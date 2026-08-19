@@ -66,10 +66,10 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* 게시판 게시물 키조회 */
     @Override
     public Optional<SyBbsDto.Item> selectById(String bbsId) {
-        SyBbsDto.Item dto = baseSelColumnQuery()
+        SyBbsDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syBbs.bbsId.eq(bbsId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 게시판 게시물 목록조회 */
@@ -96,7 +96,8 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyBbsDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 게시판 게시물 페이지조회 */
@@ -119,21 +120,21 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyBbsDto.Item> content = query.clone()
+        List<SyBbsDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syBbs.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyBbsDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
 

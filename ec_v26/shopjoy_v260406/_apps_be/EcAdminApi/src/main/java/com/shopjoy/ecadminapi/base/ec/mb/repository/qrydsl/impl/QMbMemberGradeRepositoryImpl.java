@@ -54,7 +54,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                         mbMemberGrade.updDate          // 수정일시
                 ))
                 .from(mbMemberGrade)
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd)));
+                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd))) // 회원등급
+                ;
     }
 
     /* 회원 등급 키조회 */
@@ -88,7 +89,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbMemberGradeDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 회원 등급 페이지조회 */
@@ -111,21 +113,21 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbMemberGradeDto.Item> content = query.clone()
+        List<MbMemberGradeDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMemberGrade.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberGradeDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "gradeNm,gradeCd" (Entity 필드명) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

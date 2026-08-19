@@ -67,19 +67,20 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         oi2.prodOptNm.as("prodOptNm2")
                 ))
                 .from(odCart)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
-                .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOpt1Id))
-                .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOpt2Id));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId)) // 회원
+                .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId)) // 상품
+                .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOpt1Id)) // 옵션1
+                .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOpt2Id)) // 옵션2
+                ;
     }
 
     /* 장바구니 키조회 */
     @Override
     public Optional<OdCartDto.Item> selectById(String cartId) {
-        OdCartDto.Item dto = baseListQuery()
+        OdCartDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odCart.cartId.eq(cartId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 장바구니 목록조회 */
@@ -112,7 +113,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdCartDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 장바구니 페이지조회 */
@@ -140,21 +142,21 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         JPAQuery<OdCartDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdCartDto.Item> content = query.clone()
+        List<OdCartDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odCart.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdCartDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

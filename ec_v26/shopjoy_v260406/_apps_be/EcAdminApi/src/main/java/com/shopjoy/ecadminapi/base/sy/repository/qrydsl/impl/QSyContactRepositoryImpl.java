@@ -63,10 +63,10 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* 문의 키조회 */
     @Override
     public Optional<SyContactDto.Item> selectById(String contactId) {
-        SyContactDto.Item dto = baseSelColumnQuery()
+        SyContactDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syContact.contactId.eq(contactId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 문의 목록조회 */
@@ -94,7 +94,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyContactDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 문의 페이지조회 */
@@ -118,21 +119,21 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyContactDto.Item> content = query.clone()
+        List<SyContactDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syContact.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyContactDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
 

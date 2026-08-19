@@ -61,17 +61,18 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         cd_bs.codeLabel.as("runStatusCdNm")  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
                 ))
                 .from(syhBatchLog)
-                .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatusCd)));
+                .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatusCd))) // 배치상태
+                ;
     }
 
     /* 배치 로그 키조회 (단건 상세 — baseSelColumnQuery 공유) */
     @Override
     public Optional<SyhBatchLogDto.Item> selectById(String id) {
-        SyhBatchLogDto.Item dto = baseSelColumnQuery()
+        SyhBatchLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhBatchLog.batchLogId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 배치 로그 목록조회 */
@@ -97,7 +98,8 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyhBatchLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 배치 로그 페이지조회 */
@@ -119,21 +121,21 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         JPAQuery<SyhBatchLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhBatchLogDto.Item> content = query.clone()
+        List<SyhBatchLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhBatchLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhBatchLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

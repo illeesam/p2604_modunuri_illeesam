@@ -58,10 +58,10 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
     /* 결제 변경 이력 키조회 */
     @Override
     public Optional<OdhPayChgHistDto.Item> selectById(String id) {
-        OdhPayChgHistDto.Item dto = baseSelColumnQuery()
+        OdhPayChgHistDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odhPayChgHist.payChgHistId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 결제 변경 이력 목록조회 */
@@ -86,7 +86,8 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdhPayChgHistDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 결제 변경 이력 페이지조회 */
@@ -106,21 +107,21 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdhPayChgHistDto.Item> content = query.clone()
+        List<OdhPayChgHistDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odhPayChgHist.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdhPayChgHistDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

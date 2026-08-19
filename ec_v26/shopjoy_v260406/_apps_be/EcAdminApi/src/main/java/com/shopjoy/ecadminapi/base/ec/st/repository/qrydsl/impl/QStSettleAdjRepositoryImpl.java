@@ -56,16 +56,17 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                         cdSat.codeLabel.as("adjTypeCdNm")           // 조정유형명 (sy_code 조인)
                 ))
                 .from(stSettleAdj)
-                .leftJoin(cdSat).on(cdSat.codeGrp.eq("ADJ_TYPE_CD").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd)));
+                .leftJoin(cdSat).on(cdSat.codeGrp.eq("ADJ_TYPE_CD").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd))) // 조정유형
+                ;
     }
 
     /* 정산 조정 키조회 */
     @Override
     public Optional<StSettleAdjDto.Item> selectById(String id) {
-        StSettleAdjDto.Item dto = baseListQuery()
+        StSettleAdjDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleAdj.settleAdjId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 정산 조정 목록조회 */
@@ -94,7 +95,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StSettleAdjDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 정산 조정 페이지조회 */
@@ -118,21 +120,21 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         JPAQuery<StSettleAdjDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StSettleAdjDto.Item> content = query.clone()
+        List<StSettleAdjDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleAdj.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleAdjDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

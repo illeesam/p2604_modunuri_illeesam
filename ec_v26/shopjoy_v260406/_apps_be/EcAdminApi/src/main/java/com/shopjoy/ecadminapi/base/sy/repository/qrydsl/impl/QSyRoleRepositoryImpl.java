@@ -71,17 +71,18 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                         syRole.pathId          // 점(.) 구분 표시경로 (트리 빌드용)
                 ))
                 .from(syRole)
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE_CD").and(cdRt.codeValue.eq(syRole.roleTypeCd)));
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE_CD").and(cdRt.codeValue.eq(syRole.roleTypeCd))) // 역할유형
+                ;
     }
 
     /* 역할(권한) 키조회 */
     @Override
     public Optional<SyRoleDto.Item> selectById(String roleId) {
-        SyRoleDto.Item dto = baseSelColumnQuery()
+        SyRoleDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syRole.roleId.eq(roleId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 역할(권한) 목록조회 */
@@ -109,7 +110,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyRoleDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 역할(권한) 페이지조회 */
@@ -134,21 +136,21 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyRoleDto.Item> content = query.clone()
+        List<SyRoleDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syRole.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyRoleDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */

@@ -68,18 +68,19 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                         pdDlivTmplt.regBy, pdDlivTmplt.regDate, pdDlivTmplt.updBy, pdDlivTmplt.updDate
                 ))
                 .from(pdDlivTmplt)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId))
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd)))
-                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE_CD").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd)));
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId)) // 업체
+                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd))) // 배송방법
+                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE_CD").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd))) // 배송비유형
+                ;
     }
 
     /* 배송 템플릿 키조회 */
     @Override
     public Optional<PdDlivTmpltDto.Item> selectById(String dlivTmpltId) {
-        PdDlivTmpltDto.Item dto = baseSelColumnQuery()
+        PdDlivTmpltDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdDlivTmplt.dlivTmpltId.eq(dlivTmpltId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 배송 템플릿 목록조회 */
@@ -108,7 +109,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdDlivTmpltDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 배송 템플릿 페이지조회 */
@@ -132,21 +134,21 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdDlivTmpltDto.Item> content = query.clone()
+        List<PdDlivTmpltDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdDlivTmplt.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdDlivTmpltDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

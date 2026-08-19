@@ -60,19 +60,20 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                         odOrderItemDiscnt.regBy, odOrderItemDiscnt.regDate
                 ))
                 .from(odOrderItemDiscnt)
-                .leftJoin(ord).on(ord.orderId.eq(odOrderItemDiscnt.orderId))
-                .leftJoin(ite).on(ite.orderItemId.eq(odOrderItemDiscnt.orderItemId))
-                .leftJoin(cpn).on(cpn.couponId.eq(odOrderItemDiscnt.couponId))
-                .leftJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(odOrderItemDiscnt.discntTypeCd)));
+                .leftJoin(ord).on(ord.orderId.eq(odOrderItemDiscnt.orderId)) // 주문
+                .leftJoin(ite).on(ite.orderItemId.eq(odOrderItemDiscnt.orderItemId)) // 주문상품
+                .leftJoin(cpn).on(cpn.couponId.eq(odOrderItemDiscnt.couponId)) // 쿠폰
+                .leftJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(odOrderItemDiscnt.discntTypeCd))) // 주문상품할인유형
+                ;
     }
 
     /* 주문 아이템 할인 키조회 */
     @Override
     public Optional<OdOrderItemDiscntDto.Item> selectById(String orderItemDiscntId) {
-        OdOrderItemDiscntDto.Item dto = baseListQuery()
+        OdOrderItemDiscntDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderItemDiscnt.orderItemDiscntId.eq(orderItemDiscntId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 주문 아이템 할인 목록조회 */
@@ -99,7 +100,8 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdOrderItemDiscntDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 주문 아이템 할인 페이지조회 */
@@ -121,21 +123,21 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdOrderItemDiscntDto.Item> content = query.clone()
+        List<OdOrderItemDiscntDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrderItemDiscnt.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdOrderItemDiscntDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

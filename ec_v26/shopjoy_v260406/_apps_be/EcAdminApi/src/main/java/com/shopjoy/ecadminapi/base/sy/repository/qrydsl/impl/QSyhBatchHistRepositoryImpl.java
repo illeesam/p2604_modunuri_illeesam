@@ -60,11 +60,11 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     /* 배치 실행 이력 키조회 */
     @Override
     public Optional<SyhBatchHistDto.Item> selectById(String id) {
-        SyhBatchHistDto.Item dto = baseSelColumnQuery()
+        SyhBatchHistDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhBatchHist.batchHistId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 배치 실행 이력 목록조회 */
@@ -90,7 +90,8 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyhBatchHistDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 배치 실행 이력 페이지조회 */
@@ -112,21 +113,21 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhBatchHistDto.Item> content = query.clone()
+        List<SyhBatchHistDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhBatchHist.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhBatchHistDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

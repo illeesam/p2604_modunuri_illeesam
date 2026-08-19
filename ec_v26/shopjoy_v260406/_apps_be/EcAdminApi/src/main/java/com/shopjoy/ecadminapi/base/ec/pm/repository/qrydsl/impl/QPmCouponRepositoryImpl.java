@@ -96,19 +96,20 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                         cdMg.codeLabel.as("memGradeCdNm")        // 적용등급 코드라벨 (조인)
                 ))
                 .from(pmCoupon)
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd)))
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("COUPON_STATUS_CD").and(cdCs.codeValue.eq(pmCoupon.couponStatusCd)))
-                .leftJoin(cdTt).on(cdTt.codeGrp.eq("COUPON_TARGET").and(cdTt.codeValue.eq(pmCoupon.targetTypeCd)))
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmCoupon.memGradeCd)));
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
+                .leftJoin(cdCs).on(cdCs.codeGrp.eq("COUPON_STATUS_CD").and(cdCs.codeValue.eq(pmCoupon.couponStatusCd))) // 쿠폰상태
+                .leftJoin(cdTt).on(cdTt.codeGrp.eq("COUPON_TARGET").and(cdTt.codeValue.eq(pmCoupon.targetTypeCd))) // 쿠폰대상
+                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmCoupon.memGradeCd))) // 회원등급
+                ;
     }
 
     /* 쿠폰 키조회 */
     @Override
     public Optional<PmCouponDto.Item> selectById(String couponId) {
-        PmCouponDto.Item dto = baseSelColumnQuery()
+        PmCouponDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCoupon.couponId.eq(couponId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 쿠폰 목록조회 */
@@ -140,7 +141,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmCouponDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 쿠폰 페이지조회 */
@@ -167,21 +169,21 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmCouponDto.Item> content = query.clone()
+        List<PmCouponDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmCoupon.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmCouponDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_coupon_prod(coupon_id↔prod_id) 를 거쳐
      *  pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS. */

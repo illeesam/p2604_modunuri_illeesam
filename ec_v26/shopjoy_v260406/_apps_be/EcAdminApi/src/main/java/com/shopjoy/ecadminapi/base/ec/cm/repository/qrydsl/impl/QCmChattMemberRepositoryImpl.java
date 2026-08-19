@@ -56,11 +56,11 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
     @Override
     public Optional<CmChattMemberDto.Item> selectById(String chattMemberId) {
-        CmChattMemberDto.Item dto = baseSelColumnQuery()
+        CmChattMemberDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmChattMember.chattMemberId.eq(chattMemberId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     @Override
@@ -82,7 +82,8 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
-        return query.fetch();
+        List<CmChattMemberDto.Item> list = query.fetch();
+        return list;
     }
 
     @Override
@@ -100,21 +101,21 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmChattMemberDto.Item> content = base.clone()
+        List<CmChattMemberDto.Item> pageList = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
 
-        Long total = base.clone()
+        Long pageTotalCount = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmChattMember.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmChattMemberDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private List<OrderSpecifier<?>> buildOrder(String sort) {

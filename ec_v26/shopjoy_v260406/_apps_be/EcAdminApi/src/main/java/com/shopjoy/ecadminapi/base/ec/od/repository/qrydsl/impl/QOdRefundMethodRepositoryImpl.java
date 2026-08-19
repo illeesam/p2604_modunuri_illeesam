@@ -63,19 +63,20 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                         odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
                 ))
                 .from(odRefundMethod)
-                .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId))
-                .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd)));
+                .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId)) // 주문
+                .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId)) // 결제
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd))) // 결제수단
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd))) // 환불상태
+                ;
     }
 
     /* 환불수단 키조회 */
     @Override
     public Optional<OdRefundMethodDto.Item> selectById(String refundMethodId) {
-        OdRefundMethodDto.Item dto = baseListQuery()
+        OdRefundMethodDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odRefundMethod.refundMethodId.eq(refundMethodId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 환불수단 목록조회 */
@@ -102,7 +103,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdRefundMethodDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 환불수단 페이지조회 */
@@ -124,21 +126,21 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         JPAQuery<OdRefundMethodDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdRefundMethodDto.Item> content = query.clone()
+        List<OdRefundMethodDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odRefundMethod.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdRefundMethodDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

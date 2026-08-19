@@ -71,10 +71,10 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     /* 클레임 아이템 키조회 */
     @Override
     public Optional<OdClaimItemDto.Item> selectById(String claimItemId) {
-        OdClaimItemDto.Item dto = baseListQuery()
+        OdClaimItemDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odClaimItem.claimItemId.eq(claimItemId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 클레임 아이템 목록조회 */
@@ -105,7 +105,8 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdClaimItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 클레임 아이템 페이지조회 */
@@ -131,21 +132,21 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         JPAQuery<OdClaimItemDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdClaimItemDto.Item> content = query.clone()
+        List<OdClaimItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odClaimItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdClaimItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

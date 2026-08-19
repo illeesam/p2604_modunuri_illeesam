@@ -104,7 +104,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<DpPanelDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 전시 패널 페이지조회 */
@@ -130,19 +131,19 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<DpPanelDto.Item> content = query.clone()
+        List<DpPanelDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpPanel.count())
                 .where(wheres)
                 .fetchOne();
         BasePage<DpPanelDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
 

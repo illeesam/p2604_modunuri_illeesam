@@ -89,22 +89,23 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                         cdIc.codeLabel.as("inboundCourierCdNm")
                 ))
                 .from(odDliv)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(odDliv.vendorId))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odDliv.dlivStatusCd)))
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE_CD").and(cdDt.codeValue.eq(odDliv.dlivTypeCd)))
-                .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV_CD").and(cdDd.codeValue.eq(odDliv.dlivDivCd)))
-                .leftJoin(cdOc).on(cdOc.codeGrp.eq("COURIER").and(cdOc.codeValue.eq(odDliv.outboundCourierCd)))
-                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odDliv.inboundCourierCd)));
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId)) // 주문
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(odDliv.vendorId)) // 업체
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odDliv.dlivStatusCd))) // 배송상태
+                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE_CD").and(cdDt.codeValue.eq(odDliv.dlivTypeCd))) // 배송유형
+                .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV_CD").and(cdDd.codeValue.eq(odDliv.dlivDivCd))) // 입출고구분
+                .leftJoin(cdOc).on(cdOc.codeGrp.eq("COURIER").and(cdOc.codeValue.eq(odDliv.outboundCourierCd))) // 택배사
+                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odDliv.inboundCourierCd))) // 택배사
+                ;
     }
 
     /* 배송 키조회 */
     @Override
     public Optional<OdDlivDto.Item> selectById(String dlivId) {
-        OdDlivDto.Item dto = baseSelColumnQuery()
+        OdDlivDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odDliv.dlivId.eq(dlivId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 배송 목록조회 */
@@ -148,7 +149,8 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdDlivDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 배송 페이지조회 */
@@ -187,21 +189,21 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdDlivDto.Item> content = query.clone()
+        List<OdDlivDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odDliv.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdDlivDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

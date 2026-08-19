@@ -53,10 +53,10 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     /* 태그 키조회 */
     @Override
     public Optional<PdTagDto.Item> selectById(String tagId) {
-        PdTagDto.Item dto = baseSelColumnQuery()
+        PdTagDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdTag.tagId.eq(tagId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 태그 목록조회 */
@@ -84,7 +84,8 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdTagDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 태그 페이지조회 */
@@ -107,21 +108,21 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         JPAQuery<PdTagDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdTagDto.Item> content = query.clone()
+        List<PdTagDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdTag.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdTagDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

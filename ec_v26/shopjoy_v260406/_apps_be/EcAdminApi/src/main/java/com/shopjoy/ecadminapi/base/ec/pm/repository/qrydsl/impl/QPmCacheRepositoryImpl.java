@@ -56,16 +56,17 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                         pmCache.regBy, pmCache.regDate, pmCache.updBy, pmCache.updDate
                 ))
                 .from(pmCache)
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE_CD").and(cdCt.codeValue.eq(pmCache.cacheTypeCd)));
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE_CD").and(cdCt.codeValue.eq(pmCache.cacheTypeCd))) // 캐쉬유형
+                ;
     }
 
     /* 캐시(충전금) 키조회 */
     @Override
     public Optional<PmCacheDto.Item> selectById(String cacheId) {
-        PmCacheDto.Item dto = baseSelColumnQuery()
+        PmCacheDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCache.cacheId.eq(cacheId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 캐시(충전금) 목록조회 */
@@ -94,7 +95,8 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmCacheDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 캐시(충전금) 페이지조회 */
@@ -118,21 +120,21 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmCacheDto.Item> content = query.clone()
+        List<PmCacheDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmCache.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmCacheDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

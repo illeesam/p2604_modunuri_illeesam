@@ -54,7 +54,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                         mbMemberAddr.updDate                   // 수정일
                 ))
                 .from(mbMemberAddr)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId)) // 회원
+                ;
     }
 
     /* 회원 주소 키조회 */
@@ -89,7 +90,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbMemberAddrDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 회원 주소 페이지조회 */
@@ -113,21 +115,21 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbMemberAddrDto.Item> content = query.clone()
+        List<MbMemberAddrDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMemberAddr.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberAddrDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

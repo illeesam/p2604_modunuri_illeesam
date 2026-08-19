@@ -57,10 +57,10 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     /* ERP 전표 상세 키조회 */
     @Override
     public Optional<StErpVoucherLineDto.Item> selectById(String id) {
-        StErpVoucherLineDto.Item dto = baseListQuery()
+        StErpVoucherLineDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stErpVoucherLine.erpVoucherLineId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* ERP 전표 상세 목록조회 */
@@ -87,7 +87,8 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StErpVoucherLineDto.Item> list = query.fetch();
+        return list;
     }
 
     /* ERP 전표 상세 페이지조회 */
@@ -109,21 +110,21 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StErpVoucherLineDto.Item> content = query.clone()
+        List<StErpVoucherLineDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stErpVoucherLine.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StErpVoucherLineDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

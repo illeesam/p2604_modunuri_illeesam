@@ -73,18 +73,19 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                         cdSs.codeLabel.as("siteStatusCdNm")    // 상태 라벨 (sy_code SITE_STATUS 조인)
                 ))
                 .from(sySite)
-                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE_CD").and(cdSt.codeValue.eq(sySite.siteTypeCd)))
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS_CD").and(cdSs.codeValue.eq(sySite.siteStatusCd)));
+                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE_CD").and(cdSt.codeValue.eq(sySite.siteTypeCd))) // 사이트유형
+                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS_CD").and(cdSs.codeValue.eq(sySite.siteStatusCd))) // 사이트상태
+                ;
     }
 
     /* 사이트 키조회 */
     @Override
     public Optional<SySiteDto.Item> selectById(String siteId) {
-        SySiteDto.Item dto = baseSelColumnQuery()
+        SySiteDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(sySite.siteId.eq(siteId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 사이트 목록조회 */
@@ -112,7 +113,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SySiteDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 사이트 페이지조회 */
@@ -136,21 +138,21 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SySiteDto.Item> content = query.clone()
+        List<SySiteDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(sySite.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SySiteDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

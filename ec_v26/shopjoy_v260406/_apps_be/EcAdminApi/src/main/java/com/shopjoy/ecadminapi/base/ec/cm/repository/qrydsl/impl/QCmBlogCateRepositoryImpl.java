@@ -54,11 +54,11 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* 게시판 카테고리 키조회 */
     @Override
     public Optional<CmBlogCateDto.Item> selectById(String blogCateId) {
-        CmBlogCateDto.Item dto = baseSelColumnQuery()
+        CmBlogCateDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmBlogCate.blogCateId.eq(blogCateId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 게시판 카테고리 목록조회 */
@@ -84,7 +84,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmBlogCateDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 게시판 카테고리 페이지조회 */
@@ -107,21 +108,21 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmBlogCateDto.Item> content = query.clone()
+        List<CmBlogCateDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlogCate.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogCateDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

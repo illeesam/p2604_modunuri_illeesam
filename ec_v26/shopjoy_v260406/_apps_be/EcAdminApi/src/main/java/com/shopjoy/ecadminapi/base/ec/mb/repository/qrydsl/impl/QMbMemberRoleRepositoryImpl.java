@@ -55,9 +55,10 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                         gu.userNm.as("grantUserNm")           // 권한 부여 관리자명 (sy_user 조인, 별칭 gu)
                 ))
                 .from(mbMemberRole)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberRole.memberId))
-                .leftJoin(syRole).on(syRole.roleId.eq(mbMemberRole.roleId))
-                .leftJoin(gu).on(gu.userId.eq(mbMemberRole.grantUserId));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberRole.memberId)) // 회원
+                .leftJoin(syRole).on(syRole.roleId.eq(mbMemberRole.roleId)) // 역할
+                .leftJoin(gu).on(gu.userId.eq(mbMemberRole.grantUserId)) // 사용자
+                ;
     }
 
     /* 회원 역할 연결 키조회 */
@@ -90,7 +91,8 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbMemberRoleDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 회원 역할 연결 페이지조회 */
@@ -112,21 +114,21 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbMemberRoleDto.Item> content = query.clone()
+        List<MbMemberRoleDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMemberRole.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberRoleDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

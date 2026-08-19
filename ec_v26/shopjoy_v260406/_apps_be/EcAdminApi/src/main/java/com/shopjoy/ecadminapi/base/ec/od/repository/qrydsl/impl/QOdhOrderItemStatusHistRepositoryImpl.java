@@ -53,10 +53,10 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
     /* 주문 아이템 상태 이력 키조회 */
     @Override
     public Optional<OdhOrderItemStatusHistDto.Item> selectById(String id) {
-        OdhOrderItemStatusHistDto.Item dto = baseSelColumnQuery()
+        OdhOrderItemStatusHistDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odhOrderItemStatusHist.orderItemStatusHistId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 주문 아이템 상태 이력 목록조회 */
@@ -81,7 +81,8 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdhOrderItemStatusHistDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 주문 아이템 상태 이력 페이지조회 */
@@ -101,21 +102,21 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdhOrderItemStatusHistDto.Item> content = query.clone()
+        List<OdhOrderItemStatusHistDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odhOrderItemStatusHist.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdhOrderItemStatusHistDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

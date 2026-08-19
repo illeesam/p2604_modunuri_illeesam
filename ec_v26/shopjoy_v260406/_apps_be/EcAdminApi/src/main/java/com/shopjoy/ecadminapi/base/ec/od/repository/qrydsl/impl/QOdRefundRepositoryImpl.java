@@ -70,20 +70,21 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                         odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
                 ))
                 .from(odRefund)
-                .leftJoin(ord).on(ord.orderId.eq(odRefund.orderId))
-                .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE_CD").and(cdRt.codeValue.eq(odRefund.refundTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefund.refundStatusCd)))
-                .leftJoin(cdCf).on(cdCf.codeGrp.eq("FAULT_TYPE_CD").and(cdCf.codeValue.eq(odRefund.faultTypeCd)));
+                .leftJoin(ord).on(ord.orderId.eq(odRefund.orderId)) // 주문
+                .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId)) // 클레임
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE_CD").and(cdRt.codeValue.eq(odRefund.refundTypeCd))) // 환불유형
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefund.refundStatusCd))) // 환불상태
+                .leftJoin(cdCf).on(cdCf.codeGrp.eq("FAULT_TYPE_CD").and(cdCf.codeValue.eq(odRefund.faultTypeCd))) // 귀책유형
+                ;
     }
 
     /* 환불 키조회 */
     @Override
     public Optional<OdRefundDto.Item> selectById(String refundId) {
-        OdRefundDto.Item dto = baseListQuery()
+        OdRefundDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odRefund.refundId.eq(refundId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 환불 목록조회 */
@@ -110,7 +111,8 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdRefundDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 환불 페이지조회 */
@@ -132,21 +134,21 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         JPAQuery<OdRefundDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdRefundDto.Item> content = query.clone()
+        List<OdRefundDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odRefund.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdRefundDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

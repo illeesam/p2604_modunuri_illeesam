@@ -69,21 +69,22 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                         pmSaveIssue.regBy, pmSaveIssue.regDate, pmSaveIssue.updBy, pmSaveIssue.updDate
                 ))
                 .from(pmSaveIssue)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveIssue.memberId))
-                .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveIssue.orderId))
-                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveIssue.orderItemId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveIssue.prodId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE_CD").and(cdSit.codeValue.eq(pmSaveIssue.saveIssueTypeCd)))
-                .leftJoin(cdSis).on(cdSis.codeGrp.eq("ISSUE_STATUS_CD").and(cdSis.codeValue.eq(pmSaveIssue.issueStatusCd)));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveIssue.memberId)) // 회원
+                .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveIssue.orderId)) // 주문
+                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveIssue.orderItemId)) // 주문상품
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveIssue.prodId)) // 상품
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE_CD").and(cdSit.codeValue.eq(pmSaveIssue.saveIssueTypeCd))) // 적립금발급유형
+                .leftJoin(cdSis).on(cdSis.codeGrp.eq("ISSUE_STATUS_CD").and(cdSis.codeValue.eq(pmSaveIssue.issueStatusCd))) // 발급상태
+                ;
     }
 
     /* 적립금 지급 이력 키조회 */
     @Override
     public Optional<PmSaveIssueDto.Item> selectById(String saveIssueId) {
-        PmSaveIssueDto.Item dto = baseSelColumnQuery()
+        PmSaveIssueDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSaveIssue.saveIssueId.eq(saveIssueId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 적립금 지급 이력 목록조회 */
@@ -110,7 +111,8 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmSaveIssueDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 적립금 지급 이력 페이지조회 */
@@ -132,21 +134,21 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmSaveIssueDto.Item> content = query.clone()
+        List<PmSaveIssueDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSaveIssue.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmSaveIssueDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

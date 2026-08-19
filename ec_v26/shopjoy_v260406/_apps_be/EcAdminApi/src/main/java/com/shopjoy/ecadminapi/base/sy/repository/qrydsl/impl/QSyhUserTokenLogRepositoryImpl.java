@@ -69,19 +69,20 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                         cd_tt.codeLabel.as("tokenTypeCdNm")             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
                 ))
                 .from(syhUserTokenLog)
-                .leftJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId))
-                .leftJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd)))
-                .leftJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd)));
+                .leftJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId)) // 사용자
+                .leftJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd))) // 액션
+                .leftJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd))) // 토큰유형
+                ;
     }
 
     /* 키조회 */
     @Override
     public Optional<SyhUserTokenLogDto.Item> selectById(String id) {
-        SyhUserTokenLogDto.Item dto = baseSelColumnQuery()
+        SyhUserTokenLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhUserTokenLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 목록조회 */
@@ -109,7 +110,8 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyhUserTokenLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -133,21 +135,21 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhUserTokenLogDto.Item> content = query.clone()
+        List<SyhUserTokenLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhUserTokenLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhUserTokenLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

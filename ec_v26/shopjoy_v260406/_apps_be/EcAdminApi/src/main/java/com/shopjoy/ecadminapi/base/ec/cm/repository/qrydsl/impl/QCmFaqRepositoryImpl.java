@@ -67,16 +67,17 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                         syPath.pathLabel.as("pathLabel") // 표시경로 라벨 (sy_path 조인)
                 ))
                 .from(cmFaq)
-                .leftJoin(syPath).on(syPath.pathId.eq(cmFaq.pathId));
+                .leftJoin(syPath).on(syPath.pathId.eq(cmFaq.pathId)) // 표시경로
+                ;
     }
 
     /* FAQ 키조회 */
     @Override
     public Optional<CmFaqDto.Item> selectById(String faqId) {
-        CmFaqDto.Item dto = baseSelColumnQuery()
+        CmFaqDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmFaq.faqId.eq(faqId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* FAQ 목록조회 */
@@ -101,7 +102,8 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
             int offset = (pageNo - 1) * pageSize;
             query.offset(offset).limit(pageSize);
         }
-        return query.fetch();
+        List<CmFaqDto.Item> list = query.fetch();
+        return list;
     }
 
     /* FAQ 페이지조회 */
@@ -122,21 +124,21 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmFaqDto.Item> content = query.clone()
+        List<CmFaqDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(pageSize)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmFaq.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmFaqDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* pathId — 선택 노드 + 모든 자손 path 포함 (트리 클릭 시 하위까지 조회) */

@@ -54,10 +54,10 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     /* 상품 상세 콘텐츠 키조회 */
     @Override
     public Optional<PdProdContentDto.Item> selectById(String prodContentId) {
-        PdProdContentDto.Item dto = baseSelColumnQuery()
+        PdProdContentDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdContent.prodContentId.eq(prodContentId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 상품 상세 콘텐츠 목록조회 */
@@ -85,7 +85,8 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdProdContentDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 상품 상세 콘텐츠 페이지조회 */
@@ -108,21 +109,21 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         JPAQuery<PdProdContentDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdProdContentDto.Item> content = query.clone()
+        List<PdProdContentDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProdContent.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdContentDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

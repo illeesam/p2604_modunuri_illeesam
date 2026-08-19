@@ -85,21 +85,22 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                         syVendor.vendorNm.as("vendorNm")             // 업체명 (조인: sy_vendor)
                 ))
                 .from(syhAccessErrorLog)
-                .leftJoin(syUser).on(syUser.userId.eq(syhAccessErrorLog.userId))
-                .leftJoin(syRole).on(syRole.roleId.eq(syhAccessErrorLog.roleId))
-                .leftJoin(syDept).on(syDept.deptId.eq(syhAccessErrorLog.deptId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessErrorLog.vendorId))
-                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessErrorLog.appTypeCd)));
+                .leftJoin(syUser).on(syUser.userId.eq(syhAccessErrorLog.userId)) // 사용자
+                .leftJoin(syRole).on(syRole.roleId.eq(syhAccessErrorLog.roleId)) // 역할
+                .leftJoin(syDept).on(syDept.deptId.eq(syhAccessErrorLog.deptId)) // 부서
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessErrorLog.vendorId)) // 업체
+                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessErrorLog.appTypeCd))) // 앱유형
+                ;
     }
 
     /* 단건 상세조회 (코드명/연관명 조인 포함 풀필드 — baseSelColumnQuery 공유) */
     @Override
     public Optional<SyhAccessErrorLogDto.Item> selectById(String id) {
-        SyhAccessErrorLogDto.Item dto = baseSelColumnQuery()
+        SyhAccessErrorLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhAccessErrorLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
@@ -127,7 +128,8 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
-        return query.fetch();
+        List<SyhAccessErrorLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -144,21 +146,21 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         JPAQuery<SyhAccessErrorLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhAccessErrorLogDto.Item> content = query.clone()
+        List<SyhAccessErrorLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhAccessErrorLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhAccessErrorLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

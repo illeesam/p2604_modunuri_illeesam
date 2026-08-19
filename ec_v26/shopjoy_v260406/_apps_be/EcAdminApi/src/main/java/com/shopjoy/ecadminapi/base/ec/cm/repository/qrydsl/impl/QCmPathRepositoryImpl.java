@@ -53,11 +53,11 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmPathDto.Item> selectById(String bizCd) {
-        CmPathDto.Item dto = baseSelColumnQuery()
+        CmPathDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmPath.bizCd.eq(bizCd))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -83,7 +83,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmPathDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -106,21 +107,21 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         JPAQuery<CmPathDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmPathDto.Item> content = query.clone()
+        List<CmPathDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmPath.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmPathDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 */

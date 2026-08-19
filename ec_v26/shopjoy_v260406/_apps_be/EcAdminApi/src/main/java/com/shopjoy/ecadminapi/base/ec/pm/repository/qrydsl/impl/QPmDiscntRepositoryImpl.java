@@ -87,10 +87,10 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     /* 할인 키조회 */
     @Override
     public Optional<PmDiscntDto.Item> selectById(String discntId) {
-        PmDiscntDto.Item dto = baseSelColumnQuery()
+        PmDiscntDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmDiscnt.discntId.eq(discntId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 할인 목록조회 */
@@ -124,7 +124,8 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmDiscntDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 할인 페이지조회 */
@@ -153,21 +154,21 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmDiscntDto.Item> content = query.clone()
+        List<PmDiscntDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmDiscnt.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmDiscntDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /** andMember — 사용회원 필터. pm_discnt_usage(discnt_id↔member_id) 에 사용 이력이
      *  있는 회원만 남긴다. discnt_usage.member_id 는 사용 시점 스냅샷이라 mb_member 는

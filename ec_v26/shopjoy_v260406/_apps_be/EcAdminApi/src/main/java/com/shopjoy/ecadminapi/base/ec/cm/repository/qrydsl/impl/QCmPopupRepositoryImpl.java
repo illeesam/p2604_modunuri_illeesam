@@ -48,20 +48,20 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
             andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
-        List<CmPopup> content = queryFactory.selectFrom(cmPopup)
+        List<CmPopup> pageList = queryFactory.selectFrom(cmPopup)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(buildOrder())
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
 
-        Long total = queryFactory.select(cmPopup.count()).from(cmPopup)
+        Long pageTotalCount = queryFactory.select(cmPopup.count()).from(cmPopup)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmPopup> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 팝업 패턴 (1 조회+목록 / 2 트리+목록 / 3 트리+목록+선택목록) */

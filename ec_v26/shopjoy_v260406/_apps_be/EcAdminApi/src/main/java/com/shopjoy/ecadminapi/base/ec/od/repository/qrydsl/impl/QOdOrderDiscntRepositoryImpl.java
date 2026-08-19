@@ -58,18 +58,19 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                         odOrderDiscnt.regBy, odOrderDiscnt.regDate
                 ))
                 .from(odOrderDiscnt)
-                .leftJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId))
-                .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId))
-                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd)));
+                .leftJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId)) // 주문
+                .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId)) // 쿠폰
+                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd))) // 주문할인유형
+                ;
     }
 
     /* 주문 할인 키조회 */
     @Override
     public Optional<OdOrderDiscntDto.Item> selectById(String orderDiscntId) {
-        OdOrderDiscntDto.Item dto = baseListQuery()
+        OdOrderDiscntDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderDiscnt.orderDiscntId.eq(orderDiscntId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 주문 할인 목록조회 */
@@ -98,7 +99,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdOrderDiscntDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 주문 할인 페이지조회 */
@@ -122,21 +124,21 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdOrderDiscntDto.Item> content = query.clone()
+        List<OdOrderDiscntDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrderDiscnt.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdOrderDiscntDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -68,9 +68,10 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                         cdTt.codeLabel.as("tokenTypeCdNm")          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
                 ))
                 .from(mbhMemberTokenLog)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId))
-                .leftJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd)))
-                .leftJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd)));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId)) // 회원
+                .leftJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd))) // 액션
+                .leftJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd))) // 토큰유형
+                ;
     }
 
     /* 키조회 */
@@ -102,7 +103,8 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbhMemberTokenLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -123,21 +125,21 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbhMemberTokenLogDto.Item> content = query.clone()
+        List<MbhMemberTokenLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbhMemberTokenLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbhMemberTokenLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "memberId" (Entity 필드명) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

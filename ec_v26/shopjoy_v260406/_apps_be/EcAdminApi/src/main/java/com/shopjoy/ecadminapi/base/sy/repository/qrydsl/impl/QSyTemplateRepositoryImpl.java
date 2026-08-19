@@ -63,10 +63,10 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* 템플릿 키조회 */
     @Override
     public Optional<SyTemplateDto.Item> selectById(String templateId) {
-        SyTemplateDto.Item dto = baseQuery()
+        SyTemplateDto.Item dtl = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syTemplate.templateId.eq(templateId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 템플릿 목록조회 */
@@ -95,7 +95,8 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyTemplateDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 템플릿 페이지조회 */
@@ -120,21 +121,21 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         JPAQuery<SyTemplateDto.Item> query = baseQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyTemplateDto.Item> content = query.clone()
+        List<SyTemplateDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syTemplate.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyTemplateDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

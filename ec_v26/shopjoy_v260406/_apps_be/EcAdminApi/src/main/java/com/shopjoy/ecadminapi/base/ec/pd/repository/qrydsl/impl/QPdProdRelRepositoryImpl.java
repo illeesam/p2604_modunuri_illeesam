@@ -51,10 +51,10 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
 
     @Override
     public Optional<PdProdRelDto.Item> selectById(String prodRelId) {
-        PdProdRelDto.Item dto = baseSelColumnQuery()
+        PdProdRelDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdRel.prodRelId.eq(prodRelId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -83,7 +83,8 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdProdRelDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -107,21 +108,21 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         JPAQuery<PdProdRelDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdProdRelDto.Item> content = query.clone()
+        List<PdProdRelDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProdRel.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdRelDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 단건/목록/페이지 공용 base query */

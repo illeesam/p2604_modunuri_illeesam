@@ -57,11 +57,11 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* 역할별 메뉴 권한 키조회 */
     @Override
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
-        SyRoleMenuDto.Item dto = baseSelColumnQuery()
+        SyRoleMenuDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(vwRoleMenu.roleMenuId.eq(roleMenuId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 역할별 메뉴 권한 목록조회 */
@@ -88,7 +88,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyRoleMenuDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 역할별 메뉴 권한 페이지조회 */
@@ -113,21 +114,21 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyRoleMenuDto.Item> content = query.clone()
+        List<SyRoleMenuDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(vwRoleMenu.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyRoleMenuDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

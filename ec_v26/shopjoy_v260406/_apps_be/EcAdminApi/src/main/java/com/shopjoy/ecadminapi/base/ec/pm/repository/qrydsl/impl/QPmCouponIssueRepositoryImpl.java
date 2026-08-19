@@ -65,18 +65,19 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                         cdCt.codeLabel.as("couponTypeCdNm")         // 쿠폰유형 코드라벨 (조인)
                 ))
                 .from(pmCouponIssue)
-                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd)));
+                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId)) // 쿠폰
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId)) // 회원
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
+                ;
     }
 
     /* 쿠폰 발행 키조회 */
     @Override
     public Optional<PmCouponIssueDto.Item> selectById(String couponIssueId) {
-        PmCouponIssueDto.Item dto = baseSelColumnQuery()
+        PmCouponIssueDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponIssue.couponIssueId.eq(couponIssueId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 쿠폰 발행 목록조회 */
@@ -107,7 +108,8 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmCouponIssueDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 쿠폰 발행 페이지조회 */
@@ -133,21 +135,21 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmCouponIssueDto.Item> content = query.clone()
+        List<PmCouponIssueDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmCouponIssue.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmCouponIssueDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

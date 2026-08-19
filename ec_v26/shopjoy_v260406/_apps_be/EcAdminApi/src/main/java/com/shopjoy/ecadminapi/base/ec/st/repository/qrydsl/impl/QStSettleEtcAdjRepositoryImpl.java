@@ -58,17 +58,18 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                         cdAd.codeLabel.as("etcAdjDirCdNm")            // 가산/차감명 (sy_code 조인)
                 ))
                 .from(stSettleEtcAdj)
-                .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("ETC_ADJ_TYPE_CD").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd)))
-                .leftJoin(cdAd).on(cdAd.codeGrp.eq("ETC_ADJ_DIR_CD").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd)));
+                .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("ETC_ADJ_TYPE_CD").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd))) // 기타조정유형
+                .leftJoin(cdAd).on(cdAd.codeGrp.eq("ETC_ADJ_DIR_CD").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd))) // 기타조정방향
+                ;
     }
 
     /* 정산 기타 조정 키조회 */
     @Override
     public Optional<StSettleEtcAdjDto.Item> selectById(String id) {
-        StSettleEtcAdjDto.Item dto = baseListQuery()
+        StSettleEtcAdjDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleEtcAdj.settleEtcAdjId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 정산 기타 조정 목록조회 */
@@ -96,7 +97,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StSettleEtcAdjDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 정산 기타 조정 페이지조회 */
@@ -119,21 +121,21 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StSettleEtcAdjDto.Item> content = query.clone()
+        List<StSettleEtcAdjDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleEtcAdj.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleEtcAdjDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

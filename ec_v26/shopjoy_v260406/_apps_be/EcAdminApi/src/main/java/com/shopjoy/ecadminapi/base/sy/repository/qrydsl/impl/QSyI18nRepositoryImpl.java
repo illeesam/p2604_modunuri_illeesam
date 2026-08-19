@@ -62,10 +62,10 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     /* 다국어 키조회 */
     @Override
     public Optional<SyI18nDto.Item> selectById(String i18nId) {
-        SyI18nDto.Item dto = baseSelColumnQuery()
+        SyI18nDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syI18n.i18nId.eq(i18nId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 다국어 목록조회 */
@@ -91,7 +91,8 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyI18nDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 다국어 페이지조회 */
@@ -113,21 +114,21 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyI18nDto.Item> content = query.clone()
+        List<SyI18nDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syI18n.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyI18nDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

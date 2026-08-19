@@ -69,17 +69,18 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                         pmPlan.useYn, pmPlan.regBy, pmPlan.regDate, pmPlan.updBy, pmPlan.updDate
                 ))
                 .from(pmPlan)
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE_CD").and(cdPt.codeValue.eq(pmPlan.planTypeCd)))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS_CD").and(cdPs.codeValue.eq(pmPlan.planStatusCd)));
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE_CD").and(cdPt.codeValue.eq(pmPlan.planTypeCd))) // 기획전유형
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS_CD").and(cdPs.codeValue.eq(pmPlan.planStatusCd))) // 기획전상태
+                ;
     }
 
     /* 프로모션 플랜 키조회 */
     @Override
     public Optional<PmPlanDto.Item> selectById(String planId) {
-        PmPlanDto.Item dto = baseSelColumnQuery()
+        PmPlanDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmPlan.planId.eq(planId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 프로모션 플랜 목록조회 */
@@ -109,7 +110,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmPlanDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 프로모션 플랜 페이지조회 */
@@ -134,21 +136,21 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmPlanDto.Item> content = query.clone()
+        List<PmPlanDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmPlan.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmPlanDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_plan_item(plan_id↔prod_id) 를 거쳐

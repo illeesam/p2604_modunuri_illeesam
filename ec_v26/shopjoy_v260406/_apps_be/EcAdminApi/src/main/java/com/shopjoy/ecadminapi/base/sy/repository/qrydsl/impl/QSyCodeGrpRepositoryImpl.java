@@ -61,11 +61,11 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* 공통 코드 그룹 키조회 */
     @Override
     public Optional<SyCodeGrpDto.Item> selectById(String codeGrpId) {
-        SyCodeGrpDto.Item dto = baseSelColumnQuery()
+        SyCodeGrpDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syCodeGrp.codeGrpId.eq(codeGrpId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 공통 코드 그룹 목록조회 */
@@ -93,7 +93,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyCodeGrpDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 공통 코드 그룹 페이지조회 */
@@ -118,21 +119,21 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyCodeGrpDto.Item> content = query.clone()
+        List<SyCodeGrpDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syCodeGrp.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyCodeGrpDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

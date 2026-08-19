@@ -112,12 +112,13 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.thumbnailUrl                          // 썸네일URL (직접 컬럼값; 없으면 _listFillRelations에서 imgMap으로 보완)
                 ))
                 .from(pdProd)
-                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId))
-                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
-                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd)));
+                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId)) // 카테고리
+                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId)) // 브랜드
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId)) // 업체
+                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
+                ;
     }
 
     /** 단건 조회 — selectById 와 동일 컬럼 셋 (size_info_cd_nm 포함) */
@@ -129,7 +130,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
          * PROD_TYPE_CD    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'}
          * SIZE_INFO_CD    {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
          */
-        PdProdDto.Item dto = queryFactory
+        PdProdDto.Item dtl = queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
                         // a.* equivalent
                         pdProd.prodId,                  // 상품ID (PK)
@@ -189,16 +190,16 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         cdSz.codeLabel.as("sizeInfoCdNm")                        // 사이즈 코드라벨 (조인)
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(pdProd)
-                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId))
-                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
-                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
-                .leftJoin(cdSz).on(cdSz.codeGrp.eq("SIZE_INFO_CD").and(cdSz.codeValue.eq(pdProd.sizeInfoCd)))
+                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId)) // 카테고리
+                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId)) // 브랜드
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId)) // 업체
+                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
+                .leftJoin(cdSz).on(cdSz.codeGrp.eq("SIZE_INFO_CD").and(cdSz.codeValue.eq(pdProd.sizeInfoCd))) // 사이즈
                 .where(pdProd.prodId.eq(prodId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
@@ -261,7 +262,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdProdDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -322,21 +324,21 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         JPAQuery<PdProdDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdProdDto.Item> content = query.clone()
+        List<PdProdDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProd.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */

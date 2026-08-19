@@ -59,10 +59,10 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* 공지사항 키조회 */
     @Override
     public Optional<SyNoticeDto.Item> selectById(String noticeId) {
-        SyNoticeDto.Item dto = baseSelColumnQuery()
+        SyNoticeDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syNotice.noticeId.eq(noticeId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 공지사항 목록조회 */
@@ -89,7 +89,8 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyNoticeDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 공지사항 페이지조회 */
@@ -112,21 +113,21 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyNoticeDto.Item> content = query.clone()
+        List<SyNoticeDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syNotice.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyNoticeDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

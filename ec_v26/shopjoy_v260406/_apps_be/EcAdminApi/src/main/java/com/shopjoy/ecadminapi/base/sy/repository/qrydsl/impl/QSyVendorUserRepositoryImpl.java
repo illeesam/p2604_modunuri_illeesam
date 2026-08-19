@@ -69,20 +69,21 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                         syVendor.vendorNm.as("vendorNm")           // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorUser)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId))
-                .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId))
-                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION_CD").and(cdP.codeValue.eq(syVendorUser.positionCd)))
-                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS_CD").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd)));
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId)) // 업체
+                .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId)) // 사용자
+                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION_CD").and(cdP.codeValue.eq(syVendorUser.positionCd))) // 직급
+                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS_CD").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd))) // 업체담당자상태
+                ;
     }
 
     /* 업체 사용자 키조회 */
     @Override
     public Optional<SyVendorUserDto.Item> selectById(String vendorUserId) {
-        SyVendorUserDto.Item dto = baseSelColumnQuery()
+        SyVendorUserDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syVendorUser.vendorUserId.eq(vendorUserId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 업체 사용자 목록조회 */
@@ -110,7 +111,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyVendorUserDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 업체 사용자 페이지조회 */
@@ -135,21 +137,21 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyVendorUserDto.Item> content = query.clone()
+        List<SyVendorUserDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVendorUser.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyVendorUserDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

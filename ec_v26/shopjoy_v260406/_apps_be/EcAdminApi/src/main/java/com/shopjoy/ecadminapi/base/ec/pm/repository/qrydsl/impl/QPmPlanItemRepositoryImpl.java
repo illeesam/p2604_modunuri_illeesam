@@ -47,17 +47,18 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                         pmPlanItem.regBy, pmPlanItem.regDate, pmPlanItem.updBy, pmPlanItem.updDate
                 ))
                 .from(pmPlanItem)
-                .leftJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId));
+                .leftJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId)) // 기획전
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId)) // 상품
+                ;
     }
 
     /* 프로모션 플랜 아이템 키조회 */
     @Override
     public Optional<PmPlanItemDto.Item> selectById(String planItemId) {
-        PmPlanItemDto.Item dto = baseSelColumnQuery()
+        PmPlanItemDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmPlanItem.planItemId.eq(planItemId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 프로모션 플랜 아이템 목록조회 */
@@ -84,7 +85,8 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmPlanItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 프로모션 플랜 아이템 페이지조회 */
@@ -106,21 +108,21 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmPlanItemDto.Item> content = query.clone()
+        List<PmPlanItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmPlanItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmPlanItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

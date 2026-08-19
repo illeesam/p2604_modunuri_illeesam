@@ -69,8 +69,9 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                         cdLr.codeLabel.as("resultCdNm")             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
                 ))
                 .from(mbhMemberLoginLog)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberLoginLog.memberId))
-                .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd)));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberLoginLog.memberId)) // 회원
+                .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd))) // 로그인결과
+                ;
     }
 
     /* 회원 로그인 로그 키조회 (단건 상세 — baseSelColumnQuery 공유) */
@@ -102,7 +103,8 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbhMemberLoginLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 회원 로그인 로그 페이지조회 */
@@ -123,21 +125,21 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbhMemberLoginLogDto.Item> content = query.clone()
+        List<MbhMemberLoginLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbhMemberLoginLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbhMemberLoginLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "memberId,loginId" (Entity 필드명) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

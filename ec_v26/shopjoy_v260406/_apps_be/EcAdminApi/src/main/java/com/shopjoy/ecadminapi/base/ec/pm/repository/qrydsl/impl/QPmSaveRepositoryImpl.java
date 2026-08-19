@@ -66,17 +66,18 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                         pmSave.regBy, pmSave.regDate
                 ))
                 .from(pmSave)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSave.memberId))
-                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE_CD").and(cdSt.codeValue.eq(pmSave.saveTypeCd)));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSave.memberId)) // 회원
+                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE_CD").and(cdSt.codeValue.eq(pmSave.saveTypeCd))) // 적립금유형
+                ;
     }
 
     /* 적립금 키조회 */
     @Override
     public Optional<PmSaveDto.Item> selectById(String saveId) {
-        PmSaveDto.Item dto = baseSelColumnQuery()
+        PmSaveDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSave.saveId.eq(saveId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 적립금 목록조회 */
@@ -107,7 +108,8 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmSaveDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 적립금 페이지조회 */
@@ -135,21 +137,21 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmSaveDto.Item> content = query.clone()
+        List<PmSaveDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSave.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmSaveDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_save_prod(save_id↔prod_id) 를 거쳐

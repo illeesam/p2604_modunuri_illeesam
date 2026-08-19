@@ -63,17 +63,18 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                         pmVoucher.useYn, pmVoucher.regBy, pmVoucher.regDate, pmVoucher.updBy, pmVoucher.updDate
                 ))
                 .from(pmVoucher)
-                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VOUCHER_TYPE_CD").and(cdVt.codeValue.eq(pmVoucher.voucherTypeCd)))
-                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS_CD").and(cdVs.codeValue.eq(pmVoucher.voucherStatusCd)));
+                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VOUCHER_TYPE_CD").and(cdVt.codeValue.eq(pmVoucher.voucherTypeCd))) // 바우처유형
+                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS_CD").and(cdVs.codeValue.eq(pmVoucher.voucherStatusCd))) // 바우처상태
+                ;
     }
 
     /* 바우처(상품권) 키조회 */
     @Override
     public Optional<PmVoucherDto.Item> selectById(String voucherId) {
-        PmVoucherDto.Item dto = baseSelColumnQuery()
+        PmVoucherDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmVoucher.voucherId.eq(voucherId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 바우처(상품권) 목록조회 */
@@ -103,7 +104,8 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmVoucherDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 바우처(상품권) 페이지조회 */
@@ -128,21 +130,21 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         JPAQuery<PmVoucherDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmVoucherDto.Item> content = query.clone()
+        List<PmVoucherDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmVoucher.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmVoucherDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** andMember — 발급회원 필터. pm_voucher_issue(voucher_id↔member_id) 에 발급 이력이

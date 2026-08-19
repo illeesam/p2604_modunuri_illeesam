@@ -74,18 +74,19 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                         cdAtt.codeLabel.as("targetTypeCdNm")      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
                 ))
                 .from(syAlarm)
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE_CD").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd)))
-                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd)));
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE_CD").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd))) // 알림유형
+                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd))) // 알림채널
+                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd))) // 알림대상유형
+                ;
     }
 
     /* 알람 키조회 */
     @Override
     public Optional<SyAlarmDto.Item> selectById(String alarmId) {
-        SyAlarmDto.Item dto = baseQuery()
+        SyAlarmDto.Item dtl = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syAlarm.alarmId.eq(alarmId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 알람 목록조회 */
@@ -112,7 +113,8 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyAlarmDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 알람 페이지조회 */
@@ -135,21 +137,21 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyAlarmDto.Item> content = query.clone()
+        List<SyAlarmDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syAlarm.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyAlarmDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

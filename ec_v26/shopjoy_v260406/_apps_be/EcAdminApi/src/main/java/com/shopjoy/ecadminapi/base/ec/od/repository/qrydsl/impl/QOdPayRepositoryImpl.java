@@ -83,12 +83,13 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdRs.codeLabel.as("refundStatusCdNm")
                 ))
                 .from(odPay)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd)));
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd))) // 결제상태
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd))) // 결제수단
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd))) // 결제방향
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd))) // 환불상태
+                ;
     }
 
     /*
@@ -98,7 +99,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     /* 결제 키조회 */
     @Override
     public Optional<OdPayDto.Item> selectById(String payId) {
-        OdPayDto.Item dto = queryFactory
+        OdPayDto.Item dtl = queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
                         odPay.payId,                  // 결제ID (YYMMDDhhmmss+rand4)
                         odPay.orderId,                 // 주문ID (od_order.)
@@ -135,18 +136,18 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdCt.codeLabel.as("cardTypeCdNm")
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odPay)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd)))
-                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL_CD").and(cdPc.codeValue.eq(odPay.payChannelCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
-                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCd)))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE_CD").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd))) // 결제상태
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd))) // 결제수단
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd))) // 결제방향
+                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL_CD").and(cdPc.codeValue.eq(odPay.payChannelCd))) // 결제채널
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd))) // 환불상태
+                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCd))) // 은행
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE_CD").and(cdCt.codeValue.eq(odPay.cardTypeCd))) // 카드유형
                 .where(odPay.payId.eq(payId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 결제 목록조회 */
@@ -176,7 +177,8 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdPayDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 결제 페이지조회 */
@@ -201,21 +203,21 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         JPAQuery<OdPayDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdPayDto.Item> content = query.clone()
+        List<OdPayDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odPay.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdPayDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

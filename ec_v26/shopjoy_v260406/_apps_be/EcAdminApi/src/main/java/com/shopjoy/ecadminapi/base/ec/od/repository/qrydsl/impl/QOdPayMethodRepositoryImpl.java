@@ -52,17 +52,18 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                         odPayMethod.regBy, odPayMethod.regDate, odPayMethod.updBy, odPayMethod.updDate
                 ))
                 .from(odPayMethod)
-                .leftJoin(mem).on(mem.memberId.eq(odPayMethod.memberId))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd)));
+                .leftJoin(mem).on(mem.memberId.eq(odPayMethod.memberId)) // 회원
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd))) // 결제수단
+                ;
     }
 
     /* 결제수단 키조회 */
     @Override
     public Optional<OdPayMethodDto.Item> selectById(String payMethodId) {
-        OdPayMethodDto.Item dto = baseListQuery()
+        OdPayMethodDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odPayMethod.payMethodId.eq(payMethodId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 결제수단 목록조회 */
@@ -89,7 +90,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdPayMethodDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 결제수단 페이지조회 */
@@ -111,21 +113,21 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         JPAQuery<OdPayMethodDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdPayMethodDto.Item> content = query.clone()
+        List<OdPayMethodDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odPayMethod.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdPayMethodDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

@@ -50,17 +50,18 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                         cdSit.codeLabel.as("targetTypeCdNm")        // 대상유형 코드라벨 (조인)
                 ))
                 .from(pmSaveItem)
-                .leftJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd)));
+                .leftJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId)) // 적립금
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd))) // 프로모션대상유형
+                ;
     }
 
     /* 적립금 대상 상품 키조회 */
     @Override
     public Optional<PmSaveItemDto.Item> selectById(String saveItemId) {
-        PmSaveItemDto.Item dto = baseSelColumnQuery()
+        PmSaveItemDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSaveItem.saveItemId.eq(saveItemId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 적립금 대상 상품 목록조회 */
@@ -90,7 +91,8 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmSaveItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 적립금 대상 상품 페이지조회 */
@@ -115,21 +117,21 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmSaveItemDto.Item> content = query.clone()
+        List<PmSaveItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSaveItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmSaveItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

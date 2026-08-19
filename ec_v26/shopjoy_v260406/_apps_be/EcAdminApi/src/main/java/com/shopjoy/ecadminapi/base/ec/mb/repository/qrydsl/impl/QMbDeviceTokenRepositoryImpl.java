@@ -51,7 +51,8 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                         mbMember.memberNm.as("memberNm")   // 회원명 (mb_member 조인)
                 ))
                 .from(mbDeviceToken)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbDeviceToken.memberId));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbDeviceToken.memberId)) // 회원
+                ;
     }
 
     /* 키조회 */
@@ -84,7 +85,8 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbDeviceTokenDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -106,21 +108,21 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbDeviceTokenDto.Item> content = query.clone()
+        List<MbDeviceTokenDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbDeviceToken.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbDeviceTokenDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

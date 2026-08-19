@@ -42,16 +42,17 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                         pdProdTag.regBy, pdProdTag.regDate
                 ))
                 .from(pdProdTag)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId)) // 상품
+                ;
     }
 
     /* 상품 태그 키조회 */
     @Override
     public Optional<PdProdTagDto.Item> selectById(String prodTagId) {
-        PdProdTagDto.Item dto = baseSelColumnQuery()
+        PdProdTagDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdTag.prodTagId.eq(prodTagId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 상품 태그 목록조회 */
@@ -78,7 +79,8 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdProdTagDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 상품 태그 페이지조회 */
@@ -100,21 +102,21 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         JPAQuery<PdProdTagDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdProdTagDto.Item> content = query.clone()
+        List<PdProdTagDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProdTag.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdTagDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

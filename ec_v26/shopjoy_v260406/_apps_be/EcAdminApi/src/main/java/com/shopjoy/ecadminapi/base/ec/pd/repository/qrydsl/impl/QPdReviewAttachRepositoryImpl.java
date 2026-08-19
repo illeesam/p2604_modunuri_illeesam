@@ -54,10 +54,10 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 단건 조회 */
     @Override
     public Optional<PdReviewAttachDto.Item> selectById(String reviewAttachId) {
-        PdReviewAttachDto.Item dto = baseQuerySingle()
+        PdReviewAttachDto.Item dtl = baseQuerySingle()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdReviewAttach.reviewAttachId.eq(reviewAttachId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -85,7 +85,8 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdReviewAttachDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -110,21 +111,21 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdReviewAttachDto.Item> content = query.clone()
+        List<PdReviewAttachDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdReviewAttach.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdReviewAttachDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 목록/페이지 용 base query — pd_review LEFT JOIN 포함 (prodId 조건 지원) */
@@ -140,7 +141,8 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                         pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
                 ))
                 .from(pdReviewAttach)
-                .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId));
+                .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId)) // 리뷰
+                ;
     }
 
     /** 검색조건 빌드 — Mapper XML pdReviewAttachCond 와 동일 동작 */

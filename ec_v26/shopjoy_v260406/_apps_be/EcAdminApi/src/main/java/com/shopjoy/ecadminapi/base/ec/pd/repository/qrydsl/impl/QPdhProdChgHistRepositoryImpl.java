@@ -55,11 +55,11 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     /* 상품 변경 이력 키조회 */
     @Override
     public Optional<PdhProdChgHistDto.Item> selectById(String id) {
-        PdhProdChgHistDto.Item dto = baseSelColumnQuery()
+        PdhProdChgHistDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(pdhProdChgHist.prodChgHistId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 상품 변경 이력 목록조회 */
@@ -85,7 +85,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdhProdChgHistDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 상품 변경 이력 페이지조회 */
@@ -107,21 +108,21 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         JPAQuery<PdhProdChgHistDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdhProdChgHistDto.Item> content = query.clone()
+        List<PdhProdChgHistDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdhProdChgHist.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdhProdChgHistDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 — Mapper XML pdhProdChgHistCond 와 동일 동작 */

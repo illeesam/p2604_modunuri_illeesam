@@ -69,18 +69,19 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                         cdEvs.codeLabel.as("erpVoucherStatusCdNm") // 전표상태명 (sy_code 조인)
                 ))
                 .from(stErpVoucher)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId))
-                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd)))
-                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd)));
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId)) // 업체
+                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd))) // ERP전표유형
+                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd))) // ERP전표상태
+                ;
     }
 
     /* ERP 전표 키조회 */
     @Override
     public Optional<StErpVoucherDto.Item> selectById(String id) {
-        StErpVoucherDto.Item dto = baseListQuery()
+        StErpVoucherDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stErpVoucher.erpVoucherId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* ERP 전표 목록조회 */
@@ -109,7 +110,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StErpVoucherDto.Item> list = query.fetch();
+        return list;
     }
 
     /* ERP 전표 페이지조회 */
@@ -133,21 +135,21 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StErpVoucherDto.Item> content = query.clone()
+        List<StErpVoucherDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stErpVoucher.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StErpVoucherDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

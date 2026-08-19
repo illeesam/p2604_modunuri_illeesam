@@ -65,10 +65,10 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
     /* 알림함 키조회 */
     @Override
     public Optional<SyNotiDto.Item> selectById(String notiId) {
-        SyNotiDto.Item dto = baseSelColumnQuery()
+        SyNotiDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syNoti.notiId.eq(notiId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 알림함 목록조회 */
@@ -98,7 +98,8 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyNotiDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 알림함 페이지조회 */
@@ -124,21 +125,21 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyNotiDto.Item> content = query.clone()
+        List<SyNotiDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syNoti.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyNotiDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* 안읽음 건수 — 종 아이콘 뱃지용 */

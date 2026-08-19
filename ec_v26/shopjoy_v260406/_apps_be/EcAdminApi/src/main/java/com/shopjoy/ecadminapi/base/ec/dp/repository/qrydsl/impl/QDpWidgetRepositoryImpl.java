@@ -100,7 +100,8 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<DpWidgetDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 전시 위젯 페이지조회 */
@@ -119,19 +120,19 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<DpWidgetDto.Item> content = query.clone()
+        List<DpWidgetDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpWidget.count())
                 .where(wheres)
                 .fetchOne();
         BasePage<DpWidgetDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

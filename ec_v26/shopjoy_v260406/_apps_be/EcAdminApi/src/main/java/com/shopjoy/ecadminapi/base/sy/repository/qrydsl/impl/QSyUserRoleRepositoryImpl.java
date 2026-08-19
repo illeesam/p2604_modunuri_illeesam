@@ -55,19 +55,20 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                         usr2.userNm.as("grantUserNm")             // 부여자명 (조인: sy_user, alias usr2)
                 ))
                 .from(syUserRole)
-                .leftJoin(usr).on(usr.userId.eq(syUserRole.userId))
-                .leftJoin(syRole).on(syRole.roleId.eq(syUserRole.roleId))
-                .leftJoin(usr2).on(usr2.userId.eq(syUserRole.grantUserId));
+                .leftJoin(usr).on(usr.userId.eq(syUserRole.userId)) // 사용자
+                .leftJoin(syRole).on(syRole.roleId.eq(syUserRole.roleId)) // 역할
+                .leftJoin(usr2).on(usr2.userId.eq(syUserRole.grantUserId)) // 사용자
+                ;
     }
 
     /* 사용자별 역할 키조회 */
     @Override
     public Optional<SyUserRoleDto.Item> selectById(String userRoleId) {
-        SyUserRoleDto.Item dto = baseSelColumnQuery()
+        SyUserRoleDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syUserRole.userRoleId.eq(userRoleId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 사용자별 역할 목록조회 */
@@ -94,7 +95,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyUserRoleDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 사용자별 역할 페이지조회 */
@@ -118,21 +120,21 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyUserRoleDto.Item> content = query.clone()
+        List<SyUserRoleDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syUserRole.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyUserRoleDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

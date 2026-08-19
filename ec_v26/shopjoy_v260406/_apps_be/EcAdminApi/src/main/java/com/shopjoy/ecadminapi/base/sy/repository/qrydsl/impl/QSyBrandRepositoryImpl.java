@@ -64,11 +64,11 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 브랜드 키조회 */
     @Override
     public Optional<SyBrandDto.Item> selectById(String brandId) {
-        SyBrandDto.Item dto = baseSelColumnQuery()
+        SyBrandDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syBrand.brandId.eq(brandId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 브랜드 목록조회 */
@@ -96,7 +96,8 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyBrandDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 브랜드 페이지조회 */
@@ -121,21 +122,21 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyBrandDto.Item> content = query.clone()
+        List<SyBrandDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syBrand.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyBrandDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

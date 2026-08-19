@@ -93,7 +93,8 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<DpAreaDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 전시 영역 페이지조회 */
@@ -116,19 +117,19 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<DpAreaDto.Item> content = query.clone()
+        List<DpAreaDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpArea.count())
                 .where(wheres)
                 .fetchOne();
         BasePage<DpAreaDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

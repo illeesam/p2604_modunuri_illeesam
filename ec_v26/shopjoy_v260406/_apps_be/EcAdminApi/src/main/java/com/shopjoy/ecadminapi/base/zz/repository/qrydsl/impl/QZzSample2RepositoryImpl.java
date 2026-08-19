@@ -79,11 +79,11 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
     /* 키조회 */
     @Override
     public Optional<ZzSample2Dto.Item> selectById(String id) {
-        ZzSample2Dto.Item dto = baseSelColumnQuery()
+        ZzSample2Dto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(zzSample2.sample2Id.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 목록조회 */
@@ -111,7 +111,8 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<ZzSample2Dto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -135,21 +136,21 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<ZzSample2Dto.Item> content = query.clone()
+        List<ZzSample2Dto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(zzSample2.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<ZzSample2Dto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -47,8 +47,9 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                         mbMemberSns.regDate        // 등록일시
                 ))
                 .from(mbMemberSns)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId))
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL_CD").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd)));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId)) // 회원
+                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL_CD").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd))) // SNS채널
+                ;
     }
 
     /* SNS 연동 회원 키조회 */
@@ -83,7 +84,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbMemberSnsDto.Item> list = query.fetch();
+        return list;
     }
 
     /* SNS 연동 회원 페이지조회 */
@@ -107,21 +109,21 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbMemberSnsDto.Item> content = query.clone()
+        List<MbMemberSnsDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMemberSns.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberSnsDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -74,11 +74,11 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     /* 전시 패널 아이템 키조회 */
     @Override
     public Optional<DpPanelItemDto.Item> selectById(String panelItemId) {
-        DpPanelItemDto.Item dto = baseSelColumnQuery()
+        DpPanelItemDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(dpPanelItem.panelItemId.eq(panelItemId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 전시 패널 아이템 목록조회 */
@@ -109,7 +109,8 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<DpPanelItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 전시 패널 아이템 페이지조회 */
@@ -134,21 +135,21 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<DpPanelItemDto.Item> content = query.clone()
+        List<DpPanelItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpPanelItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<DpPanelItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

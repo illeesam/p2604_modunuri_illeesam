@@ -51,11 +51,11 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmBlogTagDto.Item> selectById(String blogTagId) {
-        CmBlogTagDto.Item dto = baseSelColumnQuery()
+        CmBlogTagDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmBlogTag.blogTagId.eq(blogTagId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -82,7 +82,8 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmBlogTagDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -106,21 +107,21 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         JPAQuery<CmBlogTagDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmBlogTagDto.Item> content = query.clone()
+        List<CmBlogTagDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlogTag.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogTagDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 */

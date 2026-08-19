@@ -71,11 +71,11 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     /* 첨부파일 키조회 */
     @Override
     public Optional<SyAttachDto.Item> selectById(String attachId) {
-        SyAttachDto.Item dto = baseSelColumnQuery()
+        SyAttachDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syAttach.attachId.eq(attachId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 첨부파일 목록조회 */
@@ -102,7 +102,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyAttachDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 첨부파일 페이지조회 */
@@ -125,21 +126,21 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyAttachDto.Item> content = query.clone()
+        List<SyAttachDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syAttach.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyAttachDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

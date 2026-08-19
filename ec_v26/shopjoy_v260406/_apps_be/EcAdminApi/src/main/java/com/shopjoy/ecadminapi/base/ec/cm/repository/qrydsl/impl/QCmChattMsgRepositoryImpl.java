@@ -60,11 +60,11 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
     @Override
     public Optional<CmChattMsgDto.Item> selectById(String chattMsgId) {
-        CmChattMsgDto.Item dto = baseSelColumnQuery()
+        CmChattMsgDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmChattMsg.chattMsgId.eq(chattMsgId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     @Override
@@ -91,7 +91,8 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
-        return query.fetch();
+        List<CmChattMsgDto.Item> list = query.fetch();
+        return list;
     }
 
     @Override
@@ -114,21 +115,21 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         JPAQuery<CmChattMsgDto.Item> base = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmChattMsgDto.Item> content = base.clone()
+        List<CmChattMsgDto.Item> pageList = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
 
-        Long total = base.clone()
+        Long pageTotalCount = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmChattMsg.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmChattMsgDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(CmChattMsgDto.Request s) {

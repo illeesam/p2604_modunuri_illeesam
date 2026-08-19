@@ -61,11 +61,11 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmBlogDto.Item> selectById(String blogId) {
-        CmBlogDto.Item dto = baseSelColumnQuery()
+        CmBlogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmBlog.blogId.eq(blogId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
@@ -94,7 +94,8 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmBlogDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -120,21 +121,21 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmBlogDto.Item> content = query.clone()
+        List<CmBlogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 */

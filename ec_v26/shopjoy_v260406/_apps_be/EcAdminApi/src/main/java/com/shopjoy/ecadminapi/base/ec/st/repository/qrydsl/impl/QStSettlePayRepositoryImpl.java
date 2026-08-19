@@ -69,18 +69,19 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                         cdSps.codeLabel.as("payStatusCdNm")             // 지급상태명 (sy_code 조인)
                 ))
                 .from(stSettlePay)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId))
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd)))
-                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd)));
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId)) // 업체
+                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd))) // 결제수단
+                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd))) // 정산지급상태
+                ;
     }
 
     /* 정산 지급 키조회 */
     @Override
     public Optional<StSettlePayDto.Item> selectById(String id) {
-        StSettlePayDto.Item dto = baseListQuery()
+        StSettlePayDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettlePay.settlePayId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 정산 지급 목록조회 */
@@ -108,7 +109,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StSettlePayDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 정산 지급 페이지조회 */
@@ -131,21 +133,21 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         JPAQuery<StSettlePayDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StSettlePayDto.Item> content = query.clone()
+        List<StSettlePayDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettlePay.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StSettlePayDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

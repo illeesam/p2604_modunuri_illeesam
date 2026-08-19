@@ -56,10 +56,10 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
     /* 단건 조회 */
     @Override
     public Optional<PmSavePolicyDto.Item> selectById(String saveId) {
-        PmSavePolicyDto.Item dto = baseSelColumnQuery()
+        PmSavePolicyDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSavePolicy.saveId.eq(saveId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 목록조회 */
@@ -84,7 +84,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(wheres)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId)) // 업체
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -93,7 +93,8 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmSavePolicyDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지 목록 */
@@ -119,24 +120,25 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId));
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId)) // 업체
+                ;
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmSavePolicyDto.Item> content = query.clone()
+        List<PmSavePolicyDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSavePolicy.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmSavePolicyDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** andProd — 대상상품 필터. pm_save_prod(save_id↔prod_id, 배치 전개) 를 거쳐 pd_prod 조인 */

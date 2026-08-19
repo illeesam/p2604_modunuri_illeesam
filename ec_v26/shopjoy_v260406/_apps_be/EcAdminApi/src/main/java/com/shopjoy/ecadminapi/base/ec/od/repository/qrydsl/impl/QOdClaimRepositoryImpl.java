@@ -150,13 +150,14 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                             "claimItemCnt")
                 ))
                 .from(odClaim)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd)))
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd)))
-                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd)))
-                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd)))
-                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd)));
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId)) // 회원
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
+                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
+                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
+                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd))) // 택배사
+                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
+                ;
     }
 
     /*
@@ -166,7 +167,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* 클레임(취소/반품/교환) 키조회 */
     @Override
     public Optional<OdClaimDto.Item> selectById(String claimId) {
-        OdClaimDto.Item dto = queryFactory
+        OdClaimDto.Item dtl = queryFactory
                 .select(Projections.bean(OdClaimDto.Item.class,
                         // a.* equivalent (DTO Item 에 존재하는 모든 a. 필드)
                         odClaim.claimId,                      // 클레임ID (YYMMDDhhmmss+rand4)
@@ -262,21 +263,21 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .from(odClaim)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd)))
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd)))
-                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd)))
-                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odClaim.refundBankCd)))
-                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("DLIV_STATUS").and(cdRs.codeValue.eq(odClaim.returnStatusCd)))
-                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odClaim.inboundCourierCd)))
-                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odClaim.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odClaim.apprTargetCd)))
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId)) // 회원
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
+                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
+                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
+                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odClaim.refundBankCd))) // 은행
+                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd))) // 택배사
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("DLIV_STATUS").and(cdRs.codeValue.eq(odClaim.returnStatusCd))) // 배송상태
+                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odClaim.inboundCourierCd))) // 택배사
+                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odClaim.apprStatusCd))) // 결재상태
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odClaim.apprTargetCd))) // 결재대상
                 .where(odClaim.claimId.eq(claimId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 클레임(취소/반품/교환) 목록조회 */
@@ -312,7 +313,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdClaimDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 클레임(취소/반품/교환) 페이지조회 */
@@ -343,21 +345,21 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         JPAQuery<OdClaimDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdClaimDto.Item> content = query.clone()
+        List<OdClaimDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odClaim.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdClaimDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

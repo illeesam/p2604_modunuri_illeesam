@@ -56,10 +56,10 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     /* 고객의 소리(VOC) 키조회 */
     @Override
     public Optional<SyVocDto.Item> selectById(String vocId) {
-        SyVocDto.Item dto = baseSelColumnQuery()
+        SyVocDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syVoc.vocId.eq(vocId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 고객의 소리(VOC) 목록조회 */
@@ -86,7 +86,8 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyVocDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 고객의 소리(VOC) 페이지조회 */
@@ -109,21 +110,21 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyVocDto.Item> content = query.clone()
+        List<SyVocDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVoc.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyVocDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

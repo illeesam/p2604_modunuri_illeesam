@@ -58,10 +58,10 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* 상품 이미지 키조회 */
     @Override
     public Optional<PdProdImgDto.Item> selectById(String prodImgId) {
-        PdProdImgDto.Item dto = baseSelColumnQuery()
+        PdProdImgDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdImg.prodImgId.eq(prodImgId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 상품 이미지 목록조회 */
@@ -90,7 +90,8 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdProdImgDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 상품 이미지 페이지조회 */
@@ -114,21 +115,21 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdProdImgDto.Item> content = query.clone()
+        List<PdProdImgDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProdImg.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdImgDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

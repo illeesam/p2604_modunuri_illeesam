@@ -63,19 +63,20 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                         syBrand.brandNm.as("brandNm")              // 브랜드명 (조인: sy_brand)
                 ))
                 .from(syVendorBrand)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId))
-                .leftJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId))
-                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("CONTRACT_CD").and(cdVbc.codeValue.eq(syVendorBrand.contractCd)));
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId)) // 업체
+                .leftJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId)) // 브랜드
+                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("CONTRACT_CD").and(cdVbc.codeValue.eq(syVendorBrand.contractCd))) // 계약상태
+                ;
     }
 
     /* 업체별 브랜드 키조회 */
     @Override
     public Optional<SyVendorBrandDto.Item> selectById(String vendorBrandId) {
-        SyVendorBrandDto.Item dto = baseSelColumnQuery()
+        SyVendorBrandDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syVendorBrand.vendorBrandId.eq(vendorBrandId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 업체별 브랜드 목록조회 */
@@ -102,7 +103,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyVendorBrandDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 업체별 브랜드 페이지조회 */
@@ -126,21 +128,21 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyVendorBrandDto.Item> content = query.clone()
+        List<SyVendorBrandDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVendorBrand.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyVendorBrandDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

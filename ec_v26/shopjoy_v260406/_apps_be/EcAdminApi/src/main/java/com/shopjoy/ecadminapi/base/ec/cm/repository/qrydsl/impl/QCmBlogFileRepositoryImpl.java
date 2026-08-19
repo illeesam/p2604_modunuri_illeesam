@@ -49,11 +49,11 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* 게시물 첨부파일 키조회 */
     @Override
     public Optional<CmBlogFileDto.Item> selectById(String blogFileId) {
-        CmBlogFileDto.Item dto = baseSelColumnQuery()
+        CmBlogFileDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmBlogFile.blogFileId.eq(blogFileId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 게시물 첨부파일 목록조회 */
@@ -80,7 +80,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmBlogFileDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 게시물 첨부파일 페이지조회 */
@@ -104,21 +105,21 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmBlogFileDto.Item> content = query.clone()
+        List<CmBlogFileDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlogFile.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogFileDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

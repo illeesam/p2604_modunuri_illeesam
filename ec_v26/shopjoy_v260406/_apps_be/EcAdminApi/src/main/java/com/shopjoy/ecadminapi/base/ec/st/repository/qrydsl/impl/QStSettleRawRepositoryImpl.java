@@ -167,34 +167,35 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         cdPmc.codeLabel.as("payMethodCdNm")                     // 결제수단명 (sy_code 조인)
                 ))
                 .from(stSettleRaw)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId))
-                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleRaw.orderItemId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(stSettleRaw.memberId))
-                .leftJoin(odClaim).on(odClaim.claimId.eq(stSettleRaw.claimId))
-                .leftJoin(odClaimItem).on(odClaimItem.claimItemId.eq(stSettleRaw.claimItemId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleRaw.vendorId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(stSettleRaw.prodId))
-                .leftJoin(syBrand).on(syBrand.brandId.eq(stSettleRaw.brandId))
-                .leftJoin(syUser).on(syUser.userId.eq(stSettleRaw.mdUserId))
-                .leftJoin(pmEvent).on(pmEvent.eventId.eq(stSettleRaw.promoId))
-                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(stSettleRaw.couponId))
-                .leftJoin(pmDiscnt).on(pmDiscnt.discntId.eq(stSettleRaw.discntId))
-                .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(stSettleRaw.voucherId))
-                .leftJoin(pmGift).on(pmGift.giftId.eq(stSettleRaw.giftId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE_CD").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS_CD").and(cdRs.codeValue.eq(stSettleRaw.rawStatusCd)))
-                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd)))
-                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE_CD").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd)))
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettleRaw.payMethodCd)));
+                .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId)) // 주문
+                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleRaw.orderItemId)) // 주문상품
+                .leftJoin(mbMember).on(mbMember.memberId.eq(stSettleRaw.memberId)) // 회원
+                .leftJoin(odClaim).on(odClaim.claimId.eq(stSettleRaw.claimId)) // 클레임
+                .leftJoin(odClaimItem).on(odClaimItem.claimItemId.eq(stSettleRaw.claimItemId)) // 클레임상품
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleRaw.vendorId)) // 업체
+                .leftJoin(pdProd).on(pdProd.prodId.eq(stSettleRaw.prodId)) // 상품
+                .leftJoin(syBrand).on(syBrand.brandId.eq(stSettleRaw.brandId)) // 브랜드
+                .leftJoin(syUser).on(syUser.userId.eq(stSettleRaw.mdUserId)) // 사용자
+                .leftJoin(pmEvent).on(pmEvent.eventId.eq(stSettleRaw.promoId)) // 이벤트
+                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(stSettleRaw.couponId)) // 쿠폰
+                .leftJoin(pmDiscnt).on(pmDiscnt.discntId.eq(stSettleRaw.discntId)) // 할인
+                .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(stSettleRaw.voucherId)) // 바우처
+                .leftJoin(pmGift).on(pmGift.giftId.eq(stSettleRaw.giftId)) // 사은품
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE_CD").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd))) // 원장유형
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS_CD").and(cdRs.codeValue.eq(stSettleRaw.rawStatusCd))) // 원장상태
+                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd))) // 주문상품상태
+                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE_CD").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd))) // 업체유형
+                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettleRaw.payMethodCd))) // 결제수단
+                ;
     }
 
     /* 정산 원천 데이터 키조회 */
     @Override
     public Optional<StSettleRawDto.Item> selectById(String id) {
-        StSettleRawDto.Item dto = baseListQuery()
+        StSettleRawDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleRaw.settleRawId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 정산 원천 데이터 목록조회 */
@@ -237,7 +238,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StSettleRawDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 정산 원천 데이터 페이지조회 */
@@ -275,21 +277,21 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         JPAQuery<StSettleRawDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StSettleRawDto.Item> content = query.clone()
+        List<StSettleRawDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleRaw.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleRawDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

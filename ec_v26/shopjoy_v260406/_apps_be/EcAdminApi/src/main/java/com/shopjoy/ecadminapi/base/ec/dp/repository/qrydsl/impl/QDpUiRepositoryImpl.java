@@ -69,10 +69,10 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     /* 전시 UI 키조회 */
     @Override
     public Optional<DpUiDto.Item> selectById(String uiId) {
-        DpUiDto.Item dto = baseQuery()
+        DpUiDto.Item dtl = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(dpUi.uiId.eq(uiId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 전시 UI 목록조회 */
@@ -101,7 +101,8 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<DpUiDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 전시 UI 페이지조회 */
@@ -125,21 +126,21 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         JPAQuery<DpUiDto.Item> query = baseQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<DpUiDto.Item> content = query.clone()
+        List<DpUiDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpUi.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<DpUiDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

@@ -87,10 +87,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                         syCode_authMethodCd.codeLabel.as("authMethodCdNm")   // 인증방식 코드명 (조인: sy_code AUTH_METHOD)
                 ))
                 .from(syUser)
-                .leftJoin(syDept).on(syDept.deptId.eq(syUser.deptId))
-                .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
-                .leftJoin(syCode_userStatusCd).on(syCode_userStatusCd.codeGrp.eq("USER_STATUS_CD").and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd)))
-                .leftJoin(syCode_authMethodCd).on(syCode_authMethodCd.codeGrp.eq("AUTH_METHOD_CD").and(syCode_authMethodCd.codeValue.eq(syUser.authMethodCd)));
+                .leftJoin(syDept).on(syDept.deptId.eq(syUser.deptId)) // 부서
+                .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId)) // 역할
+                .leftJoin(syCode_userStatusCd).on(syCode_userStatusCd.codeGrp.eq("USER_STATUS_CD").and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd))) // 사용자상태
+                .leftJoin(syCode_authMethodCd).on(syCode_authMethodCd.codeGrp.eq("AUTH_METHOD_CD").and(syCode_authMethodCd.codeValue.eq(syUser.authMethodCd))) // 인증방식
+                ;
     }
 
     /* ============================================================
@@ -101,11 +102,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 단건 조회 */
     @Override
     public Optional<SyUserDto.Item> selectById(String userId) {
-        SyUserDto.Item dto = baseSelColumnQuery()
+        SyUserDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syUser.userId.eq(userId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용. null 안전) */
@@ -134,7 +135,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyUserDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
@@ -159,21 +161,21 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyUserDto.Item> content = query.clone()
+        List<SyUserDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syUser.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyUserDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
@@ -192,7 +194,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         Long total = queryFactory.select(syUser.count())
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syUser)
                 /* andRoleEq 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
-                .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
+                .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId)) // 역할
                 .where(wheres)
                 .fetchOne();
         return CmUtil.nvlLong(total);

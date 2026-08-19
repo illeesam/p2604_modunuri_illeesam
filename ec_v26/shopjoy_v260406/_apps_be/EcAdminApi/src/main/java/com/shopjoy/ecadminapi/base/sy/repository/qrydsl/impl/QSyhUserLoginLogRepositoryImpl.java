@@ -68,18 +68,19 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                         cd_lr.codeLabel.as("resultCdNm")              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
                 ))
                 .from(syhUserLoginLog)
-                .leftJoin(syUser).on(syUser.userId.eq(syhUserLoginLog.userId))
-                .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(syhUserLoginLog.resultCd)));
+                .leftJoin(syUser).on(syUser.userId.eq(syhUserLoginLog.userId)) // 사용자
+                .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(syhUserLoginLog.resultCd))) // 로그인결과
+                ;
     }
 
     /* 사용자 로그인 로그 키조회 */
     @Override
     public Optional<SyhUserLoginLogDto.Item> selectById(String id) {
-        SyhUserLoginLogDto.Item dto = baseSelColumnQuery()
+        SyhUserLoginLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhUserLoginLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 사용자 로그인 로그 목록조회 */
@@ -106,7 +107,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyhUserLoginLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 사용자 로그인 로그 페이지조회 */
@@ -129,21 +131,21 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhUserLoginLogDto.Item> content = query.clone()
+        List<SyhUserLoginLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhUserLoginLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhUserLoginLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

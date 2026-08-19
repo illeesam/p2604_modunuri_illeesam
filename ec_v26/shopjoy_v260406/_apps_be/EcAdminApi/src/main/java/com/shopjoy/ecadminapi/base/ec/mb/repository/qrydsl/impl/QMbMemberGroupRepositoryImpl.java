@@ -80,7 +80,8 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbMemberGroupDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 회원 그룹 페이지조회 */
@@ -103,21 +104,21 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbMemberGroupDto.Item> content = query.clone()
+        List<MbMemberGroupDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMemberGroup.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberGroupDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

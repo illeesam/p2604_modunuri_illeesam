@@ -54,16 +54,17 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                         cdScs.codeLabel.as("closeStatusCdNm")         // 마감상태명 (sy_code 조인)
                 ))
                 .from(stSettleClose)
-                .leftJoin(cdScs).on(cdScs.codeGrp.eq("CLOSE_STATUS_CD").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
+                .leftJoin(cdScs).on(cdScs.codeGrp.eq("CLOSE_STATUS_CD").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd))) // 마감상태
+                ;
     }
 
     /* 정산 마감 키조회 */
     @Override
     public Optional<StSettleCloseDto.Item> selectById(String id) {
-        StSettleCloseDto.Item dto = baseListQuery()
+        StSettleCloseDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleClose.settleCloseId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 정산 마감 목록조회 */
@@ -90,7 +91,8 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StSettleCloseDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 정산 마감 페이지조회 */
@@ -112,21 +114,21 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         JPAQuery<StSettleCloseDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StSettleCloseDto.Item> content = query.clone()
+        List<StSettleCloseDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleClose.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleCloseDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

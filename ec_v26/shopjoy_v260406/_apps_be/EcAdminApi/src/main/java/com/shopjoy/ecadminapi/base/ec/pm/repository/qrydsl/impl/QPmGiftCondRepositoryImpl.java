@@ -52,17 +52,18 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                         pmGiftCond.regBy, pmGiftCond.regDate
                 ))
                 .from(pmGiftCond)
-                .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId))
-                .leftJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd)));
+                .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId)) // 사은품
+                .leftJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd))) // 조건유형
+                ;
     }
 
     /* 사은품 지급 조건 키조회 */
     @Override
     public Optional<PmGiftCondDto.Item> selectById(String giftCondId) {
-        PmGiftCondDto.Item dto = baseSelColumnQuery()
+        PmGiftCondDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmGiftCond.giftCondId.eq(giftCondId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 사은품 지급 조건 목록조회 */
@@ -92,7 +93,8 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmGiftCondDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 사은품 지급 조건 페이지조회 */
@@ -117,21 +119,21 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmGiftCondDto.Item> content = query.clone()
+        List<PmGiftCondDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmGiftCond.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmGiftCondDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

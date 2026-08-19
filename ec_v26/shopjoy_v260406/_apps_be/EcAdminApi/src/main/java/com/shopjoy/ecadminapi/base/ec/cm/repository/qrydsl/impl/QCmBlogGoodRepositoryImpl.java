@@ -42,17 +42,18 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
                         cmBlogGood.regDate   // 등록일시
                 ))
                 .from(cmBlogGood)
-                .leftJoin(cmBlog).on(cmBlog.blogId.eq(cmBlogGood.blogId));
+                .leftJoin(cmBlog).on(cmBlog.blogId.eq(cmBlogGood.blogId)) // 블로그
+                ;
     }
 
     /** 단건 조회 */
     @Override
     public Optional<CmBlogGoodDto.Item> selectById(String blogGoodId) {
-        CmBlogGoodDto.Item dto = baseSelColumnQuery()
+        CmBlogGoodDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmBlogGood.blogGoodId.eq(blogGoodId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -77,7 +78,8 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmBlogGoodDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -99,21 +101,21 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmBlogGoodDto.Item> content = query.clone()
+        List<CmBlogGoodDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlogGood.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogGoodDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 */

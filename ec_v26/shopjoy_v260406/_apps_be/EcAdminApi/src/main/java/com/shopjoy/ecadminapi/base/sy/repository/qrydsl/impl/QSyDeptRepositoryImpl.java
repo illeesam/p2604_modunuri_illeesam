@@ -64,18 +64,19 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                         syDept.updDate        // 수정일시
                 ))
                 .from(syDept)
-                .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId))
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE_CD").and(cdDt.codeValue.eq(syDept.deptTypeCd)));
+                .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId)) // 사용자
+                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE_CD").and(cdDt.codeValue.eq(syDept.deptTypeCd))) // 부서유형
+                ;
     }
 
     /* 부서 키조회 */
     @Override
     public Optional<SyDeptDto.Item> selectById(String deptId) {
-        SyDeptDto.Item dto = baseSelColumnQuery()
+        SyDeptDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syDept.deptId.eq(deptId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 부서 목록조회 */
@@ -102,7 +103,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyDeptDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 부서 페이지조회 */
@@ -126,21 +128,21 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyDeptDto.Item> content = query.clone()
+        List<SyDeptDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syDept.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyDeptDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

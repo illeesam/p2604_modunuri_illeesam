@@ -56,10 +56,10 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
     /* 쿠폰 사용 이력 키조회 */
     @Override
     public Optional<PmCouponUsageDto.Item> selectById(String couponUsageId) {
-        PmCouponUsageDto.Item dto = baseSelColumnQuery()
+        PmCouponUsageDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponUsage.couponUsageId.eq(couponUsageId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 쿠폰 사용 이력 목록조회 */
@@ -88,7 +88,8 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmCouponUsageDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 쿠폰 사용 이력 페이지조회 */
@@ -112,21 +113,21 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmCouponUsageDto.Item> content = query.clone()
+        List<PmCouponUsageDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmCouponUsage.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmCouponUsageDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

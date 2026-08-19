@@ -52,13 +52,13 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     /* zz_exam3 키조회 */
     @Override
     public Optional<ZzExam3Dto.Item> selectById(String exam1Id, String exam2Id, String exam3Id) {
-        ZzExam3Dto.Item dto = baseSelColumnQuery()
+        ZzExam3Dto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(zzExam3.exam1Id.eq(exam1Id)
                         .and(zzExam3.exam2Id.eq(exam2Id))
                         .and(zzExam3.exam3Id.eq(exam3Id)))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* zz_exam3 목록조회 */
@@ -85,7 +85,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<ZzExam3Dto.Item> list = query.fetch();
+        return list;
     }
 
     /* zz_exam3 페이지조회 */
@@ -108,21 +109,21 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<ZzExam3Dto.Item> content = query.clone()
+        List<ZzExam3Dto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(zzExam3.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<ZzExam3Dto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "col31,col32" */

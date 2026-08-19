@@ -54,17 +54,18 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                         pdProdSetItem.regBy, pdProdSetItem.regDate, pdProdSetItem.updBy, pdProdSetItem.updDate
                 ))
                 .from(pdProdSetItem)
-                .leftJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId))
-                .leftJoin(prd2).on(prd2.prodId.eq(pdProdSetItem.itemProdId));
+                .leftJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId)) // 상품
+                .leftJoin(prd2).on(prd2.prodId.eq(pdProdSetItem.itemProdId)) // 상품
+                ;
     }
 
     /* 세트상품 구성 키조회 */
     @Override
     public Optional<PdProdSetItemDto.Item> selectById(String prodSetItemId) {
-        PdProdSetItemDto.Item dto = baseSelColumnQuery()
+        PdProdSetItemDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdSetItem.prodSetItemId.eq(prodSetItemId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 세트상품 구성 목록조회 */
@@ -91,7 +92,8 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdProdSetItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 세트상품 구성 페이지조회 */
@@ -113,21 +115,21 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         JPAQuery<PdProdSetItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdProdSetItemDto.Item> content = query.clone()
+        List<PdProdSetItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProdSetItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdSetItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

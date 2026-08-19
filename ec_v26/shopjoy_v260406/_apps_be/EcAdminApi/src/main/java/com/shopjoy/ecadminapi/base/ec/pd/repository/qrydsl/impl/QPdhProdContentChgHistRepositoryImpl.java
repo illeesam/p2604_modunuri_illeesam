@@ -55,18 +55,19 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
                         pdhProdContentChgHist.regBy, pdhProdContentChgHist.regDate, pdhProdContentChgHist.updBy, pdhProdContentChgHist.updDate
                 ))
                 .from(pdhProdContentChgHist)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdContentChgHist.prodId))
-                .leftJoin(syUser).on(syUser.userId.eq(pdhProdContentChgHist.chgUserId));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdContentChgHist.prodId)) // 상품
+                .leftJoin(syUser).on(syUser.userId.eq(pdhProdContentChgHist.chgUserId)) // 사용자
+                ;
     }
 
     /* 상품 콘텐츠 변경 이력 키조회 */
     @Override
     public Optional<PdhProdContentChgHistDto.Item> selectById(String id) {
-        PdhProdContentChgHistDto.Item dto = baseSelColumnQuery()
+        PdhProdContentChgHistDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(pdhProdContentChgHist.histId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 상품 콘텐츠 변경 이력 목록조회 */
@@ -92,7 +93,8 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdhProdContentChgHistDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 상품 콘텐츠 변경 이력 페이지조회 */
@@ -114,21 +116,21 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         JPAQuery<PdhProdContentChgHistDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdhProdContentChgHistDto.Item> content = query.clone()
+        List<PdhProdContentChgHistDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdhProdContentChgHist.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdhProdContentChgHistDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

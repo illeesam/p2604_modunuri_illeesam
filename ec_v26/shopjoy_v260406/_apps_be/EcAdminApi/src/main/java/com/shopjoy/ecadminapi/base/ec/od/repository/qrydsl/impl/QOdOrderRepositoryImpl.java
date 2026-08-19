@@ -110,13 +110,14 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                             "orderItemCnt")
                 ))
                 .from(odOrder)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL_CD").and(cdAc.codeValue.eq(odOrder.accessChannelCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId)) // 쿠폰
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd))) // 주문상태
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd))) // 결제수단
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd))) // 배송상태
+                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL_CD").and(cdAc.codeValue.eq(odOrder.accessChannelCd))) // 접근채널
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd))) // 결재상태
+                ;
     }
 
     /*
@@ -128,7 +129,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     /* 주문 키조회 */
     @Override
     public Optional<OdOrderDto.Item> selectById(String orderId) {
-        OdOrderDto.Item dto = queryFactory
+        OdOrderDto.Item dtl = queryFactory
                 .select(Projections.bean(OdOrderDto.Item.class,
                         // a.* equivalent (DTO Item 에 존재하는 필드만)
                         odOrder.orderId,               // 주문ID (YYMMDDhhmmss+rand4)
@@ -180,17 +181,17 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         cdAt.codeLabel.as("apprTargetCdNm")
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odOrder)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
-                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId)) // 쿠폰
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd))) // 주문상태
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd))) // 결제수단
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd))) // 배송상태
+                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd))) // 은행
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd))) // 결재상태
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odOrder.apprTargetCd))) // 결재대상
                 .where(odOrder.orderId.eq(orderId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 주문 목록조회 */
@@ -223,7 +224,8 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdOrderDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 주문 페이지조회 */
@@ -251,21 +253,21 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         JPAQuery<OdOrderDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdOrderDto.Item> content = query.clone()
+        List<OdOrderDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrder.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdOrderDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

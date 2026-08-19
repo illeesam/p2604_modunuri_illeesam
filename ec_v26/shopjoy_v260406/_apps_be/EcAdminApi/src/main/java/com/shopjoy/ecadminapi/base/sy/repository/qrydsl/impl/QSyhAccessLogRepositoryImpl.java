@@ -84,21 +84,22 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                         syVendor.vendorNm.as("vendorNm")         // 업체명 (조인: sy_vendor)
                 ))
                 .from(syhAccessLog)
-                .leftJoin(syUser).on(syUser.userId.eq(syhAccessLog.userId))
-                .leftJoin(syRole).on(syRole.roleId.eq(syhAccessLog.roleId))
-                .leftJoin(syDept).on(syDept.deptId.eq(syhAccessLog.deptId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessLog.vendorId))
-                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessLog.appTypeCd)));
+                .leftJoin(syUser).on(syUser.userId.eq(syhAccessLog.userId)) // 사용자
+                .leftJoin(syRole).on(syRole.roleId.eq(syhAccessLog.roleId)) // 역할
+                .leftJoin(syDept).on(syDept.deptId.eq(syhAccessLog.deptId)) // 부서
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessLog.vendorId)) // 업체
+                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessLog.appTypeCd))) // 앱유형
+                ;
     }
 
     /* 단건 상세조회 (코드명/연관명 조인 포함 풀필드 — baseSelColumnQuery 공유) */
     @Override
     public Optional<SyhAccessLogDto.Item> selectById(String id) {
-        SyhAccessLogDto.Item dto = baseSelColumnQuery()
+        SyhAccessLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhAccessLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
@@ -127,7 +128,8 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
-        return query.fetch();
+        List<SyhAccessLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -144,21 +146,21 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhAccessLogDto.Item> content = query.clone()
+        List<SyhAccessLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhAccessLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhAccessLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

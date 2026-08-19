@@ -55,11 +55,11 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     /* 상품 조회 로그 키조회 */
     @Override
     public Optional<PdhProdViewLogDto.Item> selectById(String id) {
-        PdhProdViewLogDto.Item dto = baseSelColumnQuery()
+        PdhProdViewLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(pdhProdViewLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 상품 조회 로그 목록조회 */
@@ -85,7 +85,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdhProdViewLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 상품 조회 로그 페이지조회 */
@@ -107,21 +108,21 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         JPAQuery<PdhProdViewLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdhProdViewLogDto.Item> content = query.clone()
+        List<PdhProdViewLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdhProdViewLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdhProdViewLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

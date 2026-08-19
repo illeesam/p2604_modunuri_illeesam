@@ -69,10 +69,10 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     /* 시스템 속성 키조회 */
     @Override
     public Optional<SyPropDto.Item> selectById(String propId) {
-        SyPropDto.Item dto = baseQuery()
+        SyPropDto.Item dtl = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syProp.propId.eq(propId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 시스템 속성 목록조회 */
@@ -102,7 +102,8 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyPropDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 시스템 속성 페이지조회 */
@@ -128,21 +129,21 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyPropDto.Item> content = query.clone()
+        List<SyPropDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syProp.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyPropDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함.

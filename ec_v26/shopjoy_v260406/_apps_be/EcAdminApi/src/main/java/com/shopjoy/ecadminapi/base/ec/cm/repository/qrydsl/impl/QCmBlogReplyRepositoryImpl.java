@@ -56,11 +56,11 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmBlogReplyDto.Item> selectById(String blogReplyId) {
-        CmBlogReplyDto.Item dto = baseSelColumnQuery()
+        CmBlogReplyDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmBlogReply.blogReplyId.eq(blogReplyId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -87,7 +87,8 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmBlogReplyDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -111,21 +112,21 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmBlogReplyDto.Item> content = query.clone()
+        List<CmBlogReplyDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlogReply.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogReplyDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 */

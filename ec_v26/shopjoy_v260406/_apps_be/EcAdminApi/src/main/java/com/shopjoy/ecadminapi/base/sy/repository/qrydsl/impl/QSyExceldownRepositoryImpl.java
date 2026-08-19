@@ -81,17 +81,18 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
                         syUser.userNm.as("regUserNm")   // 요청자명 (JOIN sy_user)
                 ))
                 .from(syExceldown)
-                .leftJoin(syUser).on(syUser.userId.eq(syExceldown.regBy));
+                .leftJoin(syUser).on(syUser.userId.eq(syExceldown.regBy)) // 사용자
+                ;
     }
 
     /* 엑셀다운로드 키조회 */
     @Override
     public Optional<SyExceldownDto.Item> selectById(String exceldownId) {
-        SyExceldownDto.Item dto = baseSelColumnQuery()
+        SyExceldownDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syExceldown.exceldownId.eq(exceldownId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 엑셀다운로드 목록조회 */
@@ -109,7 +110,8 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
-        return query.fetch();
+        List<SyExceldownDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 엑셀다운로드 페이지조회 */
@@ -125,21 +127,21 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
         JPAQuery<SyExceldownDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyExceldownDto.Item> content = query.clone()
+        List<SyExceldownDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(pageSize)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syExceldown.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyExceldownDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression[] buildWhere(SyExceldownDto.Request search) {
@@ -233,14 +235,14 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     /* ── 큐/동시성 제어 ───────────────────────────────────────── */
     @Override
     public Optional<SyExceldownDto.Item> selectRunning(String siteId) {
-        SyExceldownDto.Item dto = baseSelColumnQuery()
+        SyExceldownDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectRunning()")
                 .where(syExceldown.exceldownStatusCd.eq("RUNNING"),
                        QdslUtil.strEq(syExceldown.regSiteId, siteId))
                 .orderBy(new OrderSpecifier<>(Order.DESC, syExceldown.startDate))
                 .limit(1)
                 .fetchFirst();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     @Override

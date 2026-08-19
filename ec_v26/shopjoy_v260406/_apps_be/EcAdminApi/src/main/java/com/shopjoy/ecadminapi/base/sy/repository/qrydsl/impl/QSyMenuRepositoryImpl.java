@@ -68,17 +68,18 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         syMenu.updDate        // 수정일시
                 ))
                 .from(syMenu)
-                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE_CD").and(cdMt.codeValue.eq(syMenu.menuTypeCd)));
+                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE_CD").and(cdMt.codeValue.eq(syMenu.menuTypeCd))) // 메뉴유형
+                ;
     }
 
     /* 메뉴 키조회 */
     @Override
     public Optional<SyMenuDto.Item> selectById(String menuId) {
-        SyMenuDto.Item dto = baseSelColumnQuery()
+        SyMenuDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syMenu.menuId.eq(menuId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 메뉴 목록조회 */
@@ -105,7 +106,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyMenuDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 메뉴 페이지조회 */
@@ -129,21 +131,21 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         JPAQuery<SyMenuDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyMenuDto.Item> content = query.clone()
+        List<SyMenuDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syMenu.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyMenuDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

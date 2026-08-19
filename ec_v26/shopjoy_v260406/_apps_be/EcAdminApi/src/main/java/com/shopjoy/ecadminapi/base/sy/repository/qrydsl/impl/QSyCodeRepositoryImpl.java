@@ -59,17 +59,18 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                         syCode.updDate                       // 수정일시
                 ))
                 .from(syCode)
-                .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId));
+                .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId)) // 코드그룹
+                ;
     }
 
     /* 키조회 */
     @Override
     public Optional<SyCodeDto.Item> selectById(String codeId) {
-        SyCodeDto.Item dto = baseSelColumnQuery()
+        SyCodeDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syCode.codeId.eq(codeId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 목록조회 */
@@ -99,7 +100,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyCodeDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -126,21 +128,21 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         JPAQuery<SyCodeDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyCodeDto.Item> content = query.clone()
+        List<SyCodeDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syCode.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyCodeDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

@@ -58,10 +58,10 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     @Override
     public Optional<PdReviewDto.Item> selectById(String reviewId) {
-        PdReviewDto.Item dto = baseSelColumnQuery()
+        PdReviewDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdReview.reviewId.eq(reviewId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
@@ -91,7 +91,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdReviewDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -116,21 +117,21 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdReviewDto.Item> content = query.clone()
+        List<PdReviewDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdReview.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdReviewDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 단건/목록/페이지 공용 base query (DTO Item 필드만 매핑) */

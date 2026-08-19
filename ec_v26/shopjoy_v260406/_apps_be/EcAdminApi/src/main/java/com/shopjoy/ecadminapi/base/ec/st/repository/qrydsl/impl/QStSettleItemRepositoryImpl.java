@@ -68,18 +68,19 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                         cdSit.codeLabel.as("settleItemTypeCdNm")            // 항목유형명 (sy_code 조인)
                 ))
                 .from(stSettleItem)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId))
-                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd)));
+                .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId)) // 주문
+                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId)) // 주문상품
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd))) // 정산항목유형
+                ;
     }
 
     /* 정산 항목 키조회 */
     @Override
     public Optional<StSettleItemDto.Item> selectById(String id) {
-        StSettleItemDto.Item dto = baseListQuery()
+        StSettleItemDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleItem.settleItemId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 정산 항목 목록조회 */
@@ -107,7 +108,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StSettleItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 정산 항목 페이지조회 */
@@ -130,21 +132,21 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         JPAQuery<StSettleItemDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StSettleItemDto.Item> content = query.clone()
+        List<StSettleItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

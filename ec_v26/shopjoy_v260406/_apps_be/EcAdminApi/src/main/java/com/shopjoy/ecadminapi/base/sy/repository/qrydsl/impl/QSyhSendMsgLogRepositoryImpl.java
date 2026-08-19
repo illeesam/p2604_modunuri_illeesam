@@ -77,20 +77,21 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                         cd_sr.codeLabel.as("resultCdNm")             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendMsgLog)
-                .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId))
-                .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId))
-                .leftJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd)))
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendMsgLog.resultCd)));
+                .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId)) // 템플릿
+                .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId)) // 사용자
+                .leftJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd))) // 메시지채널
+                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendMsgLog.resultCd))) // 발송결과
+                ;
     }
 
     /* 메시지 발송 로그 키조회 */
     @Override
     public Optional<SyhSendMsgLogDto.Item> selectById(String id) {
-        SyhSendMsgLogDto.Item dto = baseSelColumnQuery()
+        SyhSendMsgLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhSendMsgLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 메시지 발송 로그 목록조회 */
@@ -120,7 +121,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyhSendMsgLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 메시지 발송 로그 페이지조회 */
@@ -146,21 +148,21 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhSendMsgLogDto.Item> content = query.clone()
+        List<SyhSendMsgLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhSendMsgLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhSendMsgLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

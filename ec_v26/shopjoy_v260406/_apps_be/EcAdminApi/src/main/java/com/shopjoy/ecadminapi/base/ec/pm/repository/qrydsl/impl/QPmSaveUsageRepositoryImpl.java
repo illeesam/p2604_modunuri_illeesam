@@ -53,19 +53,20 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                         pmSaveUsage.regBy, pmSaveUsage.regDate
                 ))
                 .from(pmSaveUsage)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveUsage.memberId))
-                .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveUsage.orderId))
-                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveUsage.orderItemId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveUsage.prodId));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveUsage.memberId)) // 회원
+                .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveUsage.orderId)) // 주문
+                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveUsage.orderItemId)) // 주문상품
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveUsage.prodId)) // 상품
+                ;
     }
 
     /* 적립금 사용 이력 키조회 */
     @Override
     public Optional<PmSaveUsageDto.Item> selectById(String saveUsageId) {
-        PmSaveUsageDto.Item dto = baseSelColumnQuery()
+        PmSaveUsageDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSaveUsage.saveUsageId.eq(saveUsageId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 적립금 사용 이력 목록조회 */
@@ -94,7 +95,8 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmSaveUsageDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 적립금 사용 이력 페이지조회 */
@@ -118,21 +120,21 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmSaveUsageDto.Item> content = query.clone()
+        List<PmSaveUsageDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSaveUsage.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmSaveUsageDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

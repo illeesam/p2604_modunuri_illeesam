@@ -72,19 +72,20 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                         cd_sr.codeLabel.as("resultCdNm")              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendEmailLog)
-                .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendEmailLog.templateId))
-                .leftJoin(syUser).on(syUser.userId.eq(syhSendEmailLog.userId))
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendEmailLog.resultCd)));
+                .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendEmailLog.templateId)) // 템플릿
+                .leftJoin(syUser).on(syUser.userId.eq(syhSendEmailLog.userId)) // 사용자
+                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendEmailLog.resultCd))) // 발송결과
+                ;
     }
 
     /* 이메일 발송 로그 키조회 */
     @Override
     public Optional<SyhSendEmailLogDto.Item> selectById(String id) {
-        SyhSendEmailLogDto.Item dto = baseSelColumnQuery()
+        SyhSendEmailLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syhSendEmailLog.logId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 이메일 발송 로그 목록조회 */
@@ -114,7 +115,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyhSendEmailLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 이메일 발송 로그 페이지조회 */
@@ -140,21 +142,21 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         JPAQuery<SyhSendEmailLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyhSendEmailLogDto.Item> content = query.clone()
+        List<SyhSendEmailLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhSendEmailLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyhSendEmailLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -57,10 +57,10 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     /* 키조회 */
     @Override
     public Optional<SyPathDto.Item> selectById(String pathId) {
-        SyPathDto.Item dto = baseSelColumnQuery()
+        SyPathDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syPath.pathId.eq(pathId)).fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 목록조회 */
@@ -85,7 +85,8 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyPathDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 페이지조회 */
@@ -105,21 +106,21 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery();
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
-        List<SyPathDto.Item> content = query.clone()
+        List<SyPathDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(buildOrder().toArray(OrderSpecifier[]::new))
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syPath.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyPathDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

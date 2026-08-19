@@ -54,16 +54,17 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
                         cdDm.codeLabel.as("dlivMethodCdNm")   // 배송방법명 (sy_code 조인)
                 ))
                 .from(stDlivFeePolicy)
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(stDlivFeePolicy.dlivMethodCd)));
+                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(stDlivFeePolicy.dlivMethodCd))) // 배송방법
+                ;
     }
 
     /* 배송수수료정책 키조회 */
     @Override
     public Optional<StDlivFeePolicyDto.Item> selectById(String id) {
-        StDlivFeePolicyDto.Item dto = baseListQuery()
+        StDlivFeePolicyDto.Item dtl = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stDlivFeePolicy.dlivFeePolicyId.eq(id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 배송수수료정책 목록조회 */
@@ -92,7 +93,8 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<StDlivFeePolicyDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 배송수수료정책 페이지조회 */
@@ -116,21 +118,21 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
         JPAQuery<StDlivFeePolicyDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<StDlivFeePolicyDto.Item> content = query.clone()
+        List<StDlivFeePolicyDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stDlivFeePolicy.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<StDlivFeePolicyDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

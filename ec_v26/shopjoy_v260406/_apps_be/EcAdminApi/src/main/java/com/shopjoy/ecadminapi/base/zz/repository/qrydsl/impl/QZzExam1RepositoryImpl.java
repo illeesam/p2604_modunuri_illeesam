@@ -50,11 +50,11 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     /* zz_exam1 키조회 */
     @Override
     public Optional<ZzExam1Dto.Item> selectById(String exam1Id) {
-        ZzExam1Dto.Item dto = baseSelColumnQuery()
+        ZzExam1Dto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(zzExam1.exam1Id.eq(exam1Id))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* zz_exam1 목록조회 */
@@ -79,7 +79,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<ZzExam1Dto.Item> list = query.fetch();
+        return list;
     }
 
     /* zz_exam1 페이지조회 */
@@ -100,21 +101,21 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<ZzExam1Dto.Item> content = query.clone()
+        List<ZzExam1Dto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(zzExam1.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<ZzExam1Dto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "col11,col12" */

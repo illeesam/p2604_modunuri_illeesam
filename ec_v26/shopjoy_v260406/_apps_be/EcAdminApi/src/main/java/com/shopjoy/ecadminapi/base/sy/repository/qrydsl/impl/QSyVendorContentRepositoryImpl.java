@@ -67,20 +67,21 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                         syVendor.vendorNm.as("vendorNm")              // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorContent)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorContent.vendorId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorContent.vendorId)) // 업체
                 // sySite·syAttachGrp 은 SELECT 대상 없는 dead JOIN → 제거됨
-                .leftJoin(cdVct).on(cdVct.codeGrp.eq("VENDOR_CONTENT_TYPE").and(cdVct.codeValue.eq(syVendorContent.contentTypeCd)))
-                .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS_CD").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd)));
+                .leftJoin(cdVct).on(cdVct.codeGrp.eq("VENDOR_CONTENT_TYPE").and(cdVct.codeValue.eq(syVendorContent.contentTypeCd))) // 업체컨텐츠유형
+                .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS_CD").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd))) // 업체컨텐츠상태
+                ;
     }
 
     /* 업체 콘텐츠 키조회 */
     @Override
     public Optional<SyVendorContentDto.Item> selectById(String vendorContentId) {
-        SyVendorContentDto.Item dto = baseSelColumnQuery()
+        SyVendorContentDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syVendorContent.vendorContentId.eq(vendorContentId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 업체 콘텐츠 목록조회 */
@@ -108,7 +109,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyVendorContentDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 업체 콘텐츠 페이지조회 */
@@ -133,21 +135,21 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         JPAQuery<SyVendorContentDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyVendorContentDto.Item> content = query.clone()
+        List<SyVendorContentDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVendorContent.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyVendorContentDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

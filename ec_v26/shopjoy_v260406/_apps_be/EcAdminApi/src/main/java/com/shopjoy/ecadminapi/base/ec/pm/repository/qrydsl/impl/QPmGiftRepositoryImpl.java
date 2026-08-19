@@ -82,21 +82,22 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                         pmGift.visibilityTargets    // 공개대상
                 ))
                 .from(pmGift)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
-                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
-                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE_CD").and(cdGt.codeValue.eq(pmGift.giftTypeCd)))
-                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS_CD").and(cdGs.codeValue.eq(pmGift.giftStatusCd)))
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd)));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId)) // 상품
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId)) // 업체
+                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
+                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE_CD").and(cdGt.codeValue.eq(pmGift.giftTypeCd))) // 사은품유형
+                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS_CD").and(cdGs.codeValue.eq(pmGift.giftStatusCd))) // 사은품상태
+                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd))) // 회원등급
+                ;
     }
 
     /** 단건 조회 */
     @Override
     public Optional<PmGiftDto.Item> selectById(String giftId) {
-        PmGiftDto.Item dto = baseSelColumnQuery()
+        PmGiftDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmGift.giftId.eq(giftId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
@@ -133,7 +134,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmGiftDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -167,21 +169,21 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmGiftDto.Item> content = query.clone()
+        List<PmGiftDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmGift.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmGiftDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** andMember — 발급회원 필터. pm_gift_issue(gift_id↔member_id) 에 발급 이력이

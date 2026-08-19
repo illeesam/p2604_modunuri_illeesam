@@ -62,11 +62,11 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmhPushLogDto.Item> selectById(String logId) {
-        CmhPushLogDto.Item dto = baseSelColumnQuery()
+        CmhPushLogDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(cmhPushLog.logId.eq(logId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /** 전체 목록 */
@@ -92,7 +92,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<CmhPushLogDto.Item> list = query.fetch();
+        return list;
     }
 
     /** 페이지 목록 */
@@ -115,21 +116,21 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<CmhPushLogDto.Item> content = query.clone()
+        List<CmhPushLogDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmhPushLog.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<CmhPushLogDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 검색조건 빌드 */

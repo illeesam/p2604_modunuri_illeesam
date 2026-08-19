@@ -204,26 +204,27 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                                 .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd")
                 ))
                 .from(odOrderItem)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId))
-                .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId))
-                .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOpt1Id))
-                .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id))
-                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
-                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)))
-                .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId))
-                .leftJoin(odOrderJoin).on(odOrderJoin.orderId.eq(odOrderItem.orderId))
-                .leftJoin(syVendorJoin).on(syVendorJoin.vendorId.eq(pdProd.vendorId))
-                .leftJoin(syUserJoin).on(syUserJoin.userId.eq(pdProd.mdUserId))
-                .leftJoin(pdCategoryJoin).on(pdCategoryJoin.categoryId.eq(pdProd.categoryId));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId)) // 상품
+                .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId)) // SKU
+                .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOpt1Id)) // 옵션1
+                .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id)) // 옵션2
+                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd))) // 주문상품상태
+                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd))) // 택배사
+                .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId)) // 사은품
+                .leftJoin(odOrderJoin).on(odOrderJoin.orderId.eq(odOrderItem.orderId)) // 주문
+                .leftJoin(syVendorJoin).on(syVendorJoin.vendorId.eq(pdProd.vendorId)) // 업체
+                .leftJoin(syUserJoin).on(syUserJoin.userId.eq(pdProd.mdUserId)) // 사용자
+                .leftJoin(pdCategoryJoin).on(pdCategoryJoin.categoryId.eq(pdProd.categoryId)) // 카테고리
+                ;
     }
 
     /* 주문 아이템(상품) 키조회 */
     @Override
     public Optional<OdOrderItemDto.Item> selectById(String orderItemId) {
-        OdOrderItemDto.Item dto = baseSelColumnQuery()
+        OdOrderItemDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderItem.orderItemId.eq(orderItemId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 주문 아이템(상품) 목록조회 */
@@ -289,7 +290,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<OdOrderItemDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 주문 아이템(상품) 페이지조회 */
@@ -350,21 +352,21 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<OdOrderItemDto.Item> content = query.clone()
+        List<OdOrderItemDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrderItem.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<OdOrderItemDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
 
@@ -383,7 +385,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
             String statusCd = parts[0], typeCd = parts[1];
             BooleanExpression pairExists = JPAExpressions.selectOne()
                     .from(claimItemFlt)
-                    .join(claimFlt).on(claimFlt.claimId.eq(claimItemFlt.claimId))
+                    .join(claimFlt).on(claimFlt.claimId.eq(claimItemFlt.claimId)) // 클레임
                     .where(claimItemFlt.orderItemId.eq(odOrderItem.orderItemId),
                            claimItemFlt.claimItemStatusCd.eq(statusCd),
                            claimFlt.claimTypeCd.eq(typeCd))
@@ -421,7 +423,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
             // brandNm: pd_prod → sy_brand 원장 브랜드명 EXISTS
             QdslUtil.FieldDef.exists("brandNm", sv -> JPAExpressions.selectOne()
                     .from(pBrandEx)
-                    .join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
+                    .join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId)) // 브랜드
                     .where(pBrandEx.prodId.eq(odOrderItem.prodId),
                            QdslUtil.strLike(sBrandEx.brandNm, sv))
                     .exists())

@@ -71,17 +71,18 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                         cdMs.codeLabel.as("memberStatusCdNm")          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
                 ))
                 .from(mbMember)
-                .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd)))
-                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS_CD").and(cdMs.codeValue.eq(mbMember.memberStatusCd)));
+                .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd))) // 회원등급
+                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS_CD").and(cdMs.codeValue.eq(mbMember.memberStatusCd))) // 회원상태
+                ;
     }
 
     /* 회원 키조회 */
     @Override
     public Optional<MbMemberDto.Item> selectById(String memberId) {
-        MbMemberDto.Item dto = baseSelColumnQuery()
+        MbMemberDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(mbMember.memberId.eq(memberId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 회원 목록조회 */
@@ -111,7 +112,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<MbMemberDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 회원 페이지조회 */
@@ -136,21 +138,21 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<MbMemberDto.Item> content = query.clone()
+        List<MbMemberDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMember.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /** 공용 base query */

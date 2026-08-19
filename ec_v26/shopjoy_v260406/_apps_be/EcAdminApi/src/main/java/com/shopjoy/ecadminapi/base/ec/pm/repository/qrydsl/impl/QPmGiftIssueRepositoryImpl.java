@@ -58,19 +58,20 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                         pmGiftIssue.regBy, pmGiftIssue.regDate, pmGiftIssue.updBy, pmGiftIssue.updDate
                 ))
                 .from(pmGiftIssue)
-                .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId))
-                .leftJoin(odOrder).on(odOrder.orderId.eq(pmGiftIssue.orderId))
-                .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS_CD").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd)));
+                .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId)) // 사은품
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId)) // 회원
+                .leftJoin(odOrder).on(odOrder.orderId.eq(pmGiftIssue.orderId)) // 주문
+                .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS_CD").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd))) // 사은품발급상태
+                ;
     }
 
     /* 사은품 발행 이력 키조회 */
     @Override
     public Optional<PmGiftIssueDto.Item> selectById(String giftIssueId) {
-        PmGiftIssueDto.Item dto = baseSelColumnQuery()
+        PmGiftIssueDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmGiftIssue.giftIssueId.eq(giftIssueId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 사은품 발행 이력 목록조회 */
@@ -98,7 +99,8 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmGiftIssueDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 사은품 발행 이력 페이지조회 */
@@ -121,21 +123,21 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmGiftIssueDto.Item> content = query.clone()
+        List<PmGiftIssueDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmGiftIssue.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmGiftIssueDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

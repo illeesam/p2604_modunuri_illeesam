@@ -76,10 +76,10 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* 이벤트 키조회 */
     @Override
     public Optional<PmEventDto.Item> selectById(String eventId) {
-        PmEventDto.Item dto = baseSelColumnQuery()
+        PmEventDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmEvent.eventId.eq(eventId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 이벤트 목록조회 */
@@ -111,7 +111,8 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PmEventDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 이벤트 페이지조회 */
@@ -138,21 +139,21 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PmEventDto.Item> content = query.clone()
+        List<PmEventDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmEvent.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PmEventDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
     /** andVendorMd — 대상상품/업체/담당MD 필터. pm_event_prod(event_id↔prod_id) 를 거쳐
      *  pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS.

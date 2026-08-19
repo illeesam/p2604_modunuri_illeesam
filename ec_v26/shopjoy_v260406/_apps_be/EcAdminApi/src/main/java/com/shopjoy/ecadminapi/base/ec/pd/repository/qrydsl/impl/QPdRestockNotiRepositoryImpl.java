@@ -52,17 +52,18 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                         pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
                 ))
                 .from(pdRestockNoti)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId)) // 상품
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId)) // 회원
+                ;
     }
 
     /* 재입고 알림 키조회 */
     @Override
     public Optional<PdRestockNotiDto.Item> selectById(String restockNotiId) {
-        PdRestockNotiDto.Item dto = baseSelColumnQuery()
+        PdRestockNotiDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdRestockNoti.restockNotiId.eq(restockNotiId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 재입고 알림 목록조회 */
@@ -91,7 +92,8 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<PdRestockNotiDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 재입고 알림 페이지조회 */
@@ -115,21 +117,21 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<PdRestockNotiDto.Item> content = query.clone()
+        List<PdRestockNotiDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdRestockNoti.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<PdRestockNotiDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

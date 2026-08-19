@@ -80,18 +80,19 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                         syVendor.updDate                     // 수정일시
                 ))
                 .from(syVendor)
-                .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS_CD").and(cdVc.codeValue.eq(syVendor.vendorClassCd)))
-                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS_CD").and(cdVs.codeValue.eq(syVendor.vendorStatusCd)));
+                .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS_CD").and(cdVc.codeValue.eq(syVendor.vendorClassCd))) // 업체등급
+                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS_CD").and(cdVs.codeValue.eq(syVendor.vendorStatusCd))) // 업체상태
+                ;
     }
 
     /* 업체(판매자) 키조회 */
     @Override
     public Optional<SyVendorDto.Item> selectById(String vendorId) {
-        SyVendorDto.Item dto = baseSelColumnQuery()
+        SyVendorDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syVendor.vendorId.eq(vendorId))
                 .fetchOne();
-        return Optional.ofNullable(dto);
+        return Optional.ofNullable(dtl);
     }
 
     /* 업체(판매자) 목록조회 */
@@ -120,7 +121,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
             int limit  = pageSize;
             query.offset(offset).limit(limit);
         }
-        return query.fetch();
+        List<SyVendorDto.Item> list = query.fetch();
+        return list;
     }
 
     /* 업체(판매자) 페이지조회 */
@@ -146,21 +148,21 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        List<SyVendorDto.Item> content = query.clone()
+        List<SyVendorDto.Item> pageList = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = query.clone()
+        Long pageTotalCount = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVendor.count())
                 .where(wheres)
                 .fetchOne();
 
         BasePage<SyVendorDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+        return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
