@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** OdDliv QueryDSL Custom 구현체 */
+/** OdDliv(배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdDlivRepositoryImpl implements QOdDlivRepository {
 

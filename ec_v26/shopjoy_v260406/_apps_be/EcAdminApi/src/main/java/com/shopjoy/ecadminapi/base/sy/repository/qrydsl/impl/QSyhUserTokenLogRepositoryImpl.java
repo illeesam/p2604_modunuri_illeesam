@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhUserTokenLog QueryDSL Custom 구현체 */
+/** SyhUserTokenLog(관리자 사용자 토큰 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepository {
 

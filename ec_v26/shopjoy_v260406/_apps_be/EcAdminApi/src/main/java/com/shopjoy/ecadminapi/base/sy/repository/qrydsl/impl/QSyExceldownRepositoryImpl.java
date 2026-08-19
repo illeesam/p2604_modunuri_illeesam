@@ -28,7 +28,7 @@ import java.util.Optional;
 
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** SyExceldown QueryDSL Custom 구현체 */
+/** SyExceldown(엑셀 다운로드 요청/이력 (동기·비동기 전부 기록)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
 

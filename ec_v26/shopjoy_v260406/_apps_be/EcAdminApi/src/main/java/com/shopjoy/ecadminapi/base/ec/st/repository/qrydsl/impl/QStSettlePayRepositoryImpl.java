@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** StSettlePay QueryDSL Custom 구현체 */
+/** StSettlePay(정산지급) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 

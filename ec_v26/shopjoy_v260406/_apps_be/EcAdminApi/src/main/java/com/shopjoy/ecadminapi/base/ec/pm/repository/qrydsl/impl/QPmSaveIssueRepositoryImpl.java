@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmSaveIssue QueryDSL Custom 구현체 */
+/** PmSaveIssue(적립금 지급 이력 (구매적립/이벤트/리뷰/관리자 등)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 

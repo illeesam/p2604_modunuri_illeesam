@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyContact QueryDSL Custom 구현체 */
+/** SyContact(고객문의) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyContactRepositoryImpl implements QSyContactRepository {
 

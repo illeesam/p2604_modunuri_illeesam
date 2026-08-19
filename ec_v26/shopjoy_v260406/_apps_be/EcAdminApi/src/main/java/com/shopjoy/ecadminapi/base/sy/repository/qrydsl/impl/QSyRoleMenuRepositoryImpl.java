@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyRoleMenu QueryDSL Custom 구현체 */
+/** SyRoleMenu(역할-메뉴 권한 매핑) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 

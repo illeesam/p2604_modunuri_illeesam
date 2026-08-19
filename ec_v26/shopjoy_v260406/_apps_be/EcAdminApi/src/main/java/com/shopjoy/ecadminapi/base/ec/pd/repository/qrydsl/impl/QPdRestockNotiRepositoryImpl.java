@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdRestockNoti QueryDSL Custom 구현체 */
+/** PdRestockNoti(재입고알림 신청) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 

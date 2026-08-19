@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** CmBlogCate QueryDSL Custom 구현체 */
+/** CmBlogCate(블로그 카테고리) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 

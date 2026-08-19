@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdProdTag QueryDSL Custom 구현체 */
+/** PdProdTag(상품-태그 매핑) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 

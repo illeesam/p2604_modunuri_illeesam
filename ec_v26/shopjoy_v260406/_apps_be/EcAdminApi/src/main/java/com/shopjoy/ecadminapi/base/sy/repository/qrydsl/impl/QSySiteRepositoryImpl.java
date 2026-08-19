@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SySite QueryDSL Custom 구현체 */
+/** SySite(사이트) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSySiteRepositoryImpl implements QSySiteRepository {
 

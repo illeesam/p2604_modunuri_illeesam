@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** OdDlivItem QueryDSL Custom 구현체 */
+/** OdDlivItem(배송 항목 (배송에 포함된 주문상품 명세)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 

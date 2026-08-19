@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** ZzSample2 QueryDSL Custom 구현체 */
+/** ZzSample2(다목적 샘플/코드성 데이터 저장소 2) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 

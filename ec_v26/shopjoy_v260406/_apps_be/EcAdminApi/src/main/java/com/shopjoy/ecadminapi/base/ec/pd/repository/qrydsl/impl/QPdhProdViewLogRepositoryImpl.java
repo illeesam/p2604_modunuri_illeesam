@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** PdhProdViewLog QueryDSL Custom 구현체 */
+/** PdhProdViewLog(상품/페이지 조회 로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository {
 

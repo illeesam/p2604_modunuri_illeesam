@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** CmBlogGood QueryDSL Custom 구현체 */
+/** CmBlogGood(블로그 좋아요) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 

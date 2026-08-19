@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** CmPath QueryDSL Custom 구현체 */
+/** CmPath(경로 (업무별 트리)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmPathRepositoryImpl implements QCmPathRepository {
 

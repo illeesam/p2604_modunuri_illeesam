@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhSendEmailLog QueryDSL Custom 구현체 */
+/** SyhSendEmailLog(이메일 발송 로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepository {
 

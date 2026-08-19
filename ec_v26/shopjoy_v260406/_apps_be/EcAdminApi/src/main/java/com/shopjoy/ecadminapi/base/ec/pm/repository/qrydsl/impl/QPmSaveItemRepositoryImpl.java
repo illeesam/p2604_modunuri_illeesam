@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmSaveItem QueryDSL Custom 구현체 */
+/** PmSaveItem(적립금 대상 상품 (pm_save 하위 항목)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 

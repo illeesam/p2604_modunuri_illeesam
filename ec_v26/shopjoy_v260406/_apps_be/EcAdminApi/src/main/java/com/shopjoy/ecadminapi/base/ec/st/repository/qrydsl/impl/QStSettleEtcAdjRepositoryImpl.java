@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** StSettleEtcAdj QueryDSL Custom 구현체 */
+/** StSettleEtcAdj(정산 기타조정) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository {
 

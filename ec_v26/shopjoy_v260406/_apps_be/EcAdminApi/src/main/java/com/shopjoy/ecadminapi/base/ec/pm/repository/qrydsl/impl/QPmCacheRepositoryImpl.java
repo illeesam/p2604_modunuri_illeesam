@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmCache QueryDSL Custom 구현체 */
+/** PmCache(적립금 (캐시)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 

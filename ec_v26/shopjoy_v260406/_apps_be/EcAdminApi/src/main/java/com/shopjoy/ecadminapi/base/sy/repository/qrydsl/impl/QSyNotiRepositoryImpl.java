@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** SyNoti QueryDSL Custom 구현체 */
+/** SyNoti(알림함 (수신자별 알림 1건 = 1행)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyNotiRepositoryImpl implements QSyNotiRepository {
 

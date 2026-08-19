@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhSendMsgLog QueryDSL Custom 구현체 */
+/** SyhSendMsgLog(메시지 발송 로그 (SMS/카카오/앱푸시)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 

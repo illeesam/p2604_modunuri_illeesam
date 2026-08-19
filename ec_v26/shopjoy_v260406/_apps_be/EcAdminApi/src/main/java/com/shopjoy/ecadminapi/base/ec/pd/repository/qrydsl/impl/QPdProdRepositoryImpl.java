@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** PdProd QueryDSL Custom 구현체 */
+/** PdProd(상품) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdRepositoryImpl implements QPdProdRepository {
 

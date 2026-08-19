@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyAttach QueryDSL Custom 구현체 */
+/** SyAttach(첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 

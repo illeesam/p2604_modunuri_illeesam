@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyBbs QueryDSL Custom 구현체 */
+/** SyBbs(게시물) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 

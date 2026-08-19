@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** CmBlogTag QueryDSL Custom 구현체 */
+/** CmBlogTag(블로그 태그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 

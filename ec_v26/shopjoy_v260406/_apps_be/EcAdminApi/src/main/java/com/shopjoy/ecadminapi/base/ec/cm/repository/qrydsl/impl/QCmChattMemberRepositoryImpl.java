@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** CmChattMember QueryDSL Custom 구현체 */
+/** CmChattMember(채팅 참여자) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 

@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpUi;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpUiRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -29,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** DpUi QueryDSL Custom 구현체 */
+/** DpUi(디스플레이 UI (최상위 화면 정의)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QDpUiRepositoryImpl implements QDpUiRepository {
 
@@ -40,7 +42,10 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
-    private static final QDpUi dpUi = QDpUi.dpUi;    /*
+    private static final QDpUi dpUi = QDpUi.dpUi;
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
+    /*
      * baseQuery — 코드성 필드 예시 코드값
      * USE_YN           {Y: '사용', N: '미사용'}
      * DEVICE_TYPE_CD   (코드그룹: DEVICE_TYPE, sy_code 실제 등록값 미확인 — 필드 용도만 참고)
@@ -58,12 +63,18 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                         dpUi.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
                         dpUi.useStartDate,  // 사용시작일
                         dpUi.useEndDate,    // 사용종료일
+                        dpUi.regSiteId,     // 등록사이트ID
                         dpUi.regBy,         // 등록자
                         dpUi.regDate,       // 등록일시
                         dpUi.updBy,         // 수정자
-                        dpUi.updDate        // 수정일시
+                        dpUi.updDate,       // 수정일시
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(dpUi);
+                .from(dpUi)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(dpUi.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(dpUi.regBy)) // 등록자
+                ;
     }
 
     /* 전시 UI 키조회 */

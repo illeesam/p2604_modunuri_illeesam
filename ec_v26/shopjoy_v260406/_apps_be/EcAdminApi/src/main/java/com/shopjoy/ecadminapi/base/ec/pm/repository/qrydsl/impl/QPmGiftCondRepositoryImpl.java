@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmGiftCond QueryDSL Custom 구현체 */
+/** PmGiftCond(사은품 지급 조건) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 

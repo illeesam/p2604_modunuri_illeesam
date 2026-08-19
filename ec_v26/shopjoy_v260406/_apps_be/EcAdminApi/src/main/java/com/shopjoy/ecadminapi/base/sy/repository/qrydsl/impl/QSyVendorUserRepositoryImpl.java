@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyVendorUser QueryDSL Custom 구현체 */
+/** SyVendorUser(판매/배송업체 사용자 (담당자/실무자)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 

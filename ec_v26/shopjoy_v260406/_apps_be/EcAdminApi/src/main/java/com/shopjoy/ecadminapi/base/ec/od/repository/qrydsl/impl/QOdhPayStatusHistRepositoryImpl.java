@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** OdhPayStatusHist QueryDSL Custom 구현체 */
+/** OdhPayStatusHist(결제 상태 이력 (결제 상태 변경만 추적)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistRepository {
 

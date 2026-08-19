@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** SyUser QueryDSL Custom 구현체 */
+/** SyUser(관리자 사용자) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyUserRepositoryImpl implements QSyUserRepository {
 

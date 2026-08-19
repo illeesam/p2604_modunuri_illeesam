@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** OdOrder QueryDSL Custom 구현체 */
+/** OdOrder(주문) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdOrderRepositoryImpl implements QOdOrderRepository {
 

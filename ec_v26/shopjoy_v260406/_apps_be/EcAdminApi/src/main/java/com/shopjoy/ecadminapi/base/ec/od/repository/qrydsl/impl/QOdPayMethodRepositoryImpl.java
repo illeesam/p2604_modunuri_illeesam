@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** OdPayMethod QueryDSL Custom 구현체 */
+/** OdPayMethod(마이페이지 등록 결제수단) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 

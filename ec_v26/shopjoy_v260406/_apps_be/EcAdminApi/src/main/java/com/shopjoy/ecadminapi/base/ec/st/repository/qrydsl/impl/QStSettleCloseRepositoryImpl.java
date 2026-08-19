@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** StSettleClose QueryDSL Custom 구현체 */
+/** StSettleClose(정산마감 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 

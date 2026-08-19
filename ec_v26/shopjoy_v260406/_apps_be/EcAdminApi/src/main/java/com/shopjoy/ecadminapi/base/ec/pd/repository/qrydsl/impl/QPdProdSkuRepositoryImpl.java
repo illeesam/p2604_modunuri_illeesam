@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdProdSku QueryDSL Custom 구현체 */
+/** PdProdSku(상품 옵션 SKU (조합별 재고/가격)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 

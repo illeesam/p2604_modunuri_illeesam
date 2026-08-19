@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdProdContent QueryDSL Custom 구현체 */
+/** PdProdContent(상품 상세 컨텐츠 (HTML 에디터)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 

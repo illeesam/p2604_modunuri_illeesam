@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** OdClaimItem QueryDSL Custom 구현체 */
+/** OdClaimItem(클레임 항목 (클레임 대상 주문상품 명세)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 

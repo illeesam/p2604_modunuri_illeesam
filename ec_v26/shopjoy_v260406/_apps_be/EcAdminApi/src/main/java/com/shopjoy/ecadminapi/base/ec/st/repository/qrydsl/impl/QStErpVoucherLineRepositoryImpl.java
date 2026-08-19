@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** StErpVoucherLine QueryDSL Custom 구현체 */
+/** StErpVoucherLine(ERP 전표 라인 (분개 항목, 차변/대변 1행씩)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineRepository {
 

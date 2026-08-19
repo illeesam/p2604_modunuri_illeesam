@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-/** SyUserPref QueryDSL Custom 구현체 */
+/** SyUserPref(관리자 사용자 개인화 설정) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyUserPrefRepositoryImpl implements QSyUserPrefRepository {
 

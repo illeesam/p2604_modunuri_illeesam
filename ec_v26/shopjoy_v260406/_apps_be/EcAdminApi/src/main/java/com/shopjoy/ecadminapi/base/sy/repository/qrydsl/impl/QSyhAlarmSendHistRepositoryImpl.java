@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhAlarmSendHist QueryDSL Custom 구현체 */
+/** SyhAlarmSendHist(알림 발송 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistRepository {
 

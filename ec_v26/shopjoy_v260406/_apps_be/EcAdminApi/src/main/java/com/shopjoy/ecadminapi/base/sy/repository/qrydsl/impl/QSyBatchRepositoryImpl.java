@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyBatch QueryDSL Custom 구현체 */
+/** SyBatch(배치 작업) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 

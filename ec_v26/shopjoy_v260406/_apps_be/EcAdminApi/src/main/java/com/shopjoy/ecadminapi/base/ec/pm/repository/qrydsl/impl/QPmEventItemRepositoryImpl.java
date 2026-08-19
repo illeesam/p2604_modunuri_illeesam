@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmEventItem QueryDSL Custom 구현체 */
+/** PmEventItem(이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 

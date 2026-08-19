@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyCodeGrp QueryDSL Custom 구현체 */
+/** SyCodeGrp(공통코드 그룹) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 

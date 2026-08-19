@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** CmFaq QueryDSL Custom 구현체 */
+/** CmFaq(FAQ (자주 묻는 질문)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 

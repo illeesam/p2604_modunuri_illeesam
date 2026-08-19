@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyVendor QueryDSL Custom 구현체 */
+/** SyVendor(판매/배송업체 (사업체/법인)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 

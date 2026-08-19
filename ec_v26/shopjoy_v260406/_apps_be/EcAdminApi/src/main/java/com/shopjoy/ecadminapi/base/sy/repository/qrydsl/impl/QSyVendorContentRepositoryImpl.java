@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyVendorContent QueryDSL Custom 구현체 */
+/** SyVendorContent(판매/배송업체 콘텐츠 (회사소개/배너/약관 등)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepository {
 

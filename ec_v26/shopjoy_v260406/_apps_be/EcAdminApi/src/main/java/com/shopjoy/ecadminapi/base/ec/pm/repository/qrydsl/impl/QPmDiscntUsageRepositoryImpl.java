@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmDiscntUsage QueryDSL Custom 구현체 */
+/** PmDiscntUsage(할인 적용 이력 (주문 시 적용된 할인정책 건별 기록)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** CmhPushLog QueryDSL Custom 구현체 */
+/** CmhPushLog(푸시/알림 발송 로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 

@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** StSettleRaw QueryDSL Custom 구현체 */
+/** StSettleRaw(정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 

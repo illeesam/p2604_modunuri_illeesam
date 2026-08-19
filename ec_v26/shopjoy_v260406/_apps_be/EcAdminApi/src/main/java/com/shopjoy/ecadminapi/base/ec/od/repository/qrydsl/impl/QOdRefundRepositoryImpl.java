@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** OdRefund QueryDSL Custom 구현체 */
+/** OdRefund(환불 마스터 (클레임 건별 환불 총괄)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdRefundRepositoryImpl implements QOdRefundRepository {
 

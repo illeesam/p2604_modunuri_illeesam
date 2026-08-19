@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyMenu QueryDSL Custom 구현체 */
+/** SyMenu(메뉴) QueryDSL Custom 구현체 */
 public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
     private final JPAQueryFactory queryFactory;

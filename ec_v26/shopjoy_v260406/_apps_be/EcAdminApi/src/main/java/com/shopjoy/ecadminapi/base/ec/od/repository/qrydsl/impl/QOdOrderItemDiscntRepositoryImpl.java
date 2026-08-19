@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** OdOrderItemDiscnt QueryDSL Custom 구현체 */
+/** OdOrderItemDiscnt(주문상품할인 내역 (즉시할인·상품쿠폰)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepository {
 

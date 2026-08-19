@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmVoucherIssue QueryDSL Custom 구현체 */
+/** PmVoucherIssue(상품권 발급 및 사용 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository {
 

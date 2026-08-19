@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** CmChattMsg QueryDSL Custom 구현체 */
+/** CmChattMsg(채팅 메시지) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** PdReview QueryDSL Custom 구현체 */
+/** PdReview(상품 리뷰) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 

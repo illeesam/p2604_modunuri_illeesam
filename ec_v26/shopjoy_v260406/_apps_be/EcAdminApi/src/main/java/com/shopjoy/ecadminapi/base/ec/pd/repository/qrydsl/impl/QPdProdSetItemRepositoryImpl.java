@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdProdSetItem QueryDSL Custom 구현체 */
+/** PdProdSetItem(세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 

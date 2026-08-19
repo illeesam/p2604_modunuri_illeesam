@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyVoc QueryDSL Custom 구현체 */
+/** SyVoc(고객의소리 VOC 분류) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVocRepositoryImpl implements QSyVocRepository {
 

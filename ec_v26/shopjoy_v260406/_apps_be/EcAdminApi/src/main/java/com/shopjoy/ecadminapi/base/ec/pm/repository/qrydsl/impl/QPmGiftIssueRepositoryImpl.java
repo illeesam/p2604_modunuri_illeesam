@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmGiftIssue QueryDSL Custom 구현체 */
+/** PmGiftIssue(사은품 발급) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
 

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmEvent QueryDSL Custom 구현체 */
+/** PmEvent(이벤트) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventRepositoryImpl implements QPmEventRepository {
 

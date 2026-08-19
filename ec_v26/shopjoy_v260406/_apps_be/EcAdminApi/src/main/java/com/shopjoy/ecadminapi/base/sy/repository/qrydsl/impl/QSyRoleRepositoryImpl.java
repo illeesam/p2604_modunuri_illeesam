@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyRole QueryDSL Custom 구현체 */
+/** SyRole(역할 (권한그룹)) QueryDSL Custom 구현체 */
 public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
     private final JPAQueryFactory queryFactory;

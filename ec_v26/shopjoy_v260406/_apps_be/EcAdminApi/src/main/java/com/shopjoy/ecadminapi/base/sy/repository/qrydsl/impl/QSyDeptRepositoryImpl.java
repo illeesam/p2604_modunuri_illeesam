@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyDept QueryDSL Custom 구현체 */
+/** SyDept(부서) QueryDSL Custom 구현체 */
 public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
     private final JPAQueryFactory queryFactory;

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** PmSavePolicy QueryDSL Custom 구현체 */
+/** PmSavePolicy(적립금 정책(캠페인)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
 

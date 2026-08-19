@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyI18n QueryDSL Custom 구현체 */
+/** SyI18n(다국어 키 마스터) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 

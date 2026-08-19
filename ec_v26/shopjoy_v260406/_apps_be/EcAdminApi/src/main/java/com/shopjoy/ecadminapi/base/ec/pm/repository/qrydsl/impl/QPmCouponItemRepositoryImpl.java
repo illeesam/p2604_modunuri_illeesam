@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmCouponItem QueryDSL Custom 구현체 */
+/** PmCouponItem(쿠폰 적용 대상 항목 (상품/카테고리/판매자/브랜드)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
 

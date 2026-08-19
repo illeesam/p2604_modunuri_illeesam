@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdCategoryProd QueryDSL Custom 구현체 */
+/** PdCategoryProd(상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository {
 

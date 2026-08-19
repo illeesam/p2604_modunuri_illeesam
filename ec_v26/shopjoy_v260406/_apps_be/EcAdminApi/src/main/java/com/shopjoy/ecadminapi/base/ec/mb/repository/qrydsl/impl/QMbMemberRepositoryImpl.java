@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** MbMember QueryDSL Custom 구현체 */
+/** MbMember(회원) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 

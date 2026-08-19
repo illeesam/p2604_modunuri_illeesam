@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** OdCart QueryDSL Custom 구현체 */
+/** OdCart(장바구니) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdCartRepositoryImpl implements QOdCartRepository {
 

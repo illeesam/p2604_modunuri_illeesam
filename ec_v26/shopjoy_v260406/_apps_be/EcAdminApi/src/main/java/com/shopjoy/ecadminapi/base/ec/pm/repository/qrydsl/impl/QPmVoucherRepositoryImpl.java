@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmVoucher QueryDSL Custom 구현체 */
+/** PmVoucher(상품권) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 

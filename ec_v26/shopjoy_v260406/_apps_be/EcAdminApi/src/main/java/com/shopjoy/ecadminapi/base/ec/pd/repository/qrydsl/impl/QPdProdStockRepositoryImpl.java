@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-/** PdProdStock QueryDSL Custom 구현체 */
+/** PdProdStock(상품 재고 마스터 — prod_stock_id PK, stock_code UNIQUE) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdStockRepositoryImpl implements QPdProdStockRepository {
 

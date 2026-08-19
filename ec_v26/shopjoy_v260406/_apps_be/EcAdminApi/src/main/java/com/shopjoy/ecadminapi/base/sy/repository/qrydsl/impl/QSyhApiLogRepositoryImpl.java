@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhApiLog QueryDSL Custom 구현체 */
+/** SyhApiLog(외부 API 연동 로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 

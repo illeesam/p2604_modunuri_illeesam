@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** StErpVoucher QueryDSL Custom 구현체 */
+/** StErpVoucher(ERP 전표 마스터 (정산 → ERP 회계 전표)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 

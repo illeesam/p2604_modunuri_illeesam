@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmEventBenefit QueryDSL Custom 구현체 */
+/** PmEventBenefit(이벤트 혜택) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository {
 

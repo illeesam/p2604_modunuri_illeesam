@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhBatchHist QueryDSL Custom 구현체 */
+/** SyhBatchHist(배치 실행 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 

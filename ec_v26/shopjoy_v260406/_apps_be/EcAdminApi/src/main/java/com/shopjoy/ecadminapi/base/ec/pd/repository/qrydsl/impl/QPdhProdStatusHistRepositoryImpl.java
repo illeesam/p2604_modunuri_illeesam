@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdhProdStatusHist QueryDSL Custom 구현체 */
+/** PdhProdStatusHist(상품 상태 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepository {
 

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** StRecon QueryDSL Custom 구현체 */
+/** StRecon(정산 대사 (기대금액 vs 실제금액 불일치 관리)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStReconRepositoryImpl implements QStReconRepository {
 

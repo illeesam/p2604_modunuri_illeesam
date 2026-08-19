@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** CmBlogFile QueryDSL Custom 구현체 */
+/** CmBlogFile(블로그 이미지) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 

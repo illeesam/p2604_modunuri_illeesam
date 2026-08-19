@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** StDlivFeePolicy QueryDSL Custom 구현체 */
+/** StDlivFeePolicy(배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepository {
 

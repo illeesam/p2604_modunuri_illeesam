@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyProp QueryDSL Custom 구현체 */
+/** SyProp(프로퍼티 (환경설정/공통 파라미터)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {
 

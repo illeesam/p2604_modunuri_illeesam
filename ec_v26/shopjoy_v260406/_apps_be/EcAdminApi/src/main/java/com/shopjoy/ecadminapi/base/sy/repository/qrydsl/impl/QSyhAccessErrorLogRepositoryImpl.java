@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyhAccessErrorLog QueryDSL Custom 구현체 */
+/** SyhAccessErrorLog(HTTP 요청 에러 로그 (비동기 수집)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepository {
 

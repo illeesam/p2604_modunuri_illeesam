@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PdCategory QueryDSL Custom 구현체 */
+/** PdCategory(카테고리) QueryDSL Custom 구현체 */
 public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
     private final JPAQueryFactory queryFactory;

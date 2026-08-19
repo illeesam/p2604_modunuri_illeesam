@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
-/** PdProdQna QueryDSL Custom 구현체 */
+/** PdProdQna(상품문의) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 

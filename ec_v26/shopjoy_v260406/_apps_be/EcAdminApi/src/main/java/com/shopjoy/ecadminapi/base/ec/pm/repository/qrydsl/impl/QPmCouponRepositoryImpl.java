@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** PmCoupon QueryDSL Custom 구현체 */
+/** PmCoupon(쿠폰) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCouponRepositoryImpl implements QPmCouponRepository {
 

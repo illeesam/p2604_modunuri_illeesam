@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-/** CmPopup QueryDSL Custom 구현체 */
+/** CmPopup(공통 선택/조회 팝업 정의) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmPopupRepositoryImpl implements QCmPopupRepository {
 

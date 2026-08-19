@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
-/** SyVendorBrand QueryDSL Custom 구현체 */
+/** SyVendorBrand(판매/배송업체-브랜드 매핑) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
