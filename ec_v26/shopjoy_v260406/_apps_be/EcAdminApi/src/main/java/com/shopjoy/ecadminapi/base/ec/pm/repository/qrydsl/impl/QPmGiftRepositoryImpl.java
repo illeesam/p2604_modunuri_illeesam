@@ -49,12 +49,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final QVwSyCode  cdMg = new QVwSyCode("cd_mg");
     // EXISTS 서브쿼리용 별칭 (발급회원 필터 — pm_gift_issue → mb_member)
     private static final QPmGiftIssue giftIssueEx = new QPmGiftIssue("gift_issue_ex");
-    private static final QMbMember    mbMemberEx  = new QMbMember("mb_member_ex");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmGift.regDate,
-        "upd_date", pmGift.updDate
-    );
-
-    /**
+    private static final QMbMember    mbMemberEx  = new QMbMember("mb_member_ex");    /**
      * 공통 base query — JOIN 일치, Item 필드만 projection
      *
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -105,6 +100,10 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmGift.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGift.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
@@ -120,7 +119,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                     QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
                     QdslUtil.strLike(syUser.userNm, search.getMdUserNm()),
                     andMember(search),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -137,6 +136,10 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<PmGiftDto.Item> selectPageData(PmGiftDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmGift.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGift.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -156,7 +159,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
                 QdslUtil.strLike(syUser.userNm, search.getMdUserNm()),
                 andMember(search),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

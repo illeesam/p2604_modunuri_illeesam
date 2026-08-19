@@ -36,12 +36,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeGrpRepositoryImpl";
-    private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syCodeGrp.regDate,
-        "upd_date", syCodeGrp.updDate
-    );
-
-    /*
+    private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN {Y: '사용', N: '미사용'}
      * (sy_code_grp 자체가 공통코드 그룹의 메타 테이블 — code_grp 값 예시: MEMBER_GRADE, ORDER_STATUS, ALARM_TYPE 등)
@@ -76,6 +71,10 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* 공통 코드 그룹 목록조회 */
     @Override
     public List<SyCodeGrpDto.Item> selectList(SyCodeGrpDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syCodeGrp.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syCodeGrp.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -83,7 +82,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,6 +99,10 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* 공통 코드 그룹 페이지조회 */
     @Override
     public BasePage<SyCodeGrpDto.Item> selectPageData(SyCodeGrpDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syCodeGrp.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syCodeGrp.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -111,7 +114,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

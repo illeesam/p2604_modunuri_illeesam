@@ -37,13 +37,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyTemplate      syTemplate = QSyTemplate.syTemplate;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QVwSyCode          cd_sr = new QVwSyCode("cd_sr");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("send_date", syhSendEmailLog.sendDate,
-        "reg_date", syhSendEmailLog.regDate,
-        "upd_date", syhSendEmailLog.updDate
-    );
-
-    /*
+    private static final QVwSyCode          cd_sr = new QVwSyCode("cd_sr");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SEND_RESULT  {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
      */
@@ -95,6 +89,12 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     /* 이메일 발송 로그 목록조회 */
     @Override
     public List<SyhSendEmailLogDto.Item> selectList(SyhSendEmailLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhSendEmailLog.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendEmailLog.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendEmailLog.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhSendEmailLogDto.Item> query = baseSelColumnQuery()
@@ -103,7 +103,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -120,6 +120,12 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     /* 이메일 발송 로그 페이지조회 */
     @Override
     public BasePage<SyhSendEmailLogDto.Item> selectPageData(SyhSendEmailLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhSendEmailLog.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendEmailLog.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendEmailLog.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -131,7 +137,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -35,11 +35,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSavePolicyRepositoryImpl";
     private static final QPmSavePolicy pmSavePolicy = QPmSavePolicy.pmSavePolicy;
-    private static final QSyVendor     syVendor     = QSyVendor.syVendor;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmSavePolicy.regDate,
-        "upd_date", pmSavePolicy.updDate
-    );
-    // EXISTS 서브쿼리용 별칭 (대상상품 필터 — pm_save_prod → pd_prod)
+    private static final QSyVendor     syVendor     = QSyVendor.syVendor;    // EXISTS 서브쿼리용 별칭 (대상상품 필터 — pm_save_prod → pd_prod)
     private static final QPmSaveProd saveProdEx = new QPmSaveProd("save_prod_ex");
     private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
 
@@ -68,6 +64,10 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
     /* 목록조회 */
     @Override
     public List<PmSavePolicyDto.Item> selectList(PmSavePolicyDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmSavePolicy.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmSavePolicy.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()
@@ -80,7 +80,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
                     QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()),
                     QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()),
                     andProd(search),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId))
@@ -98,6 +98,10 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
     /* 페이지 목록 */
     @Override
     public BasePage<PmSavePolicyDto.Item> selectPageData(PmSavePolicyDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmSavePolicy.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmSavePolicy.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -112,7 +116,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
                 QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()),
                 QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()),
                 andProd(search),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

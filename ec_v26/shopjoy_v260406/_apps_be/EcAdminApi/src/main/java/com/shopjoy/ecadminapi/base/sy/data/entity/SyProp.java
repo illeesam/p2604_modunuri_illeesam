@@ -37,7 +37,7 @@ public class SyProp extends BaseEntity {
 
     @Comment("값")
     @Column(name = "prop_value", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "propValue 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "propValue 는 500,000자 이내여야 합니다.")
     private String propValue;
 
     @Comment("표시명")

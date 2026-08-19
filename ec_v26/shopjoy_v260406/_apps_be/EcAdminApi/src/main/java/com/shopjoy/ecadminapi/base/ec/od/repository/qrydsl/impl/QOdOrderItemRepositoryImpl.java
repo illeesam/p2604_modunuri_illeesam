@@ -83,12 +83,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QOdClaimItem     claimItemDsp    = new QOdClaimItem("claim_item_dsp");
     private static final QOdClaim         claimDsp        = new QOdClaim("claim_dsp");
     private static final QOdClaimItem     claimItemFlt    = new QOdClaimItem("claim_item_flt");
-    private static final QOdClaim         claimFlt        = new QOdClaim("claim_flt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odOrderItem.regDate,
-        "upd_date", odOrderItem.updDate
-    );
-
-    /*
+    private static final QOdClaim         claimFlt        = new QOdClaim("claim_flt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * ORDER_ITEM_STATUS  {ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소}
      * COURIER  {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
@@ -233,6 +228,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     /* 주문 아이템(상품) 목록조회 */
     @Override
     public List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odOrderItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrderItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery()
@@ -246,7 +245,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                     claimFilter(search.getClaimCombos()),
                     QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                         ? JPAExpressions.selectOne()
                               .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
@@ -295,6 +294,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     /* 주문 아이템(상품) 페이지조회 */
     @Override
     public BasePage<OdOrderItemDto.Item> selectPageData(OdOrderItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odOrderItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrderItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -310,7 +313,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                 claimFilter(search.getClaimCombos()),
                 QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                     ? JPAExpressions.selectOne()
                           .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))

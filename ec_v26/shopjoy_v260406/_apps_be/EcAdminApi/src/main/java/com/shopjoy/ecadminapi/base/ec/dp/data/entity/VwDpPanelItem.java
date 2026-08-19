@@ -45,7 +45,7 @@ public class VwDpPanelItem {
     private String widgetTitle;
 
     @Column(name = "widget_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetContent 는 500,000자 이내여야 합니다.")
     private String widgetContent;
 
     @Column(name = "title_show_yn", length = 1)
@@ -64,7 +64,7 @@ public class VwDpPanelItem {
     private Integer sortOrd;
 
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetConfigJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetConfigJson 는 500,000자 이내여야 합니다.")
     private String widgetConfigJson;
 
     @Column(name = "visibility_targets", length = 200)

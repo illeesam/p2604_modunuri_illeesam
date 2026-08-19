@@ -38,12 +38,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     private static final QOdOrder           ord = new QOdOrder("ord");
     private static final QOdOrderItem       ite = new QOdOrderItem("ite");
     private static final QPmCoupon          cpn = new QPmCoupon("cpn");
-    private static final QVwSyCode            cdOidt = new QVwSyCode("cd_oidt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odOrderItemDiscnt.regDate,
-        "upd_date", odOrderItemDiscnt.updDate
-    );
-
-    /*
+    private static final QVwSyCode            cdOidt = new QVwSyCode("cd_oidt");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * ORDER_ITEM_DISCNT_TYPE (sy_code 미등록 — Entity 주석 기준 예시)
      *   ITEM_DISCNT:즉시할인, ITEM_COUPON:상품쿠폰
@@ -82,13 +77,17 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     /* 주문 아이템 할인 목록조회 */
     @Override
     public List<OdOrderItemDiscntDto.Item> selectList(OdOrderItemDiscntDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odOrderItemDiscnt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrderItemDiscnt.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,6 +104,10 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     /* 주문 아이템 할인 페이지조회 */
     @Override
     public BasePage<OdOrderItemDiscntDto.Item> selectPageData(OdOrderItemDiscntDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odOrderItemDiscnt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrderItemDiscnt.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -113,7 +116,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

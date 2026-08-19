@@ -28,12 +28,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherLineRepositoryImpl";
-    private static final QStErpVoucherLine stErpVoucherLine = QStErpVoucherLine.stErpVoucherLine;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stErpVoucherLine.regDate,
-        "upd_date", stErpVoucherLine.updDate
-    );
-
-    /*
+    private static final QStErpVoucherLine stErpVoucherLine = QStErpVoucherLine.stErpVoucherLine;    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 참고값)
      * REF_TYPE_CD  {SETTLE: '정산', ORDER: '주문', CLAIM: '클레임', PAY: '지급', ADJ: '조정'}
      */
@@ -70,13 +65,17 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     /* ERP 전표 상세 목록조회 */
     @Override
     public List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stErpVoucherLine.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stErpVoucherLine.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,6 +92,10 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     /* ERP 전표 상세 페이지조회 */
     @Override
     public BasePage<StErpVoucherLineDto.Item> selectPageData(StErpVoucherLineDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stErpVoucherLine.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stErpVoucherLine.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -101,7 +104,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

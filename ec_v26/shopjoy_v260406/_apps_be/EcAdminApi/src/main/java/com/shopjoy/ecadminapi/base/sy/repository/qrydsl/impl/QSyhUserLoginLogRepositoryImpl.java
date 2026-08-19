@@ -35,11 +35,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QSyhUserLoginLog syhUserLoginLog   = QSyhUserLoginLog.syhUserLoginLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QVwSyCode          cd_lr = new QVwSyCode("cd_lr");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhUserLoginLog.regDate
-    );
-
-    /*
+    private static final QVwSyCode          cd_lr = new QVwSyCode("cd_lr");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * LOGIN_RESULT  {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금', FAIL_DORMANT: '휴면계정', FAIL_WITHDRAWN: '탈퇴계정'}
      */
@@ -88,6 +84,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     /* 사용자 로그인 로그 목록조회 */
     @Override
     public List<SyhUserLoginLogDto.Item> selectList(SyhUserLoginLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhUserLoginLog.regDate;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
@@ -95,7 +92,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -112,6 +109,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     /* 사용자 로그인 로그 페이지조회 */
     @Override
     public BasePage<SyhUserLoginLogDto.Item> selectPageData(SyhUserLoginLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhUserLoginLog.regDate;
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -122,7 +120,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

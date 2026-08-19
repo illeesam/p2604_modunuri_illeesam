@@ -32,12 +32,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGradeRepositoryImpl";
     private static final QMbMemberGrade mbMemberGrade    = QMbMemberGrade.mbMemberGrade;
     private static final QSySite        sySite  = QSySite.sySite;
-    private static final QVwSyCode        cdMg = new QVwSyCode("cd_mg");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberGrade.regDate,
-        "upd_date", mbMemberGrade.updDate
-    );
-
-    /*
+    private static final QVwSyCode        cdMg = new QVwSyCode("cd_mg");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GRADE_CD (코드: MEMBER_GRADE)  {BASIC: '일반', NORMAL: '일반', GOLD: '우수', VIP: 'VIP'}
      * USE_YN                        {Y: '사용', N: '미사용'}
@@ -72,13 +67,17 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     /* 회원 등급 목록조회 */
     @Override
     public List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberGrade.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberGrade.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()),
                     QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -94,6 +93,10 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     /* 회원 등급 페이지조회 */
     @Override
     public BasePage<MbMemberGradeDto.Item> selectPageData(MbMemberGradeDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberGrade.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberGrade.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -103,7 +106,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()),
                 QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

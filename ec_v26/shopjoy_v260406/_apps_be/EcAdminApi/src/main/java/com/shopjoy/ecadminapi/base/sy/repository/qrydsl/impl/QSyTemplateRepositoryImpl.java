@@ -36,12 +36,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyTemplateRepositoryImpl";
-    private static final QSyTemplate syTemplate = QSyTemplate.syTemplate;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syTemplate.regDate,
-        "upd_date", syTemplate.updDate
-    );
-
-    /*
+    private static final QSyTemplate syTemplate = QSyTemplate.syTemplate;    /*
      * baseQuery — 코드성 필드 예시 코드값
      * TEMPLATE_TYPE  {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
      */
@@ -77,6 +72,10 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* 템플릿 목록조회 */
     @Override
     public List<SyTemplateDto.Item> selectList(SyTemplateDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syTemplate.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syTemplate.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyTemplateDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -85,7 +84,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                     QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
                     QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
                     QdslUtil.strEq(syTemplate.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -102,6 +101,10 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* 템플릿 페이지조회 */
     @Override
     public BasePage<SyTemplateDto.Item> selectPageData(SyTemplateDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syTemplate.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syTemplate.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -113,7 +116,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
                 QdslUtil.strEq(syTemplate.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

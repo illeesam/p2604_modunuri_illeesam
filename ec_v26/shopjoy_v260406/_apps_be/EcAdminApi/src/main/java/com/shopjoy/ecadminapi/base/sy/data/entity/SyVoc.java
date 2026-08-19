@@ -42,7 +42,7 @@ public class SyVoc extends BaseEntity {
 
     @Comment("VOC항목설명")
     @Column(name = "voc_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "vocContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "vocContent 는 500,000자 이내여야 합니다.")
     private String vocContent;
 
     @Comment("사용여부 Y/N")

@@ -28,12 +28,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchHistRepositoryImpl";
-    private static final QSyhBatchHist syhBatchHist   = QSyhBatchHist.syhBatchHist;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhBatchHist.regDate,
-        "upd_date", syhBatchHist.updDate
-    );
-
-    /*
+    private static final QSyhBatchHist syhBatchHist   = QSyhBatchHist.syhBatchHist;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
      * runStatusCd  {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
      */
@@ -74,12 +69,16 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     /* 배치 실행 이력 목록조회 */
     @Override
     public List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhBatchHist.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhBatchHist.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,6 +95,10 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     /* 배치 실행 이력 페이지조회 */
     @Override
     public BasePage<SyhBatchHistDto.Item> selectPageData(SyhBatchHistDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhBatchHist.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhBatchHist.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +107,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

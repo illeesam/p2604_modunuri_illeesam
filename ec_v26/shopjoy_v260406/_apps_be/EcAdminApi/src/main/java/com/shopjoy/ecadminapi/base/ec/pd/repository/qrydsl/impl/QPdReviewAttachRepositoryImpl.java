@@ -32,13 +32,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewAttachRepositoryImpl";
     private static final QPdReviewAttach pdReviewAttach = QPdReviewAttach.pdReviewAttach;
-    private static final QPdReview       pdReview = QPdReview.pdReview;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdReviewAttach.regDate,
-        "upd_date", pdReviewAttach.updDate
-    );
-
-    /*
+    private static final QPdReview       pdReview = QPdReview.pdReview;    /*
      * baseQuerySingle / baseQueryWithJoin — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * MEDIA_TYPE_CD  {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
      */
@@ -69,6 +63,10 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 전체 목록 */
     @Override
     public List<PdReviewAttachDto.Item> selectList(PdReviewAttachDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdReviewAttach.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdReviewAttach.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
@@ -76,7 +74,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
                 QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,6 +91,10 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 페이지 목록 */
     @Override
     public BasePage<PdReviewAttachDto.Item> selectPageData(PdReviewAttachDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdReviewAttach.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdReviewAttach.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +106,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
                 QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

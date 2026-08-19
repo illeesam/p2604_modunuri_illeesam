@@ -52,7 +52,7 @@ public class CmBlog extends BaseEntity {
 
     @Comment("본문 (HTML 에디터)")
     @Column(name = "blog_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "blogContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "blogContent 는 500,000자 이내여야 합니다.")
     private String blogContent;
 
     @Comment("작성자 이름")

@@ -28,13 +28,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAlarmSendHistRepositoryImpl";
-    private static final QSyhAlarmSendHist syhAlarmSendHist   = QSyhAlarmSendHist.syhAlarmSendHist;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("send_date", syhAlarmSendHist.sendDate,
-        "reg_date", syhAlarmSendHist.regDate,
-        "upd_date", syhAlarmSendHist.updDate
-    );
-
-    /*
+    private static final QSyhAlarmSendHist syhAlarmSendHist   = QSyhAlarmSendHist.syhAlarmSendHist;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * sendHistStatusCd  (sy_code 미등록 — Entity 주석 기준 SENT/FAILED 값 사용)
      */
@@ -72,13 +66,19 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     /* 알람 발송 이력 목록조회 */
     @Override
     public List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhAlarmSendHist.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhAlarmSendHist.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhAlarmSendHist.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhAlarmSendHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -95,6 +95,12 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     /* 알람 발송 이력 페이지조회 */
     @Override
     public BasePage<SyhAlarmSendHistDto.Item> selectPageData(SyhAlarmSendHistDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhAlarmSendHist.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhAlarmSendHist.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhAlarmSendHist.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +110,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

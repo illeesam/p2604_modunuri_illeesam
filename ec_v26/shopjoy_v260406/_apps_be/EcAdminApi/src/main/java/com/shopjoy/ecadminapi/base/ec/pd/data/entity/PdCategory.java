@@ -61,7 +61,7 @@ public class PdCategory extends BaseEntity {
 
     @Comment("설명")
     @Column(name = "category_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "categoryDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "categoryDesc 는 500,000자 이내여야 합니다.")
     private String categoryDesc;
 
 }

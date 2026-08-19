@@ -36,12 +36,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
     private static final QPdProd   pdProd  = QPdProd.pdProd;
-    private static final QVwSyCode   cdLt = new QVwSyCode("cd_ltt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbLike.regDate,
-        "upd_date", mbLike.updDate
-    );
-
-    /*
+    private static final QVwSyCode   cdLt = new QVwSyCode("cd_ltt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * TARGET_TYPE_CD (코드: LIKE_TARGET_TYPE)  {PRODUCT: '상품', BRAND: '브랜드'}
      */
@@ -74,6 +69,10 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* 좋아요(찜) 목록조회 */
     @Override
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbLike.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbLike.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -82,7 +81,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                     QdslUtil.strEq(mbLike.memberId, search.getMemberId()),
                     QdslUtil.strEq(mbLike.targetId, search.getTargetId()),
                     QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,6 +97,10 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* 좋아요(찜) 페이지조회 */
     @Override
     public BasePage<MbLikeDto.Item> selectPageData(MbLikeDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbLike.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbLike.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -109,7 +112,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 QdslUtil.strEq(mbLike.memberId, search.getMemberId()),
                 QdslUtil.strEq(mbLike.targetId, search.getTargetId()),
                 QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

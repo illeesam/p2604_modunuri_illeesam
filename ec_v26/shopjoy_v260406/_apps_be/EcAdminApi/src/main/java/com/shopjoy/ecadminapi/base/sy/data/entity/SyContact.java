@@ -53,7 +53,7 @@ public class SyContact extends BaseEntity {
 
     @Comment("문의내용")
     @Column(name = "contact_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contactContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "contactContent 는 500,000자 이내여야 합니다.")
     private String contactContent;
 
     @Comment("처리상태 (코드: CONTACT_STATUS_CD)")
@@ -63,7 +63,7 @@ public class SyContact extends BaseEntity {
 
     @Comment("답변내용")
     @Column(name = "contact_answer", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contactAnswer 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "contactAnswer 는 500,000자 이내여야 합니다.")
     private String contactAnswer;
 
     @Comment("답변자 (sy_user.user_id)")

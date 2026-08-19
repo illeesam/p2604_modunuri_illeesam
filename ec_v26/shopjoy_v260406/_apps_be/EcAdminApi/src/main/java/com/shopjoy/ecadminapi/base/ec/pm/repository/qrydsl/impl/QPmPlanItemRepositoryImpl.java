@@ -34,12 +34,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     private static final QPmPlanItem pmPlanItem   = QPmPlanItem.pmPlanItem;
     private static final QPmPlan     pmPlan = QPmPlan.pmPlan;
     private static final QPdProd     pdProd = QPdProd.pdProd;
-    private static final QSySite     sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmPlanItem.regDate,
-        "upd_date", pmPlanItem.updDate
-    );
-
-    /* 프로모션 플랜 아이템 baseSelColumnQuery — 코드성 필드 없음 (상품 매핑·진열순서·메모만 보유) */
+    private static final QSySite     sySite = QSySite.sySite;    /* 프로모션 플랜 아이템 baseSelColumnQuery — 코드성 필드 없음 (상품 매핑·진열순서·메모만 보유) */
     private JPAQuery<PmPlanItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanItemDto.Item.class,
@@ -67,13 +62,17 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     /* 프로모션 플랜 아이템 목록조회 */
     @Override
     public List<PmPlanItemDto.Item> selectList(PmPlanItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmPlanItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmPlanItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,6 +89,10 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     /* 프로모션 플랜 아이템 페이지조회 */
     @Override
     public BasePage<PmPlanItemDto.Item> selectPageData(PmPlanItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmPlanItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmPlanItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -98,7 +101,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

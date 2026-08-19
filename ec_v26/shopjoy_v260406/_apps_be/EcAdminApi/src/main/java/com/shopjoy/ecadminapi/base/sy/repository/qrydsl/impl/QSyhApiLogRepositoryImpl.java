@@ -28,12 +28,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhApiLogRepositoryImpl";
-    private static final QSyhApiLog syhApiLog   = QSyhApiLog.syhApiLog;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhApiLog.regDate,
-        "upd_date", syhApiLog.updDate
-    );
-
-    /*
+    private static final QSyhApiLog syhApiLog   = QSyhApiLog.syhApiLog;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
      * apiTypeCd  {PG: 'PG결제', LOGISTICS: '물류/택배', KAKAO: '카카오', NAVER: '네이버', SMS: 'SMS'}
      * resultCd   {SUCCESS: '성공', FAIL: '실패'}
@@ -80,13 +75,17 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     /* API 로그 목록조회 */
     @Override
     public List<SyhApiLogDto.Item> selectList(SyhApiLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhApiLog.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhApiLog.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -103,6 +102,10 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     /* API 로그 페이지조회 */
     @Override
     public BasePage<SyhApiLogDto.Item> selectPageData(SyhApiLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhApiLog.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhApiLog.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -112,7 +115,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

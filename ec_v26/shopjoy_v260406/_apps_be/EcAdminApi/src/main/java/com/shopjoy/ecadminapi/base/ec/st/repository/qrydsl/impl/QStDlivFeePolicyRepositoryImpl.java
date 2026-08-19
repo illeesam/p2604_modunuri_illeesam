@@ -32,13 +32,7 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStDlivFeePolicyRepositoryImpl";
     private static final QStDlivFeePolicy stDlivFeePolicy = QStDlivFeePolicy.stDlivFeePolicy;
-    private static final QVwSyCode        cdDm = new QVwSyCode("cd_dm");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", stDlivFeePolicy.regDate,
-        "upd_date", stDlivFeePolicy.updDate
-    );
-
-    /*
+    private static final QVwSyCode        cdDm = new QVwSyCode("cd_dm");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * DLIV_METHOD_CD  {COURIER:택배, DIRECT:직접배송, PICKUP:방문수령, SAME_DAY:당일배송, QUICK:퀵배송, REMOTE:오지배송, HALF_COURIER:반값택배배송, POST:우체국배송}
      * USE_YN          {Y:사용, N:미사용}
@@ -74,6 +68,10 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
     /* 배송수수료정책 목록조회 */
     @Override
     public List<StDlivFeePolicyDto.Item> selectList(StDlivFeePolicyDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stDlivFeePolicy.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stDlivFeePolicy.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StDlivFeePolicyDto.Item> query = baseListQuery()
@@ -82,7 +80,7 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
                     QdslUtil.strEq(stDlivFeePolicy.siteId, search.getSiteId()),
                     QdslUtil.strEq(stDlivFeePolicy.dlivMethodCd, search.getDlivMethodCd()),
                     QdslUtil.strEq(stDlivFeePolicy.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,6 +97,10 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
     /* 배송수수료정책 페이지조회 */
     @Override
     public BasePage<StDlivFeePolicyDto.Item> selectPageData(StDlivFeePolicyDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stDlivFeePolicy.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stDlivFeePolicy.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -109,7 +111,7 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
                 QdslUtil.strEq(stDlivFeePolicy.siteId, search.getSiteId()),
                 QdslUtil.strEq(stDlivFeePolicy.dlivMethodCd, search.getDlivMethodCd()),
                 QdslUtil.strEq(stDlivFeePolicy.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

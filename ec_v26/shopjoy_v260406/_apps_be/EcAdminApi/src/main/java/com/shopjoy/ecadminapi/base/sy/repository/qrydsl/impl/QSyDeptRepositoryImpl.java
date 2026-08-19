@@ -40,12 +40,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         this.syDeptRepository = syDeptRepository;
     }
     private static final QSyUser syUser = QSyUser.syUser;
-    private static final QVwSyCode cdDt = new QVwSyCode("cd_dt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syDept.regDate,
-        "upd_date", syDept.updDate
-    );
-
-    /*
+    private static final QVwSyCode cdDt = new QVwSyCode("cd_dt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * DEPT_TYPE {HQ: '본사', DEV: '개발팀', DEV_BACKEND: '백엔드', DEV_FRONTEND: '프론트엔드', MKT: '마케팅팀', LOGIS: '물류팀'}
      * USE_YN    {Y: '사용', N: '미사용'}
@@ -85,13 +80,17 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     /* 부서 목록조회 */
     @Override
     public List<SyDeptDto.Item> selectList(SyDeptDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syDept.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syDept.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,6 +107,10 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     /* 부서 페이지조회 */
     @Override
     public BasePage<SyDeptDto.Item> selectPageData(SyDeptDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syDept.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syDept.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -118,7 +121,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

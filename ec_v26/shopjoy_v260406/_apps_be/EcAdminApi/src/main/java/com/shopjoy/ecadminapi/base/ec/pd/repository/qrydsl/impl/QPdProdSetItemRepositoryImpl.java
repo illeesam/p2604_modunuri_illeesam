@@ -33,12 +33,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     private static final QPdProdSetItem pdProdSetItem    = QPdProdSetItem.pdProdSetItem;
     private static final QSySite        sySite  = QSySite.sySite;
     private static final QPdProd        prd  = new QPdProd("prd");
-    private static final QPdProd        prd2 = new QPdProd("prd2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdSetItem.regDate,
-        "upd_date", pdProdSetItem.updDate
-    );
-
-    /*
+    private static final QPdProd        prd2 = new QPdProd("prd2");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN  {Y: '사용', N: '미사용'}
      */
@@ -74,13 +69,17 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     /* 세트상품 구성 목록조회 */
     @Override
     public List<PdProdSetItemDto.Item> selectList(PdProdSetItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdSetItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdSetItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdSetItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -97,6 +96,10 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     /* 세트상품 구성 페이지조회 */
     @Override
     public BasePage<PdProdSetItemDto.Item> selectPageData(PdProdSetItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdSetItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdSetItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -105,7 +108,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

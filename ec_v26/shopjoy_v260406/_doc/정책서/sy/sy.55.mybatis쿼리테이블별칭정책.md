@@ -134,6 +134,29 @@ MyBatis XML 매퍼의 SQL 쿼리에서 JOIN 조건과 WHERE 절의 컬럼 참조
 </select>
 ```
 
+### 5. JOIN 종류 명시 (bare `JOIN` 금지) ⭐ (2026-08-19)
+
+**정의**: `JOIN` 을 단독으로 쓰지 않고 항상 `INNER JOIN` / `LEFT JOIN` / `RIGHT JOIN` / `FULL JOIN` 중 의도한 종류를 명시한다. 결과는 `JOIN`(=INNER JOIN)과 동일하지만, 읽는 사람이 매번 "이게 내부조인이 맞나, 원래 LEFT였는데 실수로 지운 건 아닌가"를 확인할 필요 없이 코드만 보고 바로 조인 종류를 알 수 있어야 한다.
+
+**규칙**:
+- Mapper XML `<select>`/`<sql>` 의 `FROM ... JOIN` 전부 `INNER JOIN` 으로 명시
+- DDL 소스(`_doc/ddl_pgsql/**/*.sql`)의 `CREATE VIEW` 정의도 동일하게 명시
+
+```xml
+<!-- ❌ 잘못된 예 -->
+FROM sy_code c
+JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id
+
+<!-- ✅ 올바른 예 -->
+FROM sy_code c
+INNER JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id
+```
+
+**⚠ PostgreSQL VIEW 예외 (반드시 알아야 함)**: `CREATE VIEW` 정의에 `INNER JOIN` 이라고 써도, PostgreSQL은 뷰를 파싱된 쿼리 트리로 저장하고 `pg_get_viewdef()`(= `\d+`, DBeaver/pgAdmin 등 모든 조회 도구가 내부적으로 쓰는 함수)로 되돌려 보여줄 때 **INNER 는 항상 생략하고 그냥 `JOIN` 으로 정규화해서 보여준다** — LEFT/RIGHT/FULL 은 그대로 유지되지만 INNER 만 예외적으로 사라진다. 즉:
+- **DDL 소스 파일**(`.sql`)에는 `INNER JOIN` 을 그대로 남겨 의도를 문서화한다 — 이 파일은 텍스트 그대로 보존되므로 정책이 유효하다.
+- 실제 DB에서 `\d+`, `pg_get_viewdef`, DB 클라이언트로 뷰 정의를 다시 열어보면 `JOIN` 으로 보이는 게 **정상**이다 — 버그도 아니고 되돌릴 필요도 없다.
+- 이 예외는 **VIEW 에만 해당**한다. Mapper XML의 `<select>` 쿼리는 텍스트 그대로 실행되므로 `INNER JOIN` 이 그대로 유지·표시된다.
+
 ## 테이블 별칭 관례
 
 ### 도메인별 주 테이블 별칭
@@ -428,6 +451,7 @@ LEFT JOIN sy_code cd_ps
 
 | 날짜 | 버전 | 내용 |
 |---|---|---|
+| 2026-08-19 | 2.2 | §5 JOIN 종류 명시 규칙 추가 (bare `JOIN` 금지 → `INNER/LEFT/RIGHT JOIN` 명시). PostgreSQL VIEW 는 `pg_get_viewdef()` 재조회 시 INNER 만 정규화되어 사라지는 것이 정상 동작임을 명시(DDL 소스 파일에는 그대로 유지). Mapper 1건(`AutoRestMapper.selectCodeLabels`), VIEW 4건(`vw_dp_area`/`vw_dp_panel`/`vw_dp_panel_item`/`vw_sy_role_menu`) 적용 |
 | 2026-04-29 | 2.1 | 전체 Mapper 완전 정정 완료 — XML 파싱 오류 제거 (3개 파일), COUNT(a.*) 별칭 정정 (43개 파일), SELECT/JOIN/WHERE 모든 컬럼 명시화 (155개 파일 검증) |
 | 2026-04-29 | 2.0 | 전체 Mapper 감시 완료 — COUNT(*), SELECT *, Fragment 조건 모두 명시화 (114개 파일 수정) |
 | 2026-04-29 | 1.0 | 최초 작성 — 모든 Mapper 쿼리 별칭 규칙 정의 |

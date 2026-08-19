@@ -37,13 +37,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     private static final QPmVoucher      pmVoucher  = QPmVoucher.pmVoucher;
     private static final QOdOrder        odOrder  = QOdOrder.odOrder;
     private static final QSySite         sySite  = QSySite.sySite;
-    private static final QVwSyCode         cdVis = new QVwSyCode("cd_vis");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("issue_date", pmVoucherIssue.issueDate,
-        "reg_date", pmVoucherIssue.regDate,
-        "upd_date", pmVoucherIssue.updDate
-    );
-
-    /*
+    private static final QVwSyCode         cdVis = new QVwSyCode("cd_vis");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * VOUCHER_ISSUE_STATUS  {ISSUED: '발급됨', USED: '사용완료', EXPIRED: '만료', CANCELLED: '취소'}
      */
@@ -81,13 +75,19 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     /* 바우처(상품권) 발행 이력 목록조회 */
     @Override
     public List<PmVoucherIssueDto.Item> selectList(PmVoucherIssueDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmVoucherIssue.issueDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmVoucherIssue.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmVoucherIssue.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -104,6 +104,12 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     /* 바우처(상품권) 발행 이력 페이지조회 */
     @Override
     public BasePage<PmVoucherIssueDto.Item> selectPageData(PmVoucherIssueDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmVoucherIssue.issueDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmVoucherIssue.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmVoucherIssue.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -112,7 +118,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

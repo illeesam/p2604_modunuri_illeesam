@@ -65,7 +65,7 @@ public class PmVoucher extends BaseEntity {
 
     @Comment("상품권 설명")
     @Column(name = "voucher_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "voucherDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "voucherDesc 는 500,000자 이내여야 합니다.")
     private String voucherDesc;
 
     @Comment("사용여부 Y/N")

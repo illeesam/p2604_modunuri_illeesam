@@ -50,7 +50,7 @@ public class PmPlan extends BaseEntity {
 
     @Comment("기획전 설명")
     @Column(name = "plan_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "planDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "planDesc 는 500,000자 이내여야 합니다.")
     private String planDesc;
 
     @Comment("썸네일 이미지 URL")

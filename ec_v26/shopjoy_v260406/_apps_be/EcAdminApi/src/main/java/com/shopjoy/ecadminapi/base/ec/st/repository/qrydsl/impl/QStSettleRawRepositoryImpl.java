@@ -66,13 +66,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QVwSyCode      cdRs  = new QVwSyCode("cd_rs");
     private static final QVwSyCode      cdOis = new QVwSyCode("cd_ois");
     private static final QVwSyCode      cdVt  = new QVwSyCode("cd_vt");
-    private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("order_date", stSettleRaw.orderDate,
-        "reg_date", stSettleRaw.regDate,
-        "upd_date", stSettleRaw.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * RAW_TYPE            {ORDER: '주문', CLAIM: '클레임', ADJ: '조정'}
      * RAW_STATUS          {COLLECTED: '수집완료', EXCLUDED: '제외', SETTLED: '정산반영'}
@@ -205,6 +199,12 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     /* 정산 원천 데이터 목록조회 */
     @Override
     public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettleRaw.orderDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleRaw.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleRaw.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleRawDto.Item> query = baseListQuery()
@@ -226,7 +226,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                     QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()),
                     QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()),
                     QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -243,6 +243,12 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     /* 정산 원천 데이터 페이지조회 */
     @Override
     public BasePage<StSettleRawDto.Item> selectPageData(StSettleRawDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettleRaw.orderDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleRaw.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleRaw.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -266,7 +272,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()),
                 QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()),
                 QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

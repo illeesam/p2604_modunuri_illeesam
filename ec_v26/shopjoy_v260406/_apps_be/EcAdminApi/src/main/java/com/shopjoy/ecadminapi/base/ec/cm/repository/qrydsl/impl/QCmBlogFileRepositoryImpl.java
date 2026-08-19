@@ -27,12 +27,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogFileRepositoryImpl";
-    private static final QCmBlogFile cmBlogFile = QCmBlogFile.cmBlogFile;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogFile.regDate,
-        "upd_date", cmBlogFile.updDate
-    );
-
-    /*
+    private static final QCmBlogFile cmBlogFile = QCmBlogFile.cmBlogFile;    /*
      * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_file 은 이미지 URL/정렬순서 중심 테이블)
      */
     private JPAQuery<CmBlogFileDto.Item> baseSelColumnQuery() {
@@ -63,13 +58,17 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* 게시물 첨부파일 목록조회 */
     @Override
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogFile.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogFile.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,6 +85,10 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* 게시물 첨부파일 페이지조회 */
     @Override
     public BasePage<CmBlogFileDto.Item> selectPageData(CmBlogFileDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogFile.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogFile.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -96,7 +99,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                 QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

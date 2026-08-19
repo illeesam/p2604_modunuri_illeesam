@@ -36,12 +36,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private static final QSySite      sySite    = QSySite.sySite;
     private static final QSyVendor    syVendor    = QSyVendor.syVendor;
     private static final QVwSyCode      cdDm   = new QVwSyCode("cd_dm");
-    private static final QVwSyCode      cdDpt  = new QVwSyCode("cd_dpt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdDlivTmplt.regDate,
-        "upd_date", pdDlivTmplt.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cdDpt  = new QVwSyCode("cd_dpt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * DLIV_METHOD_CD    {COURIER: '택배', DIRECT: '직접배송', PICKUP: '방문수령'}
      * DLIV_PAY_TYPE_CD  {PREPAY: '선불', COD: '착불'}
@@ -89,6 +84,10 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     /* 배송 템플릿 목록조회 */
     @Override
     public List<PdDlivTmpltDto.Item> selectList(PdDlivTmpltDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdDlivTmplt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdDlivTmplt.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery()
@@ -97,7 +96,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                     QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()),
                     QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                     QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,6 +113,10 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     /* 배송 템플릿 페이지조회 */
     @Override
     public BasePage<PdDlivTmpltDto.Item> selectPageData(PdDlivTmpltDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdDlivTmplt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdDlivTmplt.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -124,7 +127,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()),
                 QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                 QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

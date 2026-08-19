@@ -35,12 +35,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
-    private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", dpWidgetLib.regDate,
-        "upd_date", dpWidgetLib.updDate
-    );
-
-    /*
+    private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;    /*
      * baseQuery — 코드성 필드 예시 코드값
      * USE_YN / IS_SYSTEM  {Y: '예', N: '아니오'}
      * WIDGET_TYPE_CD (코드그룹: DISP_WIDGET_TYPE, 27종)
@@ -84,6 +79,10 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 전시 위젯 라이브러리 목록조회 */
     @Override
     public List<DpWidgetLibDto.Item> selectList(DpWidgetLibDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = dpWidgetLib.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = dpWidgetLib.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -92,7 +91,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                     QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
                     QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()),
                     QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -109,6 +108,10 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 전시 위젯 라이브러리 페이지조회 */
     @Override
     public BasePage<DpWidgetLibDto.Item> selectPageData(DpWidgetLibDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = dpWidgetLib.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = dpWidgetLib.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -119,7 +122,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
                 QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()),
                 QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)

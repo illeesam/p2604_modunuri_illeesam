@@ -43,7 +43,7 @@ public class DpWidgetLib extends BaseEntity {
 
     @Comment("위젯라이브러리설명")
     @Column(name = "widget_lib_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetLibDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetLibDesc 는 500,000자 이내여야 합니다.")
     private String widgetLibDesc;
 
     @Comment("점(.) 구분 표시경로")
@@ -58,12 +58,12 @@ public class DpWidgetLib extends BaseEntity {
 
     @Comment("위젯내용 (HTML 에디터, 3개 테이블 통일)")
     @Column(name = "widget_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetContent 는 500,000자 이내여야 합니다.")
     private String widgetContent;
 
     @Comment("위젯설정 (JSON, 3개 테이블 통일)")
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetConfigJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetConfigJson 는 500,000자 이내여야 합니다.")
     private String widgetConfigJson;
 
     @Comment("시스템기본위젯 Y/N")

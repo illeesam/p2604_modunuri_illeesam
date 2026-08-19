@@ -42,14 +42,16 @@ public class PdhProdContentChgHist extends BaseEntity {
     @Size(max = 50, message = "contentTypeCd 는 50자 이내여야 합니다.")
     private String contentTypeCd;
 
+    /* pd_prod_content.content_html / pd_prod.content_html 값을 그대로 스냅샷 저장하는 이력 컬럼이므로
+       원본 필드와 동일한 상한을 둔다 — 원본이 허용하는 크기의 콘텐츠를 저장할 때 이력 기록이 먼저 막히면 안 된다. */
     @Comment("변경전 HTML 컨텐츠")
     @Column(name = "content_before", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentBefore 는 50000자 이내여야 합니다.")
+    @Size(max = 10000000, message = "contentBefore 는 10,000,000자 이내여야 합니다.")
     private String contentBefore;
 
     @Comment("변경후 HTML 컨텐츠")
     @Column(name = "content_after", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentAfter 는 50000자 이내여야 합니다.")
+    @Size(max = 10000000, message = "contentAfter 는 10,000,000자 이내여야 합니다.")
     private String contentAfter;
 
     @Comment("변경사유 (예: 내용 오류 수정, 계절 업데이트)")

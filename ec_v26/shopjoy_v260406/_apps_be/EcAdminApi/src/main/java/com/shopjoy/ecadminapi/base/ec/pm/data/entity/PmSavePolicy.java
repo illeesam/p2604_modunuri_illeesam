@@ -96,7 +96,7 @@ public class PmSavePolicy extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "remark", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "remark 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "remark 는 500,000자 이내여야 합니다.")
     private String remark;
 
     @Comment("사용여부 Y/N")

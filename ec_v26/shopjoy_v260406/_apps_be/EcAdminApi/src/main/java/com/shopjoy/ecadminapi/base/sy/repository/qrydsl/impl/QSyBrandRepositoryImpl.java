@@ -36,12 +36,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBrandRepositoryImpl";
-    private static final QSyBrand syBrand = QSyBrand.syBrand;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syBrand.regDate,
-        "upd_date", syBrand.updDate
-    );
-
-    /*
+    private static final QSyBrand syBrand = QSyBrand.syBrand;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN {Y: '사용', N: '미사용'}
      */
@@ -79,6 +74,10 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 브랜드 목록조회 */
     @Override
     public List<SyBrandDto.Item> selectList(SyBrandDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syBrand.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syBrand.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -86,7 +85,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 QdslUtil.strEq(syBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syBrand.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syBrand.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -103,6 +102,10 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 브랜드 페이지조회 */
     @Override
     public BasePage<SyBrandDto.Item> selectPageData(SyBrandDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syBrand.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syBrand.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -114,7 +117,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 QdslUtil.strEq(syBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syBrand.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syBrand.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -49,7 +49,7 @@ public class SyVendorContent extends BaseEntity {
 
     @Comment("본문 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentHtml 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "contentHtml 는 500,000자 이내여야 합니다.")
     private String contentHtml;
 
     @Comment("썸네일 URL")

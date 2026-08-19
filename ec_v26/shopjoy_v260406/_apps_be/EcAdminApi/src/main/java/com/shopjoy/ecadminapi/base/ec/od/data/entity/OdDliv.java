@@ -132,7 +132,7 @@ public class OdDliv extends BaseEntity {
 
     @Comment("메모 (HTML 에디터)")
     @Column(name = "dliv_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "dlivMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "dlivMemo 는 500,000자 이내여야 합니다.")
     private String dlivMemo;
 
     @Comment("배송료 (현재값)")

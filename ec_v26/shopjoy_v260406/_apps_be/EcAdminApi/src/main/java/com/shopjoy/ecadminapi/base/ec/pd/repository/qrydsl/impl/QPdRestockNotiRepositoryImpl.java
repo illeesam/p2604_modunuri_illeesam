@@ -34,12 +34,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     private static final QPdRestockNoti pdRestockNoti   = QPdRestockNoti.pdRestockNoti;
     private static final QSySite        sySite = QSySite.sySite;
     private static final QPdProd        pdProd = QPdProd.pdProd;
-    private static final QMbMember      mbMember = QMbMember.mbMember;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdRestockNoti.regDate,
-        "upd_date", pdRestockNoti.updDate
-    );
-
-    /*
+    private static final QMbMember      mbMember = QMbMember.mbMember;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * NOTI_YN  {Y: '발송완료', N: '미발송'}
      */
@@ -72,6 +67,10 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     /* 재입고 알림 목록조회 */
     @Override
     public List<PdRestockNotiDto.Item> selectList(PdRestockNotiDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdRestockNoti.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdRestockNoti.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery()
@@ -80,7 +79,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                     QdslUtil.strEq(pdRestockNoti.restockNotiId, search.getRestockNotiId()),
                     QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
                     QdslUtil.strEq(pdRestockNoti.notiYn, search.getNotiYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -97,6 +96,10 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     /* 재입고 알림 페이지조회 */
     @Override
     public BasePage<PdRestockNotiDto.Item> selectPageData(PdRestockNotiDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdRestockNoti.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdRestockNoti.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -107,7 +110,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                 QdslUtil.strEq(pdRestockNoti.restockNotiId, search.getRestockNotiId()),
                 QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
                 QdslUtil.strEq(pdRestockNoti.notiYn, search.getNotiYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

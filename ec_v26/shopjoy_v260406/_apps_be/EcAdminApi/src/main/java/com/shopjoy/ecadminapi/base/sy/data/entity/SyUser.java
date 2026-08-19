@@ -77,7 +77,7 @@ public class SyUser extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "user_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "userMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "userMemo 는 500,000자 이내여야 합니다.")
     private String userMemo;
 
     @Comment("인증방식 (코드: AUTH_METHOD_CD)")

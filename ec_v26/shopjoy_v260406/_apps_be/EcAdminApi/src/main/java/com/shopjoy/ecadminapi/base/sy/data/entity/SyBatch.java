@@ -39,7 +39,7 @@ public class SyBatch extends BaseEntity {
 
     @Comment("배치설명")
     @Column(name = "batch_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "batchDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "batchDesc 는 500,000자 이내여야 합니다.")
     private String batchDesc;
 
     @Comment("Cron 표현식")
@@ -80,7 +80,7 @@ public class SyBatch extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "batch_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "batchMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "batchMemo 는 500,000자 이내여야 합니다.")
     private String batchMemo;
 
     @Comment("점(.) 구분 표시경로 (트리 빌드용)")

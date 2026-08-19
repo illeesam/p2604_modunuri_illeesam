@@ -131,7 +131,7 @@
     <select id="selectCodeLabels" resultType="com.shopjoy.ecadminapi.autorest.data.dto.RowMap">
         SELECT code_value, code_label  /* autorest :: AutoRest :: selectCodeLabels */
         FROM sy_code c
-        JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id
+        INNER JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id
         WHERE g.code_grp = #{codeGrp}
           AND c.use_yn = 'Y'
           AND g.use_yn = 'Y'

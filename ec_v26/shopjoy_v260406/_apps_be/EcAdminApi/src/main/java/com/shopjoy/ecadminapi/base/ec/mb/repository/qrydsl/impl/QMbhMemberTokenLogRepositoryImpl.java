@@ -35,11 +35,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
     private static final QVwSyCode            cdTa = new QVwSyCode("cd_ta");
-    private static final QVwSyCode            cdTt = new QVwSyCode("cd_tt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbhMemberTokenLog.regDate
-    );
-
-    /*
+    private static final QVwSyCode            cdTt = new QVwSyCode("cd_tt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * ACTION_CD (코드: ACTION_CD)      {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
      * TOKEN_TYPE_CD (코드: TOKEN_TYPE)    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
@@ -87,12 +83,13 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     /* 목록조회 */
     @Override
     public List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbhMemberTokenLog.regDate;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,6 +105,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     /* 페이지조회 */
     @Override
     public BasePage<MbhMemberTokenLogDto.Item> selectPageData(MbhMemberTokenLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbhMemberTokenLog.regDate;
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -116,7 +114,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

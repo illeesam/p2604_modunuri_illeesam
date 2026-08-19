@@ -58,7 +58,7 @@ public class SyNoti extends BaseEntity {
 
     @Comment("알림 내용")
     @Column(name = "noti_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "notiContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "notiContent 는 500,000자 이내여야 합니다.")
     private String notiContent;
 
     @Comment("클릭 시 이동할 화면 pageId")

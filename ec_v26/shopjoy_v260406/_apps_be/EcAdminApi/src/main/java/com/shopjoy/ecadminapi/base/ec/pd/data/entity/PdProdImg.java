@@ -53,12 +53,12 @@ public class PdProdImg extends BaseEntity {
 
     @Comment("CDN 원본 이미지 URL (상세 페이지용, sy_attach 기준)")
     @Column(name = "cdn_img_url", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "cdnImgUrl 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "cdnImgUrl 는 500,000자 이내여야 합니다.")
     private String cdnImgUrl;
 
     @Comment("CDN 썸네일 URL (목록/검색/카테고리용, sy_attach 기준)")
     @Column(name = "cdn_thumb_url", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "cdnThumbUrl 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "cdnThumbUrl 는 500,000자 이내여야 합니다.")
     private String cdnThumbUrl;
 
     @Comment("이미지 대체텍스트 (alt 속성, SEO/접근성)")

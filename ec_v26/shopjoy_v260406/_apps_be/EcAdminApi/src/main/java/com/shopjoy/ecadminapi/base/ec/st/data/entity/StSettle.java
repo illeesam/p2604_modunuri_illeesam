@@ -98,7 +98,7 @@ public class StSettle extends BaseEntity {
 
     @Comment("정산 메모")
     @Column(name = "settle_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "settleMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "settleMemo 는 500,000자 이내여야 합니다.")
     private String settleMemo;
 
     @Comment("시뮬데이터여부 (Y/N)")

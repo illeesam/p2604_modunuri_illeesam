@@ -28,12 +28,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventBenefitRepositoryImpl";
-    private static final QPmEventBenefit pmEventBenefit = QPmEventBenefit.pmEventBenefit;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmEventBenefit.regDate,
-        "upd_date", pmEventBenefit.updDate
-    );
-
-    /*
+    private static final QPmEventBenefit pmEventBenefit = QPmEventBenefit.pmEventBenefit;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * BENEFIT_TYPE  {COUPON: '쿠폰', POINT: '적립금', DISCOUNT: '할인', GIFT: '사은품'} (코드: EVENT_BENEFIT_TYPE)
      */
@@ -65,6 +60,10 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     /* 이벤트 혜택 목록조회 */
     @Override
     public List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmEventBenefit.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmEventBenefit.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery()
@@ -73,7 +72,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                     QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                     QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
                     QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,6 +89,10 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     /* 이벤트 혜택 페이지조회 */
     @Override
     public BasePage<PmEventBenefitDto.Item> selectPageData(PmEventBenefitDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmEventBenefit.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmEventBenefit.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -100,7 +103,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
                 QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -77,7 +77,7 @@ public class DpPanel extends BaseEntity {
 
     @Comment("패널콘텐츠 (JSON - 위젯 목록 및 설정)")
     @Column(name = "content_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "contentJson 는 500,000자 이내여야 합니다.")
     private String contentJson;
 
 }

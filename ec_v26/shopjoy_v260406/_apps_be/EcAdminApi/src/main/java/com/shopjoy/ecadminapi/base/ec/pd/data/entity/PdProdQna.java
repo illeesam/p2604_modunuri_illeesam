@@ -63,7 +63,7 @@ public class PdProdQna extends BaseEntity {
 
     @Comment("문의내용")
     @Column(name = "prod_qna_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "prodQnaContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "prodQnaContent 는 500,000자 이내여야 합니다.")
     private String prodQnaContent;
 
     @Comment("비밀글여부 Y/N")
@@ -78,7 +78,7 @@ public class PdProdQna extends BaseEntity {
 
     @Comment("답변내용")
     @Column(name = "answ_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "answContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "answContent 는 500,000자 이내여야 합니다.")
     private String answContent;
 
     @Comment("답변일시")

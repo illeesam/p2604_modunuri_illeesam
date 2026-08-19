@@ -45,12 +45,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final QPmPlanItem planItemEx = new QPmPlanItem("plan_item_ex");
     private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
     private static final QSyVendor   syVendorEx = new QSyVendor("sy_vendor_ex");
-    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmPlan.regDate,
-        "upd_date", pmPlan.updDate
-    );
-
-    /*
+    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * PLAN_TYPE    {SEASON: '시즌', BRAND: '브랜드', THEME: '테마', COLLAB: '협업'}
      * PLAN_STATUS  {DRAFT: '초안', ACTIVE: '공개', ENDED: '종료'}
@@ -89,6 +84,10 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     /* 프로모션 플랜 목록조회 */
     @Override
     public List<PmPlanDto.Item> selectList(PmPlanDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmPlan.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmPlan.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
@@ -97,7 +96,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                     QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
                     QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andProdVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -115,6 +114,10 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     /* 프로모션 플랜 페이지조회 */
     @Override
     public BasePage<PmPlanDto.Item> selectPageData(PmPlanDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmPlan.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmPlan.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -125,7 +128,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
                 QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andProdVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

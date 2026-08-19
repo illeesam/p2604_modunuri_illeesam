@@ -38,12 +38,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final QSyVendor    syVendor  = QSyVendor.syVendor;
     private static final QStSettleRaw stSettleRaw  = QStSettleRaw.stSettleRaw;
     private static final QVwSyCode      cdRt = new QVwSyCode("cd_rt");
-    private static final QVwSyCode      cdRs = new QVwSyCode("cd_rs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stRecon.regDate,
-        "upd_date", stRecon.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cdRs = new QVwSyCode("cd_rs");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * RECON_TYPE    {ORDER: '주문대사', SETTLE: '정산대사'}
      * RECON_STATUS  {MATCHED: '일치', DIFF: '차이', MANUAL: '수동처리'}
@@ -96,6 +91,10 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     /* 정산 대사(Reconciliation) 목록조회 */
     @Override
     public List<StReconDto.Item> selectList(StReconDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stRecon.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stRecon.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StReconDto.Item> query = baseListQuery()
@@ -104,7 +103,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                     QdslUtil.strEq(stRecon.reconId, search.getReconId()),
                     QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
                     QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -121,6 +120,10 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     /* 정산 대사(Reconciliation) 페이지조회 */
     @Override
     public BasePage<StReconDto.Item> selectPageData(StReconDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stRecon.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stRecon.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -131,7 +134,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 QdslUtil.strEq(stRecon.reconId, search.getReconId()),
                 QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
                 QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

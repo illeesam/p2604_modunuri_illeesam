@@ -34,11 +34,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     private static final QMbhMemberLoginLog mbhMemberLoginLog    = QMbhMemberLoginLog.mbhMemberLoginLog;
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
-    private static final QVwSyCode            cdLr = new QVwSyCode("cd_lr");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbhMemberLoginLog.regDate
-    );
-
-    /*
+    private static final QVwSyCode            cdLr = new QVwSyCode("cd_lr");    /*
      * baseSelColumnQuery — list/page/byId 공유 (코드명 포함 풀필드)
      * 코드성 필드 예시 코드값
      * RESULT_CD (코드: LOGIN_RESULT)  {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금',
@@ -87,12 +83,13 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     /* 회원 로그인 로그 목록조회 */
     @Override
     public List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbhMemberLoginLog.regDate;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,6 +105,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     /* 회원 로그인 로그 페이지조회 */
     @Override
     public BasePage<MbhMemberLoginLogDto.Item> selectPageData(MbhMemberLoginLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbhMemberLoginLog.regDate;
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -116,7 +114,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

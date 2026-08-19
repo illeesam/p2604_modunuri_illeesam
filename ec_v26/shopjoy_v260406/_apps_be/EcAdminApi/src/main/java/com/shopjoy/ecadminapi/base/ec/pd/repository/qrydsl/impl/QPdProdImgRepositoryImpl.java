@@ -28,12 +28,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdImgRepositoryImpl";
-    private static final QPdProdImg pdProdImg = QPdProdImg.pdProdImg;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdImg.regDate,
-        "upd_date", pdProdImg.updDate
-    );
-
-    /*
+    private static final QPdProdImg pdProdImg = QPdProdImg.pdProdImg;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * IS_THUMB  {Y: '대표이미지', N: '일반이미지'}
      */
@@ -71,6 +66,10 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* 상품 이미지 목록조회 */
     @Override
     public List<PdProdImgDto.Item> selectList(PdProdImgDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdImg.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdImg.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery()
@@ -79,7 +78,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                     QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,6 +95,10 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* 상품 이미지 페이지조회 */
     @Override
     public BasePage<PdProdImgDto.Item> selectPageData(PdProdImgDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdImg.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdImg.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -106,7 +109,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

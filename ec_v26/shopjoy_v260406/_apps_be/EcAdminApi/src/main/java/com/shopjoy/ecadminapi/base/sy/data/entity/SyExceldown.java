@@ -63,17 +63,17 @@ public class SyExceldown extends BaseEntity {
 
     @Comment("요청 시점 검색조건 스냅샷 (JSON, 재실행·표시용)")
     @Column(name = "search_param_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "searchParamJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "searchParamJson 는 500,000자 이내여야 합니다.")
     private String searchParamJson;
 
     @Comment("검색조건 사람이 읽는 형태 (화면 라벨 기준, 이력 화면 표시용)")
     @Column(name = "search_cond_text", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "searchCondText 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "searchCondText 는 500,000자 이내여야 합니다.")
     private String searchCondText;
 
     @Comment("다운로드 컬럼 헤더명 (그리드 헤더 순서대로, 쉼표 구분)")
     @Column(name = "excel_columns", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "excelColumns 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "excelColumns 는 500,000자 이내여야 합니다.")
     private String excelColumns;
 
     @Comment("대상 전체 건수 (countList 결과)")
@@ -128,7 +128,7 @@ public class SyExceldown extends BaseEntity {
 
     @Comment("실패 사유")
     @Column(name = "error_msg", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "errorMsg 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "errorMsg 는 500,000자 이내여야 합니다.")
     private String errorMsg;
 
     @Comment("파일 보관 만료일시 (정리 배치 대상)")

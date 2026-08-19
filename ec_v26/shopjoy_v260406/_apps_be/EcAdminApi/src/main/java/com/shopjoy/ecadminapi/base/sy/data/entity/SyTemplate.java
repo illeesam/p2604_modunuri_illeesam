@@ -48,12 +48,12 @@ public class SyTemplate extends BaseEntity {
 
     @Comment("내용 (치환변수 포함)")
     @Column(name = "template_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "templateContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "templateContent 는 500,000자 이내여야 합니다.")
     private String templateContent;
 
     @Comment("치환변수 예시 (JSON)")
     @Column(name = "sample_params", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "sampleParams 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "sampleParams 는 500,000자 이내여야 합니다.")
     private String sampleParams;
 
     @Comment("사용여부 Y/N")

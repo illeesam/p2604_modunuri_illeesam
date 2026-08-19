@@ -29,12 +29,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdOptRepositoryImpl";
-    private static final QPdProdOpt pdProdOpt = QPdProdOpt.pdProdOpt;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdOpt.regDate,
-        "upd_date", pdProdOpt.updDate
-    );
-
-    /*
+    private static final QPdProdOpt pdProdOpt = QPdProdOpt.pdProdOpt;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * PROD_OPT_STD_CD / PROD_OPT_TYPE1_CD / PROD_OPT_TYPE2_CD (OPT_VAL)
      *   {BLACK: '검정', WHITE: '흰색', RED: '빨강', BLUE: '파랑', GREEN: '초록', YELLOW: '노랑', PINK: '핑크', PURPLE: '보라', GRAY: '회색', BROWN: '갈색'}
@@ -76,6 +71,10 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     /* 상품 옵션값 목록조회 */
     @Override
     public List<PdProdOptDto.Item> selectList(PdProdOptDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdOpt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdOpt.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdOptDto.Item> query = baseSelColumnQuery()
@@ -84,7 +83,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                     QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,6 +99,10 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     /* 상품 옵션값 페이지조회 */
     @Override
     public BasePage<PdProdOptDto.Item> selectPageData(PdProdOptDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdOpt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdOpt.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -109,7 +112,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

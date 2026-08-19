@@ -52,7 +52,7 @@ public class StSettleEtcAdj extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "settle_etc_adj_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "settleEtcAdjMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "settleEtcAdjMemo 는 500,000자 이내여야 합니다.")
     private String settleEtcAdjMemo;
 
 }

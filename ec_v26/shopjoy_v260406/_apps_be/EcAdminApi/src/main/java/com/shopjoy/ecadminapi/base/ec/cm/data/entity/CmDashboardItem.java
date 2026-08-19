@@ -89,12 +89,12 @@ public class CmDashboardItem extends BaseEntity {
 
     @Comment("시리즈 설정 JSON 배열 [{name,color,type,...}]")
     @Column(name = "series_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "seriesJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "seriesJson 는 500,000자 이내여야 합니다.")
     private String seriesJson;
 
     @Comment("ECharts 옵션 오버라이드 JSON (xAxis/yAxis/legend 등 부분)")
     @Column(name = "option_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "optionJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "optionJson 는 500,000자 이내여야 합니다.")
     private String optionJson;
 
     @Comment("실시간 차트 여부 (Y/N)")
@@ -104,6 +104,6 @@ public class CmDashboardItem extends BaseEntity {
 
     @Comment("실시간 차트 설정 JSON {intervalMs,maxPoints,apiUrl,thresholds,brushEnabled,smoothing}")
     @Column(name = "realtime_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "realtimeJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "realtimeJson 는 500,000자 이내여야 합니다.")
     private String realtimeJson;
 }

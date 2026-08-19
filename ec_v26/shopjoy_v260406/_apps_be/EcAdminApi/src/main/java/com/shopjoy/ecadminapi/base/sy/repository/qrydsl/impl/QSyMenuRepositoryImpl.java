@@ -44,12 +44,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         this.syMenuRepository = syMenuRepository;
         this.em = em;
     }
-    private static final QVwSyCode cdMt = new QVwSyCode("cd_mt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syMenu.regDate,
-        "upd_date", syMenu.updDate
-    );
-
-    /*
+    private static final QVwSyCode cdMt = new QVwSyCode("cd_mt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * MENU_TYPE {PAGE: '페이지', FOLDER: '폴더', LINK: '링크'}
      * USE_YN    {Y: '사용', N: '미사용'}
@@ -89,13 +84,17 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* 메뉴 목록조회 */
     @Override
     public List<SyMenuDto.Item> selectList(SyMenuDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syMenu.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syMenu.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andMenuIdIn(search),
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
                 QdslUtil.strEq(syMenu.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -112,6 +111,10 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* 메뉴 페이지조회 */
     @Override
     public BasePage<SyMenuDto.Item> selectPageData(SyMenuDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syMenu.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syMenu.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -122,7 +125,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                 andMenuIdIn(search),
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
                 QdslUtil.strEq(syMenu.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

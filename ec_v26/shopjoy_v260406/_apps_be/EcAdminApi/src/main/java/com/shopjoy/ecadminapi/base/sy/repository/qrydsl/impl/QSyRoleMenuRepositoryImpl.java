@@ -31,10 +31,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
     private static final QVwSyRoleMenu vwRoleMenu = QVwSyRoleMenu.vwSyRoleMenu; // SELECT 전용 — sy_role JOIN 내장
     private static final QSyRoleMenu syRoleMenu = QSyRoleMenu.syRoleMenu;       // UPDATE 전용 (updateSelective)
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", vwRoleMenu.regDate,
-        "upd_date", vwRoleMenu.updDate
-    );
-
     /*
      * baseSelColumnQuery — vw_sy_role_menu 뷰 사용 (sy_role_menu INNER JOIN sy_role)
      * roleNm / roleCode 등 sy_role 컬럼을 추가 JOIN 없이 직접 조회
@@ -70,13 +66,17 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* 역할별 메뉴 권한 목록조회 */
     @Override
     public List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = vwRoleMenu.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = vwRoleMenu.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
                 QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,6 +93,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* 역할별 메뉴 권한 페이지조회 */
     @Override
     public BasePage<SyRoleMenuDto.Item> selectPageData(SyRoleMenuDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = vwRoleMenu.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = vwRoleMenu.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -103,7 +107,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
                 QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

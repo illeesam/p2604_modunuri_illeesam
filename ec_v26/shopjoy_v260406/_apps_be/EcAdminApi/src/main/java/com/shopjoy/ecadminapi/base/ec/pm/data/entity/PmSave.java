@@ -66,7 +66,7 @@ public class PmSave extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "save_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "saveMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "saveMemo 는 500,000자 이내여야 합니다.")
     private String saveMemo;
 
     @Comment("시뮬데이터여부 (Y/N)")

@@ -33,12 +33,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     private static final QMbMemberRole mbMemberRole   = QMbMemberRole.mbMemberRole;
     private static final QMbMember     mbMember = QMbMember.mbMember;
     private static final QSyRole       syRole = QSyRole.syRole;
-    private static final QSyUser       gu  = new QSyUser("gu");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberRole.regDate,
-        "upd_date", mbMemberRole.updDate
-    );
-
-    /* 회원 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할/일자 위주) */
+    private static final QSyUser       gu  = new QSyUser("gu");    /* 회원 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할/일자 위주) */
     private JPAQuery<MbMemberRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberRoleDto.Item.class,
@@ -75,12 +70,16 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     /* 회원 역할 연결 목록조회 */
     @Override
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberRole.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,6 +95,10 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     /* 회원 역할 연결 페이지조회 */
     @Override
     public BasePage<MbMemberRoleDto.Item> selectPageData(MbMemberRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberRole.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +107,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

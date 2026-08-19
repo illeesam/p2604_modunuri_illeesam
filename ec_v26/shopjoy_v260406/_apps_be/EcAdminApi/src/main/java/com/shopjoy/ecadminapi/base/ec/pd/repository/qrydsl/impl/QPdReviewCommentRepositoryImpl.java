@@ -29,12 +29,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewCommentRepositoryImpl";
-    private static final QPdReviewComment pdReviewComment = QPdReviewComment.pdReviewComment;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdReviewComment.regDate,
-        "upd_date", pdReviewComment.updDate
-    );
-
-    /*
+    private static final QPdReviewComment pdReviewComment = QPdReviewComment.pdReviewComment;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — sy_code 미등록)
      * WRITER_TYPE_CD   {MEMBER: '회원', SELLER: '판매자', ADMIN: '관리자'}
      * REPLY_STATUS_CD  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
@@ -67,6 +62,10 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /** 전체 목록 */
     @Override
     public List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdReviewComment.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdReviewComment.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery()
@@ -75,7 +74,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                     QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
                     QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
                     QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,6 +91,10 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /** 페이지 목록 */
     @Override
     public BasePage<PdReviewCommentDto.Item> selectPageData(PdReviewCommentDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdReviewComment.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdReviewComment.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -102,7 +105,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                 QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
                 QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
                 QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

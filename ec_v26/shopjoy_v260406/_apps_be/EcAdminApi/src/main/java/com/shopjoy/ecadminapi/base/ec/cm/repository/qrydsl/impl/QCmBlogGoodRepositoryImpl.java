@@ -29,12 +29,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogGoodRepositoryImpl";
     private static final QCmBlogGood cmBlogGood = QCmBlogGood.cmBlogGood;
-    private static final QCmBlog cmBlog = QCmBlog.cmBlog;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogGood.regDate,
-        "upd_date", cmBlogGood.updDate
-    );
-
-    /*
+    private static final QCmBlog cmBlog = QCmBlog.cmBlog;    /*
      * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_good 은 회원-블로그 좋아요 매핑 테이블)
      */
     private JPAQuery<CmBlogGoodDto.Item> baseSelColumnQuery() {
@@ -62,11 +57,15 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     /** 전체 목록 */
     @Override
     public List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogGood.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogGood.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -83,6 +82,10 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<CmBlogGoodDto.Item> selectPageData(CmBlogGoodDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogGood.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogGood.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -91,7 +94,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

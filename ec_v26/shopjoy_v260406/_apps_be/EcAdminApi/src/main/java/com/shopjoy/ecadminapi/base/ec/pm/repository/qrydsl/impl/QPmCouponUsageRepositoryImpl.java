@@ -28,12 +28,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponUsageRepositoryImpl";
-    private static final QPmCouponUsage pmCouponUsage = QPmCouponUsage.pmCouponUsage;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmCouponUsage.regDate,
-        "upd_date", pmCouponUsage.updDate
-    );
-
-    /*
+    private static final QPmCouponUsage pmCouponUsage = QPmCouponUsage.pmCouponUsage;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * discountTypeCd  {RATE: '정률', FIXED: '정액'} (Entity 주석 기준)
      */
@@ -69,6 +64,10 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
     /* 쿠폰 사용 이력 목록조회 */
     @Override
     public List<PmCouponUsageDto.Item> selectList(PmCouponUsageDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmCouponUsage.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmCouponUsage.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery()
@@ -77,7 +76,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                     QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()),
                     QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId()),
                     QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -94,6 +93,10 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
     /* 쿠폰 사용 이력 페이지조회 */
     @Override
     public BasePage<PmCouponUsageDto.Item> selectPageData(PmCouponUsageDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmCouponUsage.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmCouponUsage.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +107,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                 QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()),
                 QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId()),
                 QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

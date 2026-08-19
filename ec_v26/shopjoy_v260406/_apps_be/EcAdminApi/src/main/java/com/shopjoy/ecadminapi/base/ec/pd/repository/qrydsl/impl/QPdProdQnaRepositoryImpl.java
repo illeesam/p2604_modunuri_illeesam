@@ -29,12 +29,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdQnaRepositoryImpl";
-    private static final QPdProdQna pdProdQna = QPdProdQna.pdProdQna;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdQna.regDate,
-        "upd_date", pdProdQna.updDate
-    );
-
-    /*
+    private static final QPdProdQna pdProdQna = QPdProdQna.pdProdQna;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (prodQnaTypeCd 는 sy_code 미등록 — Entity 주석 기준 예시)
      * SCRT_YN / ANSW_YN / DISP_YN / USE_YN  {Y: '예', N: '아니오'}
      */
@@ -73,6 +68,10 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     /** 전체 목록 */
     @Override
     public List<PdProdQnaDto.Item> selectList(PdProdQnaDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdQna.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdQna.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery()
@@ -82,7 +81,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                     QdslUtil.strEq(pdProdQna.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()),
                     QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,6 +98,10 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<PdProdQnaDto.Item> selectPageData(PdProdQnaDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdQna.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdQna.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -110,7 +113,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                 QdslUtil.strEq(pdProdQna.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()),
                 QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

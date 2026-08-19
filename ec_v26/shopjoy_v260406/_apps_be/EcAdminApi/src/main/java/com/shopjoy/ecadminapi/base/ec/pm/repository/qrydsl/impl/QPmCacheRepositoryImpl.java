@@ -33,12 +33,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCacheRepositoryImpl";
     private static final QPmCache pmCache    = QPmCache.pmCache;
     private static final QSySite  sySite  = QSySite.sySite;
-    private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmCache.regDate,
-        "upd_date", pmCache.updDate
-    );
-
-    /*
+    private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * CACHE_TYPE  {EARN_BUY: '구매 적립', EARN_ADMIN: '관리자 지급', EARN_EVENT: '이벤트 지급', USE_ORDER: '주문 사용', REFUND: '환불 복원', EXPIRE: '소멸'}
      * (참고: sy_code 샘플 데이터 기준. 운영 DB의 실제 등록값과 다를 수 있음 — Entity/DDL 주석에는 코드값이 명시되어 있지 않음)
@@ -75,6 +70,10 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     /* 캐시(충전금) 목록조회 */
     @Override
     public List<PmCacheDto.Item> selectList(PmCacheDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmCache.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmCache.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery()
@@ -83,7 +82,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                     QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                     QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
                     QdslUtil.strEq(pmCache.memberId, search.getMemberId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,6 +99,10 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     /* 캐시(충전금) 페이지조회 */
     @Override
     public BasePage<PmCacheDto.Item> selectPageData(PmCacheDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmCache.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmCache.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -110,7 +113,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                 QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
                 QdslUtil.strEq(pmCache.memberId, search.getMemberId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

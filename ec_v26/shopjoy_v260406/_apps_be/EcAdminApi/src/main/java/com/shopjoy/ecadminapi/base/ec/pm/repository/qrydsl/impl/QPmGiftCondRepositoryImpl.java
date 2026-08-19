@@ -34,12 +34,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private static final QPmGiftCond pmGiftCond    = QPmGiftCond.pmGiftCond;
     private static final QPmGift     pmGift  = QPmGift.pmGift;
     private static final QSySite     sySite  = QSySite.sySite;
-    private static final QVwSyCode     cdGct = new QVwSyCode("cd_gct");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmGiftCond.regDate,
-        "upd_date", pmGiftCond.updDate
-    );
-
-    /*
+    private static final QVwSyCode     cdGct = new QVwSyCode("cd_gct");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GIFT_COND_TYPE  {ORDER_AMT: '주문금액', PRODUCT: '특정상품', MEMBER_GRADE: '회원등급'}
      * targetTypeCd    {PRODUCT: '상품', CATEGORY: '카테고리', MEMBER_GRADE: '회원등급'} (Entity 주석 기준)
@@ -72,6 +67,10 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     /* 사은품 지급 조건 목록조회 */
     @Override
     public List<PmGiftCondDto.Item> selectList(PmGiftCondDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmGiftCond.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGiftCond.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery()
@@ -81,7 +80,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                     QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()),
                     QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
                     QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,6 +97,10 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     /* 사은품 지급 조건 페이지조회 */
     @Override
     public BasePage<PmGiftCondDto.Item> selectPageData(PmGiftCondDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmGiftCond.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGiftCond.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -109,7 +112,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()),
                 QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
                 QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

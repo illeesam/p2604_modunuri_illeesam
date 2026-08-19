@@ -34,6 +34,6 @@ public class SyUserPref extends BaseEntity {
 
     @Comment("설정 값 (예: true / false)")
     @Column(name = "pref_value", columnDefinition = "text")
-    @Size(max = 50000, message = "prefValue 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "prefValue 는 500,000자 이내여야 합니다.")
     private String prefValue;
 }

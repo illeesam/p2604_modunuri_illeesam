@@ -45,12 +45,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         this.syRoleRepository = syRoleRepository;
         this.em = em;
     }
-    private static final QVwSyCode cdRt = new QVwSyCode("cd_rt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syRole.regDate,
-        "upd_date", syRole.updDate
-    );
-
-    /*
+    private static final QVwSyCode cdRt = new QVwSyCode("cd_rt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * ROLE_TYPE     {SYSTEM: '시스템', CUSTOM: '커스텀'}
      * USE_YN        {Y: '사용', N: '미사용'}
@@ -91,6 +86,10 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 역할(권한) 목록조회 */
     @Override
     public List<SyRoleDto.Item> selectList(SyRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syRole.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -98,7 +97,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -115,6 +114,10 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 역할(권한) 페이지조회 */
     @Override
     public BasePage<SyRoleDto.Item> selectPageData(SyRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syRole.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -126,7 +129,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -155,12 +158,16 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */
     @Override
     public long selectCount(SyRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syRole.updDate;
+        }
         Long total = queryFactory.select(syRole.count()).setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syRole).where(
                 QdslUtil.strEq(syRole.roleId, search.getRoleId()),
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         ).fetchOne();
         return CmUtil.nvlLong(total);

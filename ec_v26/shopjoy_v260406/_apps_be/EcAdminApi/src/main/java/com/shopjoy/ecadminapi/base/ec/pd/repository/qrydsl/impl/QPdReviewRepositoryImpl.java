@@ -31,12 +31,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewRepositoryImpl";
-    private static final QPdReview pdReview = QPdReview.pdReview;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdReview.regDate,
-        "upd_date", pdReview.updDate
-    );
-
-    /*
+    private static final QPdReview pdReview = QPdReview.pdReview;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * REVIEW_STATUS_CD  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
      */
@@ -71,6 +66,10 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PdReviewDto.Item> selectList(PdReviewDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdReview.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdReview.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery()
@@ -80,7 +79,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                     QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                     QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
                     andRatingGoe(search),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -97,6 +96,10 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<PdReviewDto.Item> selectPageData(PdReviewDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdReview.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdReview.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -108,7 +111,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                 QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
                 andRatingGoe(search),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

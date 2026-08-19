@@ -40,12 +40,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
-    private static final QDpUi dpUi = QDpUi.dpUi;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", dpUi.regDate,
-        "upd_date", dpUi.updDate
-    );
-
-    /*
+    private static final QDpUi dpUi = QDpUi.dpUi;    /*
      * baseQuery — 코드성 필드 예시 코드값
      * USE_YN           {Y: '사용', N: '미사용'}
      * DEVICE_TYPE_CD   (코드그룹: DEVICE_TYPE, sy_code 실제 등록값 미확인 — 필드 용도만 참고)
@@ -83,6 +78,10 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     /* 전시 UI 목록조회 */
     @Override
     public List<DpUiDto.Item> selectList(DpUiDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = dpUi.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = dpUi.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<DpUiDto.Item> query = baseQuery()
@@ -91,7 +90,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                     andPathIdIn(search),
                     QdslUtil.strEq(dpUi.uiId, search.getUiId()),
                     QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,6 +107,10 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     /* 전시 UI 페이지조회 */
     @Override
     public BasePage<DpUiDto.Item> selectPageData(DpUiDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = dpUi.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = dpUi.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -118,7 +121,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 andPathIdIn(search),
                 QdslUtil.strEq(dpUi.uiId, search.getUiId()),
                 QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

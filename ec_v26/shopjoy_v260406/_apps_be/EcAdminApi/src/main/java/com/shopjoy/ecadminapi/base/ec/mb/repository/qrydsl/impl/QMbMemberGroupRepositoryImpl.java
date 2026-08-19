@@ -29,12 +29,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGroupRepositoryImpl";
     private static final QMbMemberGroup mbMemberGroup   = QMbMemberGroup.mbMemberGroup;
-    private static final QSySite        sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberGroup.regDate,
-        "upd_date", mbMemberGroup.updDate
-    );
-
-    /*
+    private static final QSySite        sySite = QSySite.sySite;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN  {Y: '사용', N: '미사용'}
      */
@@ -64,13 +59,17 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* 회원 그룹 목록조회 */
     @Override
     public List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberGroup.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberGroup.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                     QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,6 +85,10 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* 회원 그룹 페이지조회 */
     @Override
     public BasePage<MbMemberGroupDto.Item> selectPageData(MbMemberGroupDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberGroup.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberGroup.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -95,7 +98,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                 QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

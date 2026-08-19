@@ -39,12 +39,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     private static final QOdClaim  cla = new QOdClaim("cla");
     private static final QVwSyCode   cdRt = new QVwSyCode("cd_rt");
     private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
-    private static final QVwSyCode   cdCf = new QVwSyCode("cd_cf");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odRefund.regDate,
-        "upd_date", odRefund.updDate
-    );
-
-    /*
+    private static final QVwSyCode   cdCf = new QVwSyCode("cd_cf");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * REFUND_TYPE   {CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제환불}
      * REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
@@ -93,13 +88,17 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     /* 환불 목록조회 */
     @Override
     public List<OdRefundDto.Item> selectList(OdRefundDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odRefund.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odRefund.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdRefundDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -116,6 +115,10 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     /* 환불 페이지조회 */
     @Override
     public BasePage<OdRefundDto.Item> selectPageData(OdRefundDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odRefund.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odRefund.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -124,7 +127,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

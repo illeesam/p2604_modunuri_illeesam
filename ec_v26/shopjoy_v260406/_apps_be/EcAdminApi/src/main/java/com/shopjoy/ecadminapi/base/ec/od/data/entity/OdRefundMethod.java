@@ -80,7 +80,7 @@ public class OdRefundMethod extends BaseEntity {
 
     @Comment("PG 환불 응답 JSON")
     @Column(name = "pg_response", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "pgResponse 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "pgResponse 는 500,000자 이내여야 합니다.")
     private String pgResponse;
 
 }

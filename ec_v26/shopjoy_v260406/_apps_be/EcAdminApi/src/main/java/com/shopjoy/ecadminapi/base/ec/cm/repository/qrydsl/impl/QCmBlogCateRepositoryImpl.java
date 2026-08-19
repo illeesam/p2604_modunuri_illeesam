@@ -30,12 +30,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogCateRepositoryImpl";
     private static final QCmBlogCate cmBlogCate = QCmBlogCate.cmBlogCate;
-    private static final QSySite sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogCate.regDate,
-        "upd_date", cmBlogCate.updDate
-    );
-
-    /*
+    private static final QSySite sySite = QSySite.sySite;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값
      * USE_YN  {Y: '사용', N: '미사용'} — sy_code 미등록, use_yn 전역 공통 규약
      */
@@ -68,12 +63,16 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* 게시판 카테고리 목록조회 */
     @Override
     public List<CmBlogCateDto.Item> selectList(CmBlogCateDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogCate.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogCate.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmBlogCate.blogCateId, search.getBlogCateId()),
                 QdslUtil.strEq(cmBlogCate.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,6 +89,10 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* 게시판 카테고리 페이지조회 */
     @Override
     public BasePage<CmBlogCateDto.Item> selectPageData(CmBlogCateDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogCate.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogCate.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -99,7 +102,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmBlogCate.blogCateId, search.getBlogCateId()),
                 QdslUtil.strEq(cmBlogCate.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

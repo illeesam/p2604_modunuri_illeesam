@@ -35,12 +35,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     private static final QStSettle  stSettle   = QStSettle.stSettle;
     private static final QSyVendor  syVendor = QSyVendor.syVendor;
     private static final QSySite    sySite = QSySite.sySite;
-    private static final QVwSyCode    cdSs = new QVwSyCode("cd_ss");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stSettle.regDate,
-        "upd_date", stSettle.updDate
-    );
-
-    /*
+    private static final QVwSyCode    cdSs = new QVwSyCode("cd_ss");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_STATUS  {OPEN: '진행중', CLOSED: '마감완료', CANCELLED: '마감취소'}
      * (Entity/DDL 주석상 settleStatusCd 흐름: DRAFT/CONFIRMED/CLOSED/PAID — sy_code 실 데이터와 값 표기가 다름)
@@ -90,13 +85,17 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     /* 정산 목록조회 */
     @Override
     public List<StSettleDto.Item> selectList(StSettleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettle.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettle.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(stSettle.settleId, search.getSettleId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -113,6 +112,10 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     /* 정산 페이지조회 */
     @Override
     public BasePage<StSettleDto.Item> selectPageData(StSettleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettle.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettle.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -121,7 +124,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettle.settleId, search.getSettleId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

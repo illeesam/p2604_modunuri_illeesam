@@ -114,7 +114,7 @@ public class MbMember extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "member_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "memberMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "memberMemo 는 500,000자 이내여야 합니다.")
     private String memberMemo;
 
     @Comment("시뮬데이터여부 (Y/N)")

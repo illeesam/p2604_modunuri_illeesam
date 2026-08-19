@@ -28,12 +28,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmPathRepositoryImpl";
-    private static final QCmPath cmPath = QCmPath.cmPath;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmPath.regDate,
-        "upd_date", cmPath.updDate
-    );
-
-    /*
+    private static final QCmPath cmPath = QCmPath.cmPath;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값
      * USE_YN  {Y: '사용', N: '미사용'} — sy_code 미등록, use_yn 전역 공통 규약
      */
@@ -67,12 +62,16 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 전체 목록 */
     @Override
     public List<CmPathDto.Item> selectList(CmPathDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmPath.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmPath.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,6 +88,10 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<CmPathDto.Item> selectPageData(CmPathDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmPath.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmPath.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -98,7 +101,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

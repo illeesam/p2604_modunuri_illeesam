@@ -48,7 +48,7 @@ public class CmBlogReply extends BaseEntity {
 
     @Comment("댓글 내용")
     @Column(name = "blog_comment_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "blogCommentContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "blogCommentContent 는 500,000자 이내여야 합니다.")
     private String blogCommentContent;
 
     @Comment("상태 (코드: COMMENT_STATUS_CD)")

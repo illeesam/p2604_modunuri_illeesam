@@ -29,12 +29,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimItemRepositoryImpl";
-    private static final QOdClaimItem odClaimItem = QOdClaimItem.odClaimItem;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odClaimItem.regDate,
-        "upd_date", odClaimItem.updDate
-    );
-
-    /*
+    private static final QOdClaimItem odClaimItem = QOdClaimItem.odClaimItem;    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * CLAIM_ITEM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
      */
@@ -84,6 +79,10 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     /* 클레임 아이템 목록조회 */
     @Override
     public List<OdClaimItemDto.Item> selectList(OdClaimItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odClaimItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaimItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdClaimItemDto.Item> query = baseListQuery()
@@ -94,7 +93,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                     QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
                     QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd()),
                     QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -111,6 +110,10 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     /* 클레임 아이템 페이지조회 */
     @Override
     public BasePage<OdClaimItemDto.Item> selectPageData(OdClaimItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odClaimItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaimItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -123,7 +126,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                 QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
                 QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd()),
                 QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

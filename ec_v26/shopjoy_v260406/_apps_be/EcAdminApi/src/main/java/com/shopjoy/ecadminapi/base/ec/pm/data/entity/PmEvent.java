@@ -50,7 +50,7 @@ public class PmEvent extends BaseEntity {
 
     @Comment("이벤트 상세내용")
     @Column(name = "event_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "eventContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "eventContent 는 500,000자 이내여야 합니다.")
     private String eventContent;
 
     @Comment("이벤트 시작일")
@@ -99,7 +99,7 @@ public class PmEvent extends BaseEntity {
 
     @Comment("이벤트설명")
     @Column(name = "event_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "eventDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "eventDesc 는 500,000자 이내여야 합니다.")
     private String eventDesc;
 
     @Comment("시뮬데이터여부 (Y/N)")

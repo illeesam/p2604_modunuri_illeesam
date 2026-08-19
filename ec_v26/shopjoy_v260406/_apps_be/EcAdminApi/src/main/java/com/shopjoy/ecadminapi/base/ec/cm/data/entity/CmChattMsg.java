@@ -48,7 +48,7 @@ public class CmChattMsg extends BaseEntity {
 
     @Comment("메시지 내용")
     @Column(name = "msg_text", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "msgText 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "msgText 는 500,000자 이내여야 합니다.")
     private String msgText;
 
     @Comment("메시지유형 (TEXT/IMAGE/FILE/REF/SYSTEM)")

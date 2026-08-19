@@ -31,12 +31,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdViewLogRepositoryImpl";
     private static final QPdhProdViewLog pdhProdViewLog   = QPdhProdViewLog.pdhProdViewLog;
-    private static final QSySite         sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdhProdViewLog.regDate,
-        "upd_date", pdhProdViewLog.updDate
-    );
-
-    /* 상품 조회 로그 baseSelColumnQuery — 코드성 필드 없음 (로그성 원본값 저장) */
+    private static final QSySite         sySite = QSySite.sySite;    /* 상품 조회 로그 baseSelColumnQuery — 코드성 필드 없음 (로그성 원본값 저장) */
     private JPAQuery<PdhProdViewLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdViewLogDto.Item.class,
@@ -69,12 +64,16 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     /* 상품 조회 로그 목록조회 */
     @Override
     public List<PdhProdViewLogDto.Item> selectList(PdhProdViewLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdhProdViewLog.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdhProdViewLog.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdhProdViewLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -91,6 +90,10 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     /* 상품 조회 로그 페이지조회 */
     @Override
     public BasePage<PdhProdViewLogDto.Item> selectPageData(PdhProdViewLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdhProdViewLog.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdhProdViewLog.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -99,7 +102,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

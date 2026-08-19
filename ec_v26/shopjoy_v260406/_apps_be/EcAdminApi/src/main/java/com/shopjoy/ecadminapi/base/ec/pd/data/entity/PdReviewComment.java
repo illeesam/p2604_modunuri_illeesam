@@ -53,7 +53,7 @@ public class PdReviewComment extends BaseEntity {
 
     @Comment("댓글 내용")
     @Column(name = "review_reply_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "reviewReplyContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "reviewReplyContent 는 500,000자 이내여야 합니다.")
     private String reviewReplyContent;
 
     @Comment("상태 (ACTIVE/HIDDEN/DELETED)")

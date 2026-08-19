@@ -49,7 +49,7 @@ public class PmGift extends BaseEntity {
 
     @Comment("사은품 설명")
     @Column(name = "gift_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "giftDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "giftDesc 는 500,000자 이내여야 합니다.")
     private String giftDesc;
 
     @Comment("시작일시")

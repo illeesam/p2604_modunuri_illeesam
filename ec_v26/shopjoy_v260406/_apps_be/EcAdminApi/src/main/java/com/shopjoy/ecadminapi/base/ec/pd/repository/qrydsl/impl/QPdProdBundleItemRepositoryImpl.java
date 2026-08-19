@@ -33,12 +33,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     private static final QPdProdBundleItem pdProdBundleItem    = QPdProdBundleItem.pdProdBundleItem;
     private static final QSySite           sySite  = QSySite.sySite;
     private static final QPdProd           prd  = new QPdProd("prd");
-    private static final QPdProd           prd2 = new QPdProd("prd2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdBundleItem.regDate,
-        "upd_date", pdProdBundleItem.updDate
-    );
-
-    /*
+    private static final QPdProd           prd2 = new QPdProd("prd2");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN  {Y: '사용', N: '미사용'}
      */
@@ -73,13 +68,17 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 목록조회 */
     @Override
     public List<PdProdBundleItemDto.Item> selectList(PdProdBundleItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdBundleItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdBundleItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,6 +95,10 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 페이지조회 */
     @Override
     public BasePage<PdProdBundleItemDto.Item> selectPageData(PdProdBundleItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdBundleItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdBundleItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +107,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

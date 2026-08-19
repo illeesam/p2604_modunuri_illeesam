@@ -34,11 +34,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventRepositoryImpl";
-    private static final QPmEvent pmEvent = QPmEvent.pmEvent;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmEvent.regDate,
-        "upd_date", pmEvent.updDate
-    );
-    // EXISTS 서브쿼리용 별칭 (업체/담당MD 필터 — pm_event_prod → pd_prod → sy_vendor/sy_user)
+    private static final QPmEvent pmEvent = QPmEvent.pmEvent;    // EXISTS 서브쿼리용 별칭 (업체/담당MD 필터 — pm_event_prod → pd_prod → sy_vendor/sy_user)
     private static final QPmEventProd eventProdEx = new QPmEventProd("event_prod_ex");
     private static final QPdProd      pProdEx     = new QPdProd("p_prod_ex");
     private static final QSyVendor    syVendorEx  = new QSyVendor("sy_vendor_ex");
@@ -87,6 +83,10 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* 이벤트 목록조회 */
     @Override
     public List<PmEventDto.Item> selectList(PmEventDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmEvent.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmEvent.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
@@ -96,7 +96,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                     QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
                     QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -114,6 +114,10 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* 이벤트 페이지조회 */
     @Override
     public BasePage<PmEventDto.Item> selectPageData(PmEventDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmEvent.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmEvent.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -125,7 +129,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
                 QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

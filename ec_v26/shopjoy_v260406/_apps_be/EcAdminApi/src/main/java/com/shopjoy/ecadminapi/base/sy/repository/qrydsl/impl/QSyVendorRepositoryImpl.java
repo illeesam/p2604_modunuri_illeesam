@@ -40,12 +40,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorRepositoryImpl";
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode cdVc = new QVwSyCode("cd_vc");
-    private static final QVwSyCode cdVs = new QVwSyCode("cd_vs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syVendor.regDate,
-        "upd_date", syVendor.updDate
-    );
-
-    /*
+    private static final QVwSyCode cdVs = new QVwSyCode("cd_vs");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * VENDOR_CLASS   {INDIVIDUAL: '개인사업자', CORPORATION: '법인사업자', TAX_EXEMPT: '면세사업자', SIMPLIFIED: '간이과세자'}
      * VENDOR_STATUS  {ACTIVE: '활성', REVIEWING: '심사중', BLOCKED: '정지'}
@@ -102,6 +97,10 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 업체(판매자) 목록조회 */
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syVendor.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syVendor.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -110,7 +109,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
                 QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
                 QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -127,6 +126,10 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 업체(판매자) 페이지조회 */
     @Override
     public BasePage<SyVendorDto.Item> selectPageData(SyVendorDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syVendor.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syVendor.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -139,7 +142,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
                 QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
                 QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

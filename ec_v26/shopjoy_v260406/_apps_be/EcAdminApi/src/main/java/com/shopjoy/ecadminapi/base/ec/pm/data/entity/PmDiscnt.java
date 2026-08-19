@@ -84,7 +84,7 @@ public class PmDiscnt extends BaseEntity {
 
     @Comment("할인 설명")
     @Column(name = "discnt_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "discntDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "discntDesc 는 500,000자 이내여야 합니다.")
     private String discntDesc;
 
     @Comment("적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)")

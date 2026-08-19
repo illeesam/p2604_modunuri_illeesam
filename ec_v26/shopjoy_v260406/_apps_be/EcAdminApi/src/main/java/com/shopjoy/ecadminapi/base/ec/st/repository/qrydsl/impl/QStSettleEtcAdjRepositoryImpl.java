@@ -34,12 +34,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private static final QStSettleEtcAdj stSettleEtcAdj     = QStSettleEtcAdj.stSettleEtcAdj;
     private static final QSySite         sySite   = QSySite.sySite;
     private static final QVwSyCode         cdSeat = new QVwSyCode("cd_seat");
-    private static final QVwSyCode         cdAd   = new QVwSyCode("cd_ad");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stSettleEtcAdj.regDate,
-        "upd_date", stSettleEtcAdj.updDate
-    );
-
-    /*
+    private static final QVwSyCode         cdAd   = new QVwSyCode("cd_ad");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_ETC_ADJ_TYPE  {위약금, 인센티브, 세금조정, 기타} (코드값 자체가 한글 — Entity 주석상 SHIP/RETURN_SHIP/PENALTY/OTHER 와 값 표기가 다름)
      * ADJ_DIR              {ADD: '가산', SUB: '차감'} (Entity 주석상 ADD/DEDUCT 와 값 표기가 다름)
@@ -78,6 +73,10 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     /* 정산 기타 조정 목록조회 */
     @Override
     public List<StSettleEtcAdjDto.Item> selectList(StSettleEtcAdjDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettleEtcAdj.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleEtcAdj.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery()
@@ -85,7 +84,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                 .where(
                     QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
                     QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -102,6 +101,10 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     /* 정산 기타 조정 페이지조회 */
     @Override
     public BasePage<StSettleEtcAdjDto.Item> selectPageData(StSettleEtcAdjDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettleEtcAdj.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleEtcAdj.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -111,7 +114,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
                 QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

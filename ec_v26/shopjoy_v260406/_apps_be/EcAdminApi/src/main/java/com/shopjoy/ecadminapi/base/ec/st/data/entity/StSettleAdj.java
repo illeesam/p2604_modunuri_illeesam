@@ -47,7 +47,7 @@ public class StSettleAdj extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "settle_adj_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "settleAdjMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "settleAdjMemo 는 500,000자 이내여야 합니다.")
     private String settleAdjMemo;
 
     @Comment("승인상태 (코드: APRV_STATUS_CD — 대기/승인/반려)")

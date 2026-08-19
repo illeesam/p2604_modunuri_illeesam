@@ -82,7 +82,7 @@ public class StSettlePay extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "settle_pay_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "settlePayMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "settlePayMemo 는 500,000자 이내여야 합니다.")
     private String settlePayMemo;
 
 }

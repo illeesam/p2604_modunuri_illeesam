@@ -77,7 +77,7 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("쿠폰설명")
     @Column(name = "coupon_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "couponDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "couponDesc 는 500,000자 이내여야 합니다.")
     private String couponDesc;
 
     @Comment("유효기간 시작")
@@ -148,7 +148,7 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "memo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "memo 는 500,000자 이내여야 합니다.")
     private String memo;
 
     @Comment("시뮬데이터여부 (Y/N)")

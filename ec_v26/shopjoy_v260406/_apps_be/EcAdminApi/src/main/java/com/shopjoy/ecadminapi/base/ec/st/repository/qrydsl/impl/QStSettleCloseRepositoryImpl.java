@@ -33,12 +33,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleCloseRepositoryImpl";
     private static final QStSettleClose stSettleClose   = QStSettleClose.stSettleClose;
     private static final QSySite        sySite = QSySite.sySite;
-    private static final QVwSyCode        cdScs = new QVwSyCode("cd_scs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stSettleClose.regDate,
-        "upd_date", stSettleClose.updDate
-    );
-
-    /*
+    private static final QVwSyCode        cdScs = new QVwSyCode("cd_scs");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_CLOSE_STATUS  {DRAFT: '임시마감', CONFIRMED: '확정마감', PAID: '지급완료'}
      * (Entity 주석상 closeStatusCd 흐름: CLOSED/REOPENED — sy_code 실 데이터와 값 표기가 다름)
@@ -73,13 +68,17 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     /* 정산 마감 목록조회 */
     @Override
     public List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettleClose.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleClose.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleCloseDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,6 +95,10 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     /* 정산 마감 페이지조회 */
     @Override
     public BasePage<StSettleCloseDto.Item> selectPageData(StSettleCloseDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettleClose.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettleClose.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +107,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

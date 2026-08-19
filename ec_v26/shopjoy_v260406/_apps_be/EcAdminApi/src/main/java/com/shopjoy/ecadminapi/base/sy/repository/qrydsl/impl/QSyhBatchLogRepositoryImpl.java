@@ -33,12 +33,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchLogRepositoryImpl";
     private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      sySite = QSySite.sySite;
-    private static final QVwSyCode      cd_bs  = new QVwSyCode("cd_bs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhBatchLog.regDate,
-        "upd_date", syhBatchLog.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cd_bs  = new QVwSyCode("cd_bs");    /*
      * baseSelColumnQuery — list/page/byId 공유 (코드명 조인 포함 풀필드)
      * 코드성 필드 예시 코드값
      * BATCH_STATUS  {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
@@ -81,12 +76,16 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     /* 배치 로그 목록조회 */
     @Override
     public List<SyhBatchLogDto.Item> selectList(SyhBatchLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhBatchLog.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhBatchLog.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhBatchLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -103,6 +102,10 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     /* 배치 로그 페이지조회 */
     @Override
     public BasePage<SyhBatchLogDto.Item> selectPageData(SyhBatchLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhBatchLog.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhBatchLog.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -111,7 +114,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -48,15 +48,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private static final QVwSyCode   cdRb = new QVwSyCode("cd_rb");
     private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
     private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");
-    private static final QVwSyCode   cdAc = new QVwSyCode("cd_ac");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("order_date", odOrder.orderDate,
-        "reg_date", odOrder.regDate,
-        "upd_date", odOrder.updDate,
-        "pay_date", odOrder.payDate,
-        "dliv_ship_date", odOrder.dlivShipDate
-    );
-
-    /*
+    private static final QVwSyCode   cdAc = new QVwSyCode("cd_ac");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * ORDER_STATUS  {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
      * PAY_METHOD    {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
@@ -203,6 +195,16 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     /* 주문 목록조회 */
     @Override
     public List<OdOrderDto.Item> selectList(OdOrderDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odOrder.orderDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.updDate;
+        } else if ("pay_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.payDate;
+        } else if ("dliv_ship_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.dlivShipDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdOrderDto.Item> query = baseListQuery()
@@ -212,7 +214,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                     QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                     QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
                     QdslUtil.strIn(odOrder.orderStatusCd, search.getOrderStatusCds()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -229,6 +231,16 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     /* 주문 페이지조회 */
     @Override
     public BasePage<OdOrderDto.Item> selectPageData(OdOrderDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odOrder.orderDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.updDate;
+        } else if ("pay_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.payDate;
+        } else if ("dliv_ship_date".equals(search.getDateRangeType())) {
+            dateRangeField = odOrder.dlivShipDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -240,7 +252,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                 QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
                 QdslUtil.strIn(odOrder.orderStatusCd, search.getOrderStatusCds()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -30,12 +30,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeRepositoryImpl";
     private static final QSyCode syCode = QSyCode.syCode;
-    private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syCode.regDate,
-        "upd_date", syCode.updDate
-    );
-
-    /*
+    private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN {Y: '사용', N: '미사용'}
      * (sy_code 자체가 전체 공통코드 메타 테이블 — code_grp 로 도메인 구분, code_value/code_label 이 실제 코드값/라벨.
@@ -79,6 +74,10 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     /* 목록조회 */
     @Override
     public List<SyCodeDto.Item> selectList(SyCodeDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syCode.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syCode.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyCodeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -88,7 +87,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 QdslUtil.strEq(syCode.codeValue, search.getCodeValue()),
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
                 QdslUtil.strEq(syCode.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,6 +104,10 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     /* 페이지조회 */
     @Override
     public BasePage<SyCodeDto.Item> selectPageData(SyCodeDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syCode.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syCode.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -118,7 +121,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 QdslUtil.strEq(syCode.codeValue, search.getCodeValue()),
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
                 QdslUtil.strEq(syCode.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

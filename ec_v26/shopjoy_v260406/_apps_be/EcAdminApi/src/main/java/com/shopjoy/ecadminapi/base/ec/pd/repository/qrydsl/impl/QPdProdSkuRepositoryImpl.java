@@ -28,12 +28,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSkuRepositoryImpl";
-    private static final QPdProdSku pdProdSku = QPdProdSku.pdProdSku;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdSku.regDate,
-        "upd_date", pdProdSku.updDate
-    );
-
-    /*
+    private static final QPdProdSku pdProdSku = QPdProdSku.pdProdSku;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN  {Y: '사용', N: '미사용'}
      */
@@ -67,6 +62,10 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     /* 상품 SKU 목록조회 */
     @Override
     public List<PdProdSkuDto.Item> selectList(PdProdSkuDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdSku.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdSku.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdSkuDto.Item> query = baseSelColumnQuery()
@@ -75,7 +74,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                     QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,6 +91,10 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     /* 상품 SKU 페이지조회 */
     @Override
     public BasePage<PdProdSkuDto.Item> selectPageData(PdProdSkuDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdProdSku.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdProdSku.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -102,7 +105,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

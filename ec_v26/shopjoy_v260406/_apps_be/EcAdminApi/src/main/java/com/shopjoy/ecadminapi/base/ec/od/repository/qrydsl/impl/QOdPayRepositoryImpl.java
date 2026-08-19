@@ -42,13 +42,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     private static final QVwSyCode   cdPc = new QVwSyCode("cd_pc");
     private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
     private static final QVwSyCode   cdVb = new QVwSyCode("cd_vb");
-    private static final QVwSyCode   cdCt = new QVwSyCode("cd_ct");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("pay_date", odPay.payDate,
-        "reg_date", odPay.regDate,
-        "upd_date", odPay.updDate
-    );
-
-    /*
+    private static final QVwSyCode   cdCt = new QVwSyCode("cd_ct");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * PAY_STATUS  {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
      * PAY_METHOD  {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
@@ -157,6 +151,12 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     /* 결제 목록조회 */
     @Override
     public List<OdPayDto.Item> selectList(OdPayDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odPay.payDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odPay.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odPay.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdPayDto.Item> query = baseListQuery()
@@ -165,7 +165,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                     QdslUtil.strIn(odPay.orderId, search.getOrderIds()),
                     QdslUtil.strEq(odPay.orderId, search.getOrderId()),
                     QdslUtil.strEq(odPay.payId, search.getPayId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -182,6 +182,12 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     /* 결제 페이지조회 */
     @Override
     public BasePage<OdPayDto.Item> selectPageData(OdPayDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odPay.payDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odPay.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odPay.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -192,7 +198,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 QdslUtil.strIn(odPay.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odPay.orderId, search.getOrderId()),
                 QdslUtil.strEq(odPay.payId, search.getPayId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

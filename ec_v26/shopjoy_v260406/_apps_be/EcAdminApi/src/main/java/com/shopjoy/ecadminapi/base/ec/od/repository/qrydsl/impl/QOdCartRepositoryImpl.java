@@ -41,12 +41,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final QMbMember      mbMemberEx = new QMbMember("mb_member_ex");
     private static final QPdProd        pdProd = QPdProd.pdProd;
     private static final QPdProdOpt oi1 = new QPdProdOpt("oi1");
-    private static final QPdProdOpt oi2 = new QPdProdOpt("oi2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odCart.regDate,
-        "upd_date", odCart.updDate
-    );
-
-    /*
+    private static final QPdProdOpt oi2 = new QPdProdOpt("oi2");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * od_cart 는 상태코드(*_cd) 컬럼 없음 (is_checked 는 Y/N 플래그)
      */
@@ -89,6 +84,10 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     /* 장바구니 목록조회 */
     @Override
     public List<OdCartDto.Item> selectList(OdCartDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odCart.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odCart.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdCartDto.Item> query = baseListQuery()
@@ -101,7 +100,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                                      QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
                                      StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                         : null,
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -118,6 +117,10 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     /* 장바구니 페이지조회 */
     @Override
     public BasePage<OdCartDto.Item> selectPageData(OdCartDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odCart.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odCart.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -132,7 +135,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                                  QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
                                  StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                     : null,
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -34,12 +34,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     private static final QPmSaveItem pmSaveItem    = QPmSaveItem.pmSaveItem;
     private static final QPmSave     pmSave  = QPmSave.pmSave;
     private static final QSySite     sySite  = QSySite.sySite;
-    private static final QVwSyCode     cdSit = new QVwSyCode("cd_sit");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmSaveItem.regDate,
-        "upd_date", pmSaveItem.updDate
-    );
-
-    /*
+    private static final QVwSyCode     cdSit = new QVwSyCode("cd_sit");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SAVE_ITEM_TARGET  대상 유형 코드 (sy_code: SAVE_ITEM_TARGET, 상품·카테고리·브랜드 등 — Entity 주석 기준. 실제 등록값은 미확인)
      */
@@ -70,6 +65,10 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     /* 적립금 대상 상품 목록조회 */
     @Override
     public List<PmSaveItemDto.Item> selectList(PmSaveItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmSaveItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmSaveItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery()
@@ -79,7 +78,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                     QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId()),
                     QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId()),
                     QdslUtil.strEq(pmSaveItem.targetTypeCd, search.getTargetTypeCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,6 +95,10 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     /* 적립금 대상 상품 페이지조회 */
     @Override
     public BasePage<PmSaveItemDto.Item> selectPageData(PmSaveItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmSaveItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmSaveItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -107,7 +110,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                 QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId()),
                 QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId()),
                 QdslUtil.strEq(pmSaveItem.targetTypeCd, search.getTargetTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

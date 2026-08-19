@@ -40,12 +40,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl";
     private static final QSySite sySite = QSySite.sySite;
     private static final QVwSyCode cdSt = new QVwSyCode("cd_st");
-    private static final QVwSyCode cdSs = new QVwSyCode("cd_ss");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", sySite.regDate,
-        "upd_date", sySite.updDate
-    );
-
-    /*
+    private static final QVwSyCode cdSs = new QVwSyCode("cd_ss");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SITE_TYPE   {EC: '이커머스', ADMIN: '관리자', API: 'API'}
      * SITE_STATUS {ACTIVE: '활성', MAINTENANCE: '점검중', INACTIVE: '비활성'}
@@ -95,6 +90,10 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* 사이트 목록조회 */
     @Override
     public List<SySiteDto.Item> selectList(SySiteDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = sySite.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = sySite.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -102,7 +101,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                     andPathIdIn(search),
                     QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                     QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -119,6 +118,10 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* 사이트 페이지조회 */
     @Override
     public BasePage<SySiteDto.Item> selectPageData(SySiteDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = sySite.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = sySite.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -129,7 +132,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 andPathIdIn(search),
                 QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                 QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

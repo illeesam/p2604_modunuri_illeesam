@@ -64,7 +64,7 @@ public class OdClaim extends BaseEntity {
 
     @Comment("사유 상세")
     @Column(name = "reason_detail", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "reasonDetail 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "reasonDetail 는 500,000자 이내여야 합니다.")
     private String reasonDetail;
 
     @Comment("대표 상품명")
@@ -147,7 +147,7 @@ public class OdClaim extends BaseEntity {
 
     @Comment("관리메모")
     @Column(name = "memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "memo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "memo 는 500,000자 이내여야 합니다.")
     private String memo;
 
     @Comment("추가배송비 (교환=출고배송비, 반품/취소=무료배송 조건 파괴 시 추가)")

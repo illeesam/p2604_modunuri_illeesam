@@ -39,13 +39,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     private static final QMbMember    mbMember  = QMbMember.mbMember;
     private static final QOdOrder     odOrder  = QOdOrder.odOrder;
     private static final QSySite      sySite  = QSySite.sySite;
-    private static final QVwSyCode      cdGis = new QVwSyCode("cd_gis");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("issue_date", pmGiftIssue.issueDate,
-        "reg_date", pmGiftIssue.regDate,
-        "upd_date", pmGiftIssue.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cdGis = new QVwSyCode("cd_gis");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GIFT_ISSUE_STATUS  {ISSUED: '발급됨', DELIVERED: '배송완료', CANCELLED: '취소'}
      */
@@ -81,13 +75,19 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     /* 사은품 발행 이력 목록조회 */
     @Override
     public List<PmGiftIssueDto.Item> selectList(PmGiftIssueDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmGiftIssue.issueDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGiftIssue.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGiftIssue.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -104,6 +104,12 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     /* 사은품 발행 이력 페이지조회 */
     @Override
     public BasePage<PmGiftIssueDto.Item> selectPageData(PmGiftIssueDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmGiftIssue.issueDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGiftIssue.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmGiftIssue.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -112,7 +118,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

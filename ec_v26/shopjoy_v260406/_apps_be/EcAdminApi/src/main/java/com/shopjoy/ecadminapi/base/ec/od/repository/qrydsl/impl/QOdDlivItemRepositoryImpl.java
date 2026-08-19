@@ -28,12 +28,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivItemRepositoryImpl";
-    private static final QOdDlivItem odDlivItem = QOdDlivItem.odDlivItem;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odDlivItem.regDate,
-        "upd_date", odDlivItem.updDate
-    );
-
-    /*
+    private static final QOdDlivItem odDlivItem = QOdDlivItem.odDlivItem;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * dliv_type_cd (od_dliv_item, sy_code 미등록 — Entity 주석 기준 예시)  OUT:출고, IN:입고반품
      * DLIV_STATUS  {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
@@ -69,6 +64,10 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     /* 배송 아이템 목록조회 */
     @Override
     public List<OdDlivItemDto.Item> selectList(OdDlivItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odDlivItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDlivItem.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery()
@@ -77,7 +76,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                     QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()),
                     QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
                     QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -94,6 +93,10 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     /* 배송 아이템 페이지조회 */
     @Override
     public BasePage<OdDlivItemDto.Item> selectPageData(OdDlivItemDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odDlivItem.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDlivItem.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +107,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()),
                 QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
                 QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

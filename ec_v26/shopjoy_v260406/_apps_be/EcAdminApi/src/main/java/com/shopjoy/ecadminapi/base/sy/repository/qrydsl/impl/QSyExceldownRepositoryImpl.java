@@ -36,13 +36,6 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyExceldownRepositoryImpl";
     private static final QSyExceldown syExceldown = QSyExceldown.syExceldown;
     private static final QSyUser syUser = QSyUser.syUser;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syExceldown.regDate,
-        "upd_date", syExceldown.updDate,
-        "start_date", syExceldown.startDate,
-        "end_date", syExceldown.endDate
-    );
-
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * RUN_TYPE_CD         {SYNC: '즉시', ASYNC: '예약'}
@@ -147,6 +140,14 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     }
 
     private BooleanExpression[] buildWhere(SyExceldownDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syExceldown.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syExceldown.updDate;
+        } else if ("start_date".equals(search.getDateRangeType())) {
+            dateRangeField = syExceldown.startDate;
+        } else if ("end_date".equals(search.getDateRangeType())) {
+            dateRangeField = syExceldown.endDate;
+        }
         return new BooleanExpression[] {
             QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()),
             QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()),
@@ -154,7 +155,7 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
             QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()),
             QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()),
             QdslUtil.strEq(syExceldown.regBy, search.getRegBy()),
-            QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+            QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
             andSearchValue(search.getSearchValue(), search.getSearchType())
         };
     }

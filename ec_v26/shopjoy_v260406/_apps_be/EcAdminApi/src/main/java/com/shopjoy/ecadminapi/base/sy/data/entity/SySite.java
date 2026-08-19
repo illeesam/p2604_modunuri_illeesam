@@ -56,7 +56,7 @@ public class SySite extends BaseEntity {
 
     @Comment("사이트설명")
     @Column(name = "site_desc", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "siteDesc 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "siteDesc 는 500,000자 이내여야 합니다.")
     private String siteDesc;
 
     @Comment("대표이메일")
@@ -96,7 +96,7 @@ public class SySite extends BaseEntity {
 
     @Comment("확장설정 (JSON)")
     @Column(name = "config_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "configJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "configJson 는 500,000자 이내여야 합니다.")
     private String configJson;
 
     @Comment("점(.) 구분 표시경로 (트리 빌드용)")

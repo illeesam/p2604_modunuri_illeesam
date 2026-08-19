@@ -56,7 +56,7 @@ public class CmDashboardItemData extends BaseEntity {
 
     @Comment("데이터 JSON")
     @Column(name = "data_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "dataJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "dataJson 는 500,000자 이내여야 합니다.")
     private String dataJson;
 
     @Comment("지표1명")

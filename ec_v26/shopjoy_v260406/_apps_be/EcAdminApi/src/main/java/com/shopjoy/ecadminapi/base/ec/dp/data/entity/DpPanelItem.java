@@ -49,7 +49,7 @@ public class DpPanelItem extends BaseEntity {
 
     @Comment("위젯내용 (HTML 에디터)")
     @Column(name = "widget_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetContent 는 500,000자 이내여야 합니다.")
     private String widgetContent;
 
     @Comment("타이틀표시여부 (Y/N)")
@@ -73,7 +73,7 @@ public class DpPanelItem extends BaseEntity {
 
     @Comment("위젯설정 (JSON - 위젯별 특정 설정 또는 직접 생성 콘텐츠)")
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "widgetConfigJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "widgetConfigJson 는 500,000자 이내여야 합니다.")
     private String widgetConfigJson;
 
     @Comment("공개대상 (코드: VISIBILITY_TARGETS, ^CODE^CODE^ 형식)")

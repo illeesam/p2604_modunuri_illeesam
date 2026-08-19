@@ -45,12 +45,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private static final QPmSaveProd saveProdEx = new QPmSaveProd("save_prod_ex");
     private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
     private static final QSyVendor   syVendorEx = new QSyVendor("sy_vendor_ex");
-    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmSave.regDate,
-        "upd_date", pmSave.updDate
-    );
-
-    /*
+    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SAVE_TYPE  {EARN: '적립', USE: '사용', EXPIRE: '소멸', CANCEL: '적립취소', ADMIN: '관리자조정'} (Entity 주석: EARN/USE/EXPIRE/CANCEL/ADMIN)
      * refTypeCd  연관유형 (예: ORDER/EVENT/ADMIN 등, Entity 주석 기준)
@@ -86,6 +81,10 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     /* 적립금 목록조회 */
     @Override
     public List<PmSaveDto.Item> selectList(PmSaveDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmSave.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmSave.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery()
@@ -95,7 +94,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                     QdslUtil.strEq(pmSave.saveId, search.getSaveId()),
                     QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()),
                     QdslUtil.strEq(pmSave.memberId, search.getMemberId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andProdVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -113,6 +112,10 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     /* 적립금 페이지조회 */
     @Override
     public BasePage<PmSaveDto.Item> selectPageData(PmSaveDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pmSave.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pmSave.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -126,7 +129,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 /* ⚠ memberId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
                    — 페이지 조회 모드에서만 회원 필터가 무시되던 기존 버그. 같이 정정. */
                 QdslUtil.strEq(pmSave.memberId, search.getMemberId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andProdVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

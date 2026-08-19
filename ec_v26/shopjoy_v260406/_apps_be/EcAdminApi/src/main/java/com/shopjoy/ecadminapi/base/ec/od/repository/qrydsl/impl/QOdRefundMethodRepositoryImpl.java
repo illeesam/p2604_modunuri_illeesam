@@ -38,12 +38,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private static final QOdOrder        ord = new QOdOrder("ord");
     private static final QOdPay          pay = new QOdPay("pay");
     private static final QVwSyCode         cdPm = new QVwSyCode("cd_pm");
-    private static final QVwSyCode         cdRs = new QVwSyCode("cd_rs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odRefundMethod.regDate,
-        "upd_date", odRefundMethod.updDate
-    );
-
-    /*
+    private static final QVwSyCode         cdRs = new QVwSyCode("cd_rs");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * PAY_METHOD    {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
      * REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
@@ -85,13 +80,17 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     /* 환불수단 목록조회 */
     @Override
     public List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odRefundMethod.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odRefundMethod.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdRefundMethodDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,6 +107,10 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     /* 환불수단 페이지조회 */
     @Override
     public BasePage<OdRefundMethodDto.Item> selectPageData(OdRefundMethodDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odRefundMethod.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odRefundMethod.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -116,7 +119,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

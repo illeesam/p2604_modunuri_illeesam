@@ -49,13 +49,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     private static final QSyRole syRole = QSyRole.syRole;
     /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
     private static final QVwSyCode syCode_userStatusCd = new QVwSyCode("code_userStatusCd");
-    private static final QVwSyCode syCode_authMethodCd = new QVwSyCode("code_authMethodCd");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syUser.regDate,
-        "upd_date", syUser.updDate,
-        "last_login_date", syUser.lastLoginDate
-    );
-
-    /* ============================================================
+    private static final QVwSyCode syCode_authMethodCd = new QVwSyCode("code_authMethodCd");    /* ============================================================
      * 기본 쿼리 빌드 — SELECT + JOIN (조회 메서드들이 공유하는 base)
      * ============================================================ */
 
@@ -117,6 +111,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용. null 안전) */
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syUser.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUser.updDate;
+        } else if ("last_login_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUser.lastLoginDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -124,7 +124,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     andDeptIdIn(search),
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -141,6 +141,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
     @Override
     public BasePage<SyUserDto.Item> selectPageData(SyUserDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syUser.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUser.updDate;
+        } else if ("last_login_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUser.lastLoginDate;
+        }
         int pageNo   = search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -151,7 +157,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 andDeptIdIn(search),
                 QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                 QdslUtil.strEq(syRole.roleNm, search.getRole()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -180,6 +186,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
     @Override
     public long selectCount(SyUserDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syUser.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUser.updDate;
+        } else if ("last_login_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUser.lastLoginDate;
+        }
         Long total = queryFactory.select(syUser.count())
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syUser)
                 /* andRoleEq 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
@@ -188,7 +200,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     andDeptIdIn(search),
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .fetchOne();

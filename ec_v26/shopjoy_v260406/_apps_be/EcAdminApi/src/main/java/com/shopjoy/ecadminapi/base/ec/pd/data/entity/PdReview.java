@@ -49,7 +49,7 @@ public class PdReview extends BaseEntity {
 
     @Comment("리뷰 내용")
     @Column(name = "review_content", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "reviewContent 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "reviewContent 는 500,000자 이내여야 합니다.")
     private String reviewContent;
 
     @Comment("평점 (1.0~5.0)")

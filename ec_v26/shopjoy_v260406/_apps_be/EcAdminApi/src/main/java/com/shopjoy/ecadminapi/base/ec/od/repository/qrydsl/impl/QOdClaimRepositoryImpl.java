@@ -49,16 +49,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");
     private static final QVwSyCode   cdEc = new QVwSyCode("cd_ec");
     private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
-    private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("request_date", odClaim.requestDate,
-        "proc_date", odClaim.procDate,
-        "claim_cancel_date", odClaim.claimCancelDate,
-        "collect_schd_date", odClaim.collectSchdDate,
-        "reg_date", odClaim.regDate,
-        "upd_date", odClaim.updDate
-    );
-
-    /*
+    private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * CLAIM_TYPE    {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
      * CLAIM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
@@ -290,6 +281,18 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* 클레임(취소/반품/교환) 목록조회 */
     @Override
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odClaim.requestDate;
+        if ("proc_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.procDate;
+        } else if ("claim_cancel_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.claimCancelDate;
+        } else if ("collect_schd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.collectSchdDate;
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery()
@@ -301,7 +304,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                     QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
                     QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()),
                     QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -318,6 +321,18 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* 클레임(취소/반품/교환) 페이지조회 */
     @Override
     public BasePage<OdClaimDto.Item> selectPageData(OdClaimDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odClaim.requestDate;
+        if ("proc_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.procDate;
+        } else if ("claim_cancel_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.claimCancelDate;
+        } else if ("collect_schd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.collectSchdDate;
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odClaim.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -331,7 +346,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
                 QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()),
                 QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -33,12 +33,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private static final QSyUserRole syUserRole = QSyUserRole.syUserRole;
     private static final QSyUser usr  = new QSyUser("usr");
     private static final QSyRole syRole  = QSyRole.syRole;
-    private static final QSyUser usr2 = new QSyUser("usr2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syUserRole.regDate,
-        "upd_date", syUserRole.updDate
-    );
-
-    /* 사용자별 역할 baseSelColumnQuery — 코드성 필드 없음 (역할명/역할코드는 조인으로 획득) */
+    private static final QSyUser usr2 = new QSyUser("usr2");    /* 사용자별 역할 baseSelColumnQuery — 코드성 필드 없음 (역할명/역할코드는 조인으로 획득) */
     private JPAQuery<SyUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserRoleDto.Item.class,
@@ -77,13 +72,17 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     /* 사용자별 역할 목록조회 */
     @Override
     public List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syUserRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUserRole.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId()),
                 QdslUtil.strEq(syUserRole.userId, search.getUserId()),
                 QdslUtil.strEq(syUserRole.roleId, search.getRoleId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,6 +99,10 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     /* 사용자별 역할 페이지조회 */
     @Override
     public BasePage<SyUserRoleDto.Item> selectPageData(SyUserRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syUserRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syUserRole.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -110,7 +113,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId()),
                 QdslUtil.strEq(syUserRole.userId, search.getUserId()),
                 QdslUtil.strEq(syUserRole.roleId, search.getRoleId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -29,13 +29,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmhPushLogRepositoryImpl";
-    private static final QCmhPushLog cmhPushLog = QCmhPushLog.cmhPushLog;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("send_date", cmhPushLog.sendDate,
-        "reg_date", cmhPushLog.regDate,
-        "upd_date", cmhPushLog.updDate
-    );
-
-    /*
+    private static final QCmhPushLog cmhPushLog = QCmhPushLog.cmhPushLog;    /*
      * baseSelColumnQuery — 코드성 필드 예시 (PUSH_CHANNEL / PUSH_RESULT 는 sy_code 미등록 — 실제 코드 등록 없음)
      * channel_cd : 발송채널 구분 코드 (코드: PUSH_CHANNEL, DB 등록값 없음 — 용도만 설명)
      * result_cd  : 발송결과 코드 (코드: PUSH_RESULT, DB 등록값 없음. 컬럼 기본값은 'SUCCESS')
@@ -77,11 +71,17 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /** 전체 목록 */
     @Override
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmhPushLog.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmhPushLog.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmhPushLog.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,6 +98,12 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<CmhPushLogDto.Item> selectPageData(CmhPushLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmhPushLog.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmhPushLog.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmhPushLog.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -106,7 +112,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

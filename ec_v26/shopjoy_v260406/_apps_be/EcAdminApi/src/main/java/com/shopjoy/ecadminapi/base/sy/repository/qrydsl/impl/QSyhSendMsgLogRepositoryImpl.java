@@ -38,13 +38,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private static final QSyTemplate    syTemplate = QSyTemplate.syTemplate;
     private static final QSyUser        syUser = QSyUser.syUser;
     private static final QVwSyCode        cd_mc = new QVwSyCode("cd_mc");
-    private static final QVwSyCode        cd_sr = new QVwSyCode("cd_sr");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("send_date", syhSendMsgLog.sendDate,
-        "reg_date", syhSendMsgLog.regDate,
-        "upd_date", syhSendMsgLog.updDate
-    );
-
-    /*
+    private static final QVwSyCode        cd_sr = new QVwSyCode("cd_sr");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * MSG_CHANNEL   {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
      * SEND_RESULT   {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
@@ -101,6 +95,12 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* 메시지 발송 로그 목록조회 */
     @Override
     public List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhSendMsgLog.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendMsgLog.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendMsgLog.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
@@ -109,7 +109,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -126,6 +126,12 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* 메시지 발송 로그 페이지조회 */
     @Override
     public BasePage<SyhSendMsgLogDto.Item> selectPageData(SyhSendMsgLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhSendMsgLog.sendDate;
+        if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendMsgLog.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syhSendMsgLog.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -137,7 +143,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

@@ -47,7 +47,7 @@ public class CmChatt extends BaseEntity {
 
     @Comment("관리자 메모")
     @Column(name = "chatt_memo", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "chattMemo 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "chattMemo 는 500,000자 이내여야 합니다.")
     private String chattMemo;
 
     @Comment("종료일시")

@@ -36,11 +36,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
     private static final QVwSyCode          cd_ta = new QVwSyCode("cd_ta");
-    private static final QVwSyCode          cd_tt = new QVwSyCode("cd_tt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhUserTokenLog.regDate
-    );
-
-    /*
+    private static final QVwSyCode          cd_tt = new QVwSyCode("cd_tt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * TOKEN_ACTION  {ISSUE: '발급', REFRESH: '갱신', EXPIRE: '만료', REVOKE: '강제폐기'}
      * TOKEN_TYPE    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
@@ -90,6 +86,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* 목록조회 */
     @Override
     public List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhUserTokenLog.regDate;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
@@ -98,7 +95,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
                 QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -115,6 +112,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* 페이지조회 */
     @Override
     public BasePage<SyhUserTokenLogDto.Item> selectPageData(SyhUserTokenLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhUserTokenLog.regDate;
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -126,7 +124,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
                 QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

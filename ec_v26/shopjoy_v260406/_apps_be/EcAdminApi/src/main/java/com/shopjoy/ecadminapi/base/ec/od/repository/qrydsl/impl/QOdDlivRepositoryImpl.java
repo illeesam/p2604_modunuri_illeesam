@@ -45,14 +45,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private static final QVwSyCode   cdDt = new QVwSyCode("cd_dt");
     private static final QVwSyCode   cdDd = new QVwSyCode("cd_dd");
     private static final QVwSyCode   cdOc = new QVwSyCode("cd_oc");
-    private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("dliv_ship_date", odDliv.dlivShipDate,
-        "dliv_date", odDliv.dlivDate,
-        "reg_date", odDliv.regDate,
-        "upd_date", odDliv.updDate
-    );
-
-    /*
+    private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * DLIV_TYPE  {NORMAL:정상배송, RETURN:반품, EXCHANGE:교환반품, EXCHANGE_OUT:교환출고}
      * DLIV_DIV   {OUTBOUND:출고(정상배송), INBOUND:입고(반품수거)}
@@ -116,6 +109,14 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     /* 배송 목록조회 */
     @Override
     public List<OdDlivDto.Item> selectList(OdDlivDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odDliv.dlivShipDate;
+        if ("dliv_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDliv.dlivDate;
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDliv.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDliv.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery()
@@ -137,7 +138,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                                      StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                         : null,
                     QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -154,6 +155,14 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     /* 배송 페이지조회 */
     @Override
     public BasePage<OdDlivDto.Item> selectPageData(OdDlivDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = odDliv.dlivShipDate;
+        if ("dliv_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDliv.dlivDate;
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDliv.regDate;
+        } else if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = odDliv.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -177,7 +186,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                                  StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                     : null,
                 QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

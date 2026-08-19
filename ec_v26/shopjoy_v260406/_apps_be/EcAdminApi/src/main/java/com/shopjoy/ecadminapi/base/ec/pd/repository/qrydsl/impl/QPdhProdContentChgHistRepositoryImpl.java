@@ -34,12 +34,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     private static final QPdhProdContentChgHist pdhProdContentChgHist   = QPdhProdContentChgHist.pdhProdContentChgHist;
     private static final QSySite                sySite = QSySite.sySite;
     private static final QPdProd                pdProd = QPdProd.pdProd;
-    private static final QSyUser                syUser = QSyUser.syUser;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdhProdContentChgHist.regDate,
-        "upd_date", pdhProdContentChgHist.updDate
-    );
-
-    /*
+    private static final QSyUser                syUser = QSyUser.syUser;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * CONTENT_TYPE_CD (PROD_CONTENT_TYPE)  {DETAIL: '상세설명', NOTICE: '상품공지', GUIDE: '이용안내', SIZE_GUIDE: '사이즈안내'}
      */
@@ -76,12 +71,16 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     /* 상품 콘텐츠 변경 이력 목록조회 */
     @Override
     public List<PdhProdContentChgHistDto.Item> selectList(PdhProdContentChgHistDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdhProdContentChgHist.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdhProdContentChgHist.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdhProdContentChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdContentChgHist.histId, search.getHistId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,6 +97,10 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     /* 상품 콘텐츠 변경 이력 페이지조회 */
     @Override
     public BasePage<PdhProdContentChgHistDto.Item> selectPageData(PdhProdContentChgHistDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = pdhProdContentChgHist.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = pdhProdContentChgHist.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -106,7 +109,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdContentChgHist.histId, search.getHistId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

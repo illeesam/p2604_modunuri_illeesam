@@ -68,7 +68,7 @@ public class VwDpPanel {
     private String dispPanelStatusCdBefore;
 
     @Column(name = "content_json", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentJson 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "contentJson 는 500,000자 이내여야 합니다.")
     private String contentJson;
 
     @Column(name = "reg_by", length = 30)

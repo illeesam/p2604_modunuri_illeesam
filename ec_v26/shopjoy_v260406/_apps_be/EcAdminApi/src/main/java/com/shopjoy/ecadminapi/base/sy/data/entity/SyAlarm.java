@@ -60,7 +60,7 @@ public class SyAlarm extends BaseEntity {
 
     @Comment("발송내용")
     @Column(name = "alarm_msg", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "alarmMsg 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "alarmMsg 는 500,000자 이내여야 합니다.")
     private String alarmMsg;
 
     @Comment("발송예정일시")

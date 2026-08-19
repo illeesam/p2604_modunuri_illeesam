@@ -164,26 +164,57 @@ public class QdslUtil {
     }
 
     /**
-     * 기간 검색 — dateRangeType 값으로 dateFields 에서 대상 컬럼(DateTimePath)을 찾아 [dateRangeStart, dateRangeEnd]
-     * 범위(끝일 포함, yyyy-MM-dd) 조건을 만든다. dateRangeType/dateRangeStart/dateRangeEnd 중 하나라도 blank 이거나
-     * dateFields 에 dateRangeType 키가 없으면(알 수 없는 dateRangeType) 조건 미적용(null 반환).
+     * 숫자 범위(양끝 포함) — min/max 둘 다 null 이면 조건 미적용, 한쪽만 있으면 편측 비교로 동작한다.
+     * numGoe/numLoe 를 그대로 조합한 것 — 가격/수량/금액 등 min~max 검색에 사용.
      *
-     * <p>사용 예:
      * <pre>
-     * private static final Map&lt;String, DateTimePath&lt;LocalDateTime&gt;&gt; DATE_RANGE_FIELDS = Map.of(
-     *     "reg_date", xxx.regDate,
-     *     "upd_date", xxx.updDate
-     * );
-     * private BooleanExpression andDateRangeBetween(XxxDto.Request s) {
-     *     return s == null ? null : QdslUtil.dateBetween(s.getDateRangeType(), s.getDateRangeStart(), s.getDateRangeEnd(), DATE_RANGE_FIELDS);
+     * private BooleanExpression andPriceBetween(PdProdDto.Request s) {
+     *     return s == null ? null : QdslUtil.numBetween(pdProd.salePrice, s.getPriceMin(), s.getPriceMax());
      * }
      * </pre>
      */
-    public static BooleanExpression dateBetween(String dateRangeType, String dateRangeStart, String dateRangeEnd,
-                                                       Map<String, DateTimePath<LocalDateTime>> dateFields) {
-        if (!StringUtils.hasText(dateRangeType) || !StringUtils.hasText(dateRangeStart) || !StringUtils.hasText(dateRangeEnd)) return null;
-        DateTimePath<LocalDateTime> path = dateFields.get(dateRangeType);
-        if (path == null) return null;
+    public static <T extends Number & Comparable<?>> BooleanExpression numBetween(NumberExpression<T> p, T min, T max) {
+        BooleanExpression goe = numGoe(p, min);
+        BooleanExpression loe = numLoe(p, max);
+        if (goe == null) return loe;
+        if (loe == null) return goe;
+        return goe.and(loe);
+    }
+
+    /**
+     * 문자열 범위(양끝 포함, 사전식 비교) — min/max 둘 다 blank 면 조건 미적용, 한쪽만 있으면 편측 비교.
+     * 영문/숫자 코드처럼 사전식 정렬이 곧 값 순서인 컬럼의 구간 검색에 사용.
+     */
+    public static BooleanExpression strBetween(StringExpression p, String min, String max) {
+        BooleanExpression goe = StringUtils.hasText(min) ? p.goe(min) : null;
+        BooleanExpression loe = StringUtils.hasText(max) ? p.loe(max) : null;
+        if (goe == null) return loe;
+        if (loe == null) return goe;
+        return goe.and(loe);
+    }
+
+    /**
+     * 기간 검색 — 호출부에서 dateRangeType 값을 if 로 직접 분기해 미리 골라 둔 대상 컬럼(path)에 대해
+     * [dateRangeStart, dateRangeEnd] 범위(끝일 포함, yyyy-MM-dd) 조건을 만든다.
+     * dateRangeStart/dateRangeEnd 중 하나라도 blank 면 조건 미적용(null 반환).
+     *
+     * <p>대상 컬럼이 2~3개뿐인 경우가 대부분이라, 매 Repository 마다 Map&lt;String, DateTimePath&gt; 상수를
+     * 선언해 조회하던 이전 방식 대신 호출부에서 직접 if 로 고르도록 단순화했다. 변수는 기본 컬럼(보통
+     * regDate)으로 초기화해두고, dateRangeType 이 다른 값이면 그 컬럼으로 재할당한다.
+     *
+     * <pre>
+     * private BooleanExpression andDateRangeBetween(XxxDto.Request s) {
+     *     if (s == null) return null;
+     *     DateTimePath&lt;LocalDateTime&gt; dateRangeField = xxx.regDate;
+     *     if ("upd_date".equals(s.getDateRangeType())) {
+     *         dateRangeField = xxx.updDate;
+     *     }
+     *     return QdslUtil.dateBetween(dateRangeField, s.getDateRangeStart(), s.getDateRangeEnd());
+     * }
+     * </pre>
+     */
+    public static BooleanExpression dateBetween(DateTimePath<LocalDateTime> path, String dateRangeStart, String dateRangeEnd) {
+        if (path == null || !StringUtils.hasText(dateRangeStart) || !StringUtils.hasText(dateRangeEnd)) return null;
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         /* 종료일 23:59:59.999999(마이크로초 끝) — SQL 로그에 검색한 두 날짜(start~end) 그대로 찍혀서
          * 일자 기준 기간임을 바로 알아볼 수 있다. "다음날 00시 미만" 방식과 결과는 사실상 동일하고

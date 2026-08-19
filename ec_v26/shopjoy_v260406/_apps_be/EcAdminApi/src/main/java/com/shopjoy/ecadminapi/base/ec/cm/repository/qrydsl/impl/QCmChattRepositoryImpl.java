@@ -29,13 +29,7 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattRepositoryImpl";
-    private static final QCmChatt cmChatt = QCmChatt.cmChatt;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", cmChatt.regDate,
-        "upd_date", cmChatt.updDate
-    );
-
-    /*
+    private static final QCmChatt cmChatt = QCmChatt.cmChatt;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값 (sy_code_grp CHATT_STATUS)
      * CHATT_STATUS  {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
      */
@@ -69,13 +63,17 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
     @Override
     public List<CmChattDto.Item> selectList(CmChattDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmChatt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmChatt.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmChattDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                         QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
                         QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
-                        QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                        QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                         andSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,6 +87,10 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
     @Override
     public BasePage<CmChattDto.Item> selectPageData(CmChattDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmChatt.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmChatt.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
@@ -96,7 +98,7 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search)
         };
 

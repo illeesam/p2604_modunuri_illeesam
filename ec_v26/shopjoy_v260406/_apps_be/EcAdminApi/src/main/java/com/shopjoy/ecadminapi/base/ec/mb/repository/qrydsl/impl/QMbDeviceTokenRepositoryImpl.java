@@ -29,12 +29,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbDeviceTokenRepositoryImpl";
     private static final QMbDeviceToken mbDeviceToken   = QMbDeviceToken.mbDeviceToken;
-    private static final QMbMember      mbMember = QMbMember.mbMember;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbDeviceToken.regDate,
-        "upd_date", mbDeviceToken.updDate
-    );
-
-    /*
+    private static final QMbMember      mbMember = QMbMember.mbMember;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * OS_TYPE          ANDROID/IOS (코드 미등록, DDL 코멘트 기준 값)
      * BENEFIT_NOTI_YN  {Y: '수신', N: '미수신'}
@@ -69,12 +64,16 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     /* 목록조회 */
     @Override
     public List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbDeviceToken.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbDeviceToken.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,6 +89,10 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     /* 페이지조회 */
     @Override
     public BasePage<MbDeviceTokenDto.Item> selectPageData(MbDeviceTokenDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbDeviceToken.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbDeviceToken.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -98,7 +101,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

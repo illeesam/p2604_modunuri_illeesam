@@ -86,7 +86,7 @@ public class StRecon extends BaseEntity {
 
     @Comment("대사 메모")
     @Column(name = "recon_note", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "reconNote 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "reconNote 는 500,000자 이내여야 합니다.")
     private String reconNote;
 
     @Comment("해소 처리자 (sy_user.user_id)")

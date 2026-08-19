@@ -37,12 +37,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private static final QSyVendor    syVendor   = QSyVendor.syVendor;
     private static final QSySite      sySite   = QSySite.sySite;
     private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");
-    private static final QVwSyCode      cdSps = new QVwSyCode("cd_sps");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stSettlePay.regDate,
-        "upd_date", stSettlePay.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cdSps = new QVwSyCode("cd_sps");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * PAY_METHOD_CD      (Entity 주석 명시값 없음. sy_code 에도 'PAY_METHOD_CD' 그룹 데이터 없음 —
      *                      od_refund_method.pay_method_cd DDL 코멘트 기준 유사 코드그룹 'PAY_METHOD' 값 참고: BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
@@ -90,6 +85,10 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     /* 정산 지급 목록조회 */
     @Override
     public List<StSettlePayDto.Item> selectList(StSettlePayDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettlePay.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettlePay.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettlePayDto.Item> query = baseListQuery()
@@ -97,7 +96,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .where(
                     QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()),
                     QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,6 +113,10 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     /* 정산 지급 페이지조회 */
     @Override
     public BasePage<StSettlePayDto.Item> selectPageData(StSettlePayDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stSettlePay.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stSettlePay.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -123,7 +126,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()),
                 QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

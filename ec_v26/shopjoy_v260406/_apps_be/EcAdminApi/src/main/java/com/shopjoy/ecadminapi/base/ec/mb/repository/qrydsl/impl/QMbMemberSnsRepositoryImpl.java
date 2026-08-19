@@ -31,12 +31,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberSnsRepositoryImpl";
     private static final QMbMemberSns mbMemberSns    = QMbMemberSns.mbMemberSns;
     private static final QMbMember    mbMember  = QMbMember.mbMember;
-    private static final QVwSyCode      cdSc = new QVwSyCode("cd_sc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberSns.regDate,
-        "upd_date", mbMemberSns.updDate
-    );
-
-    /*
+    private static final QVwSyCode      cdSc = new QVwSyCode("cd_sc");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SNS_CHANNEL_CD (코드: SNS_CHANNEL_CD)  {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
      */
@@ -66,6 +61,10 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     /* SNS 연동 회원 목록조회 */
     @Override
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberSns.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberSns.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -73,7 +72,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                     QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds()),
                     QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId()),
                     QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,6 +88,10 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     /* SNS 연동 회원 페이지조회 */
     @Override
     public BasePage<MbMemberSnsDto.Item> selectPageData(MbMemberSnsDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = mbMemberSns.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = mbMemberSns.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -99,7 +102,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds()),
                 QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId()),
                 QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

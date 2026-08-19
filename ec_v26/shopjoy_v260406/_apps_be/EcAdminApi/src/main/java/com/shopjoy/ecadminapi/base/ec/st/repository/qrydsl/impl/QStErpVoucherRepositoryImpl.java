@@ -36,12 +36,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QSyVendor     syVendor  = QSyVendor.syVendor;
     private static final QVwSyCode       cdEvt = new QVwSyCode("cd_evt");
-    private static final QVwSyCode       cdEvs = new QVwSyCode("cd_evs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stErpVoucher.regDate,
-        "upd_date", stErpVoucher.updDate
-    );
-
-    /*
+    private static final QVwSyCode       cdEvs = new QVwSyCode("cd_evs");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * ERP_VOUCHER_TYPE    {SALE: '매출전표', CANCEL: '취소전표', SETTLE: '정산전표', ADJ: '조정전표'}
      * ERP_VOUCHER_STATUS  {DRAFT: '임시', SENT: '전송완료', FAILED: '전송실패', CONFIRMED: 'ERP확인'}
@@ -90,6 +85,10 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     /* ERP 전표 목록조회 */
     @Override
     public List<StErpVoucherDto.Item> selectList(StErpVoucherDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stErpVoucher.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stErpVoucher.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
@@ -98,7 +97,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                     QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()),
                     QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
                     QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
-                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -115,6 +114,10 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     /* ERP 전표 페이지조회 */
     @Override
     public BasePage<StErpVoucherDto.Item> selectPageData(StErpVoucherDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = stErpVoucher.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = stErpVoucher.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -125,7 +128,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()),
                 QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
                 QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

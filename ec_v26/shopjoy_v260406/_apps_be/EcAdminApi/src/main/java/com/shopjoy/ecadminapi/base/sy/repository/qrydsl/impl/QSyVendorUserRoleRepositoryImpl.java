@@ -36,12 +36,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyVendorUser syVendorUser = QSyVendorUser.syVendorUser;
     private static final QSyRole syRole = QSyRole.syRole;
-    private static final QSyUser syUser = QSyUser.syUser;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syVendorUserRole.regDate,
-        "upd_date", syVendorUserRole.updDate
-    );
-
-    /* 업체 사용자 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할명은 조인으로 획득) */
+    private static final QSyUser syUser = QSyUser.syUser;    /* 업체 사용자 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할명은 조인으로 획득) */
     private JPAQuery<SyVendorUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserRoleDto.Item.class,
@@ -83,13 +78,17 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     /* 업체 사용자 역할 연결 목록조회 */
     @Override
     public List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syVendorUserRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syVendorUserRole.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId()),
                 QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -106,6 +105,10 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     /* 업체 사용자 역할 연결 페이지조회 */
     @Override
     public BasePage<SyVendorUserRoleDto.Item> selectPageData(SyVendorUserRoleDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syVendorUserRole.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = syVendorUserRole.updDate;
+        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -116,7 +119,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                 QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId()),
                 QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

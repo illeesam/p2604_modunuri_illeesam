@@ -40,9 +40,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode   cd_at    = new QVwSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhAccessLog.regDate
-    );
-
     /*
      * baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드)
      * 코드성 필드 예시 코드값
@@ -105,6 +102,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessLogDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = syhAccessLog.regDate;
         return new BooleanExpression[] {
                 QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()),
                 andStatusEq(search),
@@ -112,8 +110,9 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 andUiNmLike(search),
                 QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
                 QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                andSearchValue(search.getSearchValue(), search.getSearchType())
+
         };
     }
 

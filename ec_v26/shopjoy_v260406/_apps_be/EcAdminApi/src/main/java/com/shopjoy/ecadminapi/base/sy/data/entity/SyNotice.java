@@ -48,7 +48,7 @@ public class SyNotice extends BaseEntity {
 
     @Comment("내용 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentHtml 는 50000자 이내여야 합니다.")
+    @Size(max = 500000, message = "contentHtml 는 500,000자 이내여야 합니다.")
     private String contentHtml;
 
     @Comment("노출시작일")

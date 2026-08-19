@@ -29,12 +29,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogTagRepositoryImpl";
-    private static final QCmBlogTag cmBlogTag = QCmBlogTag.cmBlogTag;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogTag.regDate,
-        "upd_date", cmBlogTag.updDate
-    );
-
-    /*
+    private static final QCmBlogTag cmBlogTag = QCmBlogTag.cmBlogTag;    /*
      * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_tag 는 블로그-태그명 매핑 테이블)
      */
     private JPAQuery<CmBlogTagDto.Item> baseSelColumnQuery() {
@@ -65,13 +60,17 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     /** 전체 목록 */
     @Override
     public List<CmBlogTagDto.Item> selectList(CmBlogTagDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogTag.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogTag.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogTagDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,6 +87,10 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<CmBlogTagDto.Item> selectPageData(CmBlogTagDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogTag.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogTag.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -98,7 +101,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
                 QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

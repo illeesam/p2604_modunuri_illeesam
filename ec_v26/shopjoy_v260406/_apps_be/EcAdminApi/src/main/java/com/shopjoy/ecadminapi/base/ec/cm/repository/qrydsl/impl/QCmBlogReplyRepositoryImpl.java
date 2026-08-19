@@ -29,12 +29,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogReplyRepositoryImpl";
-    private static final QCmBlogReply cmBlogReply = QCmBlogReply.cmBlogReply;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogReply.regDate,
-        "upd_date", cmBlogReply.updDate
-    );
-
-    /*
+    private static final QCmBlogReply cmBlogReply = QCmBlogReply.cmBlogReply;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값 (sy_code_grp COMMENT_STATUS)
      * COMMENT_STATUS  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
      */
@@ -70,13 +65,17 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     /** 전체 목록 */
     @Override
     public List<CmBlogReplyDto.Item> selectList(CmBlogReplyDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogReply.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogReply.updDate;
+        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,6 +92,10 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<CmBlogReplyDto.Item> selectPageData(CmBlogReplyDto.Request search) {
+        DateTimePath<LocalDateTime> dateRangeField = cmBlogReply.regDate;
+        if ("upd_date".equals(search.getDateRangeType())) {
+            dateRangeField = cmBlogReply.updDate;
+        }
         int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset = (pageNo - 1) * pageSize;
@@ -103,7 +106,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                 QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

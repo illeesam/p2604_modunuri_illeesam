@@ -102,9 +102,12 @@ public class PdProd extends BaseEntity {
     @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
     private String thumbnailUrl;
 
+    /* 상품 상세설명은 이미지가 많이 들어가는 페이지라 넉넉하게 잡는다.
+       에디터가 이미지를 서버 업로드 없이 base64 그대로 인라인하므로(BaseComp.js addImageBlobHook),
+       스마트폰 원본 사진 한 장만 해도 base64 변환 시 수백만 자가 될 수 있다 — 여러 장 첨부 대비 상한을 크게 둔다. */
     @Comment("상세설명 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
-    @Size(max = 50000, message = "contentHtml 는 50000자 이내여야 합니다.")
+    @Size(max = 10000000, message = "contentHtml 는 10,000,000자 이내여야 합니다.")
     private String contentHtml;
 
     @Comment("무게(kg)")
