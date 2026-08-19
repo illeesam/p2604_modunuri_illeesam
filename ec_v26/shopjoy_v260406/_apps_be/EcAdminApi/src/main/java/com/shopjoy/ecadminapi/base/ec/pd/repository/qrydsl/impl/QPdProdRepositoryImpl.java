@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
@@ -203,41 +204,61 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PdProdDto.Item> selectList(PdProdDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pdProd.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pdProd.updDate;
-        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> wheres = new ArrayList<>();
+
+        wheres.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
+        wheres.add(QdslUtil.strEq(pdProd.prodId, search.getProdId()));
+
+        /* 브랜드 — brandId 가 있으면 ID 로, 없고 brandNm 만 있으면 브랜드명 LIKE 로 EXISTS */
+        if (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) {
+            wheres.add(JPAExpressions.selectOne().from(syBrandEx)
+                    .where(syBrandEx.brandId.eq(pdProd.brandId),
+                           QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
+                           StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm()))
+                    .exists());
+        }
+
+        /* 업체 — vendorId 가 있으면 ID 로, 없고 vendorNm 만 있으면 업체명 LIKE 로 EXISTS */
+        if (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm())) {
+            wheres.add(JPAExpressions.selectOne().from(syVendorEx)
+                    .where(syVendorEx.vendorId.eq(pdProd.vendorId),
+                           QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                           StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                    .exists());
+        }
+
+        /* 담당MD — mdUserId 가 있으면 ID 로, 없고 mdUserNm 만 있으면 사용자명 LIKE 로 EXISTS */
+        if (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm())) {
+            wheres.add(JPAExpressions.selectOne().from(syUserEx)
+                    .where(syUserEx.userId.eq(pdProd.mdUserId),
+                           QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                           StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                    .exists());
+        }
+
+        wheres.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()));
+        wheres.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
+        wheres.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
+
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            wheres.add(QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else {
+            wheres.add(QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
+        }
+
+        wheres.add(andCurrentYnProd(search.getCurrentYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<PdProdDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
-                    QdslUtil.strEq(pdProd.prodId, search.getProdId()),
-                    (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
-                        ? JPAExpressions.selectOne().from(syBrandEx)
-                              .where(syBrandEx.brandId.eq(pdProd.brandId),
-                                     QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
-                                     StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
-                        : null,
-                    (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
-                        ? JPAExpressions.selectOne().from(syVendorEx)
-                              .where(syVendorEx.vendorId.eq(pdProd.vendorId),
-                                     QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                     StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
-                        : null,
-                    (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
-                        ? JPAExpressions.selectOne().from(syUserEx)
-                              .where(syUserEx.userId.eq(pdProd.mdUserId),
-                                     QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
-                                     StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
-                        : null,
-                    QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
-                    QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()),
-                    QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
-                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
+                .where(wheres.toArray(BooleanExpression[]::new))
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -252,43 +273,65 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<PdProdDto.Item> selectPageData(PdProdDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pdProd.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pdProd.updDate;
-        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
-                QdslUtil.strEq(pdProd.prodId, search.getProdId()),
-                (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
-                    ? JPAExpressions.selectOne().from(syBrandEx)
-                          .where(syBrandEx.brandId.eq(pdProd.brandId),
-                                 QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
-                                 StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
-                    : null,
-                (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
-                    ? JPAExpressions.selectOne().from(syVendorEx)
-                          .where(syVendorEx.vendorId.eq(pdProd.vendorId),
-                                 QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                 StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
-                    : null,
-                (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
-                    ? JPAExpressions.selectOne().from(syUserEx)
-                          .where(syUserEx.userId.eq(pdProd.mdUserId),
-                                 QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
-                                 StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
-                    : null,
-                QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
-                QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()),
-                QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add (selectList 와 동일 구성).
+           배열 초기화 { } 안에는 식(expression)만 올 수 있어 if 를 못 쓰지만,
+           리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시한다. */
+        List<BooleanExpression> whereList = new ArrayList<>();
+
+        whereList.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
+        whereList.add(QdslUtil.strEq(pdProd.prodId, search.getProdId()));
+
+        /* 브랜드 — brandId 가 있으면 ID 로, 없고 brandNm 만 있으면 브랜드명 LIKE 로 EXISTS */
+        if (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) {
+            whereList.add(JPAExpressions.selectOne().from(syBrandEx)
+                    .where(syBrandEx.brandId.eq(pdProd.brandId),
+                           QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
+                           StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm()))
+                    .exists());
+        }
+
+        /* 업체 — vendorId 가 있으면 ID 로, 없고 vendorNm 만 있으면 업체명 LIKE 로 EXISTS */
+        if (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm())) {
+            whereList.add(JPAExpressions.selectOne().from(syVendorEx)
+                    .where(syVendorEx.vendorId.eq(pdProd.vendorId),
+                           QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                           StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                    .exists());
+        }
+
+        /* 담당MD — mdUserId 가 있으면 ID 로, 없고 mdUserNm 만 있으면 사용자명 LIKE 로 EXISTS */
+        if (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm())) {
+            whereList.add(JPAExpressions.selectOne().from(syUserEx)
+                    .where(syUserEx.userId.eq(pdProd.mdUserId),
+                           QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                           StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                    .exists());
+        }
+
+        whereList.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()));
+        whereList.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
+        whereList.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
+
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        }
+
+        whereList.add(andCurrentYnProd(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        /* list/count 가 동일 조건을 공유하도록 배열로 1회 변환 */
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PdProdDto.Item> query = baseListQuery();
@@ -314,6 +357,20 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    /**
+     * currentYn='Y' 일 때만 "지금 판매중" 조건 — 상태 ACTIVE + 판매기간(sale_start_date~sale_end_date) 이내.
+     *
+     * <p>FO 는 FoPdProdService 가 요청마다 currentYn='Y' 를 강제 세팅하므로 항상 적용된다(끌 수 없음).
+     * BO 는 기본 미적용(전체 조회)이며, "지금 노출중인 것만" 미리보기 시에만 'Y' 를 보낸다.
+     * 기준시각은 메서드 진입 시 1회 계산해 두 비교(시작/종료)가 동일 시점을 공유하게 한다.
+     */
+    private BooleanExpression andCurrentYnProd(String currentYn) {
+        if (!"Y".equals(currentYn)) return null;
+        LocalDateTime now = LocalDateTime.now();
+        return pdProd.prodStatusCd.eq("ACTIVE")
+                .and(QdslUtil.dateBetween(now, pdProd.saleStartDate, pdProd.saleEndDate));
+    }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(

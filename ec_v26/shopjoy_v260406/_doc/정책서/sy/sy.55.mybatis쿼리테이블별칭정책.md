@@ -157,6 +157,51 @@ INNER JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id
 - 실제 DB에서 `\d+`, `pg_get_viewdef`, DB 클라이언트로 뷰 정의를 다시 열어보면 `JOIN` 으로 보이는 게 **정상**이다 — 버그도 아니고 되돌릴 필요도 없다.
 - 이 예외는 **VIEW 에만 해당**한다. Mapper XML의 `<select>` 쿼리는 텍스트 그대로 실행되므로 `INNER JOIN` 이 그대로 유지·표시된다.
 
+### 6. 현재 유효건 조회 — `currentYn` (FO 강제 / BO 옵션) ⭐ (2026-08-19)
+
+**정의**: "지금 유효한 것만"(상태 ACTIVE + 사용여부 Y + 노출기간 이내) 조건은 `BaseRequest.currentYn` 으로 표현하고, `Q*RepositoryImpl` 의 `andCurrentYn{도메인}(String currentYn)` 이 `'Y'` 일 때만 조건을 만든다.
+
+**메서드명은 도메인 접미어를 붙인다** — `andCurrentYnProd` / `andCurrentYnCoupon` / `andCurrentYnDiscnt` / `andCurrentYnEvent` / `andCurrentYnGift`. 도메인마다 유효 판정 기준(상태코드명·기간컬럼명·컬럼타입)이 달라 같은 이름을 쓰면 어느 테이블 기준인지 호출부에서 분간이 안 되고, 파일 간 복붙 시 조건이 뒤섞이기 쉽다. 기존 `andSearchValue`/`andPathLike` 처럼 `and*` 접두어 규칙은 그대로 따른다.
+
+**핵심 규칙 — FO 는 옵션이 아니라 강제**:
+- **FO Service 는 요청마다 `req.setCurrentYn("Y")` 를 직접 세팅한다.** 클라이언트가 보내든 말든 무조건 적용 → 새 FO 화면에서 빠뜨릴 여지 자체를 없앤다. 이는 FO 가 `memberId` 를 `SecurityUtil` 로 강제 주입하는 기존 패턴과 같은 성격이다(빠뜨리면 사용자에게 만료·숨김 데이터가 그대로 노출되는 사고).
+- **BO 는 기본 미적용**(전체 조회 — 관리자는 만료·미시작 건도 관리해야 함). "지금 노출중인 것만 미리보기" 용도로만 클라이언트가 선택적으로 `currentYn='Y'` 를 보낸다.
+
+```java
+// base/ec/pm/repository/qrydsl/impl/QPmEventRepositoryImpl.java
+private BooleanExpression andCurrentYnEvent(String currentYn) {
+    if (!"Y".equals(currentYn)) return null;   // 미지정이면 조건 미적용
+    LocalDate today = LocalDate.now();          // ← 기준시각 1회 계산 (아래 주의 참고)
+    return pmEvent.eventStatusCd.eq("ACTIVE")
+            .and(pmEvent.useYn.eq("Y"))
+            .and(QdslUtil.dateBetween(today, pmEvent.startDate, pmEvent.endDate));
+}
+
+// fo/*/service/Fo*Service.java — FO 는 강제
+public List<PmEventDto.Item> getList(PmEventDto.Request req) {
+    req.setCurrentYn("Y");   // FO 강제 — 클라이언트 파라미터와 무관
+    return pmEventRepository.selectList(req);
+}
+```
+
+**`dateBetween` 오버로드 — 읽는 법은 항상 "첫 인자가 뒤 두 인자 사이에 있는가"**:
+
+| 형태 | 의미 | 용도 |
+|---|---|---|
+| `dateBetween(regDatePath, "2026-01-01", "2026-12-31")` | **컬럼**이 입력 두 날짜 사이 | 기간검색 (dateRangeType) |
+| `dateBetween(today, startDatePath, endDatePath)` | **기준일**이 두 컬럼 사이 | 유효기간 판정 (DATE) |
+| `dateBetween(now, startDtPath, endDtPath)` | **기준시각**이 두 컬럼 사이 | 유효기간 판정 (TIMESTAMP) |
+
+기준시각을 인자로 받으므로 "지금"에 묶이지 않는다 — 과거/미래 특정 시점 기준 조회("그날 유효했던 프로모션", BO 시뮬레이션 등)에 그대로 재사용된다.
+
+**⚠ 기준시각은 반드시 변수로 1회 계산 후 전달**: 메서드 안에서 `LocalDate.now()` 를 매번 부르면 한 쿼리의 시작/종료 비교가 서로 다른 시각을 기준으로 평가될 수 있고(자정 경계에서 목록·카운트 불일치), 같은 요청의 여러 조건이 동일 시점 스냅샷을 공유하지 못한다. **한 요청 = 한 기준시각**.
+
+**⚠ 컬럼 타입에 맞는 오버로드가 자동 선택되도록 기준값 타입을 맞출 것**: DATE 컬럼엔 `LocalDate`, TIMESTAMP 컬럼엔 `LocalDateTime` 을 넘긴다. 섞으면 컴파일 에러로 즉시 잡히거나(다행) "당일 오후 시작" 같은 경계값이 어긋난다. (예: `pm_event`/`pm_discnt`/`pm_gift`/`pm_coupon` 은 DATE, `pd_prod.sale_start_date` 는 TIMESTAMP)
+
+**적용 대상 판단**: 상태·사용여부·기간 조건이 **여러 개 얽혀 있어 매번 다시 쓰면 틀리기 쉬운** 테이블에만 둔다. 단일 조건(`use_yn` 하나뿐 등)은 호출부에서 직접 쓰는 게 낫고, `pm_save` 처럼 거래원장이라 유효기간 개념 자체가 없는 테이블은 대상이 아니다(설정해도 조용히 무시되어 오해만 부른다).
+
+**DB 뷰(`vw_*_cur`)로 만들지 않는 이유**: 이 프로젝트는 검색조건을 전부 `BaseRequest` + QueryDSL `andXxx()` 조합으로 처리한다. 유효조건만 DB 뷰로 빼면 (1) raw 뷰와 `_cur` 뷰를 항상 동기화해야 하고, (2) 다른 검색조건과 조합이 어려워지며, (3) 이 코드베이스에서 유일하게 이질적인 패턴이 된다. 2026-08-19 에 `vw_*_cur` 13종을 만들었다가 같은 이유로 전량 폐기하고 `currentYn` 방식으로 정리했다.
+
 ## 테이블 별칭 관례
 
 ### 도메인별 주 테이블 별칭
@@ -451,6 +496,7 @@ LEFT JOIN sy_code cd_ps
 
 | 날짜 | 버전 | 내용 |
 |---|---|---|
+| 2026-08-19 | 2.3 | §6 현재 유효건 조회(`currentYn`) 규칙 추가 — FO Service 강제 세팅 / BO 옵션. `QdslUtil.dateBetween(기준일, 시작컬럼, 종료컬럼)` 오버로드 신설(기존 `dateBetween(컬럼, 시작, 종료)` 과 동일하게 "첫 인자가 뒤 둘 사이" 로 읽힘 — 기준시각을 인자로 받아 과거/미래 시점 조회에도 재사용 가능). `vw_*_cur` 뷰 13종은 만들었다가 전량 폐기(사유 §6). 메서드명은 도메인 접미어(`andCurrentYnProd`/`Coupon`/`Discnt`/`Event`/`Gift`). 적용: PdProd/PmCoupon/PmEvent/PmDiscnt/PmGift Repository + FoPdProd/FoPmEvent Service. 부수 수정: `FoPdProdService.getPromotions()` 가 `*_prod` 매핑 ID 를 Request 에 set 하지 않아 상품 무관 전체 프로모션이 응답되던 버그 |
 | 2026-08-19 | 2.2 | §5 JOIN 종류 명시 규칙 추가 (bare `JOIN` 금지 → `INNER/LEFT/RIGHT JOIN` 명시). PostgreSQL VIEW 는 `pg_get_viewdef()` 재조회 시 INNER 만 정규화되어 사라지는 것이 정상 동작임을 명시(DDL 소스 파일에는 그대로 유지). Mapper 1건(`AutoRestMapper.selectCodeLabels`), VIEW 4건(`vw_dp_area`/`vw_dp_panel`/`vw_dp_panel_item`/`vw_sy_role_menu`) 적용 |
 | 2026-04-29 | 2.1 | 전체 Mapper 완전 정정 완료 — XML 파싱 오류 제거 (3개 파일), COUNT(a.*) 별칭 정정 (43개 파일), SELECT/JOIN/WHERE 모든 컬럼 명시화 (155개 파일 검증) |
 | 2026-04-29 | 2.0 | 전체 Mapper 감시 완료 — COUNT(*), SELECT *, Fragment 조건 모두 명시화 (114개 파일 수정) |

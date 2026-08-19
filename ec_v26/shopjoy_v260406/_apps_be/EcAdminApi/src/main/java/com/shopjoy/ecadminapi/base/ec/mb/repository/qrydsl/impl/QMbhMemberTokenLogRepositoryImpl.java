@@ -83,13 +83,12 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     /* 목록조회 */
     @Override
     public List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = mbhMemberTokenLog.regDate;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
-                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                    QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,7 +104,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     /* 페이지조회 */
     @Override
     public BasePage<MbhMemberTokenLogDto.Item> selectPageData(MbhMemberTokenLogDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = mbhMemberTokenLog.regDate;
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -114,7 +112,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

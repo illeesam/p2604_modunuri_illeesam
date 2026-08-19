@@ -86,7 +86,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* 목록조회 */
     @Override
     public List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = syhUserTokenLog.regDate;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
@@ -95,7 +94,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
                 QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -112,7 +111,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* 페이지조회 */
     @Override
     public BasePage<SyhUserTokenLogDto.Item> selectPageData(SyhUserTokenLogDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = syhUserTokenLog.regDate;
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
@@ -124,7 +122,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
                 QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

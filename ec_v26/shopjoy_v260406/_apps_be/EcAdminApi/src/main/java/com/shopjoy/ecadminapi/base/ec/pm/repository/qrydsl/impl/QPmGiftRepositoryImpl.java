@@ -27,8 +27,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -100,28 +102,35 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pmGift.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pmGift.updDate;
-        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
+        wheres.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
+        wheres.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
+        wheres.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
+        wheres.add(QdslUtil.strEq(pmGift.prodId, search.getProdId()));
+        wheres.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
+        wheres.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        wheres.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
+        wheres.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        wheres.add(andMember(search));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            wheres.add(QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else {
+            wheres.add(QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
+        }
+        wheres.add(andCurrentYnGift(search.getCurrentYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
-                    QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
-                    QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
-                    QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
-                    QdslUtil.strEq(pmGift.prodId, search.getProdId()),
-                    QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
-                    QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()),
-                    QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
-                    QdslUtil.strLike(syUser.userNm, search.getMdUserNm()),
-                    andMember(search),
-                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
+                .where(wheres.toArray(BooleanExpression[]::new))
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -136,32 +145,38 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /** 페이지 목록 */
     @Override
     public BasePage<PmGiftDto.Item> selectPageData(PmGiftDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pmGift.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pmGift.updDate;
-        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
-                QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
-                QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
-                QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
-                /* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
-                   — 페이지 조회 모드에서만 상품 필터가 무시되던 기존 버그. 같이 정정. */
-                QdslUtil.strEq(pmGift.prodId, search.getProdId()),
-                QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
-                QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()),
-                QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
-                QdslUtil.strLike(syUser.userNm, search.getMdUserNm()),
-                andMember(search),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
+        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
+        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
+        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
+        whereList.add(/* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
+               — 페이지 조회 모드에서만 상품 필터가 무시되던 기존 버그. 같이 정정. */
+            QdslUtil.strEq(pmGift.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
+        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        whereList.add(andMember(search));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        }
+        whereList.add(andCurrentYnGift(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery();
@@ -200,6 +215,21 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
     /** 검색조건 빌드 — Mapper XML pmGiftCond 와 동일 */
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    /**
+     * currentYn='Y' 일 때만 "지금 지급중" 조건 — 상태 ACTIVE + use_yn='Y' + 지급기간(start_date~end_date) 이내.
+     *
+     * <p>FO 는 서비스가 요청마다 currentYn='Y' 를 강제 세팅하므로 항상 적용된다(끔 수 없음).
+     * BO 는 기본 미적용(전체 조회)이며, "지금 노출중인 것만" 미리보기 시에만 'Y' 를 보낸다.
+     * 기준일은 메서드 진입 시 1회 계산해 두 비교(시작/종료)가 동일 시점을 공유하게 한다.
+     */
+    private BooleanExpression andCurrentYnGift(String currentYn) {
+        if (!"Y".equals(currentYn)) return null;
+        LocalDate today = LocalDate.now();
+        return pmGift.giftStatusCd.eq("ACTIVE")
+                .and(pmGift.useYn.eq("Y"))
+                .and(QdslUtil.dateBetween(today, pmGift.startDate, pmGift.endDate));
+    }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(

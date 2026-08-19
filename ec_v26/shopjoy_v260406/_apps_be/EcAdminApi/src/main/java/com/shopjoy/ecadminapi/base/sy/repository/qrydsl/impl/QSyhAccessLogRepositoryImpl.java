@@ -102,7 +102,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessLogDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = syhAccessLog.regDate;
         return new BooleanExpression[] {
                 QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()),
                 andStatusEq(search),
@@ -110,7 +109,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 andUiNmLike(search),
                 QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
                 QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                QdslUtil.dateBetween(syhAccessLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
 
         };

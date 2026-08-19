@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -68,19 +69,25 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 목록조회 */
     @Override
     public List<PdProdBundleItemDto.Item> selectList(PdProdBundleItemDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pdProdBundleItem.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pdProdBundleItem.updDate;
-        }
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            wheres.add(QdslUtil.dateBetween(pdProdBundleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else {
+            wheres.add(QdslUtil.dateBetween(pdProdBundleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
+        }
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()),
-                    QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
+                .where(wheres.toArray(BooleanExpression[]::new))
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -95,21 +102,26 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 페이지조회 */
     @Override
     public BasePage<PdProdBundleItemDto.Item> selectPageData(PdProdBundleItemDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pdProdBundleItem.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pdProdBundleItem.updDate;
-        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pdProdBundleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pdProdBundleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        }
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery();

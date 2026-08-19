@@ -103,14 +103,13 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessErrorLogDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = syhAccessErrorLog.regDate;
         return new BooleanExpression[] {
                 QdslUtil.strEq(syhAccessErrorLog.reqMethod, search.getMethod()),
                 andPathLike(search),
                 andUiNmLike(search),
                 QdslUtil.strEqTrim(syhAccessErrorLog.traceId, search.getTraceId()),
                 QdslUtil.strEq(syhAccessErrorLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
+                QdslUtil.dateBetween(syhAccessErrorLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
 
         };

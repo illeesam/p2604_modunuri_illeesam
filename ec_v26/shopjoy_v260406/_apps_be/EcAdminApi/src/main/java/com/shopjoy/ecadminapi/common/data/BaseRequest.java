@@ -48,6 +48,18 @@ public abstract class BaseRequest {
     @Size(max = 50, message = "sort 는 50자 이내여야 합니다.")
     private String sort;
 
+    /**
+     * 현재 유효건만 조회 ('Y' 일 때만 적용) — 사용여부/상태 + 노출기간이 "지금" 기준으로 유효한 행만.
+     *
+     * <p><b>BO 전용 옵션이다.</b> 관리자 화면은 만료·미시작 건도 관리해야 하므로 기본은 전체 조회이고,
+     * "지금 노출중인 것만 미리보기" 같은 용도에서만 'Y' 를 보낸다.
+     *
+     * <p><b>FO 는 이 값을 쓰지 않는다</b> — 사용자에게 만료·숨김 데이터가 노출되면 안 되므로
+     * FO Repository 는 파라미터와 무관하게 유효조건을 <b>항상</b> 건다(빠뜨릴 여지를 없앤다).
+     */
+    @Size(max = 1, message = "currentYn 는 1자 이내여야 합니다.")
+    private String currentYn;
+
     /** 조회할 페이지 번호 (1부터). PageHelper 가 offset 계산에 사용. */
     @Min(value = 1, message = "pageNo 는 1 이상이어야 합니다.")
     @Max(value = 100000, message = "pageNo 는 100000 이하여야 합니다.")

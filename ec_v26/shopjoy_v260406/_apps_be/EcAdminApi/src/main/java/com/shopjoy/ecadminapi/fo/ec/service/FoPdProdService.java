@@ -73,6 +73,7 @@ public class FoPdProdService {
 
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
+        req.setCurrentYn("Y");   // FO 강제 — 판매중 + 판매기간 이내만 (아래 주석 참조)
         List<PdProdDto.Item> list = pdProdRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -80,6 +81,7 @@ public class FoPdProdService {
 
     /** getPageData — 조회 */
     public BasePage<PdProdDto.Item> getPageData(PdProdDto.Request req) {
+        req.setCurrentYn("Y");   // FO 강제 — 판매중 + 판매기간 이내만 (아래 주석 참조)
         BasePage<PdProdDto.Item> res = pdProdService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -243,8 +245,14 @@ public class FoPdProdService {
 
         Map<String, Object> result = new LinkedHashMap<>();
 
+        /* ⚠ 아래 각 블록은 위에서 구한 *_prod 매핑 ID 목록을 반드시 Request 에 set 해야 한다.
+           set 하지 않으면 "이 상품의 프로모션"이 아니라 사이트 전체 프로모션이 통째로 응답된다
+           (2026-08-19 수정 — 이전에는 ID 목록을 구해놓고 request 에 넣지 않아 전체가 나가고 있었음).
+           또한 FO 응답이므로 currentYn='Y' 를 강제해 만료/미시작 프로모션을 제외한다. */
         if (!couponIds.isEmpty()) {
             PmCouponDto.Request req = new PmCouponDto.Request();
+            req.setCouponIds(couponIds);
+            req.setCurrentYn("Y");
             result.put("coupons", pmCouponService.getList(req));
         } else {
             result.put("coupons", List.of());
@@ -252,24 +260,35 @@ public class FoPdProdService {
 
         if (!discntIds.isEmpty()) {
             PmDiscntDto.Request req = new PmDiscntDto.Request();
+            req.setDiscntIds(discntIds);
+            req.setCurrentYn("Y");
             result.put("discnts", pmDiscntService.getList(req));
         } else {
             result.put("discnts", List.of());
         }
 
-        // 사은품(gift)은 *_prod 테이블 미운용 — useYn 전체 조회 유지
+        // 사은품(gift)은 *_prod 테이블 미운용 — 상품 한정 없이 조회하되 현재 유효건만
         PmGiftDto.Request giftReq = new PmGiftDto.Request();
+        giftReq.setCurrentYn("Y");
         result.put("gifts", pmGiftService.getList(giftReq));
 
         if (!eventIds.isEmpty()) {
             PmEventDto.Request req = new PmEventDto.Request();
+            req.setEventIds(eventIds);
+            req.setCurrentYn("Y");
             result.put("events", pmEventService.getList(req));
         } else {
             result.put("events", List.of());
         }
 
+        /* ⚠ saves 는 currentYn 을 걸지 않는다 — pm_save 는 적립/사용/소멸 "거래원장"이라
+           유효기간(start/end)·use_yn 자체가 없기 때문(설정하면 조용히 무시될 뿐이라 오해 소지).
+           적립 "정책"은 별도 테이블 pm_save_policy 이고 pm_save_item.save_id 도 실제로는
+           pm_save_policy.save_policy_id 를 참조한다 — 이 블록이 정책이 아닌 원장을 조회하는
+           구조는 별도 확인 필요(2026-08-19 확인된 사항, 이번 변경 범위 밖). */
         if (!saveIds.isEmpty()) {
             PmSaveDto.Request req = new PmSaveDto.Request();
+            req.setSaveIds(saveIds);
             result.put("saves", pmSaveService.getList(req));
         } else {
             result.put("saves", List.of());

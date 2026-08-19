@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.common.util;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
@@ -194,22 +195,70 @@ public class QdslUtil {
     }
 
     /**
+     * ⭐ 기준일이 기간컬럼 안에 드는가 (DATE 컬럼용) — {@code baseDate} 가 [startDate, endDate] 안인지.
+     * 시작/종료가 NULL 이면 각각 "제한 없음"으로 본다(즉시 시작 / 무기한).
+     *
+     * <p>같은 이름의 {@code dateBetween(path, start, end)} 과 읽는 방식이 동일하다 —
+     * <b>"첫 인자가 뒤 두 인자 사이에 있는가"</b>. 다만 방향이 반대다:
+     * <ul>
+     *   <li>{@code dateBetween(regDate, "2026-01-01", "2026-12-31")} — <b>컬럼</b>이 입력 두 날짜 사이 (기간검색)</li>
+     *   <li>{@code dateBetween(today, startDate, endDate)} — <b>기준일</b>이 두 컬럼 사이 (유효기간 판정)</li>
+     * </ul>
+     *
+     * <p>기준일을 인자로 받으므로 "지금"에 묶이지 않는다 — 과거/미래 특정 시점 기준 조회(BO 시뮬레이션,
+     * "그날 유효했던 프로모션" 조회 등)에도 그대로 쓸 수 있다.
+     *
+     * <p><b>기준일은 호출부에서 미리 한 번 구해 변수에 담아 넘긴다</b> — 메서드 안에서 매번
+     * {@code LocalDate.now()} 를 부르면 한 쿼리 안의 조건들이 서로 다른 시각을 기준으로 평가될 수
+     * 있고(자정 경계에서 목록/카운트 불일치), 같은 요청 안의 여러 조건이 동일 시점 스냅샷을 공유하지
+     * 못한다. 한 요청 = 한 기준시각 원칙.
+     *
+     * <pre>
+     * LocalDate today = LocalDate.now();
+     * .where(QdslUtil.dateBetween(today, pmEvent.startDate, pmEvent.endDate),
+     *        pmEvent.useYn.eq("Y"))
+     * </pre>
+     *
+     * @param baseDate 기준일 (호출부에서 1회 계산해 전달). null 이면 조건 미적용(null 반환).
+     */
+    public static BooleanExpression dateBetween(LocalDate baseDate, DatePath<LocalDate> startDate, DatePath<LocalDate> endDate) {
+        if (baseDate == null) return null;
+        return startDate.isNull().or(startDate.loe(baseDate))
+                .and(endDate.isNull().or(endDate.goe(baseDate)));
+    }
+
+    /**
+     * ⭐ 기준시각이 기간컬럼 안에 드는가 (TIMESTAMP 컬럼용) — {@code baseDateTime} 이 [startDt, endDt] 안인지.
+     * 의미·사용 원칙은 {@link #dateBetween(LocalDate, DatePath, DatePath)} 와 동일하며 컬럼 타입만 다르다.
+     *
+     * <p>DATE 컬럼에 이걸 쓰거나 TIMESTAMP 컬럼에 DATE 버전을 쓰면 경계값(당일 오후 시작 등)이
+     * 미묘하게 어긋나므로 <b>컬럼 타입에 맞는 쪽을 반드시 골라 쓸 것</b>.
+     *
+     * @param baseDateTime 기준시각 (호출부에서 1회 계산해 전달). null 이면 조건 미적용(null 반환).
+     */
+    public static BooleanExpression dateBetween(LocalDateTime baseDateTime, DateTimePath<LocalDateTime> startDt, DateTimePath<LocalDateTime> endDt) {
+        if (baseDateTime == null) return null;
+        return startDt.isNull().or(startDt.loe(baseDateTime))
+                .and(endDt.isNull().or(endDt.goe(baseDateTime)));
+    }
+
+    /**
      * 기간 검색 — 호출부에서 dateRangeType 값을 if 로 직접 분기해 미리 골라 둔 대상 컬럼(path)에 대해
      * [dateRangeStart, dateRangeEnd] 범위(끝일 포함, yyyy-MM-dd) 조건을 만든다.
      * dateRangeStart/dateRangeEnd 중 하나라도 blank 면 조건 미적용(null 반환).
      *
      * <p>대상 컬럼이 2~3개뿐인 경우가 대부분이라, 매 Repository 마다 Map&lt;String, DateTimePath&gt; 상수를
-     * 선언해 조회하던 이전 방식 대신 호출부에서 직접 if 로 고르도록 단순화했다. 변수는 기본 컬럼(보통
-     * regDate)으로 초기화해두고, dateRangeType 이 다른 값이면 그 컬럼으로 재할당한다.
+     * 선언해 조회하던 이전 방식 대신 {@code andDateRange(search)} 헬퍼 안에서 분기별로 대상 컬럼을
+     * <b>직접 명시</b>한다. 중간 변수(dateRangeField)에 담아 넘기지 않는다 — 어느 분기가 어느 컬럼을
+     * 쓰는지 그 자리에서 바로 보이게 하기 위함.
      *
      * <pre>
-     * private BooleanExpression andDateRangeBetween(XxxDto.Request s) {
-     *     if (s == null) return null;
-     *     DateTimePath&lt;LocalDateTime&gt; dateRangeField = xxx.regDate;
-     *     if ("upd_date".equals(s.getDateRangeType())) {
-     *         dateRangeField = xxx.updDate;
+     * private BooleanExpression andDateRange(XxxDto.Request search) {
+     *     if ("upd_date".equals(search.getDateRangeType())) {
+     *         return QdslUtil.dateBetween(xxx.updDate, search.getDateRangeStart(), search.getDateRangeEnd());
      *     }
-     *     return QdslUtil.dateBetween(dateRangeField, s.getDateRangeStart(), s.getDateRangeEnd());
+     *     // reg_date (기본) — dateRangeType 미지정/미인식 시
+     *     return QdslUtil.dateBetween(xxx.regDate, search.getDateRangeStart(), search.getDateRangeEnd());
      * }
      * </pre>
      */

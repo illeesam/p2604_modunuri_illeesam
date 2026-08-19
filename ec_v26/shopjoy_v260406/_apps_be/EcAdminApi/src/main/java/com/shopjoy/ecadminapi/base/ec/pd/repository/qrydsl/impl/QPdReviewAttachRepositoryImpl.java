@@ -63,20 +63,26 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 전체 목록 */
     @Override
     public List<PdReviewAttachDto.Item> selectList(PdReviewAttachDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pdReviewAttach.regDate;
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
+        wheres.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
+        wheres.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
+        wheres.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
         if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pdReviewAttach.updDate;
+            wheres.add(QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else {
+            wheres.add(QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
         }
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
-        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
-                QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()),
-                QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
-                QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
-                QdslUtil.strEq(pdReview.prodId, search.getProdId()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        )
+        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(wheres.toArray(BooleanExpression[]::new))
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -91,24 +97,29 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 페이지 목록 */
     @Override
     public BasePage<PdReviewAttachDto.Item> selectPageData(PdReviewAttachDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = pdReviewAttach.regDate;
-        if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = pdReviewAttach.updDate;
-        }
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-        BooleanExpression[] wheres = {
-                QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()),
-                QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
-                QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
-                QdslUtil.strEq(pdReview.prodId, search.getProdId()),
-                QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
+        if ("upd_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        }
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin();

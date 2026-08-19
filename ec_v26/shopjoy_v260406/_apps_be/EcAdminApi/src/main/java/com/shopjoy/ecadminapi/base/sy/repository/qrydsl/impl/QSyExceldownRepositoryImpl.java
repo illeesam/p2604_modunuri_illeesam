@@ -21,6 +21,7 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -140,24 +141,29 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     }
 
     private BooleanExpression[] buildWhere(SyExceldownDto.Request search) {
-        DateTimePath<LocalDateTime> dateRangeField = syExceldown.regDate;
+        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
+           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
+           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
+           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()));
+        whereList.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()));
+        whereList.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()));
+        whereList.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()));
+        whereList.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy()));
+        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
         if ("upd_date".equals(search.getDateRangeType())) {
-            dateRangeField = syExceldown.updDate;
+            whereList.add(QdslUtil.dateBetween(syExceldown.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         } else if ("start_date".equals(search.getDateRangeType())) {
-            dateRangeField = syExceldown.startDate;
+            whereList.add(QdslUtil.dateBetween(syExceldown.startDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         } else if ("end_date".equals(search.getDateRangeType())) {
-            dateRangeField = syExceldown.endDate;
+            whereList.add(QdslUtil.dateBetween(syExceldown.endDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        } else if ("reg_date".equals(search.getDateRangeType())) {
+            whereList.add(QdslUtil.dateBetween(syExceldown.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         }
-        return new BooleanExpression[] {
-            QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()),
-            QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()),
-            QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()),
-            QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()),
-            QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()),
-            QdslUtil.strEq(syExceldown.regBy, search.getRegBy()),
-            QdslUtil.dateBetween(dateRangeField, search.getDateRangeStart(), search.getDateRangeEnd()),
-            andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        return whereList.toArray(BooleanExpression[]::new);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
