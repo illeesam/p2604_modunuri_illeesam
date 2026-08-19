@@ -66,15 +66,15 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     public List<OdhOrderItemChgHistDto.Item> selectList(OdhOrderItemChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdhOrderItemChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -95,26 +95,25 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhOrderItemChgHistDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdhOrderItemChgHistDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odhOrderItemChgHist.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdhOrderItemChgHistDto.Item> res = new BasePage<>();

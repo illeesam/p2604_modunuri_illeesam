@@ -116,22 +116,22 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     public List<PmCouponDto.Item> selectList(PmCouponDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
-        wheres.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
-        wheres.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andProdVendorMd(search));
-        wheres.add(andCurrentYnCoupon(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
+        whereList.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
+        whereList.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andProdVendorMd(search));
+        whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -152,24 +152,24 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
-        wheres.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
-        wheres.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andProdVendorMd(search));
-        wheres.add(andCurrentYnCoupon(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
+        whereList.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
+        whereList.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andProdVendorMd(search));
+        whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmCouponDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -177,7 +177,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmCoupon.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmCouponDto.Item> res = new BasePage<>();
@@ -194,15 +194,15 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(couponProdEx)
             .where(couponProdEx.couponId.eq(pmCoupon.couponId));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(couponProdEx.prodId, search.getProdId()));
-        wheres.add(StringUtils.hasText(search.getProdId()) ? null
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(couponProdEx.prodId, search.getProdId()));
+        whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(couponProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         if (needProd) {
-            sub = sub.where(wheres2);
+            sub = sub.where(wheres);
         }
         if (needVendor) {
             sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))

@@ -63,19 +63,19 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     public List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()));
-        wheres.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()));
-        wheres.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -96,21 +96,21 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()));
-        wheres.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()));
-        wheres.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmEventBenefitDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -118,7 +118,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmEventBenefit.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmEventBenefitDto.Item> res = new BasePage<>();

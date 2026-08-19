@@ -88,19 +88,19 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     public List<StErpVoucherDto.Item> selectList(StErpVoucherDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()));
-        wheres.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()));
-        wheres.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()));
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()));
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -121,21 +121,21 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()));
-        wheres.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()));
-        wheres.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()));
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()));
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<StErpVoucherDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -143,7 +143,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stErpVoucher.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<StErpVoucherDto.Item> res = new BasePage<>();

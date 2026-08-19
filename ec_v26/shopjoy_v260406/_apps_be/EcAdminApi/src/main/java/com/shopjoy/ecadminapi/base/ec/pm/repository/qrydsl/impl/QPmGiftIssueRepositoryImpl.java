@@ -78,18 +78,18 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     public List<PmGiftIssueDto.Item> selectList(PmGiftIssueDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -110,20 +110,20 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmGiftIssueDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -131,7 +131,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmGiftIssue.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmGiftIssueDto.Item> res = new BasePage<>();

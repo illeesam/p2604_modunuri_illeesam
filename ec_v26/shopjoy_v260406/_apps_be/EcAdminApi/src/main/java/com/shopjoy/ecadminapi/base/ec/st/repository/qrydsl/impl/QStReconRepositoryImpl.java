@@ -94,19 +94,19 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     public List<StReconDto.Item> selectList(StReconDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stRecon.reconId, search.getReconId()));
-        wheres.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()));
-        wheres.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stRecon.reconId, search.getReconId()));
+        whereList.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()));
+        whereList.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<StReconDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -127,21 +127,21 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stRecon.reconId, search.getReconId()));
-        wheres.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()));
-        wheres.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stRecon.reconId, search.getReconId()));
+        whereList.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()));
+        whereList.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<StReconDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<StReconDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -149,7 +149,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stRecon.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<StReconDto.Item> res = new BasePage<>();

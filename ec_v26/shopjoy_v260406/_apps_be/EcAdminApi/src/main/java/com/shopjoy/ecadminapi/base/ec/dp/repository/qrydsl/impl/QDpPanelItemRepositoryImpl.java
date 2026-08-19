@@ -85,22 +85,22 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     @Override
     public List<DpPanelItemDto.Item> selectList(DpPanelItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -120,23 +120,23 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()));
-        wheres.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<DpPanelItemDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -144,7 +144,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpPanelItem.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<DpPanelItemDto.Item> res = new BasePage<>();

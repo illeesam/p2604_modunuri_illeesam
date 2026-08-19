@@ -87,20 +87,20 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     public List<PmPlanDto.Item> selectList(PmPlanDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId()));
-        wheres.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andProdVendorMd(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId()));
+        whereList.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andProdVendorMd(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -121,22 +121,22 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId()));
-        wheres.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andProdVendorMd(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId()));
+        whereList.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andProdVendorMd(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmPlanDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -144,7 +144,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmPlan.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmPlanDto.Item> res = new BasePage<>();
@@ -164,15 +164,15 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(planItemEx)
             .where(planItemEx.planId.eq(pmPlan.planId));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(planItemEx.prodId, search.getProdId()));
-        wheres.add(StringUtils.hasText(search.getProdId()) ? null
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(planItemEx.prodId, search.getProdId()));
+        whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(planItemEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         if (needProd) {
-            sub = sub.where(wheres2);
+            sub = sub.where(wheres);
         }
         if (needVendor) {
             sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))

@@ -89,18 +89,18 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     public List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
-        wheres.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
+        whereList.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -121,30 +121,29 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
-        wheres.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
-        wheres.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
+        whereList.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyhUserTokenLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhUserTokenLog.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyhUserTokenLogDto.Item> res = new BasePage<>();

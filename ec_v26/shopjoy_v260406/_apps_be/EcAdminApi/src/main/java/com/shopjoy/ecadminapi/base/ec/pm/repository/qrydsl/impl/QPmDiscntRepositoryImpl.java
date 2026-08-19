@@ -98,24 +98,24 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     public List<PmDiscntDto.Item> selectList(PmDiscntDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andMember(search));
-        wheres.add(andProdVendorMd(search));
-        wheres.add(andCurrentYnDiscnt(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andMember(search));
+        whereList.add(andProdVendorMd(search));
+        whereList.add(andCurrentYnDiscnt(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -136,26 +136,26 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()));
-        wheres.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andMember(search));
-        wheres.add(andProdVendorMd(search));
-        wheres.add(andCurrentYnDiscnt(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andMember(search));
+        whereList.add(andProdVendorMd(search));
+        whereList.add(andCurrentYnDiscnt(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmDiscntDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -163,7 +163,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmDiscnt.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmDiscntDto.Item> res = new BasePage<>();
@@ -194,15 +194,15 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(discntProdEx)
             .where(discntProdEx.discntId.eq(pmDiscnt.discntId));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(discntProdEx.prodId, search.getProdId()));
-        wheres.add(StringUtils.hasText(search.getProdId()) ? null
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(discntProdEx.prodId, search.getProdId()));
+        whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(discntProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         if (needProd) {
-            sub = sub.where(wheres2);
+            sub = sub.where(wheres);
         }
         if (needVendor) {
             sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))

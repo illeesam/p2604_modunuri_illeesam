@@ -66,16 +66,16 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     /* 목록조회 */
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
-        wheres.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
-        wheres.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
+        whereList.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
+        whereList.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2);
+                .where(wheres);
         // default order: sort_ord ASC, path_id ASC
         query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -96,27 +96,26 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
-        wheres.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
-        wheres.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
+        whereList.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
+        whereList.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         List<SyPathDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(buildOrder().toArray(OrderSpecifier[]::new))
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syPath.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyPathDto.Item> res = new BasePage<>();

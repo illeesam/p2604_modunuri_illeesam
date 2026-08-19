@@ -41,24 +41,23 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmPopup.useYn, search.getUseYn()));
-        wheres.add(andPopupPatternEq(search));
-        wheres.add(/* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmPopup.useYn, search.getUseYn()));
+        whereList.add(andPopupPatternEq(search));
+        whereList.add(/* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */
             andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         List<CmPopup> content = queryFactory.selectFrom(cmPopup)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(buildOrder())
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = queryFactory.select(cmPopup.count()).from(cmPopup)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<CmPopup> res = new BasePage<>();

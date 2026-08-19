@@ -72,17 +72,17 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     @Override
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
-        wheres.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
-        wheres.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
+        whereList.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
+        whereList.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -103,28 +103,27 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
-        wheres.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
-        wheres.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
+        whereList.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
+        whereList.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyI18nDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syI18n.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyI18nDto.Item> res = new BasePage<>();

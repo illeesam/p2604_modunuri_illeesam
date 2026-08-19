@@ -98,20 +98,20 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
-        wheres.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
-        wheres.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
+        whereList.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -132,23 +132,23 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
-        wheres.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
-        wheres.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
+        whereList.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyVendorDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -156,7 +156,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVendor.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyVendorDto.Item> res = new BasePage<>();

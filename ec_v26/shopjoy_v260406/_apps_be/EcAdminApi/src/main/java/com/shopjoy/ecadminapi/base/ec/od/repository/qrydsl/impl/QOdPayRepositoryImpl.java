@@ -154,20 +154,20 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     public List<OdPayDto.Item> selectList(OdPayDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odPay.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odPay.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odPay.payId, search.getPayId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("pay_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.payDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odPay.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odPay.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odPay.payId, search.getPayId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("pay_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.payDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdPayDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -188,22 +188,22 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odPay.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odPay.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odPay.payId, search.getPayId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("pay_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.payDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odPay.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odPay.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odPay.payId, search.getPayId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("pay_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.payDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdPayDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdPayDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -211,7 +211,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odPay.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdPayDto.Item> res = new BasePage<>();

@@ -92,18 +92,18 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     @Override
     public List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()));
-        wheres.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyAlarmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -124,29 +124,28 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()));
-        wheres.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyAlarmDto.Item> query = baseQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyAlarmDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syAlarm.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyAlarmDto.Item> res = new BasePage<>();

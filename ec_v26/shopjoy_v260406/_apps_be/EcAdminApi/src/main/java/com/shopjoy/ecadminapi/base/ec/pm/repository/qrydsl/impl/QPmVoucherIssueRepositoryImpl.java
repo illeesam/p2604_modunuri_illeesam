@@ -78,18 +78,18 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     public List<PmVoucherIssueDto.Item> selectList(PmVoucherIssueDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -110,20 +110,20 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmVoucherIssueDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -131,7 +131,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmVoucherIssue.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmVoucherIssueDto.Item> res = new BasePage<>();

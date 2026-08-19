@@ -91,18 +91,18 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
     public List<ZzSample2Dto.Item> selectList(ZzSample2Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()));
-        wheres.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()));
-        wheres.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()));
-        wheres.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()));
-        wheres.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()));
+        whereList.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()));
+        whereList.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()));
+        whereList.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()));
+        whereList.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<ZzSample2Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -123,30 +123,29 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()));
-        wheres.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()));
-        wheres.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()));
-        wheres.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()));
-        wheres.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()));
+        whereList.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()));
+        whereList.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()));
+        whereList.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()));
+        whereList.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzSample2Dto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<ZzSample2Dto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(zzSample2.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<ZzSample2Dto.Item> res = new BasePage<>();

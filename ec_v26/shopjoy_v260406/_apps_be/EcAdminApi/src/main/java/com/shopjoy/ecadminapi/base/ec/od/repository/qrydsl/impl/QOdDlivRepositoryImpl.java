@@ -112,34 +112,34 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     public List<OdDlivDto.Item> selectList(OdDlivDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odDliv.dlivId, search.getDlivId()));
-        wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odDliv.dlivId, search.getDlivId()));
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne().from(mbMemberEx)
                       .where(mbMemberEx.memberId.eq(odDliv.memberId),
                              QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                 ? JPAExpressions.selectOne().from(syVendorEx)
                       .where(syVendorEx.vendorId.eq(odDliv.vendorId),
                              QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                 : null);
-        wheres.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
-        wheres.add("dliv_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
+        whereList.add("dliv_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -160,36 +160,36 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odDliv.dlivId, search.getDlivId()));
-        wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odDliv.dlivId, search.getDlivId()));
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne().from(mbMemberEx)
                       .where(mbMemberEx.memberId.eq(odDliv.memberId),
                              QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                 ? JPAExpressions.selectOne().from(syVendorEx)
                       .where(syVendorEx.vendorId.eq(odDliv.vendorId),
                              QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                 : null);
-        wheres.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
-        wheres.add("dliv_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        whereList.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
+        whereList.add("dliv_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdDlivDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -197,7 +197,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odDliv.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdDlivDto.Item> res = new BasePage<>();

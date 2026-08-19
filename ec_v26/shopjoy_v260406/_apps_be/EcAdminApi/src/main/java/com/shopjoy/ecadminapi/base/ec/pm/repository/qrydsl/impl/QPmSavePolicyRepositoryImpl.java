@@ -67,23 +67,23 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
     public List<PmSavePolicyDto.Item> selectList(PmSavePolicyDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmSavePolicy.saveId, search.getSaveId()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.saveTypeCd, search.getSaveTypeCd()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.saveStatus, search.getSaveStatus()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()));
-        wheres.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        wheres.add(andProd(search));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmSavePolicy.saveId, search.getSaveId()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.saveTypeCd, search.getSaveTypeCd()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.saveStatus, search.getSaveStatus()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(andProd(search));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId))
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
@@ -105,18 +105,18 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmSavePolicy.saveId, search.getSaveId()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.saveTypeCd, search.getSaveTypeCd()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.saveStatus, search.getSaveStatus()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()));
-        wheres.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        wheres.add(andProd(search));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmSavePolicy.saveId, search.getSaveId()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.saveTypeCd, search.getSaveTypeCd()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.saveStatus, search.getSaveStatus()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(andProd(search));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pmSavePolicy.vendorId));
@@ -124,7 +124,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmSavePolicyDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -132,7 +132,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSavePolicy.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmSavePolicyDto.Item> res = new BasePage<>();

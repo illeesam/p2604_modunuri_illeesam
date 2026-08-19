@@ -75,21 +75,21 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
     @Override
     public List<SyNotiDto.Item> selectList(SyNotiDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syNoti.notiId, search.getNotiId()));
-        wheres.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd()));
-        wheres.add(QdslUtil.strEq(syNoti.recvId, search.getRecvId()));
-        wheres.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd()));
-        wheres.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd()));
-        wheres.add(QdslUtil.strEq(syNoti.readYn, search.getReadYn()));
-        wheres.add(QdslUtil.strEq(syNoti.regSiteId, search.getSiteId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syNoti.notiId, search.getNotiId()));
+        whereList.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd()));
+        whereList.add(QdslUtil.strEq(syNoti.recvId, search.getRecvId()));
+        whereList.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd()));
+        whereList.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd()));
+        whereList.add(QdslUtil.strEq(syNoti.readYn, search.getReadYn()));
+        whereList.add(QdslUtil.strEq(syNoti.regSiteId, search.getSiteId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyNotiDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -110,32 +110,31 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syNoti.notiId, search.getNotiId()));
-        wheres.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd()));
-        wheres.add(QdslUtil.strEq(syNoti.recvId, search.getRecvId()));
-        wheres.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd()));
-        wheres.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd()));
-        wheres.add(QdslUtil.strEq(syNoti.readYn, search.getReadYn()));
-        wheres.add(QdslUtil.strEq(syNoti.regSiteId, search.getSiteId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syNoti.notiId, search.getNotiId()));
+        whereList.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd()));
+        whereList.add(QdslUtil.strEq(syNoti.recvId, search.getRecvId()));
+        whereList.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd()));
+        whereList.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd()));
+        whereList.add(QdslUtil.strEq(syNoti.readYn, search.getReadYn()));
+        whereList.add(QdslUtil.strEq(syNoti.regSiteId, search.getSiteId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyNotiDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyNotiDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syNoti.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyNotiDto.Item> res = new BasePage<>();

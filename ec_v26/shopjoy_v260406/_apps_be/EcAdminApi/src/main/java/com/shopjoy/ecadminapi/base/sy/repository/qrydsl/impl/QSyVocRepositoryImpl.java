@@ -66,18 +66,18 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     @Override
     public List<SyVocDto.Item> selectList(SyVocDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
-        wheres.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
-        wheres.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
-        wheres.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
+        whereList.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
+        whereList.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
+        whereList.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -98,29 +98,28 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
-        wheres.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
-        wheres.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
-        wheres.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
+        whereList.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
+        whereList.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
+        whereList.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyVocDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVoc.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyVocDto.Item> res = new BasePage<>();

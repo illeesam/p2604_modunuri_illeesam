@@ -71,20 +71,20 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     public List<PdProdQnaDto.Item> selectList(PdProdQnaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()));
-        wheres.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId()));
-        wheres.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()));
-        wheres.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()));
+        whereList.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()));
+        whereList.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -105,22 +105,22 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()));
-        wheres.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId()));
-        wheres.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()));
-        wheres.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()));
+        whereList.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()));
+        whereList.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PdProdQnaDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -128,7 +128,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProdQna.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PdProdQnaDto.Item> res = new BasePage<>();

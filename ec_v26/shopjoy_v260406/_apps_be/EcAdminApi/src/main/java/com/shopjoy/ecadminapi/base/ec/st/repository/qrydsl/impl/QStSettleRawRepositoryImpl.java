@@ -202,33 +202,33 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()));
-        wheres.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()));
-        wheres.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()));
+        whereList.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()));
+        whereList.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<StSettleRawDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -249,35 +249,35 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod()));
-        wheres.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()));
-        wheres.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()));
-        wheres.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()));
+        whereList.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()));
+        whereList.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<StSettleRawDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<StSettleRawDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -285,7 +285,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleRaw.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleRawDto.Item> res = new BasePage<>();

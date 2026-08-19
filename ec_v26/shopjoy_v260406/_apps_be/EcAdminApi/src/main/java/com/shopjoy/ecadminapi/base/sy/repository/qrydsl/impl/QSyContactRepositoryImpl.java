@@ -73,19 +73,19 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     @Override
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syContact.contactId, search.getContactId()));
-        wheres.add(QdslUtil.strEq(syContact.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()));
-        wheres.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()));
-        wheres.add(andDateRangeBetween(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syContact.contactId, search.getContactId()));
+        whereList.add(QdslUtil.strEq(syContact.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()));
+        whereList.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()));
+        whereList.add(andDateRangeBetween(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyContactDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -106,30 +106,29 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syContact.contactId, search.getContactId()));
-        wheres.add(QdslUtil.strEq(syContact.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()));
-        wheres.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()));
-        wheres.add(andDateRangeBetween(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syContact.contactId, search.getContactId()));
+        whereList.add(QdslUtil.strEq(syContact.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()));
+        whereList.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()));
+        whereList.add(andDateRangeBetween(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyContactDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyContactDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syContact.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyContactDto.Item> res = new BasePage<>();

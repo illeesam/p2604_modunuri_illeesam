@@ -69,18 +69,18 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     @Override
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
-        wheres.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
-        wheres.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
+        whereList.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
+        whereList.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -101,29 +101,28 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
-        wheres.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
-        wheres.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
+        whereList.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
+        whereList.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyNoticeDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syNotice.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyNoticeDto.Item> res = new BasePage<>();

@@ -79,21 +79,21 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     @Override
     public List<SyPropDto.Item> selectList(SyPropDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syProp.propKey, search.getPropKey()));
-        wheres.add(andPropKeysIn(search));
-        wheres.add(andPropKeyPrefixesStartsWith(search));
-        wheres.add(QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()));
-        wheres.add(QdslUtil.strEq(syProp.useYn, search.getUseYn()));
-        wheres.add(andPropProfileLike(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syProp.propKey, search.getPropKey()));
+        whereList.add(andPropKeysIn(search));
+        whereList.add(andPropKeyPrefixesStartsWith(search));
+        whereList.add(QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()));
+        whereList.add(QdslUtil.strEq(syProp.useYn, search.getUseYn()));
+        whereList.add(andPropProfileLike(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyPropDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -114,32 +114,31 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syProp.propKey, search.getPropKey()));
-        wheres.add(andPropKeysIn(search));
-        wheres.add(andPropKeyPrefixesStartsWith(search));
-        wheres.add(QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()));
-        wheres.add(QdslUtil.strEq(syProp.useYn, search.getUseYn()));
-        wheres.add(andPropProfileLike(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syProp.propKey, search.getPropKey()));
+        whereList.add(andPropKeysIn(search));
+        whereList.add(andPropKeyPrefixesStartsWith(search));
+        whereList.add(QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()));
+        whereList.add(QdslUtil.strEq(syProp.useYn, search.getUseYn()));
+        whereList.add(andPropProfileLike(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyPropDto.Item> query = baseQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyPropDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syProp.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyPropDto.Item> res = new BasePage<>();

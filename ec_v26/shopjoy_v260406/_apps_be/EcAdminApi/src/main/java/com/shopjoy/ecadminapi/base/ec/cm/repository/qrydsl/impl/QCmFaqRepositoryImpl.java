@@ -83,17 +83,17 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     @Override
     public List<CmFaqDto.Item> selectList(CmFaqDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
-        wheres.add(andPathTreeIn(search));
-        wheres.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
+        whereList.add(andPathTreeIn(search));
+        whereList.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -112,28 +112,27 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
-        wheres.add(andPathTreeIn(search));
-        wheres.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
+        whereList.add(andPathTreeIn(search));
+        whereList.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<CmFaqDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(pageSize)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmFaq.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<CmFaqDto.Item> res = new BasePage<>();

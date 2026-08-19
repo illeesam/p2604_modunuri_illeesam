@@ -76,18 +76,18 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     @Override
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
-        wheres.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
-        wheres.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
-        wheres.add(andDateRangeBetween(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
+        whereList.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
+        whereList.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
+        whereList.add(andDateRangeBetween(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -108,29 +108,28 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
-        wheres.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
-        wheres.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
-        wheres.add(andDateRangeBetween(search));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
+        whereList.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
+        whereList.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
+        whereList.add(andDateRangeBetween(search));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyBbsDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syBbs.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyBbsDto.Item> res = new BasePage<>();

@@ -89,20 +89,20 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     public List<MbMemberDto.Item> selectList(MbMemberDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()));
-        wheres.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()));
+        whereList.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -123,22 +123,22 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()));
-        wheres.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()));
+        whereList.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<MbMemberDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -146,7 +146,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbMember.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<MbMemberDto.Item> res = new BasePage<>();

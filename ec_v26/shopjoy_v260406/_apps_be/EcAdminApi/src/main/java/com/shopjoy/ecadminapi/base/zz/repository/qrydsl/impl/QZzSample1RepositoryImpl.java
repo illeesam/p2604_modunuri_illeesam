@@ -90,16 +90,16 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
     public List<ZzSample1Dto.Item> selectList(ZzSample1Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(zzSample1.sample1Id, search.getSample1Ids()));
-        wheres.add(QdslUtil.strEq(zzSample1.sample1Id, search.getSample1Id()));
-        wheres.add(QdslUtil.strEq(zzSample1.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(zzSample1.sample1Id, search.getSample1Ids()));
+        whereList.add(QdslUtil.strEq(zzSample1.sample1Id, search.getSample1Id()));
+        whereList.add(QdslUtil.strEq(zzSample1.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<ZzSample1Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -120,28 +120,27 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(zzSample1.sample1Id, search.getSample1Ids()));
-        wheres.add(QdslUtil.strEq(zzSample1.sample1Id, search.getSample1Id()));
-        wheres.add(QdslUtil.strEq(zzSample1.useYn, search.getUseYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(zzSample1.sample1Id, search.getSample1Ids()));
+        whereList.add(QdslUtil.strEq(zzSample1.sample1Id, search.getSample1Id()));
+        whereList.add(QdslUtil.strEq(zzSample1.useYn, search.getUseYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzSample1Dto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<ZzSample1Dto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(zzSample1.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<ZzSample1Dto.Item> res = new BasePage<>();

@@ -70,21 +70,21 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     @Override
     public List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()));
-        wheres.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()));
-        wheres.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()));
-        wheres.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()));
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()));
+        whereList.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()));
+        whereList.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -100,23 +100,23 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()));
-        wheres.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()));
-        wheres.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()));
-        wheres.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()));
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()));
+        whereList.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()));
+        whereList.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<CmChattMsgDto.Item> base = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<CmChattMsgDto.Item> content = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
@@ -124,7 +124,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         Long total = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmChattMsg.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<CmChattMsgDto.Item> res = new BasePage<>();

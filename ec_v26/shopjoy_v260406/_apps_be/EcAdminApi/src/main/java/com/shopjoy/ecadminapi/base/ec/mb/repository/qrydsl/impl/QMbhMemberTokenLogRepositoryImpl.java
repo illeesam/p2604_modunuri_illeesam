@@ -85,16 +85,16 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     @Override
     public List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()));
-        wheres.add(QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -114,27 +114,26 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()));
-        wheres.add(QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<MbhMemberTokenLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbhMemberTokenLog.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<MbhMemberTokenLogDto.Item> res = new BasePage<>();

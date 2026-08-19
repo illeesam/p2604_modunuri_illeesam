@@ -104,27 +104,27 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
-        wheres.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
-        wheres.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
-        wheres.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmGift.prodId, search.getProdId()));
-        wheres.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
-        wheres.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        wheres.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
-        wheres.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
-        wheres.add(andMember(search));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andCurrentYnGift(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
+        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
+        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
+        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmGift.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
+        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        whereList.add(andMember(search));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andCurrentYnGift(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -145,31 +145,31 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
-        wheres.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
-        wheres.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
-        wheres.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
-        wheres.add(/* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
+        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
+        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
+        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
+        whereList.add(/* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
                — 페이지 조회 모드에서만 상품 필터가 무시되던 기존 버그. 같이 정정. */
             QdslUtil.strEq(pmGift.prodId, search.getProdId()));
-        wheres.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
-        wheres.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        wheres.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
-        wheres.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
-        wheres.add(andMember(search));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andCurrentYnGift(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
+        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        whereList.add(andMember(search));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andCurrentYnGift(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmGiftDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -177,7 +177,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmGift.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmGiftDto.Item> res = new BasePage<>();

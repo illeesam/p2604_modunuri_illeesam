@@ -72,19 +72,19 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     @Override
     public List<SyCodeGrpDto.Item> selectList(SyCodeGrpDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()));
-        wheres.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
-        wheres.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()));
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
+        whereList.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -105,22 +105,22 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()));
-        wheres.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
-        wheres.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()));
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
+        whereList.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyCodeGrpDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -128,7 +128,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syCodeGrp.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyCodeGrpDto.Item> res = new BasePage<>();

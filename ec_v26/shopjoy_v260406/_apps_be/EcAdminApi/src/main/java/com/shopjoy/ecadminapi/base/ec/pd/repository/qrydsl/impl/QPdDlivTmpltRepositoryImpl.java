@@ -87,19 +87,19 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     public List<PdDlivTmpltDto.Item> selectList(PdDlivTmpltDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()));
-        wheres.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()));
-        wheres.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -120,21 +120,21 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()));
-        wheres.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()));
-        wheres.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PdDlivTmpltDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -142,7 +142,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdDlivTmplt.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PdDlivTmpltDto.Item> res = new BasePage<>();

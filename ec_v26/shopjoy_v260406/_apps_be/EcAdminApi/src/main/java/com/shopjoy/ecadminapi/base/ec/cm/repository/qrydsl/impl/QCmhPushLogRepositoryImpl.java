@@ -73,17 +73,17 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     @Override
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -104,20 +104,20 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         int limit = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<CmhPushLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -125,7 +125,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmhPushLog.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<CmhPushLogDto.Item> res = new BasePage<>();

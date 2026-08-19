@@ -143,19 +143,19 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     }
 
     private BooleanExpression[] buildWhere(SyExceldownDto.Request search) {
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()));
-        wheres.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()));
-        wheres.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()));
-        wheres.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()));
-        wheres.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()));
-        wheres.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("start_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.startDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("end_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.endDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        return wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()));
+        whereList.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()));
+        whereList.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()));
+        whereList.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()));
+        whereList.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("start_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.startDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("end_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.endDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        return whereList.toArray(BooleanExpression[]::new);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

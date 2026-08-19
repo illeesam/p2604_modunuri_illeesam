@@ -81,18 +81,18 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     @Override
     public List<SyBatchDto.Item> selectList(SyBatchDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
-        wheres.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
+        whereList.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyBatchDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -113,29 +113,28 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
-        wheres.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
-        wheres.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
+        whereList.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyBatchDto.Item> query = baseQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyBatchDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syBatch.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyBatchDto.Item> res = new BasePage<>();

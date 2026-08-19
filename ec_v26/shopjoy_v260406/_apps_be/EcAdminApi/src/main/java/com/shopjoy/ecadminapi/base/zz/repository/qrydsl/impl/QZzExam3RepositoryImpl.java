@@ -66,17 +66,17 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     public List<ZzExam3Dto.Item> selectList(ZzExam3Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids()));
-        wheres.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id()));
-        wheres.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id()));
-        wheres.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids()));
+        whereList.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id()));
+        whereList.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id()));
+        whereList.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -97,29 +97,28 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids()));
-        wheres.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id()));
-        wheres.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id()));
-        wheres.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids()));
+        whereList.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id()));
+        whereList.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id()));
+        whereList.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<ZzExam3Dto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(zzExam3.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<ZzExam3Dto.Item> res = new BasePage<>();

@@ -92,20 +92,20 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     public List<SyhSendEmailLogDto.Item> selectList(SyhSendEmailLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()));
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()));
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()));
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyhSendEmailLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -126,23 +126,23 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()));
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()));
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()));
-        wheres.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<SyhSendEmailLogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyhSendEmailLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -150,7 +150,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhSendEmailLog.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyhSendEmailLogDto.Item> res = new BasePage<>();

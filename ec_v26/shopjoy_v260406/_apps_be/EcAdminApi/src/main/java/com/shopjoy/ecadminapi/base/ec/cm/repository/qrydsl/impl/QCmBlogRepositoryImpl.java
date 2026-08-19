@@ -72,20 +72,20 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     @Override
     public List<CmBlogDto.Item> selectList(CmBlogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId()));
-        wheres.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()));
-        wheres.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()));
-        wheres.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId()));
+        whereList.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()));
+        whereList.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()));
+        whereList.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres)
         .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -106,23 +106,23 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         int limit = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId()));
-        wheres.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()));
-        wheres.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()));
-        wheres.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId()));
+        whereList.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()));
+        whereList.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()));
+        whereList.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<CmBlogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -130,7 +130,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmBlog.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<CmBlogDto.Item> res = new BasePage<>();

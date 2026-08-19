@@ -284,26 +284,26 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
-        wheres.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
-        wheres.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
-        wheres.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
-        wheres.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
+        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
+        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
+        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
+        whereList.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdClaimDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -324,28 +324,28 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
-        wheres.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
-        wheres.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
-        wheres.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
-        wheres.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
+        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
+        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
+        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
+        whereList.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdClaimDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -353,7 +353,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odClaim.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdClaimDto.Item> res = new BasePage<>();

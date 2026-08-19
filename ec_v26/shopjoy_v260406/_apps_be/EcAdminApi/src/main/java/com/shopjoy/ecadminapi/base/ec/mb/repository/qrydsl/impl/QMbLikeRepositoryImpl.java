@@ -71,20 +71,20 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     @Override
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId()));
-        wheres.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId()));
-        wheres.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId()));
+        whereList.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId()));
+        whereList.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -104,22 +104,22 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId()));
-        wheres.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId()));
-        wheres.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId()));
-        wheres.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId()));
+        whereList.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId()));
+        whereList.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<MbLikeDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -127,7 +127,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbLike.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<MbLikeDto.Item> res = new BasePage<>();

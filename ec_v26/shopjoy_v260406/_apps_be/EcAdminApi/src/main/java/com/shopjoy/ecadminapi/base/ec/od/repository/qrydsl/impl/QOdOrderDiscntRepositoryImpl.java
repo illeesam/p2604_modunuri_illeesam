@@ -77,19 +77,19 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     public List<OdOrderDiscntDto.Item> selectList(OdOrderDiscntDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odOrderDiscnt.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odOrderDiscnt.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -110,21 +110,21 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odOrderDiscnt.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odOrderDiscnt.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdOrderDiscntDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -132,7 +132,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrderDiscnt.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdOrderDiscntDto.Item> res = new BasePage<>();

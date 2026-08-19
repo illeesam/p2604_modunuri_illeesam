@@ -82,18 +82,18 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     @Override
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
-        wheres.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
-        wheres.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
-        wheres.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
+        whereList.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
+        whereList.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
+        whereList.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -114,29 +114,28 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
-        wheres.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
-        wheres.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
-        wheres.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
+        whereList.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
+        whereList.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
+        whereList.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyAttachDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syAttach.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<SyAttachDto.Item> res = new BasePage<>();

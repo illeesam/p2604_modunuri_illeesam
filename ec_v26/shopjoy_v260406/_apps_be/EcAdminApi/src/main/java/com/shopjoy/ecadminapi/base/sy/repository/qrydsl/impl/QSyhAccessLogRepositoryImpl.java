@@ -103,16 +103,16 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessLogDto.Request search) {
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()));
-        wheres.add(andStatusEq(search));
-        wheres.add(andPathLike(search));
-        wheres.add(andUiNmLike(search));
-        wheres.add(QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()));
-        wheres.add(QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()));
-        wheres.add(QdslUtil.dateBetween(syhAccessLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        return wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()));
+        whereList.add(andStatusEq(search));
+        whereList.add(andPathLike(search));
+        whereList.add(andUiNmLike(search));
+        whereList.add(QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()));
+        whereList.add(QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()));
+        whereList.add(QdslUtil.dateBetween(syhAccessLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        return whereList.toArray(BooleanExpression[]::new);
     }
 
     /* 목록조회 — 대량 export 청크용. COUNT 를 돌지 않아 selectPageData 보다 가볍다 */

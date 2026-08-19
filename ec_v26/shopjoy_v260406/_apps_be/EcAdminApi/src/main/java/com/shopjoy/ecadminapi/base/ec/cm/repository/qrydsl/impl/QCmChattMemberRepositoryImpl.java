@@ -66,16 +66,16 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
     @Override
     public List<CmChattMemberDto.Item> selectList(CmChattMemberDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId()));
-        wheres.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()));
-        wheres.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId()));
+        whereList.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()));
+        whereList.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<CmChattMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -91,27 +91,26 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId()));
-        wheres.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()));
-        wheres.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId()));
+        whereList.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()));
+        whereList.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId()));
 
         JPAQuery<CmChattMemberDto.Item> base = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<CmChattMemberDto.Item> content = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = base.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmChattMember.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<CmChattMemberDto.Item> res = new BasePage<>();

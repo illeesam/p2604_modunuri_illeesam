@@ -64,16 +64,16 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
     public List<OdhClaimStatusHistDto.Item> selectList(OdhClaimStatusHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()));
-        wheres.add(QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdhClaimStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -94,27 +94,26 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()));
-        wheres.add(QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhClaimStatusHistDto.Item> query = baseSelColumnQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdhClaimStatusHistDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odhClaimStatusHist.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdhClaimStatusHistDto.Item> res = new BasePage<>();

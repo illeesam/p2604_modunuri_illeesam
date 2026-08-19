@@ -231,18 +231,18 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     public List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
-        wheres.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
-        wheres.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
-        wheres.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
-        wheres.add(claimFilter(search.getClaimCombos()));
-        wheres.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
+        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
+        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
+        whereList.add(claimFilter(search.getClaimCombos()));
+        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne()
                       .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                       .where(odOrderEx.orderId.eq(odOrderItem.orderId),
@@ -250,7 +250,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                       .exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                 ? JPAExpressions.selectOne()
                       .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                       .where(pVendorEx.prodId.eq(odOrderItem.prodId),
@@ -258,7 +258,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                       .exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
                 ? JPAExpressions.selectOne()
                       .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                       .where(pMdEx.prodId.eq(odOrderItem.prodId),
@@ -266,7 +266,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                       .exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
                 ? JPAExpressions.selectOne()
                       .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                       .where(pBrandEx.prodId.eq(odOrderItem.prodId),
@@ -274,13 +274,13 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
                       .exists()
                 : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -301,18 +301,18 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
-        wheres.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
-        wheres.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
-        wheres.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
-        wheres.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
-        wheres.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
-        wheres.add(claimFilter(search.getClaimCombos()));
-        wheres.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
+        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
+        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
+        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
+        whereList.add(claimFilter(search.getClaimCombos()));
+        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne()
                       .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                       .where(odOrderEx.orderId.eq(odOrderItem.orderId),
@@ -320,7 +320,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                       .exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                 ? JPAExpressions.selectOne()
                       .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                       .where(pVendorEx.prodId.eq(odOrderItem.prodId),
@@ -328,7 +328,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                       .exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
                 ? JPAExpressions.selectOne()
                       .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                       .where(pMdEx.prodId.eq(odOrderItem.prodId),
@@ -336,7 +336,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                       .exists()
                 : null);
-        wheres.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
                 ? JPAExpressions.selectOne()
                       .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                       .where(pBrandEx.prodId.eq(odOrderItem.prodId),
@@ -344,15 +344,15 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
                       .exists()
                 : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdOrderItemDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -360,7 +360,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrderItem.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<OdOrderItemDto.Item> res = new BasePage<>();

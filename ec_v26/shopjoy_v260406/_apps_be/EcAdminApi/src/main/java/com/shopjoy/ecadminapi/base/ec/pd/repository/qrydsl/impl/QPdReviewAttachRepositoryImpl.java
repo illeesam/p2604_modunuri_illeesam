@@ -63,20 +63,20 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 전체 목록 */
     @Override
     public List<PdReviewAttachDto.Item> selectList(PdReviewAttachDto.Request search) {
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
-        wheres.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
-        wheres.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
-        wheres.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
-        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(wheres2)
+        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(wheres)
         .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -97,22 +97,22 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
-        wheres.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
-        wheres.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
-        wheres.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PdReviewAttachDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -120,7 +120,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdReviewAttach.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PdReviewAttachDto.Item> res = new BasePage<>();

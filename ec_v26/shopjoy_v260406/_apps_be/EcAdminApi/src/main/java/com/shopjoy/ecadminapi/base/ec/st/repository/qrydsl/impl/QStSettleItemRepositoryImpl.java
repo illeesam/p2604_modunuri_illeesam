@@ -87,18 +87,18 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     public List<StSettleItemDto.Item> selectList(StSettleItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<StSettleItemDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -119,20 +119,20 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()));
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()));
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<StSettleItemDto.Item> query = baseListQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<StSettleItemDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -140,7 +140,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(stSettleItem.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<StSettleItemDto.Item> res = new BasePage<>();

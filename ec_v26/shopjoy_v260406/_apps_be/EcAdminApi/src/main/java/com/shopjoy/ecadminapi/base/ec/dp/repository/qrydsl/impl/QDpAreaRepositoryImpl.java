@@ -72,20 +72,20 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     @Override
     public List<DpAreaDto.Item> selectList(DpAreaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
-        wheres.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
-        wheres.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
+        whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
+        whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<DpAreaDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -104,29 +104,28 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
-        wheres.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
-        wheres.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
+        whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
+        whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
         JPAQuery<DpAreaDto.Item> query = baseQuery();
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<DpAreaDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpArea.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
         BasePage<DpAreaDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);

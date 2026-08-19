@@ -87,22 +87,22 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     public List<PmEventDto.Item> selectList(PmEventDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds()));
-        wheres.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId()));
-        wheres.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andVendorMd(search));
-        wheres.add(andCurrentYnEvent(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds()));
+        whereList.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId()));
+        whereList.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andVendorMd(search));
+        whereList.add(andCurrentYnEvent(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -123,24 +123,24 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds()));
-        wheres.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId()));
-        wheres.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn()));
-        wheres.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andVendorMd(search));
-        wheres.add(andCurrentYnEvent(search.getCurrentYn()));
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds()));
+        whereList.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId()));
+        whereList.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andVendorMd(search));
+        whereList.add(andCurrentYnEvent(search.getCurrentYn()));
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmEventDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
@@ -148,7 +148,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmEvent.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
 
         BasePage<PmEventDto.Item> res = new BasePage<>();
@@ -168,15 +168,15 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(eventProdEx)
             .where(eventProdEx.eventId.eq(pmEvent.eventId));
 
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(eventProdEx.prodId, search.getProdId()));
-        wheres.add(StringUtils.hasText(search.getProdId()) ? null
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(eventProdEx.prodId, search.getProdId()));
+        whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(eventProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         if (needProd) {
-            sub = sub.where(wheres2);
+            sub = sub.where(wheres);
         }
         if (needVendor) {
             sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))

@@ -79,23 +79,23 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     @Override
     public List<DpPanelDto.Item> selectList(DpPanelDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId()));
-        wheres.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()));
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId()));
-        wheres.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()));
-        wheres.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()));
-        wheres.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId()));
+        whereList.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()));
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId()));
+        whereList.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()));
+        whereList.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()));
+        whereList.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -115,31 +115,31 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        List<BooleanExpression> wheres = new ArrayList<>();
-        wheres.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId()));
-        wheres.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()));
-        wheres.add(andPathIdIn(search));
-        wheres.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId()));
-        wheres.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()));
-        wheres.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()));
-        wheres.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn()));
-        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> whereList = new ArrayList<>();
+        whereList.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId()));
+        whereList.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()));
+        whereList.add(andPathIdIn(search));
+        whereList.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId()));
+        whereList.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()));
+        whereList.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()));
+        whereList.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn()));
+        whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
 
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<DpPanelDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres2)
+                .where(wheres)
                 .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpPanel.count())
-                .where(wheres2)
+                .where(wheres)
                 .fetchOne();
         BasePage<DpPanelDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
