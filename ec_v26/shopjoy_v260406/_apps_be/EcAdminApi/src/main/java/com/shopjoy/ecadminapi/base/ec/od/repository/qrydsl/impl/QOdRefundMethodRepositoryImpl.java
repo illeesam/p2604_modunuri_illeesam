@@ -63,9 +63,9 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                         odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
                 ))
                 .from(odRefundMethod)
-                .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId)) // 주문
+                .innerJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId)) // 주문
+                .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd))) // 결제수단
                 .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId)) // 결제
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd))) // 결제수단
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd))) // 환불상태
                 ;
     }

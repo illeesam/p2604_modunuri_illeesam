@@ -69,7 +69,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                         syVendor.vendorNm.as("vendorNm")           // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorUser)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId)) // 업체
+                .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId)) // 업체
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId)) // 사용자
                 .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION_CD").and(cdP.codeValue.eq(syVendorUser.positionCd))) // 직급
                 .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS_CD").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd))) // 업체담당자상태

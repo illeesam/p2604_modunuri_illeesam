@@ -167,8 +167,9 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         cdPmc.codeLabel.as("payMethodCdNm")                     // 결제수단명 (sy_code 조인)
                 ))
                 .from(stSettleRaw)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId)) // 주문
-                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleRaw.orderItemId)) // 주문상품
+                .innerJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId)) // 주문
+                .innerJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleRaw.orderItemId)) // 주문상품
+                .innerJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE_CD").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd))) // 원장유형
                 .leftJoin(mbMember).on(mbMember.memberId.eq(stSettleRaw.memberId)) // 회원
                 .leftJoin(odClaim).on(odClaim.claimId.eq(stSettleRaw.claimId)) // 클레임
                 .leftJoin(odClaimItem).on(odClaimItem.claimItemId.eq(stSettleRaw.claimItemId)) // 클레임상품
@@ -181,7 +182,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(pmDiscnt).on(pmDiscnt.discntId.eq(stSettleRaw.discntId)) // 할인
                 .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(stSettleRaw.voucherId)) // 바우처
                 .leftJoin(pmGift).on(pmGift.giftId.eq(stSettleRaw.giftId)) // 사은품
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE_CD").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd))) // 원장유형
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS_CD").and(cdRs.codeValue.eq(stSettleRaw.rawStatusCd))) // 원장상태
                 .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd))) // 주문상품상태
                 .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE_CD").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd))) // 업체유형

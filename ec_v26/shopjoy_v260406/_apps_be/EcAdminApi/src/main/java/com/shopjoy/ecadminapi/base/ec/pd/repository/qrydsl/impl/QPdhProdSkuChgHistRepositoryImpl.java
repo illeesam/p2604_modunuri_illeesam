@@ -56,8 +56,8 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
                         pdhProdSkuChgHist.regDate
                 ))
                 .from(pdhProdSkuChgHist)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuChgHist.prodId)) // 상품
-                .leftJoin(cd_sct).on(cd_sct.codeGrp.eq("SKU_CHG_TYPE").and(cd_sct.codeValue.eq(pdhProdSkuChgHist.chgTypeCd))) // SKU변경유형
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuChgHist.prodId)) // 상품
+                .innerJoin(cd_sct).on(cd_sct.codeGrp.eq("SKU_CHG_TYPE").and(cd_sct.codeValue.eq(pdhProdSkuChgHist.chgTypeCd))) // SKU변경유형
                 ;
     }
 

@@ -47,8 +47,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                         mbMemberSns.regDate        // 등록일시
                 ))
                 .from(mbMemberSns)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId)) // 회원
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL_CD").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd))) // SNS채널
+                .innerJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId)) // 회원
+                .innerJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL_CD").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd))) // SNS채널
                 ;
     }
 

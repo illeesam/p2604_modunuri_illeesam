@@ -47,8 +47,8 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                         pmPlanItem.regBy, pmPlanItem.regDate, pmPlanItem.updBy, pmPlanItem.updDate
                 ))
                 .from(pmPlanItem)
-                .leftJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId)) // 기획전
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId)) // 상품
+                .innerJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId)) // 기획전
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId)) // 상품
                 ;
     }
 

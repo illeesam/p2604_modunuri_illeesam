@@ -63,8 +63,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                         syBrand.brandNm.as("brandNm")              // 브랜드명 (조인: sy_brand)
                 ))
                 .from(syVendorBrand)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId)) // 업체
-                .leftJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId)) // 브랜드
+                .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId)) // 업체
+                .innerJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId)) // 브랜드
                 .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("CONTRACT_CD").and(cdVbc.codeValue.eq(syVendorBrand.contractCd))) // 계약상태
                 ;
     }

@@ -52,8 +52,8 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                         pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
                 ))
                 .from(pdRestockNoti)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId)) // 상품
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId)) // 회원
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId)) // 상품
+                .innerJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId)) // 회원
                 ;
     }
 

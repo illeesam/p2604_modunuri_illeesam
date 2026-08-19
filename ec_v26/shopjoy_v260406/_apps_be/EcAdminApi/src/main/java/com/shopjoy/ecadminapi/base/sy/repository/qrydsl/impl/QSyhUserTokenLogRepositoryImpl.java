@@ -69,9 +69,9 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                         cd_tt.codeLabel.as("tokenTypeCdNm")             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
                 ))
                 .from(syhUserTokenLog)
-                .leftJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId)) // 사용자
-                .leftJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd))) // 액션
-                .leftJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd))) // 토큰유형
+                .innerJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId)) // 사용자
+                .innerJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd))) // 액션
+                .innerJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd))) // 토큰유형
                 ;
     }
 

@@ -54,7 +54,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                         mbMemberAddr.updDate                   // 수정일
                 ))
                 .from(mbMemberAddr)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId)) // 회원
+                .innerJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId)) // 회원
                 ;
     }
 

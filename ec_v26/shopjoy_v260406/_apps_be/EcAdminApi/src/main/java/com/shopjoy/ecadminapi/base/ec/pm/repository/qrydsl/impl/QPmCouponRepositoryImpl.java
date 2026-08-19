@@ -96,7 +96,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                         cdMg.codeLabel.as("memGradeCdNm")        // 적용등급 코드라벨 (조인)
                 ))
                 .from(pmCoupon)
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
+                .innerJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("COUPON_STATUS_CD").and(cdCs.codeValue.eq(pmCoupon.couponStatusCd))) // 쿠폰상태
                 .leftJoin(cdTt).on(cdTt.codeGrp.eq("COUPON_TARGET").and(cdTt.codeValue.eq(pmCoupon.targetTypeCd))) // 쿠폰대상
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmCoupon.memGradeCd))) // 회원등급

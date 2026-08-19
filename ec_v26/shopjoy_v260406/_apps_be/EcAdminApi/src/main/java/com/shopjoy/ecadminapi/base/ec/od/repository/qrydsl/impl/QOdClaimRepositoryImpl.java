@@ -150,9 +150,9 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                             "claimItemCnt")
                 ))
                 .from(odClaim)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
+                .innerJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
+                .innerJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId)) // 회원
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
                 .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
                 .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd))) // 택배사
@@ -263,9 +263,9 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .from(odClaim)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
+                .innerJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
+                .innerJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId)) // 회원
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
                 .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
                 .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odClaim.refundBankCd))) // 은행

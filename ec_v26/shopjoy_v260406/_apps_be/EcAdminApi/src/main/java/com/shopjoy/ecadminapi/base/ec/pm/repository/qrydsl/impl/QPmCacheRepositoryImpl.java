@@ -56,7 +56,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                         pmCache.regBy, pmCache.regDate, pmCache.updBy, pmCache.updDate
                 ))
                 .from(pmCache)
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE_CD").and(cdCt.codeValue.eq(pmCache.cacheTypeCd))) // 캐쉬유형
+                .innerJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE_CD").and(cdCt.codeValue.eq(pmCache.cacheTypeCd))) // 캐쉬유형
                 ;
     }
 

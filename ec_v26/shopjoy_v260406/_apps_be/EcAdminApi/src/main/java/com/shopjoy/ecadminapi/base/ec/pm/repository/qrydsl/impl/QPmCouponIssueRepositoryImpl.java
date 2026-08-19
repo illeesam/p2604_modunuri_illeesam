@@ -65,9 +65,9 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                         cdCt.codeLabel.as("couponTypeCdNm")         // 쿠폰유형 코드라벨 (조인)
                 ))
                 .from(pmCouponIssue)
-                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId)) // 쿠폰
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId)) // 회원
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
+                .innerJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId)) // 쿠폰
+                .innerJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId)) // 회원
+                .innerJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
                 ;
     }
 

@@ -54,9 +54,9 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                         mbLike.updDate         // 수정일
                 ))
                 .from(mbLike)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbLike.memberId)) // 회원
+                .innerJoin(mbMember).on(mbMember.memberId.eq(mbLike.memberId)) // 회원
+                .innerJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(mbLike.targetTypeCd))) // 찜대상유형
                 .leftJoin(pdProd).on(pdProd.prodId.eq(mbLike.targetId)) // 상품
-                .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(mbLike.targetTypeCd))) // 찜대상유형
                 ;
     }
 

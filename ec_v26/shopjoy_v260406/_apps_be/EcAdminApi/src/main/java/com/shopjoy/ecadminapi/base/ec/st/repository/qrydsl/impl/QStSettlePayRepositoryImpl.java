@@ -69,7 +69,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                         cdSps.codeLabel.as("payStatusCdNm")             // 지급상태명 (sy_code 조인)
                 ))
                 .from(stSettlePay)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId)) // 업체
+                .innerJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId)) // 업체
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd))) // 결제수단
                 .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd))) // 정산지급상태
                 ;

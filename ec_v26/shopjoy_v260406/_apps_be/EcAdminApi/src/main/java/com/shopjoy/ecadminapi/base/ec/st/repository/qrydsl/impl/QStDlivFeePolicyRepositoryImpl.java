@@ -54,7 +54,7 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
                         cdDm.codeLabel.as("dlivMethodCdNm")   // 배송방법명 (sy_code 조인)
                 ))
                 .from(stDlivFeePolicy)
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(stDlivFeePolicy.dlivMethodCd))) // 배송방법
+                .innerJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(stDlivFeePolicy.dlivMethodCd))) // 배송방법
                 ;
     }
 

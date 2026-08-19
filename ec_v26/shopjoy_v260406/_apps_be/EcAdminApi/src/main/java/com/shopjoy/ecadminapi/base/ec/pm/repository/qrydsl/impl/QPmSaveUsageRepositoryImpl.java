@@ -53,7 +53,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                         pmSaveUsage.regBy, pmSaveUsage.regDate
                 ))
                 .from(pmSaveUsage)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveUsage.memberId)) // 회원
+                .innerJoin(mbMember).on(mbMember.memberId.eq(pmSaveUsage.memberId)) // 회원
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveUsage.orderId)) // 주문
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveUsage.orderItemId)) // 주문상품
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveUsage.prodId)) // 상품

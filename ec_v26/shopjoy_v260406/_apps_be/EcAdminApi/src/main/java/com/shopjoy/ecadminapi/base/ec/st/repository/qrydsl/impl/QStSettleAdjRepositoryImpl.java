@@ -56,7 +56,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                         cdSat.codeLabel.as("adjTypeCdNm")           // 조정유형명 (sy_code 조인)
                 ))
                 .from(stSettleAdj)
-                .leftJoin(cdSat).on(cdSat.codeGrp.eq("ADJ_TYPE_CD").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd))) // 조정유형
+                .innerJoin(cdSat).on(cdSat.codeGrp.eq("ADJ_TYPE_CD").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd))) // 조정유형
                 ;
     }
 

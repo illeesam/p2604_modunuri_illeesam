@@ -68,8 +68,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                         cdSit.codeLabel.as("settleItemTypeCdNm")            // 항목유형명 (sy_code 조인)
                 ))
                 .from(stSettleItem)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId)) // 주문
-                .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId)) // 주문상품
+                .innerJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId)) // 주문
+                .innerJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId)) // 주문상품
                 .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd))) // 정산항목유형
                 ;
     }

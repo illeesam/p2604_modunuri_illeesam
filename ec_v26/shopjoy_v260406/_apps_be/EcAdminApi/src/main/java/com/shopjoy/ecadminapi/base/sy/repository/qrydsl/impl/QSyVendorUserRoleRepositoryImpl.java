@@ -60,9 +60,9 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                         syUser.userNm.as("grantUserNm")              // 부여자명 (조인: sy_user)
                 ))
                 .from(syVendorUserRole)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUserRole.vendorId)) // 업체
-                .leftJoin(syVendorUser).on(syVendorUser.vendorUserId.eq(syVendorUserRole.userId)) // 업체담당자
-                .leftJoin(syRole).on(syRole.roleId.eq(syVendorUserRole.roleId)) // 역할
+                .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorUserRole.vendorId)) // 업체
+                .innerJoin(syVendorUser).on(syVendorUser.vendorUserId.eq(syVendorUserRole.userId)) // 업체담당자
+                .innerJoin(syRole).on(syRole.roleId.eq(syVendorUserRole.roleId)) // 역할
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUserRole.grantUserId)) // 사용자
                 ;
     }

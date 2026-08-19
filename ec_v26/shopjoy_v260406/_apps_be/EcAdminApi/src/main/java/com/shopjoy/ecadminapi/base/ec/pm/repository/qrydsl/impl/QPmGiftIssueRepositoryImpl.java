@@ -58,8 +58,8 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                         pmGiftIssue.regBy, pmGiftIssue.regDate, pmGiftIssue.updBy, pmGiftIssue.updDate
                 ))
                 .from(pmGiftIssue)
-                .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId)) // 사은품
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId)) // 회원
+                .innerJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId)) // 사은품
+                .innerJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId)) // 회원
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmGiftIssue.orderId)) // 주문
                 .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS_CD").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd))) // 사은품발급상태
                 ;

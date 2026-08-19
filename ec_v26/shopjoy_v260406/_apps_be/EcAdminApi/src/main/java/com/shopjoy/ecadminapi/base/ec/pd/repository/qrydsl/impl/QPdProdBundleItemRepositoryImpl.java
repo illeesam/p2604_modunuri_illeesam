@@ -53,8 +53,8 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
                         pdProdBundleItem.regBy, pdProdBundleItem.regDate, pdProdBundleItem.updBy, pdProdBundleItem.updDate
                 ))
                 .from(pdProdBundleItem)
-                .leftJoin(prd).on(prd.prodId.eq(pdProdBundleItem.bundleProdId)) // 상품
-                .leftJoin(prd2).on(prd2.prodId.eq(pdProdBundleItem.itemProdId)) // 상품
+                .innerJoin(prd).on(prd.prodId.eq(pdProdBundleItem.bundleProdId)) // 상품
+                .innerJoin(prd2).on(prd2.prodId.eq(pdProdBundleItem.itemProdId)) // 상품
                 ;
     }
 

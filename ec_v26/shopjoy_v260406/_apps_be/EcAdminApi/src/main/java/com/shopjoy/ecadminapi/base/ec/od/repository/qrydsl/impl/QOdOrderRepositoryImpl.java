@@ -110,7 +110,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                             "orderItemCnt")
                 ))
                 .from(odOrder)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .innerJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId)) // 쿠폰
                 .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd))) // 주문상태
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd))) // 결제수단
@@ -181,7 +181,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         cdAt.codeLabel.as("apprTargetCdNm")
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odOrder)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .innerJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId)) // 쿠폰
                 .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd))) // 주문상태
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd))) // 결제수단

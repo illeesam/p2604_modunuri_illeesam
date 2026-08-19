@@ -55,7 +55,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
                         pdhProdContentChgHist.regBy, pdhProdContentChgHist.regDate, pdhProdContentChgHist.updBy, pdhProdContentChgHist.updDate
                 ))
                 .from(pdhProdContentChgHist)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdContentChgHist.prodId)) // 상품
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdContentChgHist.prodId)) // 상품
                 .leftJoin(syUser).on(syUser.userId.eq(pdhProdContentChgHist.chgUserId)) // 사용자
                 ;
     }

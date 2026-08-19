@@ -54,7 +54,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                         mbMemberGrade.updDate          // 수정일시
                 ))
                 .from(mbMemberGrade)
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd))) // 회원등급
+                .innerJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd))) // 회원등급
                 ;
     }
 

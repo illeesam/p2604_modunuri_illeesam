@@ -48,7 +48,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                         pdhProdSkuPriceHist.regDate
                 ))
                 .from(pdhProdSkuPriceHist)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuPriceHist.prodId)) // 상품
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuPriceHist.prodId)) // 상품
                 ;
     }
 

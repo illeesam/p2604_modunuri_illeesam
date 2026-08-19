@@ -74,9 +74,9 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                         cdRs.codeLabel.as("reconStatusCdNm")         // 대사상태명 (sy_code 조인)
                 ))
                 .from(stRecon)
+                .innerJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE_CD").and(cdRt.codeValue.eq(stRecon.reconTypeCd))) // 대사유형
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId)) // 업체
                 .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId)) // 정산원장
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE_CD").and(cdRt.codeValue.eq(stRecon.reconTypeCd))) // 대사유형
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS_CD").and(cdRs.codeValue.eq(stRecon.reconStatusCd))) // 대사상태
                 ;
     }

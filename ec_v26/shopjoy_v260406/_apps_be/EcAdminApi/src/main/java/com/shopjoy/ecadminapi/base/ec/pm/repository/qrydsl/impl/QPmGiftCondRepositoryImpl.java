@@ -52,8 +52,8 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                         pmGiftCond.regBy, pmGiftCond.regDate
                 ))
                 .from(pmGiftCond)
-                .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId)) // 사은품
-                .leftJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd))) // 조건유형
+                .innerJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId)) // 사은품
+                .innerJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd))) // 조건유형
                 ;
     }
 

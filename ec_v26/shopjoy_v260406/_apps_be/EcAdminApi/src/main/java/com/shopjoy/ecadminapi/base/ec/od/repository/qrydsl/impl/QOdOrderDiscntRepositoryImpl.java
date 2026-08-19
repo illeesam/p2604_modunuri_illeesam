@@ -58,9 +58,9 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                         odOrderDiscnt.regBy, odOrderDiscnt.regDate
                 ))
                 .from(odOrderDiscnt)
-                .leftJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId)) // 주문
+                .innerJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId)) // 주문
+                .innerJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd))) // 주문할인유형
                 .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId)) // 쿠폰
-                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd))) // 주문할인유형
                 ;
     }
 

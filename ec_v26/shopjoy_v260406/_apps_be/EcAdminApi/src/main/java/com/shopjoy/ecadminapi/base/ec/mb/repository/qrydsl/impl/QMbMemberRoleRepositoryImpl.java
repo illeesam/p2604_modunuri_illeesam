@@ -55,8 +55,8 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                         gu.userNm.as("grantUserNm")           // 권한 부여 관리자명 (sy_user 조인, 별칭 gu)
                 ))
                 .from(mbMemberRole)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberRole.memberId)) // 회원
-                .leftJoin(syRole).on(syRole.roleId.eq(mbMemberRole.roleId)) // 역할
+                .innerJoin(mbMember).on(mbMember.memberId.eq(mbMemberRole.memberId)) // 회원
+                .innerJoin(syRole).on(syRole.roleId.eq(mbMemberRole.roleId)) // 역할
                 .leftJoin(gu).on(gu.userId.eq(mbMemberRole.grantUserId)) // 사용자
                 ;
     }

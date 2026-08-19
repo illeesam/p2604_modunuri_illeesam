@@ -55,8 +55,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                         usr2.userNm.as("grantUserNm")             // 부여자명 (조인: sy_user, alias usr2)
                 ))
                 .from(syUserRole)
-                .leftJoin(usr).on(usr.userId.eq(syUserRole.userId)) // 사용자
-                .leftJoin(syRole).on(syRole.roleId.eq(syUserRole.roleId)) // 역할
+                .innerJoin(usr).on(usr.userId.eq(syUserRole.userId)) // 사용자
+                .innerJoin(syRole).on(syRole.roleId.eq(syUserRole.roleId)) // 역할
                 .leftJoin(usr2).on(usr2.userId.eq(syUserRole.grantUserId)) // 사용자
                 ;
     }

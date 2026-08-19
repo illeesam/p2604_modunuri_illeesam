@@ -204,14 +204,14 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                                 .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd")
                 ))
                 .from(odOrderItem)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId)) // 상품
+                .innerJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId)) // 상품
+                .innerJoin(odOrderJoin).on(odOrderJoin.orderId.eq(odOrderItem.orderId)) // 주문
                 .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId)) // SKU
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOpt1Id)) // 옵션1
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id)) // 옵션2
                 .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd))) // 주문상품상태
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd))) // 택배사
                 .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId)) // 사은품
-                .leftJoin(odOrderJoin).on(odOrderJoin.orderId.eq(odOrderItem.orderId)) // 주문
                 .leftJoin(syVendorJoin).on(syVendorJoin.vendorId.eq(pdProd.vendorId)) // 업체
                 .leftJoin(syUserJoin).on(syUserJoin.userId.eq(pdProd.mdUserId)) // 사용자
                 .leftJoin(pdCategoryJoin).on(pdCategoryJoin.categoryId.eq(pdProd.categoryId)) // 카테고리

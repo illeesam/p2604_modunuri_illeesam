@@ -52,8 +52,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                         odPayMethod.regBy, odPayMethod.regDate, odPayMethod.updBy, odPayMethod.updDate
                 ))
                 .from(odPayMethod)
-                .leftJoin(mem).on(mem.memberId.eq(odPayMethod.memberId)) // 회원
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd))) // 결제수단
+                .innerJoin(mem).on(mem.memberId.eq(odPayMethod.memberId)) // 회원
+                .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd))) // 결제수단
                 ;
     }
 

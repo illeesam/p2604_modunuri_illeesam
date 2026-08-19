@@ -141,7 +141,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                         pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
                 ))
                 .from(pdReviewAttach)
-                .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId)) // 리뷰
+                .innerJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId)) // 리뷰
                 ;
     }
 

@@ -67,8 +67,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         oi2.prodOptNm.as("prodOptNm2")
                 ))
                 .from(odCart)
+                .innerJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId)) // 상품
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId)) // 회원
-                .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId)) // 상품
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOpt1Id)) // 옵션1
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOpt2Id)) // 옵션2
                 ;

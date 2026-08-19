@@ -42,7 +42,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
                         cmBlogGood.regDate   // 등록일시
                 ))
                 .from(cmBlogGood)
-                .leftJoin(cmBlog).on(cmBlog.blogId.eq(cmBlogGood.blogId)) // 블로그
+                .innerJoin(cmBlog).on(cmBlog.blogId.eq(cmBlogGood.blogId)) // 블로그
                 ;
     }
 

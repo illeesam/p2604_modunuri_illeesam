@@ -83,10 +83,10 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdRs.codeLabel.as("refundStatusCdNm")
                 ))
                 .from(odPay)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .innerJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
+                .innerJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd))) // 결제수단
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd))) // 결제상태
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd))) // 결제수단
                 .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd))) // 결제방향
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd))) // 환불상태
                 ;
@@ -136,10 +136,10 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdCt.codeLabel.as("cardTypeCdNm")
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odPay)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .innerJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
+                .innerJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
+                .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd))) // 결제수단
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd))) // 결제상태
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd))) // 결제수단
                 .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd))) // 결제방향
                 .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL_CD").and(cdPc.codeValue.eq(odPay.payChannelCd))) // 결제채널
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd))) // 환불상태

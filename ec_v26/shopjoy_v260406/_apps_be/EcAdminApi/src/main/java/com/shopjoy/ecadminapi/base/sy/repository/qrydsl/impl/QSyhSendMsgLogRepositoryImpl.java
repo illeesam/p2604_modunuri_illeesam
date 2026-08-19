@@ -77,9 +77,9 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                         cd_sr.codeLabel.as("resultCdNm")             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendMsgLog)
+                .innerJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd))) // 메시지채널
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId)) // 템플릿
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId)) // 사용자
-                .leftJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd))) // 메시지채널
                 .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendMsgLog.resultCd))) // 발송결과
                 ;
     }

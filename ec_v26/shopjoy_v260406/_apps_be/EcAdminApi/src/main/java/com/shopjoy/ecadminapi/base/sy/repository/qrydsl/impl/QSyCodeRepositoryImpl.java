@@ -59,7 +59,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                         syCode.updDate                       // 수정일시
                 ))
                 .from(syCode)
-                .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId)) // 코드그룹
+                .innerJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId)) // 코드그룹
                 ;
     }
 

@@ -89,7 +89,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                         cdIc.codeLabel.as("inboundCourierCdNm")
                 ))
                 .from(odDliv)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId)) // 주문
+                .innerJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId)) // 주문
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(odDliv.vendorId)) // 업체
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odDliv.dlivStatusCd))) // 배송상태
                 .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE_CD").and(cdDt.codeValue.eq(odDliv.dlivTypeCd))) // 배송유형

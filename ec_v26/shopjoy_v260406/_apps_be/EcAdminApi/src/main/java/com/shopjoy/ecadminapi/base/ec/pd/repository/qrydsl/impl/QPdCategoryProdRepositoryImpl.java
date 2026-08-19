@@ -59,8 +59,8 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                         pdProd.prodNm.as("prodNm")                     // 상품명 (조인)
                 ))
                 .from(pdCategoryProd)
-                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdCategoryProd.categoryId)) // 카테고리
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdCategoryProd.prodId)) // 상품
+                .innerJoin(pdCategory).on(pdCategory.categoryId.eq(pdCategoryProd.categoryId)) // 카테고리
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdCategoryProd.prodId)) // 상품
                 ;
     }
 

@@ -58,8 +58,8 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                         pdhProdSkuStockHist.regDate
                 ))
                 .from(pdhProdSkuStockHist)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuStockHist.prodId)) // 상품
-                .leftJoin(cd_ssc).on(cd_ssc.codeGrp.eq("CHG_REASON_CD").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd))) // 변경사유
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuStockHist.prodId)) // 상품
+                .innerJoin(cd_ssc).on(cd_ssc.codeGrp.eq("CHG_REASON_CD").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd))) // 변경사유
                 ;
     }
 

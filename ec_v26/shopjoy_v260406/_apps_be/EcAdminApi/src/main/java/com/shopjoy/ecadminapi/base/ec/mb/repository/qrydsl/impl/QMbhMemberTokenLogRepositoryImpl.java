@@ -68,9 +68,9 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                         cdTt.codeLabel.as("tokenTypeCdNm")          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
                 ))
                 .from(mbhMemberTokenLog)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId)) // 회원
-                .leftJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd))) // 액션
-                .leftJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd))) // 토큰유형
+                .innerJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId)) // 회원
+                .innerJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd))) // 액션
+                .innerJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd))) // 토큰유형
                 ;
     }
 

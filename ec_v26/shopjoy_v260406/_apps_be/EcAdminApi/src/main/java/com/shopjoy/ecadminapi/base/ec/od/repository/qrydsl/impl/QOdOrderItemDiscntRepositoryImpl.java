@@ -60,10 +60,10 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                         odOrderItemDiscnt.regBy, odOrderItemDiscnt.regDate
                 ))
                 .from(odOrderItemDiscnt)
-                .leftJoin(ord).on(ord.orderId.eq(odOrderItemDiscnt.orderId)) // 주문
-                .leftJoin(ite).on(ite.orderItemId.eq(odOrderItemDiscnt.orderItemId)) // 주문상품
+                .innerJoin(ord).on(ord.orderId.eq(odOrderItemDiscnt.orderId)) // 주문
+                .innerJoin(ite).on(ite.orderItemId.eq(odOrderItemDiscnt.orderItemId)) // 주문상품
+                .innerJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(odOrderItemDiscnt.discntTypeCd))) // 주문상품할인유형
                 .leftJoin(cpn).on(cpn.couponId.eq(odOrderItemDiscnt.couponId)) // 쿠폰
-                .leftJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(odOrderItemDiscnt.discntTypeCd))) // 주문상품할인유형
                 ;
     }
 

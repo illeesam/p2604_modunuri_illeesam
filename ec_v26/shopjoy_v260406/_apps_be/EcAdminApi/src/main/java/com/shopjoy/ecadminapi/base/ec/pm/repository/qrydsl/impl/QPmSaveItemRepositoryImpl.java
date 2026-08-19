@@ -50,8 +50,8 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                         cdSit.codeLabel.as("targetTypeCdNm")        // 대상유형 코드라벨 (조인)
                 ))
                 .from(pmSaveItem)
-                .leftJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId)) // 적립금
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd))) // 프로모션대상유형
+                .innerJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId)) // 적립금
+                .innerJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd))) // 프로모션대상유형
                 ;
     }
 

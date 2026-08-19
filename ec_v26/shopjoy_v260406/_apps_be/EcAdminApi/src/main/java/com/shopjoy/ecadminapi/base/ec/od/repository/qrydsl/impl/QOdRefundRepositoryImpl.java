@@ -70,9 +70,9 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                         odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
                 ))
                 .from(odRefund)
-                .leftJoin(ord).on(ord.orderId.eq(odRefund.orderId)) // 주문
+                .innerJoin(ord).on(ord.orderId.eq(odRefund.orderId)) // 주문
+                .innerJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE_CD").and(cdRt.codeValue.eq(odRefund.refundTypeCd))) // 환불유형
                 .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId)) // 클레임
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE_CD").and(cdRt.codeValue.eq(odRefund.refundTypeCd))) // 환불유형
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefund.refundStatusCd))) // 환불상태
                 .leftJoin(cdCf).on(cdCf.codeGrp.eq("FAULT_TYPE_CD").and(cdCf.codeValue.eq(odRefund.faultTypeCd))) // 귀책유형
                 ;

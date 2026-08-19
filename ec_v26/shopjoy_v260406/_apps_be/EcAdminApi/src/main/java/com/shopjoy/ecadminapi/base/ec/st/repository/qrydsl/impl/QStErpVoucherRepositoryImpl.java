@@ -69,8 +69,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                         cdEvs.codeLabel.as("erpVoucherStatusCdNm") // 전표상태명 (sy_code 조인)
                 ))
                 .from(stErpVoucher)
+                .innerJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd))) // ERP전표유형
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId)) // 업체
-                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd))) // ERP전표유형
                 .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd))) // ERP전표상태
                 ;
     }

@@ -69,11 +69,11 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                         pmSaveIssue.regBy, pmSaveIssue.regDate, pmSaveIssue.updBy, pmSaveIssue.updDate
                 ))
                 .from(pmSaveIssue)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveIssue.memberId)) // 회원
+                .innerJoin(mbMember).on(mbMember.memberId.eq(pmSaveIssue.memberId)) // 회원
+                .innerJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE_CD").and(cdSit.codeValue.eq(pmSaveIssue.saveIssueTypeCd))) // 적립금발급유형
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveIssue.orderId)) // 주문
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveIssue.orderItemId)) // 주문상품
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveIssue.prodId)) // 상품
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE_CD").and(cdSit.codeValue.eq(pmSaveIssue.saveIssueTypeCd))) // 적립금발급유형
                 .leftJoin(cdSis).on(cdSis.codeGrp.eq("ISSUE_STATUS_CD").and(cdSis.codeValue.eq(pmSaveIssue.issueStatusCd))) // 발급상태
                 ;
     }

@@ -42,7 +42,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                         pdProdTag.regBy, pdProdTag.regDate
                 ))
                 .from(pdProdTag)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId)) // 상품
+                .innerJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId)) // 상품
                 ;
     }
 

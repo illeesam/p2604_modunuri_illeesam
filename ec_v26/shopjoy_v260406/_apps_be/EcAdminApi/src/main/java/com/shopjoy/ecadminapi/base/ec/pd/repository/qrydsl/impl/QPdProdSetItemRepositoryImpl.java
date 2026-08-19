@@ -54,7 +54,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                         pdProdSetItem.regBy, pdProdSetItem.regDate, pdProdSetItem.updBy, pdProdSetItem.updDate
                 ))
                 .from(pdProdSetItem)
-                .leftJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId)) // 상품
+                .innerJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId)) // 상품
                 .leftJoin(prd2).on(prd2.prodId.eq(pdProdSetItem.itemProdId)) // 상품
                 ;
     }

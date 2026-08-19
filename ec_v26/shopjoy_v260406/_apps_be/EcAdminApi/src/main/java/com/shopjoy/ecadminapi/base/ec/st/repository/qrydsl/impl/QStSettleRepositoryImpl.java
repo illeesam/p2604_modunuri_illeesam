@@ -70,7 +70,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                         cdSs.codeLabel.as("settleStatusCdNm")           // 상태명 (sy_code 조인)
                 ))
                 .from(stSettle)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId)) // 업체
+                .innerJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId)) // 업체
                 .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS_CD").and(cdSs.codeValue.eq(stSettle.settleStatusCd))) // 정산상태
                 ;
     }
