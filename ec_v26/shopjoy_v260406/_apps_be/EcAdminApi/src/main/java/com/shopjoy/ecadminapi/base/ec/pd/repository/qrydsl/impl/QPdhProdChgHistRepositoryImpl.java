@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdhProdChgHist pdhProdChgHist   = QPdhProdChgHist.pdhProdChgHist;
     private static final QSySite        sySite = QSySite.sySite;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — sy_code 미등록)
@@ -47,9 +51,18 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
                         pdhProdChgHist.chgReason,         // 변경사유
                         pdhProdChgHist.chgUserId,          // 처리자 (sy_user.user_id)
                         pdhProdChgHist.chgDate,           // 처리일시
-                        pdhProdChgHist.regBy, pdhProdChgHist.regDate, pdhProdChgHist.updBy, pdhProdChgHist.updDate
+                        pdhProdChgHist.regBy,      // 등록자
+                        pdhProdChgHist.regDate,    // 등록일시
+                        pdhProdChgHist.updBy,      // 수정자
+                        pdhProdChgHist.updDate,    // 수정일시
+                        pdhProdChgHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(pdhProdChgHist);
+                .from(pdhProdChgHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdhProdChgHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdChgHist.regBy)) // 등록자
+                ;
     }
 
     /* 상품 변경 이력 키조회 */

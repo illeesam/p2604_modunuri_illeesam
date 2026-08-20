@@ -27,12 +27,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyVendorUserRole(업체 사용자 역할 연결) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRoleRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVendorUserRole syVendorUserRole = QSyVendorUserRole.syVendorUserRole;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyVendorUser syVendorUser = QSyVendorUser.syVendorUser;
@@ -57,13 +60,18 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                         syVendor.vendorNm.as("vendorNm"),            // 업체명 (조인: sy_vendor)
                         syVendorUser.memberNm.as("memberNm"),        // 업체사용자 이름 (조인: sy_vendor_user)
                         syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
-                        syUser.userNm.as("grantUserNm")              // 부여자명 (조인: sy_user)
+                        syUser.userNm.as("grantUserNm"),              // 부여자명 (조인: sy_user)
+                        syVendorUserRole.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syVendorUserRole)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorUserRole.vendorId)) // 업체
                 .innerJoin(syVendorUser).on(syVendorUser.vendorUserId.eq(syVendorUserRole.userId)) // 업체담당자
                 .innerJoin(syRole).on(syRole.roleId.eq(syVendorUserRole.roleId)) // 역할
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUserRole.grantUserId)) // 사용자
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorUserRole.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorUserRole.regBy)) // 등록자
                 ;
     }
 

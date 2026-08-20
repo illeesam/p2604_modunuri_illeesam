@@ -25,6 +25,11 @@ public class PdDlivTmplt extends BaseEntity {
     @Size(max = 21, message = "dlivTmpltId 는 21자 이내여야 합니다.")
     private String dlivTmpltId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("업체ID (sy_vendor.vendor_id)")
     @Column(name = "vendor_id", length = 21)

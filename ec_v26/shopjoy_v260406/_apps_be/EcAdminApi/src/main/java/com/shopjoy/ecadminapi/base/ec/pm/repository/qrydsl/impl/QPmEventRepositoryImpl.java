@@ -30,12 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** PmEvent(이벤트) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventRepositoryImpl implements QPmEventRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmEvent pmEvent = QPmEvent.pmEvent;    // EXISTS 서브쿼리용 별칭 (업체/담당MD 필터 — pm_event_prod → pd_prod → sy_vendor/sy_user)
     private static final QPmEventProd eventProdEx = new QPmEventProd("event_prod_ex");
     private static final QPdProd      pProdEx     = new QPdProd("p_prod_ex");
@@ -68,9 +72,22 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                         pmEvent.viewCnt,               // 조회수
                         pmEvent.useYn,                 // 사용여부 Y/N
                         pmEvent.eventDesc,             // 이벤트설명
-                        pmEvent.regBy, pmEvent.regDate, pmEvent.updBy, pmEvent.updDate
+                        pmEvent.regBy,      // 등록자
+                        pmEvent.regDate,    // 등록일시
+                        pmEvent.updBy,      // 수정자
+                        pmEvent.updDate,    // 수정일시
+                        pmEvent.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmEvent.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmEvent);
+                .from(pmEvent)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmEvent.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmEvent.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmEvent.siteId)) // 사이트
+
+                ;
     }
 
     /* 이벤트 키조회 */
@@ -97,6 +114,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         whereList.add(andVendorMd(search));
         whereList.add(andCurrentYnEvent(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmEvent.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -134,6 +152,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         whereList.add(andVendorMd(search));
         whereList.add(andCurrentYnEvent(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmEvent.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery();

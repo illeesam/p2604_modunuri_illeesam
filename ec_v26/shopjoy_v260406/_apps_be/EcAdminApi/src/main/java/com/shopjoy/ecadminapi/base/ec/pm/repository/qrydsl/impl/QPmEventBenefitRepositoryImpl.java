@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventBenefitRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventBenefitRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmEventBenefit pmEventBenefit = QPmEventBenefit.pmEventBenefit;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * BENEFIT_TYPE  {COUPON: '쿠폰', POINT: '적립금', DISCOUNT: '할인', GIFT: '사은품'} (코드: EVENT_BENEFIT_TYPE)
@@ -44,9 +49,22 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                         pmEventBenefit.benefitValue,    // 혜택 값
                         pmEventBenefit.couponId,        // 연결 쿠폰ID
                         pmEventBenefit.sortOrd,         // 정렬순서
-                        pmEventBenefit.regBy, pmEventBenefit.regDate, pmEventBenefit.updBy, pmEventBenefit.updDate
+                        pmEventBenefit.regBy,      // 등록자
+                        pmEventBenefit.regDate,    // 등록일시
+                        pmEventBenefit.updBy,      // 수정자
+                        pmEventBenefit.updDate,    // 수정일시
+                        pmEventBenefit.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmEventBenefit.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmEventBenefit);
+                .from(pmEventBenefit)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmEventBenefit.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmEventBenefit.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmEventBenefit.siteId)) // 사이트
+
+                ;
     }
 
     /* 이벤트 혜택 키조회 */
@@ -70,6 +88,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -104,6 +123,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery();

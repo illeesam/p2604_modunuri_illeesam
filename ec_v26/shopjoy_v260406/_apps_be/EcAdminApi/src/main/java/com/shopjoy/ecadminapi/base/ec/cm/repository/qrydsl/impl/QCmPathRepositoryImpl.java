@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPathDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPath;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmPath;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPathRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmPathRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmPath cmPath = QCmPath.cmPath;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값
      * USE_YN  {Y: '사용', N: '미사용'} — sy_code 미등록, use_yn 전역 공통 규약
@@ -45,9 +49,15 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
                         cmPath.regBy,         // 등록자
                         cmPath.regDate,       // 등록일시
                         cmPath.updBy,         // 수정자
-                        cmPath.updDate        // 수정일시
+                        cmPath.updDate,        // 수정일시
+                        cmPath.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmPath);
+                .from(cmPath)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmPath.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmPath.regBy)) // 등록자
+                ;
     }
 
     /** 단건 조회 */

@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChatt;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmChatt;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,8 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmChatt cmChatt = QCmChatt.cmChatt;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값 (sy_code_grp CHATT_STATUS)
      * CHATT_STATUS  {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
@@ -48,9 +52,15 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
                         cmChatt.regBy,                // 등록자
                         cmChatt.regDate,              // 등록일시
                         cmChatt.updBy,                // 수정자
-                        cmChatt.updDate               // 수정일시
+                        cmChatt.updDate,               // 수정일시
+                        cmChatt.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmChatt);
+                .from(cmChatt)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmChatt.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmChatt.regBy)) // 등록자
+                ;
     }
 
     @Override

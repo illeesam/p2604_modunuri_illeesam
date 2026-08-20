@@ -26,6 +26,11 @@ public class PmCouponIssue extends BaseEntity {
     @Size(max = 21, message = "couponIssueId 는 21자 이내여야 합니다.")
     private String couponIssueId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("쿠폰ID")
     @Column(name = "coupon_id", length = 21, nullable = false)

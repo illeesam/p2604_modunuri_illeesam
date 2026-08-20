@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhClaimChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhClaimChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhClaimChgHist odhClaimChgHist = QOdhClaimChgHist.odhClaimChgHist;
 
     /*
@@ -47,8 +51,18 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
                         odhClaimChgHist.chgReason,      // 변경사유
                         odhClaimChgHist.chgUserId,      // 처리자 (sy_user.user_id)
                         odhClaimChgHist.chgDate,        // 처리일시
-                        odhClaimChgHist.regBy, odhClaimChgHist.regDate, odhClaimChgHist.updBy, odhClaimChgHist.updDate))
-                .from(odhClaimChgHist);
+                        odhClaimChgHist.regBy,      // 등록자
+                        odhClaimChgHist.regDate,    // 등록일시
+                        odhClaimChgHist.updBy,      // 수정자
+                        odhClaimChgHist.updDate,    // 수정일시
+                        odhClaimChgHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhClaimChgHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhClaimChgHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhClaimChgHist.regBy)) // 등록자
+                ;
     }
 
     /* 클레임 변경 이력 키조회 */

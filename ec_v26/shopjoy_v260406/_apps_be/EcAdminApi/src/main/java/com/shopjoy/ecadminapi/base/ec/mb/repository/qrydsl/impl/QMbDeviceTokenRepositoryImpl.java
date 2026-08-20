@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbDeviceToken;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbDeviceTokenRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbDeviceTokenRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbDeviceToken mbDeviceToken   = QMbDeviceToken.mbDeviceToken;
     private static final QMbMember      mbMember = QMbMember.mbMember;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -48,10 +53,19 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                         mbDeviceToken.regDate,         // 등록일시
                         mbDeviceToken.updBy,           // 수정자
                         mbDeviceToken.updDate,         // 수정일시
-                        mbMember.memberNm.as("memberNm")   // 회원명 (mb_member 조인)
+                        mbMember.memberNm.as("memberNm"),   // 회원명 (mb_member 조인)
+                        mbDeviceToken.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        mbDeviceToken.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbDeviceToken)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbDeviceToken.memberId)) // 회원
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbDeviceToken.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbDeviceToken.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(mbDeviceToken.siteId)) // 사이트
+
                 ;
     }
 
@@ -72,6 +86,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -103,6 +118,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery();

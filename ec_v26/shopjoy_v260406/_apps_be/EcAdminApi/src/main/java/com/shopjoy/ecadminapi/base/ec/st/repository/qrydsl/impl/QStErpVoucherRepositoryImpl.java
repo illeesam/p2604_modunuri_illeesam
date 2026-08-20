@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStErpVoucherRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -33,6 +35,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStErpVoucher stErpVoucher    = QStErpVoucher.stErpVoucher;
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QSyVendor     syVendor  = QSyVendor.syVendor;
@@ -66,12 +70,17 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                         stErpVoucher.updDate,                      // 수정일시
                         syVendor.vendorNm.as("vendorNm"),           // 업체명 (조인)
                         cdEvt.codeLabel.as("erpVoucherTypeCdNm"),   // 전표유형명 (sy_code 조인)
-                        cdEvs.codeLabel.as("erpVoucherStatusCdNm") // 전표상태명 (sy_code 조인)
+                        cdEvs.codeLabel.as("erpVoucherStatusCdNm"), // 전표상태명 (sy_code 조인)
+                        stErpVoucher.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stErpVoucher)
                 .innerJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd))) // ERP전표유형
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId)) // 업체
                 .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd))) // ERP전표상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stErpVoucher.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stErpVoucher.regBy)) // 등록자
                 ;
     }
 

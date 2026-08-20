@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPay;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdRefundMethod;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdRefundMethodRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdRefundMethodRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdRefundMethod odRefundMethod   = QOdRefundMethod.odRefundMethod;
     private static final QSySite         ste = new QSySite("ste");
     private static final QOdOrder        ord = new QOdOrder("ord");
@@ -60,13 +64,21 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                         odRefundMethod.payId,                  // 원 결제 레코드ID (od_pay.pay_id)
                         odRefundMethod.pgRefundId,            // PG 환불 거래ID
                         odRefundMethod.pgResponse,            // PG 환불 응답 JSON
-                        odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
+                        odRefundMethod.regBy,      // 등록자
+                        odRefundMethod.regDate,    // 등록일시
+                        odRefundMethod.updBy,      // 수정자
+                        odRefundMethod.updDate,    // 수정일시
+                        odRefundMethod.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(odRefundMethod)
                 .innerJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId)) // 주문
                 .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd))) // 결제수단
                 .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId)) // 결제
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd))) // 환불상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odRefundMethod.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odRefundMethod.regBy)) // 등록자
                 ;
     }
 

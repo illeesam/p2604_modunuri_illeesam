@@ -38,6 +38,9 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmPlan pmPlan    = QPmPlan.pmPlan;
     private static final QSySite sySite  = QSySite.sySite;
     private static final QVwSyCode cdPt = new QVwSyCode("cd_pt");
@@ -66,11 +69,24 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                         pmPlan.planStatusCd,         // 상태 — PLAN_STATUS {DRAFT: '초안', ACTIVE: '공개', ENDED: '종료'}
                         pmPlan.planStatusCdBefore,   // 변경 전 상태
                         pmPlan.sortOrd,              // 정렬순서
-                        pmPlan.useYn, pmPlan.regBy, pmPlan.regDate, pmPlan.updBy, pmPlan.updDate
+                        pmPlan.useYn,  // 사용여부 Y/N
+                        pmPlan.regBy,  // 등록자
+                        pmPlan.regDate,  // 등록일시
+                        pmPlan.updBy,  // 수정자
+                        pmPlan.updDate,  // 수정일시
+                        pmPlan.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmPlan.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmPlan)
                 .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE_CD").and(cdPt.codeValue.eq(pmPlan.planTypeCd))) // 기획전유형
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS_CD").and(cdPs.codeValue.eq(pmPlan.planStatusCd))) // 기획전상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmPlan.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmPlan.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmPlan.siteId)) // 사이트
+
                 ;
     }
 
@@ -96,6 +112,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmPlan.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -131,6 +148,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmPlan.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery();

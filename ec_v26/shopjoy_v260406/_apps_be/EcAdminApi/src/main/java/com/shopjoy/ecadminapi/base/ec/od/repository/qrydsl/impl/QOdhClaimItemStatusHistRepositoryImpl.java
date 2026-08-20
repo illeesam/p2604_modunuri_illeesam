@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhClaimItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhClaimItemStatusHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimItemStatusHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhClaimItemStatusHist odhClaimItemStatusHist = QOdhClaimItemStatusHist.odhClaimItemStatusHist;
 
     /*
@@ -47,8 +51,18 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
                         odhClaimItemStatusHist.chgUserId,               // 변경 담당자 (sy_user.user_id, mb_member.member_id)
                         odhClaimItemStatusHist.chgDate,                 // 변경 일시
                         odhClaimItemStatusHist.memo,                    // 메모
-                        odhClaimItemStatusHist.regBy, odhClaimItemStatusHist.regDate, odhClaimItemStatusHist.updBy, odhClaimItemStatusHist.updDate))
-                .from(odhClaimItemStatusHist);
+                        odhClaimItemStatusHist.regBy,      // 등록자
+                        odhClaimItemStatusHist.regDate,    // 등록일시
+                        odhClaimItemStatusHist.updBy,      // 수정자
+                        odhClaimItemStatusHist.updDate,    // 수정일시
+                        odhClaimItemStatusHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhClaimItemStatusHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhClaimItemStatusHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhClaimItemStatusHist.regBy)) // 등록자
+                ;
     }
 
     /* 클레임 아이템 상태 이력 키조회 */

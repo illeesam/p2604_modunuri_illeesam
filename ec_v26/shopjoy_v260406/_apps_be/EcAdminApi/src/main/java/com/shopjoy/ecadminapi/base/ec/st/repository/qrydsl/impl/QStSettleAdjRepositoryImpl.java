@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleAdj;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleAdjRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleAdjRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleAdj stSettleAdj    = QStSettleAdj.stSettleAdj;
     private static final QSySite     sySite  = QSySite.sySite;
     private static final QVwSyCode     cdSat = new QVwSyCode("cd_sat");    /*
@@ -53,10 +57,15 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                         stSettleAdj.regDate,                // 등록일시
                         stSettleAdj.updBy,                  // 수정자
                         stSettleAdj.updDate,                // 수정일시
-                        cdSat.codeLabel.as("adjTypeCdNm")           // 조정유형명 (sy_code 조인)
+                        cdSat.codeLabel.as("adjTypeCdNm"),           // 조정유형명 (sy_code 조인)
+                        stSettleAdj.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleAdj)
                 .innerJoin(cdSat).on(cdSat.codeGrp.eq("ADJ_TYPE_CD").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd))) // 조정유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleAdj.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleAdj.regBy)) // 등록자
                 ;
     }
 

@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbhMemberLoginLogRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,8 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbhMemberLoginLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbhMemberLoginLog mbhMemberLoginLog    = QMbhMemberLoginLog.mbhMemberLoginLog;
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
@@ -66,11 +70,16 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                         mbhMemberLoginLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbhMemberLoginLog.updDate,           // 수정일
                         mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
-                        cdLr.codeLabel.as("resultCdNm")             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
+                        cdLr.codeLabel.as("resultCdNm"),             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
+                        mbhMemberLoginLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(mbhMemberLoginLog)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberLoginLog.memberId)) // 회원
                 .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd))) // 로그인결과
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbhMemberLoginLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbhMemberLoginLog.regBy)) // 등록자
                 ;
     }
 

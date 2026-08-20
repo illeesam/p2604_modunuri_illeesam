@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbLikeRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -33,6 +35,9 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbLikeRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbLike   mbLike    = QMbLike.mbLike;
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
@@ -51,12 +56,21 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                         mbLike.regBy,          // 등록자
                         mbLike.regDate,        // 등록일
                         mbLike.updBy,          // 수정자
-                        mbLike.updDate         // 수정일
+                        mbLike.updDate,         // 수정일
+                        mbLike.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        mbLike.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbLike)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbLike.memberId)) // 회원
                 .innerJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(mbLike.targetTypeCd))) // 찜대상유형
                 .leftJoin(pdProd).on(pdProd.prodId.eq(mbLike.targetId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbLike.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbLike.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(mbLike.siteId)) // 사이트
+
                 ;
     }
 
@@ -80,6 +94,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbLike.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -114,6 +129,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbLike.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery();

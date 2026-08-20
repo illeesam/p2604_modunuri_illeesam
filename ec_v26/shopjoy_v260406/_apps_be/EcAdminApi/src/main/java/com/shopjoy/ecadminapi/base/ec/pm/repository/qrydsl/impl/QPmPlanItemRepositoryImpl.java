@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlanItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmPlan;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmPlanItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmPlanItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +34,9 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmPlanItem pmPlanItem   = QPmPlanItem.pmPlanItem;
     private static final QPmPlan     pmPlan = QPmPlan.pmPlan;
     private static final QPdProd     pdProd = QPdProd.pdProd;
@@ -44,11 +49,23 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                         pmPlanItem.prodId,         // 상품ID (pd_prod.prod_id)
                         pmPlanItem.sortOrd,        // 정렬순서
                         pmPlanItem.planItemMemo,   // 항목 메모 (특가/한정수량 등)
-                        pmPlanItem.regBy, pmPlanItem.regDate, pmPlanItem.updBy, pmPlanItem.updDate
+                        pmPlanItem.regBy,      // 등록자
+                        pmPlanItem.regDate,    // 등록일시
+                        pmPlanItem.updBy,      // 수정자
+                        pmPlanItem.updDate,    // 수정일시
+                        pmPlanItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmPlanItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmPlanItem)
                 .innerJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId)) // 기획전
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmPlanItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmPlanItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmPlanItem.siteId)) // 사이트
+
                 ;
     }
 
@@ -71,6 +88,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -103,6 +121,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery();

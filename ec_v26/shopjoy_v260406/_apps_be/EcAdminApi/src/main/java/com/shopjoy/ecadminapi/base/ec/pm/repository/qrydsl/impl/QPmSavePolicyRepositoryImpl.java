@@ -18,6 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSavePolicy;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSavePolicy;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveProd;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSavePolicyRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,6 +37,9 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSavePolicyRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmSavePolicy pmSavePolicy = QPmSavePolicy.pmSavePolicy;
     private static final QSyVendor     syVendor     = QSyVendor.syVendor;    // EXISTS 서브쿼리용 별칭 (대상상품 필터 — pm_save_prod → pd_prod)
     private static final QPmSaveProd saveProdEx = new QPmSaveProd("save_prod_ex");
@@ -43,14 +48,39 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
     private JPAQuery<PmSavePolicyDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmSavePolicyDto.Item.class,
-                        pmSavePolicy.saveId, pmSavePolicy.saveNm, pmSavePolicy.saveTypeCd, pmSavePolicy.saveType,
-                        pmSavePolicy.saveVal, pmSavePolicy.saveUnit, pmSavePolicy.minOrderAmt, pmSavePolicy.expireDay,
-                        pmSavePolicy.saveStatus, pmSavePolicy.startDate, pmSavePolicy.endDate, pmSavePolicy.memGradeCd,
-                        pmSavePolicy.visibilityTargets, pmSavePolicy.vendorId, pmSavePolicy.chargeStaff,
-                        pmSavePolicy.remark, pmSavePolicy.useYn,
-                        pmSavePolicy.regBy, pmSavePolicy.regDate, pmSavePolicy.updBy, pmSavePolicy.updDate
+                        pmSavePolicy.saveId,  // 적립금정책ID (YYMMDDhhmmss+rand4)
+                        pmSavePolicy.saveNm,  // 적립금명
+                        pmSavePolicy.saveTypeCd,  // 적립금 유형 (코드: SAVE_TYPE_CD)
+                        pmSavePolicy.saveType,  // 적립유형 (코드: SAVE_ISSUE_TYPE_CD)
+                        pmSavePolicy.saveVal,  // 적립값
+                        pmSavePolicy.saveUnit,  // 적립단위 (코드: SAVE_UNIT)
+                        pmSavePolicy.minOrderAmt,  // 최소주문금액
+                        pmSavePolicy.expireDay,  // 유효기간(일)
+                        pmSavePolicy.saveStatus,  // 상태 (코드: PROMO_STATUS)
+                        pmSavePolicy.startDate,  // 시작일
+                        pmSavePolicy.endDate,  // 종료일
+                        pmSavePolicy.memGradeCd,  // 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)
+                        pmSavePolicy.visibilityTargets,  // 공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)
+                        pmSavePolicy.vendorId,  // 판매업체 (sy_vendor.vendor_id)
+                        pmSavePolicy.chargeStaff,  // 판매담당자명 (업체 선택 시 자동 채움, 수정 가능)
+                        pmSavePolicy.remark,  // 비고
+                        pmSavePolicy.useYn,  // 사용여부 Y/N
+                        pmSavePolicy.regBy,      // 등록자
+                        pmSavePolicy.regDate,    // 등록일시
+                        pmSavePolicy.updBy,      // 수정자
+                        pmSavePolicy.updDate,    // 수정일시
+                        pmSavePolicy.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmSavePolicy.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmSavePolicy);
+                .from(pmSavePolicy)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSavePolicy.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSavePolicy.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmSavePolicy.siteId)) // 사이트
+
+                ;
     }
 
     /* 단건 조회 */
@@ -78,6 +108,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -117,6 +148,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()

@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleItemDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleItem;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleItem;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleItemRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleItem stSettleItem    = QStSettleItem.stSettleItem;
     private static final QOdOrder      odOrder  = QOdOrder.odOrder;
     private static final QOdOrderItem  odOrderItem  = QOdOrderItem.odOrderItem;
@@ -65,12 +69,17 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                         stSettleItem.regDate,               // 등록일시
                         odOrder.memberNm.as("orderNm"),                     // 주문 회원명 (조인)
                         odOrderItem.prodNm.as("orderItemNm"),               // 주문항목 상품명 (조인)
-                        cdSit.codeLabel.as("settleItemTypeCdNm")            // 항목유형명 (sy_code 조인)
+                        cdSit.codeLabel.as("settleItemTypeCdNm"),            // 항목유형명 (sy_code 조인)
+                        stSettleItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleItem)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId)) // 주문
                 .innerJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId)) // 주문상품
                 .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd))) // 정산항목유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleItem.regBy)) // 등록자
                 ;
     }
 

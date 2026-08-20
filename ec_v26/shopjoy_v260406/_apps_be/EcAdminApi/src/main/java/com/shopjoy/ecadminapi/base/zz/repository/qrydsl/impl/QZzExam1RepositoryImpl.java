@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 /** ZzExam1 QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -27,6 +29,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam1RepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QZzExam1 zzExam1 = QZzExam1.zzExam1;
 
     /* zz_exam1 baseSelColumnQuery — 코드성 필드 없음(범용 컬럼만 보유한 연습용 샘플 테이블) */
@@ -42,9 +46,15 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
                         zzExam1.regBy,      // 등록자
                         zzExam1.regDate,    // 등록일시
                         zzExam1.updBy,      // 수정자
-                        zzExam1.updDate     // 수정일시
+                        zzExam1.updDate,     // 수정일시
+                        zzExam1.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(zzExam1);
+                .from(zzExam1)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(zzExam1.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(zzExam1.regBy)) // 등록자
+                ;
     }
 
     /* zz_exam1 키조회 */

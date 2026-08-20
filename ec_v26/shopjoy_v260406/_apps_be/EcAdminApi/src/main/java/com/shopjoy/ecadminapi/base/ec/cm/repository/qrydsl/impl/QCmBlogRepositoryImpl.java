@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,8 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmBlog cmBlog = QCmBlog.cmBlog;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값 (DDL 컬럼 코멘트 기준, sy_code 미등록)
      * BLOG_TYPE_CD  {NEWS: '뉴스', BLOG: '블로그'}
@@ -53,9 +57,15 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                         cmBlog.regBy,        // 등록자
                         cmBlog.regDate,      // 등록일시
                         cmBlog.updBy,        // 수정자
-                        cmBlog.updDate       // 수정일시
+                        cmBlog.updDate,       // 수정일시
+                        cmBlog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmBlog);
+                .from(cmBlog)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmBlog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmBlog.regBy)) // 등록자
+                ;
     }
 
     /** 단건 조회 */

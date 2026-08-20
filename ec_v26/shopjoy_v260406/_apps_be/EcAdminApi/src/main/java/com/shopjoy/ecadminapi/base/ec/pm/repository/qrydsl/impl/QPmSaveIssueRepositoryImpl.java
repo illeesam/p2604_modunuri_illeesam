@@ -19,6 +19,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveIssueRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -36,6 +38,9 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveIssueRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmSaveIssue pmSaveIssue    = QPmSaveIssue.pmSaveIssue;
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QMbMember    mbMember  = QMbMember.mbMember;
@@ -66,7 +71,15 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                         pmSaveIssue.issueStatusCd,             // 지급상태 — SAVE_ISSUE_STATUS {PENDING, CONFIRMED, EXPIRED, CANCELED}
                         pmSaveIssue.issueStatusCdBefore,       // 변경 전 지급상태
                         pmSaveIssue.saveMemo,                  // 지급 메모
-                        pmSaveIssue.regBy, pmSaveIssue.regDate, pmSaveIssue.updBy, pmSaveIssue.updDate
+                        pmSaveIssue.regBy,      // 등록자
+                        pmSaveIssue.regDate,    // 등록일시
+                        pmSaveIssue.updBy,      // 수정자
+                        pmSaveIssue.updDate,    // 수정일시
+                        pmSaveIssue.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmSaveIssue.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmSaveIssue)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pmSaveIssue.memberId)) // 회원
@@ -75,6 +88,10 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveIssue.orderItemId)) // 주문상품
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveIssue.prodId)) // 상품
                 .leftJoin(cdSis).on(cdSis.codeGrp.eq("ISSUE_STATUS_CD").and(cdSis.codeValue.eq(pmSaveIssue.issueStatusCd))) // 발급상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSaveIssue.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSaveIssue.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmSaveIssue.siteId)) // 사이트
+
                 ;
     }
 
@@ -97,6 +114,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSaveIssue.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -129,6 +147,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSaveIssue.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery();

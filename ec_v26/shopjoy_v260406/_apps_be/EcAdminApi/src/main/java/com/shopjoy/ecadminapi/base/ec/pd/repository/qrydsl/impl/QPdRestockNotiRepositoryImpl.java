@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdRestockNotiRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +34,9 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdRestockNotiRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdRestockNoti pdRestockNoti   = QPdRestockNoti.pdRestockNoti;
     private static final QSySite        sySite = QSySite.sySite;
     private static final QPdProd        pdProd = QPdProd.pdProd;
@@ -49,11 +54,23 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                         pdRestockNoti.memberId,         // 회원ID (mb_member.member_id)
                         pdRestockNoti.notiYn,             // 알림발송여부 — {Y: '발송완료', N: '미발송'}
                         pdRestockNoti.notiDate,         // 알림발송일시
-                        pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
+                        pdRestockNoti.regBy,      // 등록자
+                        pdRestockNoti.regDate,    // 등록일시
+                        pdRestockNoti.updBy,      // 수정자
+                        pdRestockNoti.updDate,    // 수정일시
+                        pdRestockNoti.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdRestockNoti.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdRestockNoti)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId)) // 상품
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId)) // 회원
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdRestockNoti.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdRestockNoti.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdRestockNoti.siteId)) // 사이트
+
                 ;
     }
 
@@ -78,6 +95,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdRestockNoti.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdRestockNoti.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdRestockNoti.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -112,6 +130,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdRestockNoti.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdRestockNoti.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdRestockNoti.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery();

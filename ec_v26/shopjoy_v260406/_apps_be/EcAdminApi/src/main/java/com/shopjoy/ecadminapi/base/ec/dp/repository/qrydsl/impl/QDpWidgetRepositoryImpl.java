@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidget;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpWidget;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpWidgetRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,9 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QDpWidget dpWidget = QDpWidget.dpWidget;
 
     /*
@@ -66,8 +71,18 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 dpWidget.regBy,             // 등록자
                 dpWidget.regDate,           // 등록일시
                 dpWidget.updBy,             // 수정자
-                dpWidget.updDate            // 수정일시
-        )).from(dpWidget);
+                dpWidget.updDate,            // 수정일시
+                dpWidget.regSiteId,  // 등록사이트ID
+                regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                dpWidget.siteId,  // 사이트ID
+                siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
+        )).from(dpWidget)
+        .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(dpWidget.regSiteId)) // 등록사이트
+        .leftJoin(regUserEx).on(regUserEx.userId.eq(dpWidget.regBy)) // 등록자
+        .leftJoin(siteEx).on(siteEx.siteId.eq(dpWidget.siteId)) // 사이트
+
+        ;
     }
 
     /* 전시 위젯 키조회 */
@@ -86,6 +101,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         whereList.add(QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()));
         whereList.add(QdslUtil.strEq(dpWidget.useYn, search.getUseYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpWidget.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -116,6 +132,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         whereList.add(QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()));
         whereList.add(QdslUtil.strEq(dpWidget.useYn, search.getUseYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpWidget.siteId, search.getSiteId()));
         JPAQuery<DpWidgetDto.Item> query = baseQuery();
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);

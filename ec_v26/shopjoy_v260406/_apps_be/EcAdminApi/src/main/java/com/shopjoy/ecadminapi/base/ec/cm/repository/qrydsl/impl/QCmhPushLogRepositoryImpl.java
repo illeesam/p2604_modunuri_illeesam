@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmhPushLogRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmhPushLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmhPushLog cmhPushLog = QCmhPushLog.cmhPushLog;    /*
      * baseSelColumnQuery — 코드성 필드 예시 (PUSH_CHANNEL / PUSH_RESULT 는 sy_code 미등록 — 실제 코드 등록 없음)
      * channel_cd : 발송채널 구분 코드 (코드: PUSH_CHANNEL, DB 등록값 없음 — 용도만 설명)
@@ -54,9 +58,15 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
                         cmhPushLog.regBy,           // 등록자
                         cmhPushLog.regDate,         // 등록일시
                         cmhPushLog.updBy,           // 수정자
-                        cmhPushLog.updDate          // 수정일시
+                        cmhPushLog.updDate,          // 수정일시
+                        cmhPushLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmhPushLog);
+                .from(cmhPushLog)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmhPushLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmhPushLog.regBy)) // 등록자
+                ;
     }
 
     /** 단건 조회 */

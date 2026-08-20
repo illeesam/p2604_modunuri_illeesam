@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhOrderItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhOrderItemStatusHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderItemStatusHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhOrderItemStatusHist odhOrderItemStatusHist = QOdhOrderItemStatusHist.odhOrderItemStatusHist;
 
     /*
@@ -46,8 +50,18 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
                         odhOrderItemStatusHist.chgUserId,               // 변경 담당자 (sy_user.user_id, mb_member.member_id)
                         odhOrderItemStatusHist.chgDate,                 // 변경 일시
                         odhOrderItemStatusHist.memo,                    // 메모
-                        odhOrderItemStatusHist.regBy, odhOrderItemStatusHist.regDate, odhOrderItemStatusHist.updBy, odhOrderItemStatusHist.updDate))
-                .from(odhOrderItemStatusHist);
+                        odhOrderItemStatusHist.regBy,      // 등록자
+                        odhOrderItemStatusHist.regDate,    // 등록일시
+                        odhOrderItemStatusHist.updBy,      // 수정자
+                        odhOrderItemStatusHist.updDate,    // 수정일시
+                        odhOrderItemStatusHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhOrderItemStatusHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhOrderItemStatusHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhOrderItemStatusHist.regBy)) // 등록자
+                ;
     }
 
     /* 주문 아이템 상태 이력 키조회 */

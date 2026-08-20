@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdDlivTmpltRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -33,6 +35,9 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdDlivTmpltRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdDlivTmplt pdDlivTmplt      = QPdDlivTmplt.pdDlivTmplt;
     private static final QSySite      sySite    = QSySite.sySite;
     private static final QSyVendor    syVendor    = QSyVendor.syVendor;
@@ -65,12 +70,24 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                         pdDlivTmplt.returnTelNo,              // 반품지 전화번호
                         pdDlivTmplt.baseDlivYn,                // 기본배송지여부 — {Y: '기본', N: '일반'}
                         pdDlivTmplt.useYn,                     // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdDlivTmplt.regBy, pdDlivTmplt.regDate, pdDlivTmplt.updBy, pdDlivTmplt.updDate
+                        pdDlivTmplt.regBy,      // 등록자
+                        pdDlivTmplt.regDate,    // 등록일시
+                        pdDlivTmplt.updBy,      // 수정자
+                        pdDlivTmplt.updDate,    // 수정일시
+                        pdDlivTmplt.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdDlivTmplt.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdDlivTmplt)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId)) // 업체
                 .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd))) // 배송방법
                 .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE_CD").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd))) // 배송비유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdDlivTmplt.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdDlivTmplt.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdDlivTmplt.siteId)) // 사이트
+
                 ;
     }
 
@@ -95,6 +112,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -129,6 +147,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery();

@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDlivItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdDlivItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdDlivItem odDlivItem = QOdDlivItem.odDlivItem;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * dliv_type_cd (od_dliv_item, sy_code 미등록 — Entity 주석 기준 예시)  OUT:출고, IN:입고반품
@@ -48,9 +53,22 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                         odDlivItem.dlivQty,                    // 출고수량 (부분출고 시 주문수량보다 적을 수 있음)
                         odDlivItem.dlivItemStatusCd,          // 항목 배송상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
                         odDlivItem.dlivItemStatusCdBefore,    // 변경 전 배송상태 — DLIV_STATUS (동일 코드그룹)
-                        odDlivItem.regBy, odDlivItem.regDate, odDlivItem.updBy, odDlivItem.updDate
+                        odDlivItem.regBy,      // 등록자
+                        odDlivItem.regDate,    // 등록일시
+                        odDlivItem.updBy,      // 수정자
+                        odDlivItem.updDate,    // 수정일시
+                        odDlivItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odDlivItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(odDlivItem);
+                .from(odDlivItem)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odDlivItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odDlivItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odDlivItem.siteId)) // 사이트
+
+                ;
     }
 
     /* 배송 아이템 키조회 */
@@ -74,6 +92,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odDlivItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -108,6 +127,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odDlivItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery();

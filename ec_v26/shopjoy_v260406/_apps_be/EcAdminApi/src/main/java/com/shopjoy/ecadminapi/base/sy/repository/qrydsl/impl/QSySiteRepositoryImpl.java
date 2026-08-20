@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SySite(사이트) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSySiteRepositoryImpl implements QSySiteRepository {
@@ -38,6 +40,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private final SyPathRepository syPathRepository;
     private final EntityManager em;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSySite sySite = QSySite.sySite;
     private static final QVwSyCode cdSt = new QVwSyCode("cd_st");
     private static final QVwSyCode cdSs = new QVwSyCode("cd_ss");    /*
@@ -70,11 +74,16 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                         sySite.updDate,          // 수정일시
                         sySite.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
                         cdSt.codeLabel.as("siteTypeCdNm"),     // 사이트유형 라벨 (sy_code SITE_TYPE 조인)
-                        cdSs.codeLabel.as("siteStatusCdNm")    // 상태 라벨 (sy_code SITE_STATUS 조인)
+                        cdSs.codeLabel.as("siteStatusCdNm"),    // 상태 라벨 (sy_code SITE_STATUS 조인)
+                        sySite.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(sySite)
                 .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE_CD").and(cdSt.codeValue.eq(sySite.siteTypeCd))) // 사이트유형
                 .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS_CD").and(cdSs.codeValue.eq(sySite.siteStatusCd))) // 사이트상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(sySite.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(sySite.regBy)) // 등록자
                 ;
     }
 

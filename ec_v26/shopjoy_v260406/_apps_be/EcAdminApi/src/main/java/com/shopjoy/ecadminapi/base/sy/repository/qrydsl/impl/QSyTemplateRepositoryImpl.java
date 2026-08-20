@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyTemplate(발송 템플릿) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
@@ -36,6 +38,8 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyTemplateRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyTemplate syTemplate = QSyTemplate.syTemplate;    /*
      * baseQuery — 코드성 필드 예시 코드값
      * TEMPLATE_TYPE  {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
@@ -55,9 +59,15 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                         syTemplate.regBy,                          // 등록자
                         syTemplate.regDate,                        // 등록일시
                         syTemplate.updBy,                          // 수정자
-                        syTemplate.updDate                        // 수정일시
+                        syTemplate.updDate,                        // 수정일시
+                        syTemplate.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syTemplate);
+                .from(syTemplate)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syTemplate.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syTemplate.regBy)) // 등록자
+                ;
     }
 
     /* 템플릿 키조회 */

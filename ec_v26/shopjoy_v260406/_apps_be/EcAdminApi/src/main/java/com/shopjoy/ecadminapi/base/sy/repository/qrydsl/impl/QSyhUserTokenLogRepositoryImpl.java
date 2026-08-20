@@ -33,6 +33,8 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhUserTokenLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhUserTokenLog syhUserTokenLog   = QSyhUserTokenLog.syhUserTokenLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
@@ -66,12 +68,17 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                         syhUserTokenLog.updDate,              // 수정일시
                         syUser.userNm.as("userNm"),                    // 사용자명 (조인: sy_user)
                         cd_ta.codeLabel.as("actionCdNm"),               // 토큰액션 코드명 (조인: sy_code TOKEN_ACTION)
-                        cd_tt.codeLabel.as("tokenTypeCdNm")             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
+                        cd_tt.codeLabel.as("tokenTypeCdNm"),             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
+                        syhUserTokenLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhUserTokenLog)
                 .innerJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId)) // 사용자
                 .innerJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd))) // 액션
                 .innerJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd))) // 토큰유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhUserTokenLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhUserTokenLog.regBy)) // 등록자
                 ;
     }
 

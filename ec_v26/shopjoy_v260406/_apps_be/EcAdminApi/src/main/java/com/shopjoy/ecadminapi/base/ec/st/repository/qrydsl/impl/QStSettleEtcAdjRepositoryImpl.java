@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleEtcAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleEtcAdjRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleEtcAdjRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleEtcAdj stSettleEtcAdj     = QStSettleEtcAdj.stSettleEtcAdj;
     private static final QSySite         sySite   = QSySite.sySite;
     private static final QVwSyCode         cdSeat = new QVwSyCode("cd_seat");
@@ -55,11 +59,16 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                         stSettleEtcAdj.updBy,                 // 수정자
                         stSettleEtcAdj.updDate,               // 수정일시
                         cdSeat.codeLabel.as("etcAdjTypeCdNm"),        // 기타조정유형명 (sy_code 조인)
-                        cdAd.codeLabel.as("etcAdjDirCdNm")            // 가산/차감명 (sy_code 조인)
+                        cdAd.codeLabel.as("etcAdjDirCdNm"),            // 가산/차감명 (sy_code 조인)
+                        stSettleEtcAdj.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleEtcAdj)
                 .innerJoin(cdSeat).on(cdSeat.codeGrp.eq("ETC_ADJ_TYPE_CD").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd))) // 기타조정유형
                 .innerJoin(cdAd).on(cdAd.codeGrp.eq("ETC_ADJ_DIR_CD").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd))) // 기타조정방향
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleEtcAdj.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleEtcAdj.regBy)) // 등록자
                 ;
     }
 

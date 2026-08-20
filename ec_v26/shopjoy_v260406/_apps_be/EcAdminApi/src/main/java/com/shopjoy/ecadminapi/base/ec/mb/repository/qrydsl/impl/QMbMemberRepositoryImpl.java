@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,9 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMember mbMember     = QMbMember.mbMember;
     private static final QSySite   sySite     = QSySite.sySite;
     private static final QVwSyCode   cdGr  = new QVwSyCode("cd_gr");
@@ -68,11 +73,20 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                         mbMember.updBy,                   // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbMember.updDate,                 // 수정일
                         cdGr.codeLabel.as("gradeCdNm"),                // 등급 코드라벨 (sy_code MEMBER_GRADE 조인)
-                        cdMs.codeLabel.as("memberStatusCdNm")          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
+                        cdMs.codeLabel.as("memberStatusCdNm"),          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
+                        mbMember.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        mbMember.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbMember)
                 .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd))) // 회원등급
                 .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS_CD").and(cdMs.codeValue.eq(mbMember.memberStatusCd))) // 회원상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMember.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMember.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(mbMember.siteId)) // 사이트
+
                 ;
     }
 
@@ -98,6 +112,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMember.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -133,6 +148,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMember.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery();

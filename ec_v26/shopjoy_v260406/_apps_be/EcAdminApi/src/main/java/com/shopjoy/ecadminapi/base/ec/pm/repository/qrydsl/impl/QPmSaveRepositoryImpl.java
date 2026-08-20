@@ -38,6 +38,9 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmSave   pmSave    = QPmSave.pmSave;
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
@@ -63,11 +66,21 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                         pmSave.refId,         // 연관ID
                         pmSave.expireDate,    // 소멸예정일
                         pmSave.saveMemo,      // 메모
-                        pmSave.regBy, pmSave.regDate
+                        pmSave.regBy,  // 등록자
+                        pmSave.regDate,  // 등록일시
+                        pmSave.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmSave.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmSave)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pmSave.memberId)) // 회원
                 .innerJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE_CD").and(cdSt.codeValue.eq(pmSave.saveTypeCd))) // 적립금유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSave.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSave.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmSave.siteId)) // 사이트
+
                 ;
     }
 
@@ -94,6 +107,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSave.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -132,6 +146,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSave.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery();

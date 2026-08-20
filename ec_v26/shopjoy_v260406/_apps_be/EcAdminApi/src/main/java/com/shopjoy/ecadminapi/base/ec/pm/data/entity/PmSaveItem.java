@@ -25,6 +25,11 @@ public class PmSaveItem extends BaseEntity {
     @Size(max = 21, message = "saveItemId 는 21자 이내여야 합니다.")
     private String saveItemId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
     @Comment("FK: pm_save.save_id (적립금 ID)")
     @Column(name = "save_id", length = 21, nullable = false)
     @Size(max = 21, message = "saveId 는 21자 이내여야 합니다.")

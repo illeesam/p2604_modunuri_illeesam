@@ -34,6 +34,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendEmailLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhSendEmailLog syhSendEmailLog   = QSyhSendEmailLog.syhSendEmailLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyTemplate      syTemplate = QSyTemplate.syTemplate;
@@ -69,12 +71,17 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                         syhSendEmailLog.updDate,         // 수정일시
                         syTemplate.templateNm.as("templateNm"),      // 템플릿명 (조인: sy_template)
                         syUser.userNm.as("userNm"),                  // 관리자명 (조인: sy_user)
-                        cd_sr.codeLabel.as("resultCdNm")              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
+                        cd_sr.codeLabel.as("resultCdNm"),              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
+                        syhSendEmailLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhSendEmailLog)
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendEmailLog.templateId)) // 템플릿
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendEmailLog.userId)) // 사용자
                 .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendEmailLog.resultCd))) // 발송결과
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhSendEmailLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhSendEmailLog.regBy)) // 등록자
                 ;
     }
 

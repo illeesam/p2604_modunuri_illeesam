@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponIssueRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,9 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponIssueRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmCouponIssue pmCouponIssue    = QPmCouponIssue.pmCouponIssue;
     private static final QPmCoupon       pmCoupon    = QPmCoupon.pmCoupon;
     private static final QMbMember       mbMember    = QMbMember.mbMember;
@@ -51,7 +56,10 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                         pmCouponIssue.useYn,       // 사용여부 — Y: '사용' / N: '미사용'
                         pmCouponIssue.useDate,     // 사용일시
                         pmCouponIssue.orderId,     // 사용주문ID
-                        pmCouponIssue.regBy, pmCouponIssue.regDate, pmCouponIssue.updBy, pmCouponIssue.updDate,
+                        pmCouponIssue.regBy,      // 등록자
+                        pmCouponIssue.regDate,    // 등록일시
+                        pmCouponIssue.updBy,      // 수정자
+                        pmCouponIssue.updDate,    // 수정일시
                         pmCoupon.couponNm.as("couponNm"),           // 쿠폰명 (조인)
                         pmCoupon.couponCd.as("couponCd"),           // 쿠폰코드 (조인)
                         pmCoupon.couponTypeCd.as("couponTypeCd"),   // 쿠폰유형 (조인) — COUPON_TYPE {PROD_DISCNT, ORDER_DISCNT, SHIP_DISCNT, SHIP_FREE, JOIN_GIFT, VIP, CLAIM_COMP}
@@ -62,12 +70,21 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                         mbMember.memberNm.as("memberNm"),           // 회원명 (조인)
                         mbMember.loginId.as("memberEmail"),         // 회원 로그인ID/이메일 (조인)
                         mbMember.memberPhone.as("memberPhone"),     // 회원 전화번호 (조인)
-                        cdCt.codeLabel.as("couponTypeCdNm")         // 쿠폰유형 코드라벨 (조인)
+                        cdCt.codeLabel.as("couponTypeCdNm"),         // 쿠폰유형 코드라벨 (조인)
+                        pmCouponIssue.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmCouponIssue.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmCouponIssue)
                 .innerJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId)) // 쿠폰
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId)) // 회원
                 .innerJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmCouponIssue.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmCouponIssue.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmCouponIssue.siteId)) // 사이트
+
                 ;
     }
 
@@ -94,6 +111,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmCouponIssue.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -130,6 +148,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmCouponIssue.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery();

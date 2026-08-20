@@ -25,12 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyContact(고객문의) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyContactRepositoryImpl implements QSyContactRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyContactRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyContact syContact = QSyContact.syContact;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -55,9 +59,15 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                         syContact.regBy,                // 등록자
                         syContact.regDate,              // 등록일시
                         syContact.updBy,                // 수정자
-                        syContact.updDate              // 수정일시
+                        syContact.updDate,              // 수정일시
+                        syContact.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syContact);
+                .from(syContact)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syContact.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syContact.regBy)) // 등록자
+                ;
     }
 
     /* 문의 키조회 */

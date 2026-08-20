@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogFile;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogFile;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogFileRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogFileRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmBlogFile cmBlogFile = QCmBlogFile.cmBlogFile;    /*
      * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_file 은 이미지 URL/정렬순서 중심 테이블)
      */
@@ -41,9 +45,15 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                         cmBlogFile.imgAltText,  // 이미지 대체텍스트
                         cmBlogFile.sortOrd,     // 정렬순서
                         cmBlogFile.regBy,       // 등록자
-                        cmBlogFile.regDate      // 등록일시
+                        cmBlogFile.regDate,      // 등록일시
+                        cmBlogFile.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmBlogFile);
+                .from(cmBlogFile)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmBlogFile.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmBlogFile.regBy)) // 등록자
+                ;
     }
 
     /* 게시물 첨부파일 키조회 */

@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCacheRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,8 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCacheRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmCache pmCache    = QPmCache.pmCache;
     private static final QSySite  sySite  = QSySite.sySite;
     private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");    /*
@@ -53,10 +57,18 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                         pmCache.procUserId,    // 처리자 (관리자 직접 부여 시)
                         pmCache.cacheDate,     // 처리일시
                         pmCache.expireDate,    // 소멸예정일
-                        pmCache.regBy, pmCache.regDate, pmCache.updBy, pmCache.updDate
+                        pmCache.regBy,      // 등록자
+                        pmCache.regDate,    // 등록일시
+                        pmCache.updBy,      // 수정자
+                        pmCache.updDate,    // 수정일시
+                        pmCache.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pmCache)
                 .innerJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE_CD").and(cdCt.codeValue.eq(pmCache.cacheTypeCd))) // 캐쉬유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmCache.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmCache.regBy)) // 등록자
                 ;
     }
 

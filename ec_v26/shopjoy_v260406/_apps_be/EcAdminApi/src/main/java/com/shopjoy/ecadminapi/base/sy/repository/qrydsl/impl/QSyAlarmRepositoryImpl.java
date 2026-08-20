@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyAlarm(알림) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
@@ -37,6 +39,8 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAlarmRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyAlarm syAlarm = QSyAlarm.syAlarm;
     private static final QVwSyCode cdAt = new QVwSyCode("cd_at");
     private static final QVwSyCode cdAc = new QVwSyCode("cd_ac");
@@ -71,12 +75,17 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                         syAlarm.updDate,          // 수정일시
                         cdAt.codeLabel.as("alarmTypeCdNm"),       // 알림유형 라벨 (sy_code ALARM_TYPE 조인)
                         cdAc.codeLabel.as("channelCdNm"),         // 발송채널 라벨 (sy_code ALARM_CHANNEL 조인)
-                        cdAtt.codeLabel.as("targetTypeCdNm")      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
+                        cdAtt.codeLabel.as("targetTypeCdNm"),      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
+                        syAlarm.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syAlarm)
                 .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE_CD").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd))) // 알림유형
                 .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd))) // 알림채널
                 .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd))) // 알림대상유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syAlarm.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syAlarm.regBy)) // 등록자
                 ;
     }
 

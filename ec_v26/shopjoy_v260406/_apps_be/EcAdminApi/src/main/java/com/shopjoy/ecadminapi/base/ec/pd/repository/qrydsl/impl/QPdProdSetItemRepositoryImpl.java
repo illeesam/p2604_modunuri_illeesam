@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSetItem;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSetItem;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdSetItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +33,9 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSetItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProdSetItem pdProdSetItem    = QPdProdSetItem.pdProdSetItem;
     private static final QSySite        sySite  = QSySite.sySite;
     private static final QPdProd        prd  = new QPdProd("prd");
@@ -51,11 +56,23 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                         pdProdSetItem.itemDesc,       // 구성품 부가 설명 (소재·용량·색상 등)
                         pdProdSetItem.sortOrd,        // 노출 정렬 순서
                         pdProdSetItem.useYn,           // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdProdSetItem.regBy, pdProdSetItem.regDate, pdProdSetItem.updBy, pdProdSetItem.updDate
+                        pdProdSetItem.regBy,      // 등록자
+                        pdProdSetItem.regDate,    // 등록일시
+                        pdProdSetItem.updBy,      // 수정자
+                        pdProdSetItem.updDate,    // 수정일시
+                        pdProdSetItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProdSetItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdProdSetItem)
                 .innerJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId)) // 상품
                 .leftJoin(prd2).on(prd2.prodId.eq(pdProdSetItem.itemProdId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProdSetItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProdSetItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProdSetItem.siteId)) // 사이트
+
                 ;
     }
 
@@ -78,6 +95,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -110,6 +128,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdSetItemDto.Item> query = baseSelColumnQuery();

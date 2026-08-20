@@ -32,12 +32,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** PmCoupon(쿠폰) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCouponRepositoryImpl implements QPmCouponRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmCoupon pmCoupon   = QPmCoupon.pmCoupon;
     private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");
     private static final QVwSyCode  cdCs = new QVwSyCode("cd_cs");
@@ -89,17 +93,29 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                         pmCoupon.chargeStaff,             // 판매담당자명
                         pmCoupon.visibilityTargets,       // 공개대상
                         pmCoupon.mdUserId,                // 담당MD
-                        pmCoupon.regBy, pmCoupon.regDate, pmCoupon.updBy, pmCoupon.updDate,
+                        pmCoupon.regBy,      // 등록자
+                        pmCoupon.regDate,    // 등록일시
+                        pmCoupon.updBy,      // 수정자
+                        pmCoupon.updDate,    // 수정일시
                         cdCt.codeLabel.as("couponTypeCdNm"),     // 쿠폰유형 코드라벨 (조인)
                         cdCs.codeLabel.as("couponStatusCdNm"),   // 쿠폰상태 코드라벨 (조인)
                         cdTt.codeLabel.as("targetTypeCdNm"),     // 적용대상 코드라벨 (조인)
-                        cdMg.codeLabel.as("memGradeCdNm")        // 적용등급 코드라벨 (조인)
+                        cdMg.codeLabel.as("memGradeCdNm"),        // 적용등급 코드라벨 (조인)
+                        pmCoupon.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmCoupon.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmCoupon)
                 .innerJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd))) // 쿠폰유형
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("COUPON_STATUS_CD").and(cdCs.codeValue.eq(pmCoupon.couponStatusCd))) // 쿠폰상태
                 .leftJoin(cdTt).on(cdTt.codeGrp.eq("COUPON_TARGET").and(cdTt.codeValue.eq(pmCoupon.targetTypeCd))) // 쿠폰대상
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmCoupon.memGradeCd))) // 회원등급
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmCoupon.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmCoupon.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmCoupon.siteId)) // 사이트
+
                 ;
     }
 
@@ -127,6 +143,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         whereList.add(andProdVendorMd(search));
         whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmCoupon.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -164,6 +181,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         whereList.add(andProdVendorMd(search));
         whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmCoupon.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery();

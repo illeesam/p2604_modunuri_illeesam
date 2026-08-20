@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbhMemberTokenLogRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,8 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbhMemberTokenLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbhMemberTokenLog mbhMemberTokenLog    = QMbhMemberTokenLog.mbhMemberTokenLog;
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
@@ -65,12 +69,17 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                         mbhMemberTokenLog.updDate,           // 수정일
                         mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
                         cdTa.codeLabel.as("actionCdNm"),            // 토큰 액션 코드라벨 (sy_code TOKEN_ACTION 조인)
-                        cdTt.codeLabel.as("tokenTypeCdNm")          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
+                        cdTt.codeLabel.as("tokenTypeCdNm"),          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
+                        mbhMemberTokenLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(mbhMemberTokenLog)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId)) // 회원
                 .innerJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd))) // 액션
                 .innerJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd))) // 토큰유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbhMemberTokenLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbhMemberTokenLog.regBy)) // 등록자
                 ;
     }
 

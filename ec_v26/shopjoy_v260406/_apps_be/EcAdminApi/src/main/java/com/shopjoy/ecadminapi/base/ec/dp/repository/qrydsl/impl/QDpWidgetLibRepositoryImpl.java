@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpWidgetLibRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,9 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;    /*
      * baseQuery — 코드성 필드 예시 코드값
      * USE_YN / IS_SYSTEM  {Y: '예', N: '아니오'}
@@ -64,8 +69,18 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 dpWidgetLib.regBy,             // 등록자
                 dpWidgetLib.regDate,           // 등록일시
                 dpWidgetLib.updBy,             // 수정자
-                dpWidgetLib.updDate            // 수정일시
-        )).from(dpWidgetLib);
+                dpWidgetLib.updDate,            // 수정일시
+                dpWidgetLib.regSiteId,  // 등록사이트ID
+                regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                dpWidgetLib.siteId,  // 사이트ID
+                siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
+        )).from(dpWidgetLib)
+        .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(dpWidgetLib.regSiteId)) // 등록사이트
+        .leftJoin(regUserEx).on(regUserEx.userId.eq(dpWidgetLib.regBy)) // 등록자
+        .leftJoin(siteEx).on(siteEx.siteId.eq(dpWidgetLib.siteId)) // 사이트
+
+        ;
     }
 
     /* 전시 위젯 라이브러리 키조회 */
@@ -88,6 +103,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -122,6 +138,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery();
 

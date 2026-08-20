@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderDiscnt;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderDiscnt;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderDiscntRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -33,6 +35,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderDiscntRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdOrderDiscnt odOrderDiscnt   = QOdOrderDiscnt.odOrderDiscnt;
     private static final QSySite        ste = new QSySite("ste");
     private static final QOdOrder       ord = new QOdOrder("ord");
@@ -55,12 +59,18 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                         odOrderDiscnt.restoreYn,       // 복원여부 Y/N (환불 시 적립금·캐쉬 차감 복원 완료 여부)
                         odOrderDiscnt.restoreAmt,      // 복원된 금액 (부분반품 시 부분복원 지원)
                         odOrderDiscnt.restoreDate,     // 복원 처리일시
-                        odOrderDiscnt.regBy, odOrderDiscnt.regDate
+                        odOrderDiscnt.regBy,  // 등록자
+                        odOrderDiscnt.regDate,  // 등록일시
+                        odOrderDiscnt.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(odOrderDiscnt)
                 .innerJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId)) // 주문
                 .innerJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd))) // 주문할인유형
                 .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId)) // 쿠폰
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odOrderDiscnt.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odOrderDiscnt.regBy)) // 등록자
                 ;
     }
 

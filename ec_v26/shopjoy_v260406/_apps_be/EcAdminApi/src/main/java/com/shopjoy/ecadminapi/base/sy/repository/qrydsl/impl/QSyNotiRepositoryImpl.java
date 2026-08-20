@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 /** SyNoti(알림함 (수신자별 알림 1건 = 1행)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -29,6 +31,8 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyNotiRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyNoti syNoti = QSyNoti.syNoti;
 
     /*
@@ -57,9 +61,14 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
                         syNoti.regDate,      // 등록일시
                         syNoti.regSiteId,    // 등록사이트ID
                         syNoti.updBy,        // 수정자
-                        syNoti.updDate       // 수정일시
+                        syNoti.updDate,       // 수정일시
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syNoti);
+                .from(syNoti)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syNoti.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syNoti.regBy)) // 등록자
+                ;
     }
 
     /* 알림함 키조회 */

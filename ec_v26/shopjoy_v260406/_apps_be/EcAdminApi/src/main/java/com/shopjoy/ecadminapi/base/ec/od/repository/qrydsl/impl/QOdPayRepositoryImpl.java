@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPay;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPay;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdPayRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,9 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdPayRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdPay    odPay   = QOdPay.odPay;
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
@@ -73,14 +78,23 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         odPay.vbankAccount.as("vbankAccountNo"),      // 가상계좌 계좌번호
                         odPay.vbankHolderNm.as("vbankAccountNm"),     // 가상계좌 예금주명
                         odPay.vbankDepositDate.as("vbankExpireDate"), // 가상계좌 입금확인일시
-                        odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
+                        odPay.memo,  // 메모
+                        odPay.regBy,  // 등록자
+                        odPay.regDate,  // 등록일시
+                        odPay.updBy,  // 수정자
+                        odPay.updDate,  // 수정일시
                         odOrder.memberNm.as("memberNm"),
                         odOrder.orderDate.as("orderDate"),
                         mbMember.loginId.as("memberEmail"),
                         cdPs.codeLabel.as("payStatusCdNm"),
                         cdPm.codeLabel.as("payMethodCdNm"),
                         cdPd.codeLabel.as("payDirCdNm"),
-                        cdRs.codeLabel.as("refundStatusCdNm")
+                        cdRs.codeLabel.as("refundStatusCdNm"),
+                        odPay.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odPay.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odPay)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
@@ -89,6 +103,10 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd))) // 결제상태
                 .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd))) // 결제방향
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd))) // 환불상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odPay.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odPay.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odPay.siteId)) // 사이트
+
                 ;
     }
 
@@ -121,7 +139,11 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         odPay.vbankAccount.as("vbankAccountNo"),      // 가상계좌 계좌번호
                         odPay.vbankHolderNm.as("vbankAccountNm"),     // 가상계좌 예금주명
                         odPay.vbankDepositDate.as("vbankExpireDate"), // 가상계좌 입금확인일시
-                        odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
+                        odPay.memo,  // 메모
+                        odPay.regBy,  // 등록자
+                        odPay.regDate,  // 등록일시
+                        odPay.updBy,  // 수정자
+                        odPay.updDate,  // 수정일시
                         // joined
                         odOrder.memberNm.as("memberNm"),
                         odOrder.orderDate.as("orderDate"),
@@ -133,7 +155,12 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdPc.codeLabel.as("payChannelCdNm"),
                         cdRs.codeLabel.as("refundStatusCdNm"),
                         cdVb.codeLabel.as("vbankBankCdNm"),
-                        cdCt.codeLabel.as("cardTypeCdNm")
+                        cdCt.codeLabel.as("cardTypeCdNm"),
+                        odPay.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odPay.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odPay)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId)) // 주문
@@ -145,8 +172,12 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd))) // 환불상태
                 .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCd))) // 은행
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE_CD").and(cdCt.codeValue.eq(odPay.cardTypeCd))) // 카드유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odPay.regSiteId)) // 등록사이트
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odPay.siteId)) // 사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odPay.regBy)) // 등록자
                 .where(odPay.payId.eq(payId))
-                .fetchOne();
+                .fetchOne()
+                ;
         return Optional.ofNullable(dtl);
     }
 
@@ -163,6 +194,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("pay_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.payDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odPay.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -198,6 +230,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("pay_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPay.payDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odPay.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdPayDto.Item> query = baseListQuery();

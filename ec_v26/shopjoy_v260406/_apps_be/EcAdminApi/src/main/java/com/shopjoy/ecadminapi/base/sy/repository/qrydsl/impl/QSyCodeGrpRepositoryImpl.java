@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyCodeGrp(공통코드 그룹) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
@@ -36,6 +38,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeGrpRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN {Y: '사용', N: '미사용'}
@@ -53,9 +57,15 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                         syCodeGrp.regBy,         // 등록자
                         syCodeGrp.regDate,       // 등록일시
                         syCodeGrp.updBy,         // 수정자
-                        syCodeGrp.updDate       // 수정일시
+                        syCodeGrp.updDate,       // 수정일시
+                        syCodeGrp.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syCodeGrp);
+                .from(syCodeGrp)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syCodeGrp.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syCodeGrp.regBy)) // 등록자
+                ;
     }
 
     /* 공통 코드 그룹 키조회 */

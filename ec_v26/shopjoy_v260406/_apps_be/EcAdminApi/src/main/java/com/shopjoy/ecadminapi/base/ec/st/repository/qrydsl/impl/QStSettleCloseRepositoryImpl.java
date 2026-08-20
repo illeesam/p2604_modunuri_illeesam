@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleCloseRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,8 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleCloseRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleClose stSettleClose   = QStSettleClose.stSettleClose;
     private static final QSySite        sySite = QSySite.sySite;
     private static final QVwSyCode        cdScs = new QVwSyCode("cd_scs");    /*
@@ -51,10 +55,15 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                         stSettleClose.closeDate,          // 처리일시
                         stSettleClose.regBy,              // 등록자
                         stSettleClose.regDate,            // 등록일시
-                        cdScs.codeLabel.as("closeStatusCdNm")         // 마감상태명 (sy_code 조인)
+                        cdScs.codeLabel.as("closeStatusCdNm"),         // 마감상태명 (sy_code 조인)
+                        stSettleClose.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleClose)
                 .innerJoin(cdScs).on(cdScs.codeGrp.eq("CLOSE_STATUS_CD").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd))) // 마감상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleClose.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleClose.regBy)) // 등록자
                 ;
     }
 

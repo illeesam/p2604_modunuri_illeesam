@@ -26,6 +26,11 @@ public class DpPanelItem extends BaseEntity {
     @Size(max = 21, message = "panelItemId 는 21자 이내여야 합니다.")
     private String panelItemId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("패널ID (dp_panel.panel_id)")
     @Column(name = "panel_id", length = 21, nullable = false)

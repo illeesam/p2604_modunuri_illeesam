@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhOrderItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhOrderItemChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderItemChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhOrderItemChgHist odhOrderItemChgHist = QOdhOrderItemChgHist.odhOrderItemChgHist;
 
     /*
@@ -48,8 +52,18 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
                         odhOrderItemChgHist.chgReason,          // 변경사유
                         odhOrderItemChgHist.chgUserId,          // 처리자 (sy_user.user_id)
                         odhOrderItemChgHist.chgDate,            // 처리일시
-                        odhOrderItemChgHist.regBy, odhOrderItemChgHist.regDate, odhOrderItemChgHist.updBy, odhOrderItemChgHist.updDate))
-                .from(odhOrderItemChgHist);
+                        odhOrderItemChgHist.regBy,      // 등록자
+                        odhOrderItemChgHist.regDate,    // 등록일시
+                        odhOrderItemChgHist.updBy,      // 수정자
+                        odhOrderItemChgHist.updDate,    // 수정일시
+                        odhOrderItemChgHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhOrderItemChgHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhOrderItemChgHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhOrderItemChgHist.regBy)) // 등록자
+                ;
     }
 
     /* 주문 아이템 변경 이력 키조회 */

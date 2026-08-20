@@ -23,12 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyhApiLog(외부 API 연동 로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhApiLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhApiLog syhApiLog   = QSyhApiLog.syhApiLog;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
      * apiTypeCd  {PG: 'PG결제', LOGISTICS: '물류/택배', KAKAO: '카카오', NAVER: '네이버', SMS: 'SMS'}
@@ -58,9 +62,15 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                         syhApiLog.regBy,          // 등록자
                         syhApiLog.regDate,        // 등록일시
                         syhApiLog.updBy,          // 수정자
-                        syhApiLog.updDate        // 수정일시
+                        syhApiLog.updDate,        // 수정일시
+                        syhApiLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syhApiLog);
+                .from(syhApiLog)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhApiLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhApiLog.regBy)) // 등록자
+                ;
     }
 
     /* API 로그 키조회 */

@@ -47,6 +47,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleRawRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleRaw stSettleRaw    = QStSettleRaw.stSettleRaw;
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QOdOrder     odOrder  = QOdOrder.odOrder;
@@ -164,7 +166,10 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         cdRs.codeLabel.as("rawStatusCdNm"),                     // 수집상태명 (sy_code 조인)
                         cdOis.codeLabel.as("orderItemStatusCdNm"),              // 주문상태명 (sy_code 조인)
                         cdVt.codeLabel.as("vendorTypeCdNm"),                    // 업체구분명 (sy_code 조인)
-                        cdPmc.codeLabel.as("payMethodCdNm")                     // 결제수단명 (sy_code 조인)
+                        cdPmc.codeLabel.as("payMethodCdNm"),                     // 결제수단명 (sy_code 조인)
+                        stSettleRaw.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleRaw)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId)) // 주문
@@ -186,6 +191,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd))) // 주문상품상태
                 .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE_CD").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd))) // 업체유형
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettleRaw.payMethodCd))) // 결제수단
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleRaw.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleRaw.regBy)) // 등록자
                 ;
     }
 

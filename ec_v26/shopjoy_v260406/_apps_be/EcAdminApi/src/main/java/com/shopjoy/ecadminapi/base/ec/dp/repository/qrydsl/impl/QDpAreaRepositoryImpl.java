@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpAreaRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,9 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QDpArea dpArea = QDpArea.dpArea;
 
     /*
@@ -56,8 +61,18 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 dpArea.regBy,         // 등록자
                 dpArea.regDate,       // 등록일시
                 dpArea.updBy,         // 수정자
-                dpArea.updDate        // 수정일시
-        )).from(dpArea);
+                dpArea.updDate,        // 수정일시
+                dpArea.regSiteId,  // 등록사이트ID
+                regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                dpArea.siteId,  // 사이트ID
+                siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
+        )).from(dpArea)
+        .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(dpArea.regSiteId)) // 등록사이트
+        .leftJoin(regUserEx).on(regUserEx.userId.eq(dpArea.regBy)) // 등록자
+        .leftJoin(siteEx).on(siteEx.siteId.eq(dpArea.siteId)) // 사이트
+
+        ;
     }
 
     /* 전시 영역 키조회 */
@@ -80,6 +95,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
         whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpArea.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -113,6 +129,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
         whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpArea.siteId, search.getSiteId()));
         JPAQuery<DpAreaDto.Item> query = baseQuery();
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);

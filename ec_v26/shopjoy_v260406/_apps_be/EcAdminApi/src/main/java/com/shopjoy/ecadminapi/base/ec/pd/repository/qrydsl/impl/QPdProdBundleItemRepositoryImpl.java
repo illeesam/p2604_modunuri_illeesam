@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdBundleItem;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdBundleItem;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdBundleItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +33,9 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdBundleItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProdBundleItem pdProdBundleItem    = QPdProdBundleItem.pdProdBundleItem;
     private static final QSySite           sySite  = QSySite.sySite;
     private static final QPdProd           prd  = new QPdProd("prd");
@@ -50,11 +55,23 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
                         pdProdBundleItem.priceRate,        // 가격 안분율(%) — 구성품 합계 100% 필수, 부분클레임 환불 계산 기준
                         pdProdBundleItem.sortOrd,          // 노출 정렬 순서
                         pdProdBundleItem.useYn,             // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdProdBundleItem.regBy, pdProdBundleItem.regDate, pdProdBundleItem.updBy, pdProdBundleItem.updDate
+                        pdProdBundleItem.regBy,      // 등록자
+                        pdProdBundleItem.regDate,    // 등록일시
+                        pdProdBundleItem.updBy,      // 수정자
+                        pdProdBundleItem.updDate,    // 수정일시
+                        pdProdBundleItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProdBundleItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdProdBundleItem)
                 .innerJoin(prd).on(prd.prodId.eq(pdProdBundleItem.bundleProdId)) // 상품
                 .innerJoin(prd2).on(prd2.prodId.eq(pdProdBundleItem.itemProdId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProdBundleItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProdBundleItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProdBundleItem.siteId)) // 사이트
+
                 ;
     }
 
@@ -77,6 +94,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdBundleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdBundleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdBundleItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -109,6 +127,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdBundleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdBundleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdBundleItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery();

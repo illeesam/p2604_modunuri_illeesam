@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuPriceHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuPriceHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdSkuPriceHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdSkuPriceHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QPdhProdSkuPriceHist pdhProdSkuPriceHist   = QPdhProdSkuPriceHist.pdhProdSkuPriceHist;
     private static final QSySite              sySite = QSySite.sySite;
     private static final QPdProd              pdProd = QPdProd.pdProd;
@@ -45,10 +47,12 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                         pdhProdSkuPriceHist.chgBy,           // 처리자 (sy_user.user_id)
                         pdhProdSkuPriceHist.chgDate,         // 처리일시
                         pdhProdSkuPriceHist.regBy,
-                        pdhProdSkuPriceHist.regDate
+                        pdhProdSkuPriceHist.regDate,
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pdhProdSkuPriceHist)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuPriceHist.prodId)) // 상품
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdSkuPriceHist.regBy)) // 등록자
                 ;
     }
 

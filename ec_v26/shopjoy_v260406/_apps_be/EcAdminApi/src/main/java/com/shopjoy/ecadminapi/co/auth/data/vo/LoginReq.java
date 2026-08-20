@@ -14,4 +14,7 @@ public class LoginReq {
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
     private String loginPwd;
+
+    /** FO 전용 — 로그인 화면에서 선택한 사이트ID (BO 로그인은 미사용, null 허용) */
+    private String siteId;
 }

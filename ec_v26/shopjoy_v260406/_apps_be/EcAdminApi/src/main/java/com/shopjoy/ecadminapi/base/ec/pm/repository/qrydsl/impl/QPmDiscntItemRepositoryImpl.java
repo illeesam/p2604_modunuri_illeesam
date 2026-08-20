@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,9 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmDiscntItem pmDiscntItem = QPmDiscntItem.pmDiscntItem;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * DISCNT_ITEM_TARGET  {CATEGORY: '카테고리', PRODUCT: '상품', MEMBER_GRADE: '회원등급'} (Entity 주석 대상ID 설명 기준)
@@ -39,9 +44,20 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                         pmDiscntItem.discntId,       // 할인ID (pm_discnt.discnt_id)
                         pmDiscntItem.targetTypeCd,   // 대상유형 — DISCNT_ITEM_TARGET {CATEGORY, PRODUCT, MEMBER_GRADE}
                         pmDiscntItem.targetId,       // 대상ID (category_id/prod_id/grade_cd)
-                        pmDiscntItem.regBy, pmDiscntItem.regDate
+                        pmDiscntItem.regBy,  // 등록자
+                        pmDiscntItem.regDate,  // 등록일시
+                        pmDiscntItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmDiscntItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmDiscntItem);
+                .from(pmDiscntItem)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmDiscntItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmDiscntItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmDiscntItem.siteId)) // 사이트
+
+                ;
     }
 
     /* 할인 대상 상품 키조회 */
@@ -66,6 +82,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -101,6 +118,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmDiscntItemDto.Item> query = baseSelColumnQuery();

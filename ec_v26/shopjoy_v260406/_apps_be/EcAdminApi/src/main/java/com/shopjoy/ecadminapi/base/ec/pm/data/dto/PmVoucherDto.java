@@ -37,6 +37,10 @@ public class PmVoucherDto {
         private String regBy;
         private LocalDateTime regDate;
         private String regSiteId;
+        private String siteId;  // 사이트ID
+        private String siteNm;  // 사이트명 (조인)
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String updBy;
         private LocalDateTime updDate;
     }

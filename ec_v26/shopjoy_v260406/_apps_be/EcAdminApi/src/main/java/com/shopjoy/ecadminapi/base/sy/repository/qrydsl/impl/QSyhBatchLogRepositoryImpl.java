@@ -26,12 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyhBatchLog(배치 실행 로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      sySite = QSySite.sySite;
     private static final QVwSyCode      cd_bs  = new QVwSyCode("cd_bs");    /*
@@ -58,10 +62,15 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         syhBatchLog.regDate,      // 등록일시
                         syhBatchLog.updBy,        // 수정자
                         syhBatchLog.updDate,      // 수정일시
-                        cd_bs.codeLabel.as("runStatusCdNm")  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
+                        cd_bs.codeLabel.as("runStatusCdNm"),  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
+                        syhBatchLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhBatchLog)
                 .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatusCd))) // 배치상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhBatchLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhBatchLog.regBy)) // 등록자
                 ;
     }
 

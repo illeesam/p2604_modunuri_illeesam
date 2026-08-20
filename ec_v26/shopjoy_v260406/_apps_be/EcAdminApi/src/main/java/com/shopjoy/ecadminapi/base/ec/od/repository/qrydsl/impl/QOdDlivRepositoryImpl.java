@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -37,6 +39,9 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdDliv   odDliv     = QOdDliv.odDliv;
     private static final QOdOrder  odOrder    = QOdOrder.odOrder;
     private static final QSyVendor syVendor   = QSyVendor.syVendor;
@@ -76,7 +81,10 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                         odDliv.recvAddr,               // 주소
                         odDliv.recvAddrDetail,         // 상세주소
                         odDliv.dlivMemo,               // 메모 (HTML 에디터)
-                        odDliv.regBy, odDliv.regDate, odDliv.updBy, odDliv.updDate,
+                        odDliv.regBy,      // 등록자
+                        odDliv.regDate,    // 등록일시
+                        odDliv.updBy,      // 수정자
+                        odDliv.updDate,    // 수정일시
                         odOrder.memberNm.as("memberNm"),
                         odOrder.orderDate.as("orderDate"),
                         odOrder.orderStatusCd.as("orderStatusCd"),
@@ -86,7 +94,12 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                         cdDt.codeLabel.as("dlivTypeCdNm"),
                         cdDd.codeLabel.as("dlivDivCdNm"),
                         cdOc.codeLabel.as("outboundCourierCdNm"),
-                        cdIc.codeLabel.as("inboundCourierCdNm")
+                        cdIc.codeLabel.as("inboundCourierCdNm"),
+                        odDliv.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odDliv.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odDliv)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId)) // 주문
@@ -96,6 +109,10 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV_CD").and(cdDd.codeValue.eq(odDliv.dlivDivCd))) // 입출고구분
                 .leftJoin(cdOc).on(cdOc.codeGrp.eq("COURIER").and(cdOc.codeValue.eq(odDliv.outboundCourierCd))) // 택배사
                 .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odDliv.inboundCourierCd))) // 택배사
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odDliv.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odDliv.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odDliv.siteId)) // 사이트
+
                 ;
     }
 
@@ -135,6 +152,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odDliv.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -184,6 +202,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odDliv.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery();

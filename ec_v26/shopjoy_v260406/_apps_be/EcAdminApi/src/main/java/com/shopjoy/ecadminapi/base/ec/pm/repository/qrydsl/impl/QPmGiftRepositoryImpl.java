@@ -41,6 +41,9 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmGift  pmGift    = QPmGift.pmGift;
     private static final QPdProd  pdProd  = QPdProd.pdProd;
     private static final QSySite  sySite  = QSySite.sySite;
@@ -76,10 +79,19 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                         pmGift.minOrderQty,          // 최소주문수량 (NULL=제한없음)
                         pmGift.selfCdivRate,         // 자사(사이트) 분담율 (%) — 기본 100%
                         pmGift.sellerCdivRate,       // 판매자(업체) 분담율 (%) — 기본 0%
-                        pmGift.useYn, pmGift.regBy, pmGift.regDate, pmGift.updBy, pmGift.updDate,
+                        pmGift.useYn,  // 사용여부 Y/N
+                        pmGift.regBy,  // 등록자
+                        pmGift.regDate,  // 등록일시
+                        pmGift.updBy,  // 수정자
+                        pmGift.updDate,  // 수정일시
                         pmGift.vendorId,            // 판매업체 (sy_vendor.vendor_id)
                         pmGift.chargeStaff,         // 판매담당자명
-                        pmGift.visibilityTargets    // 공개대상
+                        pmGift.visibilityTargets,    // 공개대상
+                        pmGift.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmGift.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmGift)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId)) // 상품
@@ -88,6 +100,10 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE_CD").and(cdGt.codeValue.eq(pmGift.giftTypeCd))) // 사은품유형
                 .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS_CD").and(cdGs.codeValue.eq(pmGift.giftStatusCd))) // 사은품상태
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd))) // 회원등급
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmGift.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmGift.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmGift.siteId)) // 사이트
+
                 ;
     }
 
@@ -120,6 +136,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andCurrentYnGift(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmGift.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -164,6 +181,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andCurrentYnGift(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmGift.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery();

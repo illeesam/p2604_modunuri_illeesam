@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdImgDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdImgRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdImgRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProdImg pdProdImg = QPdProdImg.pdProdImg;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * IS_THUMB  {Y: '대표이미지', N: '일반이미지'}
@@ -50,9 +55,19 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                         pdProdImg.regBy,
                         pdProdImg.regDate,
                         pdProdImg.updBy,
-                        pdProdImg.updDate
+                        pdProdImg.updDate,
+                        pdProdImg.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProdImg.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdProdImg);
+                .from(pdProdImg)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProdImg.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProdImg.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProdImg.siteId)) // 사이트
+
+                ;
     }
 
     /* 상품 이미지 키조회 */
@@ -76,6 +91,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdImg.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -110,6 +126,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdImg.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery();

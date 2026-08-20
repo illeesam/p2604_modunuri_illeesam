@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 /** SyRoleMenu(역할-메뉴 권한 매핑) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QVwSyRoleMenu vwRoleMenu = QVwSyRoleMenu.vwSyRoleMenu; // SELECT 전용 — sy_role JOIN 내장
     private static final QSyRoleMenu syRoleMenu = QSyRoleMenu.syRoleMenu;       // UPDATE 전용 (updateSelective)
     /*
@@ -48,9 +50,12 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                         vwRoleMenu.regDate,      // 등록일시
                         vwRoleMenu.updBy,        // 수정자
                         vwRoleMenu.updDate,      // 수정일시
-                        vwRoleMenu.roleNm        // 역할명 (vw_sy_role_menu에 sy_role JOIN 내장)
+                        vwRoleMenu.roleNm,        // 역할명 (vw_sy_role_menu에 sy_role JOIN 내장)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(vwRoleMenu);
+                .from(vwRoleMenu)
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(vwRoleMenu.regBy)) // 등록자
+                ;
         // JOIN 불필요 — vw_sy_role_menu 뷰에 sy_role 정보가 내장됨
     }
 

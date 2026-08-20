@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattMsgRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,8 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattMsgRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmChattMsg cmChattMsg = QCmChattMsg.cmChattMsg;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값 (DDL 컬럼 코멘트 기준, sy_code 미등록)
      * SENDER_TYPE_CD  {MEMBER: '고객회원', ADMIN: '관리자', SYSTEM: '시스템'}
@@ -53,9 +57,15 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                         cmChattMsg.regBy,         // 등록자
                         cmChattMsg.regDate,       // 등록일시
                         cmChattMsg.updBy,         // 수정자
-                        cmChattMsg.updDate        // 수정일시
+                        cmChattMsg.updDate,        // 수정일시
+                        cmChattMsg.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmChattMsg);
+                .from(cmChattMsg)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmChattMsg.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmChattMsg.regBy)) // 등록자
+                ;
     }
 
     @Override

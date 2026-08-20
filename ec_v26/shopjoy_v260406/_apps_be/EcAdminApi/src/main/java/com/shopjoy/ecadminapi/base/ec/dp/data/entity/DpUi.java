@@ -26,6 +26,11 @@ public class DpUi extends BaseEntity {
     @Size(max = 21, message = "uiId 는 21자 이내여야 합니다.")
     private String uiId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("UI코드 (예: MOBILE_MAIN, PC_MAIN)")
     @Column(name = "ui_cd", length = 50, nullable = false)

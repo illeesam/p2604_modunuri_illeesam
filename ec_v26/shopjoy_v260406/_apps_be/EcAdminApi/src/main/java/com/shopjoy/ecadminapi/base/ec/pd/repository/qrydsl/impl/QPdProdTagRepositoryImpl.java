@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdTagRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,9 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdTagRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProdTag pdProdTag   = QPdProdTag.pdProdTag;
     private static final QPdProd    pdProd = QPdProd.pdProd;
     private static final QSySite    sySite = QSySite.sySite;    /* 상품 태그 baseSelColumnQuery — 코드성 필드 없음 (단순 매핑 테이블) */
@@ -39,10 +44,20 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                         pdProdTag.prodTagId,   // 상품태그ID (PK)
                         pdProdTag.prodId,       // 상품ID (pd_prod.prod_id)
                         pdProdTag.tagId,        // 태그ID (pd_tag.tag_id)
-                        pdProdTag.regBy, pdProdTag.regDate
+                        pdProdTag.regBy,  // 등록자
+                        pdProdTag.regDate,  // 등록일시
+                        pdProdTag.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProdTag.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdProdTag)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProdTag.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProdTag.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProdTag.siteId)) // 사이트
+
                 ;
     }
 
@@ -65,6 +80,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -97,6 +113,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdTagDto.Item> query = baseSelColumnQuery();

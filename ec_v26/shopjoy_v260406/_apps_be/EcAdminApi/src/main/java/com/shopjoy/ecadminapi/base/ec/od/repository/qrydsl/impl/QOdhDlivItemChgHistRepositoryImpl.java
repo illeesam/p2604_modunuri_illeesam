@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivItemChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhDlivItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhDlivItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhDlivItemChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhDlivItemChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhDlivItemChgHist odhDlivItemChgHist = QOdhDlivItemChgHist.odhDlivItemChgHist;
 
     /*
@@ -48,8 +52,18 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
                         odhDlivItemChgHist.chgReason,         // 변경사유
                         odhDlivItemChgHist.chgUserId,         // 처리자 (sy_user.user_id)
                         odhDlivItemChgHist.chgDate,           // 처리일시
-                        odhDlivItemChgHist.regBy, odhDlivItemChgHist.regDate, odhDlivItemChgHist.updBy, odhDlivItemChgHist.updDate))
-                .from(odhDlivItemChgHist);
+                        odhDlivItemChgHist.regBy,      // 등록자
+                        odhDlivItemChgHist.regDate,    // 등록일시
+                        odhDlivItemChgHist.updBy,      // 수정자
+                        odhDlivItemChgHist.updDate,    // 수정일시
+                        odhDlivItemChgHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhDlivItemChgHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhDlivItemChgHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhDlivItemChgHist.regBy)) // 등록자
+                ;
     }
 
     /* 배송 아이템 변경 이력 키조회 */

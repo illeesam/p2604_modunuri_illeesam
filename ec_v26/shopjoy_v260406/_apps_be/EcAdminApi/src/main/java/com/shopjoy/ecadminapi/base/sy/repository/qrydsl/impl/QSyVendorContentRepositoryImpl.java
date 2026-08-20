@@ -25,12 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyVendorContent(판매/배송업체 콘텐츠 (회사소개/배너/약관 등)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorContentRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVendorContent syVendorContent = QSyVendorContent.syVendorContent;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode cdVct = new QVwSyCode("cd_vct");
@@ -64,13 +68,18 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                         syVendorContent.regDate,                      // 등록일시
                         syVendorContent.updBy,                        // 수정자
                         syVendorContent.updDate,                      // 수정일시
-                        syVendor.vendorNm.as("vendorNm")              // 업체명 (조인: sy_vendor)
+                        syVendor.vendorNm.as("vendorNm"),              // 업체명 (조인: sy_vendor)
+                        syVendorContent.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syVendorContent)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorContent.vendorId)) // 업체
                 // sySite·syAttachGrp 은 SELECT 대상 없는 dead JOIN → 제거됨
                 .leftJoin(cdVct).on(cdVct.codeGrp.eq("VENDOR_CONTENT_TYPE").and(cdVct.codeValue.eq(syVendorContent.contentTypeCd))) // 업체컨텐츠유형
                 .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS_CD").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd))) // 업체컨텐츠상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorContent.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorContent.regBy)) // 등록자
                 ;
     }
 

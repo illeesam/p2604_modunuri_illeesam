@@ -13,6 +13,7 @@ public class DpPanelItemDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
         @Size(max = 1) private String useYn;  // 사용여부 Y/N 필터
         @Size(max = 21) private String panelItemId;  // 패널항목ID 필터
         @Size(max = 21) private String panelId;  // 패널ID 필터
@@ -43,6 +44,10 @@ public class DpPanelItemDto {
         private String regBy;  // 등록자
         private LocalDateTime regDate;  // 등록일
         private String regSiteId;  // 등록 사이트ID
+        private String siteId;  // 사이트ID
+        private String siteNm;  // 사이트명 (조인)
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String updBy;  // 수정자
         private LocalDateTime updDate;  // 수정일
     }

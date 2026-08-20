@@ -27,12 +27,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyVendorUser(판매/배송업체 사용자 (담당자/실무자)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVendorUser syVendorUser = QSyVendorUser.syVendorUser;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyUser syUser = QSyUser.syUser;
@@ -66,13 +69,18 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                         syVendorUser.regDate,                      // 등록일시
                         syVendorUser.updBy,                        // 수정자
                         syVendorUser.updDate,                      // 수정일시
-                        syVendor.vendorNm.as("vendorNm")           // 업체명 (조인: sy_vendor)
+                        syVendor.vendorNm.as("vendorNm"),           // 업체명 (조인: sy_vendor)
+                        syVendorUser.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syVendorUser)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId)) // 업체
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId)) // 사용자
                 .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION_CD").and(cdP.codeValue.eq(syVendorUser.positionCd))) // 직급
                 .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS_CD").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd))) // 업체담당자상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorUser.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorUser.regBy)) // 등록자
                 ;
     }
 

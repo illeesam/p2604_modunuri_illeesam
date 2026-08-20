@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogTag;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogTag;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogTagRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,8 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogTagRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmBlogTag cmBlogTag = QCmBlogTag.cmBlogTag;    /*
      * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_tag 는 블로그-태그명 매핑 테이블)
      */
@@ -43,9 +47,15 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
                         cmBlogTag.regBy,      // 등록자
                         cmBlogTag.regDate,    // 등록일시
                         cmBlogTag.updBy,      // 수정자
-                        cmBlogTag.updDate     // 수정일시
+                        cmBlogTag.updDate,     // 수정일시
+                        cmBlogTag.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmBlogTag);
+                .from(cmBlogTag)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmBlogTag.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmBlogTag.regBy)) // 등록자
+                ;
     }
 
     /** 단건 조회 */

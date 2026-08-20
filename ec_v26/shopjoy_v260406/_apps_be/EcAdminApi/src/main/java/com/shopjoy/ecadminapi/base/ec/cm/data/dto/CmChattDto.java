@@ -33,6 +33,8 @@ public class CmChattDto {
         private String regBy;  // 등록자
         private LocalDateTime regDate;  // 등록일
         private String regSiteId;  // 등록 사이트ID
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String updBy;  // 수정자
         private LocalDateTime updDate;  // 수정일
         private List<CmChattMemberDto.Item> members;  // 채팅방 참여자 목록

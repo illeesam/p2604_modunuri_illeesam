@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStRecon;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStReconRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStReconRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStRecon     stRecon    = QStRecon.stRecon;
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QSyVendor    syVendor  = QSyVendor.syVendor;
@@ -71,13 +75,18 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                         syVendor.vendorNm.as("vendorNm"),             // 업체명 (조인)
                         stSettleRaw.prodNm.as("settleRawNm"),         // 수집원장 상품명 스냅샷 (조인)
                         cdRt.codeLabel.as("reconTypeCdNm"),           // 대사유형명 (sy_code 조인)
-                        cdRs.codeLabel.as("reconStatusCdNm")         // 대사상태명 (sy_code 조인)
+                        cdRs.codeLabel.as("reconStatusCdNm"),         // 대사상태명 (sy_code 조인)
+                        stRecon.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stRecon)
                 .innerJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE_CD").and(cdRt.codeValue.eq(stRecon.reconTypeCd))) // 대사유형
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId)) // 업체
                 .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId)) // 정산원장
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS_CD").and(cdRs.codeValue.eq(stRecon.reconStatusCd))) // 대사상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stRecon.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stRecon.regBy)) // 등록자
                 ;
     }
 

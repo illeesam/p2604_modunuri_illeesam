@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntUsageRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,9 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntUsageRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmDiscntUsage pmDiscntUsage = QPmDiscntUsage.pmDiscntUsage;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * discntTypeCd  {RATE: '정률', FIXED: '정액', FREE_SHIP: '무료배송'} (Entity 주석 기준 — 사용 시점 스냅샷)
@@ -46,9 +51,20 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                         pmDiscntUsage.discntValue,     // 할인값 스냅샷 (정률이면 % / 정액이면 원)
                         pmDiscntUsage.discntAmt,       // 실할인금액
                         pmDiscntUsage.usedDate,        // 적용일시
-                        pmDiscntUsage.regBy, pmDiscntUsage.regDate
+                        pmDiscntUsage.regBy,  // 등록자
+                        pmDiscntUsage.regDate,  // 등록일시
+                        pmDiscntUsage.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmDiscntUsage.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmDiscntUsage);
+                .from(pmDiscntUsage)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmDiscntUsage.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmDiscntUsage.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmDiscntUsage.siteId)) // 사이트
+
+                ;
     }
 
     /* 할인 사용 이력 키조회 */
@@ -72,6 +88,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmDiscntUsage.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -106,6 +123,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmDiscntUsage.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery();

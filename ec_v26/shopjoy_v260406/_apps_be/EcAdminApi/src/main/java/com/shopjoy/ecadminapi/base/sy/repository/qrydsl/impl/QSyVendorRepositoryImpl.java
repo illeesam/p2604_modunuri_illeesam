@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyVendor(판매/배송업체 (사업체/법인)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorRepositoryImpl implements QSyVendorRepository {
@@ -38,6 +40,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode cdVc = new QVwSyCode("cd_vc");
     private static final QVwSyCode cdVs = new QVwSyCode("cd_vs");    /*
@@ -77,11 +81,16 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                         syVendor.regBy,                       // 등록자
                         syVendor.regDate,                     // 등록일시
                         syVendor.updBy,                       // 수정자
-                        syVendor.updDate                     // 수정일시
+                        syVendor.updDate,                     // 수정일시
+                        syVendor.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syVendor)
                 .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS_CD").and(cdVc.codeValue.eq(syVendor.vendorClassCd))) // 업체등급
                 .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS_CD").and(cdVs.codeValue.eq(syVendor.vendorStatusCd))) // 업체상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendor.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendor.regBy)) // 등록자
                 ;
     }
 

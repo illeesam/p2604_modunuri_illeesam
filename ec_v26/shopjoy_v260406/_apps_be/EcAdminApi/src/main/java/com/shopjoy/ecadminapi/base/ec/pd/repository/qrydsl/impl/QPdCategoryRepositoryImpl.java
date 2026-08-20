@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import org.springframework.context.annotation.Lazy;
@@ -32,6 +34,9 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private final JPAQueryFactory queryFactory;
     private final PdCategoryRepository pdCategoryRepository;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdCategory pdCategory   = QPdCategory.pdCategory;
 
     public QPdCategoryRepositoryImpl(JPAQueryFactory queryFactory, @Lazy PdCategoryRepository pdCategoryRepository) {
@@ -59,15 +64,27 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                         pdCategory.categoryStatusCdBefore,       // 변경 전 카테고리상태 — USE_YN {Y: '사용', N: '미사용'}
                         pdCategory.imgUrl,                     // 이미지URL
                         pdCategory.categoryDesc,                // 설명
-                        pdCategory.regBy, pdCategory.regDate, pdCategory.updBy, pdCategory.updDate,
+                        pdCategory.regBy,      // 등록자
+                        pdCategory.regDate,    // 등록일시
+                        pdCategory.updBy,      // 수정자
+                        pdCategory.updDate,    // 수정일시
                         p1.categoryNm.as("parentCategoryNm"),           // 상위 카테고리명 (조인)
                         p2.categoryNm.as("grandParentCategoryNm"),      // 최상위(조부모) 카테고리명 (조인)
-                        cdCs.codeLabel.as("categoryStatusCdNm")         // 카테고리상태 코드라벨 (조인, sy_code.USE_YN)
+                        cdCs.codeLabel.as("categoryStatusCdNm"),         // 카테고리상태 코드라벨 (조인, sy_code.USE_YN)
+                        pdCategory.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdCategory.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdCategory)
                 .leftJoin(p1).on(p1.categoryId.eq(pdCategory.parentCategoryId)) // 카테고리
                 .leftJoin(p2).on(p2.categoryId.eq(p1.parentCategoryId)) // 카테고리
                 .leftJoin(cdCs).on(cdCs.codeGrp.eq("USE_YN").and(cdCs.codeValue.eq(pdCategory.categoryStatusCd))) // 사용여부
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdCategory.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdCategory.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdCategory.siteId)) // 사이트
+
                 ;
     }
 
@@ -90,6 +107,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         whereList.add(andParentCategoryIdIn(search));
         whereList.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdCategory.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -122,6 +140,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         whereList.add(andParentCategoryIdIn(search));
         whereList.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdCategory.siteId, search.getSiteId()));
 
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery();
 

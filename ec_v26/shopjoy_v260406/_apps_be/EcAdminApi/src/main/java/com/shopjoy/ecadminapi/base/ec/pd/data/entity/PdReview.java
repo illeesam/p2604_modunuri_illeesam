@@ -31,6 +31,11 @@ public class PdReview extends BaseEntity {
     @Size(max = 21, message = "reviewId 는 21자 이내여야 합니다.")
     private String reviewId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
     @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")

@@ -28,12 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyDept(부서) QueryDSL Custom 구현체 */
 public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyDeptRepository syDeptRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyDeptRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyDept syDept = QSyDept.syDept;
 
     public QSyDeptRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyDeptRepository syDeptRepository) {
@@ -61,11 +64,16 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                         syDept.regBy,          // 등록자
                         syDept.regDate,        // 등록일시
                         syDept.updBy,          // 수정자
-                        syDept.updDate        // 수정일시
+                        syDept.updDate,        // 수정일시
+                        syDept.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syDept)
                 .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId)) // 사용자
                 .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE_CD").and(cdDt.codeValue.eq(syDept.deptTypeCd))) // 부서유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syDept.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syDept.regBy)) // 등록자
                 ;
     }
 

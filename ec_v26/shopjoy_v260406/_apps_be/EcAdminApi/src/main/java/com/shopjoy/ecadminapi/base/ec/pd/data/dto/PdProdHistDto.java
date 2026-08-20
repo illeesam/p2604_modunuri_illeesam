@@ -27,6 +27,8 @@ public class PdProdHistDto {
         private String prodId;              // 상품ID
         private LocalDateTime histDate;     // 이력 발생일시 (재고/가격/상태/변경 이력 공통 chg_date·proc_date)
         private String regBy;               // 처리자ID (chg_by/proc_user_id)
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String regByNm;             // 처리자명 (조인 표시용)
         private String stockTypeCd;         // 재고변동사유 — CHG_REASON_CD {SALE:판매, PURCHASE:입고, RETURN:반품, EXCHANGE:교환, ADJUST:조정, CLAIM:클레임, ADMIN:관리자조정}
         private String stockTypeCdNm;       // 재고변동사유 코드라벨 (조인 표시용)

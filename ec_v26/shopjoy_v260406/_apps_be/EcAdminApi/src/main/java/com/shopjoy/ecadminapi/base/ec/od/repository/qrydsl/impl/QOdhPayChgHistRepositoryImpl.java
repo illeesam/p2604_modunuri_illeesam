@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhPayChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhPayChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhPayChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhPayChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhPayChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhPayChgHist odhPayChgHist = QOdhPayChgHist.odhPayChgHist;
 
     /*
@@ -51,8 +55,18 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
                         odhPayChgHist.chgUserId,             // 변경 담당자 (sy_user.user_id, mb_member.member_id)
                         odhPayChgHist.chgDate,               // 변경 일시
                         odhPayChgHist.memo,                  // 메모
-                        odhPayChgHist.regBy, odhPayChgHist.regDate, odhPayChgHist.updBy, odhPayChgHist.updDate))
-                .from(odhPayChgHist);
+                        odhPayChgHist.regBy,      // 등록자
+                        odhPayChgHist.regDate,    // 등록일시
+                        odhPayChgHist.updBy,      // 수정자
+                        odhPayChgHist.updDate,    // 수정일시
+                        odhPayChgHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhPayChgHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhPayChgHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhPayChgHist.regBy)) // 등록자
+                ;
     }
 
     /* 결제 변경 이력 키조회 */

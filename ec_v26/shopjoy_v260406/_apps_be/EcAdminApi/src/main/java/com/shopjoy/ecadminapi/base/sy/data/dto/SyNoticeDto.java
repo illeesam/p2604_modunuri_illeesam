@@ -36,6 +36,8 @@ public class SyNoticeDto {
         private String regBy;  // 등록자 (sy_user.user_id, ec_member.member_id)
         private LocalDateTime regDate;  // 등록일
         private String regSiteId;  // 등록 사이트ID
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String updBy;  // 수정자 (sy_user.user_id, ec_member.member_id)
         private LocalDateTime updDate;  // 수정일
 

@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucherIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucherIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherIssueRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,9 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmVoucherIssueRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmVoucherIssue pmVoucherIssue    = QPmVoucherIssue.pmVoucherIssue;
     private static final QPmVoucher      pmVoucher  = QPmVoucher.pmVoucher;
     private static final QOdOrder        odOrder  = QOdOrder.odOrder;
@@ -56,12 +61,24 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                         pmVoucherIssue.useAmt,                       // 실제 사용 할인금액
                         pmVoucherIssue.voucherIssueStatusCd,         // 상태 — VOUCHER_ISSUE_STATUS {ISSUED, USED, EXPIRED, CANCELLED}
                         pmVoucherIssue.voucherIssueStatusCdBefore,   // 변경 전 상태
-                        pmVoucherIssue.regBy, pmVoucherIssue.regDate, pmVoucherIssue.updBy, pmVoucherIssue.updDate
+                        pmVoucherIssue.regBy,      // 등록자
+                        pmVoucherIssue.regDate,    // 등록일시
+                        pmVoucherIssue.updBy,      // 수정자
+                        pmVoucherIssue.updDate,    // 수정일시
+                        pmVoucherIssue.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmVoucherIssue.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmVoucherIssue)
                 .innerJoin(pmVoucher).on(pmVoucher.voucherId.eq(pmVoucherIssue.voucherId)) // 바우처
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmVoucherIssue.orderId)) // 주문
                 .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS_CD").and(cdVis.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd))) // 바우처발급상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmVoucherIssue.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmVoucherIssue.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmVoucherIssue.siteId)) // 사이트
+
                 ;
     }
 
@@ -85,6 +102,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -118,6 +136,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery();

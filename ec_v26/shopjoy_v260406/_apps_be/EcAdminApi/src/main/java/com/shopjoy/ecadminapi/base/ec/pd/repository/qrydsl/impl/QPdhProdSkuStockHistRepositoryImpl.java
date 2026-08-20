@@ -14,9 +14,10 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuStockHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuStockHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdSkuStockHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
@@ -30,6 +31,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdSkuStockHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QPdhProdSkuStockHist pdhProdSkuStockHist      = QPdhProdSkuStockHist.pdhProdSkuStockHist;
     private static final QSySite              sySite    = QSySite.sySite;
     private static final QPdProd              pdProd    = QPdProd.pdProd;
@@ -55,11 +57,13 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                         pdhProdSkuStockHist.chgBy,           // 처리자 (sy_user.user_id)
                         pdhProdSkuStockHist.chgDate,         // 처리일시
                         pdhProdSkuStockHist.regBy,
-                        pdhProdSkuStockHist.regDate
+                        pdhProdSkuStockHist.regDate,
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pdhProdSkuStockHist)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuStockHist.prodId)) // 상품
                 .innerJoin(cd_ssc).on(cd_ssc.codeGrp.eq("CHG_REASON_CD").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd))) // 변경사유
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdSkuStockHist.regBy)) // 등록자
                 ;
     }
 

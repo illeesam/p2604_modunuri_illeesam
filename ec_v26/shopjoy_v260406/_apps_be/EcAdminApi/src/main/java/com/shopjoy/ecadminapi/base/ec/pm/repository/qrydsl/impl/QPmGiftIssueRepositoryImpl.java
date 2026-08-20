@@ -18,6 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmGiftIssueRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -35,6 +37,9 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftIssueRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmGiftIssue pmGiftIssue    = QPmGiftIssue.pmGiftIssue;
     private static final QPmGift      pmGift  = QPmGift.pmGift;
     private static final QMbMember    mbMember  = QMbMember.mbMember;
@@ -55,13 +60,25 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                         pmGiftIssue.giftIssueStatusCd,         // 상태 — GIFT_ISSUE_STATUS {ISSUED: '발급됨', DELIVERED: '배송완료', CANCELLED: '취소'}
                         pmGiftIssue.giftIssueStatusCdBefore,   // 변경 전 상태
                         pmGiftIssue.giftIssueMemo,             // 메모
-                        pmGiftIssue.regBy, pmGiftIssue.regDate, pmGiftIssue.updBy, pmGiftIssue.updDate
+                        pmGiftIssue.regBy,      // 등록자
+                        pmGiftIssue.regDate,    // 등록일시
+                        pmGiftIssue.updBy,      // 수정자
+                        pmGiftIssue.updDate,    // 수정일시
+                        pmGiftIssue.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmGiftIssue.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmGiftIssue)
                 .innerJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId)) // 사은품
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId)) // 회원
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmGiftIssue.orderId)) // 주문
                 .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS_CD").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd))) // 사은품발급상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmGiftIssue.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmGiftIssue.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmGiftIssue.siteId)) // 사이트
+
                 ;
     }
 
@@ -85,6 +102,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmGiftIssue.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -118,6 +136,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmGiftIssue.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery();

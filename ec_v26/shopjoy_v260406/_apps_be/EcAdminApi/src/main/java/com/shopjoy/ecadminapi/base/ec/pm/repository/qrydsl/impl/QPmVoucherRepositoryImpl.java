@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucherIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -36,6 +38,9 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmVoucherRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmVoucher pmVoucher    = QPmVoucher.pmVoucher;
     private static final QSySite    sySite  = QSySite.sySite;
     private static final QVwSyCode    cdVt = new QVwSyCode("cd_vt");
@@ -60,11 +65,24 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                         pmVoucher.voucherStatusCd,         // 상태 — VOUCHER_STATUS {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'}
                         pmVoucher.voucherStatusCdBefore,   // 변경 전 상태
                         pmVoucher.voucherDesc,             // 상품권 설명
-                        pmVoucher.useYn, pmVoucher.regBy, pmVoucher.regDate, pmVoucher.updBy, pmVoucher.updDate
+                        pmVoucher.useYn,  // 사용여부 Y/N
+                        pmVoucher.regBy,  // 등록자
+                        pmVoucher.regDate,  // 등록일시
+                        pmVoucher.updBy,  // 수정자
+                        pmVoucher.updDate,  // 수정일시
+                        pmVoucher.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmVoucher.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmVoucher)
                 .innerJoin(cdVt).on(cdVt.codeGrp.eq("VOUCHER_TYPE_CD").and(cdVt.codeValue.eq(pmVoucher.voucherTypeCd))) // 바우처유형
                 .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS_CD").and(cdVs.codeValue.eq(pmVoucher.voucherStatusCd))) // 바우처상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmVoucher.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmVoucher.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmVoucher.siteId)) // 사이트
+
                 ;
     }
 
@@ -90,6 +108,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andMember(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmVoucher.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -125,6 +144,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andMember(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmVoucher.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmVoucherDto.Item> query = baseSelColumnQuery();

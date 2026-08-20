@@ -27,12 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyVendorBrand(판매/배송업체-브랜드 매핑) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorBrandRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVendorBrand syVendorBrand = QSyVendorBrand.syVendorBrand;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyBrand syBrand = QSyBrand.syBrand;
@@ -60,12 +64,17 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                         syVendorBrand.updBy,                       // 수정자
                         syVendorBrand.updDate,                     // 수정일시
                         syVendor.vendorNm.as("vendorNm"),          // 업체명 (조인: sy_vendor)
-                        syBrand.brandNm.as("brandNm")              // 브랜드명 (조인: sy_brand)
+                        syBrand.brandNm.as("brandNm"),              // 브랜드명 (조인: sy_brand)
+                        syVendorBrand.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syVendorBrand)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId)) // 업체
                 .innerJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId)) // 브랜드
                 .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("CONTRACT_CD").and(cdVbc.codeValue.eq(syVendorBrand.contractCd))) // 계약상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorBrand.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorBrand.regBy)) // 등록자
                 ;
     }
 

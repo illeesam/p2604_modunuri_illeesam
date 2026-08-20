@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogCate;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogCateRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogCateRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmBlogCate cmBlogCate = QCmBlogCate.cmBlogCate;
     private static final QSySite sySite = QSySite.sySite;    /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값
@@ -46,9 +50,15 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
                         cmBlogCate.regBy,            // 등록자
                         cmBlogCate.regDate,          // 등록일시
                         cmBlogCate.updBy,            // 수정자
-                        cmBlogCate.updDate          // 수정일시
+                        cmBlogCate.updDate,          // 수정일시
+                        cmBlogCate.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(cmBlogCate);
+                .from(cmBlogCate)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmBlogCate.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmBlogCate.regBy)) // 등록자
+                ;
     }
 
     /* 게시판 카테고리 키조회 */

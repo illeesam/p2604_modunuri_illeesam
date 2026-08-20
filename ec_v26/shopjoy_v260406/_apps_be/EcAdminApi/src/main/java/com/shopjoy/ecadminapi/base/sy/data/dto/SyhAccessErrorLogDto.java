@@ -64,6 +64,8 @@ public class SyhAccessErrorLogDto {
         private LocalDateTime logDt;  // 에러 발생 시각
         private LocalDateTime regDate;  // DB 저장 시각
         private String regSiteId;  // 등록 사이트ID
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
 
         // ── 조인 파생 (코드명/연관명) — 단건 상세조회(selectById)에서만 채워짐 ──
         private String appTypeCdNm;  // 호출 앱 유형 코드명 (JOIN)

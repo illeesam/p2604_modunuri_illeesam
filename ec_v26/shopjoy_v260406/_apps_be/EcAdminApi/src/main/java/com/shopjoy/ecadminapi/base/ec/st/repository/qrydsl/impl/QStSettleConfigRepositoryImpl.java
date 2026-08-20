@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleConfig;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleConfigRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,8 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleConfigRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleConfig stSettleConfig    = QStSettleConfig.stSettleConfig;
     private static final QSySite        sySite  = QSySite.sySite;
     private static final QSyVendor      syVendor  = QSyVendor.syVendor;
@@ -61,12 +65,17 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                         stSettleConfig.updDate,                // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
                         pdCategory.categoryNm.as("categoryNm"),         // 카테고리명 (조인)
-                        cdSc.codeLabel.as("settleCycleCdNm")            // 정산주기명 (sy_code 조인)
+                        cdSc.codeLabel.as("settleCycleCdNm"),            // 정산주기명 (sy_code 조인)
+                        stSettleConfig.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleConfig)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleConfig.vendorId)) // 업체
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(stSettleConfig.categoryId)) // 카테고리
                 .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE_CD").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd))) // 정산주기
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleConfig.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleConfig.regBy)) // 등록자
                 ;
     }
 

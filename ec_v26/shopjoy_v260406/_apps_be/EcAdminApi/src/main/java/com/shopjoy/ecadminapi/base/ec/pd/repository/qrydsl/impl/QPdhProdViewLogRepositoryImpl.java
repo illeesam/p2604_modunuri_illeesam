@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdViewLog;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdViewLog;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdViewLogRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +33,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdViewLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdhProdViewLog pdhProdViewLog   = QPdhProdViewLog.pdhProdViewLog;
     private static final QSySite         sySite = QSySite.sySite;    /* 상품 조회 로그 baseSelColumnQuery — 코드성 필드 없음 (로그성 원본값 저장) */
     private JPAQuery<PdhProdViewLogDto.Item> baseSelColumnQuery() {
@@ -47,9 +51,18 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                         pdhProdViewLog.device,        // User-Agent
                         pdhProdViewLog.referrer,      // 유입경로 URL
                         pdhProdViewLog.viewDate,      // 조회일시
-                        pdhProdViewLog.regBy, pdhProdViewLog.regDate, pdhProdViewLog.updBy, pdhProdViewLog.updDate
+                        pdhProdViewLog.regBy,      // 등록자
+                        pdhProdViewLog.regDate,    // 등록일시
+                        pdhProdViewLog.updBy,      // 수정자
+                        pdhProdViewLog.updDate,    // 수정일시
+                        pdhProdViewLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(pdhProdViewLog);
+                .from(pdhProdViewLog)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdhProdViewLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdViewLog.regBy)) // 등록자
+                ;
     }
 
     /* 상품 조회 로그 키조회 */

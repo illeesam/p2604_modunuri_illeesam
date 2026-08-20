@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhClaimItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhClaimItemChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimItemChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdhClaimItemChgHist odhClaimItemChgHist = QOdhClaimItemChgHist.odhClaimItemChgHist;
 
     /*
@@ -48,8 +52,18 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
                         odhClaimItemChgHist.chgReason,          // 변경사유
                         odhClaimItemChgHist.chgUserId,          // 처리자 (sy_user.user_id)
                         odhClaimItemChgHist.chgDate,            // 처리일시
-                        odhClaimItemChgHist.regBy, odhClaimItemChgHist.regDate, odhClaimItemChgHist.updBy, odhClaimItemChgHist.updDate))
-                .from(odhClaimItemChgHist);
+                        odhClaimItemChgHist.regBy,      // 등록자
+                        odhClaimItemChgHist.regDate,    // 등록일시
+                        odhClaimItemChgHist.updBy,      // 수정자
+                        odhClaimItemChgHist.updDate,    // 수정일시
+                        odhClaimItemChgHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                ))
+                .from(odhClaimItemChgHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odhClaimItemChgHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odhClaimItemChgHist.regBy)) // 등록자
+                ;
     }
 
     /* 클레임 아이템 변경 이력 키조회 */

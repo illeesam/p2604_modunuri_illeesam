@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItemDiscnt;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemDiscntRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -34,6 +36,8 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderItemDiscntRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdOrderItemDiscnt odOrderItemDiscnt   = QOdOrderItemDiscnt.odOrderItemDiscnt;
     private static final QSySite            ste = new QSySite("ste");
     private static final QOdOrder           ord = new QOdOrder("ord");
@@ -57,13 +61,19 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                         odOrderItemDiscnt.unitDiscntAmt,    // 1개당 할인금액
                         odOrderItemDiscnt.totalDiscntAmt,   // 전체 할인금액 (unit_discnt_amt × order_qty)
                         odOrderItemDiscnt.orderQty,         // 주문수량 스냅샷
-                        odOrderItemDiscnt.regBy, odOrderItemDiscnt.regDate
+                        odOrderItemDiscnt.regBy,  // 등록자
+                        odOrderItemDiscnt.regDate,  // 등록일시
+                        odOrderItemDiscnt.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(odOrderItemDiscnt)
                 .innerJoin(ord).on(ord.orderId.eq(odOrderItemDiscnt.orderId)) // 주문
                 .innerJoin(ite).on(ite.orderItemId.eq(odOrderItemDiscnt.orderItemId)) // 주문상품
                 .innerJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(odOrderItemDiscnt.discntTypeCd))) // 주문상품할인유형
                 .leftJoin(cpn).on(cpn.couponId.eq(odOrderItemDiscnt.couponId)) // 쿠폰
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odOrderItemDiscnt.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odOrderItemDiscnt.regBy)) // 등록자
                 ;
     }
 

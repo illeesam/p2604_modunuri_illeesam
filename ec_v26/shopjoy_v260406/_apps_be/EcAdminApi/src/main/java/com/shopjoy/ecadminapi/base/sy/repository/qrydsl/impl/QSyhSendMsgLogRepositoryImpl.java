@@ -34,6 +34,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendMsgLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhSendMsgLog syhSendMsgLog   = QSyhSendMsgLog.syhSendMsgLog;
     private static final QSySite        sySite = QSySite.sySite;
     private static final QSyTemplate    syTemplate = QSyTemplate.syTemplate;
@@ -74,13 +76,18 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                         syTemplate.templateNm.as("templateNm"),     // 템플릿명 (조인: sy_template)
                         syUser.userNm.as("userNm"),                 // 관리자명 (조인: sy_user)
                         cd_mc.codeLabel.as("channelCdNm"),           // 발송채널 코드명 (조인: sy_code MSG_CHANNEL)
-                        cd_sr.codeLabel.as("resultCdNm")             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
+                        cd_sr.codeLabel.as("resultCdNm"),             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
+                        syhSendMsgLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhSendMsgLog)
                 .innerJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd))) // 메시지채널
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId)) // 템플릿
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId)) // 사용자
                 .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendMsgLog.resultCd))) // 발송결과
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhSendMsgLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhSendMsgLog.regBy)) // 등록자
                 ;
     }
 

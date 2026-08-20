@@ -32,12 +32,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** PmDiscnt(할인정책) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmDiscnt pmDiscnt = QPmDiscnt.pmDiscnt;    // EXISTS 서브쿼리용 별칭 (사용회원/대상상품/업체/담당MD 필터)
     private static final QPmDiscntUsage discntUsageEx = new QPmDiscntUsage("discnt_usage_ex");
     private static final QMbMember      mbMemberEx    = new QMbMember("mb_member_ex");
@@ -79,9 +83,22 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                         pmDiscnt.chargeStaff,          // 판매담당자명
                         pmDiscnt.visibilityTargets,    // 공개대상
                         pmDiscnt.mdUserId,             // 담당MD
-                        pmDiscnt.regBy, pmDiscnt.regDate, pmDiscnt.updBy, pmDiscnt.updDate
+                        pmDiscnt.regBy,      // 등록자
+                        pmDiscnt.regDate,    // 등록일시
+                        pmDiscnt.updBy,      // 수정자
+                        pmDiscnt.updDate,    // 수정일시
+                        pmDiscnt.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmDiscnt.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmDiscnt);
+                .from(pmDiscnt)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmDiscnt.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmDiscnt.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmDiscnt.siteId)) // 사이트
+
+                ;
     }
 
     /* 할인 키조회 */
@@ -110,6 +127,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         whereList.add(andProdVendorMd(search));
         whereList.add(andCurrentYnDiscnt(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -149,6 +167,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         whereList.add(andProdVendorMd(search));
         whereList.add(andCurrentYnDiscnt(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery();

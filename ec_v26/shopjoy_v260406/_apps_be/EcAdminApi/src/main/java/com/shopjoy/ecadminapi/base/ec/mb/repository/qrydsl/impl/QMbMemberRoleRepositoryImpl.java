@@ -26,11 +26,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 @RequiredArgsConstructor
 public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberRoleRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMemberRole mbMemberRole   = QMbMemberRole.mbMemberRole;
     private static final QMbMember     mbMember = QMbMember.mbMember;
     private static final QSyRole       syRole = QSyRole.syRole;
@@ -52,12 +56,21 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                         mbMemberRole.updDate,           // 수정일
                         mbMember.memberNm.as("memberNm"),     // 회원명 (mb_member 조인)
                         syRole.roleNm.as("roleNm"),           // 역할명 (sy_role 조인)
-                        gu.userNm.as("grantUserNm")           // 권한 부여 관리자명 (sy_user 조인, 별칭 gu)
+                        gu.userNm.as("grantUserNm"),           // 권한 부여 관리자명 (sy_user 조인, 별칭 gu)
+                        mbMemberRole.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        mbMemberRole.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbMemberRole)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbMemberRole.memberId)) // 회원
                 .innerJoin(syRole).on(syRole.roleId.eq(mbMemberRole.roleId)) // 역할
                 .leftJoin(gu).on(gu.userId.eq(mbMemberRole.grantUserId)) // 사용자
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMemberRole.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMemberRole.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(mbMemberRole.siteId)) // 사이트
+
                 ;
     }
 
@@ -78,6 +91,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMemberRole.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -109,6 +123,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMemberRole.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery();

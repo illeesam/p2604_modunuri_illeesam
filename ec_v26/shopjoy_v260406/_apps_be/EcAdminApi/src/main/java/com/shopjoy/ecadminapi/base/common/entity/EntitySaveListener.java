@@ -166,7 +166,11 @@ public class EntitySaveListener {
         if (entity.getClass().getSimpleName().equals("SySite")) return;
         Field f = resolveSiteIdField(entity.getClass());
         if (f == null) return;
-        String ctxSiteId = SecurityUtil.getSiteId();
+        /* BO/배치/시스템처럼 인증 컨텍스트에 siteId 클레임이 없는 경우가 대부분이라(BO 는 사이트
+         * 구분을 두지 않는 정책) getSiteId() 만 쓰면 대부분의 BO 저장이 site_id NOT NULL 위반으로
+         * 실패한다. getSiteIdOrDefault() 로 대표 사이트(DEFAULT_SITE_ID)를 최종 안전망으로 둔다.
+         * FO 회원처럼 실제 siteId 클레임이 있는 컨텍스트는 그 값이 우선 적용된다. */
+        String ctxSiteId = SecurityUtil.getSiteIdOrDefault();
         if (ctxSiteId == null || ctxSiteId.isEmpty()) return;
         try {
             f.set(entity, ctxSiteId);

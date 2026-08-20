@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdQna;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdQnaRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,9 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdQnaRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProdQna pdProdQna = QPdProdQna.pdProdQna;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (prodQnaTypeCd 는 sy_code 미등록 — Entity 주석 기준 예시)
      * SCRT_YN / ANSW_YN / DISP_YN / USE_YN  {Y: '예', N: '아니오'}
@@ -53,9 +58,22 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                         pdProdQna.answUserId,      // 답변자ID (sy_user.user_id)
                         pdProdQna.dispYn,             // 노출여부 — {Y: '예', N: '아니오'}
                         pdProdQna.useYn,              // 사용여부 — {Y: '예', N: '아니오'}
-                        pdProdQna.regBy, pdProdQna.regDate, pdProdQna.updBy, pdProdQna.updDate
+                        pdProdQna.regBy,      // 등록자
+                        pdProdQna.regDate,    // 등록일시
+                        pdProdQna.updBy,      // 수정자
+                        pdProdQna.updDate,    // 수정일시
+                        pdProdQna.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProdQna.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdProdQna);
+                .from(pdProdQna)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProdQna.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProdQna.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProdQna.siteId)) // 사이트
+
+                ;
     }
 
     @Override
@@ -79,6 +97,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdQna.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -114,6 +133,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdQna.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery();

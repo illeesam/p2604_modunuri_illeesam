@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReview;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewAttach;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewAttachRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +33,9 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewAttachRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdReviewAttach pdReviewAttach = QPdReviewAttach.pdReviewAttach;
     private static final QPdReview       pdReview = QPdReview.pdReview;    /*
      * baseQuerySingle / baseQueryWithJoin — 코드성 필드 예시 코드값 (sy_code 등록 기준)
@@ -46,9 +51,22 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                         pdReviewAttach.mediaTypeCd,         // 미디어유형 — {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
                         pdReviewAttach.thumbUrl,           // 동영상 썸네일URL (이미지는 sy_attach.url 사용)
                         pdReviewAttach.sortOrd,            // 정렬순서
-                        pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
+                        pdReviewAttach.regBy,      // 등록자
+                        pdReviewAttach.regDate,    // 등록일시
+                        pdReviewAttach.updBy,      // 수정자
+                        pdReviewAttach.updDate,    // 수정일시
+                        pdReviewAttach.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdReviewAttach.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdReviewAttach);
+                .from(pdReviewAttach)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdReviewAttach.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdReviewAttach.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdReviewAttach.siteId)) // 사이트
+
+                ;
     }
 
     /** 단건 조회 */
@@ -71,6 +89,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
@@ -106,6 +125,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin();
@@ -138,10 +158,22 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                         pdReviewAttach.mediaTypeCd,         // 미디어유형 — {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
                         pdReviewAttach.thumbUrl,           // 동영상 썸네일URL
                         pdReviewAttach.sortOrd,            // 정렬순서
-                        pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
+                        pdReviewAttach.regBy,      // 등록자
+                        pdReviewAttach.regDate,    // 등록일시
+                        pdReviewAttach.updBy,      // 수정자
+                        pdReviewAttach.updDate,    // 수정일시
+                        pdReviewAttach.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdReviewAttach.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdReviewAttach)
                 .innerJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId)) // 리뷰
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdReviewAttach.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdReviewAttach.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdReviewAttach.siteId)) // 사이트
+
                 ;
     }
 

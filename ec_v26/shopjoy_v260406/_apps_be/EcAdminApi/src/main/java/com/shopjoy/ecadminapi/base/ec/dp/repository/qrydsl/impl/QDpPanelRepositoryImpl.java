@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpPanelRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -39,6 +41,9 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QDpPanel dpPanel = QDpPanel.dpPanel;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN                 {Y: '사용', N: '미사용'}
@@ -63,8 +68,18 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 dpPanel.regBy,                    // 등록자
                 dpPanel.regDate,                  // 등록일시
                 dpPanel.updBy,                    // 수정자
-                dpPanel.updDate                   // 수정일시
-        )).from(dpPanel);
+                dpPanel.updDate,                   // 수정일시
+                dpPanel.regSiteId,  // 등록사이트ID
+                regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                dpPanel.siteId,  // 사이트ID
+                siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
+        )).from(dpPanel)
+        .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(dpPanel.regSiteId)) // 등록사이트
+        .leftJoin(regUserEx).on(regUserEx.userId.eq(dpPanel.regBy)) // 등록자
+        .leftJoin(siteEx).on(siteEx.siteId.eq(dpPanel.siteId)) // 사이트
+
+        ;
     }
 
     /* 전시 패널 키조회 */
@@ -90,6 +105,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpPanel.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -127,6 +143,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpPanel.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
 

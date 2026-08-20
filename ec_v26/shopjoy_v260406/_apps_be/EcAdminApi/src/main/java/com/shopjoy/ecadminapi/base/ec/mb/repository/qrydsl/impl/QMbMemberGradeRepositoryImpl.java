@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberGradeRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -31,6 +33,9 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGradeRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMemberGrade mbMemberGrade    = QMbMemberGrade.mbMemberGrade;
     private static final QSySite        sySite  = QSySite.sySite;
     private static final QVwSyCode        cdMg = new QVwSyCode("cd_mg");    /*
@@ -51,10 +56,19 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                         mbMemberGrade.regBy,           // 등록자ID
                         mbMemberGrade.regDate,         // 등록일시
                         mbMemberGrade.updBy,           // 수정자ID
-                        mbMemberGrade.updDate          // 수정일시
+                        mbMemberGrade.updDate,          // 수정일시
+                        mbMemberGrade.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        mbMemberGrade.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbMemberGrade)
                 .innerJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd))) // 회원등급
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMemberGrade.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMemberGrade.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(mbMemberGrade.siteId)) // 사이트
+
                 ;
     }
 
@@ -76,6 +90,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -108,6 +123,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery();

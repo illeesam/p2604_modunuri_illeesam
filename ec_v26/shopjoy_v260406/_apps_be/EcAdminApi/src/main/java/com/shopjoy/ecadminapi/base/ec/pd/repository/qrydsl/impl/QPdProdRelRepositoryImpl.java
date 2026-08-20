@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdRel;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdRel;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdRelRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,9 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRelRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProdRel pdProdRel = QPdProdRel.pdProdRel;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (PROD_REL_TYPE 은 sy_code 미등록 — Entity 주석 기준)
      * PROD_REL_TYPE_CD  {REL_PROD: '연관상품', CODY_PROD: '코디상품'}
@@ -44,9 +49,22 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
                         pdProdRel.prodRelTypeCd,    // 관계유형 — {REL_PROD: '연관상품', CODY_PROD: '코디상품'}
                         pdProdRel.sortOrd,         // 정렬순서 (낮을수록 우선 노출)
                         pdProdRel.useYn,             // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdProdRel.regBy, pdProdRel.regDate, pdProdRel.updBy, pdProdRel.updDate
+                        pdProdRel.regBy,      // 등록자
+                        pdProdRel.regDate,    // 등록일시
+                        pdProdRel.updBy,      // 수정자
+                        pdProdRel.updDate,    // 수정일시
+                        pdProdRel.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProdRel.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdProdRel);
+                .from(pdProdRel)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProdRel.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProdRel.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProdRel.siteId)) // 사이트
+
+                ;
     }
 
     @Override
@@ -69,6 +87,7 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdRel.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -103,6 +122,7 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProdRel.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdRelDto.Item> query = baseSelColumnQuery();

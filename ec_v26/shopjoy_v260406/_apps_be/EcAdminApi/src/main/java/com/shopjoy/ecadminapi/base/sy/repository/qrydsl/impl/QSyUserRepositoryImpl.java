@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 /** SyUser(관리자 사용자) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -44,6 +45,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     private final EntityManager em;
 
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QSyDept syDept = QSyDept.syDept;
     private static final QSyRole syRole = QSyRole.syRole;
@@ -84,13 +87,18 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                         syDept.deptNm.as("deptNm"),                  // 부서명 (조인: sy_dept)
                         syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
                         syCode_userStatusCd.codeLabel.as("userStatusCdNm"),   // 상태 코드명 (조인: sy_code USER_STATUS)
-                        syCode_authMethodCd.codeLabel.as("authMethodCdNm")   // 인증방식 코드명 (조인: sy_code AUTH_METHOD)
+                        syCode_authMethodCd.codeLabel.as("authMethodCdNm"),   // 인증방식 코드명 (조인: sy_code AUTH_METHOD)
+                        syUser.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syUser)
                 .leftJoin(syDept).on(syDept.deptId.eq(syUser.deptId)) // 부서
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId)) // 역할
                 .leftJoin(syCode_userStatusCd).on(syCode_userStatusCd.codeGrp.eq("USER_STATUS_CD").and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd))) // 사용자상태
                 .leftJoin(syCode_authMethodCd).on(syCode_authMethodCd.codeGrp.eq("AUTH_METHOD_CD").and(syCode_authMethodCd.codeValue.eq(syUser.authMethodCd))) // 인증방식
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syUser.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syUser.regBy)) // 등록자
                 ;
     }
 

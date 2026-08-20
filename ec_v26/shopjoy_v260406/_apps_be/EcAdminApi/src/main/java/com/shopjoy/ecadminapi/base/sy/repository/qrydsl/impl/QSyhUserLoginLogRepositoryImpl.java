@@ -33,6 +33,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhUserLoginLogRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhUserLoginLog syhUserLoginLog   = QSyhUserLoginLog.syhUserLoginLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
@@ -65,11 +67,16 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                         syhUserLoginLog.updBy,                 // 수정자
                         syhUserLoginLog.updDate,               // 수정일시
                         syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
-                        cd_lr.codeLabel.as("resultCdNm")              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
+                        cd_lr.codeLabel.as("resultCdNm"),              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
+                        syhUserLoginLog.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhUserLoginLog)
                 .leftJoin(syUser).on(syUser.userId.eq(syhUserLoginLog.userId)) // 사용자
                 .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(syhUserLoginLog.resultCd))) // 로그인결과
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhUserLoginLog.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhUserLoginLog.regBy)) // 등록자
                 ;
     }
 

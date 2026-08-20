@@ -23,12 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyhBatchHist(배치 실행 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhBatchHist syhBatchHist   = QSyhBatchHist.syhBatchHist;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
      * runStatusCd  {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
@@ -52,9 +56,15 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
                         syhBatchHist.regBy,         // 등록자
                         syhBatchHist.regDate,       // 등록일시
                         syhBatchHist.updBy,         // 수정자
-                        syhBatchHist.updDate       // 수정일시
+                        syhBatchHist.updDate,       // 수정일시
+                        syhBatchHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syhBatchHist);
+                .from(syhBatchHist)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhBatchHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syhBatchHist.regBy)) // 등록자
+                ;
     }
 
     /* 배치 실행 이력 키조회 */

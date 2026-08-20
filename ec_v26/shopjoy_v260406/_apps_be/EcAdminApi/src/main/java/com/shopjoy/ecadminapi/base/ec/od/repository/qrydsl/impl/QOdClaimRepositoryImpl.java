@@ -20,6 +20,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,9 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdClaim  odClaim   = QOdClaim.odClaim;
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
@@ -130,7 +135,10 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odClaim.apprReqDate,                 // 결재 요청일시
                         odClaim.apprAprvUserId,              // 결재자 (sy_user.user_id)
                         odClaim.apprAprvDate,                // 결재일시
-                        odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
+                        odClaim.regBy,      // 등록자
+                        odClaim.regDate,    // 등록일시
+                        odClaim.updBy,      // 수정자
+                        odClaim.updDate,    // 수정일시
                         // joined — 원 주문(od_order) / 회원(mb_member) / 코드라벨(sy_code)
                         odOrder.orderDate.as("orderDate"),                   // 원 주문 주문일시
                         odOrder.orderStatusCd.as("orderStatusCd"),           // 원 주문 상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:주문취소, AUTO_CANCELLED:자동취소}
@@ -147,7 +155,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                                 JPAExpressions.select(odClaimItemCnt.count())
                                     .from(odClaimItemCnt)
                                     .where(odClaimItemCnt.claimId.eq(odClaim.claimId))),
-                            "claimItemCnt")
+                            "claimItemCnt"),
+                        odClaim.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odClaim.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odClaim)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
@@ -157,6 +170,10 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
                 .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd))) // 택배사
                 .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odClaim.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odClaim.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odClaim.siteId)) // 사이트
+
                 ;
     }
 
@@ -240,7 +257,10 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odClaim.apprReqDate,                   // 결재 요청일시
                         odClaim.apprAprvUserId,                // 결재자 (sy_user.user_id)
                         odClaim.apprAprvDate,                  // 결재일시
-                        odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
+                        odClaim.regBy,      // 등록자
+                        odClaim.regDate,    // 등록일시
+                        odClaim.updBy,      // 수정자
+                        odClaim.updDate,    // 수정일시
                         // joined — 원 주문(od_order) / 회원(mb_member) / 코드라벨(sy_code)
                         odOrder.orderDate.as("orderDate"),                     // 원 주문 주문일시
                         odOrder.orderStatusCd.as("orderStatusCd"),             // 원 주문 상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:주문취소, AUTO_CANCELLED:자동취소}
@@ -259,7 +279,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         cdIc.codeLabel.as("inboundCourierCdNm"),               // 반입 택배사 라벨 — COURIER
                         cdEc.codeLabel.as("exchangeCourierCdNm"),              // 교환상품 발송 택배사 라벨 — COURIER
                         cdAp.codeLabel.as("apprStatusCdNm"),                   // 결재상태 라벨 — APPR_STATUS
-                        cdAt.codeLabel.as("apprTargetCdNm")                    // 결재대상 라벨 — APPR_TARGET
+                        cdAt.codeLabel.as("apprTargetCdNm"),                    // 결재대상 라벨 — APPR_TARGET
+                        odClaim.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odClaim.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .from(odClaim)
@@ -275,8 +300,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
                 .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odClaim.apprStatusCd))) // 결재상태
                 .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odClaim.apprTargetCd))) // 결재대상
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odClaim.regSiteId)) // 등록사이트
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odClaim.siteId)) // 사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odClaim.regBy)) // 등록자
                 .where(odClaim.claimId.eq(claimId))
-                .fetchOne();
+                .fetchOne()
+                ;
         return Optional.ofNullable(dtl);
     }
 
@@ -299,6 +328,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odClaim.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -340,6 +370,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odClaim.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery();

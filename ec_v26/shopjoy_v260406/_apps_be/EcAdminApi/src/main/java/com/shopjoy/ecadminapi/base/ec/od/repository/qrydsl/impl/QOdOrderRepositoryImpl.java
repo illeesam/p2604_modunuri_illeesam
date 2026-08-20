@@ -19,6 +19,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -38,6 +40,9 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
     private static final QOdOrderItem odOrderItemCnt = new QOdOrderItem("ooi_cnt");   // 주문항목 수 집계 전용
@@ -93,7 +98,10 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         odOrder.apprAprvDate,          // 결재일시
                         odOrder.memo,                  // 관리메모
                         odOrder.orderDate,             // 주문일시
-                        odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
+                        odOrder.regBy,      // 등록자
+                        odOrder.regDate,    // 등록일시
+                        odOrder.updBy,      // 수정자
+                        odOrder.updDate,    // 수정일시
                         mbMember.loginId.as("memberEmail"),
                         pmCoupon.couponNm.as("couponNm"),
                         cdOs.codeLabel.as("orderStatusCdNm"),
@@ -107,7 +115,12 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                                 JPAExpressions.select(odOrderItemCnt.count())
                                     .from(odOrderItemCnt)
                                     .where(odOrderItemCnt.orderId.eq(odOrder.orderId))),
-                            "orderItemCnt")
+                            "orderItemCnt"),
+                        odOrder.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odOrder.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odOrder)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
@@ -117,6 +130,10 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd))) // 배송상태
                 .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL_CD").and(cdAc.codeValue.eq(odOrder.accessChannelCd))) // 접근채널
                 .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd))) // 결재상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odOrder.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odOrder.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odOrder.siteId)) // 사이트
+
                 ;
     }
 
@@ -165,7 +182,10 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         odOrder.apprAprvDate,          // 결재일시
                         odOrder.memo,                  // 관리메모
                         odOrder.orderDate,             // 주문일시
-                        odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
+                        odOrder.regBy,      // 등록자
+                        odOrder.regDate,    // 등록일시
+                        odOrder.updBy,      // 수정자
+                        odOrder.updDate,    // 수정일시
                         // joined
                         mbMember.loginId.as("memberEmail"),
                         mbMember.memberPhone.as("memberPhoneOrigin"),
@@ -178,7 +198,12 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         cdDs.codeLabel.as("dlivStatusCdNm"),
                         cdRb.codeLabel.as("refundBankCdNm"),
                         cdAp.codeLabel.as("apprStatusCdNm"),
-                        cdAt.codeLabel.as("apprTargetCdNm")
+                        cdAt.codeLabel.as("apprTargetCdNm"),
+                        odOrder.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odOrder.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odOrder)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId)) // 회원
@@ -189,8 +214,12 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd))) // 은행
                 .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd))) // 결재상태
                 .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odOrder.apprTargetCd))) // 결재대상
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odOrder.regSiteId)) // 등록사이트
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odOrder.siteId)) // 사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odOrder.regBy)) // 등록자
                 .where(odOrder.orderId.eq(orderId))
-                .fetchOne();
+                .fetchOne()
+                ;
         return Optional.ofNullable(dtl);
     }
 
@@ -210,6 +239,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         whereList.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrder.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrder.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odOrder.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -248,6 +278,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         whereList.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrder.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrder.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odOrder.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdOrderDto.Item> query = baseListQuery();

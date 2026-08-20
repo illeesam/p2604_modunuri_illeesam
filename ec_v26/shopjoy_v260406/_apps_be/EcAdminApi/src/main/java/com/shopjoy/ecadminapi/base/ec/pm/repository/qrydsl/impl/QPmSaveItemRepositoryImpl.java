@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,9 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmSaveItem pmSaveItem    = QPmSaveItem.pmSaveItem;
     private static final QPmSave     pmSave  = QPmSave.pmSave;
     private static final QSySite     sySite  = QSySite.sySite;
@@ -46,12 +51,22 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                         pmSaveItem.saveId,         // FK: pm_save.save_id (적립금 ID)
                         pmSaveItem.targetTypeCd,   // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
                         pmSaveItem.targetId,       // 대상 ID (상품·카테고리·브랜드 등)
-                        pmSaveItem.regBy, pmSaveItem.regDate,
-                        cdSit.codeLabel.as("targetTypeCdNm")        // 대상유형 코드라벨 (조인)
+                        pmSaveItem.regBy,  // 등록자
+                        pmSaveItem.regDate,  // 등록일시
+                        cdSit.codeLabel.as("targetTypeCdNm"),        // 대상유형 코드라벨 (조인)
+                        pmSaveItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmSaveItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmSaveItem)
                 .innerJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId)) // 적립금
                 .innerJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd))) // 프로모션대상유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSaveItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSaveItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmSaveItem.siteId)) // 사이트
+
                 ;
     }
 
@@ -77,6 +92,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -112,6 +128,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery();

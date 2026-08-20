@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,9 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdClaimItem odClaimItem = QOdClaimItem.odClaimItem;    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * CLAIM_ITEM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
@@ -63,9 +68,22 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                         odClaimItem.returnShippingFee,        // 해당 항목의 수거배송료
                         odClaimItem.inboundShippingFee,       // 해당 항목의 반입배송료
                         odClaimItem.exchangeShippingFee,      // 해당 항목의 교환 발송배송료
-                        odClaimItem.regBy, odClaimItem.regDate, odClaimItem.updBy, odClaimItem.updDate
+                        odClaimItem.regBy,      // 등록자
+                        odClaimItem.regDate,    // 등록일시
+                        odClaimItem.updBy,      // 수정자
+                        odClaimItem.updDate,    // 수정일시
+                        odClaimItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odClaimItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(odClaimItem);
+                .from(odClaimItem)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odClaimItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odClaimItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odClaimItem.siteId)) // 사이트
+
+                ;
     }
 
     /* 클레임 아이템 키조회 */
@@ -91,6 +109,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -127,6 +146,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdClaimItemDto.Item> query = baseListQuery();

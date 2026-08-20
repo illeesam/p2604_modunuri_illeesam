@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 /** PdProd(상품) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -38,6 +39,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdProd     pdProd   = QPdProd.pdProd;
     private static final QPdCategory pdCategory = QPdCategory.pdCategory;
     private static final QSyBrand    syBrand    = QSyBrand.syBrand;
@@ -102,14 +106,22 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodOptStdCd,                // 옵션 표준코드 (예: COLOR, SIZE)
                         pdProd.prodOptType1Cd,              // 옵션유형1 분류코드 (예: COLOR)
                         pdProd.prodOptType2Cd,              // 옵션유형2 분류코드 (예: SIZE)
-                        pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
+                        pdProd.regBy,      // 등록자
+                        pdProd.regDate,    // 등록일시
+                        pdProd.updBy,      // 수정자
+                        pdProd.updDate,    // 수정일시
                         pdCategory.categoryNm.as("cateNm"),        // 카테고리명 (조인)
                         syBrand.brandNm.as("brandNm"),             // 브랜드명 (조인)
                         syVendor.vendorNm.as("vendorNm"),          // 업체명 (조인)
                         syUser.userNm.as("mdUserNm"),               // 담당MD명 (조인)
                         cdPs.codeLabel.as("prodStatusCdNm"),        // 상품상태 코드라벨 (조인, sy_code.PRODUCT_STATUS)
                         cdPt.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PROD_TYPE)
-                        pdProd.thumbnailUrl                          // 썸네일URL (직접 컬럼값; 없으면 _listFillRelations에서 imgMap으로 보완)
+                        pdProd.thumbnailUrl,                          // 썸네일URL (직접 컬럼값; 없으면 _listFillRelations에서 imgMap으로 보완)
+                        pdProd.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProd.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdProd)
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId)) // 카테고리
@@ -118,6 +130,10 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
                 .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProd.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProd.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProd.siteId)) // 사이트
+
                 ;
     }
 
@@ -177,7 +193,10 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodOptStdCd,                // 옵션 표준코드
                         pdProd.prodOptType1Cd,              // 옵션유형1 분류코드
                         pdProd.prodOptType2Cd,              // 옵션유형2 분류코드
-                        pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
+                        pdProd.regBy,      // 등록자
+                        pdProd.regDate,    // 등록일시
+                        pdProd.updBy,      // 수정자
+                        pdProd.updDate,    // 수정일시
                         // joined
                         pdCategory.categoryNm.as("cateNm"),                     // 카테고리명 (조인)
                         pdCategory.parentCategoryId.as("parentCategoryId"),     // 상위 카테고리ID (조인)
@@ -187,7 +206,12 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         syUser.userNm.as("mdUserNm"),                            // 담당MD명 (조인)
                         cdPs.codeLabel.as("prodStatusCdNm"),                     // 상품상태 코드라벨 (조인)
                         cdPt.codeLabel.as("prodTypeCdNm"),                       // 상품유형 코드라벨 (조인)
-                        cdSz.codeLabel.as("sizeInfoCdNm")                        // 사이즈 코드라벨 (조인)
+                        cdSz.codeLabel.as("sizeInfoCdNm"),                        // 사이즈 코드라벨 (조인)
+                        pdProd.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdProd.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(pdProd)
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId)) // 카테고리
@@ -197,8 +221,12 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
                 .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
                 .leftJoin(cdSz).on(cdSz.codeGrp.eq("SIZE_INFO_CD").and(cdSz.codeValue.eq(pdProd.sizeInfoCd))) // 사이즈
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProd.regSiteId)) // 등록사이트
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdProd.siteId)) // 사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProd.regBy)) // 등록자
                 .where(pdProd.prodId.eq(prodId))
-                .fetchOne();
+                .fetchOne()
+                ;
         return Optional.ofNullable(dtl);
     }
 
@@ -248,6 +276,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         whereList.add(andCurrentYnProd(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProd.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -317,6 +346,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         whereList.add(andCurrentYnProd(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdProd.siteId, search.getSiteId()));
 
         /* list/count 가 동일 조건을 공유하도록 배열로 1회 변환 */
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);

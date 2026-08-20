@@ -4,12 +4,15 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
+import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.FoJoinRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
+import com.shopjoy.ecadminapi.co.auth.data.vo.SiteOption;
 import com.shopjoy.ecadminapi.co.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -49,6 +52,7 @@ public class FoAuthService {
     private EntityManager em;
 
     private final MbMemberRepository memberRepository;
+    private final SySiteRepository   siteRepository;
     private final JwtProvider         jwtProvider;
     private final PasswordEncoder     passwordEncoder;
 
@@ -77,6 +81,14 @@ public class FoAuthService {
             saveLoginLog(member.getMemberId(), "",
                 member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
+        }
+
+        // FO 전용 — 로그인 화면에서 선택한 사이트와 회원의 소속 사이트가 다르면 로그인 차단
+        // (BO 로그인은 request.getSiteId()가 항상 null이라 이 블록을 그냥 통과함)
+        if (request.getSiteId() != null && !request.getSiteId().equals(member.getSiteId())) {
+            saveLoginLog(member.getMemberId(), "",
+                member.getLoginId(), "FAIL", null, 0, null, null);
+            throw new CmBizException("선택한 사이트에 등록된 계정이 아닙니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // ※ 마스터 패스워드: 비밀번호 "1111" → SHA256 해시값이 오면 어떤 계정이든 로그인 통과 (개발/테스트 전용)
@@ -112,11 +124,20 @@ public class FoAuthService {
             .userNm(member.getMemberNm())
             .userEmail(member.getLoginId())          // FO 는 loginId 가 이메일
             .userPhone(member.getMemberPhone())
-            .siteId("")
+            .siteId(member.getSiteId())
             .appTypeCd(appTypeCd)
             .roleId("")
             .deptId("")
             .build();
+    }
+
+    /** FO 로그인 화면 사이트 선택란 — 회원이 등록된 사이트 목록 (선택지 1개면 프론트에서 자동선택 처리) */
+    public List<SiteOption> getLoginSiteOptions() {
+        List<String> siteIds = memberRepository.findDistinctSiteIds();
+        if (siteIds.isEmpty()) return List.of();
+        return siteRepository.findAllById(siteIds).stream()
+            .map(s -> new SiteOption(s.getSiteId(), s.getSiteNm()))
+            .toList();
     }
 
     // ── join ──────────────────────────────────────────────────────────────
@@ -132,6 +153,10 @@ public class FoAuthService {
             + String.format("%04d", (int)(Math.random() * 10000));
 
         body.setMemberId(newId);
+        // siteId 는 가입 화면이 속한 사이트를 프론트가 넘겨줘야 하지만, 미전달 시 대표 사이트로 안전 기본값 적용
+        if (!org.springframework.util.StringUtils.hasText(body.getSiteId())) {
+            body.setSiteId("2604010000000001");
+        }
         body.setLoginPwdHash(passwordEncoder.encode(body.getLoginPwdHash()));
         body.setMemberStatusCd("ACTIVE");
         body.setJoinDate(LocalDateTime.now());

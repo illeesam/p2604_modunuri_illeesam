@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmFaq;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmFaqRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyPath;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
@@ -42,6 +44,8 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmFaqRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QCmFaq  cmFaq  = QCmFaq.cmFaq;
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyPath syPath = QSyPath.syPath;
@@ -64,10 +68,15 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                         cmFaq.regDate,           // 등록일시
                         cmFaq.updBy,             // 수정자
                         cmFaq.updDate,           // 수정일시
-                        syPath.pathLabel.as("pathLabel") // 표시경로 라벨 (sy_path 조인)
+                        syPath.pathLabel.as("pathLabel"), // 표시경로 라벨 (sy_path 조인)
+                        cmFaq.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(cmFaq)
                 .leftJoin(syPath).on(syPath.pathId.eq(cmFaq.pathId)) // 표시경로
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(cmFaq.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(cmFaq.regBy)) // 등록자
                 ;
     }
 

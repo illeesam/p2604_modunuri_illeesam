@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettlePayRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettlePayRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettlePay stSettlePay     = QStSettlePay.stSettlePay;
     private static final QSyVendor    syVendor   = QSyVendor.syVendor;
     private static final QSySite      sySite   = QSySite.sySite;
@@ -66,12 +70,17 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                         stSettlePay.updDate,               // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
                         cdPmc.codeLabel.as("payMethodCdNm"),            // 지급수단명 (sy_code 조인)
-                        cdSps.codeLabel.as("payStatusCdNm")             // 지급상태명 (sy_code 조인)
+                        cdSps.codeLabel.as("payStatusCdNm"),             // 지급상태명 (sy_code 조인)
+                        stSettlePay.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettlePay)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId)) // 업체
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd))) // 결제수단
                 .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd))) // 정산지급상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettlePay.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettlePay.regBy)) // 등록자
                 ;
     }
 

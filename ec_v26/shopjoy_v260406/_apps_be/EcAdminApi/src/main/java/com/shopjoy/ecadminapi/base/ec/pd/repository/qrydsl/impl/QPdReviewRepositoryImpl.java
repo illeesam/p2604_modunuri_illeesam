@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReview;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -32,6 +34,9 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdReview pdReview = QPdReview.pdReview;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * REVIEW_STATUS_CD  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
@@ -51,9 +56,22 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                         pdReview.reviewStatusCd,           // 상태 — {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
                         pdReview.reviewStatusCdBefore,     // 변경 전 리뷰상태 — 동일 코드그룹
                         pdReview.reviewDate,      // 리뷰작성일
-                        pdReview.regBy, pdReview.regDate, pdReview.updBy, pdReview.updDate
+                        pdReview.regBy,      // 등록자
+                        pdReview.regDate,    // 등록일시
+                        pdReview.updBy,      // 수정자
+                        pdReview.updDate,    // 수정일시
+                        pdReview.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdReview.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdReview);
+                .from(pdReview)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdReview.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdReview.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdReview.siteId)) // 사이트
+
+                ;
     }
 
     @Override
@@ -77,6 +95,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdReview.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -112,6 +131,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdReview.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery();

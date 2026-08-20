@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberAddrRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,9 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberAddrRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMemberAddr mbMemberAddr   = QMbMemberAddr.mbMemberAddr;
     private static final QMbMember     mbMember = QMbMember.mbMember;
     private static final QSySite       sySite = QSySite.sySite;    /*
@@ -51,10 +56,19 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                         mbMemberAddr.regBy,                    // 등록자
                         mbMemberAddr.regDate,                  // 등록일
                         mbMemberAddr.updBy,                    // 수정자
-                        mbMemberAddr.updDate                   // 수정일
+                        mbMemberAddr.updDate,                   // 수정일
+                        mbMemberAddr.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        mbMemberAddr.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbMemberAddr)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId)) // 회원
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMemberAddr.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMemberAddr.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(mbMemberAddr.siteId)) // 사이트
+
                 ;
     }
 
@@ -77,6 +91,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMemberAddr.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -110,6 +125,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(mbMemberAddr.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery();

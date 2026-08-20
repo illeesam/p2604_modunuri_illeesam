@@ -100,6 +100,8 @@ public class StSettleRawDto {
         private String regBy;                                                                                               // 등록자
         private LocalDateTime regDate;                                                                                       // 등록일시
         private String regSiteId;                                                                                             // 등록 사이트ID
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String updBy;                                                                                                  // 수정자
         private LocalDateTime updDate;                                                                                          // 수정일시
         // 연관 엔티티명 (조인 alias)

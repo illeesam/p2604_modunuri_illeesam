@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyProp(프로퍼티 (환경설정/공통 파라미터)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {
@@ -38,6 +40,8 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPropRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyProp syProp = QSyProp.syProp;
 
     /*
@@ -61,9 +65,15 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                         syProp.regBy,           // 등록자
                         syProp.regDate,         // 등록일시
                         syProp.updBy,           // 수정자
-                        syProp.updDate         // 수정일시
+                        syProp.updDate,         // 수정일시
+                        syProp.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syProp);
+                .from(syProp)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syProp.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syProp.regBy)) // 등록자
+                ;
     }
 
     /* 시스템 속성 키조회 */

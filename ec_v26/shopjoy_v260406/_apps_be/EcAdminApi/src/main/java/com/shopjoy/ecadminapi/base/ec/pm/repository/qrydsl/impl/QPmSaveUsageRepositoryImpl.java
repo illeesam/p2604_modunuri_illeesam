@@ -18,6 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveUsageRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +35,9 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveUsageRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmSaveUsage pmSaveUsage    = QPmSaveUsage.pmSaveUsage;
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QMbMember    mbMember  = QMbMember.mbMember;
@@ -50,13 +55,23 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                         pmSaveUsage.useAmt,         // 사용 적립금액
                         pmSaveUsage.balanceAmt,     // 사용 후 잔액
                         pmSaveUsage.usedDate,       // 사용일시
-                        pmSaveUsage.regBy, pmSaveUsage.regDate
+                        pmSaveUsage.regBy,  // 등록자
+                        pmSaveUsage.regDate,  // 등록일시
+                        pmSaveUsage.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmSaveUsage.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmSaveUsage)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pmSaveUsage.memberId)) // 회원
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveUsage.orderId)) // 주문
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveUsage.orderItemId)) // 주문상품
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveUsage.prodId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSaveUsage.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSaveUsage.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmSaveUsage.siteId)) // 사이트
+
                 ;
     }
 
@@ -81,6 +96,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -115,6 +131,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery();

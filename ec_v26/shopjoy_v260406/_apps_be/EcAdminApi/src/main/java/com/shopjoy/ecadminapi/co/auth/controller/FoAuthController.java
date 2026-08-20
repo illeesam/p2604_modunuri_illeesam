@@ -5,8 +5,10 @@ import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.FoJoinRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
+import com.shopjoy.ecadminapi.co.auth.data.vo.SiteOption;
 import com.shopjoy.ecadminapi.co.auth.data.vo.SocialLoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.WithdrawReq;
+import java.util.List;
 import com.shopjoy.ecadminapi.co.auth.service.FoAuthService;
 import com.shopjoy.ecadminapi.co.auth.service.SocialAuthService;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
@@ -39,6 +41,12 @@ public class FoAuthController {
     public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq request) {
         LoginRes result = authService.login(request, "FO");
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /** siteOptions — 로그인 화면 사이트 선택란 옵션 (선택지 1개면 프론트에서 자동선택) */
+    @GetMapping("/site-options")
+    public ResponseEntity<ApiResponse<List<SiteOption>>> siteOptions() {
+        return ResponseEntity.ok(ApiResponse.ok(authService.getLoginSiteOptions()));
     }
 
     /** socialLogin — 소셜 로그인 (provider accessToken 검증 → 매칭/가입 → JWT) */

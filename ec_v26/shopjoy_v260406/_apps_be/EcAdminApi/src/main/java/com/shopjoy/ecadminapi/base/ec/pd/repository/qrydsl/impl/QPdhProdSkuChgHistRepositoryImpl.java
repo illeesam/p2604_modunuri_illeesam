@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdSkuChgHistRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -30,6 +31,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdSkuChgHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QPdhProdSkuChgHist pdhProdSkuChgHist      = QPdhProdSkuChgHist.pdhProdSkuChgHist;
     private static final QSySite            sySite    = QSySite.sySite;
     private static final QPdProd            pdProd    = QPdProd.pdProd;
@@ -53,11 +55,13 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
                         pdhProdSkuChgHist.chgBy,          // 처리자 (sy_user.user_id)
                         pdhProdSkuChgHist.chgDate,        // 처리일시
                         pdhProdSkuChgHist.regBy,
-                        pdhProdSkuChgHist.regDate
+                        pdhProdSkuChgHist.regDate,
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pdhProdSkuChgHist)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuChgHist.prodId)) // 상품
                 .innerJoin(cd_sct).on(cd_sct.codeGrp.eq("SKU_CHG_TYPE").and(cd_sct.codeValue.eq(pdhProdSkuChgHist.chgTypeCd))) // SKU변경유형
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdSkuChgHist.regBy)) // 등록자
                 ;
     }
 

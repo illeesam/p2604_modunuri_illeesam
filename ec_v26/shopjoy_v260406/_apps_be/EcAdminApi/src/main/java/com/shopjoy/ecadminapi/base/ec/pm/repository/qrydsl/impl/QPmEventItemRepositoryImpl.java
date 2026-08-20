@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventItemRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,9 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmEventItem pmEventItem = QPmEventItem.pmEventItem;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * EVENT_ITEM_TARGET  {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
@@ -40,9 +45,20 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                         pmEventItem.targetTypeCd,  // 대상유형 — EVENT_ITEM_TARGET {PRODUCT, CATEGORY, VENDOR, BRAND}
                         pmEventItem.targetId,      // 대상ID (prod_id / category_id / vendor_id / brand_id)
                         pmEventItem.sortNo,        // 이벤트 내 노출 순서
-                        pmEventItem.regBy, pmEventItem.regDate
+                        pmEventItem.regBy,  // 등록자
+                        pmEventItem.regDate,  // 등록일시
+                        pmEventItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmEventItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pmEventItem);
+                .from(pmEventItem)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmEventItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmEventItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmEventItem.siteId)) // 사이트
+
+                ;
     }
 
     /* 이벤트 대상 상품 키조회 */
@@ -66,6 +82,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmEventItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -100,6 +117,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmEventItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery();

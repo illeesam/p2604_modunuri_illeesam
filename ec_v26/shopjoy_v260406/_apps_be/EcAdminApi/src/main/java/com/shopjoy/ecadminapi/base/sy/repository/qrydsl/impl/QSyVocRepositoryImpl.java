@@ -22,12 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyVoc(고객의소리 VOC 분류) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVocRepositoryImpl implements QSyVocRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVocRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVoc syVoc = QSyVoc.syVoc;
 
     /*
@@ -48,9 +52,15 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                         syVoc.regBy,           // 등록자
                         syVoc.regDate,         // 등록일시
                         syVoc.updBy,           // 수정자
-                        syVoc.updDate         // 수정일시
+                        syVoc.updDate,         // 수정일시
+                        syVoc.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syVoc);
+                .from(syVoc)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVoc.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syVoc.regBy)) // 등록자
+                ;
     }
 
     /* 고객의 소리(VOC) 키조회 */

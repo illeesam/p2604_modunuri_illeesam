@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyMenu(메뉴) QueryDSL Custom 구현체 */
 public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
@@ -37,6 +39,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     private final EntityManager em;
     private final SyMenuRepository syMenuRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyMenuRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyMenu syMenu = QSyMenu.syMenu;
 
     public QSyMenuRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyMenuRepository syMenuRepository, EntityManager em) {
@@ -65,10 +69,15 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         syMenu.regBy,          // 등록자
                         syMenu.regDate,        // 등록일시
                         syMenu.updBy,          // 수정자
-                        syMenu.updDate        // 수정일시
+                        syMenu.updDate,        // 수정일시
+                        syMenu.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syMenu)
                 .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE_CD").and(cdMt.codeValue.eq(syMenu.menuTypeCd))) // 메뉴유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syMenu.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syMenu.regBy)) // 등록자
                 ;
     }
 

@@ -25,12 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyBbs(게시물) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbsRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyBbs syBbs = QSyBbs.syBbs;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -58,9 +62,15 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                         syBbs.regBy,          // 등록자
                         syBbs.regDate,        // 등록일시
                         syBbs.updBy,          // 수정자
-                        syBbs.updDate        // 수정일시
+                        syBbs.updDate,        // 수정일시
+                        syBbs.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syBbs);
+                .from(syBbs)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syBbs.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syBbs.regBy)) // 등록자
+                ;
     }
 
     /* 게시판 게시물 키조회 */

@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayMethodDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPayMethod;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPayMethod;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdPayMethodRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdPayMethodRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdPayMethod odPayMethod   = QOdPayMethod.odPayMethod;
     private static final QMbMember    mem = new QMbMember("mem");
     private static final QVwSyCode      cdPm = new QVwSyCode("cd_pm");    /*
@@ -49,11 +53,19 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                         odPayMethod.payMethodAlias,   // 별칭 (사용자 설정)
                         odPayMethod.payKeyNo,         // 결제 게이트웨이 발급 키/토큰
                         odPayMethod.mainMethodYn,     // 기본결제수단여부 Y/N
-                        odPayMethod.regBy, odPayMethod.regDate, odPayMethod.updBy, odPayMethod.updDate
+                        odPayMethod.regBy,      // 등록자
+                        odPayMethod.regDate,    // 등록일시
+                        odPayMethod.updBy,      // 수정자
+                        odPayMethod.updDate,    // 수정일시
+                        odPayMethod.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(odPayMethod)
                 .innerJoin(mem).on(mem.memberId.eq(odPayMethod.memberId)) // 회원
                 .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd))) // 결제수단
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odPayMethod.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odPayMethod.regBy)) // 등록자
                 ;
     }
 

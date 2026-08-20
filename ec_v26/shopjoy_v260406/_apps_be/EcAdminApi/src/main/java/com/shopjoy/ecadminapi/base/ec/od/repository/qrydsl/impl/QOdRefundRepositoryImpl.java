@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdRefund;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdRefundRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -34,6 +36,9 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdRefundRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdRefund odRefund   = QOdRefund.odRefund;
     private static final QSySite   ste = new QSySite("ste");
     private static final QOdOrder  ord = new QOdOrder("ord");
@@ -67,7 +72,15 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                         odRefund.faultTypeCd,         // 귀책유형코드 — FAULT_TYPE {CUST:구매자 귀책, VENDOR:판매자 귀책, PLATFORM:플랫폼 귀책}
                         odRefund.refundReason,        // 환불 사유
                         odRefund.memo,                // 관리 메모
-                        odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
+                        odRefund.regBy,      // 등록자
+                        odRefund.regDate,    // 등록일시
+                        odRefund.updBy,      // 수정자
+                        odRefund.updDate,    // 수정일시
+                        odRefund.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odRefund.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odRefund)
                 .innerJoin(ord).on(ord.orderId.eq(odRefund.orderId)) // 주문
@@ -75,6 +88,10 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                 .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId)) // 클레임
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefund.refundStatusCd))) // 환불상태
                 .leftJoin(cdCf).on(cdCf.codeGrp.eq("FAULT_TYPE_CD").and(cdCf.codeValue.eq(odRefund.faultTypeCd))) // 귀책유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odRefund.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odRefund.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odRefund.siteId)) // 사이트
+
                 ;
     }
 
@@ -97,6 +114,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odRefund.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -129,6 +147,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odRefund.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdRefundDto.Item> query = baseListQuery();

@@ -17,6 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdCart;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdCartRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -36,6 +38,9 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdCartRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdCart        odCart   = QOdCart.odCart;
     private static final QSySite        sySite = QSySite.sySite;
     private static final QMbMember      mbMember   = QMbMember.mbMember;
@@ -60,17 +65,29 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         odCart.orderQty,    // 수량
                         odCart.itemPrice,   // 소계 (단가 × 수량)
                         odCart.isChecked,   // 주문선택여부 Y/N
-                        odCart.regBy, odCart.regDate, odCart.updBy, odCart.updDate,
+                        odCart.regBy,      // 등록자
+                        odCart.regDate,    // 등록일시
+                        odCart.updBy,      // 수정자
+                        odCart.updDate,    // 수정일시
                         mbMember.memberNm.as("memberNm"),
                         pdProd.prodNm.as("prodNm"),
                         oi1.prodOptNm.as("prodOptNm1"),
-                        oi2.prodOptNm.as("prodOptNm2")
+                        oi2.prodOptNm.as("prodOptNm2"),
+                        odCart.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odCart.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odCart)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId)) // 상품
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId)) // 회원
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOpt1Id)) // 옵션1
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOpt2Id)) // 옵션2
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odCart.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odCart.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odCart.siteId)) // 사이트
+
                 ;
     }
 
@@ -99,6 +116,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odCart.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -137,6 +155,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odCart.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdCartDto.Item> query = baseListQuery();

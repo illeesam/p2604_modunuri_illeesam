@@ -33,6 +33,8 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdStatusHistRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdhProdStatusHist pdhProdStatusHist     = QPdhProdStatusHist.pdhProdStatusHist;
     private static final QSySite            sySite   = QSySite.sySite;
     private static final QSyUser            syUser   = QSyUser.syUser;
@@ -51,11 +53,19 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                         pdhProdStatusHist.memo,                // 처리메모
                         pdhProdStatusHist.procUserId,          // 처리자 (sy_user.user_id)
                         pdhProdStatusHist.procDate,            // 처리일시
-                        pdhProdStatusHist.regBy, pdhProdStatusHist.regDate, pdhProdStatusHist.updBy, pdhProdStatusHist.updDate
+                        pdhProdStatusHist.regBy,      // 등록자
+                        pdhProdStatusHist.regDate,    // 등록일시
+                        pdhProdStatusHist.updBy,      // 수정자
+                        pdhProdStatusHist.updDate,    // 수정일시
+                        pdhProdStatusHist.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pdhProdStatusHist)
                 .leftJoin(syUser).on(syUser.userId.eq(pdhProdStatusHist.procUserId)) // 사용자
                 .leftJoin(cd_beforeStatusCd).on(cd_beforeStatusCd.codeGrp.eq("PRODUCT_STATUS").and(cd_beforeStatusCd.codeValue.eq(pdhProdStatusHist.beforeStatusCd))) // 상품상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdhProdStatusHist.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdStatusHist.regBy)) // 등록자
                 ;
     }
 

@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettle;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -33,6 +35,8 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettle  stSettle   = QStSettle.stSettle;
     private static final QSyVendor  syVendor = QSyVendor.syVendor;
     private static final QSySite    sySite = QSySite.sySite;
@@ -67,11 +71,16 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                         stSettle.updBy,                     // 수정자
                         stSettle.updDate,                   // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
-                        cdSs.codeLabel.as("settleStatusCdNm")           // 상태명 (sy_code 조인)
+                        cdSs.codeLabel.as("settleStatusCdNm"),           // 상태명 (sy_code 조인)
+                        stSettle.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettle)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId)) // 업체
                 .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS_CD").and(cdSs.codeValue.eq(stSettle.settleStatusCd))) // 정산상태
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettle.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettle.regBy)) // 등록자
                 ;
     }
 

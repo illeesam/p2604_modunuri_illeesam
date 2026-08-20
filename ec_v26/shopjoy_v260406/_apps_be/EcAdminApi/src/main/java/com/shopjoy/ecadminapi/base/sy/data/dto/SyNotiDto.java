@@ -41,6 +41,8 @@ public class SyNotiDto {
         private String regBy;
         private LocalDateTime regDate;
         private String regSiteId;
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String updBy;
         private LocalDateTime updDate;
 

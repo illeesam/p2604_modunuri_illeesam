@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 /** OdOrderItem(주문상품) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -51,6 +52,9 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderItemRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdOrderItem   odOrderItem   = QOdOrderItem.odOrderItem;
     private static final QPdProd        pdProd    = QPdProd.pdProd;
     private static final QPdProdSku     pdProdSku   = QPdProdSku.pdProdSku;
@@ -134,7 +138,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         odOrderItem.dlivMethodCd,            // 배송방법 override — DLIV_METHOD_CD, NULL=상품 기본값
                         odOrderItem.dlivTrackingNo,          // 해당 항목의 배송 송장번호
                         odOrderItem.dlivShipDate,            // 해당 항목의 출고일시
-                        odOrderItem.regBy, odOrderItem.regDate, odOrderItem.updBy, odOrderItem.updDate,
+                        odOrderItem.regBy,      // 등록자
+                        odOrderItem.regDate,    // 등록일시
+                        odOrderItem.updBy,      // 수정자
+                        odOrderItem.updDate,    // 수정일시
                         pdProd.thumbnailUrl.as("thumbnailUrl"),
                         pdProd.salePrice.as("salePriceCurrent"),
                         pdProd.prodNm.as("prodNmCurrent"),
@@ -201,7 +208,12 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         ExpressionUtils.as(JPAExpressions.select(claimItemDsp.claimItemStatusCd)
                                 .from(claimItemDsp)
                                 .where(claimItemDsp.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd")
+                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd"),
+                        odOrderItem.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        odOrderItem.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(odOrderItem)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId)) // 상품
@@ -215,6 +227,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(syVendorJoin).on(syVendorJoin.vendorId.eq(pdProd.vendorId)) // 업체
                 .leftJoin(syUserJoin).on(syUserJoin.userId.eq(pdProd.mdUserId)) // 사용자
                 .leftJoin(pdCategoryJoin).on(pdCategoryJoin.categoryId.eq(pdProd.categoryId)) // 카테고리
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odOrderItem.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(odOrderItem.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(odOrderItem.siteId)) // 사이트
+
                 ;
     }
 
@@ -276,6 +292,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                       .exists()
                 : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odOrderItem.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -347,6 +364,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                       .exists()
                 : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(odOrderItem.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery();

@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StDlivFeePolicyDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStDlivFeePolicy;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StDlivFeePolicy;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStDlivFeePolicyRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,8 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStDlivFeePolicyRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStDlivFeePolicy stDlivFeePolicy = QStDlivFeePolicy.stDlivFeePolicy;
     private static final QVwSyCode        cdDm = new QVwSyCode("cd_dm");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
@@ -49,12 +53,19 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
                         stDlivFeePolicy.useYn,             // 사용여부 Y/N
                         stDlivFeePolicy.sortOrd,           // 정렬순서
                         stDlivFeePolicy.remark,            // 비고
-                        stDlivFeePolicy.regBy, stDlivFeePolicy.regDate, stDlivFeePolicy.regSiteId,
-                        stDlivFeePolicy.updBy, stDlivFeePolicy.updDate,
-                        cdDm.codeLabel.as("dlivMethodCdNm")   // 배송방법명 (sy_code 조인)
+                        stDlivFeePolicy.regBy,  // 등록자
+                        stDlivFeePolicy.regDate,  // 등록일시
+                        stDlivFeePolicy.regSiteId,  // 등록사이트ID
+                        stDlivFeePolicy.updBy,  // 수정자
+                        stDlivFeePolicy.updDate,  // 수정일시
+                        cdDm.codeLabel.as("dlivMethodCdNm"),   // 배송방법명 (sy_code 조인)
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stDlivFeePolicy)
                 .innerJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(stDlivFeePolicy.dlivMethodCd))) // 배송방법
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stDlivFeePolicy.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stDlivFeePolicy.regBy)) // 등록자
                 ;
     }
 

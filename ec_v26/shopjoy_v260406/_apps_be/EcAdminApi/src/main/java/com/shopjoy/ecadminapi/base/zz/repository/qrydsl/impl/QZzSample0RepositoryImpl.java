@@ -20,12 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** ZzSample0(ZzSample0 - 샘플 데이터 관리 테이블 0) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample0RepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QZzSample0 zzSample0 = QZzSample0.zzSample0;
 
     /*
@@ -54,9 +58,15 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
                         zzSample0.col06,         // 범용 컬럼06
                         zzSample0.col07,         // 범용 컬럼07
                         zzSample0.col08,         // 범용 컬럼08
-                        zzSample0.col09          // 범용 컬럼09
+                        zzSample0.col09,          // 범용 컬럼09
+                        zzSample0.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(zzSample0);
+                .from(zzSample0)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(zzSample0.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(zzSample0.regBy)) // 등록자
+                ;
     }
 
     /* 키조회 */

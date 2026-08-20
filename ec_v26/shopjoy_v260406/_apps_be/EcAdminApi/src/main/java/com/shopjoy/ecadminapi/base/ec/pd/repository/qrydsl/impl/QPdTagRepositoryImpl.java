@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdTagRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,9 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdTagRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdTag  pdTag   = QPdTag.pdTag;
     private static final QSySite sySite = QSySite.sySite;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -45,9 +50,22 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                         pdTag.useCount,    // 사용 빈도
                         pdTag.sortOrd,     // 정렬순서
                         pdTag.useYn,         // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdTag.regBy, pdTag.regDate, pdTag.updBy, pdTag.updDate
+                        pdTag.regBy,      // 등록자
+                        pdTag.regDate,    // 등록일시
+                        pdTag.updBy,      // 수정자
+                        pdTag.updDate,    // 수정일시
+                        pdTag.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdTag.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdTag);
+                .from(pdTag)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdTag.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdTag.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdTag.siteId)) // 사이트
+
+                ;
     }
 
     /* 태그 키조회 */
@@ -70,6 +88,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdTag.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -103,6 +122,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdTag.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdTagDto.Item> query = baseSelColumnQuery();

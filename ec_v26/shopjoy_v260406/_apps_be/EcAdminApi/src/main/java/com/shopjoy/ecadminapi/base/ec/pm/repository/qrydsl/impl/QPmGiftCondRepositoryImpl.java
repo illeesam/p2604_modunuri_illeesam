@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGiftCond;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmGiftCondRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -32,6 +34,9 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftCondRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmGiftCond pmGiftCond    = QPmGiftCond.pmGiftCond;
     private static final QPmGift     pmGift  = QPmGift.pmGift;
     private static final QSySite     sySite  = QSySite.sySite;
@@ -49,11 +54,21 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                         pmGiftCond.minOrderAmt,    // 최소주문금액 (ORDER_AMT 조건)
                         pmGiftCond.targetTypeCd,   // 대상유형 — PRODUCT/CATEGORY/MEMBER_GRADE
                         pmGiftCond.targetId,       // 대상ID
-                        pmGiftCond.regBy, pmGiftCond.regDate
+                        pmGiftCond.regBy,  // 등록자
+                        pmGiftCond.regDate,  // 등록일시
+                        pmGiftCond.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pmGiftCond.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmGiftCond)
                 .innerJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId)) // 사은품
                 .innerJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd))) // 조건유형
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmGiftCond.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pmGiftCond.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pmGiftCond.siteId)) // 사이트
+
                 ;
     }
 
@@ -79,6 +94,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -114,6 +130,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery();

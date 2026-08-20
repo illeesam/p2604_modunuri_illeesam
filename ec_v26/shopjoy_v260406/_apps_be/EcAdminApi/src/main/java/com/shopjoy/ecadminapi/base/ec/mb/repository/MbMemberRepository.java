@@ -14,6 +14,10 @@ public interface MbMemberRepository extends JpaRepository<MbMember, String>, QMb
 
     Optional<MbMember> findByLoginId(String loginId);
 
+    /** FO 로그인 화면 사이트 선택란 — 회원이 실제 등록된 사이트 목록 (등록 회원이 있는 사이트만) */
+    @Query("SELECT DISTINCT m.siteId FROM MbMember m")
+    List<String> findDistinctSiteIds();
+
     /**
      * 등급 재산정 대상 회원 조회 — ACTIVE 상태 + 사이트별.
      * SUSPENDED / WITHDRAWN 회원은 등급 재산정 제외.

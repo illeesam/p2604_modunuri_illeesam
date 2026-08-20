@@ -23,12 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyAttach(첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyAttach syAttach = QSyAttach.syAttach;
 
     /*
@@ -63,9 +67,15 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                         syAttach.regBy,              // 등록자
                         syAttach.regDate,            // 등록일시
                         syAttach.updBy,              // 수정자
-                        syAttach.updDate            // 수정일시
+                        syAttach.updDate,            // 수정일시
+                        syAttach.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syAttach);
+                .from(syAttach)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syAttach.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syAttach.regBy)) // 등록자
+                ;
     }
 
     /* 첨부파일 키조회 */

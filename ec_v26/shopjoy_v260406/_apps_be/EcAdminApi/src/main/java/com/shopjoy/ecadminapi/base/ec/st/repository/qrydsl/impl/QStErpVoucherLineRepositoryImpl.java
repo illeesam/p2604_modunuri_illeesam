@@ -14,6 +14,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherLineDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStErpVoucherLine;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStErpVoucherLineRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,8 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherLineRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStErpVoucherLine stErpVoucherLine = QStErpVoucherLine.stErpVoucherLine;    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 참고값)
      * REF_TYPE_CD  {SETTLE: '정산', ORDER: '주문', CLAIM: '클레임', PAY: '지급', ADJ: '조정'}
@@ -49,9 +53,15 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                         stErpVoucherLine.refId,              // 참조ID (settle_id / order_id / claim_id 등)
                         stErpVoucherLine.lineMemo,           // 라인 적요
                         stErpVoucherLine.regBy,              // 등록자
-                        stErpVoucherLine.regDate             // 등록일시
+                        stErpVoucherLine.regDate,             // 등록일시
+                        stErpVoucherLine.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(stErpVoucherLine);
+                .from(stErpVoucherLine)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stErpVoucherLine.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(stErpVoucherLine.regBy)) // 등록자
+                ;
     }
 
     /* ERP 전표 상세 키조회 */

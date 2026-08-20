@@ -25,6 +25,11 @@ public class PdCategory extends BaseEntity {
     @Size(max = 21, message = "categoryId 는 21자 이내여야 합니다.")
     private String categoryId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("상위 카테고리ID")
     @Column(name = "parent_category_id", length = 21)

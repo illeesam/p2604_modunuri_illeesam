@@ -42,6 +42,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
     private static final QDpUi dpUi = QDpUi.dpUi;
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
@@ -69,11 +70,15 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                         dpUi.updBy,         // 수정자
                         dpUi.updDate,       // 수정일시
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
-                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        dpUi.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(dpUi)
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(dpUi.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(dpUi.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(dpUi.siteId)) // 사이트
+
                 ;
     }
 
@@ -98,6 +103,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpUi.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -132,6 +138,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(dpUi.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<DpUiDto.Item> query = baseQuery();

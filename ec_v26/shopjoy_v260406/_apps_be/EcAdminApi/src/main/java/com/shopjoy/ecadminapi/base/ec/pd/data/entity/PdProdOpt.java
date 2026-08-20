@@ -25,6 +25,11 @@ public class PdProdOpt extends BaseEntity {
     @Size(max = 21, message = "prodOptId 는 21자 이내여야 합니다.")
     private String prodOptId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("상품ID (pd_prod.prod_id) — 조회 편의용 비정규화 컬럼")
     @Column(name = "prod_id", length = 21, nullable = false)

@@ -25,6 +25,11 @@ public class OdCart extends BaseEntity {
     @Size(max = 21, message = "cartId 는 21자 이내여야 합니다.")
     private String cartId;
 
+    @Comment("사이트ID (sy_site.site_id) - 업무 소속 사이트")
+    @Column(name = "site_id", length = 21, nullable = false)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
 
     @Comment("회원ID (비회원 NULL)")
     @Column(name = "member_id", length = 21)

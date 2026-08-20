@@ -25,12 +25,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyUserRole(관리자 사용자-역할 매핑 (N:M)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRoleRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyUserRole syUserRole = QSyUserRole.syUserRole;
     private static final QSyUser usr  = new QSyUser("usr");
     private static final QSyRole syRole  = QSyRole.syRole;
@@ -52,12 +55,17 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                         syUserRole.updDate,                       // 수정일시
                         syRole.roleNm.as("roleNm"),               // 역할명 (조인: sy_role)
                         syRole.roleCode.as("roleCode"),           // 역할코드 (조인: sy_role)
-                        usr2.userNm.as("grantUserNm")             // 부여자명 (조인: sy_user, alias usr2)
+                        usr2.userNm.as("grantUserNm"),             // 부여자명 (조인: sy_user, alias usr2)
+                        syUserRole.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syUserRole)
                 .innerJoin(usr).on(usr.userId.eq(syUserRole.userId)) // 사용자
                 .innerJoin(syRole).on(syRole.roleId.eq(syUserRole.roleId)) // 역할
                 .leftJoin(usr2).on(usr2.userId.eq(syUserRole.grantUserId)) // 사용자
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syUserRole.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syUserRole.regBy)) // 등록자
                 ;
     }
 

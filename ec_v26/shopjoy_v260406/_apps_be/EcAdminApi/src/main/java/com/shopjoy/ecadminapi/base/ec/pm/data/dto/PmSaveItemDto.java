@@ -28,6 +28,8 @@ public class PmSaveItemDto {
         private String regBy;  // 등록자 ID
         private LocalDateTime regDate;  // 등록일시
         private String regSiteId;  // 등록 사이트ID
+        private String regSiteNm;  // 등록사이트명 (조인)
+        private String regUserNm;  // 등록자명 (조인)
         private String siteNm;  // 사이트명 (조인)
         private String targetTypeCdNm;  // 대상유형명 (조인)
     }

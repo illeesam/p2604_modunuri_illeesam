@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategoryProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryProdRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -34,6 +36,9 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryProdRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdCategoryProd pdCategoryProd   = QPdCategoryProd.pdCategoryProd;
     private static final QSySite         sySite = QSySite.sySite;
     private static final QPdCategory     pdCategory = QPdCategory.pdCategory;
@@ -54,13 +59,25 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                         pdCategoryProd.dispYn,                  // 전시여부 — {Y: '전시', N: '비전시'}
                         pdCategoryProd.dispStartDate,           // 전시시작일 (NULL=즉시)
                         pdCategoryProd.dispEndDate,             // 전시종료일 (NULL=무기한)
-                        pdCategoryProd.regBy, pdCategoryProd.regDate, pdCategoryProd.updBy, pdCategoryProd.updDate,
+                        pdCategoryProd.regBy,      // 등록자
+                        pdCategoryProd.regDate,    // 등록일시
+                        pdCategoryProd.updBy,      // 수정자
+                        pdCategoryProd.updDate,    // 수정일시
                         pdCategory.categoryNm.as("categoryNm"),        // 카테고리명 (조인)
-                        pdProd.prodNm.as("prodNm")                     // 상품명 (조인)
+                        pdProd.prodNm.as("prodNm"),                     // 상품명 (조인)
+                        pdCategoryProd.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdCategoryProd.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pdCategoryProd)
                 .innerJoin(pdCategory).on(pdCategory.categoryId.eq(pdCategoryProd.categoryId)) // 카테고리
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdCategoryProd.prodId)) // 상품
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdCategoryProd.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdCategoryProd.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdCategoryProd.siteId)) // 사이트
+
                 ;
     }
 
@@ -88,6 +105,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdCategoryProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdCategoryProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdCategoryProd.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -125,6 +143,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdCategoryProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdCategoryProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdCategoryProd.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery();

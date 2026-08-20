@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 /** SyBatch(배치 작업) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBatchRepositoryImpl implements QSyBatchRepository {
@@ -35,6 +37,8 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBatchRepositoryImpl";
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyBatch syBatch = QSyBatch.syBatch;
 
     /*
@@ -63,9 +67,15 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                         syBatch.regDate,          // 등록일시
                         syBatch.updBy,            // 수정자
                         syBatch.updDate,          // 수정일시
-                        syBatch.pathId           // 점(.) 구분 표시경로 (트리 빌드용)
+                        syBatch.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
+                        syBatch.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
-                .from(syBatch);
+                .from(syBatch)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syBatch.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(syBatch.regBy)) // 등록자
+                ;
     }
 
     /* 배치 키조회 */

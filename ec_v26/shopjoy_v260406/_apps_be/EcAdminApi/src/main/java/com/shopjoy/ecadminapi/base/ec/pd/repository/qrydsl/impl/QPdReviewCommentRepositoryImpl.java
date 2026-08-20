@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewCommentRepository;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,9 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewCommentRepositoryImpl";
+    private static final QSySite siteEx = new QSySite("site_ex");
+    private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
+    private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdReviewComment pdReviewComment = QPdReviewComment.pdReviewComment;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — sy_code 미등록)
      * WRITER_TYPE_CD   {MEMBER: '회원', SELLER: '판매자', ADMIN: '관리자'}
@@ -47,9 +52,22 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                         pdReviewComment.writerNm,            // 작성자명
                         pdReviewComment.reviewReplyContent,  // 댓글 내용
                         pdReviewComment.replyStatusCd,         // 상태 — {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
-                        pdReviewComment.regBy, pdReviewComment.regDate, pdReviewComment.updBy, pdReviewComment.updDate
+                        pdReviewComment.regBy,      // 등록자
+                        pdReviewComment.regDate,    // 등록일시
+                        pdReviewComment.updBy,      // 수정자
+                        pdReviewComment.updDate,    // 수정일시
+                        pdReviewComment.regSiteId,  // 등록사이트ID
+                        regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
+                        regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
+                        pdReviewComment.siteId,  // 사이트ID
+                        siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
-                .from(pdReviewComment);
+                .from(pdReviewComment)
+                .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdReviewComment.regSiteId)) // 등록사이트
+                .leftJoin(regUserEx).on(regUserEx.userId.eq(pdReviewComment.regBy)) // 등록자
+                .leftJoin(siteEx).on(siteEx.siteId.eq(pdReviewComment.siteId)) // 사이트
+
+                ;
     }
 
     @Override
@@ -72,6 +90,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewComment.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewComment.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdReviewComment.siteId, search.getSiteId()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -106,6 +125,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewComment.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewComment.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        whereList.add(QdslUtil.strEq(pdReviewComment.siteId, search.getSiteId()));
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery();
