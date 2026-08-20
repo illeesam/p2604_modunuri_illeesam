@@ -58,7 +58,7 @@ public class PdProdOpt extends BaseEntity {
 
     @Comment("옵션 스타일 (컬러 hex 값, 아이콘 클래스 등 자유 문자열)")
     @Column(name = "prod_opt_style", length = 200)
-    @Size(max = 100, message = "prodOptStyle 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "prodOptStyle 는 200자 이내여야 합니다.")
     private String prodOptStyle;
 
     @Comment("정렬순서")

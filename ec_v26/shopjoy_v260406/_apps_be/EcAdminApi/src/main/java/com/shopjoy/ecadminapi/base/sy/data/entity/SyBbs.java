@@ -52,7 +52,7 @@ public class SyBbs extends BaseEntity {
     @Comment("제목")
     @Column(name = "bbs_title", length = 200, nullable = false)
     @NotBlank(message = "게시글 제목을 입력해주세요.")
-    @Size(max = 100, message = "게시글 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "게시글 제목은 200자 이내로 입력해주세요.")
     private String bbsTitle;
 
     @Comment("내용 (HTML)")

@@ -48,7 +48,7 @@ public class SyBrand extends BaseEntity {
 
     @Comment("로고URL")
     @Column(name = "logo_url", length = 500)
-    @Size(max = 100, message = "logoUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "logoUrl 는 500자 이내여야 합니다.")
     private String logoUrl;
 
     @Comment("업체ID")
@@ -67,7 +67,7 @@ public class SyBrand extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "brand_remark", length = 300)
-    @Size(max = 100, message = "brandRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "brandRemark 는 300자 이내여야 합니다.")
     private String brandRemark;
 
 }

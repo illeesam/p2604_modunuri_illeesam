@@ -63,7 +63,7 @@ public class PdProdQna extends BaseEntity {
     @Comment("문의제목")
     @Column(name = "prod_qna_title", length = 200, nullable = false)
     @NotBlank(message = "Q&A 제목을 입력해주세요.")
-    @Size(max = 100, message = "Q&A 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "Q&A 제목은 200자 이내로 입력해주세요.")
     private String prodQnaTitle;
 
     @Comment("문의내용")

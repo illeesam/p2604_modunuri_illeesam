@@ -58,7 +58,7 @@ public class PmCache extends BaseEntity {
 
     @Comment("내역 설명")
     @Column(name = "cache_desc", length = 200)
-    @Size(max = 100, message = "cacheDesc 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "cacheDesc 는 200자 이내여야 합니다.")
     private String cacheDesc;
 
     @Comment("처리자 (관리자 직접 부여시)")

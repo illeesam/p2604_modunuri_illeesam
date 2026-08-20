@@ -49,12 +49,12 @@ public class PdhProdViewLog extends BaseEntity {
 
     @Comment("참조명 스냅샷")
     @Column(name = "ref_nm", length = 200)
-    @Size(max = 100, message = "refNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "refNm 는 200자 이내여야 합니다.")
     private String refNm;
 
     @Comment("검색어 (SEARCH 유형)")
     @Column(name = "search_kw", length = 200)
-    @Size(max = 100, message = "searchKw 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "searchKw 는 200자 이내여야 합니다.")
     private String searchKw;
 
     @Comment("IP주소")
@@ -64,12 +64,12 @@ public class PdhProdViewLog extends BaseEntity {
 
     @Comment("User-Agent")
     @Column(name = "device", length = 200)
-    @Size(max = 100, message = "device 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "device 는 200자 이내여야 합니다.")
     private String device;
 
     @Comment("유입경로 URL")
     @Column(name = "referrer", length = 500)
-    @Size(max = 100, message = "referrer 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "referrer 는 500자 이내여야 합니다.")
     private String referrer;
 
     @Comment("조회일시")

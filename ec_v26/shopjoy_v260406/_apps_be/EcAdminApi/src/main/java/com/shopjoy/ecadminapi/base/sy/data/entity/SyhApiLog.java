@@ -53,7 +53,7 @@ public class SyhApiLog extends BaseEntity {
 
     @Comment("호출 URL")
     @Column(name = "endpoint", length = 500)
-    @Size(max = 100, message = "endpoint 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "endpoint 는 500자 이내여야 합니다.")
     private String endpoint;
 
     @Comment("요청 파라미터 (민감정보 마스킹 처리)")
@@ -77,7 +77,7 @@ public class SyhApiLog extends BaseEntity {
 
     @Comment("오류 메시지")
     @Column(name = "error_msg", length = 500)
-    @Size(max = 100, message = "errorMsg 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "errorMsg 는 500자 이내여야 합니다.")
     private String errorMsg;
 
     @Comment("응답시간 (밀리초)")

@@ -55,7 +55,7 @@ public class PdProd extends BaseEntity {
 
     @Comment("상품명")
     @Column(name = "prod_nm", length = 200, nullable = false)
-    @Size(max = 100, message = "prodNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "prodNm 는 200자 이내여야 합니다.")
     private String prodNm;
 
     @Comment("상품유형 (코드: PROD_TYPE_CD — SINGLE/GROUP/SET)")
@@ -104,7 +104,7 @@ public class PdProd extends BaseEntity {
 
     @Comment("썸네일URL")
     @Column(name = "thumbnail_url", length = 500)
-    @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbnailUrl 는 500자 이내여야 합니다.")
     private String thumbnailUrl;
 
     /* 상품 상세설명은 이미지가 많이 들어가는 페이지라 넉넉하게 잡는다.
@@ -204,7 +204,7 @@ public class PdProd extends BaseEntity {
 
     @Comment("홍보문구 (500자 이내)")
     @Column(name = "advrt_stmt", length = 500)
-    @Size(max = 100, message = "advrtStmt 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "advrtStmt 는 500자 이내여야 합니다.")
     private String advrtStmt;
 
     @Comment("홍보문구 시작일시")

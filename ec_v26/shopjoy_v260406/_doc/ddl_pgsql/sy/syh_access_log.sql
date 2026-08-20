@@ -29,8 +29,10 @@ CREATE TABLE shopjoy_2604.syh_access_log (
     file_nm      VARCHAR(200) ,
     func_nm      VARCHAR(200) ,
     line_no      VARCHAR(10)  ,
-    trace_id     VARCHAR(50)  ,
-    reg_site_id      VARCHAR(21)   NOT NULL
+    trace_id     VARCHAR(50)
+    /* reg_site_id 없음 — 2026-08-20 라이브 DB information_schema 직접 조회로 확인.
+       이 파일에 한때 `reg_site_id VARCHAR(21) NOT NULL` 이 있었으나 실제 DB엔 없었다(stale 문서).
+       syh_access_log 는 BaseEntity 를 상속하지 않아(reqDt/regDate 자체 관리) site_id 자동주입 대상이 아니다. */
 );
 
 COMMENT ON TABLE  shopjoy_2604.syh_access_log IS 'API 요청/응답 액세스 로그 (비동기 선택 수집)';

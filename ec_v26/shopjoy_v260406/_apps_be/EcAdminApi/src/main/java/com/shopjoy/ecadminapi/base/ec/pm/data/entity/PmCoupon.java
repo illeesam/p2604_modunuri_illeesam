@@ -115,7 +115,7 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("적용대상값")
     @Column(name = "target_value", length = 200)
-    @Size(max = 100, message = "targetValue 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "targetValue 는 200자 이내여야 합니다.")
     private String targetValue;
 
     @Comment("적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)")
@@ -133,7 +133,7 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("판매자 분담 비고")
     @Column(name = "seller_cdiv_remark", length = 300)
-    @Size(max = 100, message = "sellerCdivRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "sellerCdivRemark 는 300자 이내여야 합니다.")
     private String sellerCdivRemark;
 
     @Comment("PC 채널 적용여부 Y/N")
@@ -173,7 +173,7 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)")
     @Column(name = "visibility_targets", length = 200)
-    @Size(max = 100, message = "visibilityTargets 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "visibilityTargets 는 200자 이내여야 합니다.")
     private String visibilityTargets;
 
     @Comment("담당MD (sy_user.user_id)")

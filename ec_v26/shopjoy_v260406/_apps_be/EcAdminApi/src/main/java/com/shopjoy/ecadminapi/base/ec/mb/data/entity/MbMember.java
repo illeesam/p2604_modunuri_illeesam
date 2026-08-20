@@ -40,7 +40,7 @@ public class MbMember extends BaseEntity {
 
     @Comment("비밀번호 (bcrypt)")
     @Column(name = "login_pwd_hash", length = 255, nullable = false)
-    @Size(max = 100, message = "loginPwdHash 는 100자 이내여야 합니다.")
+    @Size(max = 255, message = "loginPwdHash 는 255자 이내여야 합니다.")
     private String loginPwdHash;
 
     @Comment("회원명")
@@ -109,12 +109,12 @@ public class MbMember extends BaseEntity {
 
     @Comment("주소")
     @Column(name = "member_addr", length = 200)
-    @Size(max = 100, message = "memberAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "memberAddr 는 200자 이내여야 합니다.")
     private String memberAddr;
 
     @Comment("상세주소")
     @Column(name = "member_addr_detail", length = 200)
-    @Size(max = 100, message = "memberAddrDetail 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "memberAddrDetail 는 200자 이내여야 합니다.")
     private String memberAddrDetail;
 
     @Comment("메모")

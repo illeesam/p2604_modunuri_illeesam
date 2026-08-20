@@ -86,7 +86,7 @@ public class PmSavePolicy extends BaseEntity {
 
     @Comment("공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)")
     @Column(name = "visibility_targets", length = 200)
-    @Size(max = 100, message = "visibilityTargets 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "visibilityTargets 는 200자 이내여야 합니다.")
     private String visibilityTargets;
 
     @Comment("판매업체 (sy_vendor.vendor_id)")

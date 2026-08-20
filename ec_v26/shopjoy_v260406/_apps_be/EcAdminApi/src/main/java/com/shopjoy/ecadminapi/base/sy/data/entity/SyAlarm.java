@@ -30,7 +30,7 @@ public class SyAlarm extends BaseEntity {
     @Comment("알림제목")
     @Column(name = "alarm_title", length = 200, nullable = false)
     @NotBlank(message = "알림 제목을 입력해주세요.")
-    @Size(max = 100, message = "알림 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "알림 제목은 200자 이내로 입력해주세요.")
     private String alarmTitle;
 
     @Comment("알림유형 (코드: ALARM_TYPE_CD)")

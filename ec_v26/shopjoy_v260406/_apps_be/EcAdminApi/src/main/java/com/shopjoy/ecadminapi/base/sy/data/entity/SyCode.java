@@ -55,12 +55,12 @@ public class SyCode extends BaseEntity {
 
     @Comment("허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식 — 상태 전이 제약이나 하위 코드 목록)")
     @Column(name = "child_code_values", length = 500)
-    @Size(max = 100, message = "childCodeValues 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "childCodeValues 는 500자 이내여야 합니다.")
     private String childCodeValues;
 
     @Comment("비고")
     @Column(name = "code_remark", length = 300)
-    @Size(max = 100, message = "codeRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "codeRemark 는 300자 이내여야 합니다.")
     private String codeRemark;
 
     @Comment("코드 트리 레벨 (1=루트, 2=중간, 3=리프 등). parent_code_value와 함께 다단 트리 구성")
@@ -69,7 +69,7 @@ public class SyCode extends BaseEntity {
 
     @Comment("코드별 부가 옵션 1 (스타일 색상 hex, 아이콘 클래스 등 자유 문자열)")
     @Column(name = "code_opt1", length = 200)
-    @Size(max = 100, message = "codeOpt1 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "codeOpt1 는 200자 이내여야 합니다.")
     private String codeOpt1;
 
 }

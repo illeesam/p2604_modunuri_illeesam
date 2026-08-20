@@ -42,12 +42,12 @@ public class CmBlog extends BaseEntity {
     @Comment("제목")
     @Column(name = "blog_title", length = 200, nullable = false)
     @NotBlank(message = "블로그 제목을 입력해주세요.")
-    @Size(max = 100, message = "블로그 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "블로그 제목은 200자 이내로 입력해주세요.")
     private String blogTitle;
 
     @Comment("요약 (미리보기, 검색결과용)")
     @Column(name = "blog_summary", length = 500)
-    @Size(max = 100, message = "blogSummary 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "blogSummary 는 500자 이내여야 합니다.")
     private String blogSummary;
 
     @Comment("본문 (HTML 에디터)")

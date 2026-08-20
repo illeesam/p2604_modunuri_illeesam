@@ -27,12 +27,12 @@ public class SyI18n extends BaseEntity {
 
     @Comment("다국어 키 (예: common.bt.save, error.FORBIDDEN)")
     @Column(name = "i18n_key", length = 200, nullable = false)
-    @Size(max = 100, message = "i18nKey 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "i18nKey 는 200자 이내여야 합니다.")
     private String i18nKey;
 
     @Comment("키 설명 (번역자 참고용)")
     @Column(name = "i18n_desc", length = 200)
-    @Size(max = 100, message = "i18nDesc 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "i18nDesc 는 200자 이내여야 합니다.")
     private String i18nDesc;
 
     @Comment("적용범위 (코드: I18N_SCOPE_CD — FO/BO/COMMON)")
@@ -51,22 +51,22 @@ public class SyI18n extends BaseEntity {
 
     @Comment("한국어 메시지 (플레이스홀더 {0},{1} 지원)")
     @Column(name = "i18n_msg_ko", length = 500, nullable = false)
-    @Size(max = 100, message = "i18nMsgKo 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "i18nMsgKo 는 500자 이내여야 합니다.")
     private String i18nMsgKo;
 
     @Comment("영어 메시지 (플레이스홀더 {0},{1} 지원)")
     @Column(name = "i18n_msg_en", length = 500)
-    @Size(max = 100, message = "i18nMsgEn 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "i18nMsgEn 는 500자 이내여야 합니다.")
     private String i18nMsgEn;
 
     @Comment("중국어 메시지 (플레이스홀더 {0},{1} 지원)")
     @Column(name = "i18n_msg_cn", length = 500)
-    @Size(max = 100, message = "i18nMsgCn 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "i18nMsgCn 는 500자 이내여야 합니다.")
     private String i18nMsgCn;
 
     @Comment("일본어 메시지 (플레이스홀더 {0},{1} 지원)")
     @Column(name = "i18n_msg_ja", length = 500)
-    @Size(max = 100, message = "i18nMsgJa 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "i18nMsgJa 는 500자 이내여야 합니다.")
     private String i18nMsgJa;
 
     @Comment("정렬순서")

@@ -33,7 +33,7 @@ public class SyNotice extends BaseEntity {
     @Comment("제목")
     @Column(name = "notice_title", length = 200, nullable = false)
     @NotBlank(message = "공지 제목을 입력해주세요.")
-    @Size(max = 100, message = "공지 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "공지 제목은 200자 이내로 입력해주세요.")
     private String noticeTitle;
 
     @Comment("공지유형 (코드: NOTICE_TYPE_CD)")

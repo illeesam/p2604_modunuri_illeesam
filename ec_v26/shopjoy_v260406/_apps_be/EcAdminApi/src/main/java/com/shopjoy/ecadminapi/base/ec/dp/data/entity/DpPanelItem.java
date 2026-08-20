@@ -49,7 +49,7 @@ public class DpPanelItem extends BaseEntity {
 
     @Comment("위젯타이틀")
     @Column(name = "widget_title", length = 200)
-    @Size(max = 100, message = "widgetTitle 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "widgetTitle 는 200자 이내여야 합니다.")
     private String widgetTitle;
 
     @Comment("위젯내용 (HTML 에디터)")
@@ -83,7 +83,7 @@ public class DpPanelItem extends BaseEntity {
 
     @Comment("공개대상 (코드: VISIBILITY_TARGETS, ^CODE^CODE^ 형식)")
     @Column(name = "visibility_targets", length = 200)
-    @Size(max = 100, message = "visibilityTargets 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "visibilityTargets 는 200자 이내여야 합니다.")
     private String visibilityTargets;
 
     @Comment("전시여부 (Y/N) - 배치로 자동 관리")

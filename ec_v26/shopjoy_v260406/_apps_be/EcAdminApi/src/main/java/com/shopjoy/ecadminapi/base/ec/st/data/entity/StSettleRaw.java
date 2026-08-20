@@ -99,7 +99,7 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("상품명 스냅샷")
     @Column(name = "prod_nm", length = 200)
-    @Size(max = 100, message = "prodNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "prodNm 는 200자 이내여야 합니다.")
     private String prodNm;
 
     @Comment("브랜드ID 스냅샷 (sy_brand.brand_id)")

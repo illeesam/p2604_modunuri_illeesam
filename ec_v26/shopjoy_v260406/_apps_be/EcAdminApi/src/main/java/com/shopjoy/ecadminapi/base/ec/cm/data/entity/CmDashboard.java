@@ -26,7 +26,7 @@ public class CmDashboard extends BaseEntity {
 
     @Comment("대시보드명")
     @Column(name = "dashboard_nm", length = 200, nullable = false)
-    @Size(max = 100, message = "dashboardNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "dashboardNm 는 200자 이내여야 합니다.")
     private String dashboardNm;
 
     @Comment("프론트 컴포넌트명 DashboardBoEc01 등")
@@ -61,21 +61,21 @@ public class CmDashboard extends BaseEntity {
 
     @Comment("공유 부서ID 목록 (^구분 예: ^DEPT001^DEPT002^)")
     @Column(name = "share_dept_id", length = 2000)
-    @Size(max = 100, message = "shareDeptId 는 100자 이내여야 합니다.")
+    @Size(max = 2000, message = "shareDeptId 는 2000자 이내여야 합니다.")
     private String shareDeptId;
 
     @Comment("공유 사용자ID 목록 (^구분 예: ^US001^US002^)")
     @Column(name = "share_user_ids", length = 2000)
-    @Size(max = 100, message = "shareUserIds 는 100자 이내여야 합니다.")
+    @Size(max = 2000, message = "shareUserIds 는 2000자 이내여야 합니다.")
     private String shareUserIds;
 
     @Comment("공유대상 업체ID 멀티값 (^V1^V2^)")
     @Column(name = "share_vendor_ids", length = 1000)
-    @Size(max = 100, message = "shareVendorIds 는 100자 이내여야 합니다.")
+    @Size(max = 1000, message = "shareVendorIds 는 1000자 이내여야 합니다.")
     private String shareVendorIds;
 
     @Comment("비고")
     @Column(name = "remark", length = 500)
-    @Size(max = 100, message = "remark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "remark 는 500자 이내여야 합니다.")
     private String remark;
 }

@@ -62,7 +62,7 @@ public class SyVendorUserRole extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "vendor_user_role_remark", length = 500)
-    @Size(max = 100, message = "vendorUserRoleRemark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "vendorUserRoleRemark 는 500자 이내여야 합니다.")
     private String vendorUserRoleRemark;
 
 }

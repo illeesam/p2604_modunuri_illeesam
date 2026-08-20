@@ -46,7 +46,7 @@ public class VwDpArea {
     private String areaTypeCd;
 
     @Column(name = "area_desc", length = 300)
-    @Size(max = 100, message = "areaDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "areaDesc 는 300자 이내여야 합니다.")
     private String areaDesc;
 
     @Column(name = "path_id", length = 21)
@@ -92,7 +92,7 @@ public class VwDpArea {
     private String uiNm;
 
     @Column(name = "ui_desc", length = 300)
-    @Size(max = 100, message = "uiDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "uiDesc 는 300자 이내여야 합니다.")
     private String uiDesc;
 
     @Column(name = "device_type_cd", length = 30)

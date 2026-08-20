@@ -255,7 +255,7 @@
   boUtil.bofLoadSiteOptions = async function () {
     if (_siteOptionsCache) return _siteOptionsCache;
     try {
-      const res = await coApiSvc.sySite.getSiteList();
+      const res = await coApiSvc.sySite.getSiteList({}, '공통', '사이트목록조회');
       _siteOptionsCache = (res.data?.data || []).map(s => ({ value: s.siteId, label: s.siteNm }));
     } catch (e) {
       console.warn('[boUtil.bofLoadSiteOptions] 사이트 목록 조회 실패:', e);

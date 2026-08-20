@@ -33,7 +33,7 @@ public class SyPath extends BaseEntity {
 
     @Comment("경로 라벨 (한글 표시명)")
     @Column(name = "path_label", length = 200, nullable = false)
-    @Size(max = 100, message = "pathLabel 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "pathLabel 는 200자 이내여야 합니다.")
     private String pathLabel;
 
     @Comment("동일 부모 내 정렬순서")
@@ -47,7 +47,7 @@ public class SyPath extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "path_remark", length = 500)
-    @Size(max = 100, message = "pathRemark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "pathRemark 는 500자 이내여야 합니다.")
     private String pathRemark;
 
 }

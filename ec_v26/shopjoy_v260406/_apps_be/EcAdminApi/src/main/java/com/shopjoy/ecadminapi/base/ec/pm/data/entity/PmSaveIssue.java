@@ -92,7 +92,7 @@ public class PmSaveIssue extends BaseEntity {
 
     @Comment("지급 메모")
     @Column(name = "save_memo", length = 300)
-    @Size(max = 100, message = "saveMemo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "saveMemo 는 300자 이내여야 합니다.")
     private String saveMemo;
 
 }

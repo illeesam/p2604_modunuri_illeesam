@@ -53,7 +53,7 @@ public class SyNoti extends BaseEntity {
 
     @Comment("알림 제목")
     @Column(name = "noti_title", length = 300, nullable = false)
-    @Size(max = 100, message = "notiTitle 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "notiTitle 는 300자 이내여야 합니다.")
     private String notiTitle;
 
     @Comment("알림 내용")

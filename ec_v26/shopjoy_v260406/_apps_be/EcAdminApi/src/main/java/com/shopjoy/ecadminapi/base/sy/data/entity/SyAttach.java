@@ -38,7 +38,7 @@ public class SyAttach extends BaseEntity {
 
     @Comment("원본 파일명")
     @Column(name = "file_nm", length = 300, nullable = false)
-    @Size(max = 100, message = "fileNm 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "fileNm 는 300자 이내여야 합니다.")
     private String fileNm;
 
     @Column(name = "file_size")
@@ -54,11 +54,11 @@ public class SyAttach extends BaseEntity {
 
     @Comment("저장된 파일명 (YYYYMMDD_hhmmss_seq_random.ext)")
     @Column(name = "stored_nm", length = 300)
-    @Size(max = 100, message = "storedNm 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "storedNm 는 300자 이내여야 합니다.")
     private String storedNm;
 
     @Column(name = "attach_url", length = 500)
-    @Size(max = 100, message = "attachUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "attachUrl 는 500자 이내여야 합니다.")
     private String attachUrl;
 
     @Column(name = "cdn_host", length = 100)
@@ -66,11 +66,11 @@ public class SyAttach extends BaseEntity {
     private String cdnHost;
 
     @Column(name = "cdn_img_url", length = 500)
-    @Size(max = 100, message = "cdnImgUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "cdnImgUrl 는 500자 이내여야 합니다.")
     private String cdnImgUrl;
 
     @Column(name = "cdn_thumb_url", length = 500)
-    @Size(max = 100, message = "cdnThumbUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "cdnThumbUrl 는 500자 이내여야 합니다.")
     private String cdnThumbUrl;
 
     @Comment("스토리지 타입 (LOCAL/AWS_S3/NCP_OBS)")
@@ -80,28 +80,28 @@ public class SyAttach extends BaseEntity {
 
     @Comment("파일 저장 경로 (정책: /cdn/{업무명}/YYYY/YYYYMM/YYYYMMDD/{파일명})")
     @Column(name = "storage_path", length = 500)
-    @Size(max = 100, message = "storagePath 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "storagePath 는 500자 이내여야 합니다.")
     private String storagePath;
 
     @Comment("실제 물리 저장 전체 경로 (서버 절대경로, 예: src/main/resources/static/cdn/attch/NOTICE_ATTACH/2026/202605/20260503/파일명.png)")
     @Column(name = "physical_path", length = 700)
-    @Size(max = 100, message = "physicalPath 는 100자 이내여야 합니다.")
+    @Size(max = 700, message = "physicalPath 는 700자 이내여야 합니다.")
     private String physicalPath;
 
     @Column(name = "thumb_file_nm", length = 300)
-    @Size(max = 100, message = "thumbFileNm 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "thumbFileNm 는 300자 이내여야 합니다.")
     private String thumbFileNm;
 
     @Column(name = "thumb_stored_nm", length = 300)
-    @Size(max = 100, message = "thumbStoredNm 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "thumbStoredNm 는 300자 이내여야 합니다.")
     private String thumbStoredNm;
 
     @Column(name = "thumb_url", length = 500)
-    @Size(max = 100, message = "thumbUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbUrl 는 500자 이내여야 합니다.")
     private String thumbUrl;
 
     @Column(name = "thumb_cdn_url", length = 500)
-    @Size(max = 100, message = "thumbCdnUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbCdnUrl 는 500자 이내여야 합니다.")
     private String thumbCdnUrl;
 
     @Comment("썸네일 생성 여부 (동영상은 필수 Y, 이미지는 선택)")
@@ -113,7 +113,7 @@ public class SyAttach extends BaseEntity {
     private Integer sortOrd;
 
     @Column(name = "attach_memo", length = 300)
-    @Size(max = 100, message = "attachMemo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "attachMemo 는 300자 이내여야 합니다.")
     private String attachMemo;
 
 }

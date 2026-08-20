@@ -43,7 +43,7 @@ public class SyExceldown extends BaseEntity {
 
     @Comment("다운로드 실행 backend API 경로 (예: /api/bo/excel/memberLoginLog/excel)")
     @Column(name = "api_url", length = 300)
-    @Size(max = 100, message = "apiUrl 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "apiUrl 는 300자 이내여야 합니다.")
     private String apiUrl;
 
     @Comment("HTTP 메서드 (GET/POST)")
@@ -86,7 +86,7 @@ public class SyExceldown extends BaseEntity {
 
     @Comment("대표(첫) 파일명 — 분할 시 1/N 파일")
     @Column(name = "file_nm", length = 300)
-    @Size(max = 100, message = "fileNm 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "fileNm 는 300자 이내여야 합니다.")
     private String fileNm;
 
     @Comment("대표(첫) 파일 크기 (byte)")

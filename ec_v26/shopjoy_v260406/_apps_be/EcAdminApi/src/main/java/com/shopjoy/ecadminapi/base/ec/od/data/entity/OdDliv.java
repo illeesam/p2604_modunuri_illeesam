@@ -74,12 +74,12 @@ public class OdDliv extends BaseEntity {
 
     @Comment("주소")
     @Column(name = "recv_addr", length = 200)
-    @Size(max = 100, message = "recvAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "recvAddr 는 200자 이내여야 합니다.")
     private String recvAddr;
 
     @Comment("상세주소")
     @Column(name = "recv_addr_detail", length = 200)
-    @Size(max = 100, message = "recvAddrDetail 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "recvAddrDetail 는 200자 이내여야 합니다.")
     private String recvAddrDetail;
 
     @Comment("입출고구분 (코드: DLIV_DIV_CD — OUTBOUND/INBOUND)")
@@ -183,12 +183,12 @@ public class OdDliv extends BaseEntity {
 
     @Comment("결재 대상명")
     @Column(name = "appr_target_nm", length = 200)
-    @Size(max = 100, message = "apprTargetNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "apprTargetNm 는 200자 이내여야 합니다.")
     private String apprTargetNm;
 
     @Comment("사유/메모")
     @Column(name = "appr_reason", length = 500)
-    @Size(max = 100, message = "apprReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "apprReason 는 500자 이내여야 합니다.")
     private String apprReason;
 
     @Comment("결재 요청자 (sy_user.user_id)")

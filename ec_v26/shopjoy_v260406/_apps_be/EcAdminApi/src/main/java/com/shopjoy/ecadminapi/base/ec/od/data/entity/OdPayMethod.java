@@ -48,7 +48,7 @@ public class OdPayMethod extends BaseEntity {
 
     @Comment("결제 게이트웨이 발급 키/토큰")
     @Column(name = "pay_key_no", length = 200)
-    @Size(max = 100, message = "payKeyNo 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "payKeyNo 는 200자 이내여야 합니다.")
     private String payKeyNo;
 
     @Comment("기본결제수단여부 Y/N")

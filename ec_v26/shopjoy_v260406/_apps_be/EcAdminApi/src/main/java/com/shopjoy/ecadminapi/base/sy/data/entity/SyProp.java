@@ -42,7 +42,7 @@ public class SyProp extends BaseEntity {
 
     @Comment("표시명")
     @Column(name = "prop_label", length = 200, nullable = false)
-    @Size(max = 100, message = "propLabel 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "propLabel 는 200자 이내여야 합니다.")
     private String propLabel;
 
     @Comment("값 타입 (코드: PROP_TYPE_CD — STRING/NUMBER/BOOLEAN/JSON)")
@@ -61,7 +61,7 @@ public class SyProp extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "prop_remark", length = 500)
-    @Size(max = 100, message = "propRemark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "propRemark 는 500자 이내여야 합니다.")
     private String propRemark;
 
     @Comment("적용 프로파일 (^local^dev^prod^ 형식, 비어있으면 전체 환경 적용)")

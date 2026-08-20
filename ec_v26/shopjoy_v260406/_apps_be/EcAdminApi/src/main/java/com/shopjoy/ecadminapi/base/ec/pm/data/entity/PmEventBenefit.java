@@ -48,7 +48,7 @@ public class PmEventBenefit extends BaseEntity {
 
     @Comment("조건 설명")
     @Column(name = "condition_desc", length = 200)
-    @Size(max = 100, message = "conditionDesc 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "conditionDesc 는 200자 이내여야 합니다.")
     private String conditionDesc;
 
     @Comment("혜택 값")

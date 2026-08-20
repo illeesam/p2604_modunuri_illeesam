@@ -31,7 +31,7 @@ public class MbDeviceToken extends BaseEntity {
 
     @Comment("디바이스 토큰 키")
     @Column(name = "device_token", length = 200, nullable = false)
-    @Size(max = 100, message = "deviceToken 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "deviceToken 는 200자 이내여야 합니다.")
     private String deviceToken;
 
 

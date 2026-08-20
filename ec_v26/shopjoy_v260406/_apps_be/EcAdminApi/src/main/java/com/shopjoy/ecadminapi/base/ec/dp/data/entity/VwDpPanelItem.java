@@ -41,7 +41,7 @@ public class VwDpPanelItem {
     private String widgetTypeCd;
 
     @Column(name = "widget_title", length = 200)
-    @Size(max = 100, message = "widgetTitle 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "widgetTitle 는 200자 이내여야 합니다.")
     private String widgetTitle;
 
     @Column(name = "widget_content", columnDefinition = "TEXT")
@@ -68,7 +68,7 @@ public class VwDpPanelItem {
     private String widgetConfigJson;
 
     @Column(name = "visibility_targets", length = 200)
-    @Size(max = 100, message = "visibilityTargets 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "visibilityTargets 는 200자 이내여야 합니다.")
     private String visibilityTargets;
 
     @Column(name = "disp_yn", length = 1)

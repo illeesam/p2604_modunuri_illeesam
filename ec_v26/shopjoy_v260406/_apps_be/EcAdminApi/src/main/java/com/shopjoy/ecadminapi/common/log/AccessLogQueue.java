@@ -124,7 +124,13 @@ public class AccessLogQueue {
         try {
             repository.save(entry);
         } catch (Exception e) {
-            System.err.println("[AccessLog] DB 저장 실패: " + e.getMessage());
+            /* e.getMessage() 는 "Could not commit JPA transaction" 같은 트랜잭션 매니저의
+               포장 메시지만 나온다 — 실제 원인(제약조건 위반 등)은 getCause() 체인에 있다.
+               root cause 까지 같이 찍어야 다음에 이 로그만 보고 원인을 바로 알 수 있다. */
+            Throwable root = e;
+            while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+            System.err.println("[AccessLog] DB 저장 실패: " + e.getMessage()
+                + (root != e ? " | root cause: " + root : ""));
         }
     }
 

@@ -48,7 +48,7 @@ public class PdReviewAttach extends BaseEntity {
 
     @Comment("동영상 썸네일URL (이미지는 sy_attach.url 사용)")
     @Column(name = "thumb_url", length = 500)
-    @Size(max = 100, message = "thumbUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbUrl 는 500자 이내여야 합니다.")
     private String thumbUrl;
 
     @Comment("정렬순서")

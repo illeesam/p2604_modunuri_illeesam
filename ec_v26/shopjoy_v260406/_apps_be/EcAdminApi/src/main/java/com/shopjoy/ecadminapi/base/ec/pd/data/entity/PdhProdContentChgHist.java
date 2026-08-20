@@ -56,7 +56,7 @@ public class PdhProdContentChgHist extends BaseEntity {
 
     @Comment("변경사유 (예: 내용 오류 수정, 계절 업데이트)")
     @Column(name = "chg_reason", length = 200)
-    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "chgReason 는 200자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("처리자 (sy_user.user_id)")

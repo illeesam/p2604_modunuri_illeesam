@@ -66,7 +66,7 @@ public class SyRole extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "role_remark", length = 300)
-    @Size(max = 100, message = "roleRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "roleRemark 는 300자 이내여야 합니다.")
     private String roleRemark;
 
     @Comment("점(.) 구분 표시경로 (트리 빌드용)")

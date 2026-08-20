@@ -54,7 +54,7 @@ public class DpArea extends BaseEntity {
 
     @Comment("영역설명")
     @Column(name = "area_desc", length = 300)
-    @Size(max = 100, message = "areaDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "areaDesc 는 300자 이내여야 합니다.")
     private String areaDesc;
 
     @Comment("점(.) 구분 표시경로")

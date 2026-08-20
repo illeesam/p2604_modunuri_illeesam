@@ -58,12 +58,12 @@ public class MbMemberAddr extends BaseEntity {
 
     @Comment("기본주소")
     @Column(name = "addr", length = 200)
-    @Size(max = 100, message = "addr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "addr 는 200자 이내여야 합니다.")
     private String addr;
 
     @Comment("상세주소")
     @Column(name = "addr_detail", length = 200)
-    @Size(max = 100, message = "addrDetail 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "addrDetail 는 200자 이내여야 합니다.")
     private String addrDetail;
 
     @Comment("기본배송지여부 Y/N")

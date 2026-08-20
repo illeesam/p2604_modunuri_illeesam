@@ -28,7 +28,7 @@ public class CmChatt extends BaseEntity {
 
     @Comment("채팅주제")
     @Column(name = "subject", length = 200)
-    @Size(max = 100, message = "subject 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "subject 는 200자 이내여야 합니다.")
     private String subject;
 
     @Comment("상태 (PENDING/OPEN/CLOSED)")
@@ -56,6 +56,6 @@ public class CmChatt extends BaseEntity {
 
     @Comment("종료사유")
     @Column(name = "close_reason", length = 200)
-    @Size(max = 100, message = "closeReason 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "closeReason 는 200자 이내여야 합니다.")
     private String closeReason;
 }

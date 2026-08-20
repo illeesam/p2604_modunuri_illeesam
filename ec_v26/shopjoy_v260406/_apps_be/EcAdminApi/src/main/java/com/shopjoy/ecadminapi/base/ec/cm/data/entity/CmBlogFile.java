@@ -33,17 +33,17 @@ public class CmBlogFile extends BaseEntity {
 
     @Comment("원본 이미지 URL")
     @Column(name = "img_url", length = 500, nullable = false)
-    @Size(max = 100, message = "imgUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "imgUrl 는 500자 이내여야 합니다.")
     private String imgUrl;
 
     @Comment("썸네일 이미지 URL")
     @Column(name = "thumb_url", length = 500)
-    @Size(max = 100, message = "thumbUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbUrl 는 500자 이내여야 합니다.")
     private String thumbUrl;
 
     @Comment("이미지 대체텍스트")
     @Column(name = "img_alt_text", length = 200)
-    @Size(max = 100, message = "imgAltText 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "imgAltText 는 200자 이내여야 합니다.")
     private String imgAltText;
 
     @Comment("정렬순서")

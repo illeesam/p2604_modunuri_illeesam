@@ -48,7 +48,7 @@ public class PdProdSetItem extends BaseEntity {
 
     @Comment("구성품 표시명 (예: 머그컵, 접시 2p)")
     @Column(name = "item_nm", length = 200, nullable = false)
-    @Size(max = 100, message = "itemNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "itemNm 는 200자 이내여야 합니다.")
     private String itemNm;
 
     @Comment("구성 수량")
@@ -57,7 +57,7 @@ public class PdProdSetItem extends BaseEntity {
 
     @Comment("구성품 부가 설명 (소재·용량·색상 등)")
     @Column(name = "item_desc", length = 300)
-    @Size(max = 100, message = "itemDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "itemDesc 는 300자 이내여야 합니다.")
     private String itemDesc;
 
     @Comment("노출 정렬 순서")

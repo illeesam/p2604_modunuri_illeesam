@@ -48,12 +48,12 @@ public class DpWidget extends BaseEntity {
 
     @Comment("위젯설명")
     @Column(name = "widget_desc", length = 300)
-    @Size(max = 100, message = "widgetDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "widgetDesc 는 300자 이내여야 합니다.")
     private String widgetDesc;
 
     @Comment("위젯타이틀")
     @Column(name = "widget_title", length = 200)
-    @Size(max = 100, message = "widgetTitle 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "widgetTitle 는 200자 이내여야 합니다.")
     private String widgetTitle;
 
     @Comment("위젯내용 (HTML 에디터)")
@@ -78,7 +78,7 @@ public class DpWidget extends BaseEntity {
 
     @Comment("미리보기 썸네일URL")
     @Column(name = "thumbnail_url", length = 500)
-    @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbnailUrl 는 500자 이내여야 합니다.")
     private String thumbnailUrl;
 
     @Comment("정렬순서")

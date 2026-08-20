@@ -39,12 +39,12 @@ public class SyVendorContent extends BaseEntity {
 
     @Comment("제목")
     @Column(name = "vendor_content_title", length = 200)
-    @Size(max = 100, message = "vendorContentTitle 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "vendorContentTitle 는 200자 이내여야 합니다.")
     private String vendorContentTitle;
 
     @Comment("부제")
     @Column(name = "vendor_content_subtitle", length = 300)
-    @Size(max = 100, message = "vendorContentSubtitle 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "vendorContentSubtitle 는 300자 이내여야 합니다.")
     private String vendorContentSubtitle;
 
     @Comment("본문 (HTML)")
@@ -54,17 +54,17 @@ public class SyVendorContent extends BaseEntity {
 
     @Comment("썸네일 URL")
     @Column(name = "thumb_url", length = 500)
-    @Size(max = 100, message = "thumbUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbUrl 는 500자 이내여야 합니다.")
     private String thumbUrl;
 
     @Comment("대표 이미지 URL")
     @Column(name = "image_url", length = 500)
-    @Size(max = 100, message = "imageUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "imageUrl 는 500자 이내여야 합니다.")
     private String imageUrl;
 
     @Comment("링크 URL")
     @Column(name = "link_url", length = 500)
-    @Size(max = 100, message = "linkUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "linkUrl 는 500자 이내여야 합니다.")
     private String linkUrl;
 
 
@@ -101,7 +101,7 @@ public class SyVendorContent extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "vendor_content_remark", length = 500)
-    @Size(max = 100, message = "vendorContentRemark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "vendorContentRemark 는 500자 이내여야 합니다.")
     private String vendorContentRemark;
 
 }

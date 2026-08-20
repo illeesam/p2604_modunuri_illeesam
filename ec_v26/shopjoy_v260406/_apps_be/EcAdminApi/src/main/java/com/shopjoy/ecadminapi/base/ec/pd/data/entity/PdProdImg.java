@@ -68,7 +68,7 @@ public class PdProdImg extends BaseEntity {
 
     @Comment("이미지 대체텍스트 (alt 속성, SEO/접근성)")
     @Column(name = "img_alt_text", length = 200)
-    @Size(max = 100, message = "imgAltText 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "imgAltText 는 200자 이내여야 합니다.")
     private String imgAltText;
 
     @Comment("정렬순서")

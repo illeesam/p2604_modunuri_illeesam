@@ -138,7 +138,12 @@ public class ErrorLogQueue {
         try {
             repository.save(entry);
         } catch (Exception e) {
-            System.err.println("[ErrorLog] DB 저장 실패: " + e.getMessage());
+            /* e.getMessage() 는 트랜잭션 매니저의 포장 메시지만 나온다 — 실제 원인은
+               getCause() 체인에 있다. AccessLogQueue.save() 와 동일 패턴(2026-08-20). */
+            Throwable root = e;
+            while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+            System.err.println("[ErrorLog] DB 저장 실패: " + e.getMessage()
+                + (root != e ? " | root cause: " + root : ""));
         }
     }
 

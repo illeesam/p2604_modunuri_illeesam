@@ -34,7 +34,7 @@ public class SyUser extends BaseEntity {
 
     @Comment("비밀번호 (bcrypt)")
     @Column(name = "login_pwd_hash", length = 255, nullable = false)
-    @Size(max = 100, message = "loginPwdHash 는 100자 이내여야 합니다.")
+    @Size(max = 255, message = "loginPwdHash 는 255자 이내여야 합니다.")
     private String loginPwdHash;
 
     @Comment("사용자명")

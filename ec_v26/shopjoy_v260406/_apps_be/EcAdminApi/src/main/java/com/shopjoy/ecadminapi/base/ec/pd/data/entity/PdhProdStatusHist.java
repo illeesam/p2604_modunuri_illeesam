@@ -44,7 +44,7 @@ public class PdhProdStatusHist extends BaseEntity {
 
     @Comment("처리메모")
     @Column(name = "memo", length = 300)
-    @Size(max = 100, message = "memo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "memo 는 300자 이내여야 합니다.")
     private String memo;
 
     @Comment("처리자 (sy_user.user_id)")

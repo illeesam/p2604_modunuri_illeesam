@@ -42,7 +42,7 @@ public class SyMenu extends BaseEntity {
 
     @Comment("메뉴URL")
     @Column(name = "menu_url", length = 200)
-    @Size(max = 100, message = "menuUrl 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "menuUrl 는 200자 이내여야 합니다.")
     private String menuUrl;
 
     @Comment("메뉴유형 (코드: MENU_TYPE_CD — PAGE/FOLDER/LINK)")
@@ -66,7 +66,7 @@ public class SyMenu extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "menu_remark", length = 300)
-    @Size(max = 100, message = "menuRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "menuRemark 는 300자 이내여야 합니다.")
     private String menuRemark;
 
 }

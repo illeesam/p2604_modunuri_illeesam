@@ -96,12 +96,12 @@ public class OdRefund extends BaseEntity {
 
     @Comment("환불 사유")
     @Column(name = "refund_reason", length = 500)
-    @Size(max = 100, message = "refundReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "refundReason 는 500자 이내여야 합니다.")
     private String refundReason;
 
     @Comment("관리 메모")
     @Column(name = "memo", length = 300)
-    @Size(max = 100, message = "memo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "memo 는 300자 이내여야 합니다.")
     private String memo;
 
 }

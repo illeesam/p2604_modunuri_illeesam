@@ -41,17 +41,17 @@ public class SySite extends BaseEntity {
 
     @Comment("도메인")
     @Column(name = "site_domain", length = 200)
-    @Size(max = 100, message = "siteDomain 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "siteDomain 는 200자 이내여야 합니다.")
     private String siteDomain;
 
     @Comment("로고URL")
     @Column(name = "logo_url", length = 500)
-    @Size(max = 100, message = "logoUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "logoUrl 는 500자 이내여야 합니다.")
     private String logoUrl;
 
     @Comment("파비콘URL")
     @Column(name = "favicon_url", length = 500)
-    @Size(max = 100, message = "faviconUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "faviconUrl 는 500자 이내여야 합니다.")
     private String faviconUrl;
 
     @Comment("사이트설명")
@@ -76,7 +76,7 @@ public class SySite extends BaseEntity {
 
     @Comment("주소")
     @Column(name = "site_address", length = 300)
-    @Size(max = 100, message = "siteAddress 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "siteAddress 는 300자 이내여야 합니다.")
     private String siteAddress;
 
     @Comment("사업자번호")

@@ -44,12 +44,12 @@ public class CmhPushLog extends BaseEntity {
 
     @Comment("수신처 (이메일/전화번호/디바이스토큰)")
     @Column(name = "recv_addr", length = 200, nullable = false)
-    @Size(max = 100, message = "recvAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "recvAddr 는 200자 이내여야 합니다.")
     private String recvAddr;
 
     @Comment("발송 제목")
     @Column(name = "push_log_title", length = 200)
-    @Size(max = 100, message = "pushLogTitle 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "pushLogTitle 는 200자 이내여야 합니다.")
     private String pushLogTitle;
 
     @Comment("발송 내용")
@@ -64,7 +64,7 @@ public class CmhPushLog extends BaseEntity {
 
     @Comment("실패 사유")
     @Column(name = "fail_reason", length = 500)
-    @Size(max = 100, message = "failReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "failReason 는 500자 이내여야 합니다.")
     private String failReason;
 
     @Comment("발송일시")

@@ -88,12 +88,12 @@ public class PdDlivTmplt extends BaseEntity {
 
     @Comment("반품지 주소")
     @Column(name = "return_addr", length = 200)
-    @Size(max = 100, message = "returnAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "returnAddr 는 200자 이내여야 합니다.")
     private String returnAddr;
 
     @Comment("반품지 상세주소")
     @Column(name = "return_addr_detail", length = 200)
-    @Size(max = 100, message = "returnAddrDetail 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "returnAddrDetail 는 200자 이내여야 합니다.")
     private String returnAddrDetail;
 
     @Comment("반품지 전화번호")

@@ -44,13 +44,13 @@ public class PmEvent extends BaseEntity {
 
     @Comment("배너이미지URL")
     @Column(name = "img_url", length = 500)
-    @Size(max = 100, message = "imgUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "imgUrl 는 500자 이내여야 합니다.")
     private String imgUrl;
 
     @Comment("이벤트 제목")
     @Column(name = "event_title", length = 200)
     @NotBlank(message = "이벤트 제목을 입력해주세요.")
-    @Size(max = 100, message = "이벤트 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "이벤트 제목은 200자 이내로 입력해주세요.")
     private String eventTitle;
 
     @Comment("이벤트 상세내용")

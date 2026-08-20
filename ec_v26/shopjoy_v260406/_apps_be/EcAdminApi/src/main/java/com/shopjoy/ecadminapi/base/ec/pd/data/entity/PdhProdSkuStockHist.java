@@ -54,7 +54,7 @@ public class PdhProdSkuStockHist {
 
     @Comment("변동사유 상세")
     @Column(name = "chg_reason", length = 200)
-    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "chgReason 는 200자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("연관 주문상품ID (od_order_item.order_item_id, SALE/RETURN/EXCHANGE/CLAIM 시)")

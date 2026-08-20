@@ -48,7 +48,7 @@ public class SyContact extends BaseEntity {
     @Comment("제목")
     @Column(name = "contact_title", length = 200, nullable = false)
     @NotBlank(message = "문의 제목을 입력해주세요.")
-    @Size(max = 100, message = "문의 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "문의 제목은 200자 이내로 입력해주세요.")
     private String contactTitle;
 
     @Comment("문의내용")

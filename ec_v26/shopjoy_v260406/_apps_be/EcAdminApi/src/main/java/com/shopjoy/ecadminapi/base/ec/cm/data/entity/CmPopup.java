@@ -90,17 +90,17 @@ public class CmPopup extends BaseEntity {
 
     @Comment("LEFT JOIN 절. 라벨 조인용. 예: LEFT JOIN SyDept b ON b.deptId = a.deptId (드라이빙 별칭은 항상 a)")
     @Column(name = "join_clause", length = 500)
-    @Size(max = 100, message = "joinClause 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "joinClause 는 500자 이내여야 합니다.")
     private String joinClause;
 
     @Comment("기본 정렬 (JPQL ORDER BY 내용)")
     @Column(name = "order_by", length = 200)
-    @Size(max = 100, message = "orderBy 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "orderBy 는 200자 이내여야 합니다.")
     private String orderBy;
 
     @Comment("고정 조건 (JPQL WHERE 조각)")
     @Column(name = "base_where", length = 500)
-    @Size(max = 100, message = "baseWhere 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "baseWhere 는 500자 이내여야 합니다.")
     private String baseWhere;
 
     @Comment("다중선택 여부 (Y/N)")
@@ -138,11 +138,11 @@ public class CmPopup extends BaseEntity {
 
     @Comment("이 팝업을 사용하는 화면 파일명 나열 (영향 범위 확인용)")
     @Column(name = "apply_ui_memo", length = 500)
-    @Size(max = 100, message = "applyUiMemo 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "applyUiMemo 는 500자 이내여야 합니다.")
     private String applyUiMemo;
 
     @Comment("비고")
     @Column(name = "remark", length = 500)
-    @Size(max = 100, message = "remark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "remark 는 500자 이내여야 합니다.")
     private String remark;
 }

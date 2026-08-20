@@ -46,7 +46,7 @@ public class VwDpPanel {
     private String pathId;
 
     @Column(name = "visibility_targets", length = 200)
-    @Size(max = 100, message = "visibilityTargets 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "visibilityTargets 는 200자 이내여야 합니다.")
     private String visibilityTargets;
 
     @Column(name = "use_yn", length = 1)
@@ -100,7 +100,7 @@ public class VwDpPanel {
     private String areaNm;
 
     @Column(name = "area_desc", length = 300)
-    @Size(max = 100, message = "areaDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "areaDesc 는 300자 이내여야 합니다.")
     private String areaDesc;
 
     @Column(name = "ui_id", length = 21)
@@ -122,6 +122,6 @@ public class VwDpPanel {
     private String uiNm;
 
     @Column(name = "ui_desc", length = 300)
-    @Size(max = 100, message = "uiDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "uiDesc 는 300자 이내여야 합니다.")
     private String uiDesc;
 }

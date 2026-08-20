@@ -74,12 +74,12 @@ public class SyVendor extends BaseEntity {
 
     @Comment("주소")
     @Column(name = "vendor_addr", length = 200)
-    @Size(max = 100, message = "vendorAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "vendorAddr 는 200자 이내여야 합니다.")
     private String vendorAddr;
 
     @Comment("상세주소")
     @Column(name = "vendor_addr_detail", length = 200)
-    @Size(max = 100, message = "vendorAddrDetail 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "vendorAddrDetail 는 200자 이내여야 합니다.")
     private String vendorAddrDetail;
 
     @Comment("대표 전화")
@@ -99,7 +99,7 @@ public class SyVendor extends BaseEntity {
 
     @Comment("홈페이지")
     @Column(name = "vendor_homepage", length = 200)
-    @Size(max = 100, message = "vendorHomepage 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "vendorHomepage 는 200자 이내여야 합니다.")
     private String vendorHomepage;
 
     @Comment("은행명")
@@ -119,7 +119,7 @@ public class SyVendor extends BaseEntity {
 
     @Comment("판매/배송업체등록증 첨부 URL")
     @Column(name = "vendor_reg_url", length = 500)
-    @Size(max = 100, message = "vendorRegUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "vendorRegUrl 는 500자 이내여야 합니다.")
     private String vendorRegUrl;
 
     @Comment("개업일자")

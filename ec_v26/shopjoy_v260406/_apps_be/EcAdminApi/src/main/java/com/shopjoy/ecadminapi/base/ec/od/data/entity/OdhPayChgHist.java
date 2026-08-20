@@ -54,7 +54,7 @@ public class OdhPayChgHist extends BaseEntity {
 
     @Comment("변경 사유 (예: PG 승인 완료, 수동 환불 등)")
     @Column(name = "chg_reason", length = 300)
-    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "chgReason 는 300자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("PG 응답 데이터 (JSON)")
@@ -82,7 +82,7 @@ public class OdhPayChgHist extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "memo", length = 300)
-    @Size(max = 100, message = "memo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "memo 는 300자 이내여야 합니다.")
     private String memo;
 
 }

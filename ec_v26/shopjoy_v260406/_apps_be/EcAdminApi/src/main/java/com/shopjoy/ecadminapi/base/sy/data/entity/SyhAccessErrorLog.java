@@ -30,19 +30,22 @@ public class SyhAccessErrorLog {
     @Size(max = 10, message = "reqMethod 는 10자 이내여야 합니다.")
     private String reqMethod;
 
+    /* @Size 는 @Column length 와 항상 일치시킨다 — 아래 여러 필드가 컬럼보다 좁은 @Size(max=100)
+       으로 박혀 있어 100자 넘는 값이 오면 ConstraintViolationException 으로 커밋이 실패했다
+       (SyhAccessLog 의 동일 패턴을 여기서도 정정, 2026-08-20). */
     @Comment("Host 헤더 값")
     @Column(name = "req_host", length = 200)
-    @Size(max = 100, message = "reqHost 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "reqHost 는 200자 이내여야 합니다.")
     private String reqHost;
 
     @Comment("요청 URI 경로")
     @Column(name = "req_path", length = 500)
-    @Size(max = 100, message = "reqPath 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "reqPath 는 500자 이내여야 합니다.")
     private String reqPath;
 
     @Comment("쿼리 파라미터 문자열")
     @Column(name = "req_query", length = 1000)
-    @Size(max = 100, message = "reqQuery 는 100자 이내여야 합니다.")
+    @Size(max = 1000, message = "reqQuery 는 1000자 이내여야 합니다.")
     private String reqQuery;
 
     @Comment("클라이언트 실제 IP (X-Forwarded-For 우선)")
@@ -52,7 +55,7 @@ public class SyhAccessErrorLog {
 
     @Comment("User-Agent")
     @Column(name = "req_ua", length = 500)
-    @Size(max = 100, message = "reqUa 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "reqUa 는 500자 이내여야 합니다.")
     private String reqUa;
 
     // ── 인증 정보 ────────────────────────────────────────
@@ -94,7 +97,7 @@ public class SyhAccessErrorLog {
     // ── 에러 정보 ────────────────────────────────────────
     @Comment("예외 클래스 FQCN")
     @Column(name = "error_type", length = 300)
-    @Size(max = 100, message = "errorType 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "errorType 는 300자 이내여야 합니다.")
     private String errorType;
 
     @Comment("예외 메시지")
@@ -109,19 +112,19 @@ public class SyhAccessErrorLog {
 
     // ── X-헤더 (클라이언트 호출 추적) ────────────────────
     @Column(name = "ui_nm", length = 200)
-    @Size(max = 100, message = "uiNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "uiNm 는 200자 이내여야 합니다.")
     private String uiNm;
 
     @Column(name = "cmd_nm", length = 200)
-    @Size(max = 100, message = "cmdNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "cmdNm 는 200자 이내여야 합니다.")
     private String cmdNm;
 
     @Column(name = "file_nm", length = 200)
-    @Size(max = 100, message = "fileNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "fileNm 는 200자 이내여야 합니다.")
     private String fileNm;
 
     @Column(name = "func_nm", length = 200)
-    @Size(max = 100, message = "funcNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "funcNm 는 200자 이내여야 합니다.")
     private String funcNm;
 
     @Column(name = "line_no", length = 10)
@@ -150,7 +153,7 @@ public class SyhAccessErrorLog {
 
     @Comment("로거 클래스 이름")
     @Column(name = "logger_nm", length = 200)
-    @Size(max = 100, message = "loggerNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "loggerNm 는 200자 이내여야 합니다.")
     private String loggerNm;
 
     // ── 시각 ─────────────────────────────────────────────

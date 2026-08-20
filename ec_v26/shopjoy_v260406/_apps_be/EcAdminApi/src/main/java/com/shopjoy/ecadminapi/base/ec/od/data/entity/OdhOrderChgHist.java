@@ -54,7 +54,7 @@ public class OdhOrderChgHist extends BaseEntity {
 
     @Comment("변경사유")
     @Column(name = "chg_reason", length = 300)
-    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "chgReason 는 300자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("처리자 (sy_user.user_id)")

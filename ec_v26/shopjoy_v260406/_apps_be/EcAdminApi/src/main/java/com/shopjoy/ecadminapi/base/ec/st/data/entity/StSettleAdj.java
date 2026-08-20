@@ -42,7 +42,7 @@ public class StSettleAdj extends BaseEntity {
 
     @Comment("조정 사유")
     @Column(name = "adj_reason", length = 200, nullable = false)
-    @Size(max = 100, message = "adjReason 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "adjReason 는 200자 이내여야 합니다.")
     private String adjReason;
 
     @Comment("메모")

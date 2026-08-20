@@ -47,7 +47,7 @@ public class PmPlanItem extends BaseEntity {
 
     @Comment("항목 메모 (특가/한정수량 등)")
     @Column(name = "plan_item_memo", length = 500)
-    @Size(max = 100, message = "planItemMemo 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "planItemMemo 는 500자 이내여야 합니다.")
     private String planItemMemo;
 
 }

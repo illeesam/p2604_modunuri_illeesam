@@ -53,7 +53,7 @@ public class MbhMemberTokenLog extends BaseEntity {
 
     @Comment("토큰값 (SHA-256 해시 저장 권장)")
     @Column(name = "access_token", length = 512, nullable = false)
-    @Size(max = 100, message = "accessToken 는 100자 이내여야 합니다.")
+    @Size(max = 512, message = "accessToken 는 512자 이내여야 합니다.")
     private String accessToken;
 
     @Comment("토큰 만료일시")
@@ -62,12 +62,12 @@ public class MbhMemberTokenLog extends BaseEntity {
 
     @Comment("갱신 전 토큰 해시 (REFRESH 액션 시)")
     @Column(name = "prev_token", length = 512)
-    @Size(max = 100, message = "prevToken 는 100자 이내여야 합니다.")
+    @Size(max = 512, message = "prevToken 는 512자 이내여야 합니다.")
     private String prevToken;
 
     @Comment("리푸레쉬 토큰")
     @Column(name = "refresh_token", length = 512)
-    @Size(max = 100, message = "refreshToken 는 100자 이내여야 합니다.")
+    @Size(max = 512, message = "refreshToken 는 512자 이내여야 합니다.")
     private String refreshToken;
 
     @Comment("IP주소")
@@ -77,12 +77,12 @@ public class MbhMemberTokenLog extends BaseEntity {
 
     @Comment("User-Agent")
     @Column(name = "device_info", length = 200)
-    @Size(max = 100, message = "deviceInfo 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "deviceInfo 는 200자 이내여야 합니다.")
     private String deviceInfo;
 
     @Comment("폐기 사유 (LOGOUT/FORCE/EXPIRED 등)")
     @Column(name = "revoke_reason_cd", length = 200)
-    @Size(max = 100, message = "revokeReasonCd 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "revokeReasonCd 는 200자 이내여야 합니다.")
     private String revokeReasonCd;
 
     @Comment("액세스 토큰 만료일시")
@@ -91,12 +91,12 @@ public class MbhMemberTokenLog extends BaseEntity {
 
     @Comment("화면명 (X-UI-Nm 헤더)")
     @Column(name = "ui_nm", length = 200)
-    @Size(max = 100, message = "uiNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "uiNm 는 200자 이내여야 합니다.")
     private String uiNm;
 
     @Comment("기능명 (X-Cmd-Nm 헤더)")
     @Column(name = "cmd_nm", length = 200)
-    @Size(max = 100, message = "cmdNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "cmdNm 는 200자 이내여야 합니다.")
     private String cmdNm;
 
 }

@@ -49,27 +49,27 @@ public class SyhSendEmailLog extends BaseEntity {
 
     @Comment("발신 이메일")
     @Column(name = "from_addr", length = 200, nullable = false)
-    @Size(max = 100, message = "fromAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "fromAddr 는 200자 이내여야 합니다.")
     private String fromAddr;
 
     @Comment("수신 이메일")
     @Column(name = "to_addr", length = 200, nullable = false)
-    @Size(max = 100, message = "toAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "toAddr 는 200자 이내여야 합니다.")
     private String toAddr;
 
     @Comment("참조 이메일 (복수 시 콤마 구분)")
     @Column(name = "cc_addr", length = 500)
-    @Size(max = 100, message = "ccAddr 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "ccAddr 는 500자 이내여야 합니다.")
     private String ccAddr;
 
     @Comment("숨은참조 이메일")
     @Column(name = "bcc_addr", length = 500)
-    @Size(max = 100, message = "bccAddr 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "bccAddr 는 500자 이내여야 합니다.")
     private String bccAddr;
 
     @Comment("발송 제목 (치환 완료본)")
     @Column(name = "subject", length = 300, nullable = false)
-    @Size(max = 100, message = "subject 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "subject 는 300자 이내여야 합니다.")
     private String subject;
 
     @Comment("발송 본문 (치환 완료본 HTML)")
@@ -89,7 +89,7 @@ public class SyhSendEmailLog extends BaseEntity {
 
     @Comment("실패 사유")
     @Column(name = "fail_reason", length = 500)
-    @Size(max = 100, message = "failReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "failReason 는 500자 이내여야 합니다.")
     private String failReason;
 
     @Comment("발송일시")

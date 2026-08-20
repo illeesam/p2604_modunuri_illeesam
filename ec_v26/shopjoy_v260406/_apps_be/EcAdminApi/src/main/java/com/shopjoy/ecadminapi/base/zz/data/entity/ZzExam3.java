@@ -35,22 +35,22 @@ public class ZzExam3 extends BaseEntity {
     private String exam3Id;
 
     @Column(name = "col31", length = 200)
-    @Size(max = 100, message = "col31 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col31 는 200자 이내여야 합니다.")
     private String col31;
 
     @Column(name = "col32", length = 200)
-    @Size(max = 100, message = "col32 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col32 는 200자 이내여야 합니다.")
     private String col32;
 
     @Column(name = "col33", length = 200)
-    @Size(max = 100, message = "col33 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col33 는 200자 이내여야 합니다.")
     private String col33;
 
     @Column(name = "col34", length = 200)
-    @Size(max = 100, message = "col34 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col34 는 200자 이내여야 합니다.")
     private String col34;
 
     @Column(name = "col35", length = 200)
-    @Size(max = 100, message = "col35 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col35 는 200자 이내여야 합니다.")
     private String col35;
 }

@@ -43,7 +43,7 @@ public class SyTemplate extends BaseEntity {
 
     @Comment("제목 (이메일용)")
     @Column(name = "template_subject", length = 200)
-    @Size(max = 100, message = "templateSubject 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "templateSubject 는 200자 이내여야 합니다.")
     private String templateSubject;
 
     @Comment("내용 (치환변수 포함)")

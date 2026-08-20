@@ -37,21 +37,21 @@ public class SyhExtTestLog extends BaseEntity {
 
     @Column(name = "test_msg", length = 2000)
     @Comment("결과 메시지 (응답 내용)")
-    @Size(max = 100, message = "testMsg 는 100자 이내여야 합니다.")
+    @Size(max = 2000, message = "testMsg 는 2000자 이내여야 합니다.")
     private String testMsg;
 
     @Column(name = "test_url", length = 500)
     @Comment("테스트 호출 URL")
-    @Size(max = 100, message = "testUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "testUrl 는 500자 이내여야 합니다.")
     private String testUrl;
 
     @Column(name = "test_req_body", length = 2000)
     @Comment("테스트 요청 내용 (JSON)")
-    @Size(max = 100, message = "testReqBody 는 100자 이내여야 합니다.")
+    @Size(max = 2000, message = "testReqBody 는 2000자 이내여야 합니다.")
     private String testReqBody;
 
     @Column(name = "test_account", length = 200)
     @Comment("테스트 계정 정보 (수신자/대상)")
-    @Size(max = 100, message = "testAccount 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "testAccount 는 200자 이내여야 합니다.")
     private String testAccount;
 }

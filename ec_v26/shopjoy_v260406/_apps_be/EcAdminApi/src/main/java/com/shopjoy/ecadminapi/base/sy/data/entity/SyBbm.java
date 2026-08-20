@@ -81,7 +81,7 @@ public class SyBbm extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "bbm_remark", length = 300)
-    @Size(max = 100, message = "bbmRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "bbmRemark 는 300자 이내여야 합니다.")
     private String bbmRemark;
 
 }

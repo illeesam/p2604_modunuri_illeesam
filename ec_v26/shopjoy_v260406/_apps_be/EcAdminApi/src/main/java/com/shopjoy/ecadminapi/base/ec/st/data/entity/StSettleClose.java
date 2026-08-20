@@ -39,7 +39,7 @@ public class StSettleClose extends BaseEntity {
 
     @Comment("마감/재오픈 사유")
     @Column(name = "close_reason", length = 200)
-    @Size(max = 100, message = "closeReason 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "closeReason 는 200자 이내여야 합니다.")
     private String closeReason;
 
     @Comment("마감 시점 최종정산금액 스냅샷")

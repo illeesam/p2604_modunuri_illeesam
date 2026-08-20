@@ -35,7 +35,7 @@ public class CmFaq extends BaseEntity {
 
     @Comment("질문")
     @Column(name = "faq_question", length = 500, nullable = false)
-    @Size(max = 100, message = "faqQuestion 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "faqQuestion 는 500자 이내여야 합니다.")
     private String faqQuestion;
 
     @Comment("답변(HTML)")

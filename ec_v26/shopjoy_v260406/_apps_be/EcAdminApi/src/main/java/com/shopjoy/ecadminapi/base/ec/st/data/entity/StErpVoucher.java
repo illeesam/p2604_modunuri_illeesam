@@ -64,7 +64,7 @@ public class StErpVoucher extends BaseEntity {
 
     @Comment("전표 적요")
     @Column(name = "erp_voucher_desc", length = 500)
-    @Size(max = 100, message = "erpVoucherDesc 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "erpVoucherDesc 는 500자 이내여야 합니다.")
     private String erpVoucherDesc;
 
     @Comment("차변 합계 (대변과 일치해야 전표 확정 가능)")
@@ -86,7 +86,7 @@ public class StErpVoucher extends BaseEntity {
 
     @Comment("ERP 처리 응답 메시지")
     @Column(name = "erp_res_msg", length = 500)
-    @Size(max = 100, message = "erpResMsg 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "erpResMsg 는 500자 이내여야 합니다.")
     private String erpResMsg;
 
 }

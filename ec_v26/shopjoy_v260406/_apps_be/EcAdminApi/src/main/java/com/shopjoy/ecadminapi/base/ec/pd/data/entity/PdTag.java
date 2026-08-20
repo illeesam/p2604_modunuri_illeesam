@@ -38,7 +38,7 @@ public class PdTag extends BaseEntity {
 
     @Comment("태그설명")
     @Column(name = "tag_desc", length = 300)
-    @Size(max = 100, message = "tagDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "tagDesc 는 300자 이내여야 합니다.")
     private String tagDesc;
 
     @Comment("사용 빈도")

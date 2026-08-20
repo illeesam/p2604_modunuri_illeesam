@@ -40,7 +40,7 @@ public class PmPlan extends BaseEntity {
     @Comment("기획전 타이틀 (노출용)")
     @Column(name = "plan_title", length = 200, nullable = false)
     @NotBlank(message = "기획전 제목을 입력해주세요.")
-    @Size(max = 100, message = "기획전 제목은 100자 이내로 입력해주세요.")
+    @Size(max = 200, message = "기획전 제목은 200자 이내로 입력해주세요.")
     private String planTitle;
 
     @Comment("유형 (코드: PLAN_TYPE_CD — SEASON/BRAND/THEME/COLLAB)")
@@ -60,12 +60,12 @@ public class PmPlan extends BaseEntity {
 
     @Comment("썸네일 이미지 URL")
     @Column(name = "thumbnail_url", length = 500)
-    @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbnailUrl 는 500자 이내여야 합니다.")
     private String thumbnailUrl;
 
     @Comment("배너 이미지 URL")
     @Column(name = "banner_url", length = 500)
-    @Size(max = 100, message = "bannerUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "bannerUrl 는 500자 이내여야 합니다.")
     private String bannerUrl;
 
     @Comment("시작일시")

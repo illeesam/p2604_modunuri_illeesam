@@ -61,7 +61,7 @@ public class SyDept extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "dept_remark", length = 300)
-    @Size(max = 100, message = "deptRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "deptRemark 는 300자 이내여야 합니다.")
     private String deptRemark;
 
 }

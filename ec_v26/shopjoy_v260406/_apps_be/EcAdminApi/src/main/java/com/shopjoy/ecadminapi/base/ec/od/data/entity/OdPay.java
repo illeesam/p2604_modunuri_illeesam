@@ -183,12 +183,12 @@ public class OdPay extends BaseEntity {
 
     @Comment("환불 사유")
     @Column(name = "refund_reason", length = 300)
-    @Size(max = 100, message = "refundReason 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "refundReason 는 300자 이내여야 합니다.")
     private String refundReason;
 
     @Comment("결제 실패 사유")
     @Column(name = "failure_reason", length = 500)
-    @Size(max = 100, message = "failureReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "failureReason 는 500자 이내여야 합니다.")
     private String failureReason;
 
     @Comment("결제 실패 코드 (PG 오류코드)")
@@ -202,7 +202,7 @@ public class OdPay extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "memo", length = 300)
-    @Size(max = 100, message = "memo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "memo 는 300자 이내여야 합니다.")
     private String memo;
 
 }

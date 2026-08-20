@@ -32,30 +32,30 @@ public class ZzSample3 extends BaseEntity {
     private String cdVl;
 
     @Column(name = "cd_nm", length = 200)
-    @Size(max = 100, message = "cdNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "cdNm 는 200자 이내여야 합니다.")
     private String cdNm;
 
     @Column(name = "srtord_vl")
     private BigDecimal srtordVl;
 
     @Column(name = "attr_nm1", length = 200)
-    @Size(max = 100, message = "attrNm1 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "attrNm1 는 200자 이내여야 합니다.")
     private String attrNm1;
 
     @Column(name = "attr_nm2", length = 200)
-    @Size(max = 100, message = "attrNm2 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "attrNm2 는 200자 이내여야 합니다.")
     private String attrNm2;
 
     @Column(name = "attr_nm3", length = 200)
-    @Size(max = 100, message = "attrNm3 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "attrNm3 는 200자 이내여야 합니다.")
     private String attrNm3;
 
     @Column(name = "attr_nm4", length = 200)
-    @Size(max = 100, message = "attrNm4 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "attrNm4 는 200자 이내여야 합니다.")
     private String attrNm4;
 
     @Column(name = "expln_cn", length = 2000)
-    @Size(max = 100, message = "explnCn 는 100자 이내여야 합니다.")
+    @Size(max = 2000, message = "explnCn 는 2000자 이내여야 합니다.")
     private String explnCn;
 
     @Column(name = "cd_infw_se_cd", length = 20)
@@ -67,43 +67,43 @@ public class ZzSample3 extends BaseEntity {
     private String useYn;
 
     @Column(name = "group_cd", length = 200)
-    @Size(max = 100, message = "groupCd 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "groupCd 는 200자 이내여야 합니다.")
     private String groupCd;
 
     @Column(name = "col01", length = 200)
-    @Size(max = 100, message = "col01 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col01 는 200자 이내여야 합니다.")
     private String col01;
 
     @Column(name = "col02", length = 200)
-    @Size(max = 100, message = "col02 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col02 는 200자 이내여야 합니다.")
     private String col02;
 
     @Column(name = "col03", length = 200)
-    @Size(max = 100, message = "col03 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col03 는 200자 이내여야 합니다.")
     private String col03;
 
     @Column(name = "col04", length = 200)
-    @Size(max = 100, message = "col04 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col04 는 200자 이내여야 합니다.")
     private String col04;
 
     @Column(name = "col05", length = 200)
-    @Size(max = 100, message = "col05 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col05 는 200자 이내여야 합니다.")
     private String col05;
 
     @Column(name = "col06", length = 200)
-    @Size(max = 100, message = "col06 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col06 는 200자 이내여야 합니다.")
     private String col06;
 
     @Column(name = "col07", length = 200)
-    @Size(max = 100, message = "col07 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col07 는 200자 이내여야 합니다.")
     private String col07;
 
     @Column(name = "col08", length = 200)
-    @Size(max = 100, message = "col08 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col08 는 200자 이내여야 합니다.")
     private String col08;
 
     @Column(name = "col09", length = 200)
-    @Size(max = 100, message = "col09 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "col09 는 200자 이내여야 합니다.")
     private String col09;
 
     @Column(name = "status_cd", length = 20)

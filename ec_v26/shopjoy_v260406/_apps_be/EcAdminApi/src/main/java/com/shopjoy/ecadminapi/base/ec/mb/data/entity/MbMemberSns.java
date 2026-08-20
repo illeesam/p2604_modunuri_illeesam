@@ -43,7 +43,7 @@ public class MbMemberSns extends BaseEntity {
 
     @Comment("SNS 플랫폼 사용자ID")
     @Column(name = "sns_user_id", length = 200, nullable = false)
-    @Size(max = 100, message = "snsUserId 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "snsUserId 는 200자 이내여야 합니다.")
     private String snsUserId;
 
 }

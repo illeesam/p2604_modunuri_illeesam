@@ -58,7 +58,7 @@ public class DpWidgetLib extends BaseEntity {
 
     @Comment("미리보기 썸네일URL")
     @Column(name = "thumbnail_url", length = 500)
-    @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "thumbnailUrl 는 500자 이내여야 합니다.")
     private String thumbnailUrl;
 
     @Comment("위젯내용 (HTML 에디터, 3개 테이블 통일)")

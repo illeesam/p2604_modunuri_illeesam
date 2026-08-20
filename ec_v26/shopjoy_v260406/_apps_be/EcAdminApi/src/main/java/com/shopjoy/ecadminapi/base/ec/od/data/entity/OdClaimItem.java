@@ -48,7 +48,7 @@ public class OdClaimItem extends BaseEntity {
 
     @Comment("상품명 (주문시점 스냅샷)")
     @Column(name = "prod_nm", length = 200)
-    @Size(max = 100, message = "prodNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "prodNm 는 200자 이내여야 합니다.")
     private String prodNm;
 
     @Comment("SKU ID (pd_prod_sku.prod_sku_id, 주문시점 스냅샷)")
@@ -68,7 +68,7 @@ public class OdClaimItem extends BaseEntity {
 
     @Comment("옵션 (색상/사이즈 스냅샷)")
     @Column(name = "prod_option", length = 500)
-    @Size(max = 100, message = "prodOption 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "prodOption 는 500자 이내여야 합니다.")
     private String prodOption;
 
     @Comment("[교환] 교환 요청 상품ID (claim_type_cd=EXCHANGE 시에만 사용)")
@@ -93,12 +93,12 @@ public class OdClaimItem extends BaseEntity {
 
     @Comment("[교환] 교환 요청 상품명")
     @Column(name = "new_prod_nm", length = 200)
-    @Size(max = 100, message = "newProdNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "newProdNm 는 200자 이내여야 합니다.")
     private String newProdNm;
 
     @Comment("[교환] 교환 요청 옵션 텍스트")
     @Column(name = "new_prod_option", length = 500)
-    @Size(max = 100, message = "newProdOption 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "newProdOption 는 500자 이내여야 합니다.")
     private String newProdOption;
 
     @Comment("[교환] 교환 요청 수량")

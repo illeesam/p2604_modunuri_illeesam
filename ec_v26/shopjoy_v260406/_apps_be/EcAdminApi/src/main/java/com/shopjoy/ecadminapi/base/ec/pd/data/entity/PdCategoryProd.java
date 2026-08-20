@@ -52,7 +52,7 @@ public class PdCategoryProd extends BaseEntity {
     private Integer sortOrd;
 
     @Column(name = "emphasis_cd", length = 200)
-    @Size(max = 100, message = "emphasisCd 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "emphasisCd 는 200자 이내여야 합니다.")
     private String emphasisCd;
 
     @Comment("전시여부 (Y=전시, N=비전시)")

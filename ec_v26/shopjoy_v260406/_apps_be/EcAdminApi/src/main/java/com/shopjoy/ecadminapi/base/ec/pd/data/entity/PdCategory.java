@@ -61,7 +61,7 @@ public class PdCategory extends BaseEntity {
 
     @Comment("이미지URL")
     @Column(name = "img_url", length = 500)
-    @Size(max = 100, message = "imgUrl 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "imgUrl 는 500자 이내여야 합니다.")
     private String imgUrl;
 
     @Comment("설명")

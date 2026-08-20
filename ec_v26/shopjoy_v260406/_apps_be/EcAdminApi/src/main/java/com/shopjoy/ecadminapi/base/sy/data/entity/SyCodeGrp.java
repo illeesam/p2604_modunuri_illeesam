@@ -43,7 +43,7 @@ public class SyCodeGrp extends BaseEntity {
 
     @Comment("코드그룹설명")
     @Column(name = "code_grp_desc", length = 300)
-    @Size(max = 100, message = "codeGrpDesc 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "codeGrpDesc 는 300자 이내여야 합니다.")
     private String codeGrpDesc;
 
     @Comment("사용여부 Y/N")

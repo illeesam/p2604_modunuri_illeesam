@@ -53,18 +53,18 @@ public class VwSyCode {
     private String parentCodeValue;
 
     @Column(name = "child_code_values", length = 500)
-    @Size(max = 100, message = "childCodeValues 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "childCodeValues 는 500자 이내여야 합니다.")
     private String childCodeValues;
 
     @Column(name = "code_remark", length = 300)
-    @Size(max = 100, message = "codeRemark 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "codeRemark 는 300자 이내여야 합니다.")
     private String codeRemark;
 
     @Column(name = "code_level")
     private Integer codeLevel;
 
     @Column(name = "code_opt1", length = 200)
-    @Size(max = 100, message = "codeOpt1 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "codeOpt1 는 200자 이내여야 합니다.")
     private String codeOpt1;
 
     @Column(name = "reg_by", length = 50)

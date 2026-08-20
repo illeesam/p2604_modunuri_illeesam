@@ -49,7 +49,7 @@ public class OdhPayStatusHist extends BaseEntity {
 
     @Comment("상태 변경 사유")
     @Column(name = "status_reason", length = 300)
-    @Size(max = 100, message = "statusReason 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "statusReason 는 300자 이내여야 합니다.")
     private String statusReason;
 
     @Comment("변경 담당자 (sy_user.user_id, mb_member.member_id)")
@@ -63,7 +63,7 @@ public class OdhPayStatusHist extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "memo", length = 300)
-    @Size(max = 100, message = "memo 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "memo 는 300자 이내여야 합니다.")
     private String memo;
 
 }

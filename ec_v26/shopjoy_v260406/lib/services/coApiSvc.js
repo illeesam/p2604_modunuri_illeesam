@@ -24,7 +24,9 @@
  *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS_CD');
  *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS_CD', '주문관리', '상태조회');
  *   const res = await coApiSvc.syPath.getPage({ bizCd: 'sy_brand' });
- *   const res = await coApiSvc.sySite.getSiteList();
+ *   const res = await coApiSvc.sySite.getSiteList({}, '공통', '사이트목록조회');
+ *   // ⚠ boApi 는 GET 포함 모든 호출에 uiNm/cmdNm(X-UI-Nm/X-Cmd-Nm) 이 필수다(coUtil.cofCheckNmHeaders).
+ *   //   생략하면 요청이 나가기도 전에 프론트에서 막혀 500 에러 화면으로 표시된다.
  */
 (function (global) {
   'use strict';
@@ -209,7 +211,10 @@
   /* ── sy: 사이트 (FO 헤더, BO 사이트관리 등 공유) ─────────── */
   coApiSvc.sySite = {
     getSiteList(params, uiNm, cmdNm) {
-      return client().get('/co/sy/site/list', { params, ...hdr(uiNm, cmdNm) });
+      /* CoSySiteController 의 목록조회는 /co/sy/site (bare @GetMapping) — /list 접미어가 없다.
+         /co/sy/site/list 로 부르면 @GetMapping("/{id}") 에 id="list" 로 잡혀 getById("list") 가
+         호출되고 "존재하지 않는 데이터입니다: list" 로 400 이 난다(2026-08-20 발견/수정). */
+      return client().get('/co/sy/site', { params, ...hdr(uiNm, cmdNm) });
     },
     getSiteById(_id, uiNm, cmdNm) {
       return chkId(_id, uiNm, cmdNm) || client().get(`/co/sy/site/${_id}`, hdr(uiNm, cmdNm));

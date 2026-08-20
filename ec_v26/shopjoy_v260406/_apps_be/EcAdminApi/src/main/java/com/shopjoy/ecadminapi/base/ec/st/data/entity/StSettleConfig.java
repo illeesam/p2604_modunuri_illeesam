@@ -56,7 +56,7 @@ public class StSettleConfig extends BaseEntity {
 
     @Comment("비고")
     @Column(name = "settle_config_remark", length = 500)
-    @Size(max = 100, message = "settleConfigRemark 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "settleConfigRemark 는 500자 이내여야 합니다.")
     private String settleConfigRemark;
 
     @Comment("사용여부 Y/N")

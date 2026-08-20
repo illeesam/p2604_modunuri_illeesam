@@ -49,7 +49,7 @@ public class SyhAlarmSendHist extends BaseEntity {
 
     @Comment("수신처 (이메일/전화/토큰)")
     @Column(name = "send_to", length = 200)
-    @Size(max = 100, message = "sendTo 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "sendTo 는 200자 이내여야 합니다.")
     private String sendTo;
 
     @Comment("발송일시")
@@ -63,7 +63,7 @@ public class SyhAlarmSendHist extends BaseEntity {
 
     @Comment("오류메시지")
     @Column(name = "error_msg", length = 500)
-    @Size(max = 100, message = "errorMsg 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "errorMsg 는 500자 이내여야 합니다.")
     private String errorMsg;
 
 }

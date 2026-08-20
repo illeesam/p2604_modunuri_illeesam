@@ -59,7 +59,7 @@ public class SyhSendMsgLog extends BaseEntity {
 
     @Comment("디바이스 토큰 (앱 푸시)")
     @Column(name = "device_token", length = 300)
-    @Size(max = 100, message = "deviceToken 는 100자 이내여야 합니다.")
+    @Size(max = 300, message = "deviceToken 는 300자 이내여야 합니다.")
     private String deviceToken;
 
     @Comment("발신 번호 (SMS/LMS)")
@@ -69,7 +69,7 @@ public class SyhSendMsgLog extends BaseEntity {
 
     @Comment("제목 (LMS/앱 푸시)")
     @Column(name = "title", length = 200)
-    @Size(max = 100, message = "title 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "title 는 200자 이내여야 합니다.")
     private String title;
 
     @Comment("발송 내용 (치환 완료본)")
@@ -94,12 +94,12 @@ public class SyhSendMsgLog extends BaseEntity {
 
     @Comment("통신사/카카오 응답 메시지")
     @Column(name = "result_msg", length = 200)
-    @Size(max = 100, message = "resultMsg 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "resultMsg 는 200자 이내여야 합니다.")
     private String resultMsg;
 
     @Comment("실패 사유")
     @Column(name = "fail_reason", length = 500)
-    @Size(max = 100, message = "failReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "failReason 는 500자 이내여야 합니다.")
     private String failReason;
 
     @Comment("발송일시")

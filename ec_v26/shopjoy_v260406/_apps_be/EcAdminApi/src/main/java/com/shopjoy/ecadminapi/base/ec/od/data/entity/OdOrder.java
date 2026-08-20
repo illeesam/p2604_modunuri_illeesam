@@ -145,17 +145,17 @@ public class OdOrder extends BaseEntity {
 
     @Comment("수령자주소")
     @Column(name = "recv_addr", length = 200)
-    @Size(max = 100, message = "recvAddr 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "recvAddr 는 200자 이내여야 합니다.")
     private String recvAddr;
 
     @Comment("수령자상세주소")
     @Column(name = "recv_addr_detail", length = 200)
-    @Size(max = 100, message = "recvAddrDetail 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "recvAddrDetail 는 200자 이내여야 합니다.")
     private String recvAddrDetail;
 
     @Comment("배송메모")
     @Column(name = "recv_memo", length = 200)
-    @Size(max = 100, message = "recvMemo 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "recvMemo 는 200자 이내여야 합니다.")
     private String recvMemo;
 
     @Comment("공동현관 비밀번호")
@@ -233,12 +233,12 @@ public class OdOrder extends BaseEntity {
 
     @Comment("결재 대상명")
     @Column(name = "appr_target_nm", length = 200)
-    @Size(max = 100, message = "apprTargetNm 는 100자 이내여야 합니다.")
+    @Size(max = 200, message = "apprTargetNm 는 200자 이내여야 합니다.")
     private String apprTargetNm;
 
     @Comment("사유/메모")
     @Column(name = "appr_reason", length = 500)
-    @Size(max = 100, message = "apprReason 는 100자 이내여야 합니다.")
+    @Size(max = 500, message = "apprReason 는 500자 이내여야 합니다.")
     private String apprReason;
 
     @Comment("결재 요청자 (sy_user.user_id)")
