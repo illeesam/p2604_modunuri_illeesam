@@ -690,7 +690,8 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 | LEATHER | 가죽 | MATERIAL |
 | WOOL | 울 | MATERIAL |
 | LINEN | 린넨 | MATERIAL |
-> 적용: `pd_prod_opt_type.prod_opt_type_level2_cd` (옵션 유형의 2단 분류) + `pd_prod_opt.prod_opt_type_level2_cd` (비정규화)
+> 적용: `pd_prod.prod_opt2_type_cd` (옵션 2단 분류) + `pd_prod_opt.prod_opt2_type_cd` (비정규화).
+> `pd_prod_opt_type` 테이블은 폐기되어 없다 — 상세 → `pd.08.상품옵션.md` 변경이력(2026-08-20)
 
 #### PROD_QNA_TYPE — 상품문의유형
 | code_value | label |

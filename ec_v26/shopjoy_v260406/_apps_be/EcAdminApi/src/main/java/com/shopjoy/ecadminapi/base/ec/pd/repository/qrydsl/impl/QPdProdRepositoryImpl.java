@@ -104,8 +104,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.advrtEndDate,                // 홍보문구 종료일시
                         pdProd.simulYn,                        // 시뮬데이터여부 — {Y: '예', N: '아니오'}
                         pdProd.prodOptStdCd,                // 옵션 표준코드 (예: COLOR, SIZE)
-                        pdProd.prodOptType1Cd,              // 옵션유형1 분류코드 (예: COLOR)
-                        pdProd.prodOptType2Cd,              // 옵션유형2 분류코드 (예: SIZE)
+                        pdProd.prodOpt1TypeCd,              // 옵션유형1 분류코드 (예: COLOR)
+                        pdProd.prodOpt2TypeCd,              // 옵션유형2 분류코드 (예: SIZE)
                         pdProd.regBy,      // 등록자
                         pdProd.regDate,    // 등록일시
                         pdProd.updBy,      // 수정자
@@ -191,8 +191,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.advrtEndDate,                // 홍보문구 종료일시
                         pdProd.simulYn,                        // 시뮬데이터여부 — {Y: '예', N: '아니오'}
                         pdProd.prodOptStdCd,                // 옵션 표준코드
-                        pdProd.prodOptType1Cd,              // 옵션유형1 분류코드
-                        pdProd.prodOptType2Cd,              // 옵션유형2 분류코드
+                        pdProd.prodOpt1TypeCd,              // 옵션유형1 분류코드
+                        pdProd.prodOpt2TypeCd,              // 옵션유형2 분류코드
                         pdProd.regBy,      // 등록자
                         pdProd.regDate,    // 등록일시
                         pdProd.updBy,      // 수정자
@@ -446,8 +446,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (entity.getIsNew()              != null) { update.set(pdProd.isNew,              entity.getIsNew());              hasAny = true; }
         if (entity.getSoldOutYn()          != null) { update.set(pdProd.soldOutYn,          entity.getSoldOutYn());          hasAny = true; }
         if (entity.getProdOptStdCd()       != null) { update.set(pdProd.prodOptStdCd,       entity.getProdOptStdCd());       hasAny = true; }
-        if (entity.getProdOptType1Cd()     != null) { update.set(pdProd.prodOptType1Cd,     entity.getProdOptType1Cd());     hasAny = true; }
-        if (entity.getProdOptType2Cd()     != null) { update.set(pdProd.prodOptType2Cd,     entity.getProdOptType2Cd());     hasAny = true; }
+        if (entity.getProdOpt1TypeCd()     != null) { update.set(pdProd.prodOpt1TypeCd,     entity.getProdOpt1TypeCd());     hasAny = true; }
+        if (entity.getProdOpt2TypeCd()     != null) { update.set(pdProd.prodOpt2TypeCd,     entity.getProdOpt2TypeCd());     hasAny = true; }
         if (entity.getUpdBy()              != null) { update.set(pdProd.updBy,              entity.getUpdBy());              hasAny = true; }
         update.set(pdProd.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 

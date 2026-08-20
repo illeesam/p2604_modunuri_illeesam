@@ -226,13 +226,13 @@ public class PdProd extends BaseEntity {
     private String prodOptStdCd;
 
     @Comment("옵션유형1 분류코드 (예: COLOR)")
-    @Column(name = "prod_opt_type1_cd", length = 20)
-    @Size(max = 20, message = "prodOptType1Cd 는 20자 이내여야 합니다.")
-    private String prodOptType1Cd;
+    @Column(name = "prod_opt1_type_cd", length = 20)
+    @Size(max = 20, message = "prodOpt1TypeCd 는 20자 이내여야 합니다.")
+    private String prodOpt1TypeCd;
 
     @Comment("옵션유형2 분류코드 (예: SIZE)")
-    @Column(name = "prod_opt_type2_cd", length = 20)
-    @Size(max = 20, message = "prodOptType2Cd 는 20자 이내여야 합니다.")
-    private String prodOptType2Cd;
+    @Column(name = "prod_opt2_type_cd", length = 20)
+    @Size(max = 20, message = "prodOpt2TypeCd 는 20자 이내여야 합니다.")
+    private String prodOpt2TypeCd;
 
 }

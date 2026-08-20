@@ -170,20 +170,23 @@
       };
       const _prodEntry = (row) => {
         const opts = row.prodOpts || [];
-        /* pd_prod_opt_type 흡수 후: prod_opt_type1_nm / prod_opt_type2_nm 직접 컬럼 사용 */
+        /* pd_prod_opt_type 흡수 후: 유형명(_nm) 컬럼은 없음 — pd_prod.prod_opt1_type_cd / prod_opt2_type_cd
+           (분류 코드, 예: COLOR/SIZE) 를 직접 쓴다. 예전엔 여기서 prodOptType1Nm/2Nm 을 읽었는데
+           그 필드는 DB/Entity/DTO 어디에도 없어 항상 undefined 였다 — "옵션상품" 랜덤선택이
+           늘 빈 풀로 떨어지던 원인(2026-08-20 발견/수정). */
         /* optSelects: level=1 옵션, level=2 옵션 각각 구성 */
         const optSelects = [];
-        if (row.prodOptType1Nm) {
+        if (row.prodOpt1TypeCd) {
           optSelects.push({
-            typeNm:     row.prodOptType1Nm,
+            typeNm:     row.prodOpt1TypeCd,
             choices:    opts.filter(o => o.prodOptTypeLevel === 1 || o.prodOptTypeLevel === '1')
                             .map(o => ({ id: o.prodOptId, nm: o.prodOptNm || o.prodOptVal || '' })),
             selectedId: '',
           });
         }
-        if (row.prodOptType2Nm) {
+        if (row.prodOpt2TypeCd) {
           optSelects.push({
-            typeNm:     row.prodOptType2Nm,
+            typeNm:     row.prodOpt2TypeCd,
             choices:    opts.filter(o => o.prodOptTypeLevel === 2 || o.prodOptTypeLevel === '2')
                             .map(o => ({ id: o.prodOptId, nm: o.prodOptNm || o.prodOptVal || '' })),
             selectedId: '',
@@ -195,7 +198,7 @@
           prodTypeCd:  row.prodTypeCd || 'SINGLE',
           salePrice:   row.salePrice || 0,
           qty:         1,
-          optTypeNms:  [row.prodOptType1Nm, row.prodOptType2Nm].filter(Boolean),
+          optTypeNms:  [row.prodOpt1TypeCd, row.prodOpt2TypeCd].filter(Boolean),
           optSelects,  /* 옵션 드롭다운 상태 */
         };
       };
@@ -229,9 +232,9 @@
           const rows = (await boApiSvc.pdProd.getPage(params)).data?.data?.pageList || [];
           let pool = rows;
           if (type === 'SINGLE_NO_OPT') {
-            pool = rows.filter(r => !r.prodOptType1Nm);
+            pool = rows.filter(r => !r.prodOpt1TypeCd);
           } else if (type === 'SINGLE_OPT') {
-            pool = rows.filter(r => !!r.prodOptType1Nm);
+            pool = rows.filter(r => !!r.prodOpt1TypeCd);
           }
           if (!pool.length) {
             const lbl = type === 'SINGLE_NO_OPT' ? '단품' : type === 'SINGLE_OPT' ? '옵션상품' : type === 'SET' ? '세트' : type === 'GROUP' ? '묶음' : '';

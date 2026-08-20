@@ -465,8 +465,7 @@ DDL과 1:1 대응하는 INSERT 문. 초기 데이터 로딩용 / 실 DB 연결 �
 | | PdProdContent | pd_prod_content |
 | | PdProdImg | pd_prod_img |
 | | PdProdSku | pd_prod_sku |
-| | PdProdOptType | pd_prod_opt_type |
-| | PdProdOpt | pd_prod_opt |
+| | PdProdOpt | pd_prod_opt (옵션 유형+값 통합 — `pd_prod_opt_type` 은 폐기, `prod_opt_type_level` 로 1/2단 구분) |
 | | PdProdTag | pd_prod_tag |
 | | PdTag | pd_tag |
 | | PdProdQna | pd_prod_qna |

@@ -252,12 +252,12 @@ public class ZdSimulController {
             if (optGroups.size() > 0) {
                 Map<String, Object> g0 = optGroups.get(0);
                 String cd0 = blankToNull(str(g0, "level1Cd"));
-                prodToUpdate.setProdOptType1Cd(cd0);
+                prodToUpdate.setProdOpt1TypeCd(cd0);
             }
             if (optGroups.size() > 1) {
                 Map<String, Object> g1 = optGroups.get(1);
                 String cd1 = blankToNull(str(g1, "level1Cd"));
-                prodToUpdate.setProdOptType2Cd(cd1);
+                prodToUpdate.setProdOpt2TypeCd(cd1);
             }
             pdProdService.update(prodId, prodToUpdate);
 
@@ -468,8 +468,8 @@ public class ZdSimulController {
             boolean wantOpt = "Y".equalsIgnoreCase(ho);
             all = all.stream()
                 .filter(p -> wantOpt
-                    ? (p.getProdOptType1Cd() != null)
-                    : (p.getProdOptType1Cd() == null))
+                    ? (p.getProdOpt1TypeCd() != null)
+                    : (p.getProdOpt1TypeCd() == null))
                 .toList();
         }
         Collections.shuffle(all);

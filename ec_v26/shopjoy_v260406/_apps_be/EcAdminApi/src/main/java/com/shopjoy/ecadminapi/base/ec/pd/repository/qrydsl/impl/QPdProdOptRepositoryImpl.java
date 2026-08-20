@@ -55,8 +55,8 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                         pdProdOpt.sortOrd,               // 정렬순서
                         pdProdOpt.useYn,                  // 사용여부 — {Y: '사용', N: '미사용'}
                         pdProdOpt.prodOptTypeLevel,        // 옵션유형레벨 — {1: '1단 옵션', 2: '2단 옵션'}
-                        pdProdOpt.prodOptType1Cd,         // 옵션유형1 분류코드 (예: COLOR)
-                        pdProdOpt.prodOptType2Cd,         // 옵션유형2 분류코드 (예: SIZE)
+                        pdProdOpt.prodOpt1TypeCd,         // 옵션유형1 분류코드 (예: COLOR)
+                        pdProdOpt.prodOpt2TypeCd,         // 옵션유형2 분류코드 (예: SIZE)
                         pdProdOpt.regBy,
                         pdProdOpt.regDate,
                         pdProdOpt.updBy,
@@ -190,8 +190,8 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         if (entity.getSortOrd()           != null) { update.set(pdProdOpt.sortOrd,           entity.getSortOrd());           hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(pdProdOpt.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getProdOptTypeLevel()  != null) { update.set(pdProdOpt.prodOptTypeLevel,  entity.getProdOptTypeLevel());  hasAny = true; }
-        if (entity.getProdOptType1Cd()    != null) { update.set(pdProdOpt.prodOptType1Cd,    entity.getProdOptType1Cd());    hasAny = true; }
-        if (entity.getProdOptType2Cd()    != null) { update.set(pdProdOpt.prodOptType2Cd,    entity.getProdOptType2Cd());    hasAny = true; }
+        if (entity.getProdOpt1TypeCd()    != null) { update.set(pdProdOpt.prodOpt1TypeCd,    entity.getProdOpt1TypeCd());    hasAny = true; }
+        if (entity.getProdOpt2TypeCd()    != null) { update.set(pdProdOpt.prodOpt2TypeCd,    entity.getProdOpt2TypeCd());    hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(pdProdOpt.updBy,             entity.getUpdBy());             hasAny = true; }
         update.set(pdProdOpt.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 

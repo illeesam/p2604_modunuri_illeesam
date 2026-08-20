@@ -420,7 +420,7 @@ window.PdProdDtl = {
           // 옵션그룹+아이템 [4] — GET /opts 응답 구조
           //   백엔드: { optTypes:[{optTypeCd, optTypeLevel}], opts:[pd_prod_opt 항목] }
           //   pd_prod_opt 필드: prodOptId / prodOptNm / prodOptVal / prodOptStdCd / prodOptStyle
-          //                   / prodOptTypeLevel(1|2) / prodOptType1Cd / prodOptType2Cd
+          //                   / prodOptTypeLevel(1|2) / prodOpt1TypeCd / prodOpt2TypeCd
           //                   / parentProdOptId / sortOrd / useYn
           //   화면 키: {_id, grpNm, level1Cd, level, items:[{_id, nm, val, stdCd, prodOptStyle, parentOptId, sortOrd, useYn}]}
           const optsRes_   = r[4]?.data?.data || {};

@@ -59,18 +59,25 @@ GET /api/bo/ec/pd/prod/{prodId}/images
 GET /api/bo/ec/pd/prod/{prodId}/opts
 ```
 
-- 테이블: `pd_prod_opt_type` (옵션 유형) + `pd_prod_opt` (옵션 값)
+- 테이블: `pd_prod`(옵션 1·2단 분류 플랫 컬럼) + `pd_prod_opt` (옵션 값) — `pd_prod_opt_type`(옵션 유형)
+  테이블은 폐기되어 없다. `optTypes` 는 저장된 행이 아니라 `pd_prod.prodOpt1TypeCd`/`prodOpt2TypeCd`
+  를 그 자리에서 배열로 변환한 것(`BoPdProdTabController.opts()`).
 - 응답 구조:
 
 ```json
 {
-  "optTypes": [ { "prodOptTypeId": "...", "prodOptTypeNm": "색상", "prodOptTypeLevel": 1, "prodOptTypeLevel1Cd": "COLOR", ... } ],
-  "opts":     [ { "prodOptId": "...", "prodOptTypeId": "...", "prodOptNm": "빨강", "prodOptVal": "RED", ... } ]
+  "optTypes": [ { "optTypeCd": "COLOR", "optTypeLevel": 1 } ],
+  "opts":     [ { "prodOptId": "...", "prodOptNm": "빨강", "prodOptVal": "RED",
+                  "prodOptTypeLevel": 1, "prodOpt1TypeCd": "COLOR", "prodOpt2TypeCd": null, ... } ]
 }
 ```
 
-- `opts`는 `prodOptTypeId` 기준으로 프론트에서 그룹핑
+- `opts`는 `prodOptTypeLevel` 기준으로 프론트에서 그룹핑 (더 이상 FK id로 그룹핑하지 않음)
 - 최대 2단 옵션 (1단·2단)
+- 저장(`PUT /opts`) body 는 반대로 그룹 단위로 묶어 보낸다:
+  `{ "optTypes": [{ "optTypeNm": "색상", "optTypeCd": "COLOR", "optTypeLevel": 1, "optVals": [...] }, ...] }`
+  — 서버가 `groups[0]`/`groups[1]` 을 각각 `pd_prod.prodOpt1TypeCd`/`prodOpt2TypeCd` 로 저장하고,
+  `optVals` 는 `prod_opt_type_level = 그룹 인덱스+1` 로 `pd_prod_opt` 에 INSERT 한다.
 
 ---
 

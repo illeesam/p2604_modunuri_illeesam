@@ -32,8 +32,8 @@ public class PdProdOptDto {
         private Integer sortOrd;              // 정렬순서
         private String useYn;                 // 사용여부 Y/N
         private Integer prodOptTypeLevel;  // 1 또는 2
-        private String prodOptType1Cd;     // 옵션유형1 분류코드 (예: COLOR)
-        private String prodOptType2Cd;     // 옵션유형2 분류코드 (예: SIZE)
+        private String prodOpt1TypeCd;     // 옵션유형1 분류코드 (예: COLOR)
+        private String prodOpt2TypeCd;     // 옵션유형2 분류코드 (예: SIZE)
         private String regBy;                 // 등록자
         private LocalDateTime regDate;        // 등록일
         private String regSiteId;             // 등록 사이트ID

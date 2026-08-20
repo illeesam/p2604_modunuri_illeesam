@@ -46,7 +46,8 @@ CREATE TABLE shopjoy_2604.pd_prod (
     upd_date              TIMESTAMP    ,
     platform_fee_rate     NUMERIC(5,2) ,
     platform_fee_amount   BIGINT       ,
-    prod_opt_type_level1_cd VARCHAR(20),
+    prod_opt1_type_cd     VARCHAR(20) , -- 2026-08-20 rename: prod_opt_type1_cd → prod_opt1_type_cd (라이브 DB 확인 후 문서 동기화)
+    prod_opt2_type_cd     VARCHAR(20) , -- 2026-08-20: 라이브 DB엔 있었으나 문서 누락(stale) — 추가
     CONSTRAINT pd_prod_uk_prod_code UNIQUE (prod_code)
 );
 
@@ -95,7 +96,8 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.upd_by IS '수정자 (sy_user.user_id, mb
 COMMENT ON COLUMN shopjoy_2604.pd_prod.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_rate IS '플랫폼수수료 율 (%) — 내부 관리용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_amount IS '플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_opt_type_level1_cd IS '옵션 1단 분류 코드 (코드: PROD_OPT_CATEGORY level=1) — 옵션형 상품에서 옵션 그룹들이 속하는 1단 분류 (COLOR/SIZE 등)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_opt1_type_cd IS '옵션 1단 분류 코드 (코드: PROD_OPT_CATEGORY level=1) — 옵션형 상품에서 옵션 그룹들이 속하는 1단 분류 (COLOR/SIZE 등)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_opt2_type_cd IS '옵션 2단 분류 코드 (코드: PROD_OPT_CATEGORY level=2) — NULL 가능';
 
 CREATE INDEX pd_prod_ix01_brand_id ON shopjoy_2604.pd_prod USING btree (brand_id);
 CREATE INDEX pd_prod_ix02_category_id ON shopjoy_2604.pd_prod USING btree (category_id);

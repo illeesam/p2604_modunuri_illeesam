@@ -227,8 +227,7 @@ public List<PmEventDto.Item> getList(PmEventDto.Request req) {
 |---|---|---|
 | `pd_category` | `cat` | 상품 카테고리 |
 | `pd_prod_sku` | `sk` | 상품 SKU / 기본값: `a` |
-| `pd_prod_opt_type` | `ot` | 상품 옵션 유형 |
-| `pd_prod_opt` | `opt` / `oi1`, `oi2` | 상품 옵션값 (다중 조인 시 번호 붙임) |
+| `pd_prod_opt` | `opt` / `oi1`, `oi2` | 상품 옵션값 — `prod_opt_type_level` 로 1/2단 구분(다중 조인 시 번호 붙임). `pd_prod_opt_type`(옵션 유형) 테이블은 폐기(흡수됨) |
 | `od_order_item` | `oi` | 주문 상품 |
 | `ec_dliv_item` | `di` | 배송 상품 |
 | `sy_code` | `cd_os`, `cd_pm`, `cd_ps` | 공통코드 (code_grp별 suffix) |

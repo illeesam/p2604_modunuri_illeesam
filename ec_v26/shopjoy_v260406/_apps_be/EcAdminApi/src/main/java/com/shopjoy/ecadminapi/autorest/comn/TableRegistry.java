@@ -30,7 +30,7 @@ public class TableRegistry {
         "od_pay_method", "od_pay", "od_refund_method", "od_refund",
         // ec - 상품
         "pd_category_prod", "pd_category", "pd_dliv_tmplt", "pd_prod_bundle_item",
-        "pd_prod_content", "pd_prod_img", "pd_prod_opt", "pd_prod_opt_type",
+        "pd_prod_content", "pd_prod_img", "pd_prod_opt",
         "pd_prod_qna", "pd_prod_rel", "pd_prod_set_item", "pd_prod_sku", "pd_prod_tag",
         "pd_prod", "pd_restock_noti", "pd_review_attach", "pd_review_comment",
         "pd_review", "pd_tag",
@@ -348,17 +348,13 @@ public class TableRegistry {
             .fkFields(Map.of("prod_id", "pd_prod"))
             .build());
 
-        register("pd_prod_opt_type", TableConfig.builder()
-            .pkColumn("prod_opt_type_id")
-            .requiredFields(List.of("prod_id", "prod_opt_type_nm"))
-            .fkFields(Map.of("prod_id", "pd_prod"))
-            .childTables(List.of("pd_prod_opt"))
-            .build());
-
+        /* pd_prod_opt_type(옵션 유형) 테이블은 폐기 — pd_prod_opt 로 흡수됨(prod_opt_type_level
+           컬럼으로 1/2단 구분). 2026-08-20 라이브 DB 대조 확인 후 등록 제거.
+           상세 → _doc/정책서/ec/pd/pd.08.상품옵션.md 변경이력 */
         register("pd_prod_opt", TableConfig.builder()
             .pkColumn("prod_opt_id")
-            .requiredFields(List.of("prod_opt_type_id", "prod_opt_nm"))
-            .fkFields(Map.of("prod_opt_type_id", "pd_prod_opt_type", "prod_id", "pd_prod"))
+            .requiredFields(List.of("prod_id", "prod_opt_nm"))
+            .fkFields(Map.of("prod_id", "pd_prod"))
             .build());
 
         register("pd_prod_sku", TableConfig.builder()

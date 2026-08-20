@@ -224,8 +224,8 @@
               prodId: tmpProdId,    /* 상품 임시 ID */
               /* 항상 포함 — 값 없으면 null/[] */
               prodOptStdCd: null,   /* pd_prod.prod_opt_std_cd */
-              prodOptType1Cd: null, /* pd_prod.prod_opt_type1_cd */
-              prodOptType2Cd: null, /* pd_prod.prod_opt_type2_cd */
+              prodOpt1TypeCd: null, /* pd_prod.prod_opt1_type_cd */
+              prodOpt2TypeCd: null, /* pd_prod.prod_opt2_type_cd */
               prodOpts:    [],      /* pd_prod_opt[] */
               prodSkus:    [],      /* pd_prod_sku[] (참고) */
               prodImgs:  [],      /* pd_prod_img[] */
@@ -253,8 +253,8 @@
               const grp2Nm = preset.opt2LabelType === 'size' ? '사이즈' : preset.opt2LabelType === 'color' ? '색상' : '옵션2';
               /* 상품 레벨 옵션 분류 코드 */
               body.prodOptStdCd   = preset.cd;
-              body.prodOptType1Cd = preset.opt1LabelType.toUpperCase();
-              body.prodOptType2Cd = preset.opt2LabelType.toUpperCase();
+              body.prodOpt1TypeCd = preset.opt1LabelType.toUpperCase();
+              body.prodOpt2TypeCd = preset.opt2LabelType.toUpperCase();
               /* 옵션항목 임시 ID: 본 ID(prodOptId)에 tmp-opt1-/tmp-opt2- 접두어 */
               const _pad2 = (n) => String(n + 1).padStart(2, '0');
               const opt1Items = opt1List.map((nm, i) => ({

@@ -2,6 +2,8 @@
 -- 상품 옵션 값 (빨강, M 등 실제 선택 가능한 값)
 -- 구 테이블명: pd_prod_opt_item (2026-07-12 rename)
 -- 2026-07-13: prod_opt_val_code_id 제거, opt_style → prod_opt_style 변경, prod_opt_type_level1_cd / prod_opt_type_level2_cd 추가
+-- (문서 stale 이력) 이후 언젠가 라이브 DB 에서 prod_opt_type_level{1,2}_cd → prod_opt_type{1,2}_cd 로 이미 rename 되어 있었으나 문서 미반영
+-- 2026-08-20: prod_opt_type1_cd → prod_opt1_type_cd, prod_opt_type2_cd → prod_opt2_type_cd rename (라이브 DB 직접 확인 후 적용, 문서 동기화)
 -- 2026-07-13: prod_opt_std_cd 추가 (OPT_VAL 공통코드 참조 — 통계/필터용 표준 코드값)
 
 CREATE TABLE shopjoy_2604.pd_prod_opt (
@@ -12,8 +14,8 @@ CREATE TABLE shopjoy_2604.pd_prod_opt (
     prod_opt_nm             VARCHAR(100) NOT NULL,
     prod_opt_val            VARCHAR(50),
     prod_opt_std_cd         VARCHAR(20),
-    prod_opt_type_level1_cd VARCHAR(20),
-    prod_opt_type_level2_cd VARCHAR(20),
+    prod_opt1_type_cd       VARCHAR(20),
+    prod_opt2_type_cd       VARCHAR(20),
     parent_prod_opt_id      VARCHAR(21),
     sort_ord                INTEGER      DEFAULT 0,
     use_yn                  VARCHAR(1)   DEFAULT 'Y'::bpchar,
@@ -32,8 +34,8 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt_type_id IS '옵션유형ID (
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt_nm IS '옵션항목명 (예: 빨강, M)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt_val IS '실제 저장값 — 직접입력 또는 프리셋 선택 시 자동 채움 (자유 문자열)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt_std_cd IS '표준 코드값 (코드: OPT_VAL — BLACK/WHITE/SIZE_M 등). 프리셋 선택 시 자동 세팅, 직접입력 시 NULL. 통계·필터 기준 컬럼';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt_type_level1_cd IS '1단 분류 코드 — pd_prod.prod_opt_type_level1_cd 비정규화 (COLOR/SIZE 등)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt_type_level2_cd IS '2단 분류 코드 — pd_prod_opt_type.prod_opt_type_level2_cd 비정규화 (NULL 가능)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt1_type_cd IS '1단 분류 코드 — pd_prod.prod_opt1_type_cd 비정규화 (COLOR/SIZE 등)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.prod_opt2_type_cd IS '2단 분류 코드 — pd_prod_opt_type.prod_opt2_type_cd 비정규화 (NULL 가능)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.parent_prod_opt_id IS '상위 옵션값ID — 2단 옵션에서 상위 1단 옵션값 참조 (pd_prod_opt.prod_opt_id), NULL이면 독립값';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.use_yn IS '사용여부 Y/N';

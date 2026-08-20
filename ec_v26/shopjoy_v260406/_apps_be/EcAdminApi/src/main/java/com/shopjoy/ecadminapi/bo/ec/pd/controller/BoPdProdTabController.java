@@ -80,15 +80,15 @@ public class BoPdProdTabController {
         // pd_prod 플랫 컬럼 → optTypes 배열로 변환 (프론트 화면 구조와 정합)
         List<Map<String, Object>> optTypes = new ArrayList<>();
         if (prod != null) {
-            if (prod.getProdOptType1Cd() != null) {
+            if (prod.getProdOpt1TypeCd() != null) {
                 Map<String, Object> t1 = new HashMap<>();
-                t1.put("optTypeCd",    prod.getProdOptType1Cd());
+                t1.put("optTypeCd",    prod.getProdOpt1TypeCd());
                 t1.put("optTypeLevel", 1);
                 optTypes.add(t1);
             }
-            if (prod.getProdOptType2Cd() != null) {
+            if (prod.getProdOpt2TypeCd() != null) {
                 Map<String, Object> t2 = new HashMap<>();
-                t2.put("optTypeCd",    prod.getProdOptType2Cd());
+                t2.put("optTypeCd",    prod.getProdOpt2TypeCd());
                 t2.put("optTypeLevel", 2);
                 optTypes.add(t2);
             }
@@ -298,8 +298,8 @@ public class BoPdProdTabController {
             .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + prodId));
         PdProdOptUpdateDto.OptType g0 = groups.size() > 0 ? groups.get(0) : null;
         PdProdOptUpdateDto.OptType g1 = groups.size() > 1 ? groups.get(1) : null;
-        prod.setProdOptType1Cd(g0 != null ? coalesce(nullIfEmpty(g0.getOptTypeCd()), nullIfEmpty(g0.getLevel1Cd())) : null);
-        prod.setProdOptType2Cd(g1 != null ? coalesce(nullIfEmpty(g1.getOptTypeCd()), nullIfEmpty(g1.getLevel1Cd())) : null);
+        prod.setProdOpt1TypeCd(g0 != null ? coalesce(nullIfEmpty(g0.getOptTypeCd()), nullIfEmpty(g0.getLevel1Cd())) : null);
+        prod.setProdOpt2TypeCd(g1 != null ? coalesce(nullIfEmpty(g1.getOptTypeCd()), nullIfEmpty(g1.getLevel1Cd())) : null);
         prod.setUpdBy(authId);
         prod.setUpdDate(now);
         pdProdRepository.save(prod);

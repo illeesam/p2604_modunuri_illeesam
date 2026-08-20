@@ -23,7 +23,7 @@ public class PdProdOptUpdateDto {
     public static class OptType {
         private Object _id;          // 클라이언트 임시키 (신규 유형 식별용)
         private String optTypeNm;    // 옵션유형명 (예: 색상, 사이즈)
-        private String optTypeCd;    // 옵션유형 분류코드 (예: COLOR, SIZE) — pd_prod.prod_opt_type1_cd/2_cd 로 저장
+        private String optTypeCd;    // 옵션유형 분류코드 (예: COLOR, SIZE) — pd_prod.prod_opt1_type_cd/2_cd 로 저장
         private String level1Cd;     // 하위호환용 (optTypeCd 없을 때 폴백)
         private String level2Cd;     // 하위호환용 2단 코드 (optTypeCd 없을 때 폴백)
         private Integer optTypeLevel;    // 옵션유형레벨 (1 또는 2)
