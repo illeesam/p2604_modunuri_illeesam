@@ -168,7 +168,7 @@ window.CmDashboardDataMng = {
         const body = charts.map(c => ({
           dashboardItemId: c.dashboardItemId,
           colNms: c.colNms,
-          rows: (c.rows || []).map(r => ({ seriesNm: r.seriesNm, vals: r.vals })),
+          rows: (c.rows || []).map(r => ({ seriesNm: r.seriesNm, seriesCd: r.seriesCd, vals: r.vals })),
         }));
         const res = await boApiSvc.cmDashboard.saveDataGrid(body, params, '대시보드데이타관리', '저장');
         showToast(res.data?.message || '저장되었습니다.', 'success');
@@ -338,7 +338,13 @@ window.CmDashboardDataMng = {
               <tr>
                 <th style="width:150px;">시리즈 \\ 항목</th>
                 <th v-for="i in fnColCount(chart)" :key="i" style="min-width:110px;">
-                  <input type="text" class="form-control" v-model="chart.colNms[i-1]"
+                  <!-- 항목관리에 3레벨 정의(cols_json)가 있으면 그것이 기준 — 여기서 고치지 않는다 -->
+                  <template v-if="chart.colsFixed">
+                    <div>{{ chart.colNms[i-1] }}</div>
+                    <div style="font-family:monospace;font-size:10px;color:#94a3b8;font-weight:400;">
+                      {{ chart.colCds ? chart.colCds[i-1] : '' }}</div>
+                  </template>
+                  <input v-else type="text" class="form-control" v-model="chart.colNms[i-1]"
                     :placeholder="'항목' + i" style="text-align:center;font-weight:700;" />
                 </th>
                 <th style="width:90px;">합계</th>
@@ -346,7 +352,11 @@ window.CmDashboardDataMng = {
             </thead>
             <tbody>
               <tr v-for="(row, ri) in chart.rows" :key="ri">
-                <td style="font-weight:600;background:#f8fafc;">{{ row.seriesNm || '(단일)' }}</td>
+                <td style="font-weight:600;background:#f8fafc;">
+                  {{ row.seriesNm || '(단일)' }}
+                  <div v-if="row.itemCode" style="font-family:monospace;font-size:10px;color:#94a3b8;font-weight:400;">
+                    {{ row.itemCode }}</div>
+                </td>
                 <td v-for="i in fnColCount(chart)" :key="i" style="padding:2px 4px;">
                   <input type="number" class="form-control" v-model="row.vals[i-1]"
                     style="text-align:right;" />

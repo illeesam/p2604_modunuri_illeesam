@@ -79,6 +79,9 @@ public class CmDashboardDataGridService {
         List<CmDashboardItem> items = itemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
         List<Map<String, Object>> out = new ArrayList<>();
 
+        /* cols_json 이 없는 차트를 위해 실제 데이터에서 3레벨 후보를 한 번에 모아둔다 */
+        Map<String, List<String>> colsFromData = collectColNamesFromData(items);
+
         for (CmDashboardItem it : items) {
             String chartCd = nvlStr(it.getItemKey(), "");
             out.add(node(1, chartCd, chartCd, it.getItemNm(), it, null));
@@ -88,6 +91,13 @@ public class CmDashboardDataGridService {
 
             List<Map<String, String>> series = parseNodes(it.getSeriesJson(), it.getDashboardItemId(), "series_json");
             List<Map<String, String>> cols   = parseNodes(it.getColsJson(),   it.getDashboardItemId(), "cols_json");
+            /* 정의가 없으면 저장 데이터의 col1_nm 들을 3레벨로 쓴다(구형 차트 호환) */
+            if (cols.isEmpty()) {
+                cols = colsFromData.getOrDefault(it.getDashboardItemId(), List.of()).stream()
+                    .map(nm -> { Map<String, String> m = new LinkedHashMap<>();
+                                 m.put("cd", null); m.put("name", nm); return m; })
+                    .toList();
+            }
 
             for (Map<String, String> s : series) {
                 String sCd = nvlStr(s.get("cd"), s.get("name"));
@@ -120,6 +130,32 @@ public class CmDashboardDataGridService {
             m.put("lvl2CodeGrp", it.getLvl2CodeGrp());
         }
         return m;
+    }
+
+    /**
+     * 차트별 3레벨 후보를 저장 데이터에서 모은다 (cols_json 미정의 차트용 폴백).
+     *
+     * <p>구형 데이터는 한 행에 라벨 하나씩 쌓는 long 형식이라 {@code col1_nm} 의 <b>distinct 값</b>이
+     * 곧 항목 목록이다. 한 대시보드의 항목 전체를 한 번에 읽어 차트별로 나눠 담는다(N+1 회피).
+     * 표시 순서가 매번 달라지지 않도록 이름순으로 정렬하고, 그리드 한 줄 폭을 넘지 않게 상한을 둔다.</p>
+     */
+    private Map<String, List<String>> collectColNamesFromData(List<CmDashboardItem> items) {
+        List<String> ids = items.stream()
+            .filter(i -> "CHART".equals(i.getItemTypeCd()))
+            .filter(i -> i.getColsJson() == null || i.getColsJson().isBlank())
+            .map(CmDashboardItem::getDashboardItemId)
+            .toList();
+        if (ids.isEmpty()) return Map.of();
+
+        Map<String, java.util.TreeSet<String>> acc = new LinkedHashMap<>();
+        for (CmDashboardItemData d : dataRepository.findByDashboardItemIdIn(ids)) {
+            String nm = d.getCol1Nm();
+            if (nm == null || nm.isBlank()) continue;
+            acc.computeIfAbsent(d.getDashboardItemId(), k -> new java.util.TreeSet<>()).add(nm.trim());
+        }
+        Map<String, List<String>> out = new LinkedHashMap<>();
+        acc.forEach((k, v) -> out.put(k, v.stream().limit(MAX_COLS).toList()));
+        return out;
     }
 
     /** {@code [{cd,name},...]} JSON 파싱. 깨져 있어도 화면은 떠야 하므로 빈 목록으로 폴백 */

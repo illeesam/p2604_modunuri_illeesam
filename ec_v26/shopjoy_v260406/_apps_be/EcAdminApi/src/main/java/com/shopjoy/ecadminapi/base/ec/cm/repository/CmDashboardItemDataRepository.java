@@ -32,4 +32,12 @@ public interface CmDashboardItemDataRepository extends JpaRepository<CmDashboard
      */
     List<CmDashboardItemData> findBySiteIdAndYyyymmddAndDashboardItemIdInOrderByDashboardItemIdAscSeriesNmAsc(
             String siteId, String yyyymmdd, List<String> dashboardItemIds);
+
+    /**
+     * 항목 트리의 3레벨 폴백용 — 차트들의 저장 데이터 전체.
+     *
+     * <p>{@code cols_json}(3레벨 정의)이 없는 구형 차트는 실제 데이터의 {@code col1_nm} 들이
+     * 곧 항목 목록이다(한 행에 라벨 하나씩 쌓는 long 형식). 그 distinct 값을 3레벨로 쓴다.</p>
+     */
+    List<CmDashboardItemData> findByDashboardItemIdIn(List<String> dashboardItemIds);
 }

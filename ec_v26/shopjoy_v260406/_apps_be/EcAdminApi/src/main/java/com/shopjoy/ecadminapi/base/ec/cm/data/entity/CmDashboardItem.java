@@ -115,6 +115,13 @@ public class CmDashboardItem extends BaseEntity {
     @Size(max = 50, message = "lvl2CodeGrp 는 50자 이내여야 합니다.")
     private String lvl2CodeGrp;
 
+    /* 항목관리 화면의 미리보기용 값. 실제 집계값(cm_dashboard_item_data)과는 별개이며,
+       구조를 짜면서 넣어 본 숫자를 다음에 열었을 때 그대로 보기 위해 함께 저장한다. */
+    @Comment("미리보기 시뮬레이션 값/스타일 JSON {values:[[..]],style:\"css\"} — 실제 집계값 아님")
+    @Column(name = "sim_json", columnDefinition = "TEXT")
+    @Size(max = 500000, message = "simJson 는 500,000자 이내여야 합니다.")
+    private String simJson;
+
     @Comment("ECharts 옵션 오버라이드 JSON (xAxis/yAxis/legend 등 부분)")
     @Column(name = "option_json", columnDefinition = "TEXT")
     @Size(max = 500000, message = "optionJson 는 500,000자 이내여야 합니다.")
