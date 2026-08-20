@@ -204,10 +204,10 @@ window.OdCartMng = {
 
     /* loadCodes — 공통코드 로드 */
     const loadCodes = async () => {
-      try {
-        const res = await coApiSvc.sySite.getList({}, '장바구니관리', '사이트목록');
-        codes.sites = res.data?.data || [];
-      } catch (_) {}
+      /* ⚠ coApiSvc.sySite.getList 는 존재하지 않는 메서드라(정의된 건 getSiteList)
+         이 catch(_) 로 조용히 삼켜져 codes.sites 가 항상 빈 배열이었다(사이트 필터가 죽어있었음).
+         boUtil.bofLoadSiteOptions() 는 다른 관리화면과 동일하게 쓰는 표준 헬퍼로 교체. */
+      codes.sites = (await window.boUtil.bofLoadSiteOptions()).map(o => ({ siteId: o.value, siteNm: o.label }));
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
@@ -255,6 +255,7 @@ window.OdCartMng = {
 
     /* ── BoGrid 컬럼 정의 ── */
     columns.listGrid = [
+      { key: 'siteNm', label: '사이트' },
       { key: 'memberNm', label: '회원',   style: 'min-width:130px;',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'prodNm',   label: '상품',   style: 'min-width:180px;',

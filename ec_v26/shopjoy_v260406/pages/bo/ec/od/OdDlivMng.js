@@ -17,6 +17,7 @@ window.OdDlivMng = {
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], dliv_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -231,7 +232,6 @@ window.OdDlivMng = {
       listGridPager.pageNo = 1;
     };
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -247,6 +247,7 @@ window.OdDlivMng = {
       codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
       codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -504,6 +505,7 @@ window.OdDlivMng = {
         typeOptions: () => codes.dliv_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 목록 그리드
@@ -523,8 +525,7 @@ window.OdDlivMng = {
       { key: '_dlivStatus',      label: '상태', sortKey: 'reg', style: 'white-space:nowrap;', excelKeys: [{key:'dlivStatusCdNm',label:'상태'}],
         fmt: (v, row) => row.dlivStatusCdNm || row.dlivStatusCd,
         badge: (row) => fnStatusBadge(row.dlivStatusCd) },
-      { key: '_site',            label: '사이트명',
-        fmt: () => cfSiteNm.value,
+      { key: 'siteNm',            label: '사이트명',
         cellStyle: 'color:#2563eb;' },
     ];
     /* fnGridRowStyle — 유틸 */

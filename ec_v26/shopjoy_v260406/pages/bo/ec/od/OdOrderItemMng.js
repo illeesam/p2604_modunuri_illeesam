@@ -98,6 +98,7 @@ window.OdOrderItemMng = {
     const listGridPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
     const uiState = reactive({ loading: false });
     const codes = reactive({ order_item_statuses: [], od_date_types: [], couriers: [], claim_types: [], claim_statuses: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const searchParam = reactive({
       orderId: '', memberId: '', memberNm: '',
@@ -398,6 +399,7 @@ window.OdOrderItemMng = {
         codes.claim_types         = codeStore.sgGetGrpCodes('CLAIM_TYPE_CD');
         codes.claim_statuses      = codeStore.sgGetGrpCodes('CLAIM_ITEM_STATUS_CD');
       } catch (_) {}
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     const initPage = async () => { await fnLoadCodes(); Object.assign(searchParamInit, searchParam); await handleSearchList(); };
@@ -632,6 +634,7 @@ window.OdOrderItemMng = {
 
       /* ── Fixed action ────────────────────────────────────────────────── */
       { key: '_actions', label: '작업', width: 56, align: 'center', slot: true, pin: 'right' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     columns.baseSearch = [
@@ -664,6 +667,7 @@ window.OdOrderItemMng = {
         typeOptions: () => codes.od_date_types, dateWidth: '136px',
         rangeOptions: () => window.boUtil.bofDateRangeOptions,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* ##### [07] return ########################################################## */

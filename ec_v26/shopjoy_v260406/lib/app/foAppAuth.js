@@ -109,11 +109,11 @@
   };
 
   /* ── 이메일/비밀번호 로그인 ── */
-  const login = async (loginId, loginPwd) => {
+  const login = async (loginId, loginPwd, siteId) => {
     state.loading = true;
     try {
       const loginPwdHash = await coUtil.cofSha256(loginPwd);
-      const res = await coApiSvc.foAuth.login({ loginId, loginPwd: loginPwdHash }, '로그인', '이메일로그인');
+      const res = await coApiSvc.foAuth.login({ loginId, loginPwd: loginPwdHash, siteId }, '로그인', '이메일로그인');
       if (res.data?.data) {
         const d = res.data.data;
         _store.saSetSession(_buildAuthUser(d, d.loginId), d.accessToken);

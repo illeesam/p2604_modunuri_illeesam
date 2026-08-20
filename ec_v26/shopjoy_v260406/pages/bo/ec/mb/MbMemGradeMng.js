@@ -15,6 +15,7 @@ window.MbMemGradeMng = {
       loading: false, error: null, checkAll: false, focusedIdx: null,
     });
     const codes = reactive({ member_grades: [], use_yn: [] }); // 공통코드
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     /* ===== 검색조건 ===== */
 
@@ -215,6 +216,7 @@ window.MbMemGradeMng = {
       await codeStore.saLoadCodes(['MEMBER_GRADE', 'USE_YN'], {compNm: 'MbMemGradeMng'});
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -245,6 +247,7 @@ window.MbMemGradeMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -261,6 +264,7 @@ window.MbMemGradeMng = {
         edit: 'number' },
       { key: 'useYn',          label: '사용여부',     style: 'width:90px;text-align:center;',
         edit: 'select', options: () => codes.use_yn },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

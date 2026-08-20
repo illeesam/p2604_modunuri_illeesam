@@ -15,6 +15,7 @@ window.MbMemGroupMng = {
       loading: false, error: null, checkAll: false, focusedIdx: null,
     });
     const codes = reactive({ USE_YN: [] }); // 공통코드
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     /* ===== 검색조건 ===== */
 
@@ -210,6 +211,7 @@ window.MbMemGroupMng = {
       const codeStore = window.sfGetBoCodeStore();
       await codeStore.saLoadCodes(['USE_YN'], { compNm: 'MbMemGroupMng' });
       codes.USE_YN = codeStore.sgGetGrpCodes('USE_YN');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -232,6 +234,7 @@ window.MbMemGroupMng = {
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.USE_YN, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -244,6 +247,7 @@ window.MbMemGroupMng = {
         align: 'right', fmt: (v) => (v || 0).toLocaleString() },
       { key: 'useYn',     label: '사용여부', style: 'width:90px;text-align:center;',
         edit: 'select', options: () => codes.USE_YN },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

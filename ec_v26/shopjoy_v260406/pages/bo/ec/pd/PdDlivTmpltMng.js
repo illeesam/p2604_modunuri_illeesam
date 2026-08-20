@@ -19,6 +19,7 @@ window.PdDlivTmpltMng = {
       USE_YN: [],
       DLIV_METHOD: [], DLIV_PAY_TYPE: [], COURIER: [],
     });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const form = reactive({});                    // 상세 폼 데이터
     const errors = reactive({});                  // 저장 검증 오류 (항목 아래 빨간 라벨)
     const SORT_MAP = { nm: { asc: 'dlivTmpltNm asc', desc: 'dlivTmpltNm desc' } };
@@ -242,6 +243,7 @@ window.PdDlivTmpltMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -265,6 +267,7 @@ window.PdDlivTmpltMng = {
       { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
       { key: 'dlivMethodCd', label: '배송방법', type: 'select', options: () => codes.DLIV_METHOD, nullLabel: '전체' },
       { key: 'useYn', label: '사용여부', type: 'select', options: () => codes.USE_YN, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -282,6 +285,7 @@ window.PdDlivTmpltMng = {
         badge: (row) => (row.baseDlivYn === 'Y' ? 'badge-orange' : 'badge-gray') },
       { key: 'useYn',         label: '사용',       style: 'width:60px;text-align:center;', align: 'center',
         badge: (row) => fnYnBadge(row.useYn) },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     // 기본 폼 — cols=3 기준 자연 배치

@@ -20,6 +20,7 @@ window.PdCategoryProdMng = {
       product_statuses: [],
       disp_yn_opts: [{ codeValue: 'Y', codeLabel: '전시' }, { codeValue: 'N', codeLabel: '비전시' }],
     });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     /* 카테고리-상품 매핑 fnLoadCodes */
 
@@ -99,6 +100,7 @@ window.PdCategoryProdMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* 선택된 카테고리 (watch 이전에 선언 필수) */
@@ -454,6 +456,7 @@ window.PdCategoryProdMng = {
         const columns = {};
         columns.baseSearch = [
       { key: 'prodNm', label: '상품명', type: 'text', placeholder: '상품명 검색', width: '280px' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     const cfCatProdGridColumns = computed(() => {
@@ -495,6 +498,7 @@ window.PdCategoryProdMng = {
       { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right', align: 'right',
         fmt: (v, row) => (coUtil.cofWon(row.salePrice)) },
       { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

@@ -125,7 +125,7 @@ window.PmSaveMng = {
       save_issue_types: [],
       date_range_opts: [],
     });
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false });
 
@@ -154,6 +154,7 @@ window.PmSaveMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ===== 정렬 처리 =======================================================
@@ -342,6 +343,7 @@ window.PmSaveMng = {
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -356,7 +358,7 @@ window.PmSaveMng = {
       { key: 'startDate',  label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'endDate',    label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'saveStatus', label: '상태', badge: (row) => fnStatusBadge(row.saveStatus) },
-      { key: 'siteNm',     label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
+      { key: 'siteNm',     label: '사이트', cellStyle: 'color:#2563eb' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

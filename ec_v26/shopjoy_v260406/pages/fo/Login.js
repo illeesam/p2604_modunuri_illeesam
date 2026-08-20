@@ -117,12 +117,32 @@ window.Login = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-
-
     // login | terms | signup | sns-signup  → uiState.step 사용
 
     /* -- 로그인 -- */
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
+
+    /* -- 사이트 선택란 (회원 로그인 시 site_id 체크용) -- */
+    const siteOptions = reactive({ list: [], selected: '', loading: false });
+
+    /* _loadSiteOptions — 로드 (옵션 1개면 자동선택) */
+    const _loadSiteOptions = async () => {
+      siteOptions.loading = true;
+      try {
+        const res = await coApiSvc.foAuth.siteOptions('로그인', '사이트목록조회');
+        siteOptions.list = res.data?.data || [];
+        if (siteOptions.list.length === 1) {
+          siteOptions.selected = siteOptions.list[0].siteId;
+        }
+      } catch (e) {
+        console.warn('[Login] siteOptions load failed:', e);
+        siteOptions.list = [];
+      } finally {
+        siteOptions.loading = false;
+      }
+    };
+
+    onMounted(() => { _loadSiteOptions(); });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
@@ -130,7 +150,8 @@ window.Login = {
     const doLogin = async () => {
       uiState.loginErr = '';
       if (!form.email || !form.password) { uiState.loginErr = '이메일과 비밀번호를 입력하세요.'; return; }
-      const r = await window.foAuth.login(form.email, form.password);
+      if (siteOptions.list.length > 0 && !siteOptions.selected) { uiState.loginErr = '사이트를 선택해주세요.'; return; }
+      const r = await window.foAuth.login(form.email, form.password, siteOptions.selected || undefined);
       if (r.ok) {
         const userNm = window.foAuth.state.user?.authNm || window.foAuth.state.user?.memberNm || '사용자';
         props.showToast(userNm + '님, 환영합니다!', 'success');
@@ -216,6 +237,7 @@ window.Login = {
       memberPick.show = false;
       form.email = m.loginId || m.memberEmail || '';
       form.password = '1111';
+      if (m.siteId) { siteOptions.selected = m.siteId; }   // 선택 회원의 사이트로 자동 매칭
       await doLogin();
     };
 
@@ -424,7 +446,7 @@ window.Login = {
 
     return {
       columns,
-      uiState, addrSearchModal,       // 상태
+      uiState, addrSearchModal, siteOptions,       // 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, sf, snsSf, snsPhone, terms, // 폼/약관
       IS, // 스타일
@@ -455,6 +477,12 @@ window.Login = {
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;">
+        <select v-if="siteOptions.list.length > 0" v-model="siteOptions.selected" :style="IS">
+          <option value="" disabled>사이트 선택</option>
+          <option v-for="s in siteOptions.list" :key="s.siteId" :value="s.siteId">
+            {{ s.siteNm }}
+          </option>
+        </select>
         <input v-model="form.email" type="email" placeholder="이메일" @keyup.enter="handleBtnAction('form-login')" :style="IS">
         <input v-model="form.password" type="password" placeholder="비밀번호" @keyup.enter="handleBtnAction('form-login')" :style="IS">
         <div v-if="uiState.loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">

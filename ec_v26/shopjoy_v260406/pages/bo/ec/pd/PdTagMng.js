@@ -15,6 +15,7 @@ window.PdTagMng = {
     const gridRows = reactive([]);                // 태그 그리드 행 (편집 상태 포함)
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ use_yn: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     let _tempId = -1;
 
     /* ===== 검색조건 ===== */
@@ -155,6 +156,7 @@ window.PdTagMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -177,6 +179,7 @@ window.PdTagMng = {
     columns.baseSearch = [
       { key: 'searchValue', label: '태그명', type: 'text', placeholder: '태그명 검색' },
       { key: 'useYn', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -188,6 +191,7 @@ window.PdTagMng = {
       { key: 'sortOrd',  label: '정렬',   style: 'width:80px;text-align:right;', edit: 'number', align: 'right' },
       { key: 'useYn',    label: '사용',   style: 'width:70px;text-align:center;',
         edit: 'select', options: () => codes.use_yn },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

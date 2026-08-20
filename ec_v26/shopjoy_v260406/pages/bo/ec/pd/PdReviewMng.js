@@ -17,6 +17,7 @@ window.PdReviewMng = {
     const codes = reactive({
       REVIEW_STATUS: [], REVIEW_RATING: [],
     });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     /* 상품 리뷰 fnLoadCodes */
 
@@ -105,6 +106,7 @@ window.PdReviewMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // onMounted에서 API 로드
@@ -353,6 +355,7 @@ window.PdReviewMng = {
       { key: 'searchValue', label: '리뷰제목', type: 'text', placeholder: '리뷰 제목 검색' },
       { key: 'reviewStatusCd', label: '상태', type: 'select', options: () => codes.REVIEW_STATUS, nullLabel: '전체' },
       { key: 'rating', label: '평점', type: 'select', options: () => codes.REVIEW_RATING, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -381,6 +384,7 @@ window.PdReviewMng = {
       { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
         selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.REVIEW_STATUS,
           onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
+          { key: 'siteNm', label: '사이트' },
     ];
     /* fnGridRowClass — 유틸 */
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');

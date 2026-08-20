@@ -17,6 +17,7 @@ window.DpDispAreaMng = {
     const uis = reactive([]);                     // 상위 UI 목록 (검색 select + 그리드 라벨)
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ area_types: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const searchParam = reactive({ searchValue: '', uiId: '', areaTypeCd: '', useYn: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -105,6 +106,7 @@ window.DpDispAreaMng = {
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
       await s.saLoadCodes(['AREA_TYPE_CD'], {compNm: 'DpDispAreaMng'});
       codes.area_types = s.sgGetGrpCodes('AREA_TYPE_CD');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* initPage — 화면 로드 시퀀스.
@@ -186,6 +188,7 @@ window.DpDispAreaMng = {
         options: () => uis.map(u => ({ value: u.uiId, label: u.uiNm })), nullLabel: 'UI 전체' },
       { key: 'areaTypeCd',  label: '영역유형', type: 'select', options: () => codes.area_types, nullLabel: '유형 전체' },
       { key: 'useYn',       label: '사용여부', type: 'select', options: () => codes.use_yn,     nullLabel: '사용여부 전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     columns.baseGrid = [
@@ -198,6 +201,7 @@ window.DpDispAreaMng = {
       { key: 'useYn',      label: '사용',     style: 'width:70px;',
         badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',    label: '등록일',   style: 'width:110px;', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) || '-' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

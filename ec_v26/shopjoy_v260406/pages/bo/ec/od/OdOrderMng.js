@@ -19,6 +19,7 @@ window.OdOrderMng = {
     const claims = reactive([]);                                                // 클레임 목록 (셀 렌더용)
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], order_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
 
@@ -256,7 +257,6 @@ window.OdOrderMng = {
       listGridPager.pageNo = 1;
     };
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -270,6 +270,7 @@ window.OdOrderMng = {
       codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
       codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -525,6 +526,7 @@ window.OdOrderMng = {
         typeOptions: () => codes.order_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* fnPayStatusText — 유틸 */
@@ -558,8 +560,7 @@ window.OdOrderMng = {
           if (!c) { return 'font-size:11px;color:#ccc;'; }
           return `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${fnClaimTypeColor(c.claimTypeCd)};`;
         } },
-      { key: '_site',         label: '사이트명',
-        fmt: () => cfSiteNm.value,
+      { key: 'siteNm',         label: '사이트명',
         cellStyle: 'color:#2563eb;' },
     ];
     /* fnGridRowStyle — 유틸 */

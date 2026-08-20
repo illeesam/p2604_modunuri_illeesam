@@ -16,6 +16,7 @@ window.PdQnaMng = {
                                selectedId: null, isNew: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
     const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const codes = reactive({ qna_statuses: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
     /* Dtl 인라인 패널용 폼 */
     const form = reactive({ qnaId: null, siteId: null, prodId: null, memberId: null,
@@ -224,6 +225,7 @@ window.PdQnaMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -237,7 +239,6 @@ window.PdQnaMng = {
     };
     onMounted(initPage);
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -246,6 +247,7 @@ window.PdQnaMng = {
     columns.baseSearch = [
       { key: 'searchValue', label: '키워드', type: 'text', placeholder: '제목 검색' },
       { key: 'answYn', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 답변 폼
@@ -257,7 +259,7 @@ window.PdQnaMng = {
 
     // 기본 그리드
     columns.baseGrid = [
-      { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
+      { key: 'siteNm',   label: '사이트' },
       { key: 'prodId',   label: '상품명', fmt: (v) => getProdNm(v) },
       { key: 'qnaTitle', label: '제목', link: true },
       { key: 'memberId', label: '작성자', fmt: (v) => getMemNm(v) },

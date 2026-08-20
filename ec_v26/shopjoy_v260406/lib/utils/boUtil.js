@@ -249,6 +249,21 @@
   /* useAppCodeReady 는 폐기(2026-07-30). 코드 적재는 화면의 fnLoadCodes 안에서
      codeStore.saLoadCodes([...], {compNm: 'boUtil'}) 로 하고, 호출 시점은 initPage 가 정한다. */
 
+  /* bofLoadSiteOptions — BO 검색조건 사이트 select 옵션 (sy_site 전체, 세션 내 1회만 조회 캐시)
+     그리드 컬럼 정의의 options: () => siteOptions 형태로 재사용 */
+  let _siteOptionsCache = null;
+  boUtil.bofLoadSiteOptions = async function () {
+    if (_siteOptionsCache) return _siteOptionsCache;
+    try {
+      const res = await coApiSvc.sySite.getSiteList();
+      _siteOptionsCache = (res.data?.data || []).map(s => ({ value: s.siteId, label: s.siteNm }));
+    } catch (e) {
+      console.warn('[boUtil.bofLoadSiteOptions] 사이트 목록 조회 실패:', e);
+      _siteOptionsCache = [];
+    }
+    return _siteOptionsCache;
+  };
+
   global.boUtil = boUtil;
   global.boCommonFilter = boCommonFilter;
 })(typeof window !== 'undefined' ? window : globalThis);

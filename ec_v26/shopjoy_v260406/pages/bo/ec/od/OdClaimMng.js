@@ -18,6 +18,7 @@ window.OdClaimMng = {
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
     const uiState = reactive({ bulkOpen: false, loading: false, error: null, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -240,7 +241,6 @@ window.OdClaimMng = {
       listGridPager.pageNo = 1;
     };
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -256,6 +256,7 @@ window.OdClaimMng = {
       codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
       codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -560,6 +561,7 @@ window.OdClaimMng = {
         typeOptions: () => codes.claim_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 목록 그리드
@@ -581,8 +583,7 @@ window.OdClaimMng = {
         cellInnerStyle: (v, row) => `font-size:10px;padding:2px 8px;border-radius:10px;color:#fff;font-weight:700;background:${fnClaimTypeColor(row.claimTypeCd)};` },
       { key: 'requestDate',   label: '신청일', sortKey: 'reg', style: 'white-space:nowrap;',
         fmt: (v) => (v || '').slice(0, 10) },
-      { key: '_site',         label: '사이트명',
-        fmt: () => cfSiteNm.value,
+      { key: 'siteNm',         label: '사이트명',
         cellStyle: 'color:#2563eb;' },
     ];
     /* fnGridRowStyle — 유틸 */

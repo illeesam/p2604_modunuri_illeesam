@@ -16,6 +16,7 @@ window.DpDispWidgetLibMng = {
     const widgetLibCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ loading: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -128,6 +129,7 @@ window.DpDispWidgetLibMng = {
       codes.disp_widget_types = codeStore.sgGetGrpCodes('WIDGET_TYPE_CD');
       /* 상태 = use_yn(Y/N) — 검색 시 useYn 파라미터로 전달 (구 ACTIVE_STATUS '활성' 값은 백엔드 Y/N 비교와 불일치) */
       codes.active_statuses = [{ codeValue: 'Y', codeLabel: '활성' }, { codeValue: 'N', codeLabel: '비활성' }];
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* getSortParam — 조회 */
@@ -319,6 +321,7 @@ window.DpDispWidgetLibMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '200px' },
       { key: 'widgetTypeCd',   type: 'select', label: '위젯 유형', options: () => codes.disp_widget_types, nullLabel: '전체' },
       { key: 'useYn', type: 'select', label: '상태', options: () => codes.active_statuses,   nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
@@ -330,6 +333,7 @@ window.DpDispWidgetLibMng = {
       { key: 'useYn',        label: '상태',
         badge: row => fnStatusCls(row.useYn),
         fmt:   v   => fnStatusLabel(v) },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

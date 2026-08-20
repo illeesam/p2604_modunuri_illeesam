@@ -13,6 +13,7 @@ window.DpDispWidgetMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const widgetCounts = reactive({});
     const uiState = reactive({ loading: false, selectedType: null, sortKey: '', sortDir: 'asc' });
     const widgets = reactive([]);
@@ -189,6 +190,7 @@ window.DpDispWidgetMng = {
       codes.disp_widget_types = codeStore.sgGetGrpCodes('WIDGET_TYPE_CD');
       /* 상태 = use_yn(Y/N) — 검색 시 useYn 파라미터로 전달 (구 ACTIVE_STATUS '활성' 값은 백엔드 Y/N 비교와 불일치) */
       codes.active_statuses = [{ codeValue: 'Y', codeLabel: '활성' }, { codeValue: 'N', codeLabel: '비활성' }];
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* getSortParam — 조회 */
@@ -441,6 +443,7 @@ window.DpDispWidgetMng = {
       { key: 'searchValue', type: 'text',   label: '검색어',    placeholder: '검색어 입력', width: '200px' },
       { key: 'widgetTypeCd',        type: 'select', label: '위젯 유형', options: () => codes.disp_widget_types, nullLabel: '전체' },
       { key: 'useYn',      type: 'select', label: '상태',      options: () => codes.active_statuses,   nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
@@ -449,6 +452,7 @@ window.DpDispWidgetMng = {
         cellStyle: 'color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;font-family:monospace;',
         fmt: (v) => v ? '#' + String(v).slice(-6) : '-' },
       { key: 'widgetInfo', label: '위젯 정보', sortKey: 'reg' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

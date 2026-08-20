@@ -19,7 +19,7 @@ window.PmVoucherMng = {
       promo_statuses: [],
       date_range_opts: [],
     });
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* 하단 상세 (항상 표시 — 진입 시 빈 신규 폼, 비활성) */
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false });
@@ -132,6 +132,7 @@ window.PmVoucherMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // onMounted에서 API 로드
@@ -299,6 +300,7 @@ window.PmVoucherMng = {
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -318,7 +320,7 @@ window.PmVoucherMng = {
       { key: 'startDate',       label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'endDate',         label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'voucherStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.voucherStatusCd) },
-      { key: 'siteNm',          label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
+      { key: 'siteNm',          label: '사이트', cellStyle: 'color:#2563eb' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

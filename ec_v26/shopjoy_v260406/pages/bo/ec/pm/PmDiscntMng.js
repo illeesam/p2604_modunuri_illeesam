@@ -135,6 +135,7 @@ window.PmDiscntMng = {
       promo_statuses: [],
       date_range_opts: [],
     });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     // ===== 공통코드 로딩 ===================================================
     /* 할인 fnLoadCodes */
@@ -155,6 +156,7 @@ window.PmDiscntMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
     // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
@@ -231,7 +233,6 @@ window.PmDiscntMng = {
       boUtil.bofApplyDateRange(searchParam);
       baseGridPager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
      // 'list' | 'card'
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false });
@@ -369,6 +370,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'view', reload
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -387,13 +389,13 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'view', reload
       { key: 'startDate',      label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'endDate',        label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'discntStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.discntStatusCd) },
-      { key: 'siteNm',         label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
+      { key: 'siteNm',         label: '사이트', cellStyle: 'color:#2563eb' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, baseGridPager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, onSort, sortIcon, handleBtnAction, handleSelectAction, handleGridCellAction,
+      columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, baseGridPager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, onSort, sortIcon, handleBtnAction, handleSelectAction, handleGridCellAction,
       modals, fnCallbackModal,
       excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,     // 엑셀 다운로드
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };

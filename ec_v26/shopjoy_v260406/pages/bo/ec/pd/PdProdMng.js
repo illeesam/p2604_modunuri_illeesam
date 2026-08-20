@@ -21,6 +21,7 @@ window.PdProdMng = {
       loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [], prod_types: [] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* ===== 검색조건 ===== */
@@ -345,6 +346,7 @@ window.PdProdMng = {
       codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE_CD');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* fnLoadVendorsAndMdUsers — 검색조건 판매업체 select 목록 로드 */
@@ -398,7 +400,6 @@ window.PdProdMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
 
     /* cfPageTitle — 유형별 개별 메뉴 진입 시 화면 제목 (fixedProdTypeCd 지정) */
@@ -443,6 +444,7 @@ window.PdProdMng = {
         typeOptions: () => codes.prod_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -456,7 +458,7 @@ window.PdProdMng = {
       { key: 'brandNm',      label: '브랜드' },
       { key: 'prodStatusCd', label: '상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
       { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
-      { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
+      { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

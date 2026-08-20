@@ -169,6 +169,7 @@
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.foAuth = {
     login(body, uiNm, cmdNm)          { return global.foApi.post('/co/fo-auth/login',   body, hdr(uiNm, cmdNm)); },
+    siteOptions(uiNm, cmdNm)          { return global.foApi.get('/co/fo-auth/site-options', hdr(uiNm, cmdNm)); },
     socialLogin(body, uiNm, cmdNm)    { return global.foApi.post('/co/fo-auth/social-login', body, hdr(uiNm, cmdNm)); },
     tokenRefresh(body, uiNm, cmdNm)   { return global.foApi.post('/co/fo-auth/token-refresh', body, hdr(uiNm, cmdNm)); },
     logout(body, uiNm, cmdNm)         { return global.foApi.post('/co/fo-auth/logout',  body, hdr(uiNm, cmdNm)); },

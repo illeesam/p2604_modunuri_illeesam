@@ -16,6 +16,7 @@ window.DpDispUiMng = {
     const uis = reactive([]);
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ device_types: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const searchParam = reactive({ searchValue: '', deviceTypeCd: '', useYn: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -104,6 +105,7 @@ window.DpDispUiMng = {
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
       await s.saLoadCodes(['DEVICE_TYPE_CD'], {compNm: 'DpDispUiMng'});
       codes.device_types = s.sgGetGrpCodes('DEVICE_TYPE_CD');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* initPage — 화면 로드 시퀀스.
@@ -171,6 +173,7 @@ window.DpDispUiMng = {
       { key: 'searchValue',  label: 'UI명',     type: 'text',   placeholder: 'UI명/코드 검색' },
       { key: 'deviceTypeCd', label: '디바이스', type: 'select', options: () => codes.device_types, nullLabel: '디바이스 전체' },
       { key: 'useYn',        label: '사용여부', type: 'select', options: () => codes.use_yn,       nullLabel: '사용여부 전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     columns.baseGrid = [
@@ -185,6 +188,7 @@ window.DpDispUiMng = {
       { key: 'useYn',        label: '사용',     style: 'width:70px;',
         badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',      label: '등록일',   style: 'width:110px;', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) || '-' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

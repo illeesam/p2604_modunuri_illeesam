@@ -17,6 +17,7 @@ window.MbMemberMng = {
       loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ MEMBER_STATUS: [], MEMBER_GRADE: [] }); // 공통코드
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
     const SORT_MAP = { nm: { asc: 'memberNm asc', desc: 'memberNm desc' }, reg: { asc: 'joinDate asc', desc: 'joinDate desc' } };
 
     /* ===== 검색조건 ===== */
@@ -318,6 +319,7 @@ window.MbMemberMng = {
       await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS_CD'], { compNm: 'MbMemberMng' });
       codes.MEMBER_GRADE = codeStore.sgGetGrpCodes('MEMBER_GRADE');
       codes.MEMBER_STATUS = codeStore.sgGetGrpCodes('MEMBER_STATUS_CD');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -364,6 +366,7 @@ window.MbMemberMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'gradeCd', type: 'select', label: '등급', options: () => codes.MEMBER_GRADE, nullLabel: '전체' },
       { key: 'memberStatusCd', type: 'select', label: '상태', options: () => codes.MEMBER_STATUS, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -378,6 +381,7 @@ window.MbMemberMng = {
       { key: 'joinDate',         label: '가입일',   sortKey: 'reg', fmt: (v) => fnFmtDate(v) },
       { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right', align: 'right', fmt: (v) => (v || 0) + '건' },
       { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right', align: 'right', fmt: (v) => coUtil.cofWon(v) },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

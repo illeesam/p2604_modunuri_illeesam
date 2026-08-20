@@ -18,6 +18,7 @@ window.DpDispPanelMng = {
     const uis = reactive([]);                     // UI 목록 (영역 라벨 prefix)
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ panel_types: [], disp_statuses: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     const searchParam = reactive({ searchValue: '', areaId: '', panelTypeCd: '', dispPanelStatusCd: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -107,6 +108,7 @@ window.DpDispPanelMng = {
       await s.saLoadCodes(['PANEL_TYPE_CD', 'DISP_PANEL_STATUS_CD'], {compNm: 'DpDispPanelMng'});
       codes.panel_types   = s.sgGetGrpCodes('PANEL_TYPE_CD');
       codes.disp_statuses = s.sgGetGrpCodes('DISP_PANEL_STATUS_CD');
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     /* initPage — 화면 로드 시퀀스.
@@ -196,6 +198,7 @@ window.DpDispPanelMng = {
         options: () => areas.map(a => ({ value: a.areaId, label: fnAreaNm(a.areaId) })), nullLabel: '영역 전체' },
       { key: 'panelTypeCd',       label: '표시유형', type: 'select', options: () => codes.panel_types,   nullLabel: '유형 전체' },
       { key: 'dispPanelStatusCd', label: '상태',     type: 'select', options: () => codes.disp_statuses, nullLabel: '상태 전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     columns.baseGrid = [
@@ -209,6 +212,7 @@ window.DpDispPanelMng = {
       { key: 'useYn',             label: '사용',     style: 'width:70px;',
         badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',           label: '등록일',   style: 'width:110px;', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) || '-' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

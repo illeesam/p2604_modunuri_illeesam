@@ -20,6 +20,7 @@ window.PdRestockNotiMng = {
       PRODUCT_STATUS: [],
       SEND_YN: [],
     });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     /* ===== 검색조건 ===== */
 
@@ -145,6 +146,7 @@ window.PdRestockNotiMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
     // ★ onMounted
@@ -165,6 +167,7 @@ window.PdRestockNotiMng = {
     columns.baseSearch = [
       { key: 'prodId', label: '상품ID', type: 'text', placeholder: '상품ID 검색' },
       { key: 'notiYn', label: '알림발송', type: 'select', options: () => codes.SEND_YN, nullLabel: '전체' },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -176,6 +179,7 @@ window.PdRestockNotiMng = {
         badge: (row) => fnYnBadge(row.notiYn), fmt: (v, row) => row.notiYn === 'Y' ? '발송완료' : '미발송' },
       { key: 'notiDate', label: '발송일시', style: 'width:140px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',  label: '신청일',  style: 'width:140px',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+          { key: 'siteNm', label: '사이트' },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */

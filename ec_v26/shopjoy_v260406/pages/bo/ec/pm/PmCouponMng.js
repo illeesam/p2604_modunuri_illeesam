@@ -20,6 +20,7 @@ window.PmCouponMng = {
       coupon_statuses: [],
       date_range_opts: [],
     });
+    const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
 
     /* 쿠폰 fnLoadCodes */
 
@@ -141,9 +142,9 @@ window.PmCouponMng = {
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
+            siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
@@ -340,6 +341,7 @@ window.PmCouponMng = {
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
+          { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -360,7 +362,7 @@ window.PmCouponMng = {
       { key: 'couponStatusCd', label: '상태',
         badge: (row) => fnStatusBadge(row.couponStatusCdNm || row.couponStatusCd),
         fmt: (v, row) => row.couponStatusCdNm || row.couponStatusCd },
-      { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
+      { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
