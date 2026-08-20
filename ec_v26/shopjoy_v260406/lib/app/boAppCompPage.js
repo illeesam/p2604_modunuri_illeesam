@@ -106,6 +106,7 @@
     cmBlogMng: 'cm-blog-mng',
     cmDashboardMng: 'cm-dashboard-mng',
     cmDashboardItemMng: 'cm-dashboard-item-mng',
+    cmDashboardDataMng: 'cm-dashboard-data-mng',
     cmDashboardLayoutMng: 'cm-dashboard-layout-mng',
     cmDashboardMyMng: 'cm-dashboard-my-mng',
     cmDashboardMenuMng: 'cm-dashboard-menu-mng',

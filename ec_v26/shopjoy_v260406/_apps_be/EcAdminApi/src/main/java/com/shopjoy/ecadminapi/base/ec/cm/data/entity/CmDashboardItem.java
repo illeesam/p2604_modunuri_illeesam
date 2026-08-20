@@ -87,10 +87,33 @@ public class CmDashboardItem extends BaseEntity {
     @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
-    @Comment("시리즈 설정 JSON 배열 [{name,color,type,...}]")
+    /* ── 3레벨 구조 정의 (2026-08-21) ─────────────────────────────────────────
+       1레벨 = 이 차트 자신(코드는 item_key)
+       2레벨 = 시리즈  → series_json  [{cd,name,color,...}]
+       3레벨 = 항목    → cols_json    [{cd,name}]
+       각 레벨의 이름을 공통코드에서 고르게 하려면 lvl1/lvl2_code_grp 에 코드그룹을 지정한다
+       (비우면 직접입력). 상품옵션의 OPT_TYPE/OPT_VAL 크로스그룹 트리와 같은 방식.
+       고유 item_code 는 저장하지 않고 `item_key-시리즈cd-항목cd` 로 조립해서 쓴다. */
+
+    @Comment("시리즈 설정 JSON 배열 [{cd,name,color,type,...}] — 2레벨 정의")
     @Column(name = "series_json", columnDefinition = "TEXT")
     @Size(max = 500000, message = "seriesJson 는 500,000자 이내여야 합니다.")
     private String seriesJson;
+
+    @Comment("3레벨 항목 정의 JSON [{cd,name}] — 데이터관리 그리드의 열 제목")
+    @Column(name = "cols_json", columnDefinition = "TEXT")
+    @Size(max = 500000, message = "colsJson 는 500,000자 이내여야 합니다.")
+    private String colsJson;
+
+    @Comment("2레벨(시리즈) 이름 선택용 공통코드그룹. NULL=직접입력")
+    @Column(name = "lvl1_code_grp", length = 50)
+    @Size(max = 50, message = "lvl1CodeGrp 는 50자 이내여야 합니다.")
+    private String lvl1CodeGrp;
+
+    @Comment("3레벨(항목) 이름 선택용 공통코드그룹. NULL=직접입력")
+    @Column(name = "lvl2_code_grp", length = 50)
+    @Size(max = 50, message = "lvl2CodeGrp 는 50자 이내여야 합니다.")
+    private String lvl2CodeGrp;
 
     @Comment("ECharts 옵션 오버라이드 JSON (xAxis/yAxis/legend 등 부분)")
     @Column(name = "option_json", columnDefinition = "TEXT")

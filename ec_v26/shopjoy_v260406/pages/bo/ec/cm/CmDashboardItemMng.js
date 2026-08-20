@@ -20,8 +20,15 @@ window.CmDashboardItemMng = {
     const dashboards = reactive([]);   /* cm_dashboard 전체 (사이트 기준) */
     const panels     = reactive([]);   /* 선택 대시보드의 cm_dashboard_item */
     const panelCnt   = reactive({});   /* dashboardId → 항목 수 */
-    const uiState = reactive({ loading: false, panelLoading: false });
+    const uiState = reactive({ loading: false, panelLoading: false, viewMode: 'tree' }); /* viewMode: 'tree'|'grid' */
     const codes = reactive({});
+
+    /* ── 3레벨 트리 (1:차트 / 2:시리즈 / 3:항목) ──────────────────────────
+       서버가 평면 배열(lvl + itemCode)로 준다. 접기/펼치기는 화면에서만 관리한다. */
+    const treeRows = reactive([]);
+    const treeState = reactive({
+      collapsed: {},   /* itemCode → true (접힘). 기본은 전부 펼침 */
+    });
 
     const searchParam = reactive({ searchValue: '', useYn: '' });
 
@@ -34,6 +41,7 @@ window.CmDashboardItemMng = {
     const _initPanelForm = () => ({
       dashboardItemId: null, itemKey: '', itemNm: '', itemTypeCd: 'CHART', chartTypeCd: 'bar', sortOrd: 10,
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', seriesJson: '', optionJson: '',
+      colsJson: '', lvl1CodeGrp: '', lvl2CodeGrp: '',
     });
     const panelForm = reactive(_initPanelForm());
     const panelErrors = reactive({});
@@ -118,9 +126,13 @@ window.CmDashboardItemMng = {
       } catch (e) { console.warn('[항목 수 조회 오류]', e); }
     };
 
-    /* handleSearchPanels — 선택 대시보드의 항목 목록 조회 */
+    /* handleSearchPanels — 선택 대시보드의 항목 목록 조회 (평면 목록 + 3레벨 트리) */
     const handleSearchPanels = async () => {
-      if (!dashState.selectedId) { panels.splice(0, panels.length); return; }
+      if (!dashState.selectedId) {
+        panels.splice(0, panels.length);
+        treeRows.splice(0, treeRows.length);
+        return;
+      }
       uiState.panelLoading = true;
       try {
         const res = await boApiSvc.cmDashboard.getItemList(
@@ -128,10 +140,23 @@ window.CmDashboardItemMng = {
         const list = (res.data?.data || []).filter(i => i.dashboardId === dashState.selectedId);
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         panels.splice(0, panels.length, ...list);
+        await fnLoadTree();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
       } finally {
         uiState.panelLoading = false;
+      }
+    };
+
+    /* fnLoadTree — 3레벨 트리 조회. 트리가 비어도 평면 목록은 이미 떠 있으므로 화면을 막지 않는다 */
+    const fnLoadTree = async () => {
+      try {
+        const res = await boApiSvc.cmDashboard.getItemTree(
+          { dashboardId: dashState.selectedId }, '대시보드항목관리', '항목트리조회');
+        treeRows.splice(0, treeRows.length, ...(res.data?.data || []));
+      } catch (err) {
+        treeRows.splice(0, treeRows.length);
+        console.warn('[항목 트리 조회 오류]', err);
       }
     };
 
@@ -171,6 +196,7 @@ window.CmDashboardItemMng = {
         panelWidth: row.panelWidth || 1, panelHeight: row.panelHeight || 1,
         realtimeYn: row.realtimeYn || 'N', useYn: row.useYn || 'Y',
         seriesJson: row.seriesJson || '', optionJson: row.optionJson || '',
+        colsJson: row.colsJson || '', lvl1CodeGrp: row.lvl1CodeGrp || '', lvl2CodeGrp: row.lvl2CodeGrp || '',
       });
     };
 
@@ -209,6 +235,8 @@ window.CmDashboardItemMng = {
           panelWidth: Number(panelForm.panelWidth) || 1, panelHeight: Number(panelForm.panelHeight) || 1,
           realtimeYn: panelForm.realtimeYn, useYn: panelForm.useYn,
           seriesJson: panelForm.seriesJson || null, optionJson: panelForm.optionJson || null,
+          colsJson: panelForm.colsJson || null,
+          lvl1CodeGrp: panelForm.lvl1CodeGrp || null, lvl2CodeGrp: panelForm.lvl2CodeGrp || null,
         };
         await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
         showToast('저장되었습니다.', 'success');
@@ -236,6 +264,46 @@ window.CmDashboardItemMng = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
+
+    /* ── 3레벨 트리 헬퍼 ────────────────────────────────────────────────────
+       서버가 준 평면 배열에서 "접힌 조상"이 있는 노드만 걸러 화면에 그린다.
+       lvl2 는 자기 차트(lvl1)가 접히면 숨고, lvl3 는 차트 또는 시리즈가 접히면 숨는다. */
+
+    /* fnParentCode — 노드의 부모 itemCode ('A-B-C' → 'A-B') */
+    const fnParentCode = (code) => {
+      const i = String(code || '').lastIndexOf('-');
+      return i < 0 ? '' : String(code).slice(0, i);
+    };
+
+    /* cfTreeVisible — 접힘 상태를 반영한 표시 대상 노드 */
+    const cfTreeVisible = computed(() => treeRows.filter((n) => {
+      if (n.lvl === 1) return true;
+      /* 조상 코드를 하나씩 거슬러 올라가며 접힌 게 있으면 숨김 */
+      let p = fnParentCode(n.itemCode);
+      while (p) {
+        if (treeState.collapsed[p]) return false;
+        p = fnParentCode(p);
+      }
+      return true;
+    }));
+
+    /* fnHasChild — 자식이 있는 노드만 ▼/▶ 아이콘을 보여준다 */
+    const fnHasChild = (node) => treeRows.some(n => fnParentCode(n.itemCode) === node.itemCode);
+
+    /* fnToggleNode — 접기/펼치기 */
+    const fnToggleNode = (node) => {
+      if (!fnHasChild(node)) return;
+      if (treeState.collapsed[node.itemCode]) delete treeState.collapsed[node.itemCode];
+      else treeState.collapsed[node.itemCode] = true;
+    };
+
+    const fnTreeExpandAll   = () => { Object.keys(treeState.collapsed).forEach(k => delete treeState.collapsed[k]); };
+    const fnTreeCollapseAll = () => { treeRows.forEach(n => { if (fnHasChild(n)) treeState.collapsed[n.itemCode] = true; }); };
+
+    /* fnLvlBullet / fnLvlColor — 레벨 구분 표시 (카테고리관리와 같은 방식) */
+    const fnLvlBullet = (lvl) => (lvl === 1 ? '●' : lvl === 2 ? '▪' : '·');
+    const fnLvlColor  = (lvl) => (lvl === 1 ? '#e8587a' : lvl === 2 ? '#2563eb' : '#94a3b8');
+    const fnLvlLabel  = (lvl) => (lvl === 1 ? '차트' : lvl === 2 ? '시리즈' : '항목');
 
     const columns = {};
 
@@ -294,8 +362,24 @@ window.CmDashboardItemMng = {
         options: () => [{ value: 'N', label: '일반' }, { value: 'Y', label: '실시간' }] },
       { key: 'useYn', label: '사용여부', type: 'select',
         options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },
-      { key: 'seriesJson', label: '시리즈/컬럼 설정 JSON', type: 'textarea', colSpan: 3, mono: true,
-        placeholder: '[{"name":"매출","color":"#6366f1","type":"bar"}]' },
+      /* ── 3레벨 구조 정의 ────────────────────────────────────────────────
+         2레벨(시리즈)·3레벨(항목) 이름을 공통코드에서 고르게 하려면 코드그룹을 지정한다.
+         비워두면 직접입력. 각 원소의 cd 가 고유 item_code(`항목키-시리즈cd-항목cd`) 조각이 된다. */
+      { type: 'group', label: '3레벨 구조 정의 (시리즈 · 항목)' },
+      { key: 'lvl1CodeGrp', label: '2레벨(시리즈) 코드그룹', type: 'text', mono: true,
+        placeholder: '예: SALE_CHANNEL (비우면 직접입력)',
+        hint: '시리즈명을 이 공통코드그룹에서 고른다' },
+      { key: 'lvl2CodeGrp', label: '3레벨(항목) 코드그룹', type: 'text', mono: true,
+        placeholder: '예: MONTH (비우면 직접입력)',
+        hint: '항목명을 이 공통코드그룹에서 고른다' },
+      { key: '_itemCodeSample', label: '고유 item_code 형식', type: 'readonly',
+        fmt: () => (panelForm.itemKey || '항목키') + '-시리즈cd-항목cd' },
+      { key: 'seriesJson', label: '2레벨 시리즈 정의 JSON', type: 'textarea', colSpan: 3, mono: true,
+        placeholder: '[{"cd":"CH_COUPANG","name":"쿠팡","color":"#6366f1"}]',
+        hint: 'cd 를 비우면 name 이 코드로 쓰인다' },
+      { key: 'colsJson', label: '3레벨 항목 정의 JSON', type: 'textarea', colSpan: 3, mono: true,
+        placeholder: '[{"cd":"M01","name":"1월"},{"cd":"M02","name":"2월"}]',
+        hint: '데이터관리 그리드의 열 제목. 비우면 데이터관리에서 직접 입력' },
       { key: 'optionJson', label: 'ECharts 옵션 오버라이드 JSON', type: 'textarea', colSpan: 3, mono: true,
         placeholder: '{"legend":{"show":false}}' },
     ];

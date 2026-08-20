@@ -39,7 +39,45 @@ public class CmDashboardItemData extends BaseEntity {
     @Size(max = 50, message = "itemKey 는 50자 이내여야 합니다.")
     private String itemKey;
 
-    @Comment("집계일자 (YYYYMMDD)")
+    /* ── 3레벨 구조 (2026-08-21) ───────────────────────────────────────────────
+       1레벨 차트명   = cm_dashboard_item.item_nm  (이 행의 dashboard_item_id 가 가리킴)
+       2레벨 시리즈명 = series_nm                   (아래) — 데이터관리 그리드의 "행 제목"
+       3레벨 항목명   = col1_nm ~ col9_nm           (아래) — 데이터관리 그리드의 "열 제목"
+       즉 (차트 × 시리즈 × 기간 × 상품 × 업체) 한 조합이 이 테이블의 한 행이고,
+       그 행 안에서 col1~col9 가 가로로 펼쳐진다. */
+    @Comment("시리즈명 (2레벨 — 데이터관리 그리드의 행 제목). NULL=단일 시리즈")
+    @Column(name = "series_nm", length = 100)
+    @Size(max = 100, message = "seriesNm 는 100자 이내여야 합니다.")
+    private String seriesNm;
+
+    @Comment("시리즈 코드 (2레벨) — 고유 item_code 조립용. 공통코드 value 또는 직접입력값")
+    @Column(name = "series_cd", length = 50)
+    @Size(max = 50, message = "seriesCd 는 50자 이내여야 합니다.")
+    private String seriesCd;
+
+    @Comment("사이트ID (sy_site.site_id) — 업무 소속 사이트(필수 기준조건)")
+    @Column(name = "site_id", length = 21)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
+
+    /* 기간구분 — 월 데이터도 yyyymmdd 한 컬럼에 담는다(NOT NULL 유지 + BETWEEN 정렬 그대로 동작).
+       D: yyyymmdd = YYYYMMDD (예 20260821) / M: yyyymmdd = YYYYMM + "00" (예 20260800) */
+    @Comment("기간구분 D:일자(yyyymmdd=YYYYMMDD) / M:월(yyyymmdd=YYYYMM00)")
+    @Column(name = "period_type_cd", length = 1)
+    @Size(max = 1, message = "periodTypeCd 는 1자 이내여야 합니다.")
+    private String periodTypeCd;
+
+    @Comment("상품ID (pd_prod.prod_id) — 선택 기준조건")
+    @Column(name = "prod_id", length = 21)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
+    private String prodId;
+
+    @Comment("판매업체ID (sy_vendor.vendor_id) — 선택 기준조건")
+    @Column(name = "vendor_id", length = 21)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
+    private String vendorId;
+
+    @Comment("집계일자 (D=YYYYMMDD / M=YYYYMM00)")
     @Column(name = "yyyymmdd", length = 8, nullable = false)
     @Size(max = 8, message = "yyyymmdd 는 8자 이내여야 합니다.")
     private String yyyymmdd;

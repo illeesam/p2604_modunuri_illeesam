@@ -62,8 +62,15 @@
     getItemList(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/list', { params, ...hdr(uiNm, cmdNm) }); },
     itemSave(cmd, body, uiNm, cmdNm)     { return global.boApi.post('/bo/ec/cm/dashboard/item/save/' + cmd, body, hdr(uiNm, cmdNm)); },
     itemSaveList(cmd, rows, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
+    /* 항목 목록 3레벨 트리 — 차트(1)/시리즈(2)/항목(3) 평면 배열 */
+    getItemTree(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/tree', { params, ...hdr(uiNm, cmdNm) }); },
     getItemDataList(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/cm/dashboard/item-data/list', { params, ...hdr(uiNm, cmdNm) }); },
     itemDataUpsert(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item-data/upsert', body, hdr(uiNm, cmdNm)); },
+    /* 데이터관리 3레벨 그리드 — 1레벨 차트 / 2레벨 시리즈(행) / 3레벨 항목(열).
+       params: { dashboardId, siteId, yyyymmdd, periodTypeCd, prodId?, vendorId? } */
+    getDataGrid(params, uiNm, cmdNm)      { return global.boApi.get('/bo/ec/cm/dashboard/data-grid', { params, ...hdr(uiNm, cmdNm) }); },
+    saveDataGrid(charts, params, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/data-grid/save', charts, { params, ...hdr(uiNm, cmdNm) }); },
+    simulateDataGrid(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/cm/dashboard/data-grid/simulate', { params, ...hdr(uiNm, cmdNm) }); },
   };
 
   /* ── cm: 채팅 ───────────────────────────────────────────────── */

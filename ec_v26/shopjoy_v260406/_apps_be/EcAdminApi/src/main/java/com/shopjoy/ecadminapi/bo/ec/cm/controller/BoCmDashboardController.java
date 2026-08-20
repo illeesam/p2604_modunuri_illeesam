@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardMenu;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardMenuRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataGridService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemDataService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardService;
@@ -32,6 +33,7 @@ public class BoCmDashboardController {
     private final CmDashboardService cmDashboardService;
     private final CmDashboardItemService cmDashboardItemService;
     private final CmDashboardItemDataService cmDashboardItemDataService;
+    private final CmDashboardDataGridService cmDashboardDataGridService;
     private final CmDashboardRepository cmDashboardRepository;
     private final CmDashboardMenuRepository cmDashboardMenuRepository;
 
@@ -243,6 +245,59 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<CmDashboardItemData>> itemDataUpsert(
             @Valid @RequestBody CmDashboardItemData body) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.upsert(body)));
+    }
+
+    /* ── 데이터관리 3레벨 그리드 (차트 × 시리즈 × 항목) ─────────────
+     * 1레벨 차트명 / 2레벨 시리즈명(행) / 3레벨 항목명(열).
+     * 기준조건: 사이트·기간 필수, 상품·업체 선택. 상세 → CmDashboardDataGridService */
+
+    /**
+     * 항목 목록 3레벨 트리 — 차트(1) / 시리즈(2) / 항목(3).
+     * 화면에서 들여쓰기로 그리도록 평면 배열로 준다. 각 노드에 lvl 과 조립된 itemCode 포함.
+     */
+    @GetMapping("/item/tree")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> itemTree(
+            @RequestParam String dashboardId) {
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getItemTree(dashboardId)));
+    }
+
+    /** 그리드 조회 — 대시보드 안의 CHART 항목마다 그리드 1개를 만들어 돌려준다 */
+    @GetMapping("/data-grid")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> dataGrid(
+            @RequestParam String dashboardId,
+            @RequestParam String siteId,
+            @RequestParam String yyyymmdd,
+            @RequestParam(required = false) String prodId,
+            @RequestParam(required = false) String vendorId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+            cmDashboardDataGridService.getGrids(dashboardId, siteId, yyyymmdd, prodId, vendorId)));
+    }
+
+    /** 그리드 저장 — 차트×시리즈 조합마다 1행 upsert (값이 전부 빈 시리즈는 저장하지 않음) */
+    @PostMapping("/data-grid/save")
+    public ResponseEntity<ApiResponse<Integer>> dataGridSave(
+            @RequestParam String siteId,
+            @RequestParam String yyyymmdd,
+            @RequestParam(required = false) String periodTypeCd,
+            @RequestParam(required = false) String prodId,
+            @RequestParam(required = false) String vendorId,
+            @RequestBody List<Map<String, Object>> charts) {
+        int n = cmDashboardDataGridService.saveGrids(
+            siteId, yyyymmdd, periodTypeCd, prodId, vendorId, charts);
+        return ResponseEntity.ok(ApiResponse.ok(n, "저장되었습니다. (" + n + "건)"));
+    }
+
+    /** 시뮬레이션 — 값만 자동 생성해 돌려준다(저장하지 않음). 사용자가 확인 후 [저장] */
+    @GetMapping("/data-grid/simulate")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> dataGridSimulate(
+            @RequestParam String dashboardId,
+            @RequestParam String siteId,
+            @RequestParam String yyyymmdd,
+            @RequestParam(required = false) String periodTypeCd,
+            @RequestParam(required = false) String prodId,
+            @RequestParam(required = false) String vendorId) {
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.simulate(
+            dashboardId, siteId, yyyymmdd, periodTypeCd, prodId, vendorId)));
     }
     /* ── 좌측메뉴 트리 ─────────────────────────────────────────
      * 폴더 + 대시보드 아이템으로 구성. 노드가 하나도 없으면 프론트가

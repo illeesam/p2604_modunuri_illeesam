@@ -123,6 +123,7 @@ window.boRegisterComponents = function (app) {
     .component('CmFaqDtl', window.CmFaqDtl)
     .component('CmDashboardMng', window.CmDashboardMng)
     .component('CmDashboardItemMng', window.CmDashboardItemMng)
+    .component('CmDashboardDataMng', window.CmDashboardDataMng)
     .component('CmDashboardLayoutMng', window.CmDashboardLayoutMng)
     .component('CmDashboardMyMng', window.CmDashboardMyMng)
     .component('CmDashboardMenuMng', window.CmDashboardMenuMng)

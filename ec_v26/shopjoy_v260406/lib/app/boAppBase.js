@@ -2567,6 +2567,7 @@
             <cm-blog-mng  v-else-if="page==='cmBlogMng'"  :navigate="navigate" />
             <cm-dashboard-mng  v-else-if="page==='cmDashboardMng'"  :navigate="navigate" />
             <cm-dashboard-item-mng  v-else-if="page==='cmDashboardItemMng'"  :navigate="navigate" />
+            <cm-dashboard-data-mng  v-else-if="page==='cmDashboardDataMng'"  :navigate="navigate" />
             <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <cm-dashboard-menu-mng  v-else-if="page==='cmDashboardMenuMng'"  :navigate="navigate" />
