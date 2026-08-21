@@ -508,6 +508,9 @@ public class CmDashboardDataGridService {
             chart.put("seriesOrientCd",  nvlStr(ch.getSeriesOrientCd(), "ROW"));
             chart.put("autoCollectYn",   nvlStr(ch.getAutoCollectYn(), "N"));
             chart.put("editableYn",      nvlStr(ch.getEditableYn(), "Y"));
+            /* 차트마다 필요한 조회조건 차원이 다르다(예: 일별/월별, 상품·업체 필요 여부) — 화면이
+               이 값 기준으로 차트를 묶어 그룹별 조회조건을 따로 받는다(2026-08-21) */
+            chart.put("inputOpts",       nvlStr(ch.getInputOpts(), "period_type_cd:M,site_id,yyyymmdd"));
             chart.put("colNms",          colNms);
             chart.put("colCds",          colCds);
             /* 열 제목은 항상 3레벨(항목) 정의행에서 온다 — 값이 항상 3레벨에만 붙는 지금 구조에서는

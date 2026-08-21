@@ -8,7 +8,6 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -128,18 +127,16 @@ public class SyNotiService {
         return saved;
     }
 
-    /* 알림함 수정 */
+    /* 알림함 수정 — QueryDSL updateSelective 로 넘어온 필드만 SET (전체 fetch+save 대신) */
     @Transactional
     public SyNoti update(String id, SyNoti body) {
         CmUtil.requireId(id, "id", this);
-        SyNoti entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "notiId^regBy^regDate");
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        SyNoti saved = syNotiRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
+        body.setNotiId(id);
+        body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        int affected = syNotiRepository.updateSelective(body);
+        if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        em.clear();
+        return findById(id);
     }
 
     /** 읽음 처리 — 본인 알림인지 확인 후 갱신 (다른 사람 알림을 읽음 처리할 수 없다) */
