@@ -317,7 +317,7 @@ window.CmDashboardMyMng = {
         itemTypeCd: util.itemTypeOf(i), chartTypeCd: i.chartTypeCd || 'bar', sortOrd: i.sortOrd || 0,
         panelWidth: i.panelWidth || 1, panelHeight: i.panelHeight || 1,
         useYn: i.useYn || 'Y', realtimeYn: i.realtimeYn || 'N',
-        seriesJson: i.seriesJson || null, optionJson: i.optionJson || null,
+        series: i.series || [], optionJson: i.optionJson || null,
       })));
       uiState.dirty = false;
       await handleLoadWidgetData();
@@ -375,25 +375,8 @@ window.CmDashboardMyMng = {
       } catch (e) { console.warn('[사용자 조회 오류]', e); }
     };
 
-    /**
-     * fnUniqueItemKey — 이 대시보드 안에서 겹치지 않는 item_key 를 만든다.
-     *
-     * <p>cm_dashboard_item 에 (dashboard_id, item_key) 유니크 제약이 있어 원본 키를 그대로 쓰면
-     * 같은 항목을 두 번 담을 때 500(duplicate key)이 난다. 카탈로그에는 이름이 같고 출처만 다른
-     * 항목도 있어(예: '가입/탈퇴 현황' × 3개 대시보드) 충돌이 쉽게 생긴다.</p>
-     *
-     * <p>사용자 대시보드의 데이터 조회는 item_key 가 아니라 optionJson._srcItemId 로 원본을
-     * 가리키므로, 키에 일련번호를 붙여도 렌더·조회에 영향이 없다. (item_key 는 VARCHAR(50))</p>
-     */
-    const fnUniqueItemKey = (baseKey) => {
-      const base = (baseKey || 'ITEM').slice(0, 44);   /* '_99' 접미어 여유 */
-      if (!cards.some(c => c.itemKey === base)) return base;
-      for (let i = 2; i < 100; i++) {
-        const k = base + '_' + i;
-        if (!cards.some(c => c.itemKey === k)) return k;
-      }
-      return base + '_' + Date.now().toString().slice(-4);
-    };
+    /* fnUniqueItemKey 는 제거(2026-08-21) — item_key 가 전역 UNIQUE 조립코드가 되면서
+       채번 책임이 서버(chart### 일련번호)로 넘어갔다. 화면이 키를 만들지 않는다. */
 
     /* handleAddWidget — 카탈로그 항목을 현재 대시보드에 복사 추가 (같은 항목 여러 번 가능) */
     const handleAddWidget = async (src) => {
@@ -407,11 +390,16 @@ window.CmDashboardMyMng = {
         const maxOrd = cards.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
         await boApiSvc.cmDashboard.itemSave('base', {
           rowStatus: 'I', siteId: cfSiteId.value, dashboardId: curId.value,
-          itemKey: fnUniqueItemKey(src.itemKey), itemNm: src.itemNm,
-          itemTypeCd: util.itemTypeOf(src), chartTypeCd: src.chartTypeCd,
+          /* 레벨은 chart 고정, 위젯유형은 widgetTypeCd 로 분리됐다 (2026-08-21).
+             itemKey 는 비워 보내면 서버가 chart### 로 채번한다(전역 UNIQUE). */
+          itemKey: null, itemNm: src.itemNm,
+          itemTypeCd: 'chart',
+          widgetTypeCd: util.itemTypeOf(src),
+          axisTypeCd: src.axisTypeCd || 'CATEGORY',
+          chartTypeCd: src.chartTypeCd,
           sortOrd: maxOrd + 10, panelWidth: src.panelWidth || 1, panelHeight: src.panelHeight || 1,
           realtimeYn: src.realtimeYn || 'N', useYn: 'Y',
-          seriesJson: src.seriesJson || null, optionJson: JSON.stringify(optObj),
+          optionJson: JSON.stringify(optObj),
         }, '사용자대시보드', '항목추가');
         showToast('[' + src.itemNm + '] 항목이 추가되었습니다.', 'success');
         await handleLoadCards();

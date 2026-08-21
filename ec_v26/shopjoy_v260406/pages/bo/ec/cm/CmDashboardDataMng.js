@@ -1,14 +1,14 @@
 /* ShopJoy Admin - 대시보드 데이타관리 (3레벨)
  *
- *  1레벨 차트명   cm_dashboard_item.item_nm         → 차트마다 그리드 1개
- *  2레벨 시리즈명 cm_dashboard_item_data.series_nm  → 그리드의 "행 제목"
- *  3레벨 항목명   cm_dashboard_item_data.col1~9_nm  → 그리드의 "열 제목"
+ *  1레벨 차트명   cm_dashboard_item (key_level=1)  → 차트마다 그리드 1개
+ *  2레벨 시리즈명 cm_dashboard_item (key_level=2)  → 그리드의 "행 제목"
+ *  3레벨 항목명   cm_dashboard_item (key_level=3)  → 그리드의 "열 제목"
  *
  *  기준조건: 사이트(필수) · 일자/월(필수) · 상품(선택) · 판매업체(선택)
  *  사람이 직접 입력하는 화면이며, [시뮬레이션] 은 값만 자동으로 채워준다(저장은 별도).
  *
- *  ※ 시리즈(2레벨) 목록은 '대시보드 항목관리' 의 시리즈 JSON 에서 온다.
- *    시리즈 정의가 없는 차트는 이름 없는 단일 행으로 표시된다.
+ *  ※ 구조(시리즈·항목)는 '대시보드 항목관리' 에서 정의한 "행" 에서 온다.
+ *    값은 (정의행 + options) 좌표 하나에 하나씩 저장된다.
  */
 window.CmDashboardDataMng = {
   name: 'CmDashboardDataMng',
@@ -168,7 +168,13 @@ window.CmDashboardDataMng = {
         const body = charts.map(c => ({
           dashboardItemId: c.dashboardItemId,
           colNms: c.colNms,
-          rows: (c.rows || []).map(r => ({ seriesNm: r.seriesNm, seriesCd: r.seriesCd, vals: r.vals })),
+          /* dashboardItemId=시리즈 정의행, cellItemIds=셀별 항목 정의행.
+             값이 어느 정의행에 붙는지는 서버가 이 두 가지로 판단한다 (2026-08-21 행 기반) */
+          rows: (c.rows || []).map(r => ({
+            dashboardItemId: r.dashboardItemId,
+            cellItemIds: r.cellItemIds,
+            vals: r.vals,
+          })),
         }));
         const res = await boApiSvc.cmDashboard.saveDataGrid(body, params, '대시보드데이타관리', '저장');
         showToast(res.data?.message || '저장되었습니다.', 'success');
@@ -354,8 +360,8 @@ window.CmDashboardDataMng = {
               <tr v-for="(row, ri) in chart.rows" :key="ri">
                 <td style="font-weight:600;background:#f8fafc;">
                   {{ row.seriesNm || '(단일)' }}
-                  <div v-if="row.itemCode" style="font-family:monospace;font-size:10px;color:#94a3b8;font-weight:400;">
-                    {{ row.itemCode }}</div>
+                  <div v-if="row.itemKey" style="font-family:monospace;font-size:10px;color:#94a3b8;font-weight:400;">
+                    {{ row.itemKey }}</div>
                 </td>
                 <td v-for="i in fnColCount(chart)" :key="i" style="padding:2px 4px;">
                   <input type="number" class="form-control" v-model="row.vals[i-1]"

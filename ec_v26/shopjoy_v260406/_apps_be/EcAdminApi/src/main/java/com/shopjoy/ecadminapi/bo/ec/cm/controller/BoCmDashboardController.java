@@ -186,10 +186,33 @@ public class BoCmDashboardController {
 
     /* ── 패널 정의 (CmDashboardItem) ──────────────────────────── */
 
+    /**
+     * 항목 목록 — <b>기본은 차트(key_level=1)만</b> 돌려준다.
+     *
+     * <p>3레벨 전개(2026-08-21) 이후 이 테이블에는 시리즈·항목 행까지 들어 있어서,
+     * 필터 없이 주면 배치·카탈로그 화면에 '11번가' 같은 3레벨 행이 카드로 뜬다.
+     * 전체가 필요하면 {@code keyLevel=0} (또는 원하는 레벨 번호)을 명시한다.</p>
+     */
     @GetMapping("/item/list")
     public ResponseEntity<ApiResponse<List<CmDashboardItem>>> itemList(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.getList(p)));
+        Object lv = p.get("keyLevel");
+        int level = 1;                                   /* 미지정이면 차트만 */
+        if (lv != null && !String.valueOf(lv).isBlank()) {
+            try { level = Integer.parseInt(String.valueOf(lv).trim()); }
+            catch (NumberFormatException ignore) { level = 1; }
+        }
+        List<CmDashboardItem> all = cmDashboardItemService.getList(p);
+        List<CmDashboardItem> rows = all;
+        if (level > 0) {
+            final int lvl = level;
+            rows = all.stream()
+                .filter(r -> r.getKeyLevel() != null && r.getKeyLevel() == lvl)
+                .toList();
+            /* 차트만 줄 때는 그릴 때 필요한 시리즈·항목을 하위 행에서 모아 함께 내려준다 */
+            if (lvl == 1) cmDashboardDataGridService.attachChildren(rows, all);
+        }
+        return ResponseEntity.ok(ApiResponse.ok(rows));
     }
 
     @GetMapping("/item/{id}")
@@ -203,6 +226,7 @@ public class BoCmDashboardController {
             @PathVariable("cmd") String cmd,
             @Valid @RequestBody CmDashboardItem body) {
         validateSrcItemRef(body);
+        fillChartCode(body);
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.save(cmd, body)));
     }
 
@@ -213,6 +237,25 @@ public class BoCmDashboardController {
         rows.forEach(this::validateSrcItemRef);
         cmDashboardItemService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /**
+     * 신규 차트(1레벨)의 조립코드를 채운다 — {@code chart001} 형식의 전역 일련번호.
+     *
+     * <p>{@code item_key} 가 전역 UNIQUE 라 화면이 임의로 정하면 충돌하기 쉽다. 저장 직전에
+     * 서버가 현재 최대 번호 다음 값을 붙여 준다. 이미 코드가 있으면 건드리지 않는다(수정 저장).</p>
+     */
+    private void fillChartCode(CmDashboardItem body) {
+        if ("D".equals(body.getRowStatus())) return;
+        if (body.getItemKey() != null && !body.getItemKey().isBlank()) {
+            body.setItemKey(body.getItemKey());   /* item_key = item_code 유지 */
+            return;
+        }
+        int next = cmDashboardItemService.nextChartSeq();
+        String code = String.format("chart%03d", next);
+        body.setItemKey(code);
+        body.setItemKey(code);
+        if (body.getItemTypeCd() == null || body.getItemTypeCd().isBlank()) body.setItemTypeCd("chart");
     }
 
     /** optionJson._srcItemId(개인화 위젯의 원본 패널 참조) 무결성 검증 — 존재하지 않는 원본이면 저장 차단 */
@@ -250,6 +293,25 @@ public class BoCmDashboardController {
     /* ── 데이터관리 3레벨 그리드 (차트 × 시리즈 × 항목) ─────────────
      * 1레벨 차트명 / 2레벨 시리즈명(행) / 3레벨 항목명(열).
      * 기준조건: 사이트·기간 필수, 상품·업체 선택. 상세 → CmDashboardDataGridService */
+
+    /**
+     * 차트의 시리즈·항목 편집 결과를 정의행으로 동기화한다 (항목관리 저장).
+     *
+     * <p>조립코드가 같으면 같은 행으로 보고 갱신하므로 이름만 바꿔도 데이터가 끊기지 않는다.
+     * 화면에서 사라진 코드는 그 행과 거기 붙어 있던 값까지 정리하고 건수를 돌려준다.</p>
+     */
+    @PostMapping("/item/{id}/children")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> syncChildren(
+            @PathVariable("id") String id,
+            @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> series = body.get("series") instanceof List
+            ? (List<Map<String, Object>>) body.get("series") : List.of();
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> cols = body.get("cols") instanceof List
+            ? (List<Map<String, Object>>) body.get("cols") : List.of();
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.syncChildren(id, series, cols)));
+    }
 
     /**
      * 항목 목록 3레벨 트리 — 차트(1) / 시리즈(2) / 항목(3).

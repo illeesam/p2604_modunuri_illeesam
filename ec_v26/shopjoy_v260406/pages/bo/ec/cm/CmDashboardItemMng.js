@@ -24,10 +24,10 @@ window.CmDashboardItemMng = {
     const codes = reactive({});
 
     /* ── 3레벨 트리 (1:차트 / 2:시리즈 / 3:항목) ──────────────────────────
-       서버가 평면 배열(lvl + itemCode)로 준다. 접기/펼치기는 화면에서만 관리한다. */
+       서버가 평면 배열(lvl + itemKey)로 준다. 접기/펼치기는 화면에서만 관리한다. */
     const treeRows = reactive([]);
     const treeState = reactive({
-      collapsed: {},   /* itemCode → true (접힘). 기본은 전부 펼침 */
+      collapsed: {},   /* itemKey → true (접힘). 기본은 전부 펼침 */
     });
 
     /* ── 2·3레벨 편집 그리드 ────────────────────────────────────────────────
@@ -49,9 +49,10 @@ window.CmDashboardItemMng = {
     const panelDetail = reactive({ selectedId: null, isNew: false, show: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
     const cfDtlMode = computed(() => panelDetail.dtlMode === 'view');
     const _initPanelForm = () => ({
-      dashboardItemId: null, itemKey: '', itemNm: '', itemTypeCd: 'CHART', chartTypeCd: 'bar', sortOrd: 10,
-      panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', seriesJson: '', optionJson: '',
-      colsJson: '', lvl1CodeGrp: '', lvl2CodeGrp: '', simJson: '',
+      dashboardItemId: null, itemKey: '', itemNm: '',
+      widgetTypeCd: 'CHART', axisTypeCd: 'CATEGORY', chartTypeCd: 'bar', sortOrd: 10,
+      panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', optionJson: '',
+      lvl1CodeGrp: '', lvl2CodeGrp: '', simJson: '',
     });
     const panelForm = reactive(_initPanelForm());
     const panelErrors = reactive({});
@@ -192,7 +193,7 @@ window.CmDashboardItemMng = {
       panelDetail.dtlMode = 'edit';
       const maxOrd = panels.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
       Object.assign(panelForm, _initPanelForm(), { sortOrd: maxOrd + 10 });
-      fnSyncFormToRows();   /* JSON → 편집 그리드 (신규는 빈 행) */
+      fnSyncFormToRows();   /* 편집 그리드 적재 (신규는 빈 행) */
     };
 
     /* _loadDetailForm — 항목 인라인 폼에 행 데이터 적재 (view/edit 공용) */
@@ -202,15 +203,17 @@ window.CmDashboardItemMng = {
       panelDetail.show = true;
       panelDetail.dtlMode = mode;
       Object.assign(panelForm, {
-        dashboardItemId: row.dashboardItemId, itemKey: row.itemKey, itemNm: row.itemNm,
-        itemTypeCd: util.itemTypeOf(row), chartTypeCd: row.chartTypeCd || 'bar', sortOrd: row.sortOrd || 10,
+        dashboardItemId: row.dashboardItemId, itemKey: row.itemKey || '', itemNm: row.itemNm,
+        widgetTypeCd: row.widgetTypeCd || util.itemTypeOf(row),
+        axisTypeCd: row.axisTypeCd || 'CATEGORY',
+        chartTypeCd: row.chartTypeCd || 'bar', sortOrd: row.sortOrd || 10,
         panelWidth: row.panelWidth || 1, panelHeight: row.panelHeight || 1,
         realtimeYn: row.realtimeYn || 'N', useYn: row.useYn || 'Y',
-        seriesJson: row.seriesJson || '', optionJson: row.optionJson || '',
-        colsJson: row.colsJson || '', lvl1CodeGrp: row.lvl1CodeGrp || '', lvl2CodeGrp: row.lvl2CodeGrp || '',
+        optionJson: row.optionJson || '',
+        lvl1CodeGrp: row.lvl1CodeGrp || '', lvl2CodeGrp: row.lvl2CodeGrp || '',
         simJson: row.simJson || '',
       });
-      fnSyncFormToRows();   /* JSON → 편집 그리드 */
+      fnSyncFormToRows();   /* 정의 행 → 편집 그리드 */
       onGrpChange();        /* 코드그룹이 지정돼 있으면 선택지 미리 로드 */
     };
 
@@ -236,27 +239,41 @@ window.CmDashboardItemMng = {
       if (!panelForm.itemKey) { panelErrors.itemKey = '항목 키를 입력하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
       if (!panelForm.itemNm)  { panelErrors.itemNm = '항목명을 입력하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
       if (!(await showConfirm('저장', '항목을 저장하시겠습니까?'))) return;
-      fnSyncRowsToForm();   /* 편집 그리드 → JSON (저장 직전 1회) */
       fnSyncSimToForm();    /* 시뮬레이션 값·스타일 → simJson */
       try {
         const body = {
           dashboardItemId: panelDetail.isNew ? null : panelForm.dashboardItemId,
           rowStatus: panelDetail.isNew ? 'I' : 'U',
           siteId: cfSiteId.value, dashboardId: dashState.selectedId,
-          itemKey: panelForm.itemKey, itemNm: panelForm.itemNm,
-          itemTypeCd: panelForm.itemTypeCd,
+          /* 이 화면은 1레벨(차트)만 다룬다 — 레벨은 chart 고정, 위젯유형은 widgetTypeCd 로 분리됐다.
+             itemKey 는 신규면 비워 보내고 서버가 chart### 로 채번한다(전역 UNIQUE). */
+          itemKey: panelForm.itemKey || null,
+          itemNm: panelForm.itemNm,
+          itemTypeCd: 'chart',
+          widgetTypeCd: panelForm.widgetTypeCd,
+          axisTypeCd: panelForm.axisTypeCd || 'CATEGORY',
           /* 차트가 아닌 유형은 차트종류를 비워 둔다 — 남겨두면 'kpi 차트' 같은 오해가 생긴다 */
-          chartTypeCd: panelForm.itemTypeCd === 'CHART' ? panelForm.chartTypeCd : null,
+          chartTypeCd: panelForm.widgetTypeCd === 'CHART' ? panelForm.chartTypeCd : null,
           sortOrd: Number(panelForm.sortOrd) || 10,
           panelWidth: Number(panelForm.panelWidth) || 1, panelHeight: Number(panelForm.panelHeight) || 1,
           realtimeYn: panelForm.realtimeYn, useYn: panelForm.useYn,
-          seriesJson: panelForm.seriesJson || null, optionJson: panelForm.optionJson || null,
-          colsJson: panelForm.colsJson || null,
+          optionJson: panelForm.optionJson || null,
           simJson: panelForm.simJson || null,
           lvl1CodeGrp: panelForm.lvl1CodeGrp || null, lvl2CodeGrp: panelForm.lvl2CodeGrp || null,
         };
-        await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
-        showToast('저장되었습니다.', 'success');
+        const res = await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
+        /* 편집 그리드의 시리즈·항목을 실제 정의행으로 반영 — 트리·데이터관리가 이 행을 본다 */
+        const savedId = res.data?.data?.dashboardItemId || panelForm.dashboardItemId;
+        let syncMsg = '';
+        if (savedId) {
+          const sres = await boApiSvc.cmDashboard.syncItemChildren(savedId, {
+            series: seriesRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color })),
+            cols:   colRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name })),
+          }, '대시보드항목관리', '하위행동기화');
+          const d = sres.data?.data || {};
+          if (d.deletedRows) { syncMsg = ` (삭제 ${d.deletedRows}행, 값 ${d.deletedData || 0}건 정리)`; }
+        }
+        showToast('저장되었습니다.' + syncMsg, 'success');
         resetDetailToNew();
         await handleSearchPanels();
         await fnLoadPanelCounts();
@@ -284,69 +301,40 @@ window.CmDashboardItemMng = {
 
     /* ── 2·3레벨 편집 그리드 헬퍼 ────────────────────────────────────────── */
 
-    /* fnJsonToRows — series_json / cols_json (JSON 문자열) → 편집용 행 배열.
-       깨진 JSON 이어도 화면은 떠야 하므로 빈 배열로 폴백하고 경고만 남긴다 */
-    const fnJsonToRows = (json) => {
-      if (!json || !String(json).trim()) return [];
-      try {
-        const arr = JSON.parse(json);
-        if (!Array.isArray(arr)) return [];
-        return arr.map(o => ({
-          cd:    o && o.cd    != null ? String(o.cd)    : '',
-          name:  o && o.name  != null ? String(o.name)  : '',
-          color: o && o.color != null ? String(o.color) : '',
-        }));
-      } catch (e) {
-        console.warn('[3레벨 정의 JSON 파싱 실패]', e);
-        return [];
-      }
-    };
 
-    /* fnRowsToJson — 편집용 행 배열 → JSON 문자열.
-       이름이 빈 행은 버린다(실수로 추가만 하고 안 채운 행). withColor=false 면 color 를 넣지 않는다 */
-    const fnRowsToJson = (rows, withColor) => {
-      const list = (rows || [])
-        .filter(r => String(r.name || '').trim() !== '' || String(r.cd || '').trim() !== '')
-        .map(r => {
-          const o = {};
-          if (String(r.cd || '').trim()) o.cd = String(r.cd).trim();
-          o.name = String(r.name || '').trim();
-          if (withColor && String(r.color || '').trim()) o.color = String(r.color).trim();
-          return o;
-        });
-      return list.length ? JSON.stringify(list) : '';
-    };
+
+
 
     /* fnPanelOf — 항목ID로 실제 항목 행을 찾는다.
        트리 노드에는 표시용 정보만 있어서 그대로 폼에 넘기면 빈 값으로 열린다 */
     const fnPanelOf = (id) => panels.find(p => p.dashboardItemId === id) || { dashboardItemId: id };
 
-    /* fnRowsFromTree — 저장된 정의가 없는 항목의 편집 그리드를 트리 내용으로 채운다.
-       트리 3레벨은 정의(cols_json)가 없으면 실제 데이터의 항목명으로 만들어지는데,
-       그때도 "목록에 보이는 것"과 "수정 화면에 보이는 것"이 같아야 하므로 여기서 끌어온다.
-       (사용자가 그대로 [저장]하면 그 값이 정식 정의로 승격된다) */
-    const fnRowsFromTree = (itemId, lvl) => {
-      const seen = new Set();
-      const out = [];
-      treeRows
-        .filter(n => n.dashboardItemId === itemId && n.lvl === lvl)
-        .forEach((n) => {
-          const key = (n.itemCd || '') + '||' + (n.itemNm || '');
-          if (seen.has(key)) return;
-          seen.add(key);
-          out.push({ cd: n.itemCd || '', name: n.itemNm || '', color: '' });
-        });
-      return out;
+    /* fnSeriesFromTree — 차트의 시리즈 행(2레벨)을 편집 그리드 형태로.
+       트리 노드는 각자 자기 dashboardItemId 를 가지므로 부모로 걸러야 한다
+       (차트 id 로 거르면 아무것도 안 걸린다 — 구조가 행 기반으로 바뀌면서 달라진 부분). */
+    const fnSeriesFromTree = (chartId) => treeRows
+      .filter(n => n.lvl === 2 && n.parentDashboardItemId === chartId)
+      /* dashboardItemId 를 들고 다녀야 cd(키명)를 바꿔도 서버가 같은 행으로 알아본다
+         — 없으면 "사라진 행" 으로 보여 붙어있던 데이터까지 지워진다 */
+      .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: n.itemColor || '' }));
+
+    /* fnColsFromTree — 항목 행(3레벨). 열 정의는 시리즈마다 같으므로 첫 시리즈 것을 쓴다 */
+    const fnColsFromTree = (chartId) => {
+      const first = treeRows.find(n => n.lvl === 2 && n.parentDashboardItemId === chartId);
+      if (!first) return [];
+      return treeRows
+        .filter(n => n.lvl === 3 && n.parentDashboardItemId === first.dashboardItemId)
+        .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: '' }));
     };
 
-    /* fnSyncFormToRows — 폼(JSON) → 편집 그리드. 항목을 새로 열 때마다 호출 */
+    /* fnSyncFormToRows — 정의 행(없으면 JSON) → 편집 그리드. 항목을 새로 열 때마다 호출 */
     const fnSyncFormToRows = () => {
-      let sRows = fnJsonToRows(panelForm.seriesJson);
-      let cRows = fnJsonToRows(panelForm.colsJson);
-      /* 정의가 비어 있으면 목록(트리)에 보이는 내용으로 채워준다 — 화면 간 불일치 방지 */
+      /* 정의 "행" 이 기준이다 — 트리·데이터관리가 보는 것과 같은 것을 편집해야 어긋나지 않는다.
+         아직 행이 없는 차트(신규/구형)만 series_json·cols_json 으로 폴백한다. */
       const id = panelForm.dashboardItemId;
-      if (id && !sRows.length) sRows = fnRowsFromTree(id, 2);
-      if (id && !cRows.length) cRows = fnRowsFromTree(id, 3);
+      let sRows = id ? fnSeriesFromTree(id) : [];
+      let cRows = id ? fnColsFromTree(id) : [];
+      /* 정의 행이 유일한 기준이다 (series_json/cols_json 은 2026-08-21 폐기) */
       seriesRows.splice(0, seriesRows.length, ...sRows);
       colRows.splice(0, colRows.length, ...cRows);
       srcState.scriptManual = false;   /* 다른 항목을 열었으니 수동 편집 상태는 초기화 */
@@ -354,11 +342,7 @@ window.CmDashboardItemMng = {
       fnSrcRegen();       /* 소스보기 탭 내용 재생성 */
     };
 
-    /* fnSyncRowsToForm — 편집 그리드 → 폼(JSON). 저장 직전에 호출 */
-    const fnSyncRowsToForm = () => {
-      panelForm.seriesJson = fnRowsToJson(seriesRows, true);
-      panelForm.colsJson   = fnRowsToJson(colRows, false);
-    };
+
 
     /* fnLoadGrpCodes — 지정된 코드그룹의 선택지를 가져온다(이미 받은 그룹은 캐시가 막아준다) */
     const fnLoadGrpCodes = async (grp) => {
@@ -401,7 +385,7 @@ window.CmDashboardItemMng = {
       rows.splice(j, 0, x);
     };
 
-    /* fnPreviewCode — 편집 중인 행의 고유 item_code 미리보기 */
+    /* fnPreviewCode — 편집 중인 행의 고유 item_key 미리보기 */
     const fnPreviewCode = (seriesCd, colCd) => {
       const parts = [panelForm.itemKey || '항목키'];
       if (String(seriesCd || '').trim()) parts.push(String(seriesCd).trim());
@@ -436,9 +420,10 @@ window.CmDashboardItemMng = {
           row[i] = Math.round(base * (0.6 + Math.random() * 0.8));
         }
       });
+      fnSrcRegen();   /* 소스보기 [데이타] 탭도 새 값으로 갱신 */
     };
 
-    const fnSimClear = () => { fnSimFit(); simVals.forEach(r => r.fill(null)); };
+    const fnSimClear = () => { fnSimFit(); simVals.forEach(r => r.fill(null)); fnSrcRegen(); };
 
     /* fnSyncSimToForm — 시뮬레이션 값 + 미리보기 스타일을 simJson 으로 직렬화 (저장 직전).
        값이 하나도 없고 스타일도 비면 null 로 둬서 빈 JSON 이 쌓이지 않게 한다 */
@@ -546,6 +531,7 @@ window.CmDashboardItemMng = {
       dataErr: '',
       componentErr: '',
       appliedMsg: '',
+      previewHeight: '260px',  /* 컴포넌트 탭에서 바꾸는 미리보기 높이 */
       autoApply: true,         /* 실시간 적용 — 입력이 멈추고 1초 뒤 자동 반영 */
       autoPending: false,      /* 자동 반영 대기중 표시 */
     });
@@ -597,8 +583,48 @@ window.CmDashboardItemMng = {
       );
     };
 
-    /* cfHlScript — 하이라이팅된 HTML. 끝에 개행을 더해 마지막 줄에서 스크롤이 어긋나지 않게 한다 */
-    const cfHlScript = computed(() => fnHl(srcState.scriptSrc) + '\n');
+    /* cfHlCode - 현재 탭의 하이라이팅 HTML. 끝 개행은 두 겹의 스크롤 정렬용 */
+    /* fnHlCss - 스타일 탭용 CSS 하이라이팅. 선택자 / 속성명 / 값을 구분해 칠한다 */
+    const fnHlCss = (code) => {
+      /* 토큰을 원문에서 나누고 이스케이프는 각 조각에만 한다.
+         먼저 이스케이프하면 &lt; 가 만들어낸 ';' 를 CSS 선언 구분자로 오인해 표시가 깨진다. */
+      const esc = (t) => String(t == null ? '' : t)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const raw = String(code == null ? '' : code);
+      const paintDecl = (body) => body.replace(
+        /([\w-]+)(\s*:\s*)([^;]*)(;?)/g,
+        (mm, prop, colon, val, semi) =>
+          '<span class="cmd-tk-key">' + esc(prop) + '</span>'
+          + '<span class="cmd-tk-p">' + esc(colon) + '</span>'
+          + '<span class="cmd-tk-str">' + esc(val) + '</span>'
+          + '<span class="cmd-tk-p">' + esc(semi) + '</span>');
+      let out = '', last = 0, m;
+      const re = /([^{]*)\{([^}]*)\}/g;
+      while ((m = re.exec(raw)) !== null) {
+        out += esc(raw.slice(last, m.index))
+             + '<span class="cmd-tk-sel">' + esc(m[1]) + '</span>'
+             + '<span class="cmd-tk-p">{</span>'
+             + paintDecl(m[2])
+             + '<span class="cmd-tk-p">}</span>';
+        last = m.index + m[0].length;
+      }
+      return out + esc(raw.slice(last));
+    };
+
+    /* 탭 -> 편집 대상 필드. 한 번에 한 탭만 보이므로 편집기 한 벌을 돌려 쓴다 */
+    const SRC_FIELD = { component: 'componentSrc', script: 'scriptSrc', data: 'dataSrc', style: 'styleSrc' };
+    const cfSrcField = computed(() => SRC_FIELD[srcState.tab] || 'componentSrc');
+
+    /* cfSrcCode - 현재 탭의 소스 (v-model 용 get/set) */
+    const cfSrcCode = computed({
+      get: () => srcState[cfSrcField.value],
+      set: (v) => { srcState[cfSrcField.value] = v; },
+    });
+
+    /* cfHlCode - 현재 탭의 하이라이팅 HTML. 끝에 개행을 더해 두 겹의 스크롤이 어긋나지 않게 한다 */
+    const cfHlCode = computed(() => (srcState.tab === 'style'
+      ? fnHlCss(cfSrcCode.value)
+      : fnHl(cfSrcCode.value)) + String.fromCharCode(10));
 
     /* onCodeScroll — textarea 스크롤을 하이라이팅 레이어에 그대로 옮긴다 */
     const onCodeScroll = (e) => {
@@ -622,6 +648,7 @@ window.CmDashboardItemMng = {
       '.cmd-tk-num{color:#fca5a5;}',   /* 숫자 */
       '.cmd-tk-kw{color:#c4b5fd;}',    /* true/false/null */
       '.cmd-tk-p{color:#94a3b8;}',     /* 구두점 */
+      '.cmd-tk-sel{color:#fbbf24;}',   /* CSS 선택자 */
     ].join('\n');
 
     onMounted(() => {
@@ -645,11 +672,11 @@ window.CmDashboardItemMng = {
     const fnSrcRegen = () => {
       srcState.componentSrc = JSON.stringify({
         itemKey: panelForm.itemKey || '',
-        itemTypeCd: panelForm.itemTypeCd,
+        widgetTypeCd: panelForm.widgetTypeCd,
         chartTypeCd: panelForm.chartTypeCd,
         panelWidth: Number(panelForm.panelWidth) || 1,
         panelHeight: Number(panelForm.panelHeight) || 1,
-        height: '260px',
+        height: srcState.previewHeight || '260px',
       }, null, 2);
 
       if (!srcState.scriptManual) {
@@ -672,7 +699,7 @@ window.CmDashboardItemMng = {
         try {
           const o = JSON.parse(srcState.componentSrc || '{}');
           if (o.itemKey !== undefined)     panelForm.itemKey = String(o.itemKey);
-          if (o.itemTypeCd)                panelForm.itemTypeCd = o.itemTypeCd;
+          if (o.widgetTypeCd)              panelForm.widgetTypeCd = o.widgetTypeCd;
           if (o.chartTypeCd)               panelForm.chartTypeCd = o.chartTypeCd;
           if (o.panelWidth !== undefined)  panelForm.panelWidth = Number(o.panelWidth) || 1;
           if (o.panelHeight !== undefined) panelForm.panelHeight = Number(o.panelHeight) || 1;
@@ -787,7 +814,7 @@ window.CmDashboardItemMng = {
     const cfTreeVisible = computed(() => treeRows.filter((n) => {
       if (n.lvl === 1) return true;
       /* 조상 코드를 하나씩 거슬러 올라가며 접힌 게 있으면 숨김 */
-      let p = fnParentCode(n.itemCode);
+      let p = fnParentCode(n.itemKey);
       while (p) {
         if (treeState.collapsed[p]) return false;
         p = fnParentCode(p);
@@ -796,17 +823,17 @@ window.CmDashboardItemMng = {
     }));
 
     /* fnHasChild — 자식이 있는 노드만 ▼/▶ 아이콘을 보여준다 */
-    const fnHasChild = (node) => treeRows.some(n => fnParentCode(n.itemCode) === node.itemCode);
+    const fnHasChild = (node) => treeRows.some(n => fnParentCode(n.itemKey) === node.itemKey);
 
     /* fnToggleNode — 접기/펼치기 */
     const fnToggleNode = (node) => {
       if (!fnHasChild(node)) return;
-      if (treeState.collapsed[node.itemCode]) delete treeState.collapsed[node.itemCode];
-      else treeState.collapsed[node.itemCode] = true;
+      if (treeState.collapsed[node.itemKey]) delete treeState.collapsed[node.itemKey];
+      else treeState.collapsed[node.itemKey] = true;
     };
 
     const fnTreeExpandAll   = () => { Object.keys(treeState.collapsed).forEach(k => delete treeState.collapsed[k]); };
-    const fnTreeCollapseAll = () => { treeRows.forEach(n => { if (fnHasChild(n)) treeState.collapsed[n.itemCode] = true; }); };
+    const fnTreeCollapseAll = () => { treeRows.forEach(n => { if (fnHasChild(n)) treeState.collapsed[n.itemKey] = true; }); };
 
     /* fnLvlBullet / fnLvlColor — 레벨 구분 표시 (카테고리관리와 같은 방식) */
     const fnLvlBullet = (lvl) => (lvl === 1 ? '●' : lvl === 2 ? '▪' : '·');
@@ -836,7 +863,7 @@ window.CmDashboardItemMng = {
       { key: 'itemKey',   label: '항목키', style: 'width:110px;', cellStyle: 'font-family:monospace;font-size:11px;', link: true },
       { key: 'itemNm',    label: '항목명',
         cellInnerStyle: (v, row) => panelDetail.selectedId === row.dashboardItemId ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'itemTypeCd', label: '유형', style: 'width:88px;',
+      { key: 'widgetTypeCd', label: '유형', style: 'width:88px;',
         fmt: (v, row) => util.itemTypeIcon(util.itemTypeOf(row)) + ' ' + util.itemTypeLabel(util.itemTypeOf(row)) },
       { key: 'chartTypeCd', label: '차트종류', style: 'width:96px;',
         fmt: (v, row) => util.itemTypeOf(row) === 'CHART' ? util.chartTypeIcon(v) + ' ' + util.chartTypeLabel(v) : '-' },
@@ -855,11 +882,11 @@ window.CmDashboardItemMng = {
       { type: 'group', label: '기본 · 배치설정' },
       { key: 'itemKey', label: '항목 키', type: 'text', required: true, mono: true, placeholder: 'COMP0101' },
       { key: 'itemNm', label: '항목명', type: 'text', required: true, colSpan: 2 },
-      { key: 'itemTypeCd', label: '항목유형', type: 'select',
+      { key: 'widgetTypeCd', label: '항목유형', type: 'select',
         options: () => util.ITEM_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
       /* 차트종류는 차트일 때만 물어본다 — KPI·목록에는 의미가 없다 */
       { key: 'chartTypeCd', label: '차트종류', type: 'select',
-        visible: (form) => form.itemTypeCd === 'CHART',
+        visible: (form) => form.widgetTypeCd === 'CHART',
         options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
       { key: 'panelWidth', label: '항목 폭(열 span)', type: 'select',
         options: () => [1, 2, 3, 4, 5, 6].map(n => ({ value: n, label: n })) },
@@ -882,7 +909,7 @@ window.CmDashboardItemMng = {
         placeholder: '예: MONTH (비우면 직접입력)',
         hint: '지정하면 아래 항목의 코드 칸이 공통코드 선택으로 바뀐다',
         onChange: () => onGrpChange() },
-      { key: '_itemCodeSample', label: '고유 item_code 형식', type: 'readonly',
+      { key: '_itemCodeSample', label: '고유 item_key 형식', type: 'readonly',
         fmt: () => (panelForm.itemKey || '항목키') + '-시리즈cd-항목cd' },
       /* JSON 직접 입력 대신 행 그리드로 편집한다 (저장 시 JSON 으로 직렬화) */
       { key: '_seriesGrid', label: '2레벨 · 시리즈 정의', type: 'slot', name: 'seriesGrid', colSpan: 3 },
@@ -915,7 +942,7 @@ window.CmDashboardItemMng = {
       cfSimSeriesNms, cfSimColNms, cfPreviewOption,
       /* 소스보기 */
       srcState, SRC_TABS, fnSrcApply, fnSrcReset,
-      fnSrcTouch, onAutoApplyToggle, cfHlScript, onCodeScroll, hlRef,
+      fnSrcTouch, onAutoApplyToggle, cfHlCode, cfSrcCode, onCodeScroll, hlRef,
       handleBtnAction, handleGridCellAction,
     };
   },
@@ -973,12 +1000,12 @@ window.CmDashboardItemMng = {
                 <th style="width:56px;">레벨</th>
                 <th>항목명 (차트 · 시리즈 · 항목)</th>
                 <th style="width:120px;">코드</th>
-                <th style="width:210px;">고유 item_code</th>
+                <th style="width:210px;">고유 item_key</th>
                 <th style="width:96px;">관리</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="node in cfTreeVisible" :key="node.itemCode"
+              <tr v-for="node in cfTreeVisible" :key="node.itemKey"
                 :class="node.lvl === 1 ? (panelDetail.selectedId === node.dashboardItemId ? 'bo-row-selected' : '') : ''">
                 <td style="text-align:center;">
                   <span class="badge" :class="node.lvl === 1 ? 'badge-red' : (node.lvl === 2 ? 'badge-blue' : 'badge-gray')">
@@ -990,18 +1017,18 @@ window.CmDashboardItemMng = {
                     <span @click.stop="fnToggleNode(node)"
                       :style="{ cursor: fnHasChild(node) ? 'pointer' : 'default', width:'12px',
                                 color:'#94a3b8', fontSize:'10px', userSelect:'none' }">
-                      {{ fnHasChild(node) ? (treeState.collapsed[node.itemCode] ? '▶' : '▼') : '' }}
+                      {{ fnHasChild(node) ? (treeState.collapsed[node.itemKey] ? '▶' : '▼') : '' }}
                     </span>
                     <span :style="{ color: fnLvlColor(node.lvl), fontSize: node.lvl === 1 ? '9px' : '11px' }">
                       {{ fnLvlBullet(node.lvl) }}</span>
                     <span :style="{ fontWeight: node.lvl === 1 ? 700 : (node.lvl === 2 ? 600 : 400),
                                     color: node.lvl === 3 ? '#475569' : '' }">{{ node.itemNm }}</span>
                     <span v-if="node.lvl === 1" class="badge badge-gray" style="margin-left:4px;">
-                      {{ node.itemTypeCd === 'CHART' ? (node.chartTypeCd || 'chart') : node.itemTypeCd }}</span>
+                      {{ node.widgetTypeCd === 'CHART' ? (node.chartTypeCd || 'chart') : node.widgetTypeCd }}</span>
                   </span>
                 </td>
                 <td style="font-family:monospace;font-size:11px;color:#2563eb;">{{ node.itemCd }}</td>
-                <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ node.itemCode }}</td>
+                <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ node.itemKey }}</td>
                 <td style="text-align:center;">
                   <!-- 시리즈·항목은 차트 정의(JSON)의 일부라 개별 삭제가 아니라 차트 수정에서 다룬다 -->
                   <!-- 실제 항목 행을 넘겨야 한다 — id 만 넘기면 폼이 빈 값으로 열린다 -->
@@ -1058,7 +1085,7 @@ window.CmDashboardItemMng = {
                   <th style="width:190px;">코드 (cd)</th>
                   <th>시리즈명 (name)</th>
                   <th style="width:150px;">색상 (color)</th>
-                  <th style="width:230px;">고유 item_code 미리보기</th>
+                  <th style="width:230px;">고유 item_key 미리보기</th>
                   <th style="width:96px;">관리</th>
                 </tr>
               </thead>
@@ -1116,7 +1143,7 @@ window.CmDashboardItemMng = {
                   <th style="width:44px;">순서</th>
                   <th style="width:190px;">코드 (cd)</th>
                   <th>항목명 (name)</th>
-                  <th style="width:230px;">고유 item_code 미리보기</th>
+                  <th style="width:230px;">고유 item_key 미리보기</th>
                   <th style="width:96px;">관리</th>
                 </tr>
               </thead>
@@ -1159,7 +1186,7 @@ window.CmDashboardItemMng = {
                 여기 값은 <b>미리보기 전용</b>입니다 — 저장되지 않습니다. 실제 값 입력은 [대시보드 데이타관리].</span>
               <span style="margin-left:auto;display:flex;gap:4px;">
                 <button class="btn" @click="fnSimRandom()"
-                  style="background:#fff;color:#c2410c;border:1px solid #fed7aa;font-weight:700;">🎲 자동생성</button>
+                  style="background:#fff;color:#c2410c;border:1px solid #fed7aa;font-weight:700;">🎲 데이타자동생성</button>
                 <button class="btn btn_reset" @click="fnSimClear()">비우기</button>
               </span>
             </div>
@@ -1199,7 +1226,7 @@ window.CmDashboardItemMng = {
             </div>
             <!-- id 는 스타일 탭의 CSS 적용 범위를 가두는 기준점 -->
             <div v-if="colRows.length" id="cm-dash-src-preview" style="padding:8px;">
-              <co-echart :option="cfPreviewOption" height="260px" not-merge />
+              <co-echart :option="cfPreviewOption" :height="srcState.previewHeight || '260px'" not-merge />
             </div>
             <div v-else style="padding:28px;text-align:center;color:#aaa;font-size:12px;">
               항목(3레벨)과 시뮬레이션 값을 입력하면 차트가 표시됩니다.</div>
@@ -1248,29 +1275,38 @@ window.CmDashboardItemMng = {
               <span v-if="srcState.appliedMsg" style="color:#059669;margin-left:8px;">✓ {{ srcState.appliedMsg }}</span>
             </div>
 
-            <!-- 편집 영역 -->
+            <!-- 편집 영역 — 네 탭 모두 같은 코드 편집기(다크+하이라이팅)를 돌려 쓴다 -->
             <div style="padding:8px;">
-              <div v-if="srcState.tab === 'component'">
-                <div style="font-family:monospace;font-size:11px;color:#94a3b8;margin-bottom:6px;">
-                  &lt;co-echart :option="option" height="260px" /&gt;
+              <!-- 컴포넌트 탭: 실제 렌더 마크업과 데이터가 어디서 오는지 먼저 보여준다 -->
+              <div v-if="srcState.tab === 'component'" class="cmd-code-wrap"
+                style="margin-bottom:8px;padding:10px 12px;">
+                <div style="font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.7;color:#e2e8f0;">
+                  <span style="color:#94a3b8;">&lt;</span><span style="color:#7dd3fc;">co-echart</span>
+                  <span style="color:#fbbf24;">:option</span><span style="color:#94a3b8;">=</span><span style="color:#86efac;">"cfPreviewOption"</span>
+                  <span style="color:#fbbf24;">height</span><span style="color:#94a3b8;">=</span><span style="color:#86efac;">"{{ srcState.previewHeight || '260px' }}"</span>
+                  <span style="color:#fbbf24;">not-merge</span>
+                  <span style="color:#94a3b8;">/&gt;</span>
                 </div>
-                <textarea class="form-control" v-model="srcState.componentSrc" rows="8"
-                  @input="fnSrcTouch()" style="font-family:monospace;font-size:11.5px;"></textarea>
+                <div style="margin-top:8px;padding-top:8px;border-top:1px solid #1e293b;
+                            font-family:Consolas,Monaco,monospace;font-size:11px;line-height:1.8;color:#94a3b8;">
+                  <div><span style="color:#c4b5fd;">cfPreviewOption</span> ← <b style="color:#e2e8f0;">스크립트</b> 탭 (ECharts 옵션)</div>
+                  <div>├ <span style="color:#7dd3fc;">xAxis.data</span> ← <b style="color:#e2e8f0;">데이타</b>.cols[].name
+                    <span style="color:#64748b;">(3레벨 항목 {{ colRows.length }}개)</span></div>
+                  <div>├ <span style="color:#7dd3fc;">series[].name</span> ← <b style="color:#e2e8f0;">데이타</b>.series[].name
+                    <span style="color:#64748b;">(2레벨 시리즈 {{ seriesRows.length || 1 }}개)</span></div>
+                  <div>└ <span style="color:#7dd3fc;">series[].data</span> ← <b style="color:#e2e8f0;">데이타</b>.values[시리즈][항목]
+                    <span style="color:#64748b;">(시뮬레이션 값)</span></div>
+                </div>
               </div>
 
-              <!-- 스크립트 — 색칠한 <pre> 위에 투명 textarea 를 겹쳐 편집 -->
-              <div v-else-if="srcState.tab === 'script'" class="cmd-code-wrap">
-                <pre ref="hlRef" class="cmd-code-hl" v-html="cfHlScript"></pre>
-                <textarea class="cmd-code-ta" v-model="srcState.scriptSrc" rows="16" spellcheck="false"
+              <!-- 색칠한 <pre> 위에 글자 투명 textarea 를 겹쳐 편집 (캐럿·선택은 textarea 담당) -->
+              <div class="cmd-code-wrap">
+                <pre ref="hlRef" class="cmd-code-hl" v-html="cfHlCode"></pre>
+                <textarea class="cmd-code-ta" v-model="cfSrcCode" spellcheck="false"
+                  :rows="srcState.tab === 'component' ? 9 : (srcState.tab === 'style' ? 10 : 16)"
+                  :placeholder="srcState.tab === 'style' ? '.echart-box { border: 1px solid #ddd; border-radius: 8px; }' : ''"
                   @input="fnSrcTouch()" @scroll="onCodeScroll"></textarea>
               </div>
-
-              <textarea v-else-if="srcState.tab === 'data'" class="form-control" v-model="srcState.dataSrc" rows="14"
-                @input="fnSrcTouch()" style="font-family:monospace;font-size:11.5px;"></textarea>
-              <textarea v-else class="form-control" v-model="srcState.styleSrc" rows="10"
-                @input="fnSrcTouch()"
-                placeholder=".echart-box { border: 1px solid #ddd; border-radius: 8px; }"
-                style="font-family:monospace;font-size:11.5px;"></textarea>
             </div>
           </div>
         </template>

@@ -103,7 +103,7 @@ window.CmDashboardLayoutMng = {
           itemTypeCd: util.itemTypeOf(i), chartTypeCd: i.chartTypeCd || 'bar', sortOrd: i.sortOrd || 0,
           panelWidth: i.panelWidth || 1, panelHeight: i.panelHeight || 1,
           useYn: i.useYn || 'Y', realtimeYn: i.realtimeYn || 'N',
-          seriesJson: i.seriesJson || null, optionJson: i.optionJson || null,
+          series: i.series || [], optionJson: i.optionJson || null,
         })));
         uiState.dirty = false;
         Object.keys(simState.widgets).forEach(k => delete simState.widgets[k]);

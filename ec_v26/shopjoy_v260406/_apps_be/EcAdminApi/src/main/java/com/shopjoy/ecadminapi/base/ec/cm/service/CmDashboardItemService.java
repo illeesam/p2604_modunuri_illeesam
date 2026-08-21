@@ -175,4 +175,18 @@ public class CmDashboardItemService {
         em.flush();
         em.clear();
     }
+
+    /** 다음 차트 일련번호 — chart### 의 최대값 +1 (없으면 1) */
+    public int nextChartSeq() {
+        int max = 0;
+        for (CmDashboardItem it : cmDashboardItemRepository.findAll()) {
+            String c = it.getItemKey();
+            if (c == null || !c.startsWith("chart")) continue;
+            int dash = c.indexOf('-');
+            String head = dash < 0 ? c : c.substring(0, dash);
+            try { max = Math.max(max, Integer.parseInt(head.substring(5))); }
+            catch (NumberFormatException ignore) { /* chart 로 시작하지만 숫자가 아니면 건너뜀 */ }
+        }
+        return max + 1;
+    }
 }

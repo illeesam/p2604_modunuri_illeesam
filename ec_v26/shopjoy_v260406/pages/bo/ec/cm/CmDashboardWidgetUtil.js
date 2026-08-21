@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 대시보드 항목 공용 렌더 유틸 (window.cmDashWidgetUtil)
  * CmDashboardLayoutMng(항목배치 시뮬레이션) / CmDashboardMyMng(개인화 대시보드) 공용.
- * cm_dashboard_item(chartTypeCd/seriesJson/optionJson) + cm_dashboard_item_data(rows)
+ * cm_dashboard_item(chartTypeCd/series[]/optionJson) + cm_dashboard_item_data(rows)
  * 를 받아 ECharts 옵션 또는 KPI 카드 정보를 생성한다.
  * 로드 순서: bo.html 에서 CmDashboardLayoutMng.js / CmDashboardMyMng.js 보다 먼저 로드 필수.
  */
@@ -32,7 +32,12 @@
 
   /** 항목유형 정규화 — item_type_cd 가 없는 구 데이터는 chart_type 으로 추정한다 */
   const itemTypeOf = (item) => {
-    if (item && item.itemTypeCd) return item.itemTypeCd;
+    /* 위젯유형은 widget_type_cd 가 기준이다 (2026-08-21).
+       item_type_cd 는 트리 레벨(chart/series/item) 로 의미가 바뀌었으므로 그 값이 오면 무시한다.
+       구 데이터가 KPI/CHART/TABLE 을 아직 item_type_cd 에 갖고 있을 때만 폴백으로 쓴다. */
+    if (item && item.widgetTypeCd) return item.widgetTypeCd;
+    const legacy = (item && item.itemTypeCd) || '';
+    if (legacy === 'KPI' || legacy === 'CHART' || legacy === 'TABLE') return legacy;
     const ct = (item && item.chartTypeCd || '').toLowerCase();
     if (ct === 'kpi')   return 'KPI';
     if (ct === 'table') return 'TABLE';
@@ -70,7 +75,7 @@
     });
   };
 
-  /* seriesJson([{name,color,type}]) / optionJson(부분 오버라이드) 파싱 — 실패 시 무시 */
+  /* optionJson(부분 오버라이드) 파싱 — 실패 시 무시. 시리즈는 item.series 배열에서 온다 */
   const _parseJson = (s) => {
     if (!s) return null;
     try { return JSON.parse(s); } catch (_) { return null; }
@@ -99,7 +104,10 @@
 
     const itemType  = itemTypeOf(item);
     const type      = item.chartTypeCd || 'bar';
-    const seriesArr = _parseJson(item.seriesJson) || [];
+    /* 시리즈 정의는 하위 "행" 에서 온다 (series_json 은 2026-08-21 폐기).
+       목록 API 가 item.series = [{cd,name,color}] 로 붙여 준다.
+       구형 응답(seriesJson 문자열)도 아직 올 수 있어 폴백을 둔다. */
+    const seriesArr = Array.isArray(item.series) ? item.series : (_parseJson(item.seriesJson) || []);
     const optOver   = _parseJson(item.optionJson) || {};
     delete optOver._srcItemId; /* 개인화 대시보드 원본 참조키 — ECharts 옵션 아님 */
 
@@ -159,9 +167,9 @@
   };
 
   /* 목록(표) 위젯 — col1Nm~col6Nm(텍스트) / col1Num~col9Num(숫자) 를 그대로 컬럼으로 쓴다.
-     컬럼 정의는 seriesJson 을 재활용한다(차트의 시리즈 정의와 자리만 같고 의미가 다르다):
+     컬럼 정의는 시리즈 배열을 재활용한다(차트의 시리즈와 자리만 같고 의미가 다르다):
        [{ "name":"주문번호", "key":"col1Nm" }, { "name":"금액", "key":"col1Num", "align":"right" }]
-     seriesJson 이 없으면 값이 들어있는 col* 을 자동 감지해 컬럼을 만든다. */
+     정의가 없으면 값이 들어있는 col* 을 자동 감지해 컬럼을 만든다. */
   const _buildTable = (item, rows, seriesArr) => {
     let columns = (seriesArr || [])
       .filter(c => c && c.key)

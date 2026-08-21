@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardWidgetRow;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -25,7 +25,7 @@ import java.util.Map;
  * 오타로 화면이 죽지 않는다.</p>
  *
  * <h3>반환 규약</h3>
- * <p>결과는 {@link CmDashboardItemData} 형태로 맞춘다 — 프론트(cmDashWidgetUtil)가
+ * <p>결과는 {@link CmDashboardWidgetRow} 형태로 맞춘다 — 프론트(cmDashWidgetUtil)가
  * {@code col1Nm~col6Nm}(텍스트) / {@code col1Num~col9Num}(숫자) 만 보기 때문이다.
  * 저장하지 않는 <b>일회성 객체</b>라 dashboardItemDataId 는 채우지 않는다.</p>
  *
@@ -509,14 +509,14 @@ public class CmDashboardDataSourceRegistry {
      * 대신 어떤 소스가 실패했는지는 로그로 남긴다.</p>
      */
     @SuppressWarnings("unchecked")
-    public List<CmDashboardItemData> run(String sourceCd, String siteId) {
+    public List<CmDashboardWidgetRow> run(String sourceCd, String siteId) {
         String sql = SQL.get(sourceCd == null ? "" : sourceCd.trim());
         if (sql == null) return List.of();
         try {
             Query q = em.createNativeQuery(sql, jakarta.persistence.Tuple.class);
             if (sql.contains(":siteId")) q.setParameter("siteId", siteId);
             List<jakarta.persistence.Tuple> rows = q.getResultList();
-            List<CmDashboardItemData> out = new ArrayList<>();
+            List<CmDashboardWidgetRow> out = new ArrayList<>();
             for (jakarta.persistence.Tuple t : rows) out.add(toData(t));
             return out;
         } catch (Exception e) {
@@ -525,9 +525,9 @@ public class CmDashboardDataSourceRegistry {
         }
     }
 
-    /** Tuple(col1_nm, col1_num …) → CmDashboardItemData (저장하지 않는 일회성 객체) */
-    private CmDashboardItemData toData(jakarta.persistence.Tuple t) {
-        CmDashboardItemData d = new CmDashboardItemData();
+    /** Tuple(col1_nm, col1_num …) → CmDashboardWidgetRow (저장하지 않는 일회성 객체) */
+    private CmDashboardWidgetRow toData(jakarta.persistence.Tuple t) {
+        CmDashboardWidgetRow d = new CmDashboardWidgetRow();
         for (var el : t.getElements()) {
             String alias = el.getAlias() == null ? "" : el.getAlias().toLowerCase();
             Object v = t.get(el.getAlias());
@@ -544,20 +544,7 @@ public class CmDashboardDataSourceRegistry {
         try { return Double.valueOf(String.valueOf(v).trim()); } catch (NumberFormatException e) { return null; }
     }
 
-    private void setNm(CmDashboardItemData d, int k, String v) {
-        switch (k) {
-            case 1 -> d.setCol1Nm(v); case 2 -> d.setCol2Nm(v); case 3 -> d.setCol3Nm(v);
-            case 4 -> d.setCol4Nm(v); case 5 -> d.setCol5Nm(v); case 6 -> d.setCol6Nm(v);
-            default -> { }
-        }
-    }
+    private void setNm(CmDashboardWidgetRow d, int k, String v) { d.setNm(k, v); }
 
-    private void setNum(CmDashboardItemData d, int k, Double v) {
-        switch (k) {
-            case 1 -> d.setCol1Num(v); case 2 -> d.setCol2Num(v); case 3 -> d.setCol3Num(v);
-            case 4 -> d.setCol4Num(v); case 5 -> d.setCol5Num(v); case 6 -> d.setCol6Num(v);
-            case 7 -> d.setCol7Num(v); case 8 -> d.setCol8Num(v); case 9 -> d.setCol9Num(v);
-            default -> { }
-        }
-    }
+    private void setNum(CmDashboardWidgetRow d, int k, Double v) { d.setNum(k, v); }
 }
