@@ -69,7 +69,7 @@ window.CmDashboardItemMng = {
     const panelDetail = reactive({ selectedId: null, isNew: false, show: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
     const cfDtlMode = computed(() => panelDetail.dtlMode === 'view');
     const _initPanelForm = () => ({
-      dashboardItemId: null, itemKey: '', itemNm: '',
+      dashboardItemId: null, dashboardId: '', itemKey: '', itemNm: '',
       widgetTypeCd: 'CHART', axisTypeCd: 'CATEGORY', seriesOrientCd: 'ROW', chartTypeCd: 'bar', sortOrd: 10,
       autoCollectYn: 'N', editableYn: 'Y', inputOpts: '',
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', optionJson: '',
@@ -285,7 +285,7 @@ window.CmDashboardItemMng = {
       panelDetail.show = true;
       panelDetail.dtlMode = 'edit';
       const maxOrd = panels.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
-      Object.assign(panelForm, _initPanelForm(), { sortOrd: maxOrd + 10 });
+      Object.assign(panelForm, _initPanelForm(), { sortOrd: maxOrd + 10, dashboardId: dashState.selectedId });
       fnSyncFormToRows();   /* 편집 그리드 적재 (신규는 빈 행) */
     };
 
@@ -296,7 +296,8 @@ window.CmDashboardItemMng = {
       panelDetail.show = true;
       panelDetail.dtlMode = mode;
       Object.assign(panelForm, {
-        dashboardItemId: row.dashboardItemId, itemKey: row.itemKey || '', itemNm: row.itemNm,
+        dashboardItemId: row.dashboardItemId, dashboardId: row.dashboardId || dashState.selectedId || '',
+        itemKey: row.itemKey || '', itemNm: row.itemNm,
         widgetTypeCd: row.widgetTypeCd || util.itemTypeOf(row),
         axisTypeCd: row.axisTypeCd || 'CATEGORY',
         seriesOrientCd: row.seriesOrientCd || 'ROW',
@@ -335,6 +336,7 @@ window.CmDashboardItemMng = {
     /* handleSavePanel — 항목 저장 (itemSave base, rowStatus I/U) */
     const handleSavePanel = async () => {
       Object.keys(panelErrors).forEach(k => delete panelErrors[k]);
+      if (!panelForm.dashboardId) { panelErrors.dashboardId = '대시보드를 선택하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
       if (!panelForm.itemKey) { panelErrors.itemKey = '항목 키를 입력하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
       if (!panelForm.itemNm)  { panelErrors.itemNm = '항목명을 입력하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
       if (!(await showConfirm('저장', '항목을 저장하시겠습니까?'))) return;
@@ -343,7 +345,10 @@ window.CmDashboardItemMng = {
         const body = {
           dashboardItemId: panelDetail.isNew ? null : panelForm.dashboardItemId,
           rowStatus: panelDetail.isNew ? 'I' : 'U',
-          siteId: cfSiteId.value, dashboardId: dashState.selectedId,
+          /* 대시보드는 이제 폼에서 직접 고른다 — 수정 중 다른 대시보드로 바꾸면 그 값 그대로
+             저장되고, 뒤이은 syncItemChildren() 이 방금 저장된(새 dashboardId 반영된) 차트를
+             다시 읽어 하위 시리즈·항목까지 같은 대시보드로 연쇄 이동시킨다(2026-08-21) */
+          siteId: cfSiteId.value, dashboardId: panelForm.dashboardId || dashState.selectedId,
           /* 이 화면은 1레벨(차트)만 다룬다 — 레벨은 chart 고정, 위젯유형은 widgetTypeCd 로 분리됐다.
              itemKey 는 신규면 비워 보내고 서버가 chart### 로 채번한다(전역 UNIQUE). */
           itemKey: panelForm.itemKey || null,
@@ -369,10 +374,15 @@ window.CmDashboardItemMng = {
           refItemKey: panelForm.widgetGenTypeCd === 'QUERY' ? (panelForm.refItemKey || null) : null,
         };
         const res = await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
-        /* 편집 그리드의 시리즈·항목을 실제 정의행으로 반영 — 트리·데이터관리가 이 행을 본다 */
+        /* 편집 그리드의 시리즈·항목을 실제 정의행으로 반영 — 트리·데이터관리가 이 행을 본다.
+           쿼리방식(QUERY) 차트는 구조(시리즈·항목)를 여기서 다루지 않는다 — [🔗 쿼리 실행 →
+           자동생성]이 유일한 구조 관리자다. 여기서도 syncItemChildren 을 호출하면, 이 폼의
+           seriesRows/colRows 가 그 시점에 비어있을 때(예: 방금 대시보드만 바꿔 저장한 경우)
+           "화면에 없는 행" 으로 오판해 SQL 로 만든 시리즈·항목을 통째로 지워버린다(2026-08-21
+           발견 — 대시보드 이동 저장 한 번으로 쿼리방식 차트 구조가 전부 삭제됐다). */
         const savedId = res.data?.data?.dashboardItemId || panelForm.dashboardItemId;
         let syncMsg = '';
-        if (savedId) {
+        if (savedId && panelForm.widgetGenTypeCd !== 'QUERY') {
           const sres = await boApiSvc.cmDashboard.syncItemChildren(savedId, {
             series: seriesRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color,
               autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
@@ -417,7 +427,11 @@ window.CmDashboardItemMng = {
         const delMsg = d.deletedRows ? `, 옛 항목 ${d.deletedRows}개 정리` : '';
         showToast(`쿼리 실행 완료 — 시리즈 ${d.series || 0}개, 항목 ${d.items || 0}개, 값 ${d.values || 0}건 반영${delMsg}`, 'success');
         await fnLoadTree();       /* 쿼리로 새로 생긴 시리즈·항목 행을 반영 */
-        loadView(panelForm);      /* 현재 항목 그대로 다시 열어 새 정의를 편집 그리드에 반영 */
+        /* 현재 항목 그대로 다시 열어 새 정의를 편집 그리드에 반영 — loadView() 를 쓰면 무조건
+           보기모드로 강제 전환돼(cfDtlMode=true) [🔗 쿼리 실행] 버튼 자체가 disabled 로 잠겨버려
+           기준일자를 바꿔가며 다시 실행해보는 흐름이 끊긴다(2026-08-21 발견). 지금 모드(편집중
+           이었다면 편집 그대로)를 유지한 채 데이터만 새로고침한다. */
+        _loadDetailForm(panelForm, panelDetail.dtlMode);
         await fnLoadPanelCounts();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '쿼리 실행 오류', 'error', 0);
@@ -1579,6 +1593,9 @@ window.CmDashboardItemMng = {
 
     columns.panelForm = [
       { type: 'group', label: '기본 · 배치설정' },
+      { key: 'dashboardId', label: '대시보드', type: 'select', required: true, colSpan: 2,
+        options: () => dashboards.map(d => ({ value: d.dashboardId, label: d.dashboardNm })),
+        hint: '다른 대시보드로 바꾸면 저장 시 이 항목과 하위 시리즈·항목이 통째로 그 대시보드로 옮겨간다' },
       { key: 'itemKey', label: '항목 키', type: 'text', required: true, mono: true, placeholder: 'COMP0101' },
       { key: 'itemNm', label: '항목명', type: 'text', required: true, colSpan: 2 },
       { key: 'widgetTypeCd', label: '항목유형', type: 'select',

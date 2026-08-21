@@ -371,8 +371,7 @@ public class CmDashboardDataGridService {
             upItm++;
 
             if (val != null) {
-                String[] period = derivePeriodFromInputOpts(nvlStr(ch.getInputOpts(), ""), itemCd, refYmd);
-                CmDashboardData e = upsert(it.getDashboardItemId(), siteId, period[0], period[1], null, null, ch, authId, now);
+                CmDashboardData e = upsert(it.getDashboardItemId(), siteId, runPeriod[0], runPeriod[1], null, null, ch, authId, now);
                 e.setDataVal(val);
                 dataRepository.save(e);
                 upVal++;
@@ -399,36 +398,35 @@ public class CmDashboardDataGridService {
     }
 
     /**
-     * 쿼리방식 생성 결과의 항목코드(item_cd)를 차트의 input_opts 기간 토큰에 맞춰
-     * (yyyymmdd, periodTypeCd) 로 변환한다. {@code cm_dashboard_data.yyyymmdd} 는
-     * NOT NULL 이므로 항상 8자리 값을 채워야 한다(D=YYYYMMDD/M=YYYYMM00/Y=YYYY0000 —
-     * 프로젝트 공통 관례). 기간 토큰이 없는 차트(상품/업체별 등)는 기준일자를
-     * "as of" 스냅샷으로 그대로 채우고 periodTypeCd 는 null 로 둔다.
+     * 쿼리방식 실행 전체가 공유할 (yyyymmdd, periodTypeCd) 를 차트의 input_opts 기간 토큰과
+     * 기준일자(refYmd) 로 정한다. {@code cm_dashboard_data.yyyymmdd} 는 NOT NULL 이므로 항상
+     * 8자리 값을 채워야 한다(D=YYYYMMDD/M=YYYYMM00/Y=YYYY0000 — 프로젝트 공통 관례).
+     * 기간 토큰이 없는 차트(상품/업체별 등)는 기준일자를 "as of" 스냅샷으로 그대로 채우고
+     * periodTypeCd 는 null 로 둔다. 항목코드별로 따로 계산하지 않는다 — 한 실행 결과는
+     * 통째로 하나의 스냅샷이다(위 호출부 주석 참고).
      */
-    private String[] derivePeriodFromInputOpts(String inputOpts, String itemCd, String refYmd) {
+    private String[] deriveRunPeriodFromInputOpts(String inputOpts, String refYmd) {
         Set<String> tokens = new LinkedHashSet<>(List.of(inputOpts.split(",")));
-        String cd = nvlStr(itemCd, "").replaceAll("\\D", "");
-        if (tokens.contains("yyyymmdd") && cd.length() >= 8)
-            return new String[]{cd.substring(0, 8), "D"};
-        if (tokens.contains("yyyymm") && cd.length() >= 6)
-            return new String[]{cd.substring(0, 6) + "00", "M"};
-        if (tokens.contains("yyyy") && cd.length() >= 4)
-            return new String[]{cd.substring(0, 4) + "0000", "Y"};
+        if (tokens.contains("yyyymmdd")) return new String[]{refYmd, "D"};
+        if (tokens.contains("yyyymm"))   return new String[]{refYmd.substring(0, 6) + "00", "M"};
+        if (tokens.contains("yyyy"))     return new String[]{refYmd.substring(0, 4) + "0000", "Y"};
         return new String[]{refYmd, null};
     }
 
-    /** 차트 아래 모든 시리즈·항목 행 */
+    /**
+     * 차트 아래 모든 시리즈·항목 행 — parent_dashboard_item_id 체인만으로 찾는다(대시보드ID 로
+     * 좁히지 않는다). 방금 다른 대시보드로 옮긴 차트는 저장 순서상(차트 먼저 저장 → 그 다음
+     * syncChildren 이 하위행 갱신) 이 시점엔 하위 시리즈·항목이 아직 옛 대시보드 소속이라,
+     * dashboardId 로 좁혀서 찾으면 "없는 행"으로 오판해 새로 INSERT 하려다 item_key UNIQUE
+     * 위반으로 500 이 난다(2026-08-21 발견). putRow() 가 바로 다음 줄에서 이 행들을 새
+     * dashboardId 로 갱신한다.
+     */
     private List<CmDashboardItem> descendantsOf(CmDashboardItem ch) {
-        List<CmDashboardItem> all = itemRepository.findByDashboardIdOrderBySortOrdAsc(ch.getDashboardId());
-        Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
-        for (CmDashboardItem it : all) {
-            if (it.getParentDashboardItemId() == null) continue;
-            byParent.computeIfAbsent(it.getParentDashboardItemId(), k -> new ArrayList<>()).add(it);
-        }
+        List<CmDashboardItem> sers = itemRepository.findByParentDashboardItemId(ch.getDashboardItemId());
         List<CmDashboardItem> out = new ArrayList<>();
-        for (CmDashboardItem se : byParent.getOrDefault(ch.getDashboardItemId(), List.of())) {
+        for (CmDashboardItem se : sers) {
             out.add(se);
-            out.addAll(byParent.getOrDefault(se.getDashboardItemId(), List.of()));
+            out.addAll(itemRepository.findByParentDashboardItemId(se.getDashboardItemId()));
         }
         return out;
     }
@@ -466,7 +464,14 @@ public class CmDashboardDataGridService {
         row.setEditableYn(nvlStr(editableYn, "Y"));
         row.setUpdBy(authId);
         row.setUpdDate(now);
-        return itemRepository.save(row);
+        CmDashboardItem saved = itemRepository.save(row);
+        /* exist 맵을 바로 갱신 — 같은 실행 안에서 같은 코드가 또 나오면(예: 쿼리방식 결과가
+           한 시리즈에 항목을 여럿 반환하는 보통의 경우) 두 번째부터도 방금 만든 이 행을
+           "이미 있음" 으로 찾아 UPDATE 해야 한다. 갱신을 안 하면 매번 새 행으로 오판해
+           item_key UNIQUE 위반(중복 INSERT)이 난다(2026-08-21 발견 — generateFromQuery 가
+           시리즈 하나에 항목을 여러 개 반환할 때마다 재현됨). */
+        exist.put(itemCode, saved);
+        return saved;
     }
 
     /** 화면이 보낸 PK 로 기존 행의 조립코드를 되짚는다 (신규 행이면 null) */
