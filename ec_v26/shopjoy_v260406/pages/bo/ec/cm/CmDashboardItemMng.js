@@ -601,18 +601,20 @@ window.CmDashboardItemMng = {
       };
       if (!cats.length) return {};
 
-      if (type === 'pie' || type === 'doughnut') {
+      if (type === 'pie' || type === 'doughnut' || type === 'rose') {
         /* 파이는 조각(=항목,3레벨)마다 색이 필요한데 팔레트1/시리즈색은 시리즈(2레벨) 기준이라
            그대로 못 쓴다(2026-08-21) — 팔레트2(항목 색상 순서)를 쓴다. colRows[i].color 가
-           직접 지정돼 있으면 그것을 우선한다(colorOf 와 동일한 규칙) */
+           직접 지정돼 있으면 그것을 우선한다(colorOf 와 동일한 규칙).
+           로즈차트는 파이와 데이터가 완전히 같고 roseType 만 켜면 되는 변형이라 같이 묶는다 */
         return {
           tooltip: { trigger: 'item' },
           legend: { bottom: 0, type: 'scroll' },
           color: cats.map((c, ci) => colorOf2(ci)),
           series: [{
             type: 'pie',
-            radius: type === 'doughnut' ? ['40%', '65%'] : '60%',
+            radius: type === 'doughnut' ? ['20%', '65%'] : (type === 'rose' ? ['10%', '65%'] : '60%'),
             center: ['50%', '45%'],
+            roseType: type === 'rose' ? 'radius' : undefined,
             label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
             data: cats.map((c, ci) => ({ name: c, value: at(0, ci), itemStyle: { color: colorOf2(ci) } })),
           }],
@@ -647,6 +649,20 @@ window.CmDashboardItemMng = {
           }],
         };
       }
+      if (type === 'sunburst') {
+        /* 선버스트 — 트리맵과 데이터가 완전히 같은 2단 계층(시리즈>항목), 방사형으로 표시만 다르다 */
+        return {
+          tooltip: { trigger: 'item', formatter: (p) => p.name + ': ' + coUtil.cofFmt(p.value) },
+          series: [{
+            type: 'sunburst', radius: [0, '90%'],
+            label: { rotate: 'radial' },
+            data: names.map((nm, si) => ({
+              name: nm, itemStyle: { color: colorOf(si) },
+              children: cats.map((c, ci) => ({ name: c, value: at(si, ci), itemStyle: { color: colorOf2(ci) } })),
+            })),
+          }],
+        };
+      }
       if (type === 'gauge') {
         /* 게이지 — 여러 시리즈·항목 값을 다 더한 총합 하나를 바늘로 보여준다(단일 KPI 성격) */
         let total = 0;
@@ -660,6 +676,170 @@ window.CmDashboardItemMng = {
             detail: { valueAnimation: true, formatter: (v) => coUtil.cofFmt(v), fontSize: 20, offsetCenter: [0, '70%'] },
             data: [{ value: total, name: '합계' }],
           }],
+        };
+      }
+      if (type === 'heatmap') {
+        /* 히트맵 — 시리즈×항목 격자 그대로가 정확히 히트맵의 자연스러운 모양이다(x=항목,y=시리즈,
+           색=값). 예전엔 CHART_TYPES 목록에만 있고 실제 분기가 없어 일반 막대로 잘못 그려졌다 —
+           이번에 제대로 구현(2026-08-21) */
+        const data = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => data.push([ci, si, at(si, ci)])));
+        const vals = data.map(d => d[2]);
+        return {
+          tooltip: { trigger: 'item', formatter: (p) => cats[p.data[0]] + ' / ' + names[p.data[1]] + ': ' + coUtil.cofFmt(p.data[2]) },
+          grid: { left: 90, right: 16, top: 20, bottom: 60 },
+          xAxis: { type: 'category', data: cats, splitArea: { show: true } },
+          yAxis: { type: 'category', data: names, splitArea: { show: true } },
+          visualMap: { min: Math.min(0, ...vals), max: Math.max(1, ...vals), calculable: true,
+            orient: 'horizontal', bottom: 0, inRange: { color: ['#eef2ff', colorOf(0)] } },
+          series: [{ type: 'heatmap', data, label: { show: true, fontSize: 10, formatter: (p) => coUtil.cofFmt(p.data[2]) } }],
+        };
+      }
+      if (type === 'polarBar') {
+        /* 극좌표막대 — 데이터·색상은 일반 막대와 완전히 같고, 좌표계만 원형(polar)으로 바꾼다 */
+        return {
+          tooltip: { trigger: 'axis' },
+          legend: { bottom: 0, type: 'scroll' },
+          polar: { radius: '65%' },
+          angleAxis: { type: 'category', data: cats },
+          radiusAxis: { type: 'value' },
+          series: names.map((nm, si) => ({
+            name: nm, type: 'bar', coordinateSystem: 'polar',
+            itemStyle: { color: colorOf(si) },
+            data: cats.map((c, ci) => at(si, ci)),
+          })),
+        };
+      }
+      if (type === 'bar3D') {
+        /* 입체막대(진짜 3D) — echarts-gl(WebGL, bo.html 에서 echarts 코어 직후 로드) 필요.
+           히트맵과 데이터 모양이 완전히 같다(x=항목,y=시리즈,z=값) — 평면 색칠 대신 기둥을
+           세워 입체로 보여준다(2026-08-21) */
+        const data = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => data.push([ci, si, at(si, ci)])));
+        const vals = data.map(d => d[2]);
+        return {
+          tooltip: {},
+          visualMap: { min: 0, max: Math.max(1, ...vals), calculable: true, dimension: 2,
+            inRange: { color: ['#313695', '#4575b4', '#74add1', '#e0f3f8', '#fee090', '#f46d43', '#a50026'] } },
+          xAxis3D: { type: 'category', data: cats },
+          yAxis3D: { type: 'category', data: names },
+          zAxis3D: { type: 'value' },
+          grid3D: { boxWidth: 100, boxDepth: 55, viewControl: { autoRotate: false, alpha: 22 }, light: { main: { intensity: 1.2 } } },
+          series: [{ type: 'bar3D', data, shading: 'lambert', bevelSize: 0.2 }],
+        };
+      }
+      if (type === 'scatter3D') {
+        /* 입체산점도 — bar3D 와 같은 x/y/z 격자, 기둥 대신 점으로. 값이 클수록 점도 커지고
+           색도 진해지도록 visualMap 한 채널에 색·크기 둘 다 물린다(2026-08-21) */
+        const data = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => data.push([ci, si, at(si, ci)])));
+        const vals = data.map(d => d[2]);
+        return {
+          tooltip: {},
+          visualMap: { min: 0, max: Math.max(1, ...vals), calculable: true, dimension: 2,
+            inRange: { color: ['#313695', '#4575b4', '#74add1', '#e0f3f8', '#fee090', '#f46d43', '#a50026'], symbolSize: [8, 28] } },
+          xAxis3D: { type: 'category', data: cats },
+          yAxis3D: { type: 'category', data: names },
+          zAxis3D: { type: 'value' },
+          grid3D: { boxWidth: 100, boxDepth: 55, viewControl: { autoRotate: false, alpha: 22 } },
+          series: [{ type: 'scatter3D', data, symbolSize: 12 }],
+        };
+      }
+      if (type === 'surface') {
+        /* 입체표면 — bar3D 와 같은 격자값을 기둥이 아니라 매끈한 곡면으로 이어 붙인다.
+           마침 시리즈×항목이 빈칸 없는 완전한 격자라 곡면 보간에 딱 맞는다(2026-08-21) */
+        const data = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => data.push([ci, si, at(si, ci)])));
+        const vals = data.map(d => d[2]);
+        return {
+          tooltip: {},
+          visualMap: { min: 0, max: Math.max(1, ...vals), calculable: true,
+            inRange: { color: ['#313695', '#4575b4', '#74add1', '#e0f3f8', '#fee090', '#f46d43', '#a50026'] } },
+          xAxis3D: { type: 'category', data: cats },
+          yAxis3D: { type: 'category', data: names },
+          zAxis3D: { type: 'value' },
+          grid3D: { boxWidth: 100, boxDepth: 55, viewControl: { autoRotate: false, alpha: 22 } },
+          series: [{ type: 'surface', data, shading: 'color', wireframe: { show: true } }],
+        };
+      }
+      if (type === 'line3D') {
+        /* 입체능선 — 시리즈마다 항목 축을 따라 이어지는 능선을 하나씩 그린다(조이플롯의 3D 버전).
+           색은 팔레트1(시리즈색) — 여기선 항목이 아니라 시리즈가 선 하나의 단위이기 때문 */
+        return {
+          tooltip: {},
+          xAxis3D: { type: 'category', data: cats },
+          yAxis3D: { type: 'category', data: names },
+          zAxis3D: { type: 'value' },
+          grid3D: { boxWidth: 100, boxDepth: 55, viewControl: { autoRotate: false, alpha: 22 } },
+          series: names.map((nm, si) => ({
+            type: 'line3D', lineStyle: { color: colorOf(si), width: 4 },
+            data: cats.map((c, ci) => [ci, si, at(si, ci)]),
+          })),
+        };
+      }
+      if (type === 'polarLine') {
+        /* 극좌표꺾은선 — 극좌표막대와 데이터·좌표계가 완전히 같고, 막대 대신 선으로 잇는다 */
+        return {
+          tooltip: { trigger: 'axis' },
+          legend: { bottom: 0, type: 'scroll' },
+          polar: { radius: '65%' },
+          angleAxis: { type: 'category', data: cats },
+          radiusAxis: { type: 'value' },
+          series: names.map((nm, si) => ({
+            name: nm, type: 'line', coordinateSystem: 'polar', smooth: true,
+            itemStyle: { color: colorOf(si) },
+            data: cats.map((c, ci) => at(si, ci)),
+          })),
+        };
+      }
+      if (type === 'themeRiver') {
+        /* 테마리버 — 시리즈마다 폭이 값에 비례하는 띠가 항목 축(가로)을 따라 흐른다.
+           데이터는 [항목, 값, 시리즈명] 삼중값 나열 — 지금 그리드를 그대로 풀어 쓰면 된다 */
+        const data = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => data.push([c, at(si, ci), nm])));
+        return {
+          tooltip: { trigger: 'axis' },
+          legend: { bottom: 0, type: 'scroll', data: names },
+          singleAxis: { type: 'category', data: cats, top: 20, bottom: 50 },
+          color: names.map((nm, si) => colorOf(si)),
+          series: [{ type: 'themeRiver', data, label: { show: false } }],
+        };
+      }
+      if (type === 'parallel') {
+        /* 평행좌표 — 축 하나=시리즈 하나, 선 하나=항목 하나. 항목이 여러 시리즈 값을 동시에
+           어떻게 가로지르는지 한눈에 비교하기 좋다. 선(=항목) 색은 팔레트2 */
+        return {
+          tooltip: {},
+          parallelAxis: names.map((nm, i) => ({ dim: i, name: nm })),
+          parallel: { left: 70, right: 70, top: 30, bottom: 40 },
+          series: [{
+            type: 'parallel', lineStyle: { width: 2 },
+            data: cats.map((c, ci) => ({
+              name: c, value: names.map((nm, si) => at(si, ci)),
+              lineStyle: { color: colorOf2(ci) },
+            })),
+          }],
+        };
+      }
+      if (type === 'boxplot') {
+        /* 박스플롯 — 항목마다 "그 항목에서 시리즈들이 갖는 값의 분포"를 5수치(최소/Q1/중앙값/
+           Q3/최대)로 요약한다. 시리즈 수가 곧 표본 수라 시리즈가 1개뿐이면 상자가 납작해진다 */
+        const data = cats.map((c, ci) => {
+          const vals = names.map((nm, si) => at(si, ci)).sort((a, b) => a - b);
+          const n = vals.length;
+          const q = (p) => {
+            if (n === 1) return vals[0];
+            const idx = (n - 1) * p, lo = Math.floor(idx), hi = Math.ceil(idx);
+            return vals[lo] + (vals[hi] - vals[lo]) * (idx - lo);
+          };
+          return { value: [vals[0], q(0.25), q(0.5), q(0.75), vals[n - 1]],
+            itemStyle: { color: colorOf2(ci), borderColor: colorOf2(ci) } };
+        });
+        return {
+          tooltip: { trigger: 'item' },
+          xAxis: { type: 'category', data: cats, boundaryGap: true },
+          yAxis: { type: 'value' },
+          series: [{ type: 'boxplot', data }],
         };
       }
       const isArea = type === 'area' || type === 'stackedArea';
@@ -1110,10 +1290,11 @@ window.CmDashboardItemMng = {
       { key: 'itemNm', label: '항목명', type: 'text', required: true, colSpan: 2 },
       { key: 'widgetTypeCd', label: '항목유형', type: 'select',
         options: () => util.ITEM_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
-      /* 차트종류는 차트일 때만 물어본다 — KPI·목록에는 의미가 없다 */
-      { key: 'chartTypeCd', label: '차트종류', type: 'select',
-        visible: (form) => form.widgetTypeCd === 'CHART',
-        options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
+      /* 차트종류는 차트일 때만 물어본다 — KPI·목록에는 의미가 없다.
+         기본/응용/입체(3D) 구분이 <optgroup> 으로 필요해 slot 으로 뺀다(2026-08-21, 다른 select
+         타입 컬럼과 달리 BoFormArea 의 옵션 배열은 그룹을 표현할 수 없어서 — 화면 전용 처리) */
+      { key: '_chartTypeCd', label: '차트종류', type: 'slot', name: 'chartTypeCd',
+        visible: (form) => form.widgetTypeCd === 'CHART' },
       /* 색상 팔레트는 optionJson 안에 얹어서 저장하는 파생값이라(폼 필드 직접 바인딩 불가)
          slot 으로 뺀다 — cfColorPaletteCd/cfColorPaletteCd2 computed(get/set) 가 실제 저장을 담당.
          한 슬롯 안에 팔레트1(시리즈용)·팔레트2(항목용, 파이/도넛)를 나란히 둔다 — cols=3 표 준을
@@ -1333,6 +1514,15 @@ window.CmDashboardItemMng = {
       <!-- compact: 상품수정(PdProdDtl) 과 같은 폼 높이·간격 기준 -->
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
         :cols="3" :show-actions="false" :readonly="cfDtlMode" compact plain-readonly>
+
+        <!-- ===== ■. 차트종류 — 기본/응용/입체(3D) 구분을 <optgroup> 으로 보여준다 =========== -->
+        <template #chartTypeCd>
+          <select class="form-control" v-model="panelForm.chartTypeCd" :disabled="cfDtlMode">
+            <optgroup v-for="g in util.CHART_TYPE_GROUPS" :key="g.key" :label="g.label">
+              <option v-for="c in g.items" :key="c.value" :value="c.value">{{ c.icon }} {{ c.label }}</option>
+            </optgroup>
+          </select>
+        </template>
 
         <!-- ===== ■. 색상 팔레트 1(시리즈) + 2(항목) — optionJson.colorPaletteCd/colorPaletteCd2 -->
         <template #colorPaletteCd>
@@ -1601,7 +1791,9 @@ window.CmDashboardItemMng = {
               <div style="padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
                 <span style="font-size:11px;color:#64748b;">비교</span>
                 <select v-model="compareState.chartTypeCd" class="form-control" style="width:auto;padding:2px 6px;font-size:12px;">
-                  <option v-for="c in util.CHART_TYPES" :key="c.value" :value="c.value">{{ c.icon }} {{ c.label }}</option>
+                  <optgroup v-for="g in util.CHART_TYPE_GROUPS" :key="g.key" :label="g.label">
+                    <option v-for="c in g.items" :key="c.value" :value="c.value">{{ c.icon }} {{ c.label }}</option>
+                  </optgroup>
                 </select>
                 <span style="margin-left:auto;font-size:11px;color:#94a3b8;">저장에 영향 없음</span>
               </div>
