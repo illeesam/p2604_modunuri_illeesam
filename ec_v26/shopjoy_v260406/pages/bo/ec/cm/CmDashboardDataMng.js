@@ -676,11 +676,55 @@ window.CmDashboardDataMng = {
           }],
         };
       }
-      const isArea = type === 'area';
-      const isStacked = type === 'stackedBar';   /* 카테고리당 막대 1개, 시리즈가 그 안에 쌓여 분포를 보여준다 */
-      const base = isStacked ? 'bar' : ((isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type));
-      /* 라벨 — 누적막대는 구간 안(inside)에 시리즈명+값, 그 외(막대/꺾은선/영역/산점도)는
-         점·막대 위(top)에 값만. 값만 보여줘도 되는 자리(top)는 라벨이 길면 겹치므로 값만 표시(2026-08-21) */
+      if (type === 'funnel') {
+        /* 깔때기 — 항목별 값을 큰 순서로 정렬해 단계적 감소를 보여준다. 항목 단위라 팔레트2 사용 */
+        return {
+          tooltip: { trigger: 'item' },
+          legend: { bottom: 0, type: 'scroll' },
+          series: [{
+            type: 'funnel', left: '10%', width: '80%', top: 16, bottom: 36, sort: 'descending',
+            label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
+            data: cats.map((c, ci) => ({ name: c, value: at(0, ci), itemStyle: { color: palette2[ci % palette2.length] } })),
+          }],
+        };
+      }
+      if (type === 'treemap') {
+        /* 트리맵 — 시리즈=상위 블록(팔레트1), 항목=하위 블록(팔레트2). 그리드가 이미
+           시리즈>항목 2단 구조라 별도 가공 없이 그대로 트리 데이터로 옮긴다(2026-08-21) */
+        return {
+          tooltip: { trigger: 'item', formatter: (p) => p.name + ': ' + coUtil.cofFmt(p.value) },
+          series: [{
+            type: 'treemap', roam: false, breadcrumb: { show: false },
+            label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
+            data: (chart.rows || []).map((row, ri) => ({
+              name: row.seriesNm || '(단일)', itemStyle: { color: palette[ri % palette.length] },
+              children: cats.map((c, ci) => ({ name: c, value: at(ri, ci), itemStyle: { color: palette2[ci % palette2.length] } })),
+            })),
+          }],
+        };
+      }
+      if (type === 'gauge') {
+        /* 게이지 — 그리드의 모든 값을 다 더한 총합 하나를 바늘로 보여준다 */
+        let total = 0;
+        (chart.rows || []).forEach((row, ri) => cats.forEach((c, ci) => { total += at(ri, ci); }));
+        const max = Math.max(10, Math.ceil((total * 1.25 || 10) / 10) * 10);
+        return {
+          series: [{
+            type: 'gauge', min: 0, max,
+            progress: { show: true, itemStyle: { color: palette[0] } },
+            itemStyle: { color: palette[0] },
+            detail: { valueAnimation: true, formatter: (v) => coUtil.cofFmt(v), fontSize: 20, offsetCenter: [0, '70%'] },
+            data: [{ value: total, name: '합계' }],
+          }],
+        };
+      }
+      const isArea = type === 'area' || type === 'stackedArea';
+      const isStacked = type === 'stackedBar' || type === 'stackedLine' || type === 'stackedArea';
+      const base = type === 'stackedBar' ? 'bar'
+        : (isArea || type === 'line' || type === 'stackedLine') ? 'line'
+        : (type === 'radar' ? 'line' : type);
+      /* 라벨 — 누적(막대만)은 구간 안(inside)에 시리즈명+값, 그 외(막대/꺾은선/영역/누적꺾은선/
+         누적영역/산점도)는 점·막대 위(top)에 값만. 라벨이 길면 겹치므로 top 자리는 값만 표시(2026-08-21) */
       const series = (chart.rows || []).map((row, ri) => {
         const nm = row.seriesNm || '(단일)';
         return {
@@ -690,7 +734,7 @@ window.CmDashboardDataMng = {
           itemStyle: { color: palette[ri % palette.length] },
           areaStyle: isArea ? {} : undefined,
           smooth: base === 'line',
-          label: isStacked
+          label: (isStacked && base === 'bar')
             ? { show: true, position: 'inside', fontSize: 10, color: '#fff', fontWeight: 700,
                 formatter: (p) => nm + '\n' + coUtil.cofFmt(p.value) }
             : { show: true, position: 'top', fontSize: 10, color: '#334155',
@@ -699,8 +743,8 @@ window.CmDashboardDataMng = {
         };
       });
       if (isStacked) {
-        /* 누적막대 위 합계 마커 — 팔레트(시리즈색)는 이미 각 구간에 쓰이므로, 팔레트2(항목색)를
-           "막대 전체(=항목) 합계" 마커에 얹어 항목별 구분을 추가로 보여준다(2026-08-21) */
+        /* 누적 계열 위 합계 마커 — 팔레트(시리즈색)는 이미 각 구간에 쓰이므로, 팔레트2(항목색)를
+           "전체(=항목) 합계" 마커에 얹어 항목별 구분을 추가로 보여준다(2026-08-21) */
         const totalAt = (ci) => (chart.rows || []).reduce((sum, row, ri) => sum + at(ri, ci), 0);
         series.push({
           name: '합계', type: 'scatter', z: 10, symbolSize: 9, tooltip: { show: false },

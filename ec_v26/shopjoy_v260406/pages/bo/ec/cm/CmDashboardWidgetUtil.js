@@ -18,15 +18,28 @@
   const itemTypeIcon  = (t) => (ITEM_TYPES.find(c => c.value === t) || {}).icon  || '📊';
   const itemTypeLabel = (t) => (ITEM_TYPES.find(c => c.value === t) || {}).label || (t || '-');
 
-  /* 차트종류 — item_type_cd = 'CHART' 일 때만 의미가 있다 */
+  /* 차트종류 — item_type_cd = 'CHART' 일 때만 의미가 있다.
+     2026-08-21 확장: 실제로 지금 데이터 모양(시리즈×항목 값)으로 정확히 그려지는 유형만 추가했다.
+     캔들스틱/박스플롯처럼 OHLC·사분위 같은 별도 데이터 구조가 필요한 유형은 지금 모델과 안 맞아
+     일부러 뺐다(추가하면 빈 차트 또는 깨진 렌더만 나온다) — 넣지 말 것. */
   const CHART_TYPES = [
-    { value: 'bar',        label: '막대',     icon: '📊' },
-    { value: 'stackedBar', label: '누적막대', icon: '📶' },  /* 카테고리당 막대 1개, 그 안에 시리즈별 값이 쌓여 분포를 보여준다 */
-    { value: 'line',       label: '꺾은선',   icon: '📈' },
-    { value: 'pie',        label: '파이',     icon: '🥧' },
-    { value: 'radar',      label: '레이더',   icon: '🕸' },
-    { value: 'heatmap',    label: '히트맵',   icon: '🔥' },
-    { value: 'scatter',    label: '산점도',   icon: '⚡' },
+    { value: 'bar',         label: '막대',       icon: '📊' },
+    { value: 'stackedBar',  label: '누적막대',   icon: '📶' },  /* 카테고리당 막대 1개, 그 안에 시리즈별 값이 쌓여 분포를 보여준다 */
+    { value: 'line',        label: '꺾은선',     icon: '📈' },
+    { value: 'stackedLine',   label: '누적꺾은선', icon: '📉' },  /* 꺾은선 + 누적(stack) */
+    { value: 'area',        label: '영역',       icon: '🏔' },
+    { value: 'stackedArea',  label: '누적영역',   icon: '⛰' },  /* 영역 + 누적(stack) */
+    { value: 'pie',         label: '파이',       icon: '🥧' },
+    { value: 'doughnut',    label: '도넛',       icon: '🍩' },
+    { value: 'radar',       label: '레이더',     icon: '🕸' },
+    { value: 'heatmap',     label: '히트맵',     icon: '🔥' },
+    { value: 'scatter',     label: '산점도',     icon: '⚡' },
+    { value: 'funnel',      label: '깔때기',     icon: '🔻' },  /* 항목값을 큰 순서로 정렬해 단계별 감소를 보여줌 */
+    { value: 'treemap',     label: '트리맵',     icon: '🧩' },  /* 시리즈=상위블록, 항목=하위블록 — 2단 계층 그대로 활용 */
+    { value: 'sunburst',    label: '선버스트',   icon: '🌻' },  /* 트리맵과 같은 2단 계층, 방사형으로 표시 */
+    { value: 'gauge',       label: '게이지',     icon: '⏱' },  /* 전체 합계를 바늘 하나로 표시(단일 KPI 성격) */
+    { value: 'rose',        label: '로즈차트',   icon: '🌹' },  /* 파이 + 값 크기만큼 반지름이 늘어나는 변형 */
+    { value: 'polarBar',    label: '극좌표막대', icon: '🎯' },  /* 막대를 원형 좌표계 위에 방사형으로 배치 */
   ];
   const chartTypeIcon  = (t) => (CHART_TYPES.find(c => c.value === t) || {}).icon  || '📊';
   const chartTypeLabel = (t) => (CHART_TYPES.find(c => c.value === t) || {}).label || (t || '-');
@@ -156,7 +169,7 @@
       return { kind: 'kpi', value: _fmtNum(value), label: last.col1Nm || item.itemNm, delta };
     }
 
-    if (type === 'pie') {
+    if (type === 'pie' || type === 'doughnut') {
       /* 행 각각이 {col1Nm:이름, col1Num:값} — 이름별 합산(중복 이름 대비) */
       const agg = {};
       rows.forEach(r => { const nm = r.col1Nm || '기타'; agg[nm] = (agg[nm] || 0) + (r.col1Num || 0); });
@@ -166,16 +179,22 @@
       const option = {
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
         legend: { show: data.length <= 8, bottom: 0, textStyle: { fontSize: 10 } },
-        series: [{ type: 'pie', radius: ['35%', '62%'], center: ['50%', '44%'], data,
-          label: { fontSize: 10, formatter: '{b}' } }],
+        series: [{ type: 'pie', radius: type === 'doughnut' ? ['20%', '62%'] : ['35%', '62%'],
+          center: ['50%', '44%'], data, label: { fontSize: 10, formatter: '{b}' } }],
       };
       return { kind: 'chart', option: Object.assign(option, optOver) };
     }
 
-    /* bar / stackedBar / line / heatmap(→bar 대체) / scatter — 시리즈 자동 감지 */
+    /* bar / stackedBar / line / stackedLine / area / stackedArea / heatmap(→bar 대체) / scatter — 시리즈 자동 감지.
+       funnel/treemap/gauge 는 이 행 기반(row=카테고리,col{k}Num=시리즈) 구조와 데이터 모양이 안 맞아
+       (파이처럼 이름별 단일 값 집계, 또는 2단 계층이 필요) 아직 여기서는 지원하지 않는다 — 고르면
+       일반 막대로 대체 렌더된다. 필요해지면 admin 미리보기(fnBuildOptionForType/fnBuildChartOption)
+       구현을 참고해 이 함수에도 이식할 것(2026-08-21) */
     const seriesNos = _detectSeries(rows);
-    const isStacked = type === 'stackedBar';
-    const echType   = type === 'line' ? 'line' : type === 'scatter' ? 'scatter' : 'bar';
+    const isStacked = type === 'stackedBar' || type === 'stackedLine' || type === 'stackedArea';
+    const isArea    = type === 'area' || type === 'stackedArea';
+    const echType   = (isArea || type === 'line' || type === 'stackedLine') ? 'line'
+      : type === 'scatter' ? 'scatter' : 'bar';
     const series = seriesNos.map((k, i) => {
       const cfg = seriesArr[i] || {};
       const s = {
@@ -185,6 +204,7 @@
         itemStyle: { color: cfg.color || PALETTE[i % PALETTE.length] },
       };
       if (isStacked) s.stack = 'total';   /* 같은 stack 이름끼리 카테고리당 막대 하나로 쌓인다 */
+      if (isArea) s.areaStyle = {};
       if (s.type === 'line') { s.smooth = true; s.symbolSize = 4; }
       if (s.type === 'bar')  { s.barMaxWidth = 18; }
       return s;

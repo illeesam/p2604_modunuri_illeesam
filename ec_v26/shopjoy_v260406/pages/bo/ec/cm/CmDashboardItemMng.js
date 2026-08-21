@@ -613,13 +613,62 @@ window.CmDashboardItemMng = {
             type: 'pie',
             radius: type === 'doughnut' ? ['40%', '65%'] : '60%',
             center: ['50%', '45%'],
+            label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
             data: cats.map((c, ci) => ({ name: c, value: at(0, ci), itemStyle: { color: colorOf2(ci) } })),
           }],
         };
       }
-      const isArea = type === 'area';
-      const isStacked = type === 'stackedBar';   /* 카테고리당 막대 1개, 시리즈가 그 안에 쌓여 분포를 보여준다 */
-      const base = isStacked ? 'bar' : ((isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type));
+      if (type === 'funnel') {
+        /* 깔때기 — 항목(3레벨)별 값을 큰 순서로 정렬해 단계적 감소를 보여준다.
+           파이와 마찬가지로 항목 단위라 팔레트2(colorOf2)를 쓴다 */
+        return {
+          tooltip: { trigger: 'item' },
+          legend: { bottom: 0, type: 'scroll' },
+          series: [{
+            type: 'funnel', left: '10%', width: '80%', top: 16, bottom: 36, sort: 'descending',
+            label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
+            data: cats.map((c, ci) => ({ name: c, value: at(0, ci), itemStyle: { color: colorOf2(ci) } })),
+          }],
+        };
+      }
+      if (type === 'treemap') {
+        /* 트리맵 — 시리즈(2레벨)=상위 블록, 항목(3레벨)=하위 블록. 마침 지금 데이터가 2단
+           계층(시리즈>항목)이라 별도 가공 없이 그대로 트리 구조로 옮겨 쓸 수 있다(2026-08-21).
+           블록 색은 팔레트1(상위=시리즈)·팔레트2(하위=항목) 둘 다 활용 */
+        return {
+          tooltip: { trigger: 'item', formatter: (p) => p.name + ': ' + coUtil.cofFmt(p.value) },
+          series: [{
+            type: 'treemap', roam: false, breadcrumb: { show: false },
+            label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
+            data: names.map((nm, si) => ({
+              name: nm, itemStyle: { color: colorOf(si) },
+              children: cats.map((c, ci) => ({ name: c, value: at(si, ci), itemStyle: { color: colorOf2(ci) } })),
+            })),
+          }],
+        };
+      }
+      if (type === 'gauge') {
+        /* 게이지 — 여러 시리즈·항목 값을 다 더한 총합 하나를 바늘로 보여준다(단일 KPI 성격) */
+        let total = 0;
+        names.forEach((nm, si) => cats.forEach((c, ci) => { total += at(si, ci); }));
+        const max = Math.max(10, Math.ceil((total * 1.25 || 10) / 10) * 10);
+        return {
+          series: [{
+            type: 'gauge', min: 0, max,
+            progress: { show: true, itemStyle: { color: colorOf(0) } },
+            itemStyle: { color: colorOf(0) },
+            detail: { valueAnimation: true, formatter: (v) => coUtil.cofFmt(v), fontSize: 20, offsetCenter: [0, '70%'] },
+            data: [{ value: total, name: '합계' }],
+          }],
+        };
+      }
+      const isArea = type === 'area' || type === 'stackedArea';
+      /* 누적(stack) 은 막대뿐 아니라 꺾은선·영역도 지원한다 — base 는 셋 다 렌더 방식이 다르므로
+         (막대=bar, 나머지=line) type 별로 갈라 정한다(2026-08-21) */
+      const isStacked = type === 'stackedBar' || type === 'stackedLine' || type === 'stackedArea';
+      const base = type === 'stackedBar' ? 'bar'
+        : (isArea || type === 'line' || type === 'stackedLine') ? 'line'
+        : (type === 'radar' ? 'line' : type);
       const series = names.map((nm, si) => ({
         name: nm,
         type: base === 'scatter' ? 'scatter' : base,
@@ -627,11 +676,15 @@ window.CmDashboardItemMng = {
         itemStyle: { color: colorOf(si) },
         areaStyle: isArea ? {} : undefined,
         smooth: base === 'line',
+        label: isStacked && base === 'bar'
+          ? { show: true, position: 'inside', fontSize: 10, color: '#fff', fontWeight: 700,
+              formatter: (p) => nm + '\n' + coUtil.cofFmt(p.value) }
+          : { show: true, position: 'top', fontSize: 10, color: '#334155', formatter: (p) => coUtil.cofFmt(p.value) },
         data: cats.map((c, ci) => at(si, ci)),
       }));
       if (isStacked) {
-        /* 누적막대 위 합계 마커 — 팔레트1(시리즈색)은 이미 각 구간에 쓰이므로, 팔레트2(항목색)를
-           "막대 전체(=항목) 합계" 마커에 얹어 항목별 구분을 추가로 보여준다(2026-08-21) */
+        /* 누적 계열 위 합계 마커 — 팔레트1(시리즈색)은 이미 각 구간에 쓰이므로, 팔레트2(항목색)를
+           "전체(=항목) 합계" 마커에 얹어 항목별 구분을 추가로 보여준다(2026-08-21) */
         const totalAt = (ci) => names.reduce((sum, nm, si) => sum + at(si, ci), 0);
         series.push({
           name: '합계', type: 'scatter', z: 10, symbolSize: 9, tooltip: { show: false },
@@ -645,7 +698,7 @@ window.CmDashboardItemMng = {
         /* 합계 마커는 범례에서 뺀다(names 만 나열) — 팔레트2 다색이라 범례 스와치 1개로 표현이
            안 되고, 이미 마커 라벨로 값이 보이므로 범례 항목으로는 불필요하다 */
         legend: { bottom: 0, type: 'scroll', data: isStacked ? names : undefined },
-        grid: { left: 48, right: 16, top: 20, bottom: 48 },
+        grid: { left: 48, right: 16, top: 40, bottom: 48 },
         xAxis: { type: 'category', data: cats },
         yAxis: { type: 'value' },
         series,
