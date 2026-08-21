@@ -19,10 +19,8 @@ import jakarta.validation.constraints.Size;
  * 문자열이라 차원이 늘어도 컬럼을 더 만들 필요가 없다. {@code (item_key, data_opts)} 가 UNIQUE 이고,
  * 같은 좌표가 다시 들어오면 새 행을 만들지 않고 그 행을 갱신한다(upsert).</p>
  *
- * <p>값은 한 쌍({@code item_val}/{@code item_val_nm})만 둔다 — 예전 col1~9 반복 컬럼은
- * 3레벨(시리즈×항목) 구조 도입으로 "행 하나 = 좌표 하나 = 값 하나" 가 되어 필요 없어졌다.
- * 숫자 지표는 {@code item_val}, TABLE 위젯처럼 값 자체가 텍스트(예: 로그인ID, 문의번호)면
- * {@code item_val_nm} 을 쓴다.</p>
+ * <p>값은 숫자 하나({@code data_val})만 둔다 — 예전 col1~9 반복 컬럼은 3레벨(시리즈×항목)
+ * 구조 도입으로 "행 하나 = 좌표 하나 = 값 하나" 가 되어 필요 없어졌다.</p>
  */
 @Entity
 @Table(name = "cm_dashboard_data", schema = "shopjoy_2604")
@@ -37,35 +35,34 @@ public class CmDashboardData extends BaseEntity {
     @Size(max = 21, message = "dashboardDataId 는 21자 이내여야 합니다.")
     private String dashboardDataId;
 
-    @Comment("값이 붙은 3레벨(항목) 정의행 FK")
-    @Column(name = "dashboard_item_id", length = 21, nullable = false)
-    @Size(max = 21, message = "dashboardItemId 는 21자 이내여야 합니다.")
-    private String dashboardItemId;
-
     @Comment("대시보드ID (필수). dashboard_item_id 로 유도 가능하나 조회·필터용 반정규화")
     @Column(name = "dashboard_id", length = 21, nullable = false)
     @Size(max = 21, message = "dashboardId 는 21자 이내여야 합니다.")
     private String dashboardId;
+
+    @Comment("값이 붙은 3레벨(항목) 정의행 FK (항상 key_level=3)")
+    @Column(name = "dashboard_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dashboardItemId 는 21자 이내여야 합니다.")
+    private String dashboardItemId;
+
+    @Comment("값이 붙은 3레벨 정의행의 조립코드 (cm_dashboard_item.item_key). 조인 없이 위치를 읽기 위한 반정규화")
+    @Column(name = "item_key", length = 150, nullable = false)
+    @Size(max = 150, message = "itemKey 는 150자 이내여야 합니다.")
+    private String itemKey;
 
     @Comment("차원 정규화 키 (예: period_type_cd:M,site_id:2604...,yyyymmdd:20260101). item_key 와 함께 UNIQUE")
     @Column(name = "data_opts", length = 500)
     @Size(max = 500, message = "dataOpts 는 500자 이내여야 합니다.")
     private String dataOpts;
 
-    @Comment("화면명 역정규화")
-    @Column(name = "ui_nm", length = 100, nullable = false)
-    @Size(max = 100, message = "uiNm 는 100자 이내여야 합니다.")
-    private String uiNm;
+    @Comment("값(숫자)")
+    @Column(name = "data_val")
+    private Double dataVal;
 
-    @Comment("값이 붙은 3레벨 정의행의 조립코드 (cm_dashboard_item.item_key, 항상 key_level=3). 조인 없이 위치를 읽기 위한 반정규화")
-    @Column(name = "item_key", length = 150, nullable = false)
-    @Size(max = 150, message = "itemKey 는 150자 이내여야 합니다.")
-    private String itemKey;
-
-    @Comment("사이트ID (sy_site.site_id) — 업무 소속 사이트(필수 기준조건)")
-    @Column(name = "site_id", length = 21)
-    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
-    private String siteId;
+    @Comment("집계일자 (D=YYYYMMDD / M=YYYYMM00)")
+    @Column(name = "yyyymmdd", length = 8, nullable = false)
+    @Size(max = 8, message = "yyyymmdd 는 8자 이내여야 합니다.")
+    private String yyyymmdd;
 
     /* 기간구분 — 월 데이터도 yyyymmdd 한 컬럼에 담는다(NOT NULL 유지 + BETWEEN 정렬 그대로 동작).
        D: yyyymmdd = YYYYMMDD (예 20260821) / M: yyyymmdd = YYYYMM + "00" (예 20260800) */
@@ -73,6 +70,11 @@ public class CmDashboardData extends BaseEntity {
     @Column(name = "period_type_cd", length = 1)
     @Size(max = 1, message = "periodTypeCd 는 1자 이내여야 합니다.")
     private String periodTypeCd;
+
+    @Comment("사이트ID (sy_site.site_id) — 업무 소속 사이트(필수 기준조건)")
+    @Column(name = "site_id", length = 21)
+    @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
+    private String siteId;
 
     @Comment("상품ID (pd_prod.prod_id) — 선택 기준조건")
     @Column(name = "prod_id", length = 21)
@@ -84,27 +86,13 @@ public class CmDashboardData extends BaseEntity {
     @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
-    @Comment("집계일자 (D=YYYYMMDD / M=YYYYMM00)")
-    @Column(name = "yyyymmdd", length = 8, nullable = false)
-    @Size(max = 8, message = "yyyymmdd 는 8자 이내여야 합니다.")
-    private String yyyymmdd;
-
-    @Comment("부서ID")
+    @Comment("부서ID (부서별 집계 시 사용)")
     @Column(name = "dept_id", length = 21)
     @Size(max = 21, message = "deptId 는 21자 이내여야 합니다.")
     private String deptId;
 
-    @Comment("사용자ID")
+    @Comment("사용자ID (개인별 집계 시 사용)")
     @Column(name = "user_id", length = 21)
     @Size(max = 21, message = "userId 는 21자 이내여야 합니다.")
     private String userId;
-
-    @Comment("값(숫자) — 대부분의 KPI/CHART 위젯이 사용")
-    @Column(name = "item_val")
-    private Double itemVal;
-
-    @Comment("값(텍스트) — TABLE 위젯처럼 값 자체가 텍스트인 경우(로그인ID·문의번호 등)")
-    @Column(name = "item_val_nm", length = 200)
-    @Size(max = 200, message = "itemValNm 는 200자 이내여야 합니다.")
-    private String itemValNm;
 }

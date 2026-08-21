@@ -1,7 +1,7 @@
 /* ShopJoy Admin - 대시보드 항목관리
  *  좌: 대시보드 목록(선택) / 우: 선택 대시보드의 항목 목록 + 인라인 폼.
  *
- *  대시보드 정의 자체(이름·UI컴포넌트·열수 등)는 '대시보드 기준관리' 에서 다룬다.
+ *  대시보드 정의 자체(이름·UI컴포넌트·열수 등)는 '대시보드 관리' 에서 다룬다.
  *  여기서는 그 대시보드에 어떤 항목이 있는지만 관리한다. 배치·크기는 '대시보드 항목배치'.
  */
 window.CmDashboardItemMng = {
@@ -50,7 +50,8 @@ window.CmDashboardItemMng = {
     const cfDtlMode = computed(() => panelDetail.dtlMode === 'view');
     const _initPanelForm = () => ({
       dashboardItemId: null, itemKey: '', itemNm: '',
-      widgetTypeCd: 'CHART', axisTypeCd: 'CATEGORY', chartTypeCd: 'bar', sortOrd: 10,
+      widgetTypeCd: 'CHART', axisTypeCd: 'CATEGORY', seriesOrientCd: 'ROW', chartTypeCd: 'bar', sortOrd: 10,
+      autoCollectYn: 'N', editableYn: 'Y', inputOpts: '',
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', optionJson: '',
       lvl1CodeGrp: '', lvl2CodeGrp: '', simJson: '',
     });
@@ -152,6 +153,7 @@ window.CmDashboardItemMng = {
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         panels.splice(0, panels.length, ...list);
         await fnLoadTree();
+        fnAttachChildCounts();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
       } finally {
@@ -169,6 +171,19 @@ window.CmDashboardItemMng = {
         treeRows.splice(0, treeRows.length);
         console.warn('[항목 트리 조회 오류]', err);
       }
+    };
+
+    /* fnAttachChildCounts — treeRows(전체 레벨)로 각 차트(panels 행)에 시리즈개수·데이타열개수를 매긴다.
+       데이타열개수는 시리즈끼리 항목 1벌을 공유하므로 첫 시리즈의 3레벨 자식 수를 쓴다
+       (데이터관리 그리드의 열 개수와 같은 규칙). 별도 API 호출 없이 이미 받은 트리로 계산한다. */
+    const fnAttachChildCounts = () => {
+      const byParent = {};
+      treeRows.forEach(n => { if (n.parentDashboardItemId) (byParent[n.parentDashboardItemId] = byParent[n.parentDashboardItemId] || []).push(n); });
+      panels.forEach(p => {
+        const sers = byParent[p.dashboardItemId] || [];
+        p._seriesCnt = sers.length;
+        p._colCnt = sers.length ? (byParent[sers[0].dashboardItemId] || []).length : 0;
+      });
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러) #################################### */
@@ -206,6 +221,9 @@ window.CmDashboardItemMng = {
         dashboardItemId: row.dashboardItemId, itemKey: row.itemKey || '', itemNm: row.itemNm,
         widgetTypeCd: row.widgetTypeCd || util.itemTypeOf(row),
         axisTypeCd: row.axisTypeCd || 'CATEGORY',
+        seriesOrientCd: row.seriesOrientCd || 'ROW',
+        autoCollectYn: row.autoCollectYn || 'N', editableYn: row.editableYn || 'Y',
+        inputOpts: row.inputOpts || '',
         chartTypeCd: row.chartTypeCd || 'bar', sortOrd: row.sortOrd || 10,
         panelWidth: row.panelWidth || 1, panelHeight: row.panelHeight || 1,
         realtimeYn: row.realtimeYn || 'N', useYn: row.useYn || 'Y',
@@ -252,6 +270,10 @@ window.CmDashboardItemMng = {
           itemTypeCd: 'chart',
           widgetTypeCd: panelForm.widgetTypeCd,
           axisTypeCd: panelForm.axisTypeCd || 'CATEGORY',
+          seriesOrientCd: panelForm.seriesOrientCd || 'ROW',
+          autoCollectYn: panelForm.autoCollectYn || 'N',
+          editableYn: panelForm.editableYn || 'Y',
+          inputOpts: panelForm.inputOpts || null,
           /* 차트가 아닌 유형은 차트종류를 비워 둔다 — 남겨두면 'kpi 차트' 같은 오해가 생긴다 */
           chartTypeCd: panelForm.widgetTypeCd === 'CHART' ? panelForm.chartTypeCd : null,
           sortOrd: Number(panelForm.sortOrd) || 10,
@@ -377,13 +399,19 @@ window.CmDashboardItemMng = {
     const fnDelSeriesRow = (i) => seriesRows.splice(i, 1);
     const fnDelColRow    = (i) => colRows.splice(i, 1);
 
-    /* fnMoveRow — 순서 변경 (시리즈·항목 순서가 곧 차트의 표시 순서) */
-    const fnMoveRow = (rows, i, dir) => {
-      const j = i + dir;
-      if (j < 0 || j >= rows.length) return;
-      const [x] = rows.splice(i, 1);
-      rows.splice(j, 0, x);
+    /* ── 시리즈·항목 정의 그리드 드래그 정렬 ────────────────────────────────
+       좌측 ☰ 손잡이를 잡고 끌면 순서가 바뀐다(순서 = 표시 순서·저장 시 sortOrd). rows 자체가
+       어느 그리드(seriesRows/colRows)인지로 드래그 소스를 식별한다 — 두 그리드를 오가며
+       끌리지 않도록 dragSrc.rows !== rows 면 무시한다. */
+    const dragSrc = ref(null);   // { rows, idx }
+    const onRowDragStart = (rows, idx) => { dragSrc.value = { rows, idx }; };
+    const onRowDragOver = (rows, idx) => {
+      if (!dragSrc.value || dragSrc.value.rows !== rows || dragSrc.value.idx === idx) return;
+      const moved = rows.splice(dragSrc.value.idx, 1)[0];
+      rows.splice(idx, 0, moved);
+      dragSrc.value.idx = idx;
     };
+    const onRowDragEnd = () => { dragSrc.value = null; };
 
     /* fnPreviewCode — 편집 중인 행의 고유 item_key 미리보기 */
     const fnPreviewCode = (seriesCd, colCd) => {
@@ -810,9 +838,28 @@ window.CmDashboardItemMng = {
       return i < 0 ? '' : String(code).slice(0, i);
     };
 
-    /* cfTreeVisible — 접힘 상태를 반영한 표시 대상 노드 */
+    /* cfFirstSeriesKeys — 차트별 "첫 번째 시리즈" itemKey 집합.
+       시리즈끼리 항목(3레벨) 정의를 공유하므로(syncChildren 이 열 정의 1벌을 모든 시리즈에 동일
+       적용), 트리에 항목을 매 시리즈마다 반복해 보여줄 필요가 없다 — 첫 시리즈에서만 펼쳐 보이고
+       2번째 시리즈부터는 항목 자체를 목록에서 뺀다(값은 각 시리즈마다 실제로 별도 행이라
+       데이터관리·저장에는 영향 없음, 여기 트리 "표시"만 줄이는 것). */
+    const cfFirstSeriesKeys = computed(() => {
+      const seenChart = new Set(); const out = new Set();
+      treeRows.forEach(n => {
+        if (n.lvl !== 2) return;
+        const chartKey = fnParentCode(n.itemKey);
+        if (seenChart.has(chartKey)) return;
+        seenChart.add(chartKey);
+        out.add(n.itemKey);
+      });
+      return out;
+    });
+    const fnIsFirstSeries = (node) => cfFirstSeriesKeys.value.has(node.itemKey);
+
+    /* cfTreeVisible — 접힘 상태 + "2번째 시리즈부터는 항목 생략" 규칙을 반영한 표시 대상 노드 */
     const cfTreeVisible = computed(() => treeRows.filter((n) => {
       if (n.lvl === 1) return true;
+      if (n.lvl === 3 && !cfFirstSeriesKeys.value.has(fnParentCode(n.itemKey))) return false;
       /* 조상 코드를 하나씩 거슬러 올라가며 접힌 게 있으면 숨김 */
       let p = fnParentCode(n.itemKey);
       while (p) {
@@ -822,8 +869,13 @@ window.CmDashboardItemMng = {
       return true;
     }));
 
-    /* fnHasChild — 자식이 있는 노드만 ▼/▶ 아이콘을 보여준다 */
-    const fnHasChild = (node) => treeRows.some(n => fnParentCode(n.itemKey) === node.itemKey);
+    /* fnHasChild — 자식이 있는 노드만 ▼/▶ 아이콘을 보여준다.
+       2번째 시리즈부터는 항목을 안 보여주므로(cfTreeVisible 규칙) 펼쳐도 나올 게 없다 —
+       화살표 자체를 숨겨 "눌러도 안 열리는" 혼란을 막는다. */
+    const fnHasChild = (node) => {
+      if (node.lvl === 2 && !fnIsFirstSeries(node)) return false;
+      return treeRows.some(n => fnParentCode(n.itemKey) === node.itemKey);
+    };
 
     /* fnToggleNode — 접기/펼치기 */
     const fnToggleNode = (node) => {
@@ -867,6 +919,8 @@ window.CmDashboardItemMng = {
         fmt: (v, row) => util.itemTypeIcon(util.itemTypeOf(row)) + ' ' + util.itemTypeLabel(util.itemTypeOf(row)) },
       { key: 'chartTypeCd', label: '차트종류', style: 'width:96px;',
         fmt: (v, row) => util.itemTypeOf(row) === 'CHART' ? util.chartTypeIcon(v) + ' ' + util.chartTypeLabel(v) : '-' },
+      { key: '_seriesCnt', label: '시리즈개수', style: 'width:84px;', align: 'center', fmt: (v, row) => (row._seriesCnt || 0) + '개' },
+      { key: '_colCnt', label: '데이타열개수', style: 'width:90px;', align: 'center', fmt: (v, row) => (row._colCnt || 0) + '개' },
       { key: 'panelWidth',  label: '폭', style: 'width:50px;', align: 'center', fmt: (v) => (v || 1) },
       { key: 'panelHeight', label: '높이', style: 'width:50px;', align: 'center', fmt: (v) => (v || 1) },
       { key: 'sortOrd',   label: '정렬', style: 'width:60px;', align: 'center' },
@@ -888,6 +942,22 @@ window.CmDashboardItemMng = {
       { key: 'chartTypeCd', label: '차트종류', type: 'select',
         visible: (form) => form.widgetTypeCd === 'CHART',
         options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
+      { key: 'seriesOrientCd', label: '시리즈 배치 방향', type: 'select',
+        options: () => [
+          { value: 'ROW', label: '행 (시리즈=행 · 항목=열, 기본)' },
+          { value: 'COL', label: '열 (항목=행 · 시리즈=열)' },
+        ],
+        hint: '데이터관리 그리드에서 시리즈를 행에 둘지 열에 둘지 — 항목이 많고 시리즈가 적으면 열로 바꾸면 편함' },
+      { key: 'autoCollectYn', label: '자동수집여부', type: 'select',
+        options: () => [{ value: 'N', label: '아니오 (직접입력, 기본)' }, { value: 'Y', label: '예 (배치가 채움)' }],
+        onChange: (v) => { if (v === 'Y') panelForm.editableYn = 'N'; },
+        hint: '예로 두면 SyStatsDashboardJob 배치가 매일 실 EC 데이터를 집계해 채운다' },
+      { key: 'editableYn', label: '데이터관리 편집여부', type: 'select',
+        options: () => [{ value: 'Y', label: '가능 (기본)' }, { value: 'N', label: '불가 (자동수집 값 보호)' }],
+        hint: '아니오면 데이터관리 그리드에서 이 차트의 값 입력칸이 비활성화된다' },
+      { key: 'inputOpts', label: '입력 기준조건 키', type: 'text', mono: true, colSpan: 2,
+        placeholder: '예: period_type_cd:M,site_id,yyyymmdd (비우면 이 기본값 적용)',
+        hint: 'cm_dashboard_data.data_opts 와 같은 key:value 콤마결합 형식 — 이 차트 값이 어느 차원 조합으로 찾아지는지' },
       { key: 'panelWidth', label: '항목 폭(열 span)', type: 'select',
         options: () => [1, 2, 3, 4, 5, 6].map(n => ({ value: n, label: n })) },
       { key: 'panelHeight', label: '항목 높이(행 span)', type: 'select',
@@ -931,12 +1001,13 @@ window.CmDashboardItemMng = {
       cfCurDash, cfDtlMode,
       /* 3레벨 트리 */
       treeRows, treeState, cfTreeVisible,
-      fnHasChild, fnToggleNode, fnTreeExpandAll, fnTreeCollapseAll,
+      fnHasChild, fnToggleNode, fnTreeExpandAll, fnTreeCollapseAll, fnIsFirstSeries,
       fnLvlBullet, fnLvlColor, fnLvlLabel,
       /* 2·3레벨 편집 그리드 */
       seriesRows, colRows, grpCodes,
       fnGrpOptions, onGrpChange, onPickCode, fnPreviewCode,
-      fnAddSeriesRow, fnAddColRow, fnDelSeriesRow, fnDelColRow, fnMoveRow,
+      fnAddSeriesRow, fnAddColRow, fnDelSeriesRow, fnDelColRow,
+      onRowDragStart, onRowDragOver, onRowDragEnd,
       /* 시뮬레이션 값 · 미리보기 */
       simVals, fnSimFit, fnSimRandom, fnSimClear, fnPanelOf,
       cfSimSeriesNms, cfSimColNms, cfPreviewOption,
@@ -948,7 +1019,7 @@ window.CmDashboardItemMng = {
   },
   template: /* html */ `
 <bo-page title="대시보드 항목관리"
-  desc-summary="대시보드에 속한 항목을 등록·수정합니다. 대시보드 정의는 대시보드 기준관리, 배치·크기는 대시보드 항목배치 화면을 이용하세요.">
+  desc-summary="대시보드에 속한 항목을 등록·수정합니다. 대시보드 정의는 대시보드 관리, 배치·크기는 대시보드 항목배치 화면을 이용하세요.">
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
@@ -965,7 +1036,7 @@ window.CmDashboardItemMng = {
     </bo-container>
 
     <!-- ===== ■. 항목 목록 + 인라인 폼 (항상 표시 — 미선택 시 빈 그리드 + 안내) ===== -->
-    <bo-container title="항목 목록"
+    <bo-container title="대시보드 항목 목록"
       :count-text="dashState.selectedId ? '총 ' + panels.length + '개' : ''">
       <template #toolbar-actions>
         <!-- 영역을 숨기지 않고 버튼만 잠근다 (미선택 상태에서도 무엇을 할 수 있는지 보여야 한다) -->
@@ -1025,6 +1096,8 @@ window.CmDashboardItemMng = {
                                     color: node.lvl === 3 ? '#475569' : '' }">{{ node.itemNm }}</span>
                     <span v-if="node.lvl === 1" class="badge badge-gray" style="margin-left:4px;">
                       {{ node.widgetTypeCd === 'CHART' ? (node.chartTypeCd || 'chart') : node.widgetTypeCd }}</span>
+                    <span v-if="node.lvl === 2 ? !fnIsFirstSeries(node) : false"
+                      style="font-size:10px;color:#c2410c;margin-left:2px;">(항목은 1번째 시리즈 참고)</span>
                   </span>
                 </td>
                 <td style="font-family:monospace;font-size:11px;color:#2563eb;">{{ node.itemCd }}</td>
@@ -1052,7 +1125,7 @@ window.CmDashboardItemMng = {
         bare :columns="columns.panels" :rows="panels" row-key="dashboardItemId"
         :loading="uiState.panelLoading" :selected-key="panelDetail.selectedId"
         :row-class="row => panelDetail.selectedId === row.dashboardItemId ? 'active' : ''"
-        :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '좌측에서 대시보드를 선택하면 항목 목록이 표시됩니다.'"
+        :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '좌측에서 대시보드를 선택하면 대시보드 항목 목록이 표시됩니다.'"
         grid-id="panels-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row, gridId }">
           <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
@@ -1065,7 +1138,7 @@ window.CmDashboardItemMng = {
   </div>
 
   <!-- ===== ■. 항목 상세 폼 (전체 폭 · 항상 표시 — 미선택 시 안내) ============ -->
-  <bo-container :title="!panelDetail.show ? '대시보드위젯 상세' : (panelDetail.isNew ? '대시보드위젯 신규' : (cfDtlMode ? '대시보드위젯 상세' : '대시보드위젯 수정'))"
+  <bo-container :title="!panelDetail.show ? '대시보드 위젯항목 상세' : (panelDetail.isNew ? '대시보드 위젯항목 신규' : (cfDtlMode ? '대시보드 위젯항목 상세' : '대시보드 위젯항목 수정'))"
     :title-id="panelDetail.selectedId ? panelForm.dashboardItemId : ''">
     <div v-if="panelDetail.show" style="padding:12px;">
       <!-- compact: 상품수정(PdProdDtl) 과 같은 폼 높이·간격 기준 -->
@@ -1081,16 +1154,20 @@ window.CmDashboardItemMng = {
             <table class="bo-table bo-table-narrow">
               <thead>
                 <tr>
+                  <th style="width:28px;"></th>
                   <th style="width:44px;">순서</th>
                   <th style="width:190px;">코드 (cd)</th>
                   <th>시리즈명 (name)</th>
                   <th style="width:150px;">색상 (color)</th>
                   <th style="width:230px;">고유 item_key 미리보기</th>
-                  <th style="width:96px;">관리</th>
+                  <th style="width:60px;">관리</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(r, i) in seriesRows" :key="'s'+i">
+                <tr v-for="(r, i) in seriesRows" :key="'s'+i"
+                  :draggable="!cfDtlMode" @dragstart="onRowDragStart(seriesRows, i)"
+                  @dragover.prevent="onRowDragOver(seriesRows, i)" @dragend="onRowDragEnd">
+                  <td style="text-align:center;cursor:grab;color:#bbb;font-size:16px;user-select:none;">☰</td>
                   <td style="text-align:center;color:#94a3b8;">{{ i + 1 }}</td>
                   <td>
                     <!-- 코드그룹이 지정되면 선택, 아니면 직접입력 -->
@@ -1114,13 +1191,11 @@ window.CmDashboardItemMng = {
                   </td>
                   <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ fnPreviewCode(r.cd || r.name, '') }}</td>
                   <td style="text-align:center;white-space:nowrap;">
-                    <button class="btn btn-xs" :disabled="cfDtlMode" @click="fnMoveRow(seriesRows, i, -1)">↑</button>
-                    <button class="btn btn-xs" :disabled="cfDtlMode" @click="fnMoveRow(seriesRows, i, 1)">↓</button>
                     <button class="btn btn_row_delete" :disabled="cfDtlMode" @click="fnDelSeriesRow(i)">삭제</button>
                   </td>
                 </tr>
                 <tr v-if="!seriesRows.length">
-                  <td colspan="6" style="text-align:center;color:#aaa;padding:14px;">
+                  <td colspan="7" style="text-align:center;color:#aaa;padding:14px;">
                     시리즈가 없습니다. [+ 시리즈 추가]로 등록하세요. (없으면 단일 시리즈로 동작)</td>
                 </tr>
               </tbody>
@@ -1140,15 +1215,19 @@ window.CmDashboardItemMng = {
             <table class="bo-table bo-table-narrow">
               <thead>
                 <tr>
+                  <th style="width:28px;"></th>
                   <th style="width:44px;">순서</th>
                   <th style="width:190px;">코드 (cd)</th>
                   <th>항목명 (name)</th>
                   <th style="width:230px;">고유 item_key 미리보기</th>
-                  <th style="width:96px;">관리</th>
+                  <th style="width:60px;">관리</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(r, i) in colRows" :key="'c'+i">
+                <tr v-for="(r, i) in colRows" :key="'c'+i"
+                  :draggable="!cfDtlMode" @dragstart="onRowDragStart(colRows, i)"
+                  @dragover.prevent="onRowDragOver(colRows, i)" @dragend="onRowDragEnd">
+                  <td style="text-align:center;cursor:grab;color:#bbb;font-size:16px;user-select:none;">☰</td>
                   <td style="text-align:center;color:#94a3b8;">{{ i + 1 }}</td>
                   <td>
                     <select v-if="fnGrpOptions(panelForm.lvl2CodeGrp).length" class="form-control"
@@ -1164,13 +1243,11 @@ window.CmDashboardItemMng = {
                   <td style="font-family:monospace;font-size:11px;color:#64748b;">
                     {{ fnPreviewCode(seriesRows.length ? (seriesRows[0].cd || seriesRows[0].name) : '', r.cd || r.name) }}</td>
                   <td style="text-align:center;white-space:nowrap;">
-                    <button class="btn btn-xs" :disabled="cfDtlMode" @click="fnMoveRow(colRows, i, -1)">↑</button>
-                    <button class="btn btn-xs" :disabled="cfDtlMode" @click="fnMoveRow(colRows, i, 1)">↓</button>
                     <button class="btn btn_row_delete" :disabled="cfDtlMode" @click="fnDelColRow(i)">삭제</button>
                   </td>
                 </tr>
                 <tr v-if="!colRows.length">
-                  <td colspan="5" style="text-align:center;color:#aaa;padding:14px;">
+                  <td colspan="6" style="text-align:center;color:#aaa;padding:14px;">
                     항목이 없습니다. 비워두면 데이터관리 화면에서 열 제목을 직접 입력합니다.</td>
                 </tr>
               </tbody>
@@ -1323,7 +1400,7 @@ window.CmDashboardItemMng = {
       </div>
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">
-      항목 목록에서 항목을 선택하거나 [+ 항목 추가]를 클릭하세요.</div>
+      대시보드 항목 목록에서 항목을 선택하거나 [+ 항목 추가]를 클릭하세요.</div>
   </bo-container>
 </bo-page>
 `,

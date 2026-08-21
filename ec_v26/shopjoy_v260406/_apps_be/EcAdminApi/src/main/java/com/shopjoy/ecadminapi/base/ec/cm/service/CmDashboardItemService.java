@@ -112,15 +112,15 @@ public class CmDashboardItemService {
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
+            /* 부분수정 — QueryDSL updateSelective 로 넘어온 필드만 SET (전체 fetch+save 대신).
+               시리즈표시방법만 보내는 CmDashboardDataMng.js 의 handleSaveOrient() 같은 호출이
+               불필요하게 전 컬럼을 UPDATE 문에 올리지 않도록 하기 위함. */
             CmUtil.requireId(body.getDashboardItemId(), "dashboardItemId", this);
-            CmDashboardItem entity = getById(body.getDashboardItemId());
-            VoUtil.voCopyExclude(body, entity, "dashboardItemId^regBy^regDate");
-            entity.setUpdBy(authId);
-            entity.setUpdDate(now);
-            CmDashboardItem saved = cmDashboardItemRepository.save(entity);
-            if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-            em.flush();
-            return saved;
+            body.setUpdBy(authId);
+            int affected = cmDashboardItemRepository.updateSelective(body);
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + body.getDashboardItemId() + "::" + CmUtil.svcCallerInfo(this));
+            em.clear();
+            return getById(body.getDashboardItemId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
     }

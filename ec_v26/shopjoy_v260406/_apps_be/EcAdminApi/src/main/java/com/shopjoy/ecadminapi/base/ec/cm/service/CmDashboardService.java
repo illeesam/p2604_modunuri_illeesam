@@ -1,10 +1,9 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardWidgetRow;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemDataRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
 import jakarta.persistence.EntityManager;
@@ -25,10 +24,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * EC 종합 대시보드 서비스 — cm_dashboard + cm_dashboard_item + cm_dashboard_item_data 기반.
+ * EC 종합 대시보드 서비스 — cm_dashboard + cm_dashboard_item + cm_dashboard_data 기반.
  *
  * <p>요청 목록 [{compId, siteId, uiNm, startYmd, endYmd, limit}] 를 받아
  * 각 항목을 병렬 조회하여 {@code info{NNNN}} 키로 Map에 담아 반환한다.</p>
+ *
+ * <p>실 데이터는 3레벨(항목)에만 붙으므로 {@link CmDashboardDataGridService#queryWidgetRows}
+ * 로 시리즈×항목을 pivot 해 받아 legacy {@link CmDashboardDto}(col1~9) 형태로 변환한다.</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -40,7 +42,7 @@ public class CmDashboardService {
 
     private final CmDashboardRepository cmDashboardRepository;
     private final CmDashboardItemRepository cmDashboardItemRepository;
-    private final CmDashboardItemDataRepository cmDashboardItemDataRepository;
+    private final CmDashboardDataGridService cmDashboardDataGridService;
 
     @PersistenceContext
     private EntityManager em;
@@ -69,33 +71,40 @@ public class CmDashboardService {
         String siteId = str(p.get("siteId"));
         String uiNm   = str(p.get("uiNm"));
 
-        // cm_dashboard 헤더로 dashboardId 조회
-        String dashboardId = null;
-        if (uiNm != null) {
-            CmDashboard dash = cmDashboardRepository.findByUiCompNm(uiNm).orElse(null);
-            if (dash != null) dashboardId = dash.getDashboardId();
-        }
+        /* itemKey 를 화면이 직접 보내면 그걸로 바로 정의행을 찾는다 — item_key 는 전역 UNIQUE 라
+           uiNm/dashboardId 경유 없이도 정확하다. compId 는 예전 고정 슬롯 코드(COMP0101 등)로,
+           3레벨 재구성 이후 실제 item_key(chart036 등)와 값이 달라져 이것만으로는 못 찾는다 —
+           응답 맵 키(info0101 등)를 만드는 용도로만 계속 쓰고, 조회는 itemKey 로 한다. */
+        String itemKeyParam = str(p.get("itemKey"));
+        CmDashboardItem panel = itemKeyParam != null
+            ? cmDashboardItemRepository.findByItemKey(itemKeyParam).orElse(null)
+            : null;
 
-        // 패널 목록 조회
-        List<CmDashboardItem> itemList;
-        if (dashboardId != null) {
-            itemList = cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
-        } else {
-            itemList = cmDashboardItemRepository.findAllByOrderBySortOrdAsc();
-        }
+        if (panel == null) {
+            // cm_dashboard 헤더로 dashboardId 조회 (itemKey 미지정 시의 구 매칭 경로 — 폴백)
+            String dashboardId = null;
+            if (uiNm != null) {
+                CmDashboard dash = cmDashboardRepository.findByUiCompNm(uiNm).orElse(null);
+                if (dash != null) dashboardId = dash.getDashboardId();
+            }
 
-        CmDashboardItem panel = itemList.stream()
-            .filter(i -> compId.equals(i.getItemKey()))
-            .findFirst().orElse(null);
+            List<CmDashboardItem> itemList = dashboardId != null
+                ? cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId)
+                : cmDashboardItemRepository.findAllByOrderBySortOrdAsc();
+
+            panel = itemList.stream()
+                .filter(i -> compId.equals(i.getItemKey()))
+                .findFirst().orElse(null);
+        }
 
         if (panel == null) return List.of();
 
-        // cm_dashboard_item_data에서 해당 패널의 데이터 조회
+        // cm_dashboard_data에서 해당 패널(차트)의 데이터 조회 — 3레벨(항목)을 pivot 해 받는다
         String startYmd = str(p.get("startYmd"));
         String endYmd   = str(p.get("endYmd"));
         Object limitObj = p.get("limit");
 
-        List<CmDashboardItemData> rows = queryRows(null, panel.getDashboardItemId(), startYmd, endYmd);
+        List<CmDashboardWidgetRow> rows = queryRows(panel.getDashboardItemId(), siteId, startYmd, endYmd);
 
         /* 자체 데이터가 없고 optionJson._srcItemId(원본 패널 참조)가 있으면 원본 데이터로 폴백
          * — 파생 대시보드(EC02/03·개인화)가 원본(EC01) 집계 데이터를 공유하는 규약 */
@@ -103,7 +112,7 @@ public class CmDashboardService {
             String srcItemId = extractSrcItemId(panel.getOptionJson());
             if (srcItemId != null) {
                 CmDashboardItem src = cmDashboardItemRepository.findById(srcItemId).orElse(null);
-                if (src != null) rows = queryRows(null, src.getDashboardItemId(), startYmd, endYmd);
+                if (src != null) rows = queryRows(src.getDashboardItemId(), siteId, startYmd, endYmd);
             }
         }
 
@@ -114,14 +123,8 @@ public class CmDashboardService {
         return rows.stream().map(this::toDto).toList();
     }
 
-    private List<CmDashboardItemData> queryRows(String siteId, String itemId, String startYmd, String endYmd) {
-        if (startYmd != null && endYmd != null) {
-            return cmDashboardItemDataRepository
-                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscDashboardItemDataIdAsc(
-                    itemId, startYmd, endYmd);
-        }
-        return cmDashboardItemDataRepository
-            .findByDashboardItemIdOrderByYyyymmddAscDashboardItemDataIdAsc(itemId);
+    private List<CmDashboardWidgetRow> queryRows(String chartId, String siteId, String startYmd, String endYmd) {
+        return cmDashboardDataGridService.queryWidgetRows(chartId, siteId, startYmd, endYmd);
     }
 
     /** optionJson 에서 _srcItemId 문자열 추출 (없거나 파싱 실패 시 null) */
@@ -137,10 +140,10 @@ public class CmDashboardService {
         }
     }
 
-    private CmDashboardDto toDto(CmDashboardItemData d) {
+    private CmDashboardDto toDto(CmDashboardWidgetRow d) {
         return CmDashboardDto.builder()
-            .dashboardId(d.getDashboardItemDataId())
-            .compId(d.getItemKey())
+            .dashboardId(d.getDashboardId())
+            .compId(d.getCompId())
             .yyyymmdd(d.getYyyymmdd())
             .siteNo(null)
             .uiNm(d.getUiNm())

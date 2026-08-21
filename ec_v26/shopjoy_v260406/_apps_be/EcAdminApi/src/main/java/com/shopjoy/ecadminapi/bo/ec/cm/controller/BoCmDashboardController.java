@@ -2,12 +2,13 @@ package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardWidgetRow;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardMenu;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardMenuRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataGridService;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemDataService;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardService;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
@@ -32,7 +33,7 @@ public class BoCmDashboardController {
 
     private final CmDashboardService cmDashboardService;
     private final CmDashboardItemService cmDashboardItemService;
-    private final CmDashboardItemDataService cmDashboardItemDataService;
+    private final CmDashboardDataService cmDashboardDataService;
     private final CmDashboardDataGridService cmDashboardDataGridService;
     private final CmDashboardRepository cmDashboardRepository;
     private final CmDashboardMenuRepository cmDashboardMenuRepository;
@@ -244,16 +245,19 @@ public class BoCmDashboardController {
      *
      * <p>{@code item_key} 가 전역 UNIQUE 라 화면이 임의로 정하면 충돌하기 쉽다. 저장 직전에
      * 서버가 현재 최대 번호 다음 값을 붙여 준다. 이미 코드가 있으면 건드리지 않는다(수정 저장).</p>
+     *
+     * <p><b>반드시 "신규 행"일 때만 채운다</b> — {@code dashboardItemId} 가 있으면(=기존 행 수정)
+     * itemKey 를 안 보냈다고 여기서 새 번호를 지어 붙이면 안 된다. 화면이 일부 필드만 보내는
+     * 부분수정(예: 시리즈표시방법만 저장)에서 이 가드가 없으면, itemKey 가 null → "신규"로
+     * 오판 → 기존 차트의 item_key 가 엉뚱한 새 번호로 덮어써지는 사고가 난다(실제로 발생했던 버그,
+     * 하위 행·데이터는 안 바뀌어 부모만 코드가 어긋나며 조용히 깨진다).</p>
      */
     private void fillChartCode(CmDashboardItem body) {
         if ("D".equals(body.getRowStatus())) return;
-        if (body.getItemKey() != null && !body.getItemKey().isBlank()) {
-            body.setItemKey(body.getItemKey());   /* item_key = item_code 유지 */
-            return;
-        }
+        if (body.getDashboardItemId() != null && !body.getDashboardItemId().isBlank()) return;   /* 기존 행 수정 — 건드리지 않는다 */
+        if (body.getItemKey() != null && !body.getItemKey().isBlank()) return;   /* 화면이 이미 코드를 정함 */
         int next = cmDashboardItemService.nextChartSeq();
         String code = String.format("chart%03d", next);
-        body.setItemKey(code);
         body.setItemKey(code);
         if (body.getItemTypeCd() == null || body.getItemTypeCd().isBlank()) body.setItemTypeCd("chart");
     }
@@ -276,18 +280,18 @@ public class BoCmDashboardController {
         }
     }
 
-    /* ── 집계 데이터 (CmDashboardItemData) ───────────────────── */
+    /* ── 집계 데이터 (CmDashboardData, 3레벨 항목 실데이터) ───────────────────── */
 
     @GetMapping("/item-data/list")
-    public ResponseEntity<ApiResponse<List<CmDashboardItemData>>> itemDataList(
+    public ResponseEntity<ApiResponse<List<CmDashboardWidgetRow>>> itemDataList(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataService.getList(p)));
     }
 
     @PostMapping("/item-data/upsert")
-    public ResponseEntity<ApiResponse<CmDashboardItemData>> itemDataUpsert(
-            @Valid @RequestBody CmDashboardItemData body) {
-        return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.upsert(body)));
+    public ResponseEntity<ApiResponse<CmDashboardData>> itemDataUpsert(
+            @Valid @RequestBody CmDashboardData body) {
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataService.upsert(body)));
     }
 
     /* ── 데이터관리 3레벨 그리드 (차트 × 시리즈 × 항목) ─────────────

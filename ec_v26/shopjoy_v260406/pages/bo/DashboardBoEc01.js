@@ -52,6 +52,16 @@ window.DashboardBoEc01 = {
       'COMP0401','COMP0402','COMP0403',
     ];
 
+    /* COMP_ID → 실제 cm_dashboard_item.item_key (2026-08-21 3레벨 재구성 이후 고정값).
+       compId 는 응답 맵 키(info0101 등)를 만드는 용도로만 남기고, 조회는 이 item_key 로 한다 —
+       재구성 전에는 item_key 자체가 COMP0101 이었으나 지금은 chart### 전역 일련번호라 서로 다르다. */
+    const COMP_ITEM_KEY = {
+      COMP0101: 'chart036', COMP0102: 'chart039', COMP0103: 'chart040', COMP0104: 'chart041',
+      COMP0201: 'chart042', COMP0202: 'chart043', COMP0203: 'chart044', COMP0204: 'chart038',
+      COMP0301: 'chart045', COMP0302: 'chart046', COMP0303: 'chart047', COMP0304: 'chart048',
+      COMP0401: 'chart049', COMP0402: 'chart050', COMP0403: 'chart051',
+    };
+
     const dash = reactive({
       info0101:[], info0102:[], info0103:[], info0104:[],
       info0201:[], info0202:[], info0203:[], info0204:[],
@@ -302,7 +312,7 @@ window.DashboardBoEc01 = {
         /* siteId 필수 — 미전송 시 백엔드가 전체 항목에서 itemKey 첫 매칭을 잡아
          * 다른 대시보드(EC02/03 등)의 동일 키 항목(데이터 없음)로 잘못 연결될 수 있음 */
         const siteId = window.boCommonFilter?.siteId || '';
-        const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc01', siteId, startYmd, endYmd }));
+        const items = COMP_IDS.map(compId => ({ compId, itemKey: COMP_ITEM_KEY[compId], uiNm: 'DashboardBoEc01', siteId, startYmd, endYmd }));
         const res = await boApiSvc.cmDashboard.getData(items, '대시보드', '조회');
         const d = res.data?.data || {};
         Object.keys(dash).forEach(k => { dash[k] = d[k] || []; });

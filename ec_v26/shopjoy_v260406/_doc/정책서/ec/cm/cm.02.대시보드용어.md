@@ -17,7 +17,7 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 | **대시보드** | `cm_dashboard` 한 건 | — |
 | **항목** | `cm_dashboard_item` 한 건 — 대시보드에 놓이는 단위(KPI/차트/목록) | 테이블·엔티티·컬럼이 전부 `item` (`item_key` `item_nm` `dashboardItemId`) |
 | **캔버스** | 사용자 대시보드에서 항목을 끌어 배치하는 편집 영역 | 편집 UI 고유 개념 — 항목과 층위가 다르다 |
-| **기준** | 대시보드 정의 자체(이름·UI컴포넌트·열수·소유자) | 메뉴 `대시보드 기준관리` |
+| **기준** | 대시보드 정의 자체(이름·UI컴포넌트·열수·소유자) | 메뉴 `대시보드 관리` |
 
 ### ⛔ 쓰지 않는 말
 
@@ -39,7 +39,7 @@ DB 컬럼(`panel_width` `panel_height`)은 유지한다. 한글 표기만 통일
 
 | 메뉴 | 화면 | 다루는 것 |
 |---|---|---|
-| 대시보드 기준관리 | `CmDashboardMng` | 대시보드 정의 CRUD (이름·UI컴포넌트·열수·소유자). 항목수는 참고 표시만 |
+| 대시보드 관리 | `CmDashboardMng` | 대시보드 정의 CRUD (이름·UI컴포넌트·열수·소유자). 항목수는 참고 표시만 |
 | 대시보드 항목관리 | `CmDashboardItemMng` | 좌: 대시보드 선택 / 우: 항목 목록 + 인라인 폼 |
 | 대시보드 항목배치 | `CmDashboardLayoutMng` | 항목 카드 드래그 배치, 폭·높이 조정, 실데이터 시뮬레이션 |
 | 대시보드 메뉴관리 | `CmDashboardSysMenuMng` | 좌측메뉴 `대시보드` 그룹 트리 구성 — **사이트 공통** |

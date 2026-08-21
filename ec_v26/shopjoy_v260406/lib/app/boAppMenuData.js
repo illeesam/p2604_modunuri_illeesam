@@ -42,7 +42,7 @@
       { id: 'dashboard', label: 'EC대시보드' },
       { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
       { group: '대시보드 관리' },
-      { id: 'cmDashboardMng', label: '대시보드 기준관리' },
+      { id: 'cmDashboardMng', label: '대시보드 관리' },
       { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
       { id: 'cmDashboardDataMng', label: '대시보드 데이타관리' },
       { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
@@ -253,7 +253,7 @@
   const LEFT_MENUS_TAIL = {
     home: [
       { group: '대시보드 관리' },
-      { id: 'cmDashboardMng', label: '대시보드 기준관리' },
+      { id: 'cmDashboardMng', label: '대시보드 관리' },
       { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
       { id: 'cmDashboardDataMng', label: '대시보드 데이타관리' },
       { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
