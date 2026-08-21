@@ -154,14 +154,17 @@ public class CmDashboardDataGridService {
      * <p>축 유형(DATE/CATEGORY)은 여기서 더 이상 분기하지 않는다 — 값은 항상 3레벨(항목)에만
      * 붙으므로, 날짜축 차트도 카테고리축과 똑같이 항목행(예: m01~m12)을 둔다.</p>
      *
-     * @param chartId 차트(1레벨) 정의행 ID
-     * @param series  [{cd,name,color}] 순서가 곧 표시 순서
-     * @param cols    [{cd,name}] — 시리즈 전체가 공유하는 3레벨 항목 1벌
+     * @param chartId       차트(1레벨) 정의행 ID
+     * @param series        [{cd,name,color}] 순서가 곧 표시 순서
+     * @param cols          [{cd,name}] — 시리즈 전체가 공유하는 3레벨 항목 1벌
+     * @param cellOverrides key=조립 item_key(chart-series-item), value={autoCollectYn,editableYn,color} —
+     *                      시리즈×항목 특정 셀 하나만 cols 의 공유값과 다르게 줄 때만 채운다(2026-08-21)
      */
     @Transactional
     public Map<String, Object> syncChildren(String chartId,
                                             List<Map<String, Object>> series,
-                                            List<Map<String, Object>> cols) {
+                                            List<Map<String, Object>> cols,
+                                            Map<String, Object> cellOverrides) {
         CmDashboardItem ch = itemRepository.findById(chartId)
             .orElseThrow(() -> new CmBizException("존재하지 않는 차트입니다: " + chartId));
         if (!"chart".equals(ch.getItemTypeCd()))
@@ -211,11 +214,20 @@ public class CmDashboardDataGridService {
                    가리킨다. 그 PK 로 다른 시리즈의 행까지 바꾸면 남의 코드를 덮어써 UNIQUE 가 깨진다.
                    그래서 PK 에서는 "옛 키명" 만 얻고, 실제 대상은 시리즈별 조립코드로 찾는다. */
                 String cOldCd = colOldCds.get(ci);
+                String itemKey = sCode + "-" + cCd;
                 if (cOldCd != null)
-                    renameByCode(exist, sCode + "-" + cOldCd, sCode + "-" + cCd, cCd);
-                putRow(exist, keep, sCode + "-" + cCd, cCd, str(cm.get("name")), str(cm.get("color")),
+                    renameByCode(exist, sCode + "-" + cOldCd, itemKey, cCd);
+                /* 셀 오버라이드 — 이 시리즈×항목 조합만 cols 의 공유값과 다르게 지정됐으면 그 값을,
+                   없으면 기존처럼 cols(항목 1벌 공유값)를 쓴다(2026-08-21) */
+                @SuppressWarnings("unchecked")
+                Map<String, Object> ov = cellOverrides != null && cellOverrides.get(itemKey) instanceof Map
+                    ? (Map<String, Object>) cellOverrides.get(itemKey) : null;
+                String cellColor = (ov != null && ov.get("color") != null) ? str(ov.get("color")) : str(cm.get("color"));
+                String cellAuto  = (ov != null && ov.get("autoCollectYn") != null) ? str(ov.get("autoCollectYn")) : str(cm.get("autoCollectYn"));
+                String cellEdit  = (ov != null && ov.get("editableYn") != null) ? str(ov.get("editableYn")) : str(cm.get("editableYn"));
+                putRow(exist, keep, itemKey, cCd, str(cm.get("name")), cellColor,
                     "item", ch.getDashboardId(), se.getDashboardItemId(), sCode, (ci + 1) * 10, authId, now,
-                    str(cm.get("autoCollectYn")), str(cm.get("editableYn")));
+                    cellAuto, cellEdit);
                 upItm++;
             }
         }

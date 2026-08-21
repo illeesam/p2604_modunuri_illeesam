@@ -314,7 +314,13 @@ public class BoCmDashboardController {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> cols = body.get("cols") instanceof List
             ? (List<Map<String, Object>>) body.get("cols") : List.of();
-        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.syncChildren(id, series, cols)));
+        /* cellOverrides — 시리즈×항목 "셀" 하나만 자동수집/수정가능여부·색을 따로 준 경우.
+           key = 조립 item_key(예: chart038-series01-item01). 없는 셀은 cols(항목 1벌 공유값)를
+           그대로 쓴다(2026-08-21, 화면에서 셀 단위 토글이 생기며 추가) */
+        @SuppressWarnings("unchecked")
+        Map<String, Object> cellOverrides = body.get("cellOverrides") instanceof Map
+            ? (Map<String, Object>) body.get("cellOverrides") : Map.of();
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.syncChildren(id, series, cols, cellOverrides)));
     }
 
     /**

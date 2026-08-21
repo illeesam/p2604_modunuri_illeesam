@@ -50,6 +50,11 @@
     { value: 'themeRiver',  label: '테마리버',   icon: '🏞', group: 'applied' },  /* 시리즈마다 폭이 값에 비례하는 흐르는 띠 — 항목축을 따라 흐른다 */
     { value: 'parallel',    label: '평행좌표',   icon: '🪢', group: 'applied' },  /* 축 하나=시리즈 하나, 선 하나=항목 하나 — 항목이 여러 축을 가로지르는 값 조합을 보여준다 */
     { value: 'boxplot',     label: '박스플롯',   icon: '📦', group: 'applied' },  /* 항목마다 시리즈 값들의 분포(최소~최대)를 상자로 요약 */
+    { value: 'sankey',      label: '생키다이어그램', icon: '🔀', group: 'applied' },  /* 시리즈→항목으로 흐르는 값의 흐름, 굵기=값 */
+    { value: 'graph',       label: '관계도',     icon: '🔗', group: 'applied' },  /* 시리즈·항목을 노드로, 값이 있는 조합만 선으로 이은 네트워크 그래프 */
+    { value: 'pictorialBar', label: '픽토그램막대', icon: '🧱', group: 'applied' },  /* 막대를 작은 도형을 반복해 쌓은 모양으로 표시 */
+    { value: 'graphCircular', label: '원형관계도', icon: '⭕', group: 'applied' },  /* 관계도와 데이터 동일, 노드를 원형으로 가지런히 배치(force 대신 circular 레이아웃) */
+    { value: 'tree',        label: '트리(조직도)', icon: '🌳', group: 'applied' },  /* 시리즈→항목을 계층으로 — 트리맵과 데이터 동일, 나뭇가지 모양으로 표시 */
 
     { value: 'bar3D',       label: '입체막대',   icon: '🧊', group: '3d' },  /* 진짜 3D — echarts-gl(WebGL) 필요, 마우스로 회전 가능 */
     { value: 'scatter3D',   label: '입체산점도', icon: '🌐', group: '3d' },  /* 값 클수록 점도 커지고 색도 진해진다 */
@@ -202,15 +207,17 @@
          로즈차트는 파이와 데이터가 완전히 같고 roseType 만 켜면 되는 변형이라 같이 묶는다 */
       const agg = {};
       rows.forEach(r => { const nm = r.col1Nm || '기타'; agg[nm] = (agg[nm] || 0) + (r.col1Num || 0); });
+      /* 조각 사이에 흰 테두리 + 둥근 모서리를 줘 딱딱한 파이 느낌을 없앤다(2026-08-21) */
       const data = Object.entries(agg).map(([name, value], i) => ({
-        name, value, itemStyle: { color: (seriesArr[i] || {}).color || PALETTE[i % PALETTE.length] },
+        name, value, itemStyle: { color: (seriesArr[i] || {}).color || PALETTE[i % PALETTE.length],
+          borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
       }));
       const option = {
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-        legend: { show: data.length <= 8, bottom: 0, textStyle: { fontSize: 10 } },
+        legend: { show: data.length <= 8, bottom: 0, icon: 'circle', textStyle: { fontSize: 10 } },
         series: [{ type: 'pie', radius: type === 'doughnut' ? ['20%', '62%'] : (type === 'rose' ? ['10%', '62%'] : ['35%', '62%']),
           center: ['50%', '44%'], roseType: type === 'rose' ? 'radius' : undefined,
-          data, label: { fontSize: 10, formatter: '{b}' } }],
+          data, label: { fontSize: 10, formatter: (p) => p.name + '\n' + _fmtNum(p.value) } }],
       };
       return { kind: 'chart', option: Object.assign(option, optOver) };
     }
@@ -322,48 +329,174 @@
       return { kind: 'chart', option: Object.assign(option, optOver) };
     }
 
+    if (type === 'sankey') {
+      /* 생키다이어그램 — 시리즈(왼쪽 노드)에서 카테고리(오른쪽 노드)로 값이 흐르는 굵기로
+         보여준다. 이름이 우연히 겹칠 수 있어 시리즈쪽 이름 끝에 안 보이는 문자를 붙여 구분(2026-08-21) */
+      const SUF = '​';
+      const seriesNos7 = _detectSeries(rows);
+      const names7 = seriesNos7.map((k, i) => (seriesArr[i] || {}).name || ('시리즈' + k));
+      const nodes = [
+        ...names7.map((nm, i) => ({ name: nm + SUF, itemStyle: { color: (seriesArr[i] || {}).color || PALETTE[i % PALETTE.length] } })),
+        ...labels.map((l, ri) => ({ name: l, itemStyle: { color: PALETTE[ri % PALETTE.length] } })),
+      ];
+      const links = [];
+      rows.forEach((r, ri) => seriesNos7.forEach((k, si) => {
+        const v = r['col' + k + 'Num'] || 0;
+        if (v > 0) links.push({ source: names7[si] + SUF, target: labels[ri], value: v });
+      }));
+      const stripSuf = (s) => String(s || '').replace(/​$/, '');
+      const option = {
+        tooltip: { trigger: 'item', formatter: (p) => p.dataType === 'edge'
+          ? (stripSuf(p.data.source) + ' → ' + p.data.target + ': ' + _fmtNum(p.data.value))
+          : stripSuf(p.name) },
+        series: [{ type: 'sankey', emphasis: { focus: 'adjacency' }, data: nodes, links,
+          label: { fontSize: 9, formatter: (p) => stripSuf(p.name) },
+          lineStyle: { color: 'gradient', curveness: 0.5 } }],
+      };
+      return { kind: 'chart', option: Object.assign(option, optOver) };
+    }
+
+    if (type === 'graph' || type === 'graphCircular') {
+      /* 관계도 — 시리즈·카테고리를 노드로 두고 값이 있는 조합만 선으로 잇는다. id 로 식별해
+         이름 겹침 문제 없음. 선 굵기는 값에 비례. 원형관계도는 데이터 동일, layout 만
+         force→circular 로 바꾼 변형(2026-08-21) */
+      const isCircular = type === 'graphCircular';
+      const seriesNos8 = _detectSeries(rows);
+      const names8 = seriesNos8.map((k, i) => (seriesArr[i] || {}).name || ('시리즈' + k));
+      const allVals = [];
+      rows.forEach((r) => seriesNos8.forEach((k) => allVals.push(r['col' + k + 'Num'] || 0)));
+      const maxV = Math.max(1, ...allVals);
+      const nodes = [
+        ...names8.map((nm, i) => ({ id: 's' + i, name: nm, symbolSize: 20, itemStyle: { color: (seriesArr[i] || {}).color || PALETTE[i % PALETTE.length] }, category: 0 })),
+        ...labels.map((l, ri) => ({ id: 'i' + ri, name: l, symbolSize: 12, itemStyle: { color: PALETTE[ri % PALETTE.length] }, category: 1 })),
+      ];
+      const links = [];
+      rows.forEach((r, ri) => seriesNos8.forEach((k, si) => {
+        const v = r['col' + k + 'Num'] || 0;
+        if (v > 0) links.push({ source: 's' + si, target: 'i' + ri, value: v, lineStyle: { width: 1 + 4 * (v / maxV) } });
+      }));
+      const option = {
+        tooltip: {},
+        legend: [{ data: ['시리즈', '카테고리'], bottom: 0, textStyle: { fontSize: 9 } }],
+        series: [{
+          type: 'graph', layout: isCircular ? 'circular' : 'force', roam: true, draggable: !isCircular,
+          circular: isCircular ? { rotateLabel: true } : undefined,
+          categories: [{ name: '시리즈' }, { name: '카테고리' }],
+          force: isCircular ? undefined : { repulsion: 100, edgeLength: 60 },
+          label: { show: true, fontSize: 8 },
+          lineStyle: { color: 'source', curveness: isCircular ? 0.3 : 0.1, opacity: 0.6 },
+          data: nodes, links,
+        }],
+      };
+      return { kind: 'chart', option: Object.assign(option, optOver) };
+    }
+
+    if (type === 'tree') {
+      /* 트리(조직도) — 시리즈>카테고리 2단 계층에 가상의 루트 노드 하나를 씌운다(2026-08-21) */
+      const seriesNos10 = _detectSeries(rows);
+      const names10 = seriesNos10.map((k, i) => (seriesArr[i] || {}).name || ('시리즈' + k));
+      const option = {
+        tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+        series: [{
+          type: 'tree', orient: 'LR', top: '4%', left: '10%', bottom: '4%', right: '20%',
+          symbolSize: 8, expandAndCollapse: false, initialTreeDepth: -1,
+          label: { fontSize: 9, position: 'left', verticalAlign: 'middle', align: 'right' },
+          leaves: { label: { position: 'right', verticalAlign: 'middle', align: 'left' } },
+          data: [{
+            name: '전체', itemStyle: { color: '#94a3b8' },
+            children: names10.map((nm, si) => ({
+              name: nm, itemStyle: { color: (seriesArr[si] || {}).color || PALETTE[si % PALETTE.length] },
+              children: rows.map((r, ri) => ({
+                name: labels[ri] + ' (' + _fmtNum(r['col' + seriesNos10[si] + 'Num'] || 0) + ')',
+                value: r['col' + seriesNos10[si] + 'Num'] || 0,
+                itemStyle: { color: PALETTE[ri % PALETTE.length] },
+              })),
+            })),
+          }],
+        }],
+      };
+      return { kind: 'chart', option: Object.assign(option, optOver) };
+    }
+
+    if (type === 'pictorialBar') {
+      /* 픽토그램막대 — 일반 막대와 데이터·색상이 완전히 같고, 막대 대신 작은 도형을 반복해 쌓는다 */
+      const seriesNos9 = _detectSeries(rows);
+      const series = seriesNos9.map((k, i) => {
+        const cfg = seriesArr[i] || {};
+        return {
+          name: cfg.name || ('시리즈' + k), type: 'pictorialBar',
+          symbol: 'roundRect', symbolRepeat: true, symbolSize: ['60%', '10%'], symbolMargin: '20%',
+          data: rows.map(r => r['col' + k + 'Num'] || 0),
+          itemStyle: { color: cfg.color || PALETTE[i % PALETTE.length] },
+          label: { show: true, position: 'top', fontSize: 8, color: '#666', hideOverlap: true, formatter: (p) => _fmtNum(p.value) },
+        };
+      });
+      const option = {
+        tooltip: { trigger: 'axis' },
+        legend: { show: series.length > 1, top: 0, textStyle: { fontSize: 10 } },
+        grid: { top: series.length > 1 ? 36 : 20, right: 12, bottom: 22, left: 44 },
+        xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 9, color: '#888' } },
+        yAxis: { type: 'value', axisLabel: { fontSize: 9, color: '#888', formatter: (v) => _fmtNum(v) },
+          splitLine: { lineStyle: { color: '#f0f0f0' } } },
+        series,
+      };
+      return { kind: 'chart', option: Object.assign(option, optOver) };
+    }
+
     /* bar / stackedBar / line / stackedLine / area / stackedArea / scatter / polarBar / polarLine — 시리즈 자동 감지.
        funnel/treemap/sunburst/gauge/themeRiver/parallel 은 이 행 기반(row=카테고리,col{k}Num=
        시리즈) 구조와 데이터 모양이 안 맞아(파이처럼 이름별 단일 값 집계, 또는 2단 계층이 필요)
-       아직 여기서는 지원하지 않는다 — 고르면 일반 막대로 대체 렌더된다. 필요해지면 admin
-       미리보기(fnBuildOptionForType/fnBuildChartOption) 구현을 참고해 이 함수에도 이식할
-       것(2026-08-21) */
+       아직 여기서는 지원하지 않는다(생키/관계도/픽토그램막대/박스플롯은 이식 완료) — 고르면
+       일반 막대로 대체 렌더된다. 필요해지면 admin 미리보기(fnBuildOptionForType/
+       fnBuildChartOption) 구현을 참고해 이 함수에도 이식할 것(2026-08-21) */
     const seriesNos = _detectSeries(rows);
     const isPolar   = type === 'polarBar' || type === 'polarLine';
     const isStacked = type === 'stackedBar' || type === 'stackedLine' || type === 'stackedArea';
     const isArea    = type === 'area' || type === 'stackedArea';
     const echType   = (isArea || type === 'line' || type === 'stackedLine' || type === 'polarLine') ? 'line'
       : type === 'scatter' ? 'scatter' : 'bar';
+    /* 기본 차트 스타일이 딱딱해 보인다는 피드백(2026-08-21, 재조정) — 처음엔 절제된 정도로만
+       뒀는데 카드가 작아 안 보인다는 의견이 있어 굴림·그림자를 admin 미리보기에 준하게 키웠다 */
+    const softBar = !isStacked && !isPolar && echType === 'bar';
     const series = seriesNos.map((k, i) => {
       const cfg = seriesArr[i] || {};
+      const color = cfg.color || PALETTE[i % PALETTE.length];
       const s = {
         name: cfg.name || ('시리즈' + k),
         type: cfg.type || echType,
         data: rows.map(r => r['col' + k + 'Num'] || 0),
-        itemStyle: { color: cfg.color || PALETTE[i % PALETTE.length] },
+        itemStyle: softBar
+          ? { color, borderRadius: [6, 6, 0, 0], shadowBlur: 5, shadowColor: 'rgba(0,0,0,0.12)', shadowOffsetY: 2 }
+          : { color },
       };
       if (isStacked) s.stack = 'total';   /* 같은 stack 이름끼리 카테고리당 막대 하나로 쌓인다 */
-      if (isArea) s.areaStyle = {};
-      if (s.type === 'line') { s.smooth = true; s.symbolSize = 4; }
+      if (isArea) s.areaStyle = { opacity: 0.75 };
+      if (s.type === 'line') { s.smooth = true; s.symbolSize = 5; s.lineStyle = { width: 3 }; }
       if (s.type === 'bar')  { s.barMaxWidth = 18; }
       if (isPolar) s.coordinateSystem = 'polar';
+      /* 값 라벨 기본 표시(2026-08-21) — 카테고리가 많아 겹치면 hideOverlap 로 자동 생략한다.
+         누적막대는 구간 안(흰 글씨), 그 외는 막대/점 위(top)에 값만 */
+      s.label = (isStacked && s.type === 'bar')
+        ? { show: true, position: 'inside', fontSize: 8, color: '#fff', fontWeight: 700, hideOverlap: true, formatter: (p) => _fmtNum(p.value) }
+        : { show: true, position: 'top', fontSize: 8, color: '#666', hideOverlap: true, formatter: (p) => _fmtNum(p.value) };
       return s;
     });
     /* 극좌표막대/극좌표꺾은선 — 데이터·색상은 위 series 그대로, 좌표계만 원형(polar)으로 바꾼다 */
     const option = isPolar ? {
       tooltip: { trigger: 'axis' },
-      legend: { show: series.length > 1, bottom: 0, textStyle: { fontSize: 10 } },
+      legend: { show: series.length > 1, bottom: 0, icon: 'circle', textStyle: { fontSize: 10 } },
       polar: { radius: '60%' },
       angleAxis: { type: 'category', data: labels },
       radiusAxis: { type: 'value' },
       series,
     } : {
       tooltip: { trigger: 'axis' },
-      legend: { show: series.length > 1, top: 0, textStyle: { fontSize: 10 } },
-      grid: { top: series.length > 1 ? 28 : 12, right: 12, bottom: 22, left: 44 },
-      xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 9, color: '#888' } },
+      legend: { show: series.length > 1, top: 0, icon: 'circle', textStyle: { fontSize: 10 } },
+      grid: { top: series.length > 1 ? 36 : 20, right: 12, bottom: 22, left: 44 },  /* 값 라벨이 위에 뜨므로 여유를 더 둔다 */
+      xAxis: { type: 'category', data: labels, axisLabel: { fontSize: 9, color: '#888' },
+        axisLine: { lineStyle: { color: '#e2e6eb' } }, axisTick: { show: false } },
       yAxis: { type: 'value', axisLabel: { fontSize: 9, color: '#888', formatter: (v) => _fmtNum(v) },
-        splitLine: { lineStyle: { color: '#f0f0f0' } } },
+        axisLine: { show: false }, splitLine: { lineStyle: { color: '#f0f0f0', type: 'dashed' } } },
       series,
     };
     return { kind: 'chart', option: Object.assign(option, optOver) };

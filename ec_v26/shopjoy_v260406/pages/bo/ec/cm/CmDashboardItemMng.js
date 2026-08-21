@@ -20,7 +20,21 @@ window.CmDashboardItemMng = {
     const dashboards = reactive([]);   /* cm_dashboard 전체 (사이트 기준) */
     const panels     = reactive([]);   /* 선택 대시보드의 cm_dashboard_item */
     const panelCnt   = reactive({});   /* dashboardId → 항목 수 */
-    const uiState = reactive({ loading: false, panelLoading: false, viewMode: 'tree' }); /* viewMode: 'tree'|'grid' */
+    const uiState = reactive({ loading: false, panelLoading: false, viewMode: 'tree', pdfExporting: false }); /* viewMode: 'tree'|'grid' */
+    const itemPdfAreaRef = ref(null);   /* "대시보드 위젯항목 수정" 폼 전체(정의 그리드+미리보기 포함) — PDF 캡처 대상 */
+
+    /* handleExportItemPdf — 화면에 보이는 그대로(정의 그리드+시뮬레이션 미리보기 포함) PDF 로 저장 */
+    const handleExportItemPdf = async () => {
+      uiState.pdfExporting = true;
+      try {
+        const nm = panelForm.itemNm || panelForm.itemKey || '대시보드위젯항목';
+        /* 파일명 타임스탬프는 프로젝트 표준 헬퍼로 통일 — 영역명_YYYYMMDD_hhmmss.확장자 */
+        const filename = coUtil.cofBuildExportFilename(`${nm}.pdf`);
+        await window.boUtil.bofExportPdf(itemPdfAreaRef.value, filename, showToast);
+      } finally {
+        uiState.pdfExporting = false;
+      }
+    };
     const codes = reactive({});
 
     /* ── 3레벨 트리 (1:차트 / 2:시리즈 / 3:항목) ──────────────────────────
@@ -307,6 +321,9 @@ window.CmDashboardItemMng = {
               autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
             cols:   colRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color,
               autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
+            /* 셀(시리즈×항목) 단위로 따로 지정된 자동수집/수정가능여부 — key=조립 item_key.
+               cellFlags 는 열 때(fnLoadCellFlags)·토글할 때 이미 이 모양으로 유지된다(2026-08-21) */
+            cellOverrides: { ...cellFlags },
           }, '대시보드항목관리', '하위행동기화');
           const d = sres.data?.data || {};
           if (d.deletedRows) { syncMsg = ` (삭제 ${d.deletedRows}행, 값 ${d.deletedData || 0}건 정리)`; }
@@ -377,8 +394,13 @@ window.CmDashboardItemMng = {
       /* 정의 행이 유일한 기준이다 (series_json/cols_json 은 2026-08-21 폐기) */
       seriesRows.splice(0, seriesRows.length, ...sRows);
       colRows.splice(0, colRows.length, ...cRows);
+      fnLoadCellFlags();  /* 셀(시리즈×항목) 단위 자동수집/수정가능 실값 복원 */
       srcState.scriptManual = false;   /* 다른 항목을 열었으니 수동 편집 상태는 초기화 */
       fnSyncFormToSim();  /* 저장해 둔 시뮬레이션 값·스타일 복원 (fnSimFit 포함) */
+      /* 복원 후에도 값이 전부 비어 있으면(신규 항목·시뮬값 저장 이력 없는 항목) 미리보기가
+         빈 화면으로 뜨지 않도록 바로 자동생성 한 번 돌려준다(2026-08-21) */
+      const hasSimVal = simVals.some(r => r.some(v => v !== null && v !== '' && v !== undefined));
+      if (!hasSimVal && colRows.length) fnSimRandom();
       fnSrcRegen();       /* 소스보기 탭 내용 재생성 */
     };
 
@@ -495,21 +517,70 @@ window.CmDashboardItemMng = {
       return coUtil.cofFmt(sum);
     };
 
-    /* fnToggleColAuto/fnToggleColEditable — 시뮬레이션 그리드의 항목(열) 머리글에서 클릭으로
-       자동수집/수정가능 여부를 전환한다. colRows 는 실제 3레벨 정의행 편집 대상이라, [저장]
-       누르면 이 값이 syncItemChildren 로 그대로 넘어가 cm_dashboard_item 에 반영된다 */
-    const fnToggleColAuto = (ci) => {
-      const r = colRows[ci];
-      if (r) r.autoCollectYn = r.autoCollectYn === 'Y' ? 'N' : 'Y';
-    };
-    const fnToggleColEditable = (ci) => {
-      const r = colRows[ci];
-      if (r) r.editableYn = r.editableYn === 'N' ? 'Y' : 'N';
+    /* cellFlags — 시리즈×항목 "셀" 하나만 자동수집/수정가능여부를 항목(열) 공통값과 다르게
+       지정한 경우만 담는다. key = 조립 item_key(fnCellItemKey 와 동일 규칙). 항목을 열 때
+       fnLoadCellFlags 로 실제 DB 값(레벨3 각 행의 값)을 채우고, [저장] 시 syncItemChildren 의
+       cellOverrides 로 그대로 실려 나간다(2026-08-21, "열 전체가 같이 반응하는" 문제 해결) */
+    const cellFlags = reactive({});
+    /* fnCellItemKey — 백엔드가 계산하는 조립코드(chartCd-seriesCd-itemCd)와 똑같은 규칙.
+       "고유 item_key 미리보기" 컬럼이 쓰는 fnPreviewCode 를 그대로 재사용해 어긋나지 않게 한다 */
+    const fnCellItemKey = (si, ci) => {
+      const s = seriesRows[si]; const c = colRows[ci];
+      if (!s || !c) return null;
+      return fnPreviewCode(s.cd || s.name, c.cd || c.name);
     };
     /* fnColAuto/fnColLocked — 템플릿 속성값 안에서 && 를 직접 쓰면 Vue 컴파일러가 크래시하는
-       프로젝트 규칙(CLAUDE.md) 때문에 함수로 분리 */
-    const fnColAuto   = (ci) => !!(colRows[ci] && colRows[ci].autoCollectYn === 'Y');
-    const fnColLocked = (ci) => !!(colRows[ci] && colRows[ci].editableYn === 'N');
+       프로젝트 규칙(CLAUDE.md) 때문에 함수로 분리. 셀 오버라이드가 있으면 그것을, 없으면
+       항목(열) 공통값(colRows)을 기본값으로 보여준다 */
+    const fnColAuto = (si, ci) => {
+      const key = fnCellItemKey(si, ci);
+      const ov = key ? cellFlags[key] : null;
+      if (ov && ov.autoCollectYn != null) return ov.autoCollectYn === 'Y';
+      return !!(colRows[ci] && colRows[ci].autoCollectYn === 'Y');
+    };
+    const fnColLocked = (si, ci) => {
+      const key = fnCellItemKey(si, ci);
+      const ov = key ? cellFlags[key] : null;
+      if (ov && ov.editableYn != null) return ov.editableYn === 'N';
+      return !!(colRows[ci] && colRows[ci].editableYn === 'N');
+    };
+    /* fnToggleColAuto/fnToggleColEditable — 시뮬레이션 그리드의 셀 하나를 클릭해 그 셀만
+       자동수집/수정가능 여부를 전환한다(2026-08-21, 예전엔 열 전체가 같이 바뀌었음) */
+    const fnToggleColAuto = (si, ci) => {
+      const key = fnCellItemKey(si, ci); if (!key) return;
+      const cur = fnColAuto(si, ci);
+      cellFlags[key] = { ...(cellFlags[key] || {}), autoCollectYn: cur ? 'N' : 'Y' };
+    };
+    const fnToggleColEditable = (si, ci) => {
+      const key = fnCellItemKey(si, ci); if (!key) return;
+      const cur = fnColLocked(si, ci);
+      cellFlags[key] = { ...(cellFlags[key] || {}), editableYn: cur ? 'Y' : 'N' };
+    };
+    /* fnToggleAllAuto/fnToggleAllEditable — "시리즈 \ 항목" 모서리 아이콘. 지금 보이는 시리즈×항목
+       조합 전부를 한 번에 켜거나 끈다(전부 켜져 있으면 끄고, 아니면 켠다) */
+    const fnToggleAllAuto = () => {
+      const allOn = seriesRows.every((s, si) => colRows.every((c, ci) => fnColAuto(si, ci)));
+      seriesRows.forEach((s, si) => colRows.forEach((c, ci) => {
+        const key = fnCellItemKey(si, ci); if (!key) return;
+        cellFlags[key] = { ...(cellFlags[key] || {}), autoCollectYn: allOn ? 'N' : 'Y' };
+      }));
+    };
+    const fnToggleAllEditable = () => {
+      const allLocked = seriesRows.every((s, si) => colRows.every((c, ci) => fnColLocked(si, ci)));
+      seriesRows.forEach((s, si) => colRows.forEach((c, ci) => {
+        const key = fnCellItemKey(si, ci); if (!key) return;
+        cellFlags[key] = { ...(cellFlags[key] || {}), editableYn: allLocked ? 'Y' : 'N' };
+      }));
+    };
+    /* fnLoadCellFlags — 항목을 열 때 실제 DB 값(레벨3 각 행)으로 cellFlags 를 채운다.
+       item_key 가 "이 차트 item_key-" 로 시작하는 레벨3 행이 곧 이 차트의 셀들이다 */
+    const fnLoadCellFlags = () => {
+      Object.keys(cellFlags).forEach(k => delete cellFlags[k]);
+      const prefix = (panelForm.itemKey || '') + '-';
+      treeRows.filter(n => n.lvl === 3 && n.itemKey && n.itemKey.indexOf(prefix) === 0).forEach(n => {
+        cellFlags[n.itemKey] = { autoCollectYn: n.autoCollectYn || 'N', editableYn: n.editableYn || 'Y' };
+      });
+    };
 
     /* fnSyncSimToForm — 시뮬레이션 값 + 미리보기 스타일을 simJson 으로 직렬화 (저장 직전).
        값이 하나도 없고 스타일도 비면 null 로 둬서 빈 JSON 이 쌓이지 않게 한다 */
@@ -608,7 +679,7 @@ window.CmDashboardItemMng = {
            로즈차트는 파이와 데이터가 완전히 같고 roseType 만 켜면 되는 변형이라 같이 묶는다 */
         return {
           tooltip: { trigger: 'item' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           color: cats.map((c, ci) => colorOf2(ci)),
           series: [{
             type: 'pie',
@@ -625,7 +696,7 @@ window.CmDashboardItemMng = {
            파이와 마찬가지로 항목 단위라 팔레트2(colorOf2)를 쓴다 */
         return {
           tooltip: { trigger: 'item' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           series: [{
             type: 'funnel', left: '10%', width: '80%', top: 16, bottom: 36, sort: 'descending',
             label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
@@ -699,7 +770,7 @@ window.CmDashboardItemMng = {
         /* 극좌표막대 — 데이터·색상은 일반 막대와 완전히 같고, 좌표계만 원형(polar)으로 바꾼다 */
         return {
           tooltip: { trigger: 'axis' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           polar: { radius: '65%' },
           angleAxis: { type: 'category', data: cats },
           radiusAxis: { type: 'value' },
@@ -781,7 +852,7 @@ window.CmDashboardItemMng = {
         /* 극좌표꺾은선 — 극좌표막대와 데이터·좌표계가 완전히 같고, 막대 대신 선으로 잇는다 */
         return {
           tooltip: { trigger: 'axis' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           polar: { radius: '65%' },
           angleAxis: { type: 'category', data: cats },
           radiusAxis: { type: 'value' },
@@ -799,7 +870,7 @@ window.CmDashboardItemMng = {
         names.forEach((nm, si) => cats.forEach((c, ci) => data.push([c, at(si, ci), nm])));
         return {
           tooltip: { trigger: 'axis' },
-          legend: { bottom: 0, type: 'scroll', data: names },
+          legend: { bottom: 0, type: 'plain', data: names },
           singleAxis: { type: 'category', data: cats, top: 20, bottom: 50 },
           color: names.map((nm, si) => colorOf(si)),
           series: [{ type: 'themeRiver', data, label: { show: false } }],
@@ -842,6 +913,100 @@ window.CmDashboardItemMng = {
           series: [{ type: 'boxplot', data }],
         };
       }
+      if (type === 'sankey') {
+        /* 생키다이어그램 — 시리즈(왼쪽 노드)에서 항목(오른쪽 노드)으로 값이 흐르는 굵기로 보여준다.
+           노드는 이름으로 식별되는데 지금 데이터엔 시리즈명과 항목명이 우연히 겹칠 수 있어서
+           (예: 시리즈 "자사물" · 항목 "자사물") 시리즈쪽 이름 끝에 안 보이는 문자를 붙여 구분한다 */
+        const SUF = '​';
+        const nodes = [
+          ...names.map((nm, si) => ({ name: nm + SUF, itemStyle: { color: colorOf(si) } })),
+          ...cats.map((c, ci) => ({ name: c, itemStyle: { color: colorOf2(ci) } })),
+        ];
+        const links = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => {
+          const v = at(si, ci);
+          if (v > 0) links.push({ source: nm + SUF, target: c, value: v });
+        }));
+        const stripSuf = (s) => String(s || '').replace(/​$/, '');
+        return {
+          tooltip: { trigger: 'item', formatter: (p) => p.dataType === 'edge'
+            ? (stripSuf(p.data.source) + ' → ' + p.data.target + ': ' + coUtil.cofFmt(p.data.value))
+            : stripSuf(p.name) },
+          series: [{ type: 'sankey', emphasis: { focus: 'adjacency' }, data: nodes, links,
+            label: { fontSize: 10, formatter: (p) => stripSuf(p.name) },
+            lineStyle: { color: 'gradient', curveness: 0.5 } }],
+        };
+      }
+      if (type === 'graph' || type === 'graphCircular') {
+        /* 관계도 — 시리즈·항목을 노드로 두고 값이 있는 조합만 선으로 잇는다. 노드는 id 로
+           식별되므로(생키와 달리) 이름이 겹쳐도 문제없다. 선 굵기는 값에 비례.
+           원형관계도는 데이터가 완전히 같고 layout 만 force→circular 로 바꾼 변형(2026-08-21) */
+        const isCircular = type === 'graphCircular';
+        const allVals = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => allVals.push(at(si, ci))));
+        const maxV = Math.max(1, ...allVals);
+        const nodes = [
+          ...names.map((nm, si) => ({ id: 's' + si, name: nm, symbolSize: 22, itemStyle: { color: colorOf(si) }, category: 0 })),
+          ...cats.map((c, ci) => ({ id: 'i' + ci, name: c, symbolSize: 14, itemStyle: { color: colorOf2(ci) }, category: 1 })),
+        ];
+        const links = [];
+        names.forEach((nm, si) => cats.forEach((c, ci) => {
+          const v = at(si, ci);
+          if (v > 0) links.push({ source: 's' + si, target: 'i' + ci, value: v, lineStyle: { width: 1 + 5 * (v / maxV) } });
+        }));
+        return {
+          tooltip: {},
+          legend: [{ data: ['시리즈', '항목'], bottom: 0, textStyle: { fontSize: 10 } }],
+          series: [{
+            type: 'graph', layout: isCircular ? 'circular' : 'force', roam: true, draggable: !isCircular,
+            circular: isCircular ? { rotateLabel: true } : undefined,
+            categories: [{ name: '시리즈' }, { name: '항목' }],
+            force: isCircular ? undefined : { repulsion: 150, edgeLength: 90 },
+            label: { show: true, fontSize: 9 },
+            lineStyle: { color: 'source', curveness: isCircular ? 0.3 : 0.1, opacity: 0.6 },
+            data: nodes, links,
+          }],
+        };
+      }
+      if (type === 'tree') {
+        /* 트리(조직도) — 트리맵과 데이터가 완전히 같은 2단 계층(시리즈>항목)인데, tree 시리즈는
+           뿌리가 하나여야 해서 맨 위에 가상의 루트 노드를 하나 씌운다(2026-08-21) */
+        return {
+          tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+          series: [{
+            type: 'tree', orient: 'LR', top: '4%', left: '9%', bottom: '4%', right: '18%',
+            symbolSize: 9, expandAndCollapse: false, initialTreeDepth: -1,
+            label: { fontSize: 10, position: 'left', verticalAlign: 'middle', align: 'right' },
+            leaves: { label: { position: 'right', verticalAlign: 'middle', align: 'left' } },
+            data: [{
+              name: panelForm.itemNm || '전체', itemStyle: { color: '#94a3b8' },
+              children: names.map((nm, si) => ({
+                name: nm, itemStyle: { color: colorOf(si) },
+                children: cats.map((c, ci) => ({
+                  name: c + ' (' + coUtil.cofFmt(at(si, ci)) + ')', value: at(si, ci),
+                  itemStyle: { color: colorOf2(ci) },
+                })),
+              })),
+            }],
+          }],
+        };
+      }
+      if (type === 'pictorialBar') {
+        /* 픽토그램막대 — 데이터·색상은 일반 막대와 완전히 같고, 막대 대신 작은 도형을 반복해 쌓는다 */
+        return {
+          tooltip: { trigger: 'axis' },
+          legend: { bottom: 0, type: 'plain' },
+          grid: { left: 48, right: 16, top: 20, bottom: 48 },
+          xAxis: { type: 'category', data: cats },
+          yAxis: { type: 'value' },
+          series: names.map((nm, si) => ({
+            name: nm, type: 'pictorialBar',
+            symbol: 'roundRect', symbolRepeat: true, symbolSize: ['60%', '12%'], symbolMargin: '20%',
+            itemStyle: { color: colorOf(si) },
+            data: cats.map((c, ci) => at(si, ci)),
+          })),
+        };
+      }
       const isArea = type === 'area' || type === 'stackedArea';
       /* 누적(stack) 은 막대뿐 아니라 꺾은선·영역도 지원한다 — base 는 셋 다 렌더 방식이 다르므로
          (막대=bar, 나머지=line) type 별로 갈라 정한다(2026-08-21) */
@@ -849,13 +1014,22 @@ window.CmDashboardItemMng = {
       const base = type === 'stackedBar' ? 'bar'
         : (isArea || type === 'line' || type === 'stackedLine') ? 'line'
         : (type === 'radar' ? 'line' : type);
+      /* 기본 차트 스타일이 딱딱해 보인다는 피드백(2026-08-21) — 막대는 위 모서리를 둥글리고
+         살짝 그림자를 줘 입체감을, 축·그리드선은 옅게 낮춰 부드러운 인상을 준다.
+         누적막대는 구간마다 둥글리면 이어붙은 자리가 들쭉날쭉해 보여 굴림·그림자를 뺀다 */
+      const softBar = base === 'bar' && !isStacked;
       const series = names.map((nm, si) => ({
         name: nm,
         type: base === 'scatter' ? 'scatter' : base,
         stack: isStacked ? 'total' : undefined,
-        itemStyle: { color: colorOf(si) },
-        areaStyle: isArea ? {} : undefined,
+        itemStyle: softBar
+          ? { color: colorOf(si), borderRadius: [6, 6, 0, 0], shadowBlur: 6, shadowColor: 'rgba(0,0,0,0.10)', shadowOffsetY: 3 }
+          : { color: colorOf(si) },
+        areaStyle: isArea ? { opacity: 0.75 } : undefined,
         smooth: base === 'line',
+        symbol: base === 'line' ? 'circle' : undefined,
+        symbolSize: base === 'line' ? 6 : undefined,
+        lineStyle: base === 'line' ? { width: 3 } : undefined,
         label: isStacked && base === 'bar'
           ? { show: true, position: 'inside', fontSize: 10, color: '#fff', fontWeight: 700,
               formatter: (p) => nm + '\n' + coUtil.cofFmt(p.value) }
@@ -877,10 +1051,13 @@ window.CmDashboardItemMng = {
         tooltip: { trigger: 'axis' },
         /* 합계 마커는 범례에서 뺀다(names 만 나열) — 팔레트2 다색이라 범례 스와치 1개로 표현이
            안 되고, 이미 마커 라벨로 값이 보이므로 범례 항목으로는 불필요하다 */
-        legend: { bottom: 0, type: 'scroll', data: isStacked ? names : undefined },
-        grid: { left: 48, right: 16, top: 40, bottom: 48 },
-        xAxis: { type: 'category', data: cats },
-        yAxis: { type: 'value' },
+        legend: { bottom: 0, type: 'plain', data: isStacked ? names : undefined,
+          icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { color: '#64748b', fontSize: 11 } },
+        grid: { left: 48, right: 16, top: 40, bottom: 64 },  /* 범례가 scroll→plain(2줄 가능)로 바뀌어 여유를 더 둔다 */
+        xAxis: { type: 'category', data: cats, axisLine: { lineStyle: { color: '#dde3ea' } },
+          axisTick: { show: false }, axisLabel: { color: '#64748b' } },
+        yAxis: { type: 'value', axisLine: { show: false }, axisLabel: { color: '#94a3b8' },
+          splitLine: { lineStyle: { color: '#eef1f5', type: 'dashed' } } },
         series,
       };
     };
@@ -1357,6 +1534,7 @@ window.CmDashboardItemMng = {
 
     return {
       dashboards, panels, panelCnt, uiState, codes, searchParam,
+      itemPdfAreaRef, handleExportItemPdf,
       dashState, panelDetail, panelForm, panelErrors, columns, util,
       cfCurDash, cfDtlMode,
       /* 3레벨 트리 */
@@ -1371,6 +1549,7 @@ window.CmDashboardItemMng = {
       /* 시뮬레이션 값 · 미리보기 */
       simVals, simOrient, fnSimFit, fnSimRandom, fnSimClear, fnSimRowTotal, fnSimColTotal, fnSimGrandTotal,
       fnToggleColAuto, fnToggleColEditable, fnColAuto, fnColLocked, fnPanelOf,
+      fnToggleAllAuto, fnToggleAllEditable,
       cfSimSeriesNms, cfSimColNms, cfPreviewOption, cfColorPaletteCd, cfActivePalette,
       cfColorPaletteCd2, cfActivePalette2,
       compareState, cfCompareOption,
@@ -1510,7 +1689,21 @@ window.CmDashboardItemMng = {
   <!-- ===== ■. 항목 상세 폼 (전체 폭 · 항상 표시 — 미선택 시 안내) ============ -->
   <bo-container :title="!panelDetail.show ? '대시보드 위젯항목 상세' : (panelDetail.isNew ? '대시보드 위젯항목 신규' : (cfDtlMode ? '대시보드 위젯항목 상세' : '대시보드 위젯항목 수정'))"
     :title-id="panelDetail.selectedId ? panelForm.dashboardItemId : ''">
-    <div v-if="panelDetail.show" style="padding:12px;">
+    <template v-if="panelDetail.show" #toolbar-actions>
+      <button class="btn btn_excel"
+        :disabled="uiState.pdfExporting" @click="handleExportItemPdf">
+        {{ uiState.pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
+      <!-- 저장/취소(수정/닫기)를 PDF 다운로드 우측으로 이동(2026-08-21, 예전엔 폼 하단 form-actions) -->
+      <template v-if="cfDtlMode">
+        <button class="btn btn_edit" @click="handleBtnAction('panelForm-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('panelForm-close')">닫기</button>
+      </template>
+      <template v-else>
+        <button class="btn btn_save" @click="handleBtnAction('panelForm-save')">저장</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('panelForm-cancel')">취소</button>
+      </template>
+    </template>
+    <div v-if="panelDetail.show" ref="itemPdfAreaRef" style="padding:12px;">
       <!-- compact: 상품수정(PdProdDtl) 과 같은 폼 높이·간격 기준 -->
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
         :cols="3" :show-actions="false" :readonly="cfDtlMode" compact plain-readonly>
@@ -1681,15 +1874,15 @@ window.CmDashboardItemMng = {
               <table v-if="simOrient !== 'COL'" class="bo-table bo-table-narrow">
                 <thead>
                   <tr>
-                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">시리즈 \\ 항목</th>
+                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">
+                      시리즈 \\ 항목
+                      <span style="display:inline-flex;gap:4px;margin-left:4px;">
+                        <span @click="fnToggleAllAuto()" title="전체 자동수집 켜기/끄기" style="cursor:pointer;font-size:10px;">🤖</span>
+                        <span @click="fnToggleAllEditable()" title="전체 수정불가 켜기/끄기" style="cursor:pointer;font-size:10px;">🔒</span>
+                      </span>
+                    </th>
                     <th v-for="(c, ci) in cfSimColNms" :key="'sc'+ci" style="min-width:96px;background:#eaf2ff;padding:4px 6px;font-size:11px;">
                       {{ c }}
-                      <span style="display:inline-flex;gap:3px;margin-left:2px;">
-                        <span @click="fnToggleColAuto(ci)" title="자동수집여부(클릭으로 전환)"
-                          :style="'cursor:pointer;font-size:9px;' + (fnColAuto(ci) ? 'opacity:1;' : 'opacity:.25;')">🤖</span>
-                        <span @click="fnToggleColEditable(ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
-                          :style="'cursor:pointer;font-size:9px;' + (fnColLocked(ci) ? 'opacity:1;' : 'opacity:.25;')">🔒</span>
-                      </span>
                     </th>
                     <th style="width:80px;padding:4px 6px;font-size:11px;">합계</th>
                   </tr>
@@ -1698,13 +1891,21 @@ window.CmDashboardItemMng = {
                   <tr v-for="(nm, si) in cfSimSeriesNms" :key="'sr'+si">
                     <td style="font-weight:600;background:#ffe8cf;">{{ nm }}</td>
                     <td v-for="(c, ci) in cfSimColNms" :key="'sv'+si+'_'+ci"
-                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(ci) ? 'background:#f1f5f9;' : '')">
-                      <span v-if="fnColAuto(ci)"
+                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(si, ci) ? 'background:#f1f5f9;' : '')">
+                      <!-- 자동수집 표시(왼쪽 위 녹색 삼각형, 데이터관리 그리드와 동일한 표시) +
+                           자동수집/수정가능 토글(오른쪽 위 작은 아이콘, 클릭으로 전환)(2026-08-21) -->
+                      <span v-if="fnColAuto(si, ci)"
                         style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
                         title="자동수집 항목"></span>
+                      <span style="position:absolute;top:1px;right:2px;display:flex;gap:2px;z-index:2;line-height:1;">
+                        <span @click="fnToggleColAuto(si, ci)" title="자동수집여부(클릭으로 전환)"
+                          :style="'cursor:pointer;font-size:8px;' + (fnColAuto(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🤖</span>
+                        <span @click="fnToggleColEditable(si, ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
+                          :style="'cursor:pointer;font-size:8px;' + (fnColLocked(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🔒</span>
+                      </span>
                       <input type="number" class="form-control"
-                        :disabled="fnColLocked(ci)"
-                        :style="'text-align:right;' + (fnColLocked(ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
+                        :disabled="fnColLocked(si, ci)"
+                        :style="'text-align:right;padding-right:26px;' + (fnColLocked(si, ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
                         :value="simVals[si] ? simVals[si][ci] : null"
                         @input="e => { fnSimFit(); simVals[si][ci] = e.target.value; }" />
                     </td>
@@ -1724,30 +1925,36 @@ window.CmDashboardItemMng = {
               <table v-else class="bo-table bo-table-narrow">
                 <thead>
                   <tr>
-                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">항목 \\ 시리즈</th>
+                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">
+                      항목 \\ 시리즈
+                      <span style="display:inline-flex;gap:4px;margin-left:4px;">
+                        <span @click="fnToggleAllAuto()" title="전체 자동수집 켜기/끄기" style="cursor:pointer;font-size:10px;">🤖</span>
+                        <span @click="fnToggleAllEditable()" title="전체 수정불가 켜기/끄기" style="cursor:pointer;font-size:10px;">🔒</span>
+                      </span>
+                    </th>
                     <th v-for="(nm, si) in cfSimSeriesNms" :key="'cs'+si" style="min-width:96px;background:#ffe8cf;padding:4px 6px;font-size:11px;">{{ nm }}</th>
                     <th style="width:80px;padding:4px 6px;font-size:11px;">합계</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(c, ci) in cfSimColNms" :key="'cr'+ci">
-                    <td style="font-weight:600;background:#eaf2ff;">
-                      {{ c }}
-                      <span style="display:inline-flex;gap:3px;margin-left:2px;">
-                        <span @click="fnToggleColAuto(ci)" title="자동수집여부(클릭으로 전환)"
-                          :style="'cursor:pointer;font-size:10px;' + (fnColAuto(ci) ? 'opacity:1;' : 'opacity:.25;')">🤖</span>
-                        <span @click="fnToggleColEditable(ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
-                          :style="'cursor:pointer;font-size:10px;' + (fnColLocked(ci) ? 'opacity:1;' : 'opacity:.25;')">🔒</span>
-                      </span>
-                    </td>
+                    <td style="font-weight:600;background:#eaf2ff;">{{ c }}</td>
                     <td v-for="(nm, si) in cfSimSeriesNms" :key="'cv'+ci+'_'+si"
-                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(ci) ? 'background:#f1f5f9;' : '')">
-                      <span v-if="fnColAuto(ci)"
+                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(si, ci) ? 'background:#f1f5f9;' : '')">
+                      <!-- 자동수집 표시(왼쪽 위 녹색 삼각형, 데이터관리 그리드와 동일한 표시) +
+                           자동수집/수정가능 토글(오른쪽 위 작은 아이콘, 클릭으로 전환)(2026-08-21) -->
+                      <span v-if="fnColAuto(si, ci)"
                         style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
                         title="자동수집 항목"></span>
+                      <span style="position:absolute;top:1px;right:2px;display:flex;gap:2px;z-index:2;line-height:1;">
+                        <span @click="fnToggleColAuto(si, ci)" title="자동수집여부(클릭으로 전환)"
+                          :style="'cursor:pointer;font-size:8px;' + (fnColAuto(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🤖</span>
+                        <span @click="fnToggleColEditable(si, ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
+                          :style="'cursor:pointer;font-size:8px;' + (fnColLocked(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🔒</span>
+                      </span>
                       <input type="number" class="form-control"
-                        :disabled="fnColLocked(ci)"
-                        :style="'text-align:right;' + (fnColLocked(ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
+                        :disabled="fnColLocked(si, ci)"
+                        :style="'text-align:right;padding-right:26px;' + (fnColLocked(si, ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
                         :value="simVals[si] ? simVals[si][ci] : null"
                         @input="e => { fnSimFit(); simVals[si][ci] = e.target.value; }" />
                     </td>
@@ -1884,16 +2091,6 @@ window.CmDashboardItemMng = {
           </div>
         </template>
       </bo-form-area>
-      <div class="form-actions">
-        <template v-if="cfDtlMode">
-          <button class="btn btn_edit" @click="handleBtnAction('panelForm-edit')">수정</button>
-          <button class="btn btn_close" @click="handleBtnAction('panelForm-close')">닫기</button>
-        </template>
-        <template v-else>
-          <button class="btn btn_save" @click="handleBtnAction('panelForm-save')">저장</button>
-          <button class="btn btn_cancel" @click="handleBtnAction('panelForm-cancel')">취소</button>
-        </template>
-      </div>
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">
       대시보드 항목 목록에서 항목을 선택하거나 [+ 항목 추가]를 클릭하세요.</div>

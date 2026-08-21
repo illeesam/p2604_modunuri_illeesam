@@ -41,9 +41,27 @@ window.CmDashboardDataMng = {
     const charts      = reactive([]);   /* 조회 결과 — 차트별 그리드 [{itemNm, colNms[], rows[]}] */
     const siteOptions = reactive([]);   /* 사이트 select */
     const vendors     = reactive([]);   /* 판매업체 select */
-    const uiState = reactive({ loading: false, itemLoading: false, saving: false, selectedItemIds: [] });
-    const previewOpen = reactive({});   /* dashboardItemId → 미리보기(차트) 펼침 여부, 기본 접힘 */
-    const fnTogglePreview = (id) => { previewOpen[id] = !previewOpen[id]; };
+    const uiState = reactive({ loading: false, itemLoading: false, saving: false, selectedItemIds: [], pdfExporting: false });
+    const pdfAreaRef = ref(null);   /* "대시보드 위젯데이타" 영역 전체(그룹·그리드·미리보기) — PDF 캡처 대상 */
+
+    /* handleExportPdf — 화면에 보이는 그대로(그리드+미리보기 차트 포함) PDF 로 저장.
+       html2canvas 는 실제 렌더된 DOM 을 캡처하므로 접힌 미리보기는 접힌 모습 그대로 저장된다 */
+    const handleExportPdf = async () => {
+      uiState.pdfExporting = true;
+      try {
+        const dashNm = cfCurDash.value?.dashboardNm || '대시보드';
+        /* 파일명 타임스탬프는 프로젝트 표준 헬퍼로 통일 — 영역명_YYYYMMDD_hhmmss.확장자
+           (coUtil.cofExportCsv/cofBuildExportFilename 이 엑셀·CSV 다운로드에 쓰는 것과 같은 포맷) */
+        const filename = coUtil.cofBuildExportFilename(`${dashNm}_위젯데이타.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value?.$el, filename, showToast);
+      } finally {
+        uiState.pdfExporting = false;
+      }
+    };
+    /* previewOpen — dashboardItemId → 미리보기(차트) 펼침 여부. 값이 없는(undefined) 차트는
+       기본 펼침으로 취급한다(2026-08-21, 이전엔 기본 접힘) — false 로 명시된 것만 접힌 상태 */
+    const previewOpen = reactive({});
+    const fnTogglePreview = (id) => { previewOpen[id] = previewOpen[id] === false; };
     /* fnGroupPreviewSetAll — 그룹 미니바 [미리보기 펼치기/접기] — 그 그룹에 로드된(_notLoaded
        아닌) 차트 전부를 한 번에 펼치거나 접는다 */
     const fnGroupPreviewSetAll = (group, open) => {
@@ -662,7 +680,7 @@ window.CmDashboardDataMng = {
            로즈차트는 파이와 데이터가 완전히 같고 roseType 만 켜면 되는 변형이라 같이 묶는다 */
         return {
           tooltip: { trigger: 'item' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           color: cats.map((c, ci) => palette2[ci % palette2.length]),
           series: [{
             type: 'pie',
@@ -682,7 +700,7 @@ window.CmDashboardDataMng = {
         /* 깔때기 — 항목별 값을 큰 순서로 정렬해 단계적 감소를 보여준다. 항목 단위라 팔레트2 사용 */
         return {
           tooltip: { trigger: 'item' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           series: [{
             type: 'funnel', left: '10%', width: '80%', top: 16, bottom: 36, sort: 'descending',
             label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
@@ -740,7 +758,7 @@ window.CmDashboardDataMng = {
         /* 극좌표막대 — 데이터·색상은 일반 막대와 완전히 같고, 좌표계만 원형(polar)으로 바꾼다 */
         return {
           tooltip: { trigger: 'axis' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           polar: { radius: '65%' },
           angleAxis: { type: 'category', data: cats },
           radiusAxis: { type: 'value' },
@@ -824,7 +842,7 @@ window.CmDashboardDataMng = {
         /* 극좌표꺾은선 — 극좌표막대와 데이터·좌표계가 완전히 같고, 막대 대신 선으로 잇는다 */
         return {
           tooltip: { trigger: 'axis' },
-          legend: { bottom: 0, type: 'scroll' },
+          legend: { bottom: 0, type: 'plain' },
           polar: { radius: '65%' },
           angleAxis: { type: 'category', data: cats },
           radiusAxis: { type: 'value' },
@@ -843,7 +861,7 @@ window.CmDashboardDataMng = {
         (chart.rows || []).forEach((row, ri) => cats.forEach((c, ci) => data.push([c, at(ri, ci), row.seriesNm || '(단일)'])));
         return {
           tooltip: { trigger: 'axis' },
-          legend: { bottom: 0, type: 'scroll', data: names },
+          legend: { bottom: 0, type: 'plain', data: names },
           singleAxis: { type: 'category', data: cats, top: 20, bottom: 50 },
           color: (chart.rows || []).map((row, ri) => palette[ri % palette.length]),
           series: [{ type: 'themeRiver', data, label: { show: false } }],
@@ -886,6 +904,99 @@ window.CmDashboardDataMng = {
           series: [{ type: 'boxplot', data }],
         };
       }
+      if (type === 'sankey') {
+        /* 생키다이어그램 — 시리즈(왼쪽 노드)에서 항목(오른쪽 노드)으로 값이 흐르는 굵기로 보여준다.
+           시리즈명·항목명이 우연히 겹칠 수 있어 시리즈쪽 이름 끝에 안 보이는 문자를 붙여 구분한다 */
+        const SUF = '​';
+        const nodes = [
+          ...(chart.rows || []).map((row, ri) => ({ name: (row.seriesNm || '(단일)') + SUF, itemStyle: { color: palette[ri % palette.length] } })),
+          ...cats.map((c, ci) => ({ name: c, itemStyle: { color: palette2[ci % palette2.length] } })),
+        ];
+        const links = [];
+        (chart.rows || []).forEach((row, ri) => cats.forEach((c, ci) => {
+          const v = at(ri, ci);
+          if (v > 0) links.push({ source: (row.seriesNm || '(단일)') + SUF, target: c, value: v });
+        }));
+        const stripSuf = (s) => String(s || '').replace(/​$/, '');
+        return {
+          tooltip: { trigger: 'item', formatter: (p) => p.dataType === 'edge'
+            ? (stripSuf(p.data.source) + ' → ' + p.data.target + ': ' + coUtil.cofFmt(p.data.value))
+            : stripSuf(p.name) },
+          series: [{ type: 'sankey', emphasis: { focus: 'adjacency' }, data: nodes, links,
+            label: { fontSize: 10, formatter: (p) => stripSuf(p.name) },
+            lineStyle: { color: 'gradient', curveness: 0.5 } }],
+        };
+      }
+      if (type === 'graph' || type === 'graphCircular') {
+        /* 관계도 — 시리즈·항목을 노드로 두고 값이 있는 조합만 선으로 잇는다. id 로 식별해 이름
+           겹침 문제 없음. 선 굵기는 값에 비례. 원형관계도는 데이터 동일, layout 만
+           force→circular 로 바꾼 변형(2026-08-21) */
+        const isCircular = type === 'graphCircular';
+        const allVals = [];
+        (chart.rows || []).forEach((row, ri) => cats.forEach((c, ci) => allVals.push(at(ri, ci))));
+        const maxV = Math.max(1, ...allVals);
+        const nodes = [
+          ...(chart.rows || []).map((row, ri) => ({ id: 's' + ri, name: row.seriesNm || '(단일)', symbolSize: 22, itemStyle: { color: palette[ri % palette.length] }, category: 0 })),
+          ...cats.map((c, ci) => ({ id: 'i' + ci, name: c, symbolSize: 14, itemStyle: { color: palette2[ci % palette2.length] }, category: 1 })),
+        ];
+        const links = [];
+        (chart.rows || []).forEach((row, ri) => cats.forEach((c, ci) => {
+          const v = at(ri, ci);
+          if (v > 0) links.push({ source: 's' + ri, target: 'i' + ci, value: v, lineStyle: { width: 1 + 5 * (v / maxV) } });
+        }));
+        return {
+          tooltip: {},
+          legend: [{ data: ['시리즈', '항목'], bottom: 0, textStyle: { fontSize: 10 } }],
+          series: [{
+            type: 'graph', layout: isCircular ? 'circular' : 'force', roam: true, draggable: !isCircular,
+            circular: isCircular ? { rotateLabel: true } : undefined,
+            categories: [{ name: '시리즈' }, { name: '항목' }],
+            force: isCircular ? undefined : { repulsion: 150, edgeLength: 90 },
+            label: { show: true, fontSize: 9 },
+            lineStyle: { color: 'source', curveness: isCircular ? 0.3 : 0.1, opacity: 0.6 },
+            data: nodes, links,
+          }],
+        };
+      }
+      if (type === 'tree') {
+        /* 트리(조직도) — 트리맵과 데이터가 완전히 같은 2단 계층인데, tree 시리즈는 뿌리가
+           하나여야 해서 맨 위에 가상의 루트 노드를 하나 씌운다(2026-08-21) */
+        return {
+          tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+          series: [{
+            type: 'tree', orient: 'LR', top: '4%', left: '9%', bottom: '4%', right: '18%',
+            symbolSize: 9, expandAndCollapse: false, initialTreeDepth: -1,
+            label: { fontSize: 10, position: 'left', verticalAlign: 'middle', align: 'right' },
+            leaves: { label: { position: 'right', verticalAlign: 'middle', align: 'left' } },
+            data: [{
+              name: chart.itemNm || '전체', itemStyle: { color: '#94a3b8' },
+              children: (chart.rows || []).map((row, ri) => ({
+                name: row.seriesNm || '(단일)', itemStyle: { color: palette[ri % palette.length] },
+                children: cats.map((c, ci) => ({
+                  name: c + ' (' + coUtil.cofFmt(at(ri, ci)) + ')', value: at(ri, ci),
+                  itemStyle: { color: palette2[ci % palette2.length] },
+                })),
+              })),
+            }],
+          }],
+        };
+      }
+      if (type === 'pictorialBar') {
+        /* 픽토그램막대 — 데이터·색상은 일반 막대와 완전히 같고, 막대 대신 작은 도형을 반복해 쌓는다 */
+        return {
+          tooltip: { trigger: 'axis' },
+          legend: { bottom: 0, type: 'plain' },
+          grid: { left: 48, right: 16, top: 20, bottom: 48 },
+          xAxis: { type: 'category', data: cats },
+          yAxis: { type: 'value' },
+          series: (chart.rows || []).map((row, ri) => ({
+            name: row.seriesNm || '(단일)', type: 'pictorialBar',
+            symbol: 'roundRect', symbolRepeat: true, symbolSize: ['60%', '12%'], symbolMargin: '20%',
+            itemStyle: { color: palette[ri % palette.length] },
+            data: cats.map((c, ci) => at(ri, ci)),
+          })),
+        };
+      }
       if (type === 'gauge') {
         /* 게이지 — 그리드의 모든 값을 다 더한 총합 하나를 바늘로 보여준다 */
         let total = 0;
@@ -908,15 +1019,24 @@ window.CmDashboardDataMng = {
         : (type === 'radar' ? 'line' : type);
       /* 라벨 — 누적(막대만)은 구간 안(inside)에 시리즈명+값, 그 외(막대/꺾은선/영역/누적꺾은선/
          누적영역/산점도)는 점·막대 위(top)에 값만. 라벨이 길면 겹치므로 top 자리는 값만 표시(2026-08-21) */
+      /* 기본 차트 스타일이 딱딱해 보인다는 피드백(2026-08-21) — 막대는 위 모서리를 둥글리고
+         살짝 그림자를 줘 입체감을, 축·그리드선은 옅게 낮춰 부드러운 인상을 준다.
+         누적막대는 구간마다 둥글리면 이어붙은 자리가 들쭉날쭉해 보여 굴림·그림자를 뺀다 */
+      const softBar = base === 'bar' && !isStacked;
       const series = (chart.rows || []).map((row, ri) => {
         const nm = row.seriesNm || '(단일)';
         return {
           name: nm,
           type: base === 'scatter' ? 'scatter' : base,
           stack: isStacked ? 'total' : undefined,
-          itemStyle: { color: palette[ri % palette.length] },
-          areaStyle: isArea ? {} : undefined,
+          itemStyle: softBar
+            ? { color: palette[ri % palette.length], borderRadius: [6, 6, 0, 0], shadowBlur: 6, shadowColor: 'rgba(0,0,0,0.10)', shadowOffsetY: 3 }
+            : { color: palette[ri % palette.length] },
+          areaStyle: isArea ? { opacity: 0.75 } : undefined,
           smooth: base === 'line',
+          symbol: base === 'line' ? 'circle' : undefined,
+          symbolSize: base === 'line' ? 6 : undefined,
+          lineStyle: base === 'line' ? { width: 3 } : undefined,
           label: (isStacked && base === 'bar')
             ? { show: true, position: 'inside', fontSize: 10, color: '#fff', fontWeight: 700,
                 formatter: (p) => nm + '\n' + coUtil.cofFmt(p.value) }
@@ -938,10 +1058,13 @@ window.CmDashboardDataMng = {
       }
       return {
         tooltip: { trigger: 'axis' },
-        legend: { bottom: 0, type: 'scroll', data: isStacked ? (chart.rows || []).map(r => r.seriesNm || '(단일)') : undefined },
-        grid: { left: 48, right: 16, top: 40, bottom: 48 },  /* 값 라벨이 막대/점 위에 뜨므로 여유를 더 둔다 */
-        xAxis: { type: 'category', data: cats },
-        yAxis: { type: 'value' },
+        legend: { bottom: 0, type: 'plain', data: isStacked ? (chart.rows || []).map(r => r.seriesNm || '(단일)') : undefined,
+          icon: 'circle', itemWidth: 8, itemHeight: 8, textStyle: { color: '#64748b', fontSize: 11 } },
+        grid: { left: 48, right: 16, top: 40, bottom: 64 },  /* 값 라벨(막대/점 위) + 범례가 scroll→plain(2줄 가능)로 바뀐 만큼 여유를 더 둔다 */
+        xAxis: { type: 'category', data: cats, axisLine: { lineStyle: { color: '#dde3ea' } },
+          axisTick: { show: false }, axisLabel: { color: '#64748b' } },
+        yAxis: { type: 'value', axisLine: { show: false }, axisLabel: { color: '#94a3b8' },
+          splitLine: { lineStyle: { color: '#eef1f5', type: 'dashed' } } },
         series,
       };
     };
@@ -994,6 +1117,7 @@ window.CmDashboardDataMng = {
 
     return {
       dashboards, dashItems, dashItemCnt, charts, siteOptions, vendors, uiState, codes,
+      pdfAreaRef, handleExportPdf,
       searchParam, groupParams, groupState, modals, columns, MAX_COLS, cfCurDash,
       cfHasData, cfVisibleCharts, cfGroups, cfAnyGroupLoading, cfAnyGroupSaving,
       isDashItemChecked, cfAllDashItemsChecked, onToggleDashItemCheck, onToggleDashItemCheckAll,
@@ -1047,13 +1171,16 @@ window.CmDashboardDataMng = {
   </div>
 
   <!-- ===== ■. 차트별 데이터 그리드 — input_opts 별로 묶어 그룹마다 조회조건을 따로 받는다 ===== -->
-  <bo-container title="대시보드 위젯데이타"
+  <bo-container ref="pdfAreaRef" title="대시보드 위젯데이타"
     :count-text="cfHasData ? ('체크 ' + cfVisibleCharts.length + ' / 전체 ' + charts.length + '개') : ''">
     <template #toolbar-actions>
       <button class="btn btn_reset" :disabled="cfAnyGroupLoading"
         @click="handleBtnAction('groups-reset')">초기화</button>
       <button class="btn btn_save" :disabled="!cfHasData || cfAnyGroupSaving"
         @click="handleBtnAction('groups-saveAll')">전체 저장</button>
+      <button class="btn btn_excel"
+        :disabled="!cfHasData || uiState.pdfExporting" @click="handleExportPdf">
+        {{ uiState.pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
     </template>
 
     <div style="padding:8px 12px;font-size:11.5px;color:#aaa;border-bottom:1px solid #f0f0f0;">
@@ -1227,14 +1354,14 @@ window.CmDashboardDataMng = {
                 </tfoot>
               </table>
             </div>
-            <!-- 미리보기 — 기본 접힘, 펼치면 현재 입력값 기준 실제 차트로 렌더 -->
+            <!-- 미리보기 — 기본 펼침, 접으면 숨긴다(2026-08-21) -->
             <div style="border-top:1px solid #e5e7eb;">
               <div style="padding:5px 10px;background:#fafbfc;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11.5px;color:#64748b;"
                 @click="fnTogglePreview(chart.dashboardItemId)">
-                <span style="width:10px;font-size:10px;">{{ previewOpen[chart.dashboardItemId] ? '▼' : '▶' }}</span>
+                <span style="width:10px;font-size:10px;">{{ previewOpen[chart.dashboardItemId] !== false ? '▼' : '▶' }}</span>
                 미리보기
               </div>
-              <div v-if="previewOpen[chart.dashboardItemId]" style="padding:8px;">
+              <div v-if="previewOpen[chart.dashboardItemId] !== false" style="padding:8px;">
                 <co-echart :option="fnBuildChartOption(chart)" height="220px" not-merge />
               </div>
             </div>

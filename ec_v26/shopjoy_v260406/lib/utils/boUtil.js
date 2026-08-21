@@ -264,6 +264,46 @@
     return _siteOptionsCache;
   };
 
+  /* bofExportPdf — 화면의 특정 영역(DOM 엘리먼트)을 그대로 캡처해 PDF 로 저장한다.
+     한글을 jsPDF 자체 폰트로 그리면 CJK 미지원이라 깨지므로, html2canvas 로 브라우저가 실제
+     그린 화면을 이미지화한 뒤 그 이미지를 jsPDF 에 얹는 방식을 쓴다(2026-08-21) — A4 폭에 맞춰
+     축소하고, 내용이 한 페이지보다 길면 자동으로 다음 페이지에 이어 붙인다.
+     @param el        캡처할 DOM 엘리먼트(ref.value)
+     @param filename  저장 파일명("xxx.pdf")
+     @param showToast 실패 시 안내용(옵션) — 화면마다 있는 그 showToast 그대로 넘기면 됨 */
+  boUtil.bofExportPdf = async function (el, filename, showToast) {
+    if (!el) { showToast && showToast('캡처할 영역을 찾지 못했습니다.', 'error'); return; }
+    if (!window.html2canvas || !window.jspdf) {
+      showToast && showToast('PDF 라이브러리가 로드되지 않았습니다.', 'error');
+      return;
+    }
+    try {
+      const canvas = await window.html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const margin = 8;                          /* mm */
+      const pageW  = 210 - margin * 2;            /* A4 폭(210mm) - 좌우 여백 */
+      const pageH  = 297 - margin * 2;            /* A4 높이(297mm) - 상하 여백 */
+      const imgW   = pageW;
+      const imgH   = (canvas.height * imgW) / canvas.width;
+      let heightLeft = imgH;
+      let y = margin;
+      pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
+      heightLeft -= pageH;
+      while (heightLeft > 0) {
+        y = margin - (imgH - heightLeft);         /* 다음 페이지에서 이어질 위치만큼 위로 밀어 올린다 */
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
+        heightLeft -= pageH;
+      }
+      pdf.save(filename || 'export.pdf');
+    } catch (e) {
+      console.error('[boUtil.bofExportPdf]', e);
+      showToast && showToast('PDF 생성 중 오류가 발생했습니다.', 'error', 0);
+    }
+  };
+
   global.boUtil = boUtil;
   global.boCommonFilter = boCommonFilter;
 })(typeof window !== 'undefined' ? window : globalThis);
