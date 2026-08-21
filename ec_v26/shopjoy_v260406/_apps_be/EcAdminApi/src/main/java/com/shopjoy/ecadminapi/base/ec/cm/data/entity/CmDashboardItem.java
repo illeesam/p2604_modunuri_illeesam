@@ -94,10 +94,25 @@ public class CmDashboardItem extends BaseEntity {
     @Size(max = 10, message = "seriesOrientCd 는 10자 이내여야 합니다.")
     private String seriesOrientCd;
 
-    @Comment("표시 색상 (#RRGGBB). 시리즈 레벨에서 주로 사용")
-    @Column(name = "item_color", length = 20)
-    @Size(max = 20, message = "itemColor 는 20자 이내여야 합니다.")
-    private String itemColor;
+    @Comment("2레벨(시리즈) 표시 색상 (#RRGGBB) — 막대/꺾은선 등 시리즈별 itemStyle.color")
+    @Column(name = "lvl2_color", length = 20)
+    @Size(max = 20, message = "lvl2Color 는 20자 이내여야 합니다.")
+    private String lvl2Color;
+
+    @Comment("3레벨(항목) 표시 색상 (#RRGGBB) — 파이/도넛 등 항목별 조각 색")
+    @Column(name = "lvl3_color", length = 20)
+    @Size(max = 20, message = "lvl3Color 는 20자 이내여야 합니다.")
+    private String lvl3Color;
+
+    @Comment("2레벨(시리즈) 색상 팔레트 코드 (DASH_WIDGET_COLORS_01~10) — 차트(1레벨) 행에만 의미 있음")
+    @Column(name = "lvl2_palette_cd", length = 30)
+    @Size(max = 30, message = "lvl2PaletteCd 는 30자 이내여야 합니다.")
+    private String lvl2PaletteCd;
+
+    @Comment("3레벨(항목) 색상 팔레트 코드 (DASH_WIDGET_COLORS_01~10) — 차트(1레벨) 행에만 의미 있음, 파이/도넛 등에서 사용")
+    @Column(name = "lvl3_palette_cd", length = 30)
+    @Size(max = 30, message = "lvl3PaletteCd 는 30자 이내여야 합니다.")
+    private String lvl3PaletteCd;
 
     @Comment("2레벨(시리즈) 이름 선택용 공통코드그룹 (sy_code_grp.code_grp). NULL=직접입력")
     @Column(name = "lvl1_code_grp", length = 50)

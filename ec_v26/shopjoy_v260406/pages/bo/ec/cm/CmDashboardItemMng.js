@@ -54,6 +54,7 @@ window.CmDashboardItemMng = {
       autoCollectYn: 'N', editableYn: 'Y', inputOpts: '',
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', optionJson: '',
       lvl1CodeGrp: '', lvl2CodeGrp: '', simJson: '',
+      lvl2PaletteCd: 'DASH_WIDGET_COLORS_01', lvl3PaletteCd: 'DASH_WIDGET_COLORS_02',
     });
     const panelForm = reactive(_initPanelForm());
     const panelErrors = reactive({});
@@ -240,6 +241,8 @@ window.CmDashboardItemMng = {
         optionJson: row.optionJson || '',
         lvl1CodeGrp: row.lvl1CodeGrp || '', lvl2CodeGrp: row.lvl2CodeGrp || '',
         simJson: row.simJson || '',
+        lvl2PaletteCd: row.lvl2PaletteCd || 'DASH_WIDGET_COLORS_01',
+        lvl3PaletteCd: row.lvl3PaletteCd || 'DASH_WIDGET_COLORS_02',
       });
       fnSyncFormToRows();   /* 정의 행 → 편집 그리드 */
       onGrpChange();        /* 코드그룹이 지정돼 있으면 선택지 미리 로드 */
@@ -292,6 +295,7 @@ window.CmDashboardItemMng = {
           optionJson: panelForm.optionJson || null,
           simJson: panelForm.simJson || null,
           lvl1CodeGrp: panelForm.lvl1CodeGrp || null, lvl2CodeGrp: panelForm.lvl2CodeGrp || null,
+          lvl2PaletteCd: panelForm.lvl2PaletteCd || null, lvl3PaletteCd: panelForm.lvl3PaletteCd || null,
         };
         const res = await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
         /* 편집 그리드의 시리즈·항목을 실제 정의행으로 반영 — 트리·데이터관리가 이 행을 본다 */
@@ -301,7 +305,7 @@ window.CmDashboardItemMng = {
           const sres = await boApiSvc.cmDashboard.syncItemChildren(savedId, {
             series: seriesRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color,
               autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
-            cols:   colRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name,
+            cols:   colRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color,
               autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
           }, '대시보드항목관리', '하위행동기화');
           const d = sres.data?.data || {};
@@ -350,7 +354,7 @@ window.CmDashboardItemMng = {
       .filter(n => n.lvl === 2 && n.parentDashboardItemId === chartId)
       /* dashboardItemId 를 들고 다녀야 cd(키명)를 바꿔도 서버가 같은 행으로 알아본다
          — 없으면 "사라진 행" 으로 보여 붙어있던 데이터까지 지워진다 */
-      .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: n.itemColor || '',
+      .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: n.lvl2Color || '',
         autoCollectYn: n.autoCollectYn || 'N', editableYn: n.editableYn || 'Y' }));
 
     /* fnColsFromTree — 항목 행(3레벨). 열 정의는 시리즈마다 같으므로 첫 시리즈 것을 쓴다 */
@@ -359,7 +363,7 @@ window.CmDashboardItemMng = {
       if (!first) return [];
       return treeRows
         .filter(n => n.lvl === 3 && n.parentDashboardItemId === first.dashboardItemId)
-        .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: '',
+        .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: n.lvl3Color || '',
           autoCollectYn: n.autoCollectYn || 'N', editableYn: n.editableYn || 'Y' }));
     };
 
@@ -551,24 +555,35 @@ window.CmDashboardItemMng = {
 
     /* cfAutoOption — 입력값으로 자동 생성한 ECharts 옵션.
        pie 는 시리즈 개념이 없어 첫 행만 쓰고, 그 외(bar/line/area 등)는 시리즈별 계열로 그린다. */
-    /* cfColorPaletteCd — 색상 팔레트 선택값. DB 컬럼을 새로 안 만들고 optionJson(이미 있는
-       "ECharts 옵션 오버라이드 JSON" 필드) 안에 {colorPaletteCd:"DASH_WIDGET_COLORS_03"} 형태로
-       끼워 저장한다 — 다른 옵션 오버라이드 키는 그대로 보존(get 에서 파싱, set 에서 병합 후 재직렬화) */
+    /* cfColorPaletteCd — 색상 팔레트 선택값. cm_dashboard_item.lvl2_palette_cd 실컬럼에 저장한다
+       (2026-08-21, optionJson 에 JSON 으로 끼워 넣던 방식에서 전환 — panelForm 의 다른 필드처럼
+       그냥 저장 body 에 실려 보내지므로 별도 파싱/재직렬화가 필요 없다) */
     const cfColorPaletteCd = computed({
-      get() {
-        if (!panelForm.optionJson) return 'DASH_WIDGET_COLORS_01';
-        try { return JSON.parse(panelForm.optionJson).colorPaletteCd || 'DASH_WIDGET_COLORS_01'; }
-        catch (e) { return 'DASH_WIDGET_COLORS_01'; }
-      },
+      get() { return panelForm.lvl2PaletteCd || 'DASH_WIDGET_COLORS_01'; },
       set(v) {
-        let o = {};
-        if (panelForm.optionJson) { try { o = JSON.parse(panelForm.optionJson) || {}; } catch (e) { o = {}; } }
-        o.colorPaletteCd = v;
-        panelForm.optionJson = JSON.stringify(o);
+        panelForm.lvl2PaletteCd = v;
+        /* colorOf() 는 시리즈에 이미 박힌 개별 color 를 팔레트보다 우선한다 — 그래서 팔레트만
+           바꾸면 차트가 그대로였다(2026-08-21). 팔레트 선택 = 그 팔레트로 전 시리즈 색 일괄 적용 */
+        const pal = util.DASH_WIDGET_COLOR_SETS[v] || util.PALETTE;
+        seriesRows.forEach((r, i) => { r.color = pal[i % pal.length]; });
       },
     });
     /* cfActivePalette — 선택된 팔레트 배열(없으면 기존 기본 PALETTE 로 폴백) */
     const cfActivePalette = computed(() => util.DASH_WIDGET_COLOR_SETS[cfColorPaletteCd.value] || util.PALETTE);
+
+    /* cfColorPaletteCd2 — 색상 팔레트 2(항목·3레벨 색상 순서). 팔레트1(cfColorPaletteCd)은
+       시리즈(2레벨) 색을 결정하는데, 파이/도넛은 시리즈가 아니라 항목(3레벨) 단위로 색이
+       필요해 둘을 따로 둔다 — cm_dashboard_item.lvl3_palette_cd 실컬럼에 저장 */
+    const cfColorPaletteCd2 = computed({
+      get() { return panelForm.lvl3PaletteCd || 'DASH_WIDGET_COLORS_02'; },
+      set(v) {
+        panelForm.lvl3PaletteCd = v;
+        const pal = util.DASH_WIDGET_COLOR_SETS[v] || util.PALETTE;
+        colRows.forEach((r, i) => { r.color = pal[i % pal.length]; });
+      },
+    });
+    /* cfActivePalette2 — 팔레트2 배열(항목 단위 색상 — 파이/도넛에서 사용) */
+    const cfActivePalette2 = computed(() => util.DASH_WIDGET_COLOR_SETS[cfColorPaletteCd2.value] || util.PALETTE);
 
     /* fnBuildOptionForType — 시뮬 값·색상은 그대로 두고 차트유형만 바꿔 옵션을 만든다.
        왼쪽(실제 저장될 chartTypeCd) 미리보기와 오른쪽(비교용, 저장과 무관) 미리보기가
@@ -577,6 +592,9 @@ window.CmDashboardItemMng = {
       const cats = cfSimColNms.value;
       const names = cfSimSeriesNms.value;
       const colorOf = (i) => (seriesRows[i] && seriesRows[i].color) || cfActivePalette.value[i % cfActivePalette.value.length];
+      /* colorOf2 — 항목(3레벨) 단위 색. colRows[i].color 가 있으면 그것을(수동 지정 우선),
+         없으면 팔레트2를 순번대로 돌려 쓴다(colorOf 와 같은 우선순위 규칙, 축만 다르다) */
+      const colorOf2 = (i) => (colRows[i] && colRows[i].color) || cfActivePalette2.value[i % cfActivePalette2.value.length];
       const at = (si, ci) => {
         const v = simVals[si] ? simVals[si][ci] : null;
         return v === null || v === '' || v === undefined ? 0 : Number(v) || 0;
@@ -584,33 +602,53 @@ window.CmDashboardItemMng = {
       if (!cats.length) return {};
 
       if (type === 'pie' || type === 'doughnut') {
+        /* 파이는 조각(=항목,3레벨)마다 색이 필요한데 팔레트1/시리즈색은 시리즈(2레벨) 기준이라
+           그대로 못 쓴다(2026-08-21) — 팔레트2(항목 색상 순서)를 쓴다. colRows[i].color 가
+           직접 지정돼 있으면 그것을 우선한다(colorOf 와 동일한 규칙) */
         return {
           tooltip: { trigger: 'item' },
           legend: { bottom: 0, type: 'scroll' },
+          color: cats.map((c, ci) => colorOf2(ci)),
           series: [{
             type: 'pie',
             radius: type === 'doughnut' ? ['40%', '65%'] : '60%',
             center: ['50%', '45%'],
-            data: cats.map((c, ci) => ({ name: c, value: at(0, ci) })),
+            data: cats.map((c, ci) => ({ name: c, value: at(0, ci), itemStyle: { color: colorOf2(ci) } })),
           }],
         };
       }
       const isArea = type === 'area';
-      const base = (isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type);
+      const isStacked = type === 'stackedBar';   /* 카테고리당 막대 1개, 시리즈가 그 안에 쌓여 분포를 보여준다 */
+      const base = isStacked ? 'bar' : ((isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type));
+      const series = names.map((nm, si) => ({
+        name: nm,
+        type: base === 'scatter' ? 'scatter' : base,
+        stack: isStacked ? 'total' : undefined,
+        itemStyle: { color: colorOf(si) },
+        areaStyle: isArea ? {} : undefined,
+        smooth: base === 'line',
+        data: cats.map((c, ci) => at(si, ci)),
+      }));
+      if (isStacked) {
+        /* 누적막대 위 합계 마커 — 팔레트1(시리즈색)은 이미 각 구간에 쓰이므로, 팔레트2(항목색)를
+           "막대 전체(=항목) 합계" 마커에 얹어 항목별 구분을 추가로 보여준다(2026-08-21) */
+        const totalAt = (ci) => names.reduce((sum, nm, si) => sum + at(si, ci), 0);
+        series.push({
+          name: '합계', type: 'scatter', z: 10, symbolSize: 9, tooltip: { show: false },
+          label: { show: true, position: 'top', fontWeight: 700, color: '#334155',
+            formatter: (p) => coUtil.cofFmt(p.value) },
+          data: cats.map((c, ci) => ({ value: totalAt(ci), itemStyle: { color: colorOf2(ci) } })),
+        });
+      }
       return {
         tooltip: { trigger: 'axis' },
-        legend: { bottom: 0, type: 'scroll' },
+        /* 합계 마커는 범례에서 뺀다(names 만 나열) — 팔레트2 다색이라 범례 스와치 1개로 표현이
+           안 되고, 이미 마커 라벨로 값이 보이므로 범례 항목으로는 불필요하다 */
+        legend: { bottom: 0, type: 'scroll', data: isStacked ? names : undefined },
         grid: { left: 48, right: 16, top: 20, bottom: 48 },
         xAxis: { type: 'category', data: cats },
         yAxis: { type: 'value' },
-        series: names.map((nm, si) => ({
-          name: nm,
-          type: base === 'scatter' ? 'scatter' : base,
-          itemStyle: { color: colorOf(si) },
-          areaStyle: isArea ? {} : undefined,
-          smooth: base === 'line',
-          data: cats.map((c, ci) => at(si, ci)),
-        })),
+        series,
       };
     };
     const cfAutoOption = computed(() => fnBuildOptionForType(panelForm.chartTypeCd || 'bar'));
@@ -1024,10 +1062,12 @@ window.CmDashboardItemMng = {
         visible: (form) => form.widgetTypeCd === 'CHART',
         options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
       /* 색상 팔레트는 optionJson 안에 얹어서 저장하는 파생값이라(폼 필드 직접 바인딩 불가)
-         slot 으로 뺀다 — cfColorPaletteCd computed(get/set) 가 실제 저장을 담당 */
-      { key: '_colorPaletteCd', label: '색상 팔레트', type: 'slot', name: 'colorPaletteCd',
+         slot 으로 뺀다 — cfColorPaletteCd/cfColorPaletteCd2 computed(get/set) 가 실제 저장을 담당.
+         한 슬롯 안에 팔레트1(시리즈용)·팔레트2(항목용, 파이/도넛)를 나란히 둔다 — cols=3 표 준을
+         지키면서 "팔레트 우측에 팔레트2" 요청을 한 칸 안에서 충족한다(2026-08-21) */
+      { key: '_colorPaletteCd', label: '색상 팔레트 (1시리즈/2항목)', type: 'slot', name: 'colorPaletteCd',
         visible: (form) => form.widgetTypeCd === 'CHART',
-        hint: '차트 시리즈 색상 순서 — 기본값 01. 기본' },
+        hint: '1=막대·꺾은선 등 시리즈 색상 순서(기본값 01. 기본), 2=파이·도넛 등 항목 색상 순서(기본값 02. 비비드)' },
       { key: 'seriesOrientCd', label: '시리즈 배치 방향', type: 'select',
         options: () => [
           { value: 'ROW', label: '행 (시리즈=행 · 항목=열, 기본)' },
@@ -1098,6 +1138,7 @@ window.CmDashboardItemMng = {
       simVals, simOrient, fnSimFit, fnSimRandom, fnSimClear, fnSimRowTotal, fnSimColTotal, fnSimGrandTotal,
       fnToggleColAuto, fnToggleColEditable, fnColAuto, fnColLocked, fnPanelOf,
       cfSimSeriesNms, cfSimColNms, cfPreviewOption, cfColorPaletteCd, cfActivePalette,
+      cfColorPaletteCd2, cfActivePalette2,
       compareState, cfCompareOption,
       /* 소스보기 */
       srcState, SRC_TABS, fnSrcApply, fnSrcReset,
@@ -1240,11 +1281,17 @@ window.CmDashboardItemMng = {
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
         :cols="3" :show-actions="false" :readonly="cfDtlMode" compact plain-readonly>
 
-        <!-- ===== ■. 색상 팔레트 (optionJson.colorPaletteCd 로 저장) ========= -->
+        <!-- ===== ■. 색상 팔레트 1(시리즈) + 2(항목) — optionJson.colorPaletteCd/colorPaletteCd2 -->
         <template #colorPaletteCd>
-          <select class="form-control" v-model="cfColorPaletteCd" :disabled="cfDtlMode">
-            <option v-for="o in util.DASH_WIDGET_COLOR_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <select class="form-control" v-model="cfColorPaletteCd" :disabled="cfDtlMode" style="flex:1;min-width:0;">
+              <option v-for="o in util.DASH_WIDGET_COLOR_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+            <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">2</span>
+            <select class="form-control" v-model="cfColorPaletteCd2" :disabled="cfDtlMode" style="flex:1;min-width:0;">
+              <option v-for="o in util.DASH_WIDGET_COLOR_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+          </div>
         </template>
 
         <!-- ===== ■. 2레벨 시리즈 정의 (행 그리드) ========================= -->
@@ -1321,6 +1368,7 @@ window.CmDashboardItemMng = {
                   <th style="width:44px;background:#eaf2ff;">순서</th>
                   <th style="width:190px;background:#eaf2ff;">코드 (cd)</th>
                   <th style="background:#eaf2ff;">항목명 (name)</th>
+                  <th style="width:150px;background:#eaf2ff;">색상 (color, 파이용)</th>
                   <th style="width:230px;background:#eaf2ff;">고유 item_key 미리보기</th>
                   <th style="width:60px;background:#eaf2ff;">관리</th>
                 </tr>
@@ -1342,6 +1390,14 @@ window.CmDashboardItemMng = {
                       placeholder="예: M01 (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
                   </td>
                   <td><input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 1월" /></td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:4px;">
+                      <input type="color" v-model="r.color" :disabled="cfDtlMode"
+                        style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
+                      <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
+                        placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
+                    </div>
+                  </td>
                   <td style="font-family:monospace;font-size:11px;color:#64748b;">
                     {{ fnPreviewCode(seriesRows.length ? (seriesRows[0].cd || seriesRows[0].name) : '', r.cd || r.name) }}</td>
                   <td style="text-align:center;white-space:nowrap;">

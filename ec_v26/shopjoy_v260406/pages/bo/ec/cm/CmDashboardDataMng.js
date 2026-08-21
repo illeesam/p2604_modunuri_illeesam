@@ -22,8 +22,18 @@ window.CmDashboardDataMng = {
 
     const { ref, reactive, computed, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
+    const util = window.cmDashWidgetUtil;
 
     const MAX_COLS = 9;   /* 백엔드 col1~col9 와 맞춘다 (CmDashboardDataGridService.MAX_COLS) */
+
+    /* chartPreviewSel — 차트 카드 [미리보기]용 차트유형·색상 선택 오버라이드(dashboardItemId 별).
+       화면에서만 바꿔보는 용도라 저장하지 않는다 — 실제 차트유형·색상은 [대시보드 항목관리]에서
+       정의한다. 지정 안 하면 항목관리에서 정한 chart.chartTypeCd / 기본 팔레트를 그대로 쓴다 */
+    const chartPreviewSel = reactive({});
+    const fnPreviewSel = (chart) => chartPreviewSel[chart.dashboardItemId]
+      || (chartPreviewSel[chart.dashboardItemId] = { chartTypeCd: chart.chartTypeCd || 'bar',
+        colorPaletteCd: 'DASH_WIDGET_COLORS_01',    /* 1=시리즈(막대/꺾은선 구간) 색상 순서 */
+        colorPaletteCd2: 'DASH_WIDGET_COLORS_02' }); /* 2=항목(파이 조각/누적막대 합계마커) 색상 순서 */
 
     const dashboards  = reactive([]);   /* 대시보드 선택 목록 (좌측) */
     const dashItems   = reactive([]);   /* 선택 대시보드의 위젯항목(1레벨=차트) 목록 (우측) */
@@ -250,27 +260,6 @@ window.CmDashboardDataMng = {
         });
     };
 
-    /* fnMergeChartsEmptyOnly — [빈값 시뮬] 전용. 이미 값이 있는 칸은 그대로 두고
-       빈 칸(''/null/undefined)만 서버가 계산해 준 값으로 채운다 */
-    const fnMergeChartsEmptyOnly = (key, list) => {
-      (list || [])
-        .filter(c => (c.inputOpts || DEFAULT_INPUT_OPTS) === key)
-        .map(fnNormalizeChart)
-        .forEach(incoming => {
-          const idx = charts.findIndex(c => c.dashboardItemId === incoming.dashboardItemId);
-          if (idx < 0) { charts.push(incoming); return; }   /* 처음 로드되는 차트는 통째 반영 */
-          const cur = charts[idx];
-          incoming.rows.forEach((newRow, ri) => {
-            const curRow = cur.rows[ri];
-            if (!curRow) { cur.rows[ri] = newRow; return; }
-            newRow.vals.forEach((v, ci) => {
-              const existing = curRow.vals[ci];
-              if (existing === '' || existing == null) curRow.vals[ci] = v;
-            });
-          });
-        });
-    };
-
     /* handleSearchGroup — 그룹 하나 조회 (그룹 미니바 [조회]) */
     const handleSearchGroup = async (key) => {
       const params = fnGroupCond(key);
@@ -300,23 +289,18 @@ window.CmDashboardDataMng = {
       fnEnsureGroupsFor(dashItems);   /* 템플릿이 바로 참조하므로 초기화 직후 다시 채워둔다 */
     };
 
-    /* handleSimulateGroup — 그룹 하나 자동 채우기.
+    /* handleSimulateGroup — 그룹 하나 자동 채우기. 서버를 왕복하지 않는다 — 이미 화면에
+       로드된 차트(조회를 마친 것)에 바로 랜덤값을 채워 넣을 뿐이라 DB 조회가 필요 없다
+       (2026-08-21, 이전에는 매번 simulateDataGrid API 를 호출해 불필요하게 DB 를 다시
+       읽었고, 그 응답 객체를 통째로 덮어쓰는 과정에서 화면에서만 바꾼 시리즈표시방법이
+       저장된 값으로 되돌아가는 버그도 함께 있었다 — 서버 왕복을 없애며 같이 해소됨).
        emptyOnly=false(모든값 시뮬) 은 기존 입력값도 덮어쓴다 / true(빈값 시뮬) 은 빈 칸만 채운다 */
-    const handleSimulateGroup = async (key, emptyOnly) => {
-      const params = fnGroupCond(key);
-      if (!params) return;
-      groupState[key].loading = true;
-      try {
-        const res = await boApiSvc.cmDashboard.simulateDataGrid(params, '대시보드데이타관리', emptyOnly ? '빈값시뮬레이션' : '모든값시뮬레이션');
-        const list = res.data?.data?.charts;
-        if (emptyOnly) fnMergeChartsEmptyOnly(key, list); else fnMergeCharts(key, list);
-        groupState[key].searched = true;
-        showToast('값을 자동 생성했습니다. 확인 후 [저장]을 눌러주세요.', 'success');
-      } catch (err) {
-        showToast(err.response?.data?.message || err.message || '시뮬레이션 중 오류가 발생했습니다.', 'error', 0);
-      } finally {
-        groupState[key].loading = false;
-      }
+    const handleSimulateGroup = (key, emptyOnly) => {
+      const group = cfGroups.value.find(g => g.key === key);
+      const loaded = group ? group.charts.filter(c => !c._notLoaded) : [];
+      if (!loaded.length) { showToast('먼저 [조회]를 눌러주세요.', 'error'); return; }
+      loaded.forEach(c => fnSimulateChart(c, emptyOnly));
+      showToast('값을 자동 생성했습니다. 확인 후 [저장]을 눌러주세요.', 'success');
     };
 
     /* handleClearGroupValues — 그룹 하나 [값초기화]. 서버 호출 없이 화면 입력값만 지운다(저장 전) */
@@ -330,49 +314,26 @@ window.CmDashboardDataMng = {
       showToast('값을 초기화했습니다.', 'success');
     };
 
-    /* handleSimulateAllGroups — 체크된 모든 위젯을 그룹별 조건으로 순회 자동채움 (위젯항목목록 [전체시뮬레이션]) */
-    const handleSimulateAllGroups = async () => {
+    /* handleSimulateAllGroups — 체크된 모든 위젯을 순회 자동채움 (위젯항목목록 [전체시뮬레이션]).
+       이미 로드된(=조회를 마친) 차트만 채운다 — 서버 왕복 없음 */
+    const handleSimulateAllGroups = () => {
       if (!cfGroups.value.length) { showToast('체크된 위젯이 없습니다.', 'error'); return; }
-      for (const g of cfGroups.value) {
-        const params = fnGroupCond(g.key);
-        if (!params) continue;
-        groupState[g.key].loading = true;
-        try {
-          const res = await boApiSvc.cmDashboard.simulateDataGrid(params, '대시보드데이타관리', '전체시뮬레이션');
-          fnMergeCharts(g.key, res.data?.data?.charts);
-          groupState[g.key].searched = true;
-        } catch (err) {
-          showToast((err.response?.data?.message || err.message || '시뮬레이션 중 오류가 발생했습니다.') + ' (' + g.key + ')', 'error', 0);
-        } finally {
-          groupState[g.key].loading = false;
-        }
-      }
+      let any = false;
+      cfGroups.value.forEach(g => {
+        const loaded = g.charts.filter(c => !c._notLoaded);
+        if (!loaded.length) return;
+        any = true;
+        loaded.forEach(c => fnSimulateChart(c, false));
+      });
+      if (!any) { showToast('먼저 [조회]를 눌러주세요.', 'error'); return; }
       showToast('전체 항목 값을 자동 생성했습니다. 확인 후 그룹별 [저장]을 눌러주세요.', 'success');
     };
 
-    /* handleSimulateOne — 차트 카드 제목 우측 [시뮬레이션]. row.inputOpts 로 소속 그룹의
-       조회조건을 써서 서버가 계산해 준 값 중 이 차트(row) 하나만 골라 반영한다 —
-       다른 차트의 미저장 입력은 건드리지 않는다. */
-    const handleSimulateOne = async (row) => {
-      const key = row.inputOpts || DEFAULT_INPUT_OPTS;
-      const params = fnGroupCond(key);
-      if (!params) return;
-      groupState[key].loading = true;
-      try {
-        const res = await boApiSvc.cmDashboard.simulateDataGrid(params, '대시보드데이타관리', '시뮬레이션');
-        const list = res.data?.data?.charts || [];
-        const found = list.find(c => c.dashboardItemId === row.dashboardItemId || c.itemKey === row.itemKey);
-        if (!found) { showToast('해당 항목의 그리드를 찾을 수 없습니다.', 'error'); return; }
-        const applied = fnNormalizeChart(found);
-        const idx = charts.findIndex(c => c.dashboardItemId === applied.dashboardItemId);
-        if (idx >= 0) charts.splice(idx, 1, applied); else charts.push(applied);
-        groupState[key].searched = true;
-        showToast('[' + row.itemNm + '] 값을 자동 생성했습니다. 확인 후 [저장]을 눌러주세요.', 'success');
-      } catch (err) {
-        showToast(err.response?.data?.message || err.message || '시뮬레이션 중 오류가 발생했습니다.', 'error', 0);
-      } finally {
-        groupState[key].loading = false;
-      }
+    /* handleSimulateOne — 차트 카드 제목 우측 [시뮬레이션]. 이미 로드된 이 차트 하나에만
+       바로 랜덤값을 채운다 — 다른 차트의 미저장 입력은 건드리지 않는다. 서버 왕복 없음 */
+    const handleSimulateOne = (row) => {
+      fnSimulateChart(row, false);
+      showToast('[' + row.itemNm + '] 값을 자동 생성했습니다. 확인 후 [저장]을 눌러주세요.', 'success');
     };
 
     /* handleSaveOrient — 차트 카드의 시리즈표시방법(행/열)만 저장. 부분 필드만 보내면 서버가
@@ -565,6 +526,37 @@ window.CmDashboardDataMng = {
       return chart.colsFixed ? (last + 1) : Math.min(last + 2, MAX_COLS);
     };
 
+    /* fnRandomVals — 그럴듯한 숫자를 그 자리에서 만든다(서버 simulate() 와 같은 로직:
+       시리즈행마다 기준값 50~500 을 하나 잡고 0.6~1.4배 지터). 이미 화면에 올라온 그리드에
+       바로 채워 넣을 뿐이라 DB 조회가 전혀 필요 없다 — [시뮬레이션]이 매번 서버를 왕복하던
+       문제(2026-08-21)를 없앤다 */
+    const fnRandomVals = (colCount) => {
+      const base = 50 + Math.floor(Math.random() * 451);
+      const out = [];
+      for (let i = 0; i < colCount; i++) out.push(Math.round(base * (0.6 + Math.random() * 0.8)));
+      return out;
+    };
+
+    /* fnSimulateChart — 화면에 이미 로드된 차트 하나에 랜덤값을 즉시 채운다(순수 클라이언트).
+       emptyOnly=true 면 빈 칸만, false 면 이 차트의 편집 가능한 칸 전부를 덮어쓴다.
+       자동수집(cellAutoCollect) 칸과 수정불가(cellEditable=false) 칸은 시뮬레이션도 건드리지 않는다 —
+       배치가 채우거나 잠긴 값이라 화면에서 손댈 수 없는 칸이기 때문 */
+    const fnSimulateChart = (chart, emptyOnly) => {
+      const colCount = fnColCount(chart);
+      (chart.rows || []).forEach((row) => {
+        const rnd = fnRandomVals(colCount);
+        for (let i = 0; i < colCount; i++) {
+          if (row.cellAutoCollect && row.cellAutoCollect[i]) continue;
+          if (row.cellEditable && row.cellEditable[i] === false) continue;
+          if (emptyOnly) {
+            const existing = row.vals[i];
+            if (existing !== '' && existing != null) continue;
+          }
+          row.vals[i] = rnd[i];
+        }
+      });
+    };
+
     /* fnColCountRaw — colNms 중 실제 값이 있는 순수 개수(여백 +1 없음). 전치(transpose) 계산용 */
     const fnColCountRaw = (chart) => {
       let last = -1;
@@ -657,36 +649,73 @@ window.CmDashboardDataMng = {
       const cats = (chart.colNms || []).slice(0, fnColCount(chart));
       if (!cats.length) return {};
       const at = (ri, ci) => { const v = Number(chart.rows[ri].vals[ci]); return Number.isNaN(v) ? 0 : v; };
-      const palette = (window.cmDashWidgetUtil && window.cmDashWidgetUtil.PALETTE) || ['#e8587a', '#3b82f6', '#16a34a', '#f59e0b', '#8b5cf6'];
-      const type = chart.chartTypeCd || 'bar';
+      const sel = fnPreviewSel(chart);
+      const fallback = ['#e8587a', '#3b82f6', '#16a34a', '#f59e0b', '#8b5cf6'];
+      /* palette=시리즈(막대 구간) 색, palette2=항목(파이 조각/누적막대 합계마커) 색 —
+         둘을 따로 둔다(2026-08-21, CmDashboardItemMng.js 의 팔레트1/2 구조와 동일하게 맞춤) */
+      const palette  = (util && util.DASH_WIDGET_COLOR_SETS[sel.colorPaletteCd])  || (util && util.PALETTE) || fallback;
+      const palette2 = (util && util.DASH_WIDGET_COLOR_SETS[sel.colorPaletteCd2]) || (util && util.PALETTE) || fallback;
+      const type = sel.chartTypeCd || 'bar';
       if (type === 'pie' || type === 'doughnut') {
+        /* 파이는 조각(=항목)마다 색이 필요해 시리즈 팔레트를 그대로 못 쓴다 — 항목 팔레트(2)를
+           조각 순번(ci)으로 돌려 매긴다(안 그러면 팔레트를 바꿔도 파이만 그대로인 버그가 났다, 2026-08-21) */
         return {
           tooltip: { trigger: 'item' },
           legend: { bottom: 0, type: 'scroll' },
+          color: cats.map((c, ci) => palette2[ci % palette2.length]),
           series: [{
             type: 'pie',
             radius: type === 'doughnut' ? ['40%', '65%'] : '60%',
             center: ['50%', '45%'],
-            data: cats.map((c, ci) => ({ name: c, value: at(0, ci) })),
+            /* 라벨에 이름뿐 아니라 값도 같이 보여준다(2026-08-21) */
+            label: { show: true, formatter: (p) => p.name + '\n' + coUtil.cofFmt(p.value) },
+            data: cats.map((c, ci) => ({
+              name: c, value: at(0, ci),
+              itemStyle: { color: palette2[ci % palette2.length] },
+            })),
           }],
         };
       }
       const isArea = type === 'area';
-      const base = (isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type);
-      return {
-        tooltip: { trigger: 'axis' },
-        legend: { bottom: 0, type: 'scroll' },
-        grid: { left: 48, right: 16, top: 20, bottom: 48 },
-        xAxis: { type: 'category', data: cats },
-        yAxis: { type: 'value' },
-        series: (chart.rows || []).map((row, ri) => ({
-          name: row.seriesNm || '(단일)',
+      const isStacked = type === 'stackedBar';   /* 카테고리당 막대 1개, 시리즈가 그 안에 쌓여 분포를 보여준다 */
+      const base = isStacked ? 'bar' : ((isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type));
+      /* 라벨 — 누적막대는 구간 안(inside)에 시리즈명+값, 그 외(막대/꺾은선/영역/산점도)는
+         점·막대 위(top)에 값만. 값만 보여줘도 되는 자리(top)는 라벨이 길면 겹치므로 값만 표시(2026-08-21) */
+      const series = (chart.rows || []).map((row, ri) => {
+        const nm = row.seriesNm || '(단일)';
+        return {
+          name: nm,
           type: base === 'scatter' ? 'scatter' : base,
+          stack: isStacked ? 'total' : undefined,
           itemStyle: { color: palette[ri % palette.length] },
           areaStyle: isArea ? {} : undefined,
           smooth: base === 'line',
+          label: isStacked
+            ? { show: true, position: 'inside', fontSize: 10, color: '#fff', fontWeight: 700,
+                formatter: (p) => nm + '\n' + coUtil.cofFmt(p.value) }
+            : { show: true, position: 'top', fontSize: 10, color: '#334155',
+                formatter: (p) => coUtil.cofFmt(p.value) },
           data: cats.map((c, ci) => at(ri, ci)),
-        })),
+        };
+      });
+      if (isStacked) {
+        /* 누적막대 위 합계 마커 — 팔레트(시리즈색)는 이미 각 구간에 쓰이므로, 팔레트2(항목색)를
+           "막대 전체(=항목) 합계" 마커에 얹어 항목별 구분을 추가로 보여준다(2026-08-21) */
+        const totalAt = (ci) => (chart.rows || []).reduce((sum, row, ri) => sum + at(ri, ci), 0);
+        series.push({
+          name: '합계', type: 'scatter', z: 10, symbolSize: 9, tooltip: { show: false },
+          label: { show: true, position: 'top', fontWeight: 700, color: '#334155',
+            formatter: (p) => coUtil.cofFmt(p.value) },
+          data: cats.map((c, ci) => ({ value: totalAt(ci), itemStyle: { color: palette2[ci % palette2.length] } })),
+        });
+      }
+      return {
+        tooltip: { trigger: 'axis' },
+        legend: { bottom: 0, type: 'scroll', data: isStacked ? (chart.rows || []).map(r => r.seriesNm || '(단일)') : undefined },
+        grid: { left: 48, right: 16, top: 40, bottom: 48 },  /* 값 라벨이 막대/점 위에 뜨므로 여유를 더 둔다 */
+        xAxis: { type: 'category', data: cats },
+        yAxis: { type: 'value' },
+        series,
       };
     };
 
@@ -742,6 +771,7 @@ window.CmDashboardDataMng = {
       cfHasData, cfVisibleCharts, cfGroups, cfAnyGroupLoading, cfAnyGroupSaving,
       isDashItemChecked, cfAllDashItemsChecked, onToggleDashItemCheck, onToggleDashItemCheckAll,
       fnColCount, fnRowSum, fnColSum, fnGrandTotal, fnBuildChartOption, previewOpen, fnTogglePreview, fnGroupPreviewSetAll,
+      util, chartPreviewSel, fnPreviewSel,
       fnGroupPeriodLabel, fnGroupVendorNm, fnGroupReady, onOrientChange, fnAxisBg, fnAxisCodeColor,
       handleBtnAction, handleGridCellAction, handleSimulateOne, handleSaveOrient, fnCallbackModal,
     };
@@ -874,10 +904,22 @@ window.CmDashboardDataMng = {
               <span :style="'font-weight:700;font-size:12.5px;color:#1f4a73;white-space:nowrap;' + (chart.autoCollectYn === 'Y' ? 'margin-left:76px;' : '')">
                 {{ chart.itemNm }}
                 <span style="font-family:monospace;font-size:11px;color:#94a3b8;font-weight:400;">{{ chart.itemKey }}</span>
-                <span class="badge badge-blue">{{ chart.chartTypeCd || '-' }}</span>
               </span>
               <!-- 시뮬레이션부터 우측 정렬 -->
               <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+                <!-- 미리보기 전용 오버라이드 — 저장되는 값(chart.chartTypeCd)과 무관, 화면에서만 바꿔본다 -->
+                <select v-model="fnPreviewSel(chart).chartTypeCd" class="form-control"
+                  style="width:auto;padding:2px 6px;font-size:11px;min-height:24px;" title="미리보기 차트유형(저장 안 됨)">
+                  <option v-for="c in util.CHART_TYPES" :key="c.value" :value="c.value">{{ c.icon }} {{ c.label }}</option>
+                </select>
+                <select v-model="fnPreviewSel(chart).colorPaletteCd" class="form-control"
+                  style="width:auto;padding:2px 6px;font-size:11px;min-height:24px;" title="미리보기 색상 1=시리즈용(저장 안 됨)">
+                  <option v-for="c in util.DASH_WIDGET_COLOR_OPTIONS" :key="c.value" :value="c.value">{{ c.label }}</option>
+                </select>
+                <select v-model="fnPreviewSel(chart).colorPaletteCd2" class="form-control"
+                  style="width:auto;padding:2px 6px;font-size:11px;min-height:24px;" title="미리보기 색상 2=항목용(파이 조각/누적막대 합계, 저장 안 됨)">
+                  <option v-for="c in util.DASH_WIDGET_COLOR_OPTIONS" :key="c.value" :value="c.value">{{ c.label }}</option>
+                </select>
                 <button class="btn btn-sm" :disabled="groupState[group.key].loading"
                   style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-weight:700;"
                   @click="handleSimulateOne(chart)">🎲 시뮬레이션</button>

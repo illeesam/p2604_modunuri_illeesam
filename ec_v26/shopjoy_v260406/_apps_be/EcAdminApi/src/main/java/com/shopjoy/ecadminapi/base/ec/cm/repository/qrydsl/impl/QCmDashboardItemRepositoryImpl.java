@@ -48,7 +48,10 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
         if (entity.getAxisTypeCd() != null)          { update.set(cmDashboardItem.axisTypeCd,             entity.getAxisTypeCd());               changed.put("axisTypeCd", entity.getAxisTypeCd()); }
         if (entity.getChartTypeCd() != null)         { update.set(cmDashboardItem.chartTypeCd,            entity.getChartTypeCd());              changed.put("chartTypeCd", entity.getChartTypeCd()); }
         if (entity.getSeriesOrientCd() != null)      { update.set(cmDashboardItem.seriesOrientCd,         entity.getSeriesOrientCd());           changed.put("seriesOrientCd", entity.getSeriesOrientCd()); }
-        if (entity.getItemColor() != null)           { update.set(cmDashboardItem.itemColor,              entity.getItemColor());                changed.put("itemColor", entity.getItemColor()); }
+        if (entity.getLvl2Color() != null)           { update.set(cmDashboardItem.lvl2Color,              entity.getLvl2Color());                changed.put("lvl2Color", entity.getLvl2Color()); }
+        if (entity.getLvl3Color() != null)           { update.set(cmDashboardItem.lvl3Color,              entity.getLvl3Color());                changed.put("lvl3Color", entity.getLvl3Color()); }
+        if (entity.getLvl2PaletteCd() != null)       { update.set(cmDashboardItem.lvl2PaletteCd,          entity.getLvl2PaletteCd());            changed.put("lvl2PaletteCd", entity.getLvl2PaletteCd()); }
+        if (entity.getLvl3PaletteCd() != null)       { update.set(cmDashboardItem.lvl3PaletteCd,          entity.getLvl3PaletteCd());            changed.put("lvl3PaletteCd", entity.getLvl3PaletteCd()); }
         if (entity.getLvl1CodeGrp() != null)         { update.set(cmDashboardItem.lvl1CodeGrp,            entity.getLvl1CodeGrp());              changed.put("lvl1CodeGrp", entity.getLvl1CodeGrp()); }
         if (entity.getLvl2CodeGrp() != null)         { update.set(cmDashboardItem.lvl2CodeGrp,            entity.getLvl2CodeGrp());              changed.put("lvl2CodeGrp", entity.getLvl2CodeGrp()); }
         if (entity.getDataSourceCd() != null)        { update.set(cmDashboardItem.dataSourceCd,           entity.getDataSourceCd());             changed.put("dataSourceCd", entity.getDataSourceCd()); }

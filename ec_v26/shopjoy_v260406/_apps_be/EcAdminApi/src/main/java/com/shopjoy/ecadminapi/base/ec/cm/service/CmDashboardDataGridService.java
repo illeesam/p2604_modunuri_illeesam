@@ -133,7 +133,9 @@ public class CmDashboardDataGridService {
         m.put("itemKey", it.getItemKey());
         m.put("cd", it.getKeyNm());
         m.put("name", it.getItemNm());
-        m.put("color", it.getItemColor());
+        /* 시리즈(2레벨)는 lvl2_color, 항목(3레벨)은 lvl3_color — brief() 는 두 레벨 모두에서
+           호출되므로(attachChildren 의 series/cols 매핑) keyLevel 로 갈라 낸다(2026-08-21) */
+        m.put("color", Integer.valueOf(3).equals(it.getKeyLevel()) ? it.getLvl3Color() : it.getLvl2Color());
         return m;
     }
 
@@ -211,7 +213,7 @@ public class CmDashboardDataGridService {
                 String cOldCd = colOldCds.get(ci);
                 if (cOldCd != null)
                     renameByCode(exist, sCode + "-" + cOldCd, sCode + "-" + cCd, cCd);
-                putRow(exist, keep, sCode + "-" + cCd, cCd, str(cm.get("name")), null,
+                putRow(exist, keep, sCode + "-" + cCd, cCd, str(cm.get("name")), str(cm.get("color")),
                     "item", ch.getDashboardId(), se.getDashboardItemId(), sCode, (ci + 1) * 10, authId, now,
                     str(cm.get("autoCollectYn")), str(cm.get("editableYn")));
                 upItm++;
@@ -269,7 +271,10 @@ public class CmDashboardDataGridService {
         row.setDashboardId(dashboardId);
         row.setItemKey(itemCode);        /* item_key = 조립코드 (UNIQUE) */
         row.setItemNm(nvlStr(nm, ownCd));
-        row.setItemColor(blankToNull(color));
+        /* 색상은 레벨별로 다른 컬럼에 담는다 — 시리즈(2레벨)는 lvl2_color, 항목(3레벨)은
+           lvl3_color. 차트(1레벨) 행은 색을 안 쓴다(2026-08-21, item_color 단일 컬럼에서 분리) */
+        if ("series".equals(lvlCd)) row.setLvl2Color(blankToNull(color));
+        else if ("item".equals(lvlCd)) row.setLvl3Color(blankToNull(color));
         row.setItemTypeCd(lvlCd);
         row.setKeyLevel("chart".equals(lvlCd) ? 1 : ("series".equals(lvlCd) ? 2 : 3));
         row.setKeyNm(ownCd);
@@ -358,7 +363,8 @@ public class CmDashboardDataGridService {
         m.put("itemKey", it.getItemKey());
         m.put("itemCd", lastSeg(it.getItemKey()));
         m.put("itemNm", it.getItemNm());
-        m.put("itemColor", it.getItemColor());
+        m.put("lvl2Color", it.getLvl2Color());
+        m.put("lvl3Color", it.getLvl3Color());
         m.put("sortOrd", it.getSortOrd());
         m.put("useYn", it.getUseYn());
         /* 자동수집/편집가능여부는 2·3레벨(시리즈/항목)도 개별로 가질 수 있다 — 실제 배치가

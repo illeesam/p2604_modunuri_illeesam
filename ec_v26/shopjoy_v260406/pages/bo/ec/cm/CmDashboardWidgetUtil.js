@@ -20,12 +20,13 @@
 
   /* 차트종류 — item_type_cd = 'CHART' 일 때만 의미가 있다 */
   const CHART_TYPES = [
-    { value: 'bar',     label: '막대',   icon: '📊' },
-    { value: 'line',    label: '꺾은선', icon: '📈' },
-    { value: 'pie',     label: '파이',   icon: '🥧' },
-    { value: 'radar',   label: '레이더', icon: '🕸' },
-    { value: 'heatmap', label: '히트맵', icon: '🔥' },
-    { value: 'scatter', label: '산점도', icon: '⚡' },
+    { value: 'bar',        label: '막대',     icon: '📊' },
+    { value: 'stackedBar', label: '누적막대', icon: '📶' },  /* 카테고리당 막대 1개, 그 안에 시리즈별 값이 쌓여 분포를 보여준다 */
+    { value: 'line',       label: '꺾은선',   icon: '📈' },
+    { value: 'pie',        label: '파이',     icon: '🥧' },
+    { value: 'radar',      label: '레이더',   icon: '🕸' },
+    { value: 'heatmap',    label: '히트맵',   icon: '🔥' },
+    { value: 'scatter',    label: '산점도',   icon: '⚡' },
   ];
   const chartTypeIcon  = (t) => (CHART_TYPES.find(c => c.value === t) || {}).icon  || '📊';
   const chartTypeLabel = (t) => (CHART_TYPES.find(c => c.value === t) || {}).label || (t || '-');
@@ -171,8 +172,9 @@
       return { kind: 'chart', option: Object.assign(option, optOver) };
     }
 
-    /* bar / line / heatmap(→bar 대체) / scatter — 시리즈 자동 감지 */
+    /* bar / stackedBar / line / heatmap(→bar 대체) / scatter — 시리즈 자동 감지 */
     const seriesNos = _detectSeries(rows);
+    const isStacked = type === 'stackedBar';
     const echType   = type === 'line' ? 'line' : type === 'scatter' ? 'scatter' : 'bar';
     const series = seriesNos.map((k, i) => {
       const cfg = seriesArr[i] || {};
@@ -182,6 +184,7 @@
         data: rows.map(r => r['col' + k + 'Num'] || 0),
         itemStyle: { color: cfg.color || PALETTE[i % PALETTE.length] },
       };
+      if (isStacked) s.stack = 'total';   /* 같은 stack 이름끼리 카테고리당 막대 하나로 쌓인다 */
       if (s.type === 'line') { s.smooth = true; s.symbolSize = 4; }
       if (s.type === 'bar')  { s.barMaxWidth = 18; }
       return s;
