@@ -167,13 +167,15 @@ window.CmDashboardItemMng = {
         const res = await boApiSvc.cmDashboard.getItemTree(
           { dashboardId: dashState.selectedId }, '대시보드항목관리', '항목트리조회');
         treeRows.splice(0, treeRows.length, ...(res.data?.data || []));
+        fnTreeCollapseAll();   /* 기본적으로 접힌 상태로 시작(2026-08-21) — 필요하면 [전체펼치기] */
       } catch (err) {
         treeRows.splice(0, treeRows.length);
         console.warn('[항목 트리 조회 오류]', err);
       }
     };
 
-    /* fnAttachChildCounts — treeRows(전체 레벨)로 각 차트(panels 행)에 시리즈개수·데이타열개수를 매긴다.
+    /* fnAttachChildCounts — treeRows(전체 레벨)로 각 차트(panels 행 + 트리의 1레벨 노드)에
+       시리즈개수(행개수)·데이타열개수(열개수)를 매긴다.
        데이타열개수는 시리즈끼리 항목 1벌을 공유하므로 첫 시리즈의 3레벨 자식 수를 쓴다
        (데이터관리 그리드의 열 개수와 같은 규칙). 별도 API 호출 없이 이미 받은 트리로 계산한다. */
     const fnAttachChildCounts = () => {
@@ -183,6 +185,14 @@ window.CmDashboardItemMng = {
         const sers = byParent[p.dashboardItemId] || [];
         p._seriesCnt = sers.length;
         p._colCnt = sers.length ? (byParent[sers[0].dashboardItemId] || []).length : 0;
+      });
+      /* 트리 목록의 1레벨(차트) 노드도 같은 규칙으로 표시 — 트리 화면(레벨/항목명/코드/...)에서도
+         목록 화면처럼 행개수·열개수·조회조건을 바로 볼 수 있게(2026-08-21) */
+      treeRows.forEach(n => {
+        if (n.lvl !== 1) return;
+        const sers = byParent[n.dashboardItemId] || [];
+        n._seriesCnt = sers.length;
+        n._colCnt = sers.length ? (byParent[sers[0].dashboardItemId] || []).length : 0;
       });
     };
 
@@ -289,8 +299,10 @@ window.CmDashboardItemMng = {
         let syncMsg = '';
         if (savedId) {
           const sres = await boApiSvc.cmDashboard.syncItemChildren(savedId, {
-            series: seriesRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color })),
-            cols:   colRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name })),
+            series: seriesRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name, color: r.color,
+              autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
+            cols:   colRows.map(r => ({ dashboardItemId: r.dashboardItemId, cd: r.cd, name: r.name,
+              autoCollectYn: r.autoCollectYn || 'N', editableYn: r.editableYn || 'Y' })),
           }, '대시보드항목관리', '하위행동기화');
           const d = sres.data?.data || {};
           if (d.deletedRows) { syncMsg = ` (삭제 ${d.deletedRows}행, 값 ${d.deletedData || 0}건 정리)`; }
@@ -338,7 +350,8 @@ window.CmDashboardItemMng = {
       .filter(n => n.lvl === 2 && n.parentDashboardItemId === chartId)
       /* dashboardItemId 를 들고 다녀야 cd(키명)를 바꿔도 서버가 같은 행으로 알아본다
          — 없으면 "사라진 행" 으로 보여 붙어있던 데이터까지 지워진다 */
-      .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: n.itemColor || '' }));
+      .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: n.itemColor || '',
+        autoCollectYn: n.autoCollectYn || 'N', editableYn: n.editableYn || 'Y' }));
 
     /* fnColsFromTree — 항목 행(3레벨). 열 정의는 시리즈마다 같으므로 첫 시리즈 것을 쓴다 */
     const fnColsFromTree = (chartId) => {
@@ -346,7 +359,8 @@ window.CmDashboardItemMng = {
       if (!first) return [];
       return treeRows
         .filter(n => n.lvl === 3 && n.parentDashboardItemId === first.dashboardItemId)
-        .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: '' }));
+        .map(n => ({ dashboardItemId: n.dashboardItemId, cd: n.itemCd || '', name: n.itemNm || '', color: '',
+          autoCollectYn: n.autoCollectYn || 'N', editableYn: n.editableYn || 'Y' }));
     };
 
     /* fnSyncFormToRows — 정의 행(없으면 JSON) → 편집 그리드. 항목을 새로 열 때마다 호출 */
@@ -394,8 +408,8 @@ window.CmDashboardItemMng = {
       if (opt && !String(row.name || '').trim()) row.name = opt.codeLabel;
     };
 
-    const fnAddSeriesRow = () => seriesRows.push({ cd: '', name: '', color: '' });
-    const fnAddColRow    = () => colRows.push({ cd: '', name: '', color: '' });
+    const fnAddSeriesRow = () => seriesRows.push({ cd: '', name: '', color: '', autoCollectYn: 'N', editableYn: 'Y' });
+    const fnAddColRow    = () => colRows.push({ cd: '', name: '', color: '', autoCollectYn: 'N', editableYn: 'Y' });
     const fnDelSeriesRow = (i) => seriesRows.splice(i, 1);
     const fnDelColRow    = (i) => colRows.splice(i, 1);
 
@@ -427,6 +441,11 @@ window.CmDashboardItemMng = {
        simVals[시리즈index][항목index] 로 들고 있고, 행/열이 늘거나 줄면 그때그때 맞춰준다. */
     const simVals = reactive([]);
 
+    /* simOrient — 시뮬레이션 그리드 표시방향(미리보기 전용, 저장 안 함). simVals 는 항상
+       [시리즈idx][항목idx] 로 저장하고, ROW/COL 은 화면에 어느 축을 행/열로 그릴지만 바꾼다
+       (실제 구조는 안 건드리므로 물리적 전치 없이 v-for 순서만 바꿔서 렌더) */
+    const simOrient = ref('ROW');   /* ROW: 시리즈=행·항목=열(기본) / COL: 항목=행·시리즈=열 */
+
     /* fnSimFit — simVals 를 현재 시리즈/항목 수에 맞춰 늘리거나 줄인다 */
     const fnSimFit = () => {
       const sn = Math.max(seriesRows.length, 1);
@@ -452,6 +471,41 @@ window.CmDashboardItemMng = {
     };
 
     const fnSimClear = () => { fnSimFit(); simVals.forEach(r => r.fill(null)); fnSrcRegen(); };
+
+    /* fnSimRowTotal/fnSimColTotal/fnSimGrandTotal — simVals[시리즈idx][항목idx] 합계.
+       simOrient 는 화면 배치만 바꿀 뿐 저장 배열은 항상 [시리즈][항목] 이므로 합계 계산은
+       방향과 무관하게 동일 인덱스로 한다 */
+    const fnSimRowTotal = (si) => {
+      let sum = 0;
+      (simVals[si] || []).forEach(v => { const n = Number(v); if (!Number.isNaN(n)) sum += n; });
+      return coUtil.cofFmt(sum);
+    };
+    const fnSimColTotal = (ci) => {
+      let sum = 0;
+      simVals.forEach(row => { const n = Number(row[ci]); if (!Number.isNaN(n)) sum += n; });
+      return coUtil.cofFmt(sum);
+    };
+    const fnSimGrandTotal = () => {
+      let sum = 0;
+      simVals.forEach(row => row.forEach(v => { const n = Number(v); if (!Number.isNaN(n)) sum += n; }));
+      return coUtil.cofFmt(sum);
+    };
+
+    /* fnToggleColAuto/fnToggleColEditable — 시뮬레이션 그리드의 항목(열) 머리글에서 클릭으로
+       자동수집/수정가능 여부를 전환한다. colRows 는 실제 3레벨 정의행 편집 대상이라, [저장]
+       누르면 이 값이 syncItemChildren 로 그대로 넘어가 cm_dashboard_item 에 반영된다 */
+    const fnToggleColAuto = (ci) => {
+      const r = colRows[ci];
+      if (r) r.autoCollectYn = r.autoCollectYn === 'Y' ? 'N' : 'Y';
+    };
+    const fnToggleColEditable = (ci) => {
+      const r = colRows[ci];
+      if (r) r.editableYn = r.editableYn === 'N' ? 'Y' : 'N';
+    };
+    /* fnColAuto/fnColLocked — 템플릿 속성값 안에서 && 를 직접 쓰면 Vue 컴파일러가 크래시하는
+       프로젝트 규칙(CLAUDE.md) 때문에 함수로 분리 */
+    const fnColAuto   = (ci) => !!(colRows[ci] && colRows[ci].autoCollectYn === 'Y');
+    const fnColLocked = (ci) => !!(colRows[ci] && colRows[ci].editableYn === 'N');
 
     /* fnSyncSimToForm — 시뮬레이션 값 + 미리보기 스타일을 simJson 으로 직렬화 (저장 직전).
        값이 하나도 없고 스타일도 비면 null 로 둬서 빈 JSON 이 쌓이지 않게 한다 */
@@ -497,11 +551,32 @@ window.CmDashboardItemMng = {
 
     /* cfAutoOption — 입력값으로 자동 생성한 ECharts 옵션.
        pie 는 시리즈 개념이 없어 첫 행만 쓰고, 그 외(bar/line/area 등)는 시리즈별 계열로 그린다. */
-    const cfAutoOption = computed(() => {
+    /* cfColorPaletteCd — 색상 팔레트 선택값. DB 컬럼을 새로 안 만들고 optionJson(이미 있는
+       "ECharts 옵션 오버라이드 JSON" 필드) 안에 {colorPaletteCd:"DASH_WIDGET_COLORS_03"} 형태로
+       끼워 저장한다 — 다른 옵션 오버라이드 키는 그대로 보존(get 에서 파싱, set 에서 병합 후 재직렬화) */
+    const cfColorPaletteCd = computed({
+      get() {
+        if (!panelForm.optionJson) return 'DASH_WIDGET_COLORS_01';
+        try { return JSON.parse(panelForm.optionJson).colorPaletteCd || 'DASH_WIDGET_COLORS_01'; }
+        catch (e) { return 'DASH_WIDGET_COLORS_01'; }
+      },
+      set(v) {
+        let o = {};
+        if (panelForm.optionJson) { try { o = JSON.parse(panelForm.optionJson) || {}; } catch (e) { o = {}; } }
+        o.colorPaletteCd = v;
+        panelForm.optionJson = JSON.stringify(o);
+      },
+    });
+    /* cfActivePalette — 선택된 팔레트 배열(없으면 기존 기본 PALETTE 로 폴백) */
+    const cfActivePalette = computed(() => util.DASH_WIDGET_COLOR_SETS[cfColorPaletteCd.value] || util.PALETTE);
+
+    /* fnBuildOptionForType — 시뮬 값·색상은 그대로 두고 차트유형만 바꿔 옵션을 만든다.
+       왼쪽(실제 저장될 chartTypeCd) 미리보기와 오른쪽(비교용, 저장과 무관) 미리보기가
+       이 함수 하나를 공유한다 — 로직 중복 없이 type 파라미터만 다르게 넘긴다. */
+    const fnBuildOptionForType = (type) => {
       const cats = cfSimColNms.value;
       const names = cfSimSeriesNms.value;
-      const type = panelForm.chartTypeCd || 'bar';
-      const colorOf = (i) => (seriesRows[i] && seriesRows[i].color) || util.PALETTE[i % util.PALETTE.length];
+      const colorOf = (i) => (seriesRows[i] && seriesRows[i].color) || cfActivePalette.value[i % cfActivePalette.value.length];
       const at = (si, ci) => {
         const v = simVals[si] ? simVals[si][ci] : null;
         return v === null || v === '' || v === undefined ? 0 : Number(v) || 0;
@@ -537,7 +612,13 @@ window.CmDashboardItemMng = {
           data: cats.map((c, ci) => at(si, ci)),
         })),
       };
-    });
+    };
+    const cfAutoOption = computed(() => fnBuildOptionForType(panelForm.chartTypeCd || 'bar'));
+
+    /* compareState — 우측 "다른 차트유형으로 보기" 전용. panelForm.chartTypeCd(실제 저장값)
+       와 완전히 독립적이라 여기서 바꿔봐도 저장에는 전혀 영향이 없다 */
+    const compareState = reactive({ chartTypeCd: 'line' });
+    const cfCompareOption = computed(() => fnBuildOptionForType(compareState.chartTypeCd));
 
     /* ── 소스보기 (컴포넌트 · 스크립트 · 데이타 · 스타일) ─────────────────────
        구조/값을 그리드로 만지는 것과 별개로, 실제로 어떤 코드·옵션으로 그려지는지 보고
@@ -565,7 +646,7 @@ window.CmDashboardItemMng = {
     });
 
     /* 자동 반영 타이머 — 타이핑 중 매 글자마다 반영하면 화면이 튀므로 입력이 멎은 뒤 한 번만 적용 */
-    const SRC_AUTO_MS = 1000;
+    const SRC_AUTO_MS = 400;
     let _srcTimer = null;
 
     /* fnSrcTouch — 편집창 입력 시 호출. 실시간 적용이 꺼져 있으면 아무것도 하지 않는다 */
@@ -942,6 +1023,11 @@ window.CmDashboardItemMng = {
       { key: 'chartTypeCd', label: '차트종류', type: 'select',
         visible: (form) => form.widgetTypeCd === 'CHART',
         options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
+      /* 색상 팔레트는 optionJson 안에 얹어서 저장하는 파생값이라(폼 필드 직접 바인딩 불가)
+         slot 으로 뺀다 — cfColorPaletteCd computed(get/set) 가 실제 저장을 담당 */
+      { key: '_colorPaletteCd', label: '색상 팔레트', type: 'slot', name: 'colorPaletteCd',
+        visible: (form) => form.widgetTypeCd === 'CHART',
+        hint: '차트 시리즈 색상 순서 — 기본값 01. 기본' },
       { key: 'seriesOrientCd', label: '시리즈 배치 방향', type: 'select',
         options: () => [
           { value: 'ROW', label: '행 (시리즈=행 · 항목=열, 기본)' },
@@ -956,8 +1042,8 @@ window.CmDashboardItemMng = {
         options: () => [{ value: 'Y', label: '가능 (기본)' }, { value: 'N', label: '불가 (자동수집 값 보호)' }],
         hint: '아니오면 데이터관리 그리드에서 이 차트의 값 입력칸이 비활성화된다' },
       { key: 'inputOpts', label: '입력 기준조건 키', type: 'text', mono: true, colSpan: 2,
-        placeholder: '예: period_type_cd:M,site_id,yyyymmdd (비우면 이 기본값 적용)',
-        hint: 'cm_dashboard_data.data_opts 와 같은 key:value 콤마결합 형식 — 이 차트 값이 어느 차원 조합으로 찾아지는지' },
+        placeholder: '예: site_id,yyyymm (비우면 이 기본값 적용)',
+        hint: '콤마로 나눈 조회조건 토큰 목록 — 날짜 토큰명이 기간구분을 겸함: yyyymmdd(일별) / yyyymm(월별) / yyyy(연도별). 필요시 prod_id·vendor_id 추가' },
       { key: 'panelWidth', label: '항목 폭(열 span)', type: 'select',
         options: () => [1, 2, 3, 4, 5, 6].map(n => ({ value: n, label: n })) },
       { key: 'panelHeight', label: '항목 높이(행 span)', type: 'select',
@@ -1009,8 +1095,10 @@ window.CmDashboardItemMng = {
       fnAddSeriesRow, fnAddColRow, fnDelSeriesRow, fnDelColRow,
       onRowDragStart, onRowDragOver, onRowDragEnd,
       /* 시뮬레이션 값 · 미리보기 */
-      simVals, fnSimFit, fnSimRandom, fnSimClear, fnPanelOf,
-      cfSimSeriesNms, cfSimColNms, cfPreviewOption,
+      simVals, simOrient, fnSimFit, fnSimRandom, fnSimClear, fnSimRowTotal, fnSimColTotal, fnSimGrandTotal,
+      fnToggleColAuto, fnToggleColEditable, fnColAuto, fnColLocked, fnPanelOf,
+      cfSimSeriesNms, cfSimColNms, cfPreviewOption, cfColorPaletteCd, cfActivePalette,
+      compareState, cfCompareOption,
       /* 소스보기 */
       srcState, SRC_TABS, fnSrcApply, fnSrcReset,
       fnSrcTouch, onAutoApplyToggle, cfHlCode, cfSrcCode, onCodeScroll, hlRef,
@@ -1072,6 +1160,9 @@ window.CmDashboardItemMng = {
                 <th>항목명 (차트 · 시리즈 · 항목)</th>
                 <th style="width:120px;">코드</th>
                 <th style="width:210px;">고유 item_key</th>
+                <th style="width:64px;">행개수</th>
+                <th style="width:64px;">열개수</th>
+                <th style="width:150px;">조회조건(input_opts)</th>
                 <th style="width:96px;">관리</th>
               </tr>
             </thead>
@@ -1102,6 +1193,10 @@ window.CmDashboardItemMng = {
                 </td>
                 <td style="font-family:monospace;font-size:11px;color:#2563eb;">{{ node.itemCd }}</td>
                 <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ node.itemKey }}</td>
+                <td style="text-align:center;">{{ node.lvl === 1 ? ((node._seriesCnt || 0) + '개') : '' }}</td>
+                <td style="text-align:center;">{{ node.lvl === 1 ? ((node._colCnt || 0) + '개') : '' }}</td>
+                <td style="font-family:monospace;font-size:10.5px;color:#94a3b8;">
+                  {{ node.lvl === 1 ? (node.inputOpts || 'site_id,yyyymm') : '' }}</td>
                 <td style="text-align:center;">
                   <!-- 시리즈·항목은 차트 정의(JSON)의 일부라 개별 삭제가 아니라 차트 수정에서 다룬다 -->
                   <!-- 실제 항목 행을 넘겨야 한다 — id 만 넘기면 폼이 빈 값으로 열린다 -->
@@ -1145,6 +1240,13 @@ window.CmDashboardItemMng = {
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
         :cols="3" :show-actions="false" :readonly="cfDtlMode" compact plain-readonly>
 
+        <!-- ===== ■. 색상 팔레트 (optionJson.colorPaletteCd 로 저장) ========= -->
+        <template #colorPaletteCd>
+          <select class="form-control" v-model="cfColorPaletteCd" :disabled="cfDtlMode">
+            <option v-for="o in util.DASH_WIDGET_COLOR_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+          </select>
+        </template>
+
         <!-- ===== ■. 2레벨 시리즈 정의 (행 그리드) ========================= -->
         <template #seriesGrid>
           <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
@@ -1154,13 +1256,13 @@ window.CmDashboardItemMng = {
             <table class="bo-table bo-table-narrow">
               <thead>
                 <tr>
-                  <th style="width:28px;"></th>
-                  <th style="width:44px;">순서</th>
-                  <th style="width:190px;">코드 (cd)</th>
-                  <th>시리즈명 (name)</th>
-                  <th style="width:150px;">색상 (color)</th>
-                  <th style="width:230px;">고유 item_key 미리보기</th>
-                  <th style="width:60px;">관리</th>
+                  <th style="width:28px;background:#ffe8cf;"></th>
+                  <th style="width:44px;background:#ffe8cf;">순서</th>
+                  <th style="width:190px;background:#ffe8cf;">코드 (cd)</th>
+                  <th style="background:#ffe8cf;">시리즈명 (name)</th>
+                  <th style="width:150px;background:#ffe8cf;">색상 (color)</th>
+                  <th style="width:230px;background:#ffe8cf;">고유 item_key 미리보기</th>
+                  <th style="width:60px;background:#ffe8cf;">관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -1215,12 +1317,12 @@ window.CmDashboardItemMng = {
             <table class="bo-table bo-table-narrow">
               <thead>
                 <tr>
-                  <th style="width:28px;"></th>
-                  <th style="width:44px;">순서</th>
-                  <th style="width:190px;">코드 (cd)</th>
-                  <th>항목명 (name)</th>
-                  <th style="width:230px;">고유 item_key 미리보기</th>
-                  <th style="width:60px;">관리</th>
+                  <th style="width:28px;background:#eaf2ff;"></th>
+                  <th style="width:44px;background:#eaf2ff;">순서</th>
+                  <th style="width:190px;background:#eaf2ff;">코드 (cd)</th>
+                  <th style="background:#eaf2ff;">항목명 (name)</th>
+                  <th style="width:230px;background:#eaf2ff;">고유 item_key 미리보기</th>
+                  <th style="width:60px;background:#eaf2ff;">관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -1258,33 +1360,109 @@ window.CmDashboardItemMng = {
         <!-- ===== ■. 시뮬레이션 값 입력 (미저장 · 미리보기 전용) ============ -->
         <template #simGrid>
           <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-            <div style="padding:6px 8px;background:#fff7ed;border-bottom:1px solid #fed7aa;display:flex;align-items:center;gap:8px;">
+            <div style="padding:6px 8px;background:#fff7ed;border-bottom:1px solid #fed7aa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <span style="font-size:11.5px;color:#c2410c;">
                 여기 값은 <b>미리보기 전용</b>입니다 — 저장되지 않습니다. 실제 값 입력은 [대시보드 데이타관리].</span>
-              <span style="margin-left:auto;display:flex;gap:4px;">
+              <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#92400e;">
+                  시리즈표시방법
+                  <select class="form-control" v-model="simOrient"
+                    style="width:auto;padding:2px 6px;font-size:11px;min-height:24px;">
+                    <option value="ROW">행 (시리즈=행 · 항목=열)</option>
+                    <option value="COL">열 (항목=행 · 시리즈=열)</option>
+                  </select>
+                </span>
                 <button class="btn" @click="fnSimRandom()"
                   style="background:#fff;color:#c2410c;border:1px solid #fed7aa;font-weight:700;">🎲 데이타자동생성</button>
                 <button class="btn btn_reset" @click="fnSimClear()">비우기</button>
               </span>
             </div>
             <div v-if="colRows.length" style="overflow-x:auto;">
-              <table class="bo-table bo-table-narrow">
+              <!-- ROW: 시리즈=행 · 항목=열 (기본) -->
+              <table v-if="simOrient !== 'COL'" class="bo-table bo-table-narrow">
                 <thead>
                   <tr>
-                    <th style="width:150px;">시리즈 \\ 항목</th>
-                    <th v-for="(c, ci) in cfSimColNms" :key="'sc'+ci" style="min-width:96px;">{{ c }}</th>
+                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">시리즈 \\ 항목</th>
+                    <th v-for="(c, ci) in cfSimColNms" :key="'sc'+ci" style="min-width:96px;background:#eaf2ff;padding:4px 6px;font-size:11px;">
+                      {{ c }}
+                      <span style="display:inline-flex;gap:3px;margin-left:2px;">
+                        <span @click="fnToggleColAuto(ci)" title="자동수집여부(클릭으로 전환)"
+                          :style="'cursor:pointer;font-size:9px;' + (fnColAuto(ci) ? 'opacity:1;' : 'opacity:.25;')">🤖</span>
+                        <span @click="fnToggleColEditable(ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
+                          :style="'cursor:pointer;font-size:9px;' + (fnColLocked(ci) ? 'opacity:1;' : 'opacity:.25;')">🔒</span>
+                      </span>
+                    </th>
+                    <th style="width:80px;padding:4px 6px;font-size:11px;">합계</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(nm, si) in cfSimSeriesNms" :key="'sr'+si">
-                    <td style="font-weight:600;background:#f8fafc;">{{ nm }}</td>
-                    <td v-for="(c, ci) in cfSimColNms" :key="'sv'+si+'_'+ci" style="padding:2px 4px;">
-                      <input type="number" class="form-control" style="text-align:right;"
+                    <td style="font-weight:600;background:#ffe8cf;">{{ nm }}</td>
+                    <td v-for="(c, ci) in cfSimColNms" :key="'sv'+si+'_'+ci"
+                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(ci) ? 'background:#f1f5f9;' : '')">
+                      <span v-if="fnColAuto(ci)"
+                        style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
+                        title="자동수집 항목"></span>
+                      <input type="number" class="form-control"
+                        :disabled="fnColLocked(ci)"
+                        :style="'text-align:right;' + (fnColLocked(ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
                         :value="simVals[si] ? simVals[si][ci] : null"
                         @input="e => { fnSimFit(); simVals[si][ci] = e.target.value; }" />
                     </td>
+                    <td style="text-align:right;font-weight:700;color:#475569;background:#eef1f5;">{{ fnSimRowTotal(si) }}</td>
                   </tr>
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <td style="font-weight:700;background:#eef1f5;color:#475569;">합계</td>
+                    <td v-for="(c, ci) in cfSimColNms" :key="'ct'+ci"
+                      style="text-align:right;font-weight:700;background:#eef1f5;color:#475569;">{{ fnSimColTotal(ci) }}</td>
+                    <td style="text-align:right;font-weight:700;background:#e9edf3;color:#1f4a73;">{{ fnSimGrandTotal() }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+              <!-- COL: 항목=행 · 시리즈=열 (전치 보기, simVals 물리적 변경 없이 렌더 순서만 교체) -->
+              <table v-else class="bo-table bo-table-narrow">
+                <thead>
+                  <tr>
+                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">항목 \\ 시리즈</th>
+                    <th v-for="(nm, si) in cfSimSeriesNms" :key="'cs'+si" style="min-width:96px;background:#ffe8cf;padding:4px 6px;font-size:11px;">{{ nm }}</th>
+                    <th style="width:80px;padding:4px 6px;font-size:11px;">합계</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(c, ci) in cfSimColNms" :key="'cr'+ci">
+                    <td style="font-weight:600;background:#eaf2ff;">
+                      {{ c }}
+                      <span style="display:inline-flex;gap:3px;margin-left:2px;">
+                        <span @click="fnToggleColAuto(ci)" title="자동수집여부(클릭으로 전환)"
+                          :style="'cursor:pointer;font-size:10px;' + (fnColAuto(ci) ? 'opacity:1;' : 'opacity:.25;')">🤖</span>
+                        <span @click="fnToggleColEditable(ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
+                          :style="'cursor:pointer;font-size:10px;' + (fnColLocked(ci) ? 'opacity:1;' : 'opacity:.25;')">🔒</span>
+                      </span>
+                    </td>
+                    <td v-for="(nm, si) in cfSimSeriesNms" :key="'cv'+ci+'_'+si"
+                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(ci) ? 'background:#f1f5f9;' : '')">
+                      <span v-if="fnColAuto(ci)"
+                        style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
+                        title="자동수집 항목"></span>
+                      <input type="number" class="form-control"
+                        :disabled="fnColLocked(ci)"
+                        :style="'text-align:right;' + (fnColLocked(ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
+                        :value="simVals[si] ? simVals[si][ci] : null"
+                        @input="e => { fnSimFit(); simVals[si][ci] = e.target.value; }" />
+                    </td>
+                    <td style="text-align:right;font-weight:700;color:#475569;background:#eef1f5;">{{ fnSimColTotal(ci) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td style="font-weight:700;background:#eef1f5;color:#475569;">합계</td>
+                    <td v-for="(nm, si) in cfSimSeriesNms" :key="'st'+si"
+                      style="text-align:right;font-weight:700;background:#eef1f5;color:#475569;">{{ fnSimRowTotal(si) }}</td>
+                    <td style="text-align:right;font-weight:700;background:#e9edf3;color:#1f4a73;">{{ fnSimGrandTotal() }}</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
             <div v-else style="padding:18px;text-align:center;color:#aaa;font-size:12px;">
@@ -1292,21 +1470,38 @@ window.CmDashboardItemMng = {
           </div>
         </template>
 
-        <!-- ===== ■. 미리보기 (입력값 기준 실제 차트) ====================== -->
+        <!-- ===== ■. 미리보기 (좌: 저장될 차트유형 / 우: 다른 유형으로 비교) === -->
         <template #simPreview>
-          <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-            <div style="padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
-              <span style="font-weight:700;font-size:12.5px;color:#1f4a73;">{{ panelForm.itemNm || '(항목명 미입력)' }}</span>
-              <span class="badge badge-blue">{{ panelForm.chartTypeCd || '-' }}</span>
-              <span style="margin-left:auto;font-size:11px;color:#94a3b8;">
-                차트종류를 바꾸면 미리보기가 즉시 반영됩니다</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <!-- 좌측 — 실제 저장되는 chartTypeCd 그대로 -->
+            <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+              <div style="padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:700;font-size:12.5px;color:#1f4a73;">{{ panelForm.itemNm || '(항목명 미입력)' }}</span>
+                <span class="badge badge-blue">{{ panelForm.chartTypeCd || '-' }}</span>
+                <span style="margin-left:auto;font-size:11px;color:#94a3b8;">저장될 유형</span>
+              </div>
+              <!-- id 는 스타일 탭의 CSS 적용 범위를 가두는 기준점 -->
+              <div v-if="colRows.length" id="cm-dash-src-preview" style="padding:8px;">
+                <co-echart :option="cfPreviewOption" :height="srcState.previewHeight || '260px'" not-merge />
+              </div>
+              <div v-else style="padding:28px;text-align:center;color:#aaa;font-size:12px;">
+                항목(3레벨)과 시뮬레이션 값을 입력하면 차트가 표시됩니다.</div>
             </div>
-            <!-- id 는 스타일 탭의 CSS 적용 범위를 가두는 기준점 -->
-            <div v-if="colRows.length" id="cm-dash-src-preview" style="padding:8px;">
-              <co-echart :option="cfPreviewOption" :height="srcState.previewHeight || '260px'" not-merge />
+            <!-- 우측 — 다른 차트유형이라면? 저장값과 무관한 비교 전용 -->
+            <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+              <div style="padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;color:#64748b;">비교</span>
+                <select v-model="compareState.chartTypeCd" class="form-control" style="width:auto;padding:2px 6px;font-size:12px;">
+                  <option v-for="c in util.CHART_TYPES" :key="c.value" :value="c.value">{{ c.icon }} {{ c.label }}</option>
+                </select>
+                <span style="margin-left:auto;font-size:11px;color:#94a3b8;">저장에 영향 없음</span>
+              </div>
+              <div v-if="colRows.length" style="padding:8px;">
+                <co-echart :option="cfCompareOption" :height="srcState.previewHeight || '260px'" not-merge />
+              </div>
+              <div v-else style="padding:28px;text-align:center;color:#aaa;font-size:12px;">
+                항목(3레벨)과 시뮬레이션 값을 입력하면 차트가 표시됩니다.</div>
             </div>
-            <div v-else style="padding:28px;text-align:center;color:#aaa;font-size:12px;">
-              항목(3레벨)과 시뮬레이션 값을 입력하면 차트가 표시됩니다.</div>
           </div>
         </template>
 

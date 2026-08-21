@@ -660,7 +660,7 @@ window.DashboardBoEc01 = {
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
-    <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
+    <span style="font-size:11px;color:#aaa;">{{ cfMonthLabels.length }}개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
   </div>
 
   <!-- 어제의 현황 KPI -->
@@ -753,7 +753,7 @@ window.DashboardBoEc01 = {
     <bo-container v-show="showPanel('sales')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
         <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'월별 매출현황',()=>cfOpt0101,'info0101',undefined,'COMP0101')" title="항목 정보">💰</button>
-        월별 매출현황 (14개월)
+        월별 매출현황 ({{ cfMonthLabels.length }}개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(dash.info0101.reduce((a,r)=>a+(r.col1Num||0),0)) }}원</span>
       </div>
@@ -764,7 +764,7 @@ window.DashboardBoEc01 = {
     <bo-container v-show="showPanel('member')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
         <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'가입/탈퇴 현황',()=>cfOpt0102,'info0102',undefined,'COMP0102')" title="항목 정보">👥</button>
-        월별 고객 가입/탈퇴자 현황 (14개월)
+        월별 고객 가입/탈퇴자 현황 ({{ cfMonthLabels.length }}개월)
       </div>
       <co-echart :option="cfOpt0102" height="260px" />
     </bo-container>
@@ -773,7 +773,7 @@ window.DashboardBoEc01 = {
     <bo-container v-show="showPanel('click')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
         <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품상세 클릭',()=>cfOpt0103,'info0103',undefined,'COMP0103')" title="항목 정보">🖱</button>
-        월별 상품상세 클릭 현황 (14개월)
+        월별 상품상세 클릭 현황 ({{ cfMonthLabels.length }}개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0103.reduce((a,r)=>a+(r.col1Num||0),0)) }}회</span>
       </div>
@@ -784,7 +784,7 @@ window.DashboardBoEc01 = {
     <bo-container v-show="showPanel('order')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
         <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'주문완료 현황',()=>cfOpt0104,'info0104',undefined,'COMP0104')" title="항목 정보">📋</button>
-        월별 주문완료 현황 (14개월)
+        월별 주문완료 현황 ({{ cfMonthLabels.length }}개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0104.reduce((a,r)=>a+(r.col1Num||0),0)) }}건</span>
       </div>

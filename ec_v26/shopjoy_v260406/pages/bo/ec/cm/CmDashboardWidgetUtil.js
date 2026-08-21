@@ -53,6 +53,38 @@
     bg:    PALETTE_BG[(idx || 0) % PALETTE_BG.length],
   });
 
+  /* DASH_WIDGET_COLORS_01~10 — 차트마다 고를 수 있는 시리즈 색상 팔레트 10종.
+     CmDashboardItemMng.js "색상 팔레트" select 가 이 중 하나를 골라 cm_dashboard_item.optionJson
+     의 colorPaletteCd 로 저장한다(2026-08-21) — 새 DB 컬럼 없이 기존 옵션 오버라이드 JSON 재사용. */
+  const DASH_WIDGET_COLORS_01 = ['#e8587a', '#3b82f6', '#16a34a', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+  const DASH_WIDGET_COLORS_02 = ['#0ea5e9', '#22c55e', '#eab308', '#f97316', '#a855f7', '#14b8a6', '#f43f5e', '#6366f1'];
+  const DASH_WIDGET_COLORS_03 = ['#fca5a5', '#fdba74', '#fde047', '#bef264', '#86efac', '#67e8f9', '#93c5fd', '#c4b5fd'];
+  const DASH_WIDGET_COLORS_04 = ['#1e3a5f', '#2d4a75', '#3b6cb4', '#5b8bd4', '#7ba3e0', '#9dbde8', '#c1d5f0', '#0f2540'];
+  const DASH_WIDGET_COLORS_05 = ['#7c2d12', '#c2410c', '#ea580c', '#f97316', '#fb923c', '#fdba74', '#fed7aa', '#431407'];
+  const DASH_WIDGET_COLORS_06 = ['#14532d', '#166534', '#16a34a', '#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#052e16'];
+  const DASH_WIDGET_COLORS_07 = ['#581c87', '#7e22ce', '#9333ea', '#a855f7', '#c084fc', '#d8b4fe', '#e9d5ff', '#3b0764'];
+  const DASH_WIDGET_COLORS_08 = ['#0f172a', '#334155', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0', '#475569', '#1e293b'];
+  const DASH_WIDGET_COLORS_09 = ['#be123c', '#e11d48', '#f43f5e', '#fb7185', '#fda4af', '#0f766e', '#0d9488', '#14b8a6'];
+  const DASH_WIDGET_COLORS_10 = ['#713f12', '#a16207', '#ca8a04', '#eab308', '#facc15', '#fde047', '#fef08a', '#422006'];
+
+  const DASH_WIDGET_COLOR_SETS = {
+    DASH_WIDGET_COLORS_01, DASH_WIDGET_COLORS_02, DASH_WIDGET_COLORS_03, DASH_WIDGET_COLORS_04, DASH_WIDGET_COLORS_05,
+    DASH_WIDGET_COLORS_06, DASH_WIDGET_COLORS_07, DASH_WIDGET_COLORS_08, DASH_WIDGET_COLORS_09, DASH_WIDGET_COLORS_10,
+  };
+  /* select 옵션 — 팔레트 코드 + 사람이 알아볼 라벨 */
+  const DASH_WIDGET_COLOR_OPTIONS = [
+    { value: 'DASH_WIDGET_COLORS_01', label: '01. 기본' },
+    { value: 'DASH_WIDGET_COLORS_02', label: '02. 비비드' },
+    { value: 'DASH_WIDGET_COLORS_03', label: '03. 파스텔' },
+    { value: 'DASH_WIDGET_COLORS_04', label: '04. 블루 모노톤' },
+    { value: 'DASH_WIDGET_COLORS_05', label: '05. 오렌지 모노톤' },
+    { value: 'DASH_WIDGET_COLORS_06', label: '06. 그린 모노톤' },
+    { value: 'DASH_WIDGET_COLORS_07', label: '07. 퍼플 모노톤' },
+    { value: 'DASH_WIDGET_COLORS_08', label: '08. 그레이스케일' },
+    { value: 'DASH_WIDGET_COLORS_09', label: '09. 레드·틸 대비' },
+    { value: 'DASH_WIDGET_COLORS_10', label: '10. 골드·옐로우' },
+  ];
+
   const _fmtYmd = (s) => {
     if (!s || s.length !== 8) return s || '';
     return s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
@@ -210,5 +242,6 @@
     CHART_TYPES, chartTypeIcon, chartTypeLabel,
     filterRows, buildWidget,
     PALETTE, PALETTE_BG, kpiColorOf,
+    DASH_WIDGET_COLOR_SETS, DASH_WIDGET_COLOR_OPTIONS,
   };
 })(window);

@@ -53,6 +53,10 @@ public class CmDashboardDataGridService {
     /** 한 행에서 가로로 펼칠 수 있는 3레벨 항목 최대 개수 */
     public static final int MAX_COLS = 9;
 
+    /** input_opts 미지정 시 기본값 — 날짜 토큰명(yyyy/yyyymm/yyyymmdd) 자체가 기간구분을 겸한다
+     *  (2026-08-21 개편, {@code period_type_cd:M} 같은 별도 토큰 폐기) */
+    public static final String DEFAULT_INPUT_OPTS = "site_id,yyyymm";
+
     private final CmDashboardItemRepository itemRepository;
     private final CmDashboardDataRepository dataRepository;
 
@@ -194,7 +198,8 @@ public class CmDashboardDataGridService {
             String sCode = chartCd + "-" + sCd;
             renameByCode(exist, serOldCodes.get(si), sCode, sCd);
             CmDashboardItem se = putRow(exist, keep, sCode, sCd, str(sm.get("name")), str(sm.get("color")),
-                "series", ch.getDashboardId(), ch.getDashboardItemId(), chartCd, (si + 1) * 10, authId, now);
+                "series", ch.getDashboardId(), ch.getDashboardItemId(), chartCd, (si + 1) * 10, authId, now,
+                str(sm.get("autoCollectYn")), str(sm.get("editableYn")));
             upSer++;
 
             for (int ci = 0; ci < colList.size(); ci++) {
@@ -207,7 +212,8 @@ public class CmDashboardDataGridService {
                 if (cOldCd != null)
                     renameByCode(exist, sCode + "-" + cOldCd, sCode + "-" + cCd, cCd);
                 putRow(exist, keep, sCode + "-" + cCd, cCd, str(cm.get("name")), null,
-                    "item", ch.getDashboardId(), se.getDashboardItemId(), sCode, (ci + 1) * 10, authId, now);
+                    "item", ch.getDashboardId(), se.getDashboardItemId(), sCode, (ci + 1) * 10, authId, now,
+                    str(cm.get("autoCollectYn")), str(cm.get("editableYn")));
                 upItm++;
             }
         }
@@ -250,7 +256,8 @@ public class CmDashboardDataGridService {
     private CmDashboardItem putRow(Map<String, CmDashboardItem> exist, Set<String> keep,
                                    String itemCode, String ownCd, String nm, String color, String lvlCd,
                                    String dashboardId, String parentId, String parentCode,
-                                   int sortOrd, String authId, LocalDateTime now) {
+                                   int sortOrd, String authId, LocalDateTime now,
+                                   String autoCollectYn, String editableYn) {
         keep.add(itemCode);
         CmDashboardItem row = exist.get(itemCode);
         if (row == null) {
@@ -269,6 +276,10 @@ public class CmDashboardDataGridService {
         row.setParentDashboardItemId(parentId);
         row.setSortOrd(sortOrd);
         row.setUseYn("Y");
+        /* 시리즈·항목(2·3레벨)도 자동수집/편집가능여부를 개별로 가질 수 있다 — 화면이 이 값을
+           보내면 그대로 반영, 안 보내면(구 화면 호환) 기본값으로 둔다(2026-08-21) */
+        row.setAutoCollectYn(nvlStr(autoCollectYn, "N"));
+        row.setEditableYn(nvlStr(editableYn, "Y"));
         row.setUpdBy(authId);
         row.setUpdDate(now);
         return itemRepository.save(row);
@@ -350,15 +361,18 @@ public class CmDashboardDataGridService {
         m.put("itemColor", it.getItemColor());
         m.put("sortOrd", it.getSortOrd());
         m.put("useYn", it.getUseYn());
+        /* 자동수집/편집가능여부는 2·3레벨(시리즈/항목)도 개별로 가질 수 있다 — 실제 배치가
+           채우는 건 보통 "이번 달" 항목 하나뿐이라 1레벨(차트) 전체를 잠그면 과하다(2026-08-21).
+           그래서 레벨 제한 없이 항상 내려준다. */
+        m.put("autoCollectYn", nvlStr(it.getAutoCollectYn(), "N"));
+        m.put("editableYn",    nvlStr(it.getEditableYn(), "Y"));
         if (lvl == 1) {
             m.put("itemTypeCd",  it.getItemTypeCd());
             m.put("widgetTypeCd", it.getWidgetTypeCd());
             m.put("chartTypeCd", it.getChartTypeCd());
             m.put("axisTypeCd",  it.getAxisTypeCd());
             m.put("seriesOrientCd", nvlStr(it.getSeriesOrientCd(), "ROW"));
-            m.put("autoCollectYn", nvlStr(it.getAutoCollectYn(), "N"));
-            m.put("editableYn",    nvlStr(it.getEditableYn(), "Y"));
-            m.put("inputOpts",     nvlStr(it.getInputOpts(), "period_type_cd:M,site_id,yyyymmdd"));
+            m.put("inputOpts",     nvlStr(it.getInputOpts(), DEFAULT_INPUT_OPTS));
             m.put("lvl1CodeGrp", it.getLvl1CodeGrp());
             m.put("lvl2CodeGrp", it.getLvl2CodeGrp());
         }
@@ -406,7 +420,7 @@ public class CmDashboardDataGridService {
      *
      * @param dashboardId 대상 대시보드 (이 안의 CHART 항목들만 그리드로 만든다)
      * @param siteId      사이트ID (필수)
-     * @param yyyymmdd    기간 키 — D 면 YYYYMMDD, M 이면 YYYYMM00 (필수)
+     * @param yyyymmdd    기간 키 — 컬럼 자체는 항상 8자리. D=YYYYMMDD / M=YYYYMM00 / Y=YYYY0000 로 0-패딩(필수)
      * @param prodId      상품ID (선택, null 이면 상품 미지정 행)
      * @param vendorId    업체ID (선택, null 이면 업체 미지정 행)
      * @return charts: [{dashboardItemId, itemNm, chartTypeCd, colNms[], rows:[{seriesNm, vals[]}]}]
@@ -475,9 +489,15 @@ public class CmDashboardDataGridService {
                 row.put("seriesCd", lastSeg(rowDef.getItemKey()));
                 row.put("itemKey", rowDef.getItemKey());
 
-                /* 셀 하나 = 항목(3레벨)행 하나 — 값은 그 행의 data_val */
+                /* 셀 하나 = 항목(3레벨)행 하나 — 값은 그 행의 data_val.
+                   자동수집여부는 원래 1레벨(차트) 설정뿐이었는데, 실제로 배치가 채우는 건 그
+                   차트의 "이번 달" 셀 하나뿐이라 카드 전체를 자동수집으로 표시하면 과하다 —
+                   3레벨(항목) 행에도 auto_collect_yn 을 개별로 둘 수 있게 셀 단위로 실어준다
+                   (2026-08-21, 화면은 이 값 있는 셀에만 작은 배지를 단다). */
                 List<Object> vals = new ArrayList<>();
                 List<Object> cellIds = new ArrayList<>();
+                List<Object> cellAutoCollect = new ArrayList<>();
+                List<Object> cellEditable = new ArrayList<>();
                 for (int c = 0; c < Math.min(colDefs.size(), MAX_COLS); c++) {
                     CmDashboardItem leaf;
                     if (colOrient) {
@@ -492,9 +512,14 @@ public class CmDashboardDataGridService {
                     CmDashboardData d = leaf != null ? valueOf.get(leaf.getDashboardItemId()) : null;
                     vals.add(d != null ? d.getDataVal() : null);
                     cellIds.add(leaf != null ? leaf.getDashboardItemId() : null);
+                    cellAutoCollect.add(leaf != null && "Y".equals(leaf.getAutoCollectYn()));
+                    /* 항목(3레벨) 자체는 editable_yn 미지정이 보통(Y 상속 의도)이므로 null 은 편집가능으로 본다 */
+                    cellEditable.add(leaf == null || !"N".equals(leaf.getEditableYn()));
                 }
                 row.put("cellItemIds", cellIds);   /* 저장 시 셀->정의행 매핑에 쓴다 */
                 row.put("vals", vals);
+                row.put("cellAutoCollect", cellAutoCollect);   /* 셀별 자동수집 배지 표시용 */
+                row.put("cellEditable", cellEditable);         /* 셀별 입력 잠금 — 차트 전체 editableYn 과 AND 로 적용 */
                 rows.add(row);
             }
 
@@ -510,7 +535,7 @@ public class CmDashboardDataGridService {
             chart.put("editableYn",      nvlStr(ch.getEditableYn(), "Y"));
             /* 차트마다 필요한 조회조건 차원이 다르다(예: 일별/월별, 상품·업체 필요 여부) — 화면이
                이 값 기준으로 차트를 묶어 그룹별 조회조건을 따로 받는다(2026-08-21) */
-            chart.put("inputOpts",       nvlStr(ch.getInputOpts(), "period_type_cd:M,site_id,yyyymmdd"));
+            chart.put("inputOpts",       nvlStr(ch.getInputOpts(), DEFAULT_INPUT_OPTS));
             chart.put("colNms",          colNms);
             chart.put("colCds",          colCds);
             /* 열 제목은 항상 3레벨(항목) 정의행에서 온다 — 값이 항상 3레벨에만 붙는 지금 구조에서는
@@ -543,7 +568,10 @@ public class CmDashboardDataGridService {
         LocalDateTime now = LocalDateTime.now();
         String pId = blankToNull(prodId);
         String vId = blankToNull(vendorId);
-        String per = "M".equals(periodTypeCd) ? "M" : "D";
+        /* period_type_cd 는 data_opts(UNIQUE 키)에 그대로 들어가므로 여기서 잘못 좁히면
+           같은 좌표인데 다른 data_opts 로 저장되는 사고가 난다 — D/M/Y 를 그대로 통과시키고
+           그 외(공백 등)만 D 로 보정한다 (2026-08-21, 연도별 그룹 지원 추가) */
+        String per = ("M".equals(periodTypeCd) || "Y".equals(periodTypeCd)) ? periodTypeCd : "D";
 
         int saved = 0;
         for (Map<String, Object> chart : charts == null ? List.<Map<String, Object>>of() : charts) {
@@ -702,12 +730,23 @@ public class CmDashboardDataGridService {
         itemsBySeries.values().forEach(l -> l.sort(bySort));
         if (itemsBySeries.isEmpty()) return List.of();
 
+        /* CmDashboardWidgetRow 의 계약(Javadoc) — "행 하나 = 카테고리(항목/날짜) 하나,
+           col1Nm 이 그 행의 X축 라벨, col1Num~col9Num 이 그 카테고리에서의 시리즈별 값" —
+           는 이 메서드의 두 소비처(EC01~03 legacy 대시보드 DashboardBoEc0{1,2,3}.js 의
+           cfMonthLabels=dash.infoXXXX.map(r=>r.col1Nm) 패턴, CmDashboardWidgetUtil.buildWidget
+           의 rows.map(r=>r.col1Nm) 패턴) 양쪽 모두가 그대로 전제하고 있다 — 즉 행=항목,
+           열=시리즈 순번이어야 한다. desc 가 이미 sortOrd 순이라 itemsBySeries 키 순서 그대로
+           시리즈 열 순번으로 쓴다. */
+        List<String> seriesOrder = new ArrayList<>(itemsBySeries.keySet());
+        Map<String, Integer> seriesColOf = new HashMap<>();   /* seriesId -> 1-based 열 순번(시리즈) */
+        for (int s = 0; s < seriesOrder.size() && s < MAX_COLS; s++) seriesColOf.put(seriesOrder.get(s), s + 1);
+
         Map<String, CmDashboardItem> leafByPk = new HashMap<>();
-        Map<String, Integer> colIdxOf = new HashMap<>();   /* leafPk -> 1-based 열 순번(시리즈 내) */
+        Map<String, Integer> itemRankOf = new HashMap<>();   /* leafPk -> 1-based 행 순번(시리즈 내 항목 위치) */
         for (List<CmDashboardItem> items : itemsBySeries.values()) {
             for (int i = 0; i < items.size() && i < MAX_COLS; i++) {
                 leafByPk.put(items.get(i).getDashboardItemId(), items.get(i));
-                colIdxOf.put(items.get(i).getDashboardItemId(), i + 1);
+                itemRankOf.put(items.get(i).getDashboardItemId(), i + 1);
             }
         }
         if (leafByPk.isEmpty()) return List.of();
@@ -730,21 +769,38 @@ public class CmDashboardDataGridService {
             .setParameter("endYmd", endYmd)
             .getResultList();
 
-        /* 3) 조인 — 항목의 열 순번에 값을 꽂아 시리즈×날짜 단위로 pivot */
-        Map<String, CmDashboardWidgetRow> out = new LinkedHashMap<>();
+        /* 3) 행 뼈대 먼저 — 항목(행=카테고리) 라벨은 데이터 유무와 무관하게 항상 채운다.
+         *
+         * ⚠️ 예전엔 값이 있는 t02 행을 순회하며 그때그때 행을 만들었다(key=seriesId+"|"+ymd 또는
+         * seriesId 단독) — 그러다 보니 (a) 값이 아예 없는 항목(달)은 행 자체가 안 생겨 라벨도
+         * 안 보이고("데이타 없으면 시리즈 표시 안됨" — 사용자 지적), (b) 행/열 방향이 소비처
+         * 계약과 어긋나 있었다. 소비처(EC01~03 legacy 대시보드 · CmDashboardWidgetUtil.buildWidget)
+         * 는 전부 "행 하나 = 항목(날짜/카테고리) 하나, col1Nm 이 그 행의 라벨, col1~9Num 이 그
+         * 항목에서의 시리즈별 값" 을 전제로 rows.map(r=>r.col1Nm) 패턴을 쓴다.
+         * 시리즈끼리는 항목 1벌을 공유하므로(syncChildren) 첫 시리즈의 항목명을 행 라벨로 쓰면 된다. */
+        Map<Integer, CmDashboardWidgetRow> out = new LinkedHashMap<>();
+        List<CmDashboardItem> baseItems = itemsBySeries.values().iterator().next();
+        for (int i = 0; i < baseItems.size() && i < MAX_COLS; i++) {
+            CmDashboardWidgetRow w = CmDashboardWidgetRow.builder().compId(ch.getItemKey()).build();
+            String nm = baseItems.get(i).getItemNm();
+            for (int s = 1; s <= seriesColOf.size(); s++) w.setNm(s, nm);   /* 라벨은 데이터 없어도 항상 표시 */
+            out.put(i + 1, w);
+        }
+
+        /* 4) 값 채우기 — 실제 데이터가 있는 (항목,시리즈) 칸만 덮어쓴다 */
         for (Object[] row : t02) {
             String leafPk = String.valueOf(row[0]);
             CmDashboardItem leaf = leafByPk.get(leafPk);
             if (leaf == null) continue;
-            String seriesId = leaf.getParentDashboardItemId();
+            Integer rank = itemRankOf.get(leafPk);
+            Integer col  = seriesColOf.get(leaf.getParentDashboardItemId());
+            if (rank == null || col == null) continue;
+            CmDashboardWidgetRow w = out.get(rank);
+            if (w == null) continue;
             String ymd = String.valueOf(row[1]);
-            String key = seriesId + "|" + ymd;
-            CmDashboardWidgetRow w = out.computeIfAbsent(key, k -> CmDashboardWidgetRow.builder()
-                .dashboardId(seriesId).compId(ch.getItemKey()).yyyymmdd(ymd).build());
-            int idx = colIdxOf.get(leafPk);
+            w.setYyyymmdd(ymd);   /* 최신 날짜로 갱신 — 행 대표값일 뿐 컬럼값과는 무관 */
             Double num = row[2] == null ? null : ((Number) row[2]).doubleValue();
-            w.setNm(idx, leaf.getItemNm());
-            w.setNum(idx, num);
+            w.setNum(col, num);
         }
         return new ArrayList<>(out.values());
     }

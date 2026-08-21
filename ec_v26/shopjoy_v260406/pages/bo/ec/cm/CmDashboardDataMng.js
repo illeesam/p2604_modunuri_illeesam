@@ -32,6 +32,13 @@ window.CmDashboardDataMng = {
     const siteOptions = reactive([]);   /* 사이트 select */
     const vendors     = reactive([]);   /* 판매업체 select */
     const uiState = reactive({ loading: false, itemLoading: false, saving: false, selectedItemIds: [] });
+    const previewOpen = reactive({});   /* dashboardItemId → 미리보기(차트) 펼침 여부, 기본 접힘 */
+    const fnTogglePreview = (id) => { previewOpen[id] = !previewOpen[id]; };
+    /* fnGroupPreviewSetAll — 그룹 미니바 [미리보기 펼치기/접기] — 그 그룹에 로드된(_notLoaded
+       아닌) 차트 전부를 한 번에 펼치거나 접는다 */
+    const fnGroupPreviewSetAll = (group, open) => {
+      group.charts.filter(c => !c._notLoaded).forEach(c => { previewOpen[c.dashboardItemId] = open; });
+    };
     const codes = reactive({});
 
     /* 사이트/대시보드는 화면 전체 공통조건. 기간·상품·업체는 차트(위젯)마다 cm_dashboard_item.
@@ -39,35 +46,50 @@ window.CmDashboardDataMng = {
     const _today = coUtil.cofToYmd(new Date());
     const searchParam = reactive({ dashboardId: '', siteId: '' });
 
-    /* DEFAULT_INPUT_OPTS — cm_dashboard_item.input_opts 미지정 시 백엔드 기본값과 동일 */
-    const DEFAULT_INPUT_OPTS = 'period_type_cd:M,site_id,yyyymmdd';
+    /* DEFAULT_INPUT_OPTS — cm_dashboard_item.input_opts 미지정 시 백엔드 기본값과 동일.
+       날짜 토큰명(yyyy/yyyymm/yyyymmdd) 자체가 기간구분을 겸한다 — 예전엔 period_type_cd:M
+       같은 별도 토큰이 있었는데, yyyymmdd 라는 토큰명은 그대로 두고 값만 M 으로 바꾸는 식이라
+       "토큰명은 일자인데 실제론 월별" 처럼 헷갈렸다. 지금은 site_id,yyyymmdd(일별) /
+       site_id,yyyymm(월별) / site_id,yyyy(연도별) 로 토큰명 자체가 의미를 그대로 드러낸다
+       (2026-08-21 개편). */
+    const DEFAULT_INPUT_OPTS = 'site_id,yyyymm';
 
-    /* fnParseInputOpts — "period_type_cd:M,site_id,yyyymmdd,prod_id" 같은 문자열을 화면이
-       쓰기 좋은 형태로 해석. 어떤 조회조건 입력칸을 보여줄지 이 결과로 가른다 */
+    /* fnParseInputOpts — "site_id,yyyymm,prod_id" 같은 문자열을 화면이 쓰기 좋은 형태로 해석.
+       날짜 토큰(yyyy/yyyymm/yyyymmdd) 중 하나로 기간구분(Y/M/D)을 판별 — 어떤 조회조건
+       입력칸을 보여줄지 이 결과로 가른다 */
     const fnParseInputOpts = (str) => {
-      const dims = { periodTypeCd: 'M', hasProdId: false, hasVendorId: false };
+      const dims = { periodTypeCd: 'M', hasSiteId: false, hasProdId: false, hasVendorId: false };
       String(str || DEFAULT_INPUT_OPTS).split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
-        const [k, v] = tok.split(':').map(s => (s || '').trim());
-        if (k === 'period_type_cd') dims.periodTypeCd = v === 'D' ? 'D' : 'M';
-        else if (k === 'prod_id')   dims.hasProdId = true;
-        else if (k === 'vendor_id') dims.hasVendorId = true;
+        if (tok === 'yyyymmdd')    dims.periodTypeCd = 'D';
+        else if (tok === 'yyyymm') dims.periodTypeCd = 'M';
+        else if (tok === 'yyyy')   dims.periodTypeCd = 'Y';
+        else if (tok === 'site_id')   dims.hasSiteId = true;
+        else if (tok === 'prod_id')   dims.hasProdId = true;
+        else if (tok === 'vendor_id') dims.hasVendorId = true;
       });
       return dims;
     };
 
     /* groupParams/groupState — input_opts 원문(key) 별 조회조건·진행상태. 그룹이 처음
-       나타날 때(fnEnsureGroup) input_opts 가 정한 기본 기간구분으로 채운다 */
+       나타날 때(fnEnsureGroup) input_opts 가 정한 기본 기간구분 + 현재 사이트로 채운다.
+       site_id 도 input_opts 가 선언하는 조회 차원이라 상품·업체와 동일하게 그룹별로 따로 갖는다 */
     const groupParams = reactive({});
     const groupState  = reactive({});
     const fnEnsureGroup = (key, dims) => {
       if (!groupParams[key]) {
         groupParams[key] = {
           periodTypeCd: dims.periodTypeCd,
-          ymd: _today, ym: String(_today).slice(0, 7),
+          ymd: _today, ym: String(_today).slice(0, 7), yyyy: String(_today).slice(0, 4),
+          siteId: searchParam.siteId,
           prodId: '', prodNm: '', vendorId: '',
         };
       }
       if (!groupState[key]) groupState[key] = { searched: false, loading: false, saving: false };
+    };
+    /* fnGroupReady — 이 그룹의 필수 조건(사이트·기간)이 다 채워졌는지. [조회] 버튼 활성화 기준 */
+    const fnGroupReady = (key) => {
+      const gp = groupParams[key];
+      return !!gp && !!gp.siteId && fnGroupPeriodKey(key).length === 8;
     };
     /* fnEnsureGroupsFor — 위젯항목목록(dashItems) 이 새로 들어올 때마다 그 안에 있는 모든
        input_opts 그룹의 기본값을 한 번에 채워둔다(cfGroups computed 는 순수 파생만 하도록) */
@@ -77,13 +99,14 @@ window.CmDashboardDataMng = {
         fnEnsureGroup(key, fnParseInputOpts(key));
       });
     };
-    /* fnGroupPeriodKey — 그룹의 서버 전송용 기간 키. D=YYYYMMDD / M=YYYYMM00 */
+    /* fnGroupPeriodKey — 그룹의 서버 전송용 기간 키. 컬럼 자체는 항상 8자리로 0-패딩한다.
+       D=YYYYMMDD / M=YYYYMM00 / Y=YYYY0000 */
     const fnGroupPeriodKey = (key) => {
       const gp = groupParams[key];
       if (!gp) return '';
-      return gp.periodTypeCd === 'M'
-        ? String(gp.ym || '').replace('-', '') + '00'
-        : String(gp.ymd || '').replace(/-/g, '');
+      if (gp.periodTypeCd === 'Y') return String(gp.yyyy || '').trim() + '0000';
+      if (gp.periodTypeCd === 'M') return String(gp.ym || '').replace('-', '') + '00';
+      return String(gp.ymd || '').replace(/-/g, '');
     };
 
     const modals = reactive({ isProdPick: false, prodPickGroupKey: null });
@@ -141,7 +164,9 @@ window.CmDashboardDataMng = {
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'group-search')         return handleSearchGroup(param);
       if (cmd === 'group-save')           return handleSaveGroup(param);
-      if (cmd === 'group-simulateAll')    return handleSimulateGroup(param);
+      if (cmd === 'group-clearValues')    return handleClearGroupValues(param);
+      if (cmd === 'group-simulateEmpty')  return handleSimulateGroup(param, true);
+      if (cmd === 'group-simulateAll')    return handleSimulateGroup(param, false);
       if (cmd === 'groups-searchAll')     return handleSearchAllGroups();
       if (cmd === 'groups-simulateAll')   return handleSimulateAllGroups();
       if (cmd === 'groups-saveAll')       return handleSaveAllGroups();
@@ -183,16 +208,16 @@ window.CmDashboardDataMng = {
     /* fnGroupCond — 그룹(key) 의 조회조건 검증. 통과하면 서버 전송 파라미터를 만들어 돌려준다 */
     const fnGroupCond = (key) => {
       if (!searchParam.dashboardId) { showToast('좌측에서 대시보드를 선택해주세요.', 'error'); return null; }
-      if (!searchParam.siteId)      { showToast('사이트는 필수 조건입니다.', 'error'); return null; }
       const gp = groupParams[key];
+      if (!gp || !gp.siteId) { showToast('사이트는 필수 조건입니다.', 'error'); return null; }
       const periodKey = fnGroupPeriodKey(key);
-      if (!gp || !periodKey || periodKey.length !== 8) {
-        showToast(gp && gp.periodTypeCd === 'D' ? '일자는 필수 조건입니다.' : '월은 필수 조건입니다.', 'error');
+      if (!periodKey || periodKey.length !== 8) {
+        showToast(gp.periodTypeCd === 'D' ? '일자는 필수 조건입니다.' : '월은 필수 조건입니다.', 'error');
         return null;
       }
       return {
         dashboardId:  searchParam.dashboardId,
-        siteId:       searchParam.siteId,
+        siteId:       gp.siteId,
         yyyymmdd:     periodKey,
         periodTypeCd: gp.periodTypeCd,
         ...coUtil.cofOmitEmpty({ prodId: gp.prodId, vendorId: gp.vendorId }),
@@ -203,10 +228,17 @@ window.CmDashboardDataMng = {
        (길이가 들쭉날쭉하면 v-model 바인딩이 빈 칸에서 끊긴다). 벌크 적용·단일 적용 공용 */
     const fnNormalizeChart = (c) => {
       const norm = (arr) => Array.from({ length: MAX_COLS }, (_, i) => (arr && arr[i] != null ? arr[i] : ''));
-      return { ...c, colNms: norm(c.colNms), rows: (c.rows || []).map(r => ({ ...r, vals: norm(r.vals) })) };
+      return {
+        ...c, colNms: norm(c.colNms),
+        rows: (c.rows || []).map(r => ({
+          ...r, vals: norm(r.vals),
+          cellAutoCollect: norm(r.cellAutoCollect),   /* 셀별 자동수집 배지 */
+          cellEditable: Array.from({ length: MAX_COLS }, (_, i) => (r.cellEditable && r.cellEditable[i] != null ? r.cellEditable[i] !== false : true)),
+        })),
+      };
     };
 
-    /* fnMergeCharts — 서버 응답 중 이 그룹(input_opts=key) 소속 차트만 골라 charts[] 에 반영.
+    /* fnMergeCharts — 서버 응답 중 이 그룹(input_opts=key) 소속 차트만 골라 charts[] 에 통째 반영(덮어쓰기).
        다른 그룹은 각자 자기 조건으로 이미 조회해 둔 값이니 건드리지 않는다 */
     const fnMergeCharts = (key, list) => {
       (list || [])
@@ -215,6 +247,27 @@ window.CmDashboardDataMng = {
         .forEach(applied => {
           const idx = charts.findIndex(c => c.dashboardItemId === applied.dashboardItemId);
           if (idx >= 0) charts.splice(idx, 1, applied); else charts.push(applied);
+        });
+    };
+
+    /* fnMergeChartsEmptyOnly — [빈값 시뮬] 전용. 이미 값이 있는 칸은 그대로 두고
+       빈 칸(''/null/undefined)만 서버가 계산해 준 값으로 채운다 */
+    const fnMergeChartsEmptyOnly = (key, list) => {
+      (list || [])
+        .filter(c => (c.inputOpts || DEFAULT_INPUT_OPTS) === key)
+        .map(fnNormalizeChart)
+        .forEach(incoming => {
+          const idx = charts.findIndex(c => c.dashboardItemId === incoming.dashboardItemId);
+          if (idx < 0) { charts.push(incoming); return; }   /* 처음 로드되는 차트는 통째 반영 */
+          const cur = charts[idx];
+          incoming.rows.forEach((newRow, ri) => {
+            const curRow = cur.rows[ri];
+            if (!curRow) { cur.rows[ri] = newRow; return; }
+            newRow.vals.forEach((v, ci) => {
+              const existing = curRow.vals[ci];
+              if (existing === '' || existing == null) curRow.vals[ci] = v;
+            });
+          });
         });
     };
 
@@ -247,16 +300,16 @@ window.CmDashboardDataMng = {
       fnEnsureGroupsFor(dashItems);   /* 템플릿이 바로 참조하므로 초기화 직후 다시 채워둔다 */
     };
 
-    /* handleSimulateGroup — 그룹 하나 전체 자동 채우기 (그룹 미니바 [그룹 시뮬레이션]) */
-    const handleSimulateGroup = async (key) => {
+    /* handleSimulateGroup — 그룹 하나 자동 채우기.
+       emptyOnly=false(모든값 시뮬) 은 기존 입력값도 덮어쓴다 / true(빈값 시뮬) 은 빈 칸만 채운다 */
+    const handleSimulateGroup = async (key, emptyOnly) => {
       const params = fnGroupCond(key);
       if (!params) return;
-      const ok = await showConfirm('그룹 시뮬레이션', '이 조건의 위젯 값을 자동 생성한 값으로 채웁니다.\n화면의 기존 입력값은 덮어써집니다. 진행하시겠습니까?');
-      if (!ok) return;
       groupState[key].loading = true;
       try {
-        const res = await boApiSvc.cmDashboard.simulateDataGrid(params, '대시보드데이타관리', '그룹시뮬레이션');
-        fnMergeCharts(key, res.data?.data?.charts);
+        const res = await boApiSvc.cmDashboard.simulateDataGrid(params, '대시보드데이타관리', emptyOnly ? '빈값시뮬레이션' : '모든값시뮬레이션');
+        const list = res.data?.data?.charts;
+        if (emptyOnly) fnMergeChartsEmptyOnly(key, list); else fnMergeCharts(key, list);
         groupState[key].searched = true;
         showToast('값을 자동 생성했습니다. 확인 후 [저장]을 눌러주세요.', 'success');
       } catch (err) {
@@ -266,11 +319,20 @@ window.CmDashboardDataMng = {
       }
     };
 
+    /* handleClearGroupValues — 그룹 하나 [값초기화]. 서버 호출 없이 화면 입력값만 지운다(저장 전) */
+    const handleClearGroupValues = async (key) => {
+      const group = cfGroups.value.find(g => g.key === key);
+      const loaded = group ? group.charts.filter(c => !c._notLoaded) : [];
+      if (!loaded.length) { showToast('초기화할 값이 없습니다. 먼저 조회해주세요.', 'error'); return; }
+      const ok = await showConfirm('값 초기화', '이 그룹의 입력값을 모두 지웁니다(저장 전 화면 값만 지워지며, 저장된 데이터는 그대로입니다).\n진행하시겠습니까?');
+      if (!ok) return;
+      loaded.forEach(c => { (c.rows || []).forEach(r => { r.vals = r.vals.map(() => ''); }); });
+      showToast('값을 초기화했습니다.', 'success');
+    };
+
     /* handleSimulateAllGroups — 체크된 모든 위젯을 그룹별 조건으로 순회 자동채움 (위젯항목목록 [전체시뮬레이션]) */
     const handleSimulateAllGroups = async () => {
       if (!cfGroups.value.length) { showToast('체크된 위젯이 없습니다.', 'error'); return; }
-      const ok = await showConfirm('전체 시뮬레이션', '체크된 모든 위젯 값을 그룹별 조건으로 자동 생성합니다.\n화면의 기존 입력값은 덮어써집니다. 진행하시겠습니까?');
-      if (!ok) return;
       for (const g of cfGroups.value) {
         const params = fnGroupCond(g.key);
         if (!params) continue;
@@ -295,8 +357,6 @@ window.CmDashboardDataMng = {
       const key = row.inputOpts || DEFAULT_INPUT_OPTS;
       const params = fnGroupCond(key);
       if (!params) return;
-      const ok = await showConfirm('시뮬레이션', '[' + row.itemNm + '] 값을 자동 생성한 값으로 채웁니다.\n진행하시겠습니까?');
-      if (!ok) return;
       groupState[key].loading = true;
       try {
         const res = await boApiSvc.cmDashboard.simulateDataGrid(params, '대시보드데이타관리', '시뮬레이션');
@@ -495,12 +555,14 @@ window.CmDashboardDataMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 렌더) ######################################## */
 
-    /* fnColCount — 이 차트에서 실제로 쓰는 열(3레벨) 수. 마지막 입력열 +1 을 항상 열어둔다
-       (열을 추가하려고 별도 버튼을 누르지 않아도 되게) */
+    /* fnColCount — 이 차트에서 실제로 쓰는 열(3레벨) 수.
+       colsFixed(열 제목이 항목관리 정의에서 고정 — 지금은 항상 true) 인 차트는 화면에서 직접
+       열을 타이핑해 늘릴 수 없으므로 여백 없이 실제 개수만 보여준다(헤더 없는 빈 칸 렌더 방지).
+       colsFixed 가 아닌(직접입력) 차트만 마지막 입력열 +1 을 열어둔다(추가 버튼 없이 이어 입력) */
     const fnColCount = (chart) => {
       let last = -1;
       chart.colNms.forEach((nm, i) => { if (nm != null && String(nm).trim() !== '') last = i; });
-      return Math.min(last + 2, MAX_COLS);
+      return chart.colsFixed ? (last + 1) : Math.min(last + 2, MAX_COLS);
     };
 
     /* fnColCountRaw — colNms 중 실제 값이 있는 순수 개수(여백 +1 없음). 전치(transpose) 계산용 */
@@ -512,16 +574,17 @@ window.CmDashboardDataMng = {
 
     /* fnAxisBg — 시리즈 라벨과 항목 라벨의 배경을 서로 다르게(방향이 바뀌어도 축 종류로 고정) —
        ROW 든 COL 이든 "시리즈"가 놓인 자리는 항상 같은 색, "항목"이 놓인 자리는 항상 다른 색.
-       (어두운 계열은 가독성이 나빠 되돌림 — 둘 다 밝은 파스텔로만 구분한다)
+       (어두운 계열은 가독성이 나빠 되돌림 — 밝되 시리즈 쪽은 더 색감있게)
        side: 'row'=행 라벨 칸, 'col'=열 헤더 칸 */
-    const AXIS_BG = { series: '#fff7ed', item: '#eaf2ff' };   /* series = [시뮬레이션] 버튼과 같은 계열 */
+    const AXIS_BG = { series: '#ffe8cf', item: '#eaf2ff' };   /* series = 원래(#fff7ed) 쪽으로 한 단계 더 밝게 재조정 */
     const fnAxisBg = (chart, side) => {
       const rowIsSeries = chart.seriesOrientCd !== 'COL';
       const isSeries = side === 'row' ? rowIsSeries : !rowIsSeries;
       return isSeries ? AXIS_BG.series : AXIS_BG.item;
     };
 
-    /* fnAxisCodeColor — 라벨 아래 작은 코드(monospace) 글자색. 둘 다 밝은 배경이라 통일된 회색 */
+    /* fnAxisCodeColor — 라벨 아래 작은 코드(monospace) 글자색. 배경(series #fed9b1 / item #eaf2ff)
+       둘 다 다시 밝은 톤으로 자리잡아 통일된 회색으로도 대비 충분 */
     const fnAxisCodeColor = () => '#94a3b8';
 
     /* onOrientChange — 시리즈표시방법을 바꾸면 즉시 그리드를 뒤집어 미리 보여준다.
@@ -541,6 +604,11 @@ window.CmDashboardDataMng = {
           seriesCd: chart.colCds ? (chart.colCds[j] || '') : '',
           cellItemIds: chart.rows.map(r => r.cellItemIds[j]),
           vals: chart.rows.map(r => r.vals[j]),
+          /* 셀 단위 자동수집/편집가능 배열도 vals 와 나란히 전치해야 한다 — 안 그러면
+             방향전환 직후 row.cellAutoCollect/cellEditable 가 undefined 라 템플릿이
+             그 값을 읽다 그대로 터져서 카드 전체가 사라지는 버그가 났다(2026-08-21) */
+          cellAutoCollect: chart.rows.map(r => (r.cellAutoCollect ? r.cellAutoCollect[j] : false) || false),
+          cellEditable: chart.rows.map(r => (r.cellEditable ? r.cellEditable[j] : true) !== false),
         });
       }
       chart.colNms = newColNms;
@@ -560,6 +628,68 @@ window.CmDashboardDataMng = {
       return coUtil.cofFmt(sum);
     };
 
+    /* fnColSum — 항목(열) 합계 — 그리드 맨 아래 합계 행용. 모든 시리즈(행)의 그 열 값을 더한다 */
+    const fnColSum = (chart, colIdx) => {
+      let sum = 0;
+      (chart.rows || []).forEach(row => {
+        const v = Number(row.vals[colIdx]);
+        if (!Number.isNaN(v)) sum += v;
+      });
+      return coUtil.cofFmt(sum);
+    };
+
+    /* fnGrandTotal — 그리드 전체 총합 (합계 행 × 합계 열이 만나는 우하단 셀) */
+    const fnGrandTotal = (chart) => {
+      let sum = 0;
+      (chart.rows || []).forEach(row => {
+        for (let i = 0; i < fnColCount(chart); i++) {
+          const v = Number(row.vals[i]);
+          if (!Number.isNaN(v)) sum += v;
+        }
+      });
+      return coUtil.cofFmt(sum);
+    };
+
+    /* fnBuildChartOption — 그리드에 입력된 현재 값(chart.rows/colNms) 을 그대로 ECharts 옵션으로.
+       chart.rows/colNms 는 이미 시리즈표시방법(ROW/COL) 에 맞게 정리돼 있으므로 방향을 다시
+       가릴 필요 없이 그대로 축·시리즈로 쓰면 된다 (CmDashboardItemMng.js 의 cfAutoOption 과 같은 방식) */
+    const fnBuildChartOption = (chart) => {
+      const cats = (chart.colNms || []).slice(0, fnColCount(chart));
+      if (!cats.length) return {};
+      const at = (ri, ci) => { const v = Number(chart.rows[ri].vals[ci]); return Number.isNaN(v) ? 0 : v; };
+      const palette = (window.cmDashWidgetUtil && window.cmDashWidgetUtil.PALETTE) || ['#e8587a', '#3b82f6', '#16a34a', '#f59e0b', '#8b5cf6'];
+      const type = chart.chartTypeCd || 'bar';
+      if (type === 'pie' || type === 'doughnut') {
+        return {
+          tooltip: { trigger: 'item' },
+          legend: { bottom: 0, type: 'scroll' },
+          series: [{
+            type: 'pie',
+            radius: type === 'doughnut' ? ['40%', '65%'] : '60%',
+            center: ['50%', '45%'],
+            data: cats.map((c, ci) => ({ name: c, value: at(0, ci) })),
+          }],
+        };
+      }
+      const isArea = type === 'area';
+      const base = (isArea || type === 'line') ? 'line' : (type === 'radar' ? 'line' : type);
+      return {
+        tooltip: { trigger: 'axis' },
+        legend: { bottom: 0, type: 'scroll' },
+        grid: { left: 48, right: 16, top: 20, bottom: 48 },
+        xAxis: { type: 'category', data: cats },
+        yAxis: { type: 'value' },
+        series: (chart.rows || []).map((row, ri) => ({
+          name: row.seriesNm || '(단일)',
+          type: base === 'scatter' ? 'scatter' : base,
+          itemStyle: { color: palette[ri % palette.length] },
+          areaStyle: isArea ? {} : undefined,
+          smooth: base === 'line',
+          data: cats.map((c, ci) => at(ri, ci)),
+        })),
+      };
+    };
+
     /* fnGroupVendorNm — 그룹(key)에서 선택된 판매업체명 (안내 문구용) */
     const fnGroupVendorNm = (key) => {
       const gp = groupParams[key];
@@ -572,7 +702,9 @@ window.CmDashboardDataMng = {
     const fnGroupPeriodLabel = (key) => {
       const gp = groupParams[key];
       if (!gp) return '-';
-      return gp.periodTypeCd === 'M' ? (gp.ym || '-') + ' (월)' : (gp.ymd || '-') + ' (일자)';
+      if (gp.periodTypeCd === 'Y') return (gp.yyyy || '-') + ' (연도)';
+      if (gp.periodTypeCd === 'M') return (gp.ym || '-') + ' (월)';
+      return (gp.ymd || '-') + ' (일자)';
     };
 
     const columns = {};
@@ -609,7 +741,8 @@ window.CmDashboardDataMng = {
       searchParam, groupParams, groupState, modals, columns, MAX_COLS, cfCurDash,
       cfHasData, cfVisibleCharts, cfGroups, cfAnyGroupLoading, cfAnyGroupSaving,
       isDashItemChecked, cfAllDashItemsChecked, onToggleDashItemCheck, onToggleDashItemCheckAll,
-      fnColCount, fnRowSum, fnGroupPeriodLabel, fnGroupVendorNm, onOrientChange, fnAxisBg, fnAxisCodeColor,
+      fnColCount, fnRowSum, fnColSum, fnGrandTotal, fnBuildChartOption, previewOpen, fnTogglePreview, fnGroupPreviewSetAll,
+      fnGroupPeriodLabel, fnGroupVendorNm, fnGroupReady, onOrientChange, fnAxisBg, fnAxisCodeColor,
       handleBtnAction, handleGridCellAction, handleSimulateOne, handleSaveOrient, fnCallbackModal,
     };
   },
@@ -672,15 +805,25 @@ window.CmDashboardDataMng = {
 
     <div v-if="cfGroups.length" style="padding:12px;display:flex;flex-direction:column;gap:20px;">
       <!-- 그룹 하나 = 같은 input_opts 를 쓰는 위젯 묶음 -->
-      <div v-for="group in cfGroups" :key="group.key" style="border:1px solid #dbeafe;border-radius:10px;overflow:hidden;">
-        <!-- 그룹 미니 조회조건 바 -->
+      <div v-for="group in cfGroups" :key="group.key"
+        style="border:1px solid #2d4a75;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(30,58,95,.15);">
+        <!-- 그룹 조회조건 — 1행: input_opts 원문(짙은 배경) / 2행: 실제 조건 컴포넌트 -->
+        <div style="padding:7px 12px;background:linear-gradient(135deg,#1c2e4a,#2d4a75);display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;">⚙️</span>
+          <span style="font-family:monospace;font-size:11px;color:#dce6f7;letter-spacing:.3px;">{{ group.key }}</span>
+        </div>
         <div style="padding:8px 10px;background:#f0f6ff;border-bottom:1px solid #dbeafe;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="badge badge-blue" style="font-family:monospace;font-size:10px;">{{ group.key }}</span>
-          <span style="font-size:11px;color:#64748b;">{{ group.dims.periodTypeCd === 'M' ? '월별' : '일별' }}</span>
-          <input v-if="group.dims.periodTypeCd !== 'M'" type="date" class="form-control"
+          <span style="font-size:11px;color:#64748b;">
+            {{ group.dims.periodTypeCd === 'Y' ? '연도별' : (group.dims.periodTypeCd === 'M' ? '월별' : '일별') }}</span>
+          <select v-if="group.dims.hasSiteId" class="form-control" v-model="groupParams[group.key].siteId" style="width:150px;">
+            <option v-for="o in siteOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
+          </select>
+          <input v-if="group.dims.periodTypeCd === 'D'" type="date" class="form-control"
             v-model="groupParams[group.key].ymd" style="width:140px;" />
-          <input v-else type="month" class="form-control"
+          <input v-else-if="group.dims.periodTypeCd === 'M'" type="month" class="form-control"
             v-model="groupParams[group.key].ym" style="width:130px;" />
+          <input v-else type="number" class="form-control" min="2000" max="2999"
+            v-model="groupParams[group.key].yyyy" placeholder="연도(YYYY)" style="width:100px;" />
           <span v-if="group.dims.hasProdId" style="display:flex;align-items:center;gap:4px;">
             <input type="text" class="form-control" readonly :value="groupParams[group.key].prodNm"
               placeholder="상품 선택(선택)" style="width:130px;cursor:pointer;"
@@ -692,15 +835,25 @@ window.CmDashboardDataMng = {
             <option value="">업체 전체(선택)</option>
             <option v-for="v in vendors" :key="v.vendorId" :value="v.vendorId">{{ v.vendorNm }}</option>
           </select>
-          <button class="btn btn_search btn-sm" :disabled="groupState[group.key].loading"
+          <button class="btn btn-sm" style="background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;font-weight:700;"
+            :disabled="!fnGroupReady(group.key) || groupState[group.key].loading"
             @click="handleBtnAction('group-search', group.key)">조회</button>
-          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-            <button class="btn btn-sm" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-weight:700;"
-              :disabled="groupState[group.key].loading"
-              @click="handleBtnAction('group-simulateAll', group.key)">🎲 그룹 시뮬레이션</button>
-            <button class="btn btn_save btn-sm" :disabled="groupState[group.key].saving"
-              @click="handleBtnAction('group-save', group.key)">저장</button>
-          </span>
+        </div>
+        <!-- 2행: [조회] 이후 액션 버튼들 — 조건 컴포넌트와 줄을 분리해 넓어져도 안 밀리게 -->
+        <div style="padding:6px 10px;background:#f0f6ff;border-bottom:1px solid #dbeafe;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm" style="background:#f8fafc;color:#64748b;border:1px solid #cbd5e1;font-weight:700;"
+            :disabled="groupState[group.key].loading"
+            @click="handleBtnAction('group-clearValues', group.key)">값초기화</button>
+          <button class="btn btn-sm" style="background:#fffbeb;color:#b45309;border:1px solid #fde68a;font-weight:700;"
+            :disabled="groupState[group.key].loading"
+            @click="handleBtnAction('group-simulateEmpty', group.key)">🎲 빈값 시뮬</button>
+          <button class="btn btn-sm" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-weight:700;"
+            :disabled="groupState[group.key].loading"
+            @click="handleBtnAction('group-simulateAll', group.key)">🎲 모든값 시뮬</button>
+          <button class="btn btn_save btn-sm" :disabled="groupState[group.key].saving"
+            @click="handleBtnAction('group-save', group.key)">그룹 저장</button>
+          <button class="btn btn_expand_all btn-sm" @click="fnGroupPreviewSetAll(group, true)">미리보기 펼치기</button>
+          <button class="btn btn_collapse_all btn-sm" @click="fnGroupPreviewSetAll(group, false)">미리보기 접기</button>
         </div>
         <div v-if="groupState[group.key].searched" style="padding:4px 10px;font-size:11px;color:#94a3b8;background:#fafbfc;">
           기준: {{ fnGroupPeriodLabel(group.key) }}
@@ -712,16 +865,20 @@ window.CmDashboardDataMng = {
         <!-- 그룹에 속한 차트마다 그리드 1개: 행=시리즈(2레벨) / 열=항목명(3레벨) -->
         <div style="padding:12px;display:flex;flex-direction:column;gap:16px;">
           <div v-for="chart in group.charts.filter(c => !c._notLoaded)" :key="chart.dashboardItemId"
-            style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+            style="position:relative;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+            <!-- 자동수집 위젯 — 카드 상단 모서리 뱃지(배치가 채우는 값이라는 표시) -->
+            <span v-if="chart.autoCollectYn === 'Y'"
+              style="position:absolute;top:0;left:0;background:#16a34a;color:#fff;font-size:10px;font-weight:700;padding:2px 8px 3px 6px;border-radius:8px 0 8px 0;z-index:1;line-height:1.3;"
+              title="배치가 실 데이터를 집계해 채운다 — 이 화면에서 수정 불가">🤖 자동수집</span>
             <div style="padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
-              <span style="font-weight:700;font-size:12.5px;color:#1f4a73;white-space:nowrap;">
+              <span :style="'font-weight:700;font-size:12.5px;color:#1f4a73;white-space:nowrap;' + (chart.autoCollectYn === 'Y' ? 'margin-left:76px;' : '')">
                 {{ chart.itemNm }}
                 <span style="font-family:monospace;font-size:11px;color:#94a3b8;font-weight:400;">{{ chart.itemKey }}</span>
+                <span class="badge badge-blue">{{ chart.chartTypeCd || '-' }}</span>
               </span>
               <!-- 시뮬레이션부터 우측 정렬 -->
               <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-                <button class="btn btn-sm" :disabled="chart.autoCollectYn === 'Y' || groupState[group.key].loading"
-                  :title="chart.autoCollectYn === 'Y' ? '자동수집 항목은 시뮬레이션할 수 없습니다.' : ''"
+                <button class="btn btn-sm" :disabled="groupState[group.key].loading"
                   style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;font-weight:700;"
                   @click="handleSimulateOne(chart)">🎲 시뮬레이션</button>
                 <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b;">
@@ -732,11 +889,9 @@ window.CmDashboardDataMng = {
                     <option value="ROW">행 (시리즈=행 · 항목=열)</option>
                     <option value="COL">열 (항목=행 · 시리즈=열)</option>
                   </select>
-                  <button class="btn btn-sm btn_save" @click="handleSaveOrient(chart)">저장</button>
+                  <button class="btn" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;font-weight:700;padding:2px 6px;font-size:10.5px;min-height:24px;"
+                    @click="handleSaveOrient(chart)">표시방법저장</button>
                 </span>
-                <span v-if="chart.autoCollectYn === 'Y'" class="badge badge-green"
-                  title="배치가 실 데이터를 집계해 채운다 — 이 화면에서 수정 불가">🤖 자동수집</span>
-                <span class="badge badge-blue">{{ chart.chartTypeCd || '-' }}</span>
               </span>
             </div>
             <div style="overflow-x:auto;">
@@ -767,17 +922,50 @@ window.CmDashboardDataMng = {
                       <span v-if="row.seriesCd" :style="'font-family:monospace;font-size:10px;font-weight:400;color:' + fnAxisCodeColor(chart, 'row') + ';'">
                         {{ row.seriesCd }}</span>
                     </td>
-                    <td v-for="i in fnColCount(chart)" :key="i" style="background:#fff;">
+                    <td v-for="i in fnColCount(chart)" :key="i"
+                      :style="'position:relative;background:' + (row.cellEditable[i-1] ? '#fff' : '#f1f5f9') + ';'">
+                      <!-- 셀 단위 자동수집 표시(좌상단 녹색 코너 삼각형) — 1레벨(카드)의 자동수집
+                           배지는 그 차트에 자동수집 셀이 있다는 안내일 뿐, 카드 전체를 잠그지
+                           않는다. 입력 잠금은 오직 이 셀(3레벨 항목)의 editable_yn='N' 여부로만
+                           결정한다(cellEditable) — chart.editableYn 은 더 이상 disabled 조건에 안 씀.
+                           수정불가 셀은 클릭해봐야 알 수 있던 걸 회색 배경으로 미리 보이게 한다. -->
+                      <span v-if="row.cellAutoCollect[i-1]"
+                        style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
+                        title="이 항목은 배치가 자동수집한다 — 직접 수정 불가"></span>
                       <input type="number" class="form-control" v-model="row.vals[i-1]"
-                        :disabled="chart.editableYn === 'N'"
-                        style="text-align:right;padding:4px 6px;font-size:12px;min-height:26px;" />
+                        :disabled="!row.cellEditable[i-1]"
+                        :style="'text-align:right;padding:4px 6px;font-size:12px;min-height:26px;' + (row.cellEditable[i-1] ? '' : 'background:#e2e8f0;color:#64748b;')" />
                     </td>
-                    <td style="text-align:right;font-weight:700;color:#475569;background:#f8fafc;">
+                    <td style="text-align:right;font-weight:700;color:#475569;background:#e9edf3;">
                       {{ fnRowSum(chart, row) }}
                     </td>
                   </tr>
                 </tbody>
+                <tfoot>
+                  <!-- 그리드 맨 아래 합계 행 — 열(항목)별 합계 + 우하단 총합 -->
+                  <tr>
+                    <td style="font-weight:700;background:#eef1f5;color:#475569;">합계</td>
+                    <td v-for="i in fnColCount(chart)" :key="i"
+                      style="text-align:right;font-weight:700;background:#eef1f5;color:#475569;">
+                      {{ fnColSum(chart, i-1) }}
+                    </td>
+                    <td style="text-align:right;font-weight:700;background:#e9edf3;color:#1f4a73;">
+                      {{ fnGrandTotal(chart) }}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
+            </div>
+            <!-- 미리보기 — 기본 접힘, 펼치면 현재 입력값 기준 실제 차트로 렌더 -->
+            <div style="border-top:1px solid #e5e7eb;">
+              <div style="padding:5px 10px;background:#fafbfc;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11.5px;color:#64748b;"
+                @click="fnTogglePreview(chart.dashboardItemId)">
+                <span style="width:10px;font-size:10px;">{{ previewOpen[chart.dashboardItemId] ? '▼' : '▶' }}</span>
+                미리보기
+              </div>
+              <div v-if="previewOpen[chart.dashboardItemId]" style="padding:8px;">
+                <co-echart :option="fnBuildChartOption(chart)" height="220px" not-merge />
+              </div>
             </div>
           </div>
           <div v-if="!group.charts.some(c => !c._notLoaded)" style="padding:16px;text-align:center;color:#aaa;font-size:12px;">

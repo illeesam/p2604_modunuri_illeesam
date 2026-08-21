@@ -124,7 +124,7 @@ public class CmDashboardItem extends BaseEntity {
     @Size(max = 1, message = "editableYn 는 1자 이내여야 합니다.")
     private String editableYn;
 
-    @Comment("이 차트의 값을 찾는 기준 차원 키(cm_dashboard_data.data_opts 와 같은 key:value 콤마결합 형식). 비어있으면 기본값 적용: period_type_cd:M,site_id,yyyymmdd. chart(1레벨)에서만 의미")
+    @Comment("이 차트의 값을 찾는 기준 차원 키. 콤마로 나눈 조회조건 토큰 목록(값 없는 존재여부 표기) — 예: site_id,yyyymm(월별) / site_id,yyyymmdd(일별) / site_id,yyyy(연도별) / site_id,yyyymm,prod_id,vendor_id. 날짜 토큰명(yyyy/yyyymm/yyyymmdd) 자체가 기간구분을 겸한다(2026-08-21 개편, period_type_cd:M 같은 별도 토큰 폐기). 비어있으면 기본값 적용: site_id,yyyymm. chart(1레벨)에서만 의미")
     @Column(name = "input_opts", length = 200)
     @Size(max = 200, message = "inputOpts 는 200자 이내여야 합니다.")
     private String inputOpts;
