@@ -193,8 +193,8 @@ window.Prod01View = {
     const svQnas           = reactive([]);  // Q&A
     const svPromotions    = reactive({});  // 프로모션 (쿠폰/할인/사은품/이벤트)
 
-    /* fnGetProdIdFromHash — coUtil.cofProdIdFromHash 위임 (#...&prodid= 추출) */
-    const fnGetProdIdFromHash = () => coUtil.cofProdIdFromHash();
+    /* fnGetProdIdFromUrl — coUtil.cofProdIdFromUrl 위임 (#...&prodid= 추출) */
+    const fnGetProdIdFromUrl = () => coUtil.cofProdIdFromUrl();
 
     /* fnPickData — 유틸 */
     const fnPickData = (res) => res?.data?.data ?? res?.data ?? null;
@@ -208,7 +208,7 @@ window.Prod01View = {
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
-      const prodId = fnGetProdIdFromHash() || svProduct.prodId;
+      const prodId = fnGetProdIdFromUrl() || svProduct.prodId;
       if (!prodId) { return; }
       /* Tier 1: 첫 화면 통합 (prod + images + opts + skus) */
       try {

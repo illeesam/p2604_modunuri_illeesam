@@ -303,7 +303,8 @@ window.PdProdMng = {
 
     /* previewProduct — 미리보기 (새창) */
     const previewProduct = (prodId) => {
-      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+      /* FO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환(SEO용) */
+      window.open(`${window.pageUrl('index.html')}?page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
     /* openCatModal — 카테고리 모달 열기 */

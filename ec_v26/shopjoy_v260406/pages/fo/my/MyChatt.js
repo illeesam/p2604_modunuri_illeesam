@@ -1,4 +1,4 @@
-/* ShopJoy - My 채팅 페이지 (#page=myChatt) */
+/* ShopJoy - My 채팅 페이지 (?page=myChatt) */
 window.MyChatt = {
   name: 'MyChatt',
   props: {

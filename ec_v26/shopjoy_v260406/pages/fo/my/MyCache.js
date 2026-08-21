@@ -1,4 +1,4 @@
-/* ShopJoy - My 캐쉬 페이지 (#page=myCache) */
+/* ShopJoy - My 캐쉬 페이지 (?page=myCache) */
 window.MyCache = {
   name: 'MyCache',
   props: {

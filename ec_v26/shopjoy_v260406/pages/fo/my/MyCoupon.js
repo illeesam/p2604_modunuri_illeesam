@@ -1,4 +1,4 @@
-/* ShopJoy - My 쿠폰 페이지 (#page=myCoupon) */
+/* ShopJoy - My 쿠폰 페이지 (?page=myCoupon) */
 window.MyCoupon = {
   name: 'MyCoupon',
   props: {

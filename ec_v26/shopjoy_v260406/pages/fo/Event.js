@@ -161,10 +161,11 @@ window.EventPage = {
 
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
-      /* URL 해시에 eventId 파라미터가 있으면 검색창에 채우고 조회 */
+      /* URL 쿼리스트링에 eventId 파라미터가 있으면 검색창에 채우고 조회
+         (2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — SEO용) */
       try {
-        const hash = window.location.hash || '';
-        const m = hash.match(/[?&]eventId=([^&]+)/);
+        const query = window.location.search || '';
+        const m = query.match(/[?&]eventId=([^&]+)/);
         if (m) { searchValue.value = decodeURIComponent(m[1]); }
       } catch (_) {}
       handleSearchList();

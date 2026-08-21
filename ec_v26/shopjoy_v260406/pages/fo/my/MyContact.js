@@ -1,4 +1,4 @@
-/* ShopJoy - My 문의 페이지 (#page=myContact) */
+/* ShopJoy - My 문의 페이지 (?page=myContact) */
 window.MyContact = {
   name: 'MyContact',
   props: {

@@ -1636,7 +1636,8 @@ window.PdProdDtl = {
     /* onPreview — 이벤트 */
     const onPreview = () => {
       if (!cfHasProdId.value) { showToast('상품 등록 후 미리보기 가능합니다.', 'error'); return; }
-      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${cfCurProdId.value}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+      /* FO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환(SEO용) */
+      window.open(`${window.pageUrl('index.html')}?page=prodView&prodid=${cfCurProdId.value}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
     /* 공통코드 그룹 미리보기 모달 (BoCodeGrpModal) */
     const codeGrpModal = reactive({ show: false, codeGrp: '', title: '' });

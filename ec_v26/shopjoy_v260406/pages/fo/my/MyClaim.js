@@ -1,4 +1,4 @@
-﻿/* ShopJoy - My 취소/반품/교환 페이지 (#page=myClaim) */
+﻿/* ShopJoy - My 취소/반품/교환 페이지 (?page=myClaim) */
 window.MyClaim = {
   name: 'MyClaim',
   props: {

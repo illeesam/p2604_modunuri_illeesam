@@ -98,12 +98,12 @@
       if (st === 401) {
         errorMessage.value = msg;
         page.value = 'error401';
-        try { window.history.replaceState(null, '', '#page=error401'); } catch (_) {}
+        try { window.history.replaceState(null, '', window.location.pathname + '?page=error401'); } catch (_) {}
       }
       else if (st >= 500 || st === 0) {
         errorMessage.value = msg;
         page.value = 'error500';
-        try { window.history.replaceState(null, '', '#page=error500'); } catch (_) {}
+        try { window.history.replaceState(null, '', window.location.pathname + '?page=error500'); } catch (_) {}
       }
     });
     const sidebarOpen = ref(true);
@@ -446,9 +446,9 @@
         }
       } catch (e) {}
       try {
-        const rawHash = String(window.location.hash || '').replace(/^#/, '');
-        if (rawHash.includes('page=')) {
-          const hpid = new URLSearchParams(rawHash).get('prodid') || '';
+        const rawQuery = String(window.location.search || '').replace(/^\?/, '');
+        if (rawQuery.includes('page=')) {
+          const hpid = new URLSearchParams(rawQuery).get('prodid') || '';
           if (hpid) {
             const f = prods.find(x => String(x.prodId) === hpid);
             if (f) selectedProd.value = f;
@@ -572,9 +572,9 @@
       'xsStore', 'xsLocalStorage',
       'error401','error404','error500'];
     try {
-      const rawHash = String(window.location.hash || '').replace(/^#/, '');
-      const hasPageParam = rawHash.includes('page=');
-      const params = hasPageParam ? new URLSearchParams(rawHash) : null;
+      const rawQuery = String(window.location.search || '').replace(/^\?/, '');
+      const hasPageParam = rawQuery.includes('page=');
+      const params = hasPageParam ? new URLSearchParams(rawQuery) : null;
 
       if (hasPageParam) {
         const hPage = params.get('page');
@@ -597,15 +597,18 @@
     } catch(e) {}
     restoring = false;
 
-    let syncingFromHash = false;
+    let syncingFromUrl = false;
 
-    /* onHashChange */
-    const onHashChange = () => {
-      if (syncingFromHash) return;
-      syncingFromHash = true;
+    /* onAppPopState — 뒤로/앞으로가기(popstate) 시 현재 쿼리스트링 기준으로 상태 복원.
+       (2026-08-22 해시(#page=) → 쿼리스트링(?page=) 전환 — SEO 를 위해 검색엔진에
+       상품/이벤트 페이지가 서로 다른 URL로 보이도록 함. history.pushState 는 hashchange 같은
+       자동 이벤트가 없어서, 뒤로/앞으로가기는 popstate 로만 감지된다) */
+    const onAppPopState = () => {
+      if (syncingFromUrl) return;
+      syncingFromUrl = true;
       try {
-        const rawHash = String(window.location.hash || '').replace(/^#/, '');
-        const params = new URLSearchParams(rawHash);
+        const rawQuery = String(window.location.search || '').replace(/^\?/, '');
+        const params = new URLSearchParams(rawQuery);
         const hPage = params.get('page');
         // 동일 값 set 으로 인한 reactive 무한 갱신 방지
         if (hPage && validPages.includes(hPage) && page.value !== hPage && fnCanEnterPage(hPage)) page.value = hPage;
@@ -633,12 +636,12 @@
                         : viewEditId.value;
         if (newViewId !== viewEditId.value) viewEditId.value = newViewId;
       } catch(e) {}
-      setTimeout(() => { syncingFromHash = false; }, 0);
+      setTimeout(() => { syncingFromUrl = false; }, 0);
     };
-    window.addEventListener('hashchange', onHashChange);
+    window.addEventListener('popstate', onAppPopState);
 
     watch(page, id => {
-      if (restoring || syncingFromHash) return;
+      if (restoring || syncingFromUrl) return;
       const params = new URLSearchParams();
       params.set('page', page.value);
       if (id === 'prodView') {
@@ -657,31 +660,31 @@
       if ((id === 'blogView' || id === 'blogEdit') && viewEditId.value != null) {
         params.set('dtlId', viewEditId.value);
       }
-      const hash = params.toString();
-      const url = window.location.pathname + window.location.search + '#' + hash;
-      // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
-      const curHash = String(window.location.hash || '').replace(/^#/, '');
-      if (curHash === hash) return;
+      const query = params.toString();
+      const url = window.location.pathname + '?' + query;
+      // 동일 쿼리 재설정 시 불필요한 히스토리 엔트리 방지
+      const curQuery = String(window.location.search || '').replace(/^\?/, '');
+      if (curQuery === query) return;
       if (replaceNextHash) {
         replaceNextHash = false;
-        try { history.replaceState(null, '', url); } catch (e) { window.location.hash = hash; }
+        try { history.replaceState(null, '', url); } catch (e) {}
       } else {
-        window.location.hash = hash;
+        try { history.pushState(null, '', url); } catch (e) {}
       }
     });
 
     try {
-      const raw = String(window.location.hash || '').replace(/^#/, '');
+      const raw = String(window.location.search || '').replace(/^\?/, '');
       if (!raw || !raw.includes('page=')) {
         const pr = new URLSearchParams();
         pr.set('page', page.value);
         if (page.value === 'prodView') pr.set('prodid', String(selectedProd.value?.prodId ?? ''));
-        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + pr.toString());
+        history.replaceState(null, '', window.location.pathname + '?' + pr.toString());
       }
     } catch (e) {}
 
     onBeforeUnmount(() => {
-      window.removeEventListener('hashchange', onHashChange);
+      window.removeEventListener('popstate', onAppPopState);
     });
 
     /* ── Loading done ── */
@@ -757,7 +760,7 @@
       cfShowSidebar,
       onToggleApiLog: () => { showApiLog.value = !showApiLog.value; showSettings.value = false; },
       notFoundPageId: computed(() => {
-        try { return new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('page') || ''; } catch(e) { return ''; }
+        try { return new URLSearchParams(String(window.location.search || '').replace(/^\?/, '')).get('page') || ''; } catch(e) { return ''; }
       }),
       errorMessage,
       safe: window.safeUtil,

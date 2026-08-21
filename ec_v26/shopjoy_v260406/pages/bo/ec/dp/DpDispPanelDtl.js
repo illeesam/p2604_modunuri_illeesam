@@ -701,8 +701,10 @@ window.DpDispPanelDtl = {
       if (!action || action === 'none') { return; }
       if (action === 'navigate') {
         if (!target) { showToast && showToast('이동 대상(경로)이 설정되지 않았습니다.', 'error'); return; }
-        /* FO 해시 라우팅 경로는 새 탭에서 index.html#... 으로 오픈 */
-        const path = target.startsWith('#') ? target : ('#' + target.replace(/^\//, ''));
+        /* FO 라우팅 경로는 새 탭에서 index.html?... 으로 오픈 (2026-08-22 해시(#)에서
+           쿼리스트링(?)으로 전환 — SEO용. 위젯에 예전 '#...' 형식으로 저장된 값도 호환) */
+        const cleaned = target.replace(/^[#?]/, '').replace(/^\//, '');
+        const path = '?' + cleaned;
         window.open('index.html' + path, '_blank');
         return;
       }

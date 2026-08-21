@@ -80,11 +80,12 @@
         const nextAuthId = _store.svAuthUser?.authId || '';
         /* 이전에 로그인 상태였고(prev !== '') 사용자가 바뀐 경우에만 reload */
         if (prevAuthId && prevAuthId !== nextAuthId) {
-          /* 인증 필요 페이지(마이페이지/주문 등)에 머물러 있으면 reload 후 다시 진입하지 않도록 home 으로 해시 변경.
+          /* 인증 필요 페이지(마이페이지/주문 등)에 머물러 있으면 reload 후 다시 진입하지 않도록 home 으로
+           * URL 변경(2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — SEO용).
            * 로그아웃·타계정 변경 후 이전 회원의 인증 페이지에 남는 것 방지. */
-          const curPage = (new URLSearchParams((location.hash || '').replace(/^#/, ''))).get('page') || '';
+          const curPage = (new URLSearchParams((location.search || '').replace(/^\?/, ''))).get('page') || '';
           if (AUTH_PAGES.includes(curPage)) {
-            location.hash = '#page=home';
+            try { history.replaceState(null, '', location.pathname + '?page=home'); } catch (_) {}
           }
           location.reload();
         }

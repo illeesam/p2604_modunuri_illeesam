@@ -201,7 +201,8 @@ window.PdReviewMng = {
     /* previewProduct — 미리보기 상품 */
     const previewProduct = (prodId) => {
       if (!prodId) { return; }
-      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+      /* FO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환(SEO용) */
+      window.open(`${window.pageUrl('index.html')}?page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
     /* ── 상품ID 클릭 → 하단에 해당 상품의 리뷰 페이징 목록 ─── */

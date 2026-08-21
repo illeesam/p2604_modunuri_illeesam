@@ -923,12 +923,13 @@
     return p;
   }
 
-  /* cofProdIdFromHash — 현재 URL 해시(#page=prodView&prodid=...)에서 prodid 추출.
-   *   Prod*View.fnGetProdIdFromHash 통합. 실패 시 ''. */
-  function cofProdIdFromHash() {
+  /* cofProdIdFromUrl — 현재 URL 쿼리스트링(?page=prodView&prodid=...)에서 prodid 추출.
+   *   Prod*View.fnGetProdIdFromUrl 통합. 실패 시 ''.
+   *   (2026-08-22 이름 변경 — 예전엔 해시(#)에서 읽었으나 SEO 위해 쿼리스트링(?)으로 전환) */
+  function cofProdIdFromUrl() {
     try {
-      var rawHash = String(window.location.hash || '').replace(/^#/, '');
-      return new URLSearchParams(rawHash).get('prodid') || '';
+      var rawQuery = String(window.location.search || '').replace(/^\?/, '');
+      return new URLSearchParams(rawQuery).get('prodid') || '';
     } catch (e) { return ''; }
   }
 
@@ -1230,7 +1231,7 @@
   // FO 상품 공용 헬퍼
   global.coUtil.cofGenId = global.coUtil.cofGenId || cofGenId;
   global.coUtil.cofAssignProdImage = global.coUtil.cofAssignProdImage || cofAssignProdImage;
-  global.coUtil.cofProdIdFromHash = global.coUtil.cofProdIdFromHash || cofProdIdFromHash;
+  global.coUtil.cofProdIdFromUrl = global.coUtil.cofProdIdFromUrl || cofProdIdFromUrl;
   global.coUtil.cofCategoryLabel = global.coUtil.cofCategoryLabel || cofCategoryLabel;
   global.coUtil.cofToggleSet = global.coUtil.cofToggleSet || cofToggleSet;
   global.coUtil.cofBannerTimer = global.coUtil.cofBannerTimer || cofBannerTimer;

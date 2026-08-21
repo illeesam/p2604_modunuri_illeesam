@@ -87,7 +87,7 @@ window.foAppFooter = {
       } else if (cmd === 'chat-goLogin') {
         chatState.open = false;
         if (typeof window.navigate === 'function') { window.navigate('login'); }
-        else { window.location.hash = '#page=login'; }
+        else { window.location.href = window.location.pathname + '?page=login'; }
         return;
       // 참여자 툴팁 토글
       } else if (cmd === 'chat-tooltip') {
@@ -269,7 +269,9 @@ window.foAppFooter = {
     /* goItem — 이동 */
     const goItem = (root, target) => {
       if (root === 'foOffice') {
-        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
+        /* FO 라우팅은 쿼리스트링 기반(?page=) 이다(2026-08-22, 검색엔진 색인용 — 해시(#)는
+           서버로 전송되지 않아 상품/이벤트별로 별도 URL 취급을 못 받는다) */
+        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '?page=' + target : '');
         if (target && typeof window.navigate === 'function') { window.navigate(target); }
       } else if (root === 'boOffice') {
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');

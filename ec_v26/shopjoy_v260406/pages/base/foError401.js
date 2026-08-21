@@ -5,7 +5,7 @@ window.foError401 = {
   methods: {
     openLogin() {
       if (typeof this.navigate === 'function') this.navigate('login');
-      else location.hash = '#page=login';
+      else location.href = location.pathname + '?page=login';
     },
   },
   template: /* html */`

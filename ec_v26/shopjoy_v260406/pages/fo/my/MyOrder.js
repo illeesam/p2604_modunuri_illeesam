@@ -1,4 +1,4 @@
-﻿/* ShopJoy - My 주문 페이지 (#page=myOrder) */
+﻿/* ShopJoy - My 주문 페이지 (?page=myOrder) */
 window.MyOrder = {
   name: 'MyOrder',
   props: {
