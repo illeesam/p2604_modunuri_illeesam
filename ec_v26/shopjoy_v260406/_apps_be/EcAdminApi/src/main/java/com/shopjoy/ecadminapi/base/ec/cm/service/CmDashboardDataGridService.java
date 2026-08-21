@@ -307,11 +307,26 @@ public class CmDashboardDataGridService {
         LocalDateTime now = LocalDateTime.now();
         String chartCd = nvlStr(ch.getItemKey(), "");
 
-        List<?> rawRows;
+        /* JPA em.createNativeQuery() 는 내부적으로 Hibernate 네임드파라미터 파서를 거치는데,
+           이 파서가 PostgreSQL 캐스트 연산자 "::int" 를 콜론+식별자(":int")로 오인식해
+           콜론 하나를 삼켜버리는 문제가 있다(관리자가 작성한 SQL에 ::캐스트가 매우 흔함).
+           그래서 이 구간만 Hibernate 파서를 우회하는 순수 JDBC Statement 로 직접 실행한다. */
+        List<Object[]> rawRows = new ArrayList<>();
         try {
-            jakarta.persistence.Query q = em.createNativeQuery(wrapped);
-            q.setHint("jakarta.persistence.query.timeout", 5000);
-            rawRows = q.getResultList();
+            org.hibernate.Session session = em.unwrap(org.hibernate.Session.class);
+            session.doWork(conn -> {
+                try (java.sql.Statement st = conn.createStatement()) {
+                    st.setQueryTimeout(5);
+                    try (java.sql.ResultSet rs = st.executeQuery(wrapped)) {
+                        int colCount = rs.getMetaData().getColumnCount();
+                        while (rs.next()) {
+                            Object[] row = new Object[colCount];
+                            for (int i = 0; i < colCount; i++) row[i] = rs.getObject(i + 1);
+                            rawRows.add(row);
+                        }
+                    }
+                }
+            });
         } catch (Exception e) {
             throw new CmBizException("쿼리 실행 오류: " + e.getMessage());
         }
@@ -321,12 +336,18 @@ public class CmDashboardDataGridService {
         for (CmDashboardItem d : descendantsOf(ch)) exist.put(d.getItemKey(), d);
         Set<String> keep = new LinkedHashSet<>();
 
+        /* 이번 실행 결과는 전부 "같은 스냅샷" 이다 — chart036 월별 백필(연도마다 12개월 항목이
+           전부 같은 yyyymmdd 태그를 공유)과 동일한 패턴. 항목마다 따로 계산하면(예: 연도별
+           차트에서 "2024년" 항목에 yyyymmdd=20240000 을 매기는 식) 조회 시 딱 그 항목 하나만
+           우연히 걸리고 나머지는 안 보이는 버그가 난다 — 그래서 실행 전체에서 딱 한 번만
+           기준일자(refYmd) 로 정하고, 이번에 갱신되는 모든 시리즈·항목 값이 이 태그 하나를 같이 쓴다. */
+        String[] runPeriod = deriveRunPeriodFromInputOpts(nvlStr(ch.getInputOpts(), ""), refYmd);
+
         Map<String, Integer> seriesOrd = new LinkedHashMap<>();
         Map<String, Integer> itemOrd = new LinkedHashMap<>();
         int upSer = 0, upItm = 0, upVal = 0;
 
-        for (Object rowObj : rawRows) {
-            Object[] r = (Object[]) rowObj;
+        for (Object[] r : rawRows) {
             String seriesCd = str(r[0]);
             String seriesNm = str(r[1]);
             String itemCd   = str(r[2]);
@@ -350,11 +371,21 @@ public class CmDashboardDataGridService {
             upItm++;
 
             if (val != null) {
-                CmDashboardData e = upsert(it.getDashboardItemId(), siteId, null, null, null, null, ch, authId, now);
+                String[] period = derivePeriodFromInputOpts(nvlStr(ch.getInputOpts(), ""), itemCd, refYmd);
+                CmDashboardData e = upsert(it.getDashboardItemId(), siteId, period[0], period[1], null, null, ch, authId, now);
                 e.setDataVal(val);
                 dataRepository.save(e);
                 upVal++;
             }
+        }
+        /* 남은 것 = 이번 쿼리 결과에 없는 옛 시리즈·항목(예: 매뉴얼 시절 잔재, 쿼리 변경으로
+           사라진 코드) → 붙어있던 데이터까지 함께 정리한다(syncChildren 과 동일한 정책) */
+        int delRow = 0, delData = 0;
+        for (Map.Entry<String, CmDashboardItem> e : exist.entrySet()) {
+            if (keep.contains(e.getKey())) continue;
+            delData += dataRepository.deleteByItemKey(e.getKey());
+            itemRepository.delete(e.getValue());
+            delRow++;
         }
         em.flush();
 
@@ -362,7 +393,28 @@ public class CmDashboardDataGridService {
         out.put("series", upSer);
         out.put("items", upItm);
         out.put("values", upVal);
+        out.put("deletedRows", delRow);
+        out.put("deletedValues", delData);
         return out;
+    }
+
+    /**
+     * 쿼리방식 생성 결과의 항목코드(item_cd)를 차트의 input_opts 기간 토큰에 맞춰
+     * (yyyymmdd, periodTypeCd) 로 변환한다. {@code cm_dashboard_data.yyyymmdd} 는
+     * NOT NULL 이므로 항상 8자리 값을 채워야 한다(D=YYYYMMDD/M=YYYYMM00/Y=YYYY0000 —
+     * 프로젝트 공통 관례). 기간 토큰이 없는 차트(상품/업체별 등)는 기준일자를
+     * "as of" 스냅샷으로 그대로 채우고 periodTypeCd 는 null 로 둔다.
+     */
+    private String[] derivePeriodFromInputOpts(String inputOpts, String itemCd, String refYmd) {
+        Set<String> tokens = new LinkedHashSet<>(List.of(inputOpts.split(",")));
+        String cd = nvlStr(itemCd, "").replaceAll("\\D", "");
+        if (tokens.contains("yyyymmdd") && cd.length() >= 8)
+            return new String[]{cd.substring(0, 8), "D"};
+        if (tokens.contains("yyyymm") && cd.length() >= 6)
+            return new String[]{cd.substring(0, 6) + "00", "M"};
+        if (tokens.contains("yyyy") && cd.length() >= 4)
+            return new String[]{cd.substring(0, 4) + "0000", "Y"};
+        return new String[]{refYmd, null};
     }
 
     /** 차트 아래 모든 시리즈·항목 행 */
@@ -564,18 +616,57 @@ public class CmDashboardDataGridService {
     public Map<String, Object> getGrids(String dashboardId, String siteId, String yyyymmdd,
                                         String prodId, String vendorId) {
         requireCond(siteId, yyyymmdd);
-
-        /* 정의 트리를 통째로 읽어 차트 -> 시리즈 -> 항목 으로 묶는다 (행이 곧 구조) */
         List<CmDashboardItem> all = itemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
+        Comparator<CmDashboardItem> bySort = Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
+        List<CmDashboardItem> charts0 = all.stream()
+            .filter(it -> "chart".equals(it.getItemTypeCd()) && !"N".equals(it.getUseYn()))
+            .sorted(bySort).toList();
+        return buildGridResult(all, charts0, siteId, yyyymmdd, prodId, vendorId);
+    }
+
+    /**
+     * 그리드 조회 — 서로 다른 대시보드에 걸친 차트도 한 번에 조회한다(2026-08-21).
+     * '대시보드 데이타관리' 화면이 위젯을 input_opts(조회조건 구성) 별로 묶어 그룹 단위로
+     * [조회]하는데, 그 그룹에 서로 다른 대시보드의 차트가 섞여 있을 수 있어(전체 대시보드
+     * 목록에서 여러 대시보드 위젯을 함께 체크) dashboardId 하나로 좁히지 않고 정확한
+     * 차트 dashboardItemId 목록을 그대로 받는다.
+     *
+     * @param chartIds 조회할 차트(1레벨) dashboardItemId 목록 — 요청 순서를 그대로 유지한다
+     */
+    public Map<String, Object> getGridsByCharts(List<String> chartIds, String siteId, String yyyymmdd,
+                                                String prodId, String vendorId) {
+        requireCond(siteId, yyyymmdd);
+        if (chartIds == null || chartIds.isEmpty())
+            throw new CmBizException("조회할 차트 목록이 비어 있습니다.");
+
+        Map<String, CmDashboardItem> byId = new LinkedHashMap<>();
+        itemRepository.findAllById(chartIds).forEach(it -> byId.put(it.getDashboardItemId(), it));
+        List<CmDashboardItem> charts0 = chartIds.stream()
+            .map(byId::get)
+            .filter(it -> it != null && "chart".equals(it.getItemTypeCd()) && !"N".equals(it.getUseYn()))
+            .toList();
+        if (charts0.isEmpty())
+            throw new CmBizException("조회할 수 있는 차트가 없습니다.");
+
+        /* 이 차트들이 속한 대시보드 전체 트리를 모아 부모-자식(시리즈·항목) 관계를 파악한다 */
+        Set<String> dashboardIds = new LinkedHashSet<>();
+        charts0.forEach(ch -> dashboardIds.add(ch.getDashboardId()));
+        List<CmDashboardItem> all = new ArrayList<>();
+        for (String did : dashboardIds) all.addAll(itemRepository.findByDashboardIdOrderBySortOrdAsc(did));
+
+        return buildGridResult(all, charts0, siteId, yyyymmdd, prodId, vendorId);
+    }
+
+    /** getGrids / getGridsByCharts 공용 — all(정의 트리 전체) + charts0(그릴 차트 목록)으로 그리드를 만든다 */
+    private Map<String, Object> buildGridResult(List<CmDashboardItem> all, List<CmDashboardItem> charts0,
+                                                String siteId, String yyyymmdd, String prodId, String vendorId) {
         Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
-        List<CmDashboardItem> charts0 = new ArrayList<>();
         for (CmDashboardItem it : all) {
-            if ("chart".equals(it.getItemTypeCd())) { if (!"N".equals(it.getUseYn())) charts0.add(it); }
-            else byParent.computeIfAbsent(nvlStr(it.getParentDashboardItemId(), ""), k -> new ArrayList<>()).add(it);
+            if (!"chart".equals(it.getItemTypeCd()))
+                byParent.computeIfAbsent(nvlStr(it.getParentDashboardItemId(), ""), k -> new ArrayList<>()).add(it);
         }
         Comparator<CmDashboardItem> bySort = Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
         byParent.values().forEach(v -> v.sort(bySort));
-        charts0.sort(bySort);
 
         /* 값은 항상 3레벨(항목) 행에만 붙으므로 정의행 전체를 한 번에 읽어 매칭한다 */
         List<String> allIds = all.stream().map(CmDashboardItem::getDashboardItemId).toList();

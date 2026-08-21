@@ -346,14 +346,27 @@ public class BoCmDashboardController {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getItemTree(dashboardId)));
     }
 
-    /** 그리드 조회 — 대시보드 안의 CHART 항목마다 그리드 1개를 만들어 돌려준다 */
+    /**
+     * 그리드 조회 — CHART 항목마다 그리드 1개를 만들어 돌려준다.
+     * {@code chartIds}(콤마구분, 서로 다른 대시보드 섞여도 됨)를 주면 그 차트들만 정확히 조회하고,
+     * 없으면 {@code dashboardId} 하나로 그 안의 차트 전체를 조회한다(구 방식, 하위호환).
+     */
     @GetMapping("/data-grid")
     public ResponseEntity<ApiResponse<Map<String, Object>>> dataGrid(
-            @RequestParam String dashboardId,
+            @RequestParam(required = false) String dashboardId,
+            @RequestParam(required = false) String chartIds,
             @RequestParam String siteId,
             @RequestParam String yyyymmdd,
             @RequestParam(required = false) String prodId,
             @RequestParam(required = false) String vendorId) {
+        if (chartIds != null && !chartIds.isBlank()) {
+            List<String> ids = java.util.Arrays.stream(chartIds.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).toList();
+            return ResponseEntity.ok(ApiResponse.ok(
+                cmDashboardDataGridService.getGridsByCharts(ids, siteId, yyyymmdd, prodId, vendorId)));
+        }
+        if (dashboardId == null || dashboardId.isBlank())
+            throw new com.shopjoy.ecadminapi.common.exception.CmBizException("dashboardId 또는 chartIds 중 하나는 필수입니다.");
         return ResponseEntity.ok(ApiResponse.ok(
             cmDashboardDataGridService.getGrids(dashboardId, siteId, yyyymmdd, prodId, vendorId)));
     }

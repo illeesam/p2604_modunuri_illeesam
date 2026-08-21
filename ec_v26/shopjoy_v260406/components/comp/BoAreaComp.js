@@ -674,6 +674,7 @@ window.BoGrid = {
     loading:        { type: Boolean, default: false },            // 조회 중: 툴바 '⏳ 조회 중…' + 기존 행 위 오버레이 + 빈 목록 문구 전환
     emptyText:      { type: String, default: '데이터가 없습니다.' },
     tableMaxHeight: { type: String, default: null },             // 테이블 영역 최대 높이 (예: '320px'). null=기본(calc(100vh-380px))
+    fixedHeight:    { type: Boolean, default: false },           // true=tableMaxHeight 를 고정 height 로 적용(행이 적어도 빈 공간 유지, 페이징 시 하단 요소 안 흔들림). false(기본)=max-height(내용만큼 줄어듦)
     bare:           { type: Boolean, default: false },           // true=card/toolbar/pager 없이 <table>만 (뷰토글·공용페이저·인라인Dtl 화면용)
     narrow:         { type: Boolean, default: false },           // true=.bo-table 기본 min-width(720px) 해제. .bo-2col 좌측처럼 좁은 선택 목록용
     selectable: { type: Boolean, default: false },               // true=좌측 체크박스 컬럼 + 헤더 전체선택 (일괄작업 목록용). 기본 off → 기존 화면 무영향
@@ -919,7 +920,7 @@ window.BoGrid = {
        tableMaxHeight 를 주면(bare 포함) 자체 스크롤 컨테이너가 되어 무한 스크롤이 동작한다. */
     const cfBodyStyle = Vue.computed(() => (
       props.tableMaxHeight
-        ? 'max-height:' + cfScrollMaxHeight.value + ';overflow:auto;position:relative;'
+        ? (props.fixedHeight ? 'height:' : 'max-height:') + cfScrollMaxHeight.value + ';overflow:auto;position:relative;'
         : 'overflow-x:auto;position:relative;'
     ));
 

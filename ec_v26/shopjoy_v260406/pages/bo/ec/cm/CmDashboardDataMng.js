@@ -36,8 +36,13 @@ window.CmDashboardDataMng = {
         colorPaletteCd2: 'DASH_WIDGET_COLORS_02' }); /* 2=항목(파이 조각/누적막대 합계마커) 색상 순서 */
 
     const dashboards  = reactive([]);   /* 대시보드 선택 목록 (좌측) */
-    const dashItems   = reactive([]);   /* 선택 대시보드의 위젯항목(1레벨=차트) 목록 (우측) */
+    const dashItems   = reactive([]);   /* 선택 대시보드의 위젯항목(1레벨=차트) 목록 (우측, 전체 로드) */
     const dashItemCnt = reactive({});   /* dashboardId → 위젯항목 수 (좌측 목록 표시용) */
+    /* dashItemsPager — 위젯항목목록은 API 가 페이징 없이 전체를 한 번에 내려주므로(전체 대시보드
+       선택 시 특히 건수가 많다) 클라이언트에서 30건씩 잘라 보여준다 — CRUD 전체 로드 그리드의
+       표준 페이징 예외(정책서 "클라이언트 전체 로드 목록의 필터·페이징" 허용 케이스) */
+    const dashItemsPager = reactive({ pageNo: 1, pageSize: 30, pageTotalPage: 1, pageTotalCount: 0,
+      pageSizes: [10, 20, 30, 50, 100] });
     const charts      = reactive([]);   /* 조회 결과 — 차트별 그리드 [{itemNm, colNms[], rows[]}] */
     const siteOptions = reactive([]);   /* 사이트 select */
     const vendors     = reactive([]);   /* 판매업체 select */
@@ -72,7 +77,7 @@ window.CmDashboardDataMng = {
     /* 사이트/대시보드는 화면 전체 공통조건. 기간·상품·업체는 차트(위젯)마다 cm_dashboard_item.
        input_opts 가 달라(예: 일별 vs 월별, 상품/업체 축 필요 여부) 그룹별로 따로 받는다(아래 groupParams) */
     const _today = coUtil.cofToYmd(new Date());
-    const searchParam = reactive({ dashboardId: '', siteId: '' });
+    const searchParam = reactive({ dashboardId: '', siteId: '', searchValue: '', useYn: '', itemNm: '' });
 
     /* DEFAULT_INPUT_OPTS — cm_dashboard_item.input_opts 미지정 시 백엔드 기본값과 동일.
        날짜 토큰명(yyyy/yyyymm/yyyymmdd) 자체가 기간구분을 겸한다 — 예전엔 period_type_cd:M
@@ -156,8 +161,33 @@ window.CmDashboardDataMng = {
       uiState.selectedItemIds = cfAllDashItemsChecked.value ? [] : dashItems.map(i => i.dashboardItemId);
     };
 
+    /* cfPagedDashItems — dashItemsPager 기준 30건씩 잘라낸 현재 페이지 (전체 로드 목록의
+       클라이언트 페이징 — 정책상 허용되는 computed 예외) */
+    const cfPagedDashItems = computed(() => {
+      const start = (dashItemsPager.pageNo - 1) * dashItemsPager.pageSize;
+      return dashItems.slice(start, start + dashItemsPager.pageSize);
+    });
+    /* onDashItemsSetPage / onDashItemsSizeChange — <bo-pager> 콜백. API 재호출 없이 이미
+       로드된 dashItems 를 다시 슬라이스만 한다 */
+    const onDashItemsSetPage = (n) => { dashItemsPager.pageNo = n; };
+    const onDashItemsSizeChange = () => {
+      dashItemsPager.pageNo = 1;
+      dashItemsPager.pageTotalPage = Math.max(1, Math.ceil(dashItems.length / dashItemsPager.pageSize));
+    };
+
     /* cfCurDash — 좌측에서 선택된 대시보드 행 */
     const cfCurDash = computed(() => dashboards.find(d => d.dashboardId === searchParam.dashboardId) || null);
+
+    /* fnDashNm — dashboardId → 대시보드명. 좌측 목록에서 즉시 찾는다(별도 API 호출 없음) */
+    const fnDashNm = (dashboardId) => (dashboards.find(d => d.dashboardId === dashboardId) || {}).dashboardNm || '-';
+
+    /* fnRefItemNm — 쿼리방식(QUERY) 위젯의 참조항목(refItemKey, 예:'chart036')을 이름으로.
+       위젯항목목록(dashItems)은 이 화면에서 이미 로드된 1레벨 차트 전체라 그 안에서 바로 찾는다 */
+    const fnRefItemNm = (refItemKey) => {
+      if (!refItemKey) return '-';
+      const found = dashItems.find(d => d.itemKey === refItemKey);
+      return (found && found.itemNm) ? found.itemNm : refItemKey;
+    };
 
     /* cfHasData — 조회 결과에 편집 가능한 차트가 있는지 */
     const cfHasData = computed(() => charts.length > 0);
@@ -190,6 +220,15 @@ window.CmDashboardDataMng = {
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     const handleBtnAction = (cmd, param) => {
+      if (cmd === 'searchParam-list')  return handleSearchDashboards();
+      if (cmd === 'searchParam-reset') {
+        searchParam.searchValue = ''; searchParam.useYn = ''; searchParam.itemNm = '';
+        /* 검색 초기화는 좌측 대시보드 선택도 함께 해제한다 — 그러면 우측은 전체 대시보드
+           기준으로 다시 조회된다(handleSearchDashboards 안에서 handleSearchDashItems 호출) */
+        searchParam.dashboardId = '';
+        charts.splice(0, charts.length);
+        return handleSearchDashboards();
+      }
       if (cmd === 'group-search')         return handleSearchGroup(param);
       if (cmd === 'group-save')           return handleSaveGroup(param);
       if (cmd === 'group-clearValues')    return handleClearGroupValues(param);
@@ -233,9 +272,12 @@ window.CmDashboardDataMng = {
 
     /* ##### [03] API 호출 (그룹별 — input_opts 가 같은 차트끼리 조회조건을 공유) ########## */
 
-    /* fnGroupCond — 그룹(key) 의 조회조건 검증. 통과하면 서버 전송 파라미터를 만들어 돌려준다 */
+    /* fnGroupCond — 그룹(key) 의 조회조건 검증. 통과하면 서버 전송 파라미터를 만들어 돌려준다.
+       한 그룹(input_opts 가 같은 위젯끼리)은 서로 다른 대시보드의 차트가 섞여 있을 수 있다
+       (전체 대시보드 목록에서 여러 대시보드 위젯을 함께 체크한 경우) — 그래서 dashboardId
+       하나로 좁히지 않고, 이 그룹에 속한 정확한 차트 dashboardItemId 목록을 그대로 넘긴다
+       (2026-08-21, 서버 /data-grid 가 chartIds 를 받도록 함께 확장됨) */
     const fnGroupCond = (key) => {
-      if (!searchParam.dashboardId) { showToast('좌측에서 대시보드를 선택해주세요.', 'error'); return null; }
       const gp = groupParams[key];
       if (!gp || !gp.siteId) { showToast('사이트는 필수 조건입니다.', 'error'); return null; }
       const periodKey = fnGroupPeriodKey(key);
@@ -243,8 +285,11 @@ window.CmDashboardDataMng = {
         showToast(gp.periodTypeCd === 'D' ? '일자는 필수 조건입니다.' : '월은 필수 조건입니다.', 'error');
         return null;
       }
+      const group = cfGroups.value.find(g => g.key === key);
+      const chartIds = (group ? group.charts : []).map(c => c.dashboardItemId).filter(Boolean);
+      if (!chartIds.length) { showToast('이 그룹에 표시할 위젯이 없습니다.', 'error'); return null; }
       return {
-        dashboardId:  searchParam.dashboardId,
+        chartIds:     chartIds.join(','),
         siteId:       gp.siteId,
         yyyymmdd:     periodKey,
         periodTypeCd: gp.periodTypeCd,
@@ -448,7 +493,36 @@ window.CmDashboardDataMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };
 
-    /* fnLoadRefs — 좌측 대시보드 목록 + 사이트 / 판매업체 select 소스 */
+    /* handleSearchDashboards — 좌측 대시보드 목록 조회. searchParam.searchValue(대시보드명/
+       컴포넌트명)·useYn 조건으로 거른다 — '대시보드 항목관리' 화면과 동일한 검색바 동작 */
+    const handleSearchDashboards = async () => {
+      uiState.itemLoading = true;
+      try {
+        const res = await boApiSvc.cmDashboard.getList({}, '대시보드데이타관리', '대시보드목록');
+        let list = res.data?.data || [];
+        const kw = (searchParam.searchValue || '').trim().toLowerCase();
+        if (kw) list = list.filter(d => (d.dashboardNm || '').toLowerCase().includes(kw)
+                                     || (d.uiCompNm || '').toLowerCase().includes(kw));
+        if (searchParam.useYn) list = list.filter(d => (d.useYn || 'Y') === searchParam.useYn);
+        list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+        dashboards.splice(0, dashboards.length, ...list);
+        await fnLoadItemCounts();
+        /* 선택된 대시보드가 검색조건에 걸려 사라졌으면 우측도 함께 비운다 */
+        if (searchParam.dashboardId && !list.some(d => d.dashboardId === searchParam.dashboardId)) {
+          searchParam.dashboardId = '';
+          charts.splice(0, charts.length);
+        }
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+      } finally {
+        uiState.itemLoading = false;
+      }
+      /* 좌측에서 대시보드를 고르지 않고 [조회]만 눌러도 우측 위젯항목목록은 항상 채운다 —
+         선택된 게 있으면 그 대시보드만, 없으면 방금 조회된 전체 대시보드 기준(대시보드 항목관리와 동일 정책) */
+      await handleSearchDashItems();
+    };
+
+    /* fnLoadRefs — 좌측 대시보드 목록 + 사이트 / 판매업체 select 소스 (화면 최초 진입 시 1회) */
     const fnLoadRefs = async () => {
       try {
         const opts = await window.boUtil.bofLoadSiteOptions();
@@ -457,13 +531,7 @@ window.CmDashboardDataMng = {
         searchParam.siteId = window.boCommonFilter?.siteId || (opts[0] ? opts[0].value : '');
       } catch (err) { console.error('[catch-info]', err); }
 
-      try {
-        const res = await boApiSvc.cmDashboard.getList({ useYn: 'Y' }, '대시보드데이타관리', '대시보드목록');
-        const list = res.data?.data || [];
-        list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-        dashboards.splice(0, dashboards.length, ...list);
-        await fnLoadItemCounts();
-      } catch (err) { console.error('[catch-info]', err); }
+      await handleSearchDashboards();
 
       try {
         const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 500 }, '대시보드데이타관리', '업체목록');
@@ -486,27 +554,43 @@ window.CmDashboardDataMng = {
        목록에는 1레벨 행만 보이지만(2·3레벨 구조 편집은 '대시보드 항목관리' 화면 몫), 시리즈개수·
        데이타열개수 표시를 위해 keyLevel=0(전체 레벨)으로 한 번에 받아 부모기준으로 세어둔다. */
     const handleSearchDashItems = async () => {
-      if (!searchParam.dashboardId) { dashItems.splice(0, dashItems.length); return; }
       uiState.itemLoading = true;
       try {
-        const res = await boApiSvc.cmDashboard.getItemList(
-          { siteId: searchParam.siteId, dashboardId: searchParam.dashboardId, keyLevel: 0 },
-          '대시보드데이타관리', '위젯항목조회');
-        const all = (res.data?.data || []).filter(i => i.dashboardId === searchParam.dashboardId);
+        /* 좌측에서 대시보드를 선택하지 않았으면(dashboardId 없음) 전체 대시보드의 위젯항목을
+           한 번에 보여준다 — '대시보드 항목관리' 화면의 "선택 없으면 전체 조회" 정책과 동일 */
+        const params = { siteId: searchParam.siteId, keyLevel: 0 };
+        if (searchParam.dashboardId) params.dashboardId = searchParam.dashboardId;
+        const res = await boApiSvc.cmDashboard.getItemList(params, '대시보드데이타관리', '위젯항목조회');
+        const all = searchParam.dashboardId
+          ? (res.data?.data || []).filter(i => i.dashboardId === searchParam.dashboardId)
+          : (res.data?.data || []);
 
         /* 부모ID → 자식 목록. 시리즈개수=차트의 2레벨 자식 수 / 데이타열개수=그 중 첫 시리즈의 3레벨 자식 수
            (시리즈끼리는 항목 1벌을 공유하므로 첫 시리즈 것이 곧 열 개수 — 데이터관리 그리드와 동일 규칙) */
         const byParent = {};
         all.forEach(i => { if (i.parentDashboardItemId) (byParent[i.parentDashboardItemId] = byParent[i.parentDashboardItemId] || []).push(i); });
 
-        const list = all.filter(i => i.keyLevel === 1);
+        let list = all.filter(i => i.keyLevel === 1);
         list.forEach(chart => {
           const sers = byParent[chart.dashboardItemId] || [];
           chart._seriesCnt = sers.length;
           chart._colCnt = sers.length ? (byParent[sers[0].dashboardItemId] || []).length : 0;
         });
+        /* 위젯항목명 검색 — 차트·시리즈·항목 어느 레벨의 이름이든 걸리면 그 차트를 보여준다.
+           item_key 는 항상 chartCd-seriesCd-itemCd 형식(codeOf 가 '-' 를 '_' 로 치환해 세그먼트가
+           안전)이라 첫 조각만 잘라내면 소속 차트를 바로 알 수 있다 */
+        const kw2 = (searchParam.itemNm || '').trim().toLowerCase();
+        if (kw2) {
+          const matchedChartKeys = new Set(
+            all.filter(i => (i.itemNm || '').toLowerCase().includes(kw2))
+               .map(i => (i.itemKey || '').split('-')[0]));
+          list = list.filter(c => matchedChartKeys.has(c.itemKey));
+        }
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         dashItems.splice(0, dashItems.length, ...list);
+        dashItemsPager.pageNo = 1;
+        dashItemsPager.pageTotalCount = list.length;
+        dashItemsPager.pageTotalPage = Math.max(1, Math.ceil(list.length / dashItemsPager.pageSize));
         fnEnsureGroupsFor(list);   /* input_opts 그룹별 조회조건 기본값 미리 채우기 */
         uiState.selectedItemIds = list.map(i => i.dashboardItemId);   /* 기본값: 전체선택 */
       } catch (err) {
@@ -596,6 +680,11 @@ window.CmDashboardDataMng = {
     /* fnAxisCodeColor — 라벨 아래 작은 코드(monospace) 글자색. 배경(series #fed9b1 / item #eaf2ff)
        둘 다 다시 밝은 톤으로 자리잡아 통일된 회색으로도 대비 충분 */
     const fnAxisCodeColor = () => '#94a3b8';
+
+    /* fnIsQueryChart — 쿼리방식(QUERY) 위젯 여부. 이런 차트의 입력 셀은 SQL 실행 결과로
+       채워지는 값이라(생성방식 배지·"🔗 쿼리"와 같은 계열의) 보라색 톤으로 표시해
+       손으로 입력하는 값과 한눈에 구분한다(2026-08-21) */
+    const fnIsQueryChart = (chart) => chart.widgetGenTypeCd === 'QUERY';
 
     /* onOrientChange — 시리즈표시방법을 바꾸면 즉시 그리드를 뒤집어 미리 보여준다.
        leaf 좌표(cellItemIds)는 그대로 옮겨 담을 뿐이라 저장 전에도 정확히 미리보기된다 —
@@ -1088,6 +1177,14 @@ window.CmDashboardDataMng = {
 
     const columns = {};
 
+    /* 대시보드 항목관리 화면과 동일한 상단 검색바 — 좌측 "대시보드 목록" 을 이 조건으로 거른다 */
+    columns.baseSearch = [
+      { key: 'searchValue', type: 'text', placeholder: '대시보드명/컴포넌트명 검색', label: '대시보드명' },
+      { key: 'itemNm', type: 'text', placeholder: '위젯항목명 검색(차트·시리즈·항목)', label: '위젯항목명' },
+      { key: 'useYn', type: 'select', label: '사용여부', nullLabel: '사용여부 전체',
+        options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },
+    ];
+
     /* 좌측 — 대시보드 목록. 선택용이라 .bo-2col 의 좁은 폭에 들어가는 만큼만 둔다 */
     columns.dashboards = [
       { key: 'dashboardNm', label: '대시보드명', link: true,
@@ -1099,9 +1196,12 @@ window.CmDashboardDataMng = {
 
     /* 우측 — 대시보드 위젯항목목록. 1레벨(차트)만 — 2·3레벨은 '대시보드 항목관리' 에서 편집한다 */
     columns.dashItems = [
+      { key: 'dashboardId', label: '대시보드명', style: 'width:110px;', cellStyle: 'color:#666;',
+        fmt: (v) => fnDashNm(v) },
       { key: '_lvl', label: '레벨', style: 'width:56px;', align: 'center',
         badge: () => 'badge-red', fmt: () => '● 차트' },
       { key: 'itemNm', label: '항목명 (차트)' },
+      { key: 'widgetGenTypeCd', label: '생성방식', style: 'width:110px;' },
       { key: '_seriesCnt', label: '시리즈개수', style: 'width:84px;', align: 'center', fmt: (v, row) => (row._seriesCnt || 0) + '개' },
       { key: 'seriesOrientCd', label: '시리즈표시방법', style: 'width:96px;', align: 'center',
         badge: (row) => row.seriesOrientCd === 'COL' ? 'badge-purple' : 'badge-blue',
@@ -1117,19 +1217,25 @@ window.CmDashboardDataMng = {
 
     return {
       dashboards, dashItems, dashItemCnt, charts, siteOptions, vendors, uiState, codes,
+      dashItemsPager, cfPagedDashItems, onDashItemsSetPage, onDashItemsSizeChange,
       pdfAreaRef, handleExportPdf,
       searchParam, groupParams, groupState, modals, columns, MAX_COLS, cfCurDash,
+      fnDashNm, fnRefItemNm,
       cfHasData, cfVisibleCharts, cfGroups, cfAnyGroupLoading, cfAnyGroupSaving,
       isDashItemChecked, cfAllDashItemsChecked, onToggleDashItemCheck, onToggleDashItemCheckAll,
       fnColCount, fnRowSum, fnColSum, fnGrandTotal, fnBuildChartOption, previewOpen, fnTogglePreview, fnGroupPreviewSetAll,
       util, chartPreviewSel, fnPreviewSel,
-      fnGroupPeriodLabel, fnGroupVendorNm, fnGroupReady, onOrientChange, fnAxisBg, fnAxisCodeColor,
+      fnGroupPeriodLabel, fnGroupVendorNm, fnGroupReady, onOrientChange, fnAxisBg, fnAxisCodeColor, fnIsQueryChart,
       handleBtnAction, handleGridCellAction, handleSimulateOne, handleSaveOrient, fnCallbackModal,
     };
   },
   template: /* html */ `
 <bo-page title="대시보드 데이타관리"
   desc-summary="좌측 대시보드를 선택하면 우측에 위젯항목목록이 표시됩니다. 체크한 항목만 아래 대시보드 위젯데이타에 input_opts(조회조건 구성) 별로 묶여 나타나며, 그룹마다 기간·상품·업체 조건을 따로 조회·저장합니다. 시리즈(행) × 항목(열) 매트릭스에 값을 직접 입력합니다.">
+  <bo-container>
+    <bo-search-area :loading="uiState.itemLoading" :columns="columns.baseSearch" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+  </bo-container>
 
   <div class="bo-2col">
     <!-- ===== ■. 대시보드 목록 (선택) ======================================= -->
@@ -1142,10 +1248,9 @@ window.CmDashboardDataMng = {
     </bo-container>
 
     <!-- ===== ■. 대시보드 위젯항목목록 (1레벨=차트만, 펼치기 없음) =============== -->
-    <bo-container title="대시보드 위젯항목목록"
-      :count-text="searchParam.dashboardId ? '총 ' + dashItems.length + '개' : ''">
+    <bo-container title="대시보드 위젯항목목록" :count-text="'총 ' + dashItems.length + '개'">
       <template #toolbar-actions>
-        <button class="btn btn_search" :disabled="!searchParam.dashboardId || cfAnyGroupLoading"
+        <button class="btn btn_search" :disabled="!dashItems.length || cfAnyGroupLoading"
           @click="handleBtnAction('groups-simulateAll')">🎲 전체시뮬레이션</button>
       </template>
       <div style="padding:8px 12px;font-size:11.5px;color:#666;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -1153,7 +1258,7 @@ window.CmDashboardDataMng = {
           <b>{{ cfCurDash ? cfCurDash.dashboardNm : '' }}</b>
           <span style="color:#aaa;font-family:monospace;font-size:11px;">{{ cfCurDash ? cfCurDash.uiCompNm : '' }}</span>
         </template>
-        <span v-else style="color:#aaa;">좌측에서 대시보드를 선택하세요.</span>
+        <span v-else style="color:#aaa;">전체 대시보드 — 좌측에서 하나를 선택하면 그 대시보드의 값 입력 그리드가 아래 표시됩니다.</span>
         <span style="margin-left:auto;display:flex;align-items:center;gap:6px;">
           사이트
           <select class="form-control" v-model="searchParam.siteId"
@@ -1162,11 +1267,21 @@ window.CmDashboardDataMng = {
           </select>
         </span>
       </div>
-      <bo-grid bare selectable :columns="columns.dashItems" :rows="dashItems" row-key="dashboardItemId"
-        :loading="uiState.itemLoading"
+      <bo-grid bare selectable :columns="columns.dashItems" :rows="cfPagedDashItems" row-key="dashboardItemId"
+        :loading="uiState.itemLoading" :pager="dashItemsPager" table-max-height="540px" fixed-height
         :is-checked="isDashItemChecked" :all-checked="cfAllDashItemsChecked"
         @toggle-check="onToggleDashItemCheck" @toggle-check-all="onToggleDashItemCheckAll"
-        :empty-text="searchParam.dashboardId ? '위젯항목이 없습니다.' : '좌측에서 대시보드를 선택하면 위젯항목목록이 표시됩니다.'" />
+        empty-text="위젯항목이 없습니다.">
+        <template #cell-widgetGenTypeCd="{ row }">
+          <td style="font-size:12px;">
+            <span class="badge" :class="row.widgetGenTypeCd === 'QUERY' ? 'badge-purple' : 'badge-gray'">
+              {{ row.widgetGenTypeCd === 'QUERY' ? '🔗 쿼리' : '매뉴얼' }}</span>
+            <div v-if="row.widgetGenTypeCd === 'QUERY'" style="font-size:10px;color:#7c3aed;margin-top:2px;"
+              title="SQL 실행 결과로 자동 생성됨">참조: {{ fnRefItemNm(row.refItemKey) }}</div>
+          </td>
+        </template>
+      </bo-grid>
+      <bo-pager :pager="dashItemsPager" :on-set-page="onDashItemsSetPage" :on-size-change="onDashItemsSizeChange" />
     </bo-container>
   </div>
 
@@ -1325,18 +1440,20 @@ window.CmDashboardDataMng = {
                         {{ row.seriesCd }}</span>
                     </td>
                     <td v-for="i in fnColCount(chart)" :key="i"
-                      :style="'position:relative;background:' + (row.cellEditable[i-1] ? '#fff' : '#f1f5f9') + ';'">
+                      :style="'position:relative;background:' + (fnIsQueryChart(chart) ? '#f5f3ff' : (row.cellEditable[i-1] ? '#fff' : '#f1f5f9')) + ';'">
                       <!-- 셀 단위 자동수집 표시(좌상단 녹색 코너 삼각형) — 1레벨(카드)의 자동수집
                            배지는 그 차트에 자동수집 셀이 있다는 안내일 뿐, 카드 전체를 잠그지
                            않는다. 입력 잠금은 오직 이 셀(3레벨 항목)의 editable_yn='N' 여부로만
                            결정한다(cellEditable) — chart.editableYn 은 더 이상 disabled 조건에 안 씀.
-                           수정불가 셀은 클릭해봐야 알 수 있던 걸 회색 배경으로 미리 보이게 한다. -->
+                           수정불가 셀은 클릭해봐야 알 수 있던 걸 회색 배경으로 미리 보이게 한다.
+                           쿼리방식(QUERY) 차트는 회색 대신 보라색 계열로 — "🔗 쿼리" 배지와 같은
+                           톤이라 SQL 로 자동 채워지는 값임을 그리드에서도 바로 알아본다. -->
                       <span v-if="row.cellAutoCollect[i-1]"
                         style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
                         title="이 항목은 배치가 자동수집한다 — 직접 수정 불가"></span>
                       <input type="number" class="form-control" v-model="row.vals[i-1]"
                         :disabled="!row.cellEditable[i-1]"
-                        :style="'text-align:right;padding:4px 6px;font-size:12px;min-height:26px;' + (row.cellEditable[i-1] ? '' : 'background:#e2e8f0;color:#64748b;')" />
+                        :style="'text-align:right;padding:4px 6px;font-size:12px;min-height:26px;' + (fnIsQueryChart(chart) ? 'background:#ede9fe;color:#6d28d9;' : (row.cellEditable[i-1] ? '' : 'background:#e2e8f0;color:#64748b;'))" />
                     </td>
                     <td style="text-align:right;font-weight:700;color:#475569;background:#e9edf3;">
                       {{ fnRowSum(chart, row) }}

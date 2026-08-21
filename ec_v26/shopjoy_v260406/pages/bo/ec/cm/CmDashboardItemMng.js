@@ -20,6 +20,12 @@ window.CmDashboardItemMng = {
     const dashboards = reactive([]);   /* cm_dashboard 전체 (사이트 기준) */
     const panels     = reactive([]);   /* 선택 대시보드의 cm_dashboard_item */
     const panelCnt   = reactive({});   /* dashboardId → 항목 수 */
+    /* panelsPager — 대시보드 위젯항목 목록(트리·목록 공통)은 차트(1레벨) 단위로 페이징한다.
+       API 가 페이징 없이 전체를 내려주므로 클라이언트에서 30건씩 자른다(CRUD 전체 로드
+       그리드의 표준 페이징 예외). 트리 모드도 이 pager 가 정한 "이번 페이지 차트 집합"에
+       속한 노드만 보여줘 부모(차트)와 자식(시리즈·항목)이 페이지 경계로 갈라지지 않는다 */
+    const panelsPager = reactive({ pageNo: 1, pageSize: 30, pageTotalPage: 1, pageTotalCount: 0,
+      pageSizes: [10, 20, 30, 50, 100] });
     const uiState = reactive({ loading: false, panelLoading: false, viewMode: 'tree', pdfExporting: false }); /* viewMode: 'tree'|'grid' */
     const itemPdfAreaRef = ref(null);   /* "대시보드 위젯항목 수정" 폼 전체(정의 그리드+미리보기 포함) — PDF 캡처 대상 */
 
@@ -54,7 +60,7 @@ window.CmDashboardItemMng = {
     /* 코드그룹에서 읽어온 선택지 (키: 코드그룹명) */
     const grpCodes = reactive({});
 
-    const searchParam = reactive({ searchValue: '', useYn: '' });
+    const searchParam = reactive({ searchValue: '', useYn: '', itemNm: '' });
 
     /* dashState — 좌측에서 고른 대시보드 */
     const dashState = reactive({ selectedId: null });
@@ -93,7 +99,7 @@ window.CmDashboardItemMng = {
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')  return handleSearchList();
       if (cmd === 'searchParam-reset') {
-        searchParam.searchValue = ''; searchParam.useYn = '';
+        searchParam.searchValue = ''; searchParam.useYn = ''; searchParam.itemNm = '';
         /* 검색 초기화는 좌측 대시보드 선택도 함께 해제한다 — 그래야 우측이 전체 대시보드
            기준으로 다시 조회된다(2026-08-21) */
         dashState.selectedId = null;
@@ -188,6 +194,22 @@ window.CmDashboardItemMng = {
         panels.splice(0, panels.length, ...list);
         await fnLoadTree();
         fnAttachChildCounts();
+        /* 위젯항목명 검색 — 차트·시리즈·항목 어느 레벨의 이름이든 걸리면 그 차트를 남긴다.
+           fnLoadTree() 가 이미 전체 레벨(treeRows)을 채워둔 뒤라 여기서 바로 매칭한다.
+           item_key 는 항상 chartCd-seriesCd-itemCd 형식(codeOf 가 '-' 를 '_' 로 치환해
+           세그먼트가 안전)이라 첫 조각만 잘라내면 소속 차트를 바로 알 수 있다 */
+        const kw = (searchParam.itemNm || '').trim().toLowerCase();
+        if (kw) {
+          const matchedChartKeys = new Set(
+            treeRows.filter(n => (n.itemNm || '').toLowerCase().includes(kw))
+                    .map(n => (n.itemKey || '').split('-')[0]));
+          panels.splice(0, panels.length, ...panels.filter(p => matchedChartKeys.has(p.itemKey)));
+          treeRows.splice(0, treeRows.length,
+            ...treeRows.filter(n => matchedChartKeys.has((n.itemKey || '').split('-')[0])));
+        }
+        panelsPager.pageNo = 1;
+        panelsPager.pageTotalCount = panels.length;
+        panelsPager.pageTotalPage = Math.max(1, Math.ceil(panels.length / panelsPager.pageSize));
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
       } finally {
@@ -392,7 +414,8 @@ window.CmDashboardItemMng = {
         const res = await boApiSvc.cmDashboard.generateFromQuery(panelForm.dashboardItemId,
           { siteId: cfSiteId.value, yyyymmdd: genRefYmd.value }, '대시보드항목관리', '쿼리실행생성');
         const d = res.data?.data || {};
-        showToast(`쿼리 실행 완료 — 시리즈 ${d.series || 0}개, 항목 ${d.items || 0}개, 값 ${d.values || 0}건 반영`, 'success');
+        const delMsg = d.deletedRows ? `, 옛 항목 ${d.deletedRows}개 정리` : '';
+        showToast(`쿼리 실행 완료 — 시리즈 ${d.series || 0}개, 항목 ${d.items || 0}개, 값 ${d.values || 0}건 반영${delMsg}`, 'success');
         await fnLoadTree();       /* 쿼리로 새로 생긴 시리즈·항목 행을 반영 */
         loadView(panelForm);      /* 현재 항목 그대로 다시 열어 새 정의를 편집 그리드에 반영 */
         await fnLoadPanelCounts();
@@ -1449,8 +1472,19 @@ window.CmDashboardItemMng = {
     });
     const fnIsFirstSeries = (node) => cfFirstSeriesKeys.value.has(node.itemKey);
 
-    /* cfTreeVisible — 접힘 상태 + "2번째 시리즈부터는 항목 생략" 규칙을 반영한 표시 대상 노드 */
+    /* cfPagedPanels / cfPagedChartKeys — panelsPager 기준 이번 페이지의 차트(1레벨) 집합.
+       목록(그리드) 모드는 이 슬라이스를 그대로 rows 로 쓰고, 트리 모드는 이 집합에 속한
+       차트의 노드만 cfTreeVisible 에 남겨 부모(차트)·자식(시리즈·항목)이 페이지 경계로
+       갈라지지 않게 한다 */
+    const cfPagedPanels = computed(() => {
+      const start = (panelsPager.pageNo - 1) * panelsPager.pageSize;
+      return panels.slice(start, start + panelsPager.pageSize);
+    });
+    const cfPagedChartKeys = computed(() => new Set(cfPagedPanels.value.map(p => p.itemKey)));
+
+    /* cfTreeVisible — 접힘 상태 + "2번째 시리즈부터는 항목 생략" 규칙 + 이번 페이지 차트만 반영 */
     const cfTreeVisible = computed(() => treeRows.filter((n) => {
+      if (!cfPagedChartKeys.value.has(String(n.itemKey || '').split('-')[0])) return false;
       if (n.lvl === 1) return true;
       if (n.lvl === 3 && !cfFirstSeriesKeys.value.has(fnParentCode(n.itemKey))) return false;
       /* 조상 코드를 하나씩 거슬러 올라가며 접힌 게 있으면 숨김 */
@@ -1461,6 +1495,14 @@ window.CmDashboardItemMng = {
       }
       return true;
     }));
+
+    /* onPanelsSetPage / onPanelsSizeChange — <bo-pager> 콜백. API 재호출 없이 이미 로드된
+       panels/treeRows 를 다시 슬라이스만 한다(트리·목록 두 모드가 이 pager 하나를 공유) */
+    const onPanelsSetPage = (n) => { panelsPager.pageNo = n; };
+    const onPanelsSizeChange = () => {
+      panelsPager.pageNo = 1;
+      panelsPager.pageTotalPage = Math.max(1, Math.ceil(panels.length / panelsPager.pageSize));
+    };
 
     /* fnHasChild — 자식이 있는 노드만 ▼/▶ 아이콘을 보여준다.
        2번째 시리즈부터는 항목을 안 보여주므로(cfTreeVisible 규칙) 펼쳐도 나올 게 없다 —
@@ -1498,6 +1540,7 @@ window.CmDashboardItemMng = {
 
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', placeholder: '대시보드명/컴포넌트명 검색', label: '대시보드명' },
+      { key: 'itemNm', type: 'text', placeholder: '위젯항목명 검색(차트·시리즈·항목)', label: '위젯항목명' },
       { key: 'useYn', type: 'select', label: '사용여부', nullLabel: '사용여부 전체',
         options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },
     ];
@@ -1625,6 +1668,7 @@ window.CmDashboardItemMng = {
       cfCurDash, cfDtlMode,
       /* 3레벨 트리 */
       treeRows, treeState, cfTreeVisible,
+      panelsPager, cfPagedPanels, onPanelsSetPage, onPanelsSizeChange,
       fnHasChild, fnToggleNode, fnTreeExpandAll, fnTreeCollapseAll, fnIsFirstSeries,
       fnLvlBullet, fnLvlColor, fnLvlLabel, fnRefItemNm,
       /* 2·3레벨 편집 그리드 */
@@ -1665,7 +1709,7 @@ window.CmDashboardItemMng = {
 
     <!-- ===== ■. 항목 목록 + 인라인 폼 (항상 표시 — 미선택 시 빈 그리드 + 안내) ===== -->
     <bo-container title="대시보드 위젯항목 목록"
-      :count-text="dashState.selectedId ? '총 ' + panels.length + '개' : ''">
+      :count-text="'총 ' + panels.length + '개'">
       <template #toolbar-actions>
         <!-- 영역을 숨기지 않고 버튼만 잠근다 (미선택 상태에서도 무엇을 할 수 있는지 보여야 한다) -->
         <button class="btn" :class="uiState.viewMode === 'tree' ? 'btn-primary' : ''"
@@ -1692,7 +1736,7 @@ window.CmDashboardItemMng = {
 
       <!-- ===== ■. 3레벨 트리 (1:차트 / 2:시리즈 / 3:항목) ===================== -->
       <div v-if="uiState.viewMode === 'tree'">
-        <div v-if="cfTreeVisible.length" style="max-height:520px;overflow:auto;">
+        <div v-if="cfTreeVisible.length" style="height:540px;overflow:auto;">
           <table class="bo-table bo-table-narrow">
             <thead>
               <tr>
@@ -1770,8 +1814,8 @@ window.CmDashboardItemMng = {
 
       <!-- ===== ■. 평면 목록 (기존 그리드) =================================== -->
       <bo-grid v-if="uiState.viewMode === 'grid'"
-        bare :columns="columns.panels" :rows="panels" row-key="dashboardItemId"
-        :loading="uiState.panelLoading" :selected-key="panelDetail.selectedId"
+        bare :columns="columns.panels" :rows="cfPagedPanels" row-key="dashboardItemId"
+        :loading="uiState.panelLoading" :selected-key="panelDetail.selectedId" table-max-height="540px" fixed-height
         :row-class="row => panelDetail.selectedId === row.dashboardItemId ? 'active' : ''"
         :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '항목이 없습니다. 상단 [조회]를 눌러보거나 좌측에서 특정 대시보드를 선택하세요.'"
         grid-id="panels-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
@@ -1782,6 +1826,7 @@ window.CmDashboardItemMng = {
           </div>
         </template>
       </bo-grid>
+      <bo-pager :pager="panelsPager" :on-set-page="onPanelsSetPage" :on-size-change="onPanelsSizeChange" />
     </bo-container>
   </div>
 
