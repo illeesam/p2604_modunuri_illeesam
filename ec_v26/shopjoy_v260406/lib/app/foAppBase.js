@@ -49,6 +49,11 @@
     const page = ref('home');
     const errorMessage = ref('');
 
+    /* 페이지 전환마다 title/description 을 사이트 공통값으로 초기화 — 상품상세 등 개별
+       페이지가 자기 데이터로 다시 덮어쓴다(foUtil.fofSetPageMeta). 새로 들어온 페이지가
+       커스텀 meta 를 안 쓰는 화면이면 이전 페이지의 값이 안 남고 공통값으로 정리된다 */
+    watch(page, () => foUtil.fofResetPageMeta());
+
     /* X- 헤더 배열을 압축 포맷으로 변환 (→ lib/app/foAppFunc.js) */
     const _fmtXHeaders = window.foAppFunc.fmtXHeaders;
 

@@ -50,7 +50,17 @@ window.EventView = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await foApiSvc.pmEvent.getById(props.dtlId, '이벤트상세', '상세조회');
-        events.splice(0, events.length, ...(res.data?.data ? [res.data.data] : []));
+        const raw = res.data?.data || null;
+        events.splice(0, events.length, ...(raw ? [raw] : []));
+        /* 구글봇은 JS 실행 후 최종 DOM 을 읽으므로, 이벤트/기획전별 title/description 을
+           렌더에 맞춰 교체해 둔다 — 페이지 이탈 시 foAppBase.js 의 watch(page) 가 공통값으로 되돌린다 */
+        if (raw) {
+          const nm = raw.eventTitle || raw.eventNm || '';
+          foUtil.fofSetPageMeta({
+            title: nm ? nm + ' | ShopJoy' : undefined,
+            description: raw.eventDesc || (nm ? nm + ' - ShopJoy 이벤트/기획전' : undefined),
+          });
+        }
       } catch (e) {
         console.error('[handleSearchData]', e);
         events.splice(0, events.length);

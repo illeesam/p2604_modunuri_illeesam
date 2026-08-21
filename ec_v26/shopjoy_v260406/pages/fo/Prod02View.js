@@ -214,6 +214,12 @@ window.Prod02View = {
         if (prod && prod.prodId) {
           const merged = fnMergeProdOpts(prod, { groups: data.prodOptTypes || [], items: data.prodOpts || [] }, data.prodSkus || [], data.prodImgs || []);
           fnApplySvProduct(merged);
+          /* 구글봇은 JS 실행 후 최종 DOM 을 읽으므로, 상품별 title/description 을 렌더에 맞춰
+             교체해 둔다 — 페이지 이탈 시 foAppBase.js 의 watch(page) 가 공통값으로 되돌린다 */
+          foUtil.fofSetPageMeta({
+            title: merged.prodNm ? merged.prodNm + ' | ShopJoy' : undefined,
+            description: merged.advrtStmt || (merged.prodNm ? merged.prodNm + ' - ShopJoy에서 만나보세요.' : undefined),
+          });
         }
         uiState.prodApiLoaded = true;
       } catch (e) { console.error('[handleSearchList:getById]', e); uiState.prodApiLoaded = true; }
