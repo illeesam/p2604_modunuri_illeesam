@@ -274,7 +274,8 @@ window.foAppFooter = {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '?page=' + target : '');
         if (target && typeof window.navigate === 'function') { window.navigate(target); }
       } else if (root === 'boOffice') {
-        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
+        /* BO 라우팅도 쿼리스트링 기반(?page=)이다(2026-08-22 해시(#)에서 전환) */
+        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '?page=' + target : ''), '_blank');
       } else if (root === 'dispFoUi') {
         window.open((window.pageUrl ? window.pageUrl('fo-disp-ui-pop.html') : 'fo-disp-ui-pop.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispBoUi') {

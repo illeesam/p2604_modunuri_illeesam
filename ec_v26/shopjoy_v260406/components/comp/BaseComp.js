@@ -1290,8 +1290,8 @@ window.BaseTossPayWidget = {
           orderId: props.orderId || ('ORDW' + String(uid).padStart(6, '0')),  // 토스 orderId 6~64자 규약 + 인스턴스 고정
           orderName: props.orderName || '주문결제',
           customerName: props.customerName || '고객',
-          successUrl: base + (props.successPage ? ('#page=' + props.successPage + '&payResult=success') : '#payResult=success'),
-          failUrl:    base + (props.failPage    ? ('#page=' + props.failPage    + '&payResult=fail')    : '#payResult=fail'),
+          successUrl: base + (props.successPage ? ('?page=' + props.successPage + '&payResult=success') : '?payResult=success'),
+          failUrl:    base + (props.failPage    ? ('?page=' + props.failPage    + '&payResult=fail')    : '?payResult=fail'),
         });
         /* 성공 시 successUrl 리다이렉트 → 이후 코드 보통 미실행 */
       } catch (e) {

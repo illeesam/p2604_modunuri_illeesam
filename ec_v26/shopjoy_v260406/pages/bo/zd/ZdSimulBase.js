@@ -507,7 +507,8 @@
   const _openBoPage = (row) => {
     const meta = _DOMAIN_PAGE_MAP[row.domain];
     if (!meta || !meta.bo || !row.targetId) return;
-    const url = 'bo.html#page=' + meta.bo.page + '&searchValue=' + encodeURIComponent(row.targetId);
+    /* BO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+    const url = 'bo.html?page=' + meta.bo.page + '&searchValue=' + encodeURIComponent(row.targetId);
     window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
   };
 
@@ -515,15 +516,17 @@
   const _openFoPage = (row) => {
     const meta = _DOMAIN_PAGE_MAP[row.domain];
     if (!meta || !meta.fo || !row.targetId) return;
-    const hash = meta.fo(row.targetId);
-    window.open('index.html#' + hash, '_blank', 'width=1280,height=900,scrollbars=yes,resizable=yes');
+    /* FO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+    const query = meta.fo(row.targetId);
+    window.open('index.html?' + query, '_blank', 'width=1280,height=900,scrollbars=yes,resizable=yes');
   };
 
   /* 주문 칸반 window.open (주문/클레임 공용) */
   const _openKanban = (row) => {
     const meta = _DOMAIN_PAGE_MAP[row.domain];
     if (!meta || !meta.kanban || !row.targetId) return;
-    let url = 'bo.html#page=' + meta.kanban + '&dtlId=' + encodeURIComponent(row.targetId);
+    /* BO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+    let url = 'bo.html?page=' + meta.kanban + '&dtlId=' + encodeURIComponent(row.targetId);
     if (row.domain === '클레임') url += '&claimId=' + encodeURIComponent(row.targetId);
     window.open(url, '_blank', 'width=1600,height=960,scrollbars=yes,resizable=yes');
   };
@@ -554,13 +557,15 @@
 
   /* 회원 FO 마이페이지 window.open */
   const _openFoProfile = (row) => {
-    window.open('index.html#page=myOrder', '_blank', 'width=1280,height=900,scrollbars=yes,resizable=yes');
+    /* FO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+    window.open('index.html?page=myOrder', '_blank', 'width=1280,height=900,scrollbars=yes,resizable=yes');
   };
 
   /* 클레임 환불계산 window.open */
   const _openClaimCalc = (row) => {
     if (!row.targetId) return;
-    const url = 'bo.html#page=odClaimMng&dtlId=' + encodeURIComponent(row.targetId) + '&tab=calc';
+    /* BO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+    const url = 'bo.html?page=odClaimMng&dtlId=' + encodeURIComponent(row.targetId) + '&tab=calc';
     window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
   };
 

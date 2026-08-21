@@ -49,11 +49,16 @@
         location.reload();
       } catch(_){}
     });
-    /* 기본 페이지 자동 이동 — 해시 없이 진입 시 대시보드(홈)로 */
+    /* 기본 페이지 자동 이동 — 쿼리에 page 없이 진입 시 대시보드(홈)로
+       (2026-08-22 해시(#page=)에서 쿼리스트링(?page=)으로 전환 — 주소창에 # 안 보이게) */
     (function(){
-      if (!window.location.hash) {
-        window.location.hash = '#page=dashboard';
-      }
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        if (!qs.get('page')) {
+          qs.set('page', 'dashboard');
+          history.replaceState(null, '', window.location.pathname + '?' + qs.toString());
+        }
+      } catch(_){}
     })();
   </script>
   <!-- ═══════════════════════════════════════════════════════════════════════════

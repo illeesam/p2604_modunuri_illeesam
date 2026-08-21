@@ -335,11 +335,12 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .tab-scroll-btn { flex-shrink: 0; width: 26px; background: #e4e6ec; border: none; border-right: 1px solid #d0d2da; color: #888; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .12s, color .12s; line-height: 1; padding-bottom: 2px; }
 .tab-scroll-btn:last-child { border-right: none; border-left: 1px solid #d0d2da; }
 .tab-scroll-btn:hover { background: #d8dae4; color: #4a9b7e; }
-.bo-tab { display: inline-flex; align-items: center; min-width: 90px; padding: 0 8px 0 12px; height: 32px; border-radius: 6px 6px 0 0; font-size: 12px; color: #888; cursor: pointer; white-space: nowrap; background: #dfe1e8; border: 1px solid #ced0d8; border-bottom: none; transition: background .12s, color .12s; flex-shrink: 0; user-select: none; gap: 0; }
+.bo-tab { display: inline-flex; align-items: center; width: 150px; padding: 0 4px 0 6px; height: 32px; border-radius: 6px 6px 0 0; font-size: 12px; color: #888; cursor: pointer; white-space: nowrap; background: #dfe1e8; border: 1px solid #ced0d8; border-bottom: none; transition: background .12s, color .12s; flex: 0 0 150px; user-select: none; gap: 0; }
 .bo-tab:hover { background: #e8eaef; color: #555; }
 .bo-tab.active { background: #fff; color: #4a9b7e; font-weight: 700; border-color: #d0d0d8; box-shadow: 0 -3px 0 0 #4a9b7e inset; height: 35px; position: relative; z-index: 1; margin-bottom: -2px; }
 .bo-tab .tab-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.tab-close-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; font-size: 9px; color: #bbb; border-radius: 3px; transition: background .1s, color .1s; flex-shrink: 0; margin-left: 6px; }
+.bo-tab .tab-label.tab-label-lg { font-size: 10px; }
+.tab-close-btn { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; font-size: 9px; color: #bbb; border-radius: 3px; transition: background .1s, color .1s; flex-shrink: 0; margin-left: 2px; }
 .bo-tab.active .tab-close-btn { color: #4a9b7e; opacity: .5; }
 .tab-close-btn:hover { background: #fde8ee; color: #4a9b7e; opacity: 1 !important; }
 

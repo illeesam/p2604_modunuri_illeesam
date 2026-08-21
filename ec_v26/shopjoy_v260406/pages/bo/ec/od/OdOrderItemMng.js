@@ -73,7 +73,8 @@ window.OdOrderItemMng = {
       if (!orderId) { return; }
       /* boAppBase.js 해시 라우터는 상세ID 파라미터로 'id' 만 읽는다('orderId'는 칸반 전용) —
          dtlId= 로 넘기면 dtlId.value 가 계속 null 로 남아 cfIsNew=true(신규 등록 화면)로 빠진다. */
-      const url = window.pageUrl('bo.html') + '#page=odOrderDtl&id=' + encodeURIComponent(orderId);
+      /* BO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+      const url = window.pageUrl('bo.html') + '?page=odOrderDtl&id=' + encodeURIComponent(orderId);
       window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
     };
     const openOrderPromoPop = (orderId) => {
@@ -85,7 +86,8 @@ window.OdOrderItemMng = {
        bo.html 앱 셸을 새 창에 그대로 열어 odOrderItemDtl 페이지로 라우팅(inlineNavigate 없이 표준 navigate 그대로 사용). */
     const openOrderItemDtlPop = (orderItemId) => {
       if (!orderItemId) { return; }
-      const url = window.pageUrl('bo.html') + '#page=odOrderItemDtl&id=' + encodeURIComponent(orderItemId);
+      /* BO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환 */
+      const url = window.pageUrl('bo.html') + '?page=odOrderItemDtl&id=' + encodeURIComponent(orderItemId);
       window.open(url, '_blank', 'width=1300,height=880,scrollbars=yes,resizable=yes');
     };
 

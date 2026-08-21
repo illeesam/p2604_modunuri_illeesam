@@ -113,7 +113,7 @@
           errorMessage.value = msg;
           page.value = 'error500';
           try {
-            window.history.replaceState(null, '', '#page=error500');
+            window.history.replaceState(null, '', window.location.pathname + '?page=error500');
           } catch (_) {}
         }
       });
@@ -134,6 +134,25 @@
         if (keptTabIds.has(tabId)) keptTabIds.delete(tabId);
         else keptTabIds.add(tabId);
       };
+
+      /* AUTO_KEEP_TAB_LIMIT — 탭을 열 당시 열린 탭 총수가 이 개수 미만이면 그 탭은 자동 고정(상태 유지).
+         한 번 자동 고정된 탭은 이후 탭이 더 늘어나도(임계값을 넘어도) 계속 고정 유지 —
+         "새로 여는 탭부터만" 자동고정이 안 걸리게 하기 위함(기존 탭 상태가 갑자기 풀리는 것 방지).
+         탭이 적을 때는 메모리·백그라운드 폴링 부담이 작아 굳이 수동 고정 없이도 편의를 준다. */
+      const AUTO_KEEP_TAB_LIMIT = 10;
+      const autoKeptTabIds = reactive(new Set(['dashboard']));
+      const cfEffectiveKeptIds = computed(() => new Set([...keptTabIds, ...autoKeptTabIds]));
+
+      /* 탭이 닫히면(어떤 경로로 닫히든) 고정 Set에 죽은 id가 남지 않게 정리 —
+         남아있으면 이미 닫힌 탭의 컴포넌트가 화면에 안 보이는 채로 계속 마운트되어 메모리가 샌다. */
+      watch(
+        () => openTabs.length,
+        () => {
+          const liveIds = new Set(openTabs.map((t) => t.id));
+          Array.from(keptTabIds).forEach((id) => { if (!liveIds.has(id)) keptTabIds.delete(id); });
+          Array.from(autoKeptTabIds).forEach((id) => { if (!liveIds.has(id)) autoKeptTabIds.delete(id); });
+        }
+      );
       /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppCompPage.js) ── */
       const PAGE_COMP_MAP = window.BO_APP_COMP_PAGE;
 
@@ -146,7 +165,12 @@
           /* labelOverride — 대상마다 이름이 다른 화면(대시보드 뷰어 등)은 호출부가 이름을 준다.
              안 주면 기존대로 "화면명 · ID뒤4자리". */
           const label = labelOverride || (subId ? baseLabel + ' · ' + String(subId).slice(-4) : baseLabel);
+          /* 자동고정 여부는 '현재 자동고정된 탭 개수'(열려있는 전체 탭 수가 아님) 기준 —
+             자동고정 탭이 닫혀서 여유가 생기면(10개 미만) 새로 여는 탭이 그 자리를 채운다.
+             비고정 탭이 몇 개 더 열려있든 그건 자동고정 쿼터와 무관 */
+          const shouldAutoKeep = autoKeptTabIds.size < AUTO_KEEP_TAB_LIMIT;
           openTabs.push({ id: tabId, label });
+          if (shouldAutoKeep) autoKeptTabIds.add(tabId);
         }
       };
 
@@ -156,6 +180,7 @@
         const idx = openTabs.findIndex((t) => t.id === tabId);
         if (idx === -1) return;
         keptTabIds.delete(tabId);
+        autoKeptTabIds.delete(tabId);
         openTabs.splice(idx, 1);
         if (cfActiveTabId.value === tabId) {
           const next = openTabs[Math.min(idx, openTabs.length - 1)];
@@ -239,9 +264,14 @@
         closeCtxMenu();
       };
 
-      /* ctxNewWindow — 새 창은 임베드 모드(상단 nav/탭바/사이드바 없이 화면만) */
+      /* ctxNewWindow — 새 창은 임베드 모드(상단 nav/탭바/사이드바 없이 화면만)
+         (2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — 기존 쿼리(site 등)는 유지하고
+         page/embed 만 덮어써야 하므로 location.search 를 파싱해서 병합한다) */
       const ctxNewWindow = () => {
-        window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}&embed=1`, '_blank');
+        const qs = new URLSearchParams(location.search);
+        qs.set('page', ctxMenu.tabId);
+        qs.set('embed', '1');
+        window.open(`${location.pathname}?${qs.toString()}`, '_blank');
         closeCtxMenu();
       };
 
@@ -258,9 +288,13 @@
         }
       };
 
-      /* ── 새창 열기 — 임베드 모드(상단 nav/탭바/사이드바 없이 화면만) ── */
+      /* ── 새창 열기 — 임베드 모드(상단 nav/탭바/사이드바 없이 화면만)
+         (2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — 기존 쿼리 유지 병합) ── */
       const openNewWindow = (pgId) => {
-        window.open(`${location.pathname}${location.search}#page=${pgId}&embed=1`, '_blank');
+        const qs = new URLSearchParams(location.search);
+        qs.set('page', pgId);
+        qs.set('embed', '1');
+        window.open(`${location.pathname}?${qs.toString()}`, '_blank');
       };
 
       /* ── 열린 화면 목록 (가나다순) ── */
@@ -354,9 +388,11 @@
         if (first) navigate(first.id);
       };
 
-      /* ── Hash routing ── */
+      /* ── URL routing (2026-08-22 해시(#page=)에서 쿼리스트링(?page=)으로 전환 —
+         주소창에 # 안 보이게. history.pushState 는 hashchange 같은 자동 이벤트가 없어서
+         뒤로/앞으로가기는 popstate 로 감지한다) ── */
       const readHash = (showNotification = false) => {
-        const raw = String(window.location.hash || '').replace(/^#/, '');
+        const raw = String(window.location.search || '').replace(/^\?/, '');
         const p = new URLSearchParams(raw);
         // embed 모드 플래그 동기화 (값이 '1' 또는 'true' 일 때만 활성)
         const embedVal = p.get('embed');
@@ -387,12 +423,12 @@
         const sv = p.get('searchValue');
         if (sv) {
           initSearchValue.value = sv;
-          // URL hash에서 searchValue 파라미터 제거 (재로드/히스토리 오염 방지)
+          // URL 쿼리스트링에서 searchValue 파라미터 제거 (재로드/히스토리 오염 방지)
           p.delete('searchValue');
           const cleaned = p.toString();
-          const current = String(window.location.hash || '').replace(/^#/, '');
+          const current = String(window.location.search || '').replace(/^\?/, '');
           if (current !== cleaned) {
-            history.replaceState(null, '', '#' + cleaned);
+            history.replaceState(null, '', window.location.pathname + '?' + cleaned);
           }
         }
       };
@@ -430,11 +466,11 @@
         }
         if (opts.claimId != null) p2.set('claimId', opts.claimId); // Kanban: claimId 추가
         if (embed.value) p2.set('embed', '1');
-        // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
-        const newHash = p2.toString();
-        const curHash = String(window.location.hash || '').replace(/^#/, '');
-        if (curHash !== newHash) {
-          window.location.hash = newHash;
+        // 동일 쿼리 재설정 시 불필요한 히스토리 엔트리 방지
+        const newQuery = p2.toString();
+        const curQuery = String(window.location.search || '').replace(/^\?/, '');
+        if (curQuery !== newQuery) {
+          try { history.pushState(null, '', window.location.pathname + '?' + newQuery); } catch (e) {}
         }
         window.scrollTo(0, 0);
         /* 이미 활성인 화면을 좌측메뉴에서 다시 클릭하면 cfActiveTabId 가 안 바뀌어
@@ -444,8 +480,8 @@
 
       /* readHashWithNotification */
       const readHashWithNotification = () => readHash(true);
-      window.addEventListener('hashchange', readHashWithNotification);
-      onBeforeUnmount(() => window.removeEventListener('hashchange', readHashWithNotification));
+      window.addEventListener('popstate', readHashWithNotification);
+      onBeforeUnmount(() => window.removeEventListener('popstate', readHashWithNotification));
 
       /* ── Toast (누적 스택) ── */
       const toasts = reactive([]);
@@ -955,6 +991,17 @@
       watch(
         () => [cfActiveTabId.value, openTabs.length],
         () => Vue.nextTick(scrollActiveTabIntoView)
+      );
+
+      /* 활성 탭 라벨을 브라우저 탭 타이틀에 반영 — 여러 BO 창을 동시에 열어도
+         브라우저 탭 목록에서 화면을 구분할 수 있게 한다. */
+      watch(
+        () => cfActiveTabId.value,
+        () => {
+          const tab = openTabs.find((t) => t.id === cfActiveTabId.value);
+          document.title = tab ? tab.label + ' - ShopJoy BO' : 'ShopJoy BO';
+        },
+        { immediate: true }
       );
 
       /* ── 로그인 상태 (localStorage 영속화) ── */
@@ -1639,11 +1686,11 @@
           const nextAuthId = currentAuthUser?.authId || '';
           /* 사용자가 실제로 바뀐 경우에만 reload (같은 사용자 토큰 갱신 등은 동기화로 충분) */
           if (prevAuthId !== nextAuthId) {
-            /* BO 는 dashboard 외 전 페이지가 인증 필수 → 로그아웃/계정변경 시 dashboard 로 해시 변경 후 reload.
-             * (이전 사용자의 작업 페이지에 남지 않도록 — FO 의 home 전환과 동일 취지) */
-            const curPage = (new URLSearchParams((location.hash || '').replace(/^#/, ''))).get('page') || '';
+            /* BO 는 dashboard 외 전 페이지가 인증 필수 → 로그아웃/계정변경 시 dashboard 로 URL 변경 후
+             * reload(2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — FO 의 home 전환과 동일 취지) */
+            const curPage = (new URLSearchParams((location.search || '').replace(/^\?/, ''))).get('page') || '';
             if (curPage && curPage !== 'dashboard') {
-              location.hash = '#page=dashboard';
+              try { history.replaceState(null, '', location.pathname + '?page=dashboard'); } catch (_) {}
             }
             location.reload();
           }
@@ -1920,8 +1967,10 @@
         closeTab,
         cfActiveTabId,
         toPageFromTabId,
+        toIdFromTabId,
         refreshKeys,
         keptTabIds,
+        cfEffectiveKeptIds,
         toggleKeep,
         PAGE_COMP_MAP,
         ctxMenu,
@@ -2460,10 +2509,10 @@
             @click="navigate(tab.id)"
             @contextmenu.prevent="showCtxMenu($event, tab.id)">
             <span @click.stop="toggleKeep(tab.id)"
-              :title="keptTabIds.has(tab.id) ? '고정 해제' : '고정 (탭 전환 시 상태 유지)'"
-              style="font-size:9px;cursor:pointer;margin-right:3px;transition:all .15s;flex-shrink:0;line-height:1;"
-              :style="keptTabIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
-            <span class="tab-label">{{ tab.label }}</span>
+              :title="keptTabIds.has(tab.id) ? '고정 해제' : (cfEffectiveKeptIds.has(tab.id) ? '자동 고정됨 (열린 탭 10개 미만) · 클릭 시 수동 고정' : '고정 (탭 전환 시 상태 유지)')"
+              style="font-size:9px;cursor:pointer;margin-right:1px;transition:all .15s;flex-shrink:0;line-height:1;"
+              :style="cfEffectiveKeptIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
+            <span class="tab-label" :class="{'tab-label-lg': tab.label.length > 6}">{{ tab.label }}</span>
             <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
           </div>
         </div>
@@ -2479,16 +2528,16 @@
           <span>로그인이 필요합니다.</span>
         </div>
         <template v-else>
-          <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
+          <!-- 고정된 탭(수동 📌 + 탭 10개 미만 자동고정): v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
           <component
-            v-for="keptId in keptTabIds" :key="'kept_' + keptId"
+            v-for="keptId in cfEffectiveKeptIds" :key="'kept_' + keptId"
             :is="PAGE_COMP_MAP[toPageFromTabId(keptId)]"
             v-show="cfActiveTabId === keptId"
             :navigate="navigate"
-            :dtl-id="dtlId"
+            :dtl-id="toIdFromTabId(keptId)"
             />
           <!-- 비고정 현재 탭: 전환 시 재마운트 -->
-          <div v-if="!keptTabIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
+          <div v-if="!cfEffectiveKeptIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
             <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
             <dashboard-bo-app-monitor v-else-if="page==='appMonitorDashboard'" :navigate="navigate" :show-toast="showToast" />
             <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
