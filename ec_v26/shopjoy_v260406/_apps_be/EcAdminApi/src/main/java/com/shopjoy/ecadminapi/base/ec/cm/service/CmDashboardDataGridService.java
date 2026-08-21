@@ -250,6 +250,121 @@ public class CmDashboardDataGridService {
         return out;
     }
 
+    /* ── 쿼리방식(QUERY) 위젯 생성 ────────────────────────────────────────── */
+
+    private static final java.util.regex.Pattern FORBIDDEN_SQL = java.util.regex.Pattern.compile(
+        "(?i)\\b(insert|update|delete|drop|alter|truncate|grant|revoke|create|exec|execute|call|merge|copy|vacuum)\\b|--|/\\*");
+
+    /**
+     * 쿼리방식(QUERY) 위젯 생성 — chart.gen_query 를 실행한 결과로 시리즈·항목·값을 채운다.
+     *
+     * <p>결과는 반드시 {@code series_cd, series_nm, item_cd, item_nm, val_num} 다섯 컬럼을
+     * 이 순서로 내려줘야 한다(이름이 아니라 순번으로 읽는다). 관리자가 직접 SQL 을 적는
+     * 기능이라 안전장치를 우선한다 — SELECT 단문만 허용(DML/DDL/주석 키워드 있으면 거부),
+     * 결과는 500행으로 강제로 자르고, 5초 넘게 걸리면 타임아웃시킨다.</p>
+     *
+     * <p>쿼리로 만들어진 시리즈·항목은 자동수집(Y)·수정불가(N)로 표시된다 — 데이터관리
+     * 화면에서 손으로 고치는 대상이 아니라 쿼리를 다시 실행해서 갱신하는 대상이기 때문이다.</p>
+     */
+    @Transactional
+    public Map<String, Object> generateFromQuery(String chartId, String siteId, String yyyymmdd) {
+        CmDashboardItem ch = itemRepository.findById(chartId)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 차트입니다: " + chartId));
+        if (!"chart".equals(ch.getItemTypeCd()))
+            throw new CmBizException("차트(1레벨) 행이 아닙니다: " + chartId);
+        if (!"QUERY".equals(ch.getWidgetGenTypeCd()))
+            throw new CmBizException("이 위젯은 쿼리방식(QUERY)이 아닙니다: " + chartId);
+        if (siteId == null || siteId.isBlank())
+            throw new CmBizException("사이트를 지정해야 합니다.");
+        String rawSql = nvlStr(ch.getGenQuery(), "");
+        if (rawSql.isBlank()) throw new CmBizException("생성 쿼리(gen_query)가 비어 있습니다.");
+
+        String trimmed = rawSql.trim();
+        if (trimmed.endsWith(";")) trimmed = trimmed.substring(0, trimmed.length() - 1).trim();
+        if (trimmed.contains(";"))
+            throw new CmBizException("세미콜론으로 이어진 복수 문장은 허용하지 않습니다(SELECT 한 문장만).");
+        if (!trimmed.regionMatches(true, 0, "select", 0, 6))
+            throw new CmBizException("SELECT 문만 허용합니다.");
+        if (FORBIDDEN_SQL.matcher(trimmed).find())
+            throw new CmBizException("허용되지 않는 키워드가 포함되어 있습니다(DML/DDL/주석 등).");
+
+        /* :siteId, :yyyymmdd, :yyyymm 플레이스홀더 치환 — 관리자가 작성한 신뢰 SQL 이므로
+           단순 문자열 치환으로 충분하다. 기준일자를 안 넘기면 오늘 날짜로 8자리 채워서 쓴다
+           (yyyymmdd 는 항상 8자리 — D/M/Y 어느 기간구분이든 이 프로젝트 공통 관례) */
+        String refYmd = (yyyymmdd == null || yyyymmdd.isBlank())
+            ? java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"))
+            : yyyymmdd.trim();
+        if (!refYmd.matches("\\d{8}"))
+            throw new CmBizException("기준일자는 8자리 숫자(YYYYMMDD)여야 합니다: " + refYmd);
+        String sql = trimmed
+            .replace(":siteId", "'" + siteId.replace("'", "''") + "'")
+            .replace(":yyyymmdd", "'" + refYmd + "'")
+            .replace(":yyyymm", "'" + refYmd.substring(0, 6) + "'");
+        /* 사용자가 LIMIT 을 안 넣었어도 여기서 500행으로 강제로 자른다 */
+        String wrapped = "SELECT * FROM (" + sql + ") gen_query_t LIMIT 500";
+
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        String chartCd = nvlStr(ch.getItemKey(), "");
+
+        List<?> rawRows;
+        try {
+            jakarta.persistence.Query q = em.createNativeQuery(wrapped);
+            q.setHint("jakarta.persistence.query.timeout", 5000);
+            rawRows = q.getResultList();
+        } catch (Exception e) {
+            throw new CmBizException("쿼리 실행 오류: " + e.getMessage());
+        }
+        if (rawRows.isEmpty()) throw new CmBizException("쿼리 결과가 없습니다.");
+
+        Map<String, CmDashboardItem> exist = new LinkedHashMap<>();
+        for (CmDashboardItem d : descendantsOf(ch)) exist.put(d.getItemKey(), d);
+        Set<String> keep = new LinkedHashSet<>();
+
+        Map<String, Integer> seriesOrd = new LinkedHashMap<>();
+        Map<String, Integer> itemOrd = new LinkedHashMap<>();
+        int upSer = 0, upItm = 0, upVal = 0;
+
+        for (Object rowObj : rawRows) {
+            Object[] r = (Object[]) rowObj;
+            String seriesCd = str(r[0]);
+            String seriesNm = str(r[1]);
+            String itemCd   = str(r[2]);
+            String itemNm   = str(r[3]);
+            Double val      = r.length > 4 ? toDouble(r[4]) : null;
+            if (seriesCd == null || itemCd == null) continue;
+
+            seriesOrd.putIfAbsent(seriesCd, (seriesOrd.size() + 1) * 10);
+            String sCode = chartCd + "-" + seriesCd;
+            CmDashboardItem se = putRow(exist, keep, sCode, seriesCd, seriesNm, null,
+                "series", ch.getDashboardId(), ch.getDashboardItemId(), chartCd,
+                seriesOrd.get(seriesCd), authId, now, "Y", "N");
+            upSer++;
+
+            String ordKey = seriesCd + "|" + itemCd;
+            itemOrd.putIfAbsent(ordKey, (itemOrd.size() + 1) * 10);
+            String itemKey = sCode + "-" + itemCd;
+            CmDashboardItem it = putRow(exist, keep, itemKey, itemCd, itemNm, null,
+                "item", ch.getDashboardId(), se.getDashboardItemId(), sCode,
+                itemOrd.get(ordKey), authId, now, "Y", "N");
+            upItm++;
+
+            if (val != null) {
+                CmDashboardData e = upsert(it.getDashboardItemId(), siteId, null, null, null, null, ch, authId, now);
+                e.setDataVal(val);
+                dataRepository.save(e);
+                upVal++;
+            }
+        }
+        em.flush();
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("series", upSer);
+        out.put("items", upItm);
+        out.put("values", upVal);
+        return out;
+    }
+
     /** 차트 아래 모든 시리즈·항목 행 */
     private List<CmDashboardItem> descendantsOf(CmDashboardItem ch) {
         List<CmDashboardItem> all = itemRepository.findByDashboardIdOrderBySortOrdAsc(ch.getDashboardId());
@@ -393,6 +508,9 @@ public class CmDashboardDataGridService {
             m.put("inputOpts",     nvlStr(it.getInputOpts(), DEFAULT_INPUT_OPTS));
             m.put("lvl1CodeGrp", it.getLvl1CodeGrp());
             m.put("lvl2CodeGrp", it.getLvl2CodeGrp());
+            m.put("widgetGenTypeCd", nvlStr(it.getWidgetGenTypeCd(), "MANUAL"));
+            m.put("genQuery",    it.getGenQuery());
+            m.put("refItemKey",  it.getRefItemKey());
         }
         return m;
     }
@@ -554,6 +672,10 @@ public class CmDashboardDataGridService {
             /* 차트마다 필요한 조회조건 차원이 다르다(예: 일별/월별, 상품·업체 필요 여부) — 화면이
                이 값 기준으로 차트를 묶어 그룹별 조회조건을 따로 받는다(2026-08-21) */
             chart.put("inputOpts",       nvlStr(ch.getInputOpts(), DEFAULT_INPUT_OPTS));
+            /* 쿼리방식(QUERY) 위젯은 SQL 실행 결과로 값이 채워지므로 데이터관리 화면에서 손으로
+               고치는 대상이 아니다 — 참조항목명은 화면에서 안내 문구로 보여준다(2026-08-21) */
+            chart.put("widgetGenTypeCd", nvlStr(ch.getWidgetGenTypeCd(), "MANUAL"));
+            chart.put("refItemKey",      ch.getRefItemKey());
             chart.put("colNms",          colNms);
             chart.put("colCds",          colCds);
             /* 열 제목은 항상 3레벨(항목) 정의행에서 온다 — 값이 항상 3레벨에만 붙는 지금 구조에서는

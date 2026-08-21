@@ -64,6 +64,7 @@
     itemSaveList(cmd, rows, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
     /* 시리즈·항목 편집결과를 정의행으로 동기화 (항목관리 저장) */
     syncItemChildren(id, body, uiNm, cmdNm) { return global.boApi.post(`/bo/ec/cm/dashboard/item/${id}/children`, body, hdr(uiNm, cmdNm)); },
+    generateFromQuery(id, body, uiNm, cmdNm) { return global.boApi.post(`/bo/ec/cm/dashboard/item/${id}/generate-from-query`, body, hdr(uiNm, cmdNm)); },
     /* 항목 목록 3레벨 트리 — 차트(1)/시리즈(2)/항목(3) 평면 배열 */
     getItemTree(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/tree', { params, ...hdr(uiNm, cmdNm) }); },
     getItemDataList(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/cm/dashboard/item-data/list', { params, ...hdr(uiNm, cmdNm) }); },

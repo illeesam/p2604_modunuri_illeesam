@@ -52,6 +52,9 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
         if (entity.getLvl3Color() != null)           { update.set(cmDashboardItem.lvl3Color,              entity.getLvl3Color());                changed.put("lvl3Color", entity.getLvl3Color()); }
         if (entity.getLvl2PaletteCd() != null)       { update.set(cmDashboardItem.lvl2PaletteCd,          entity.getLvl2PaletteCd());            changed.put("lvl2PaletteCd", entity.getLvl2PaletteCd()); }
         if (entity.getLvl3PaletteCd() != null)       { update.set(cmDashboardItem.lvl3PaletteCd,          entity.getLvl3PaletteCd());            changed.put("lvl3PaletteCd", entity.getLvl3PaletteCd()); }
+        if (entity.getWidgetGenTypeCd() != null)     { update.set(cmDashboardItem.widgetGenTypeCd,        entity.getWidgetGenTypeCd());          changed.put("widgetGenTypeCd", entity.getWidgetGenTypeCd()); }
+        if (entity.getGenQuery() != null)            { update.set(cmDashboardItem.genQuery,               entity.getGenQuery());                 changed.put("genQuery", entity.getGenQuery()); }
+        if (entity.getRefItemKey() != null)          { update.set(cmDashboardItem.refItemKey,             entity.getRefItemKey());               changed.put("refItemKey", entity.getRefItemKey()); }
         if (entity.getLvl1CodeGrp() != null)         { update.set(cmDashboardItem.lvl1CodeGrp,            entity.getLvl1CodeGrp());              changed.put("lvl1CodeGrp", entity.getLvl1CodeGrp()); }
         if (entity.getLvl2CodeGrp() != null)         { update.set(cmDashboardItem.lvl2CodeGrp,            entity.getLvl2CodeGrp());              changed.put("lvl2CodeGrp", entity.getLvl2CodeGrp()); }
         if (entity.getDataSourceCd() != null)        { update.set(cmDashboardItem.dataSourceCd,           entity.getDataSourceCd());             changed.put("dataSourceCd", entity.getDataSourceCd()); }

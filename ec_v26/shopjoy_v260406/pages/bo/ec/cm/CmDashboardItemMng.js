@@ -69,8 +69,18 @@ window.CmDashboardItemMng = {
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', optionJson: '',
       lvl1CodeGrp: '', lvl2CodeGrp: '', simJson: '',
       lvl2PaletteCd: 'DASH_WIDGET_COLORS_01', lvl3PaletteCd: 'DASH_WIDGET_COLORS_02',
+      widgetGenTypeCd: 'MANUAL', genQuery: '', refItemKey: '',
     });
     const panelForm = reactive(_initPanelForm());
+    /* genRefYmd — 쿼리방식(QUERY) [쿼리 실행] 시 :yyyymmdd/:yyyymm 자리표시자에 넘길 기준일자
+       (YYYYMMDD, 8자리). 저장 대상 아님 — 실행할 때만 쓰는 값이라 panelForm 밖에 별도로 둔다.
+       기본값은 오늘 날짜(2026-08-21) */
+    const _todayYmd = () => {
+      const d = new Date();
+      const p2 = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}`;
+    };
+    const genRefYmd = ref(_todayYmd());
     const panelErrors = reactive({});
 
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || '');
@@ -82,7 +92,14 @@ window.CmDashboardItemMng = {
 
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')  return handleSearchList();
-      if (cmd === 'searchParam-reset') { searchParam.searchValue = ''; searchParam.useYn = ''; return handleSearchList(); }
+      if (cmd === 'searchParam-reset') {
+        searchParam.searchValue = ''; searchParam.useYn = '';
+        /* 검색 초기화는 좌측 대시보드 선택도 함께 해제한다 — 그래야 우측이 전체 대시보드
+           기준으로 다시 조회된다(2026-08-21) */
+        dashState.selectedId = null;
+        resetDetailToNew();
+        return handleSearchList();
+      }
       if (cmd === 'panels-add')        return openPanelNew();
       if (cmd === 'panelForm-save')    return handleSavePanel();
       if (cmd === 'panelForm-close')   return resetDetailToNew();
@@ -135,6 +152,9 @@ window.CmDashboardItemMng = {
           panels.splice(0, panels.length);
           resetDetailToNew();
         }
+        /* 좌측에서 대시보드를 고르지 않고 [조회]만 눌러도 우측 위젯항목목록은 항상 채운다 —
+           선택된 게 있으면 그 대시보드만, 없으면 방금 조회된 전체 대시보드 기준(2026-08-21) */
+        await handleSearchPanels();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
       } finally {
@@ -153,18 +173,17 @@ window.CmDashboardItemMng = {
       } catch (e) { console.warn('[항목 수 조회 오류]', e); }
     };
 
-    /* handleSearchPanels — 선택 대시보드의 항목 목록 조회 (평면 목록 + 3레벨 트리) */
+    /* handleSearchPanels — 항목 목록 조회 (평면 목록 + 3레벨 트리).
+       좌측에서 대시보드를 선택 안 하고 [조회]만 누르면 전체 대시보드를 대상으로 조회한다
+       (2026-08-21) — getItemList 는 dashboardId 없이 siteId 만으로도 전체 항목을 돌려준다 */
     const handleSearchPanels = async () => {
-      if (!dashState.selectedId) {
-        panels.splice(0, panels.length);
-        treeRows.splice(0, treeRows.length);
-        return;
-      }
       uiState.panelLoading = true;
       try {
-        const res = await boApiSvc.cmDashboard.getItemList(
-          { siteId: cfSiteId.value, dashboardId: dashState.selectedId }, '대시보드항목관리', '항목조회');
-        const list = (res.data?.data || []).filter(i => i.dashboardId === dashState.selectedId);
+        const params = { siteId: cfSiteId.value };
+        if (dashState.selectedId) params.dashboardId = dashState.selectedId;
+        const res = await boApiSvc.cmDashboard.getItemList(params, '대시보드항목관리', '항목조회');
+        let list = res.data?.data || [];
+        if (dashState.selectedId) list = list.filter(i => i.dashboardId === dashState.selectedId);
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         panels.splice(0, panels.length, ...list);
         await fnLoadTree();
@@ -176,12 +195,24 @@ window.CmDashboardItemMng = {
       }
     };
 
-    /* fnLoadTree — 3레벨 트리 조회. 트리가 비어도 평면 목록은 이미 떠 있으므로 화면을 막지 않는다 */
+    /* fnLoadTree — 3레벨 트리 조회. 특정 대시보드가 선택돼 있으면 그것만, 아니면 좌측에 로드된
+       모든 대시보드를 각각 조회해 하나로 합친다(getItemTree 는 dashboardId 필수라 대시보드별로
+       나눠 부를 수밖에 없다) — 노드마다 _dashboardNm 을 붙여 그리드에서 구분해 보여준다(2026-08-21) */
     const fnLoadTree = async () => {
       try {
-        const res = await boApiSvc.cmDashboard.getItemTree(
-          { dashboardId: dashState.selectedId }, '대시보드항목관리', '항목트리조회');
-        treeRows.splice(0, treeRows.length, ...(res.data?.data || []));
+        if (dashState.selectedId) {
+          const dashNm = cfCurDash.value?.dashboardNm || '';
+          const res = await boApiSvc.cmDashboard.getItemTree(
+            { dashboardId: dashState.selectedId }, '대시보드항목관리', '항목트리조회');
+          const rows = (res.data?.data || []).map(n => ({ ...n, _dashboardNm: dashNm }));
+          treeRows.splice(0, treeRows.length, ...rows);
+        } else {
+          const results = await Promise.all(dashboards.map(d =>
+            boApiSvc.cmDashboard.getItemTree({ dashboardId: d.dashboardId }, '대시보드항목관리', '항목트리조회')
+              .then(res => (res.data?.data || []).map(n => ({ ...n, _dashboardNm: d.dashboardNm })))
+              .catch(() => [])));
+          treeRows.splice(0, treeRows.length, ...results.flat());
+        }
         fnTreeCollapseAll();   /* 기본적으로 접힌 상태로 시작(2026-08-21) — 필요하면 [전체펼치기] */
       } catch (err) {
         treeRows.splice(0, treeRows.length);
@@ -257,6 +288,7 @@ window.CmDashboardItemMng = {
         simJson: row.simJson || '',
         lvl2PaletteCd: row.lvl2PaletteCd || 'DASH_WIDGET_COLORS_01',
         lvl3PaletteCd: row.lvl3PaletteCd || 'DASH_WIDGET_COLORS_02',
+        widgetGenTypeCd: row.widgetGenTypeCd || 'MANUAL', genQuery: row.genQuery || '', refItemKey: row.refItemKey || '',
       });
       fnSyncFormToRows();   /* 정의 행 → 편집 그리드 */
       onGrpChange();        /* 코드그룹이 지정돼 있으면 선택지 미리 로드 */
@@ -310,6 +342,9 @@ window.CmDashboardItemMng = {
           simJson: panelForm.simJson || null,
           lvl1CodeGrp: panelForm.lvl1CodeGrp || null, lvl2CodeGrp: panelForm.lvl2CodeGrp || null,
           lvl2PaletteCd: panelForm.lvl2PaletteCd || null, lvl3PaletteCd: panelForm.lvl3PaletteCd || null,
+          widgetGenTypeCd: panelForm.widgetGenTypeCd || 'MANUAL',
+          genQuery: panelForm.widgetGenTypeCd === 'QUERY' ? (panelForm.genQuery || null) : null,
+          refItemKey: panelForm.widgetGenTypeCd === 'QUERY' ? (panelForm.refItemKey || null) : null,
         };
         const res = await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
         /* 편집 그리드의 시리즈·항목을 실제 정의행으로 반영 — 트리·데이터관리가 이 행을 본다 */
@@ -334,6 +369,35 @@ window.CmDashboardItemMng = {
         await fnLoadPanelCounts();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+      }
+    };
+
+    /* handleGenerateFromQuery — [쿼리 실행 → 자동생성]. 화면의 genQuery 를 실제 저장된 값 그대로
+       실행해야 하므로, 먼저 [저장]으로 gen_query 를 반영한 뒤 실행한다(저장 안 된 SQL을 그냥
+       실행하면 DB 에 남은 쿼리와 화면이 어긋난다) */
+    const handleGenerateFromQuery = async () => {
+      if (!panelForm.genQuery || !panelForm.genQuery.trim()) {
+        showToast('생성 쿼리(SQL)를 입력하세요.', 'error'); return;
+      }
+      if (panelDetail.isNew || !panelForm.dashboardItemId) {
+        showToast('먼저 [저장]으로 위젯을 등록한 뒤 쿼리를 실행하세요.', 'error'); return;
+      }
+      if (!/^\d{8}$/.test(genRefYmd.value || '')) {
+        showToast('기준일자는 8자리 숫자(YYYYMMDD)로 입력하세요.', 'error'); return;
+      }
+      const ok = await showConfirm('쿼리 실행',
+        '저장된 생성 쿼리를 실행해 시리즈·항목·값을 자동으로 채웁니다.\n(먼저 [저장]을 눌러 지금 화면의 SQL이 반영돼 있어야 합니다)\n진행하시겠습니까?');
+      if (!ok) return;
+      try {
+        const res = await boApiSvc.cmDashboard.generateFromQuery(panelForm.dashboardItemId,
+          { siteId: cfSiteId.value, yyyymmdd: genRefYmd.value }, '대시보드항목관리', '쿼리실행생성');
+        const d = res.data?.data || {};
+        showToast(`쿼리 실행 완료 — 시리즈 ${d.series || 0}개, 항목 ${d.items || 0}개, 값 ${d.values || 0}건 반영`, 'success');
+        await fnLoadTree();       /* 쿼리로 새로 생긴 시리즈·항목 행을 반영 */
+        loadView(panelForm);      /* 현재 항목 그대로 다시 열어 새 정의를 편집 그리드에 반영 */
+        await fnLoadPanelCounts();
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '쿼리 실행 오류', 'error', 0);
       }
     };
 
@@ -1421,6 +1485,15 @@ window.CmDashboardItemMng = {
     const fnLvlColor  = (lvl) => (lvl === 1 ? '#e8587a' : lvl === 2 ? '#2563eb' : '#94a3b8');
     const fnLvlLabel  = (lvl) => (lvl === 1 ? '차트' : lvl === 2 ? '시리즈' : '항목');
 
+    /* fnRefItemNm — 쿼리방식(QUERY) 위젯의 참조항목(refItemKey, 예:'chart036')을 이름으로
+       바꿔 보여준다. 대시보드가 다르면 트리에 없을 수 있어 이름을 못 찾으면 코드 그대로 표시 */
+    const fnRefItemNm = (refItemKey) => {
+      if (!refItemKey) return '-';
+      const found = treeRows.find(n => n.lvl === 1 && n.itemKey === refItemKey)
+        || panels.find(p => p.itemKey === refItemKey);
+      return (found && found.itemNm) ? found.itemNm : refItemKey;
+    };
+
     const columns = {};
 
     columns.baseSearch = [
@@ -1479,6 +1552,19 @@ window.CmDashboardItemMng = {
       { key: '_colorPaletteCd', label: '색상 팔레트 (1시리즈/2항목)', type: 'slot', name: 'colorPaletteCd',
         visible: (form) => form.widgetTypeCd === 'CHART',
         hint: '1=막대·꺾은선 등 시리즈 색상 순서(기본값 01. 기본), 2=파이·도넛 등 항목 색상 순서(기본값 02. 비비드)' },
+      /* 위젯생성타입 — MANUAL(기존, 화면에서 시리즈·항목 직접 정의) / QUERY(SQL 실행 결과로 자동
+         생성). QUERY 선택 시에만 참조항목·생성쿼리·실행 버튼이 아래에 나타난다(2026-08-21) */
+      { key: 'widgetGenTypeCd', label: '위젯생성타입', type: 'select',
+        options: () => [
+          { value: 'MANUAL', label: '매뉴얼 방식 (화면에서 시리즈·항목 직접 정의)' },
+          { value: 'QUERY',  label: '쿼리 방식 (SQL 실행 결과로 자동 생성)' },
+        ] },
+      { key: 'refItemKey', label: '참조항목(item_key)', type: 'text', mono: true,
+        placeholder: '예: chart036 (정보 표시용 — 실제 데이터 조회와는 무관)',
+        visible: (form) => form.widgetGenTypeCd === 'QUERY' },
+      { key: '_genQuery', label: '생성 쿼리(SQL)', type: 'slot', name: 'genQuery', colSpan: 3,
+        visible: (form) => form.widgetGenTypeCd === 'QUERY',
+        hint: 'SELECT 단문만 허용. 결과 컬럼 5개를 이 순서로: series_cd, series_nm, item_cd, item_nm, val_num. :siteId 자리표시자 지원' },
       { key: 'seriesOrientCd', label: '시리즈 배치 방향', type: 'select',
         options: () => [
           { value: 'ROW', label: '행 (시리즈=행 · 항목=열, 기본)' },
@@ -1540,7 +1626,7 @@ window.CmDashboardItemMng = {
       /* 3레벨 트리 */
       treeRows, treeState, cfTreeVisible,
       fnHasChild, fnToggleNode, fnTreeExpandAll, fnTreeCollapseAll, fnIsFirstSeries,
-      fnLvlBullet, fnLvlColor, fnLvlLabel,
+      fnLvlBullet, fnLvlColor, fnLvlLabel, fnRefItemNm,
       /* 2·3레벨 편집 그리드 */
       seriesRows, colRows, grpCodes,
       fnGrpOptions, onGrpChange, onPickCode, fnPreviewCode,
@@ -1556,7 +1642,7 @@ window.CmDashboardItemMng = {
       /* 소스보기 */
       srcState, SRC_TABS, fnSrcApply, fnSrcReset,
       fnSrcTouch, onAutoApplyToggle, cfHlCode, cfSrcCode, onCodeScroll, hlRef,
-      handleBtnAction, handleGridCellAction,
+      handleBtnAction, handleGridCellAction, handleGenerateFromQuery, genRefYmd,
     };
   },
   template: /* html */ `
@@ -1578,7 +1664,7 @@ window.CmDashboardItemMng = {
     </bo-container>
 
     <!-- ===== ■. 항목 목록 + 인라인 폼 (항상 표시 — 미선택 시 빈 그리드 + 안내) ===== -->
-    <bo-container title="대시보드 항목 목록"
+    <bo-container title="대시보드 위젯항목 목록"
       :count-text="dashState.selectedId ? '총 ' + panels.length + '개' : ''">
       <template #toolbar-actions>
         <!-- 영역을 숨기지 않고 버튼만 잠근다 (미선택 상태에서도 무엇을 할 수 있는지 보여야 한다) -->
@@ -1610,8 +1696,10 @@ window.CmDashboardItemMng = {
           <table class="bo-table bo-table-narrow">
             <thead>
               <tr>
+                <th style="width:120px;">대시보드명</th>
                 <th style="width:56px;">레벨</th>
-                <th>항목명 (차트 · 시리즈 · 항목)</th>
+                <th style="min-width:220px;">항목명 (차트 · 시리즈 · 항목)</th>
+                <th style="width:150px;">생성방식</th>
                 <th style="width:120px;">코드</th>
                 <th style="width:210px;">고유 item_key</th>
                 <th style="width:64px;">행개수</th>
@@ -1623,13 +1711,15 @@ window.CmDashboardItemMng = {
             <tbody>
               <tr v-for="node in cfTreeVisible" :key="node.itemKey"
                 :class="node.lvl === 1 ? (panelDetail.selectedId === node.dashboardItemId ? 'bo-row-selected' : '') : ''">
+                <td style="font-size:11px;color:#64748b;white-space:nowrap;">
+                  {{ node.lvl === 1 ? (node._dashboardNm || '-') : '' }}</td>
                 <td style="text-align:center;">
                   <span class="badge" :class="node.lvl === 1 ? 'badge-red' : (node.lvl === 2 ? 'badge-blue' : 'badge-gray')">
                     {{ fnLvlLabel(node.lvl) }}</span>
                 </td>
-                <td>
-                  <span :style="{ display:'inline-flex', alignItems:'center', gap:'4px',
-                                  marginLeft:((node.lvl - 1) * 18) + 'px' }">
+                <td style="white-space:nowrap;">
+                  <span style="display:inline-flex;align-items:center;gap:4px;"
+                    :style="{ marginLeft:((node.lvl - 1) * 18) + 'px' }">
                     <span @click.stop="fnToggleNode(node)"
                       :style="{ cursor: fnHasChild(node) ? 'pointer' : 'default', width:'12px',
                                 color:'#94a3b8', fontSize:'10px', userSelect:'none' }">
@@ -1644,6 +1734,15 @@ window.CmDashboardItemMng = {
                     <span v-if="node.lvl === 2 ? !fnIsFirstSeries(node) : false"
                       style="font-size:10px;color:#c2410c;margin-left:2px;">(항목은 1번째 시리즈 참고)</span>
                   </span>
+                </td>
+                <!-- 위젯생성타입 — 기존(MANUAL) / 쿼리(QUERY, SQL 실행 결과로 자동 생성) + 참조항목명(2026-08-21) -->
+                <td style="white-space:nowrap;">
+                  <template v-if="node.lvl === 1">
+                    <span class="badge" :class="node.widgetGenTypeCd === 'QUERY' ? 'badge-purple' : 'badge-gray'">
+                      {{ node.widgetGenTypeCd === 'QUERY' ? '🔗 쿼리' : '매뉴얼' }}</span>
+                    <div v-if="node.widgetGenTypeCd === 'QUERY'" style="font-size:10px;color:#7c3aed;margin-top:2px;"
+                      title="SQL 실행 결과로 자동 생성됨">참조: {{ fnRefItemNm(node.refItemKey) }}</div>
+                  </template>
                 </td>
                 <td style="font-family:monospace;font-size:11px;color:#2563eb;">{{ node.itemCd }}</td>
                 <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ node.itemKey }}</td>
@@ -1662,7 +1761,7 @@ window.CmDashboardItemMng = {
           </table>
         </div>
         <div v-else style="padding:32px;text-align:center;color:#aaa;">
-          {{ dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '좌측에서 대시보드를 선택하면 항목 트리가 표시됩니다.' }}
+          {{ dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '항목이 없습니다. 상단 [조회]를 눌러보거나 좌측에서 특정 대시보드를 선택하세요.' }}
         </div>
         <div v-if="cfTreeVisible.length" style="padding:6px 12px;font-size:11px;color:#94a3b8;border-top:1px solid #f0f0f0;">
           2·3레벨은 차트의 <b>시리즈 정의 JSON</b> / <b>항목 정의 JSON</b> 에서 옵니다 — 차트 행의 [수정]에서 편집하세요.
@@ -1674,7 +1773,7 @@ window.CmDashboardItemMng = {
         bare :columns="columns.panels" :rows="panels" row-key="dashboardItemId"
         :loading="uiState.panelLoading" :selected-key="panelDetail.selectedId"
         :row-class="row => panelDetail.selectedId === row.dashboardItemId ? 'active' : ''"
-        :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '좌측에서 대시보드를 선택하면 대시보드 항목 목록이 표시됩니다.'"
+        :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '항목이 없습니다. 상단 [조회]를 눌러보거나 좌측에서 특정 대시보드를 선택하세요.'"
         grid-id="panels-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row, gridId }">
           <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
@@ -1727,6 +1826,25 @@ window.CmDashboardItemMng = {
             <select class="form-control" v-model="cfColorPaletteCd2" :disabled="cfDtlMode" style="flex:1;min-width:0;">
               <option v-for="o in util.DASH_WIDGET_COLOR_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
+          </div>
+        </template>
+
+        <!-- ===== ■. 생성 쿼리(SQL, 위젯생성타입=QUERY 일 때만) ============= -->
+        <template #genQuery>
+          <div>
+            <textarea class="form-control" v-model="panelForm.genQuery" :disabled="cfDtlMode" rows="5"
+              style="font-family:monospace;font-size:12px;"
+              placeholder="SELECT series_cd, series_nm, item_cd, item_nm, val_num FROM ... WHERE site_id = :siteId AND ... = :yyyymmdd ..."></textarea>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b;">
+                기준일자
+                <input type="text" class="form-control" v-model="genRefYmd" :disabled="cfDtlMode"
+                  placeholder="YYYYMMDD" maxlength="8" style="width:100px;font-family:monospace;" />
+              </span>
+              <button class="btn" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;font-weight:700;"
+                :disabled="cfDtlMode" @click="handleGenerateFromQuery">🔗 쿼리 실행 → 자동생성</button>
+              <span style="font-size:11px;color:#94a3b8;">저장 후 실행하세요 — :siteId/:yyyymmdd/:yyyymm 자리표시자에 기준일자(8자리)가 실려 나갑니다. 실행 결과로 시리즈·항목·값이 자동수집(수정불가)으로 채워집니다.</span>
+            </div>
           </div>
         </template>
 
@@ -2093,7 +2211,7 @@ window.CmDashboardItemMng = {
       </bo-form-area>
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">
-      대시보드 항목 목록에서 항목을 선택하거나 [+ 항목 추가]를 클릭하세요.</div>
+      대시보드 위젯항목 목록에서 항목을 선택하거나 [+ 항목 추가]를 클릭하세요.</div>
   </bo-container>
 </bo-page>
 `,

@@ -114,6 +114,20 @@ public class CmDashboardItem extends BaseEntity {
     @Size(max = 30, message = "lvl3PaletteCd 는 30자 이내여야 합니다.")
     private String lvl3PaletteCd;
 
+    @Comment("위젯생성타입 — MANUAL(화면에서 시리즈/항목 직접 정의, 기본값) | QUERY(SQL 실행 결과로 자동 생성). 차트(1레벨) 행에만 의미 있음")
+    @Column(name = "widget_gen_type_cd", length = 20)
+    @Size(max = 20, message = "widgetGenTypeCd 는 20자 이내여야 합니다.")
+    private String widgetGenTypeCd;
+
+    @Comment("widget_gen_type_cd=QUERY 일 때 실행할 SELECT 쿼리. 결과 컬럼은 series_cd,series_nm,item_cd,item_nm,val_num 로 약속. :siteId 플레이스홀더 지원")
+    @Column(name = "gen_query", columnDefinition = "TEXT")
+    private String genQuery;
+
+    @Comment("이 위젯이 참조/파생한 원본 위젯의 item_key(예: chart036) — 목록 화면에 참조항목명으로 표시, 정보성 필드")
+    @Column(name = "ref_item_key", length = 60)
+    @Size(max = 60, message = "refItemKey 는 60자 이내여야 합니다.")
+    private String refItemKey;
+
     @Comment("2레벨(시리즈) 이름 선택용 공통코드그룹 (sy_code_grp.code_grp). NULL=직접입력")
     @Column(name = "lvl1_code_grp", length = 50)
     @Size(max = 50, message = "lvl1CodeGrp 는 50자 이내여야 합니다.")

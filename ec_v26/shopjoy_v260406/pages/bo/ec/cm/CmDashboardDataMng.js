@@ -1258,6 +1258,10 @@ window.CmDashboardDataMng = {
               <span :style="'font-weight:700;font-size:12.5px;color:#1f4a73;white-space:nowrap;' + (chart.autoCollectYn === 'Y' ? 'margin-left:76px;' : '')">
                 {{ chart.itemNm }}
                 <span style="font-family:monospace;font-size:11px;color:#94a3b8;font-weight:400;">{{ chart.itemKey }}</span>
+                <!-- 쿼리방식(QUERY) 위젯 — 참조항목명을 안내(2026-08-21). 이 화면에서 값은 손으로
+                     못 고치고(셀이 이미 자동수집·수정불가로 내려온다) 항목관리에서 쿼리 재실행으로 갱신 -->
+                <span v-if="chart.widgetGenTypeCd === 'QUERY'" class="badge badge-purple" style="margin-left:4px;"
+                  title="SQL 실행 결과로 자동 생성됨 — 값 재생성은 [대시보드 항목관리]에서">🔗 참조: {{ chart.refItemKey || '-' }}</span>
               </span>
               <!-- 시뮬레이션부터 우측 정렬 -->
               <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">

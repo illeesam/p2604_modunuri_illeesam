@@ -324,6 +324,19 @@ public class BoCmDashboardController {
     }
 
     /**
+     * 쿼리방식(QUERY) 위젯 생성 — 차트의 gen_query 를 실행해 시리즈·항목·값을 자동으로 채운다.
+     * widget_gen_type_cd=QUERY 로 저장된 차트에서만 호출 가능(서비스에서 검증).
+     */
+    @PostMapping("/item/{id}/generate-from-query")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> generateFromQuery(
+            @PathVariable("id") String id,
+            @RequestBody Map<String, Object> body) {
+        String siteId = body.get("siteId") == null ? null : String.valueOf(body.get("siteId"));
+        String yyyymmdd = body.get("yyyymmdd") == null ? null : String.valueOf(body.get("yyyymmdd"));
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.generateFromQuery(id, siteId, yyyymmdd)));
+    }
+
+    /**
      * 항목 목록 3레벨 트리 — 차트(1) / 시리즈(2) / 항목(3).
      * 화면에서 들여쓰기로 그리도록 평면 배열로 준다. 각 노드에 lvl 과 조립된 itemCode 포함.
      */
