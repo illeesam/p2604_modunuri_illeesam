@@ -35,7 +35,28 @@ window.DashboardBoEc03 = {
       filterExpand: false, activeTab: 'sales', tabMode: '4col', loading: false,
       xviewDrillRows: [], xviewDrillVisible: false,
       infoPanel: null, /* { title, optJson, dataJson, top, left } */
+      pdfExporting: false,
     });
+
+    /* pdfAreaRef — 화면 전체(헤더+KPI+필터+탭+차트그리드) PDF 캡처 대상 */
+    const pdfAreaRef = ref(null);
+    const handleExportPdf = async () => {
+      uiState.pdfExporting = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename('EC대시보드.pdf');
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, window.boApp?.showToast);
+      } finally {
+        uiState.pdfExporting = false;
+      }
+    };
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({ title: '온라인 쇼핑몰 매출 및 판매현황 - ShopJoy BO',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png', url: window.location.href });
+      } catch (e) {
+        window.boApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
 
     const COMP_IDS = [
       'COMP0101','COMP0102','COMP0103','COMP0104',
@@ -766,11 +787,12 @@ window.DashboardBoEc03 = {
       cfOpt0401, cfOpt0402, cfOpt0403,
       cfOptXview, onXviewBrush,
       fnOpenInfo, fnOpenXviewInfo, fnInfoTab, fnBuildApiParams,
+      pdfAreaRef, handleExportPdf, handleShareKakao,
     };
   },
 
   template: `
-<div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
+<div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'" ref="pdfAreaRef">
 
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
@@ -778,6 +800,9 @@ window.DashboardBoEc03 = {
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
     <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
+    <button class="btn btn_kakao" @click="handleShareKakao">💬 카카오톡 공유</button>
+    <button class="btn btn_pdf" :disabled="uiState.pdfExporting" @click="handleExportPdf">
+      {{ uiState.pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
   </div>
 
   <!-- 필터 -->

@@ -48,6 +48,9 @@ window.Prod01View = {
       // 찜 토글
       } else if (cmd === 'prod-toggleLike') {
         return toggleLike(param);
+      // 카카오톡 공유
+      } else if (cmd === 'prod-shareKakao') {
+        return handleShareKakao();
       // 수량 +
       } else if (cmd === 'qty-inc') {
         uiState.qty++;
@@ -162,6 +165,23 @@ window.Prod01View = {
 
     /* toggleLike — 토글 */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
+
+    /* handleShareKakao — 상품 페이지 카카오톡 공유. url/imageUrl 은 카카오 제약상 공개 절대경로여야
+       하므로, 상대경로 이미지는 origin 을 붙여 절대경로로 바꿔서 넘긴다 */
+    const handleShareKakao = () => {
+      try {
+        const rel = cfMockImages.value?.[0]?.src || '';
+        const imageUrl = rel ? (/^https?:\/\//i.test(rel) ? rel : window.location.origin + '/' + rel.replace(/^\//, '')) : '';
+        window.coExtSdk.shareKakao({
+          title: prod.prodNm || 'ShopJoy 상품',
+          description: prod.advrtStmt || '',
+          imageUrl,
+          url: window.location.origin + window.location.pathname + '?page=prodView&prodid=' + encodeURIComponent(prod.prodId),
+        });
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
 
     /* isLiked — 여부 확인 */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
@@ -935,7 +955,7 @@ window.Prod01View = {
       cfQuickBuyTotal, cfDisplayPrice, cfVisibleSizes, cfPhotoNavIdx, cfPhotoGridPageCount, cfPhotoGridItems,   // computed - 가격/사이즈/포토
       sizeGuideRows, sizeGuideColsShort, styleItems, TABS,                                // 데이터 (정적)
       tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef, buyBtnRef,                       // ref
-      getSizeDelta, fnCategoryLabel, stars, colorStatus, sizeStatus, isLiked, toggleLike,                       // 헬퍼
+      getSizeDelta, fnCategoryLabel, stars, colorStatus, sizeStatus, isLiked, toggleLike, handleShareKakao,     // 헬퍼
     };
   },
 
@@ -1204,6 +1224,10 @@ window.Prod01View = {
           <span :style="{ color: isLiked?.(prod.prodId) ? '#ef4444' : '#9ca3af' }">
           {{ isLiked?.(prod.prodId) ? '♥' : '♡' }}
         </span>
+      </button>
+      <button @click="handleBtnAction('prod-shareKakao')" title="카카오톡 공유"
+        style="width:52px;flex-shrink:0;border:none;border-radius:10px;background:#FEE500;color:#191919;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all .15s;">
+        💬
       </button>
     </div>
     <button class="btn btn_buy" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleBtnAction('order-buyNow')">

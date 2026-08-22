@@ -137,8 +137,10 @@ public class CmDashboardDataGridService {
     public BasePage<CmDashboardItem> getChartPage(Map<String, Object> p) {
         BasePage<CmDashboardItem> page = itemRepository.selectChartPage(p);
         List<CmDashboardItem> charts = page.getPageList();
+        List<String> chartIds = charts.stream().map(CmDashboardItem::getDashboardItemId).toList();
+        Map<String, List<CmDashboardItem>> byParent = fetchDescendantsByParent(chartIds);
         List<CmDashboardItem> all = new ArrayList<>(charts);
-        for (CmDashboardItem ch : charts) all.addAll(descendantsOf(ch));
+        byParent.values().forEach(all::addAll);
         attachChildren(charts, all);
         return page;
     }
@@ -154,22 +156,68 @@ public class CmDashboardDataGridService {
         itemRepository.findAllById(chartIds).forEach(c -> chartById.put(c.getDashboardItemId(), c));
         List<CmDashboardItem> ordered = chartIds.stream()
             .map(chartById::get).filter(java.util.Objects::nonNull).toList();
+        return buildTreeNodes(ordered, fetchDescendantsByParent(chartIds));
+    }
 
-        Comparator<CmDashboardItem> bySort =
-            Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
+    /**
+     * 항목관리 화면 진입/페이지 이동을 위한 통합 조회 — "페이지 목록 + 트리"를 한 요청으로 묶는다.
+     *
+     * <p>{@code getChartPage()} + {@code getItemTreeByChartIds()} 를 프론트가 따로따로 부르면
+     * 원격 DB 환경에서 HTTP 왕복이 매번 2번 생겨 그게 체감 지연의 실제 원인이 된다(N+1 을 배치
+     * 쿼리로 줄여도 왕복 자체가 2번이면 느리다, 2026-08-22). 시리즈·항목 배치조회도 한 번만 해서
+     * 카운트(attachChildren)와 트리 양쪽에 재사용 — 쿼리 수를 4개(목록/카운트/시리즈/항목)로,
+     * 왕복은 1번으로 줄인다.</p>
+     */
+    public Map<String, Object> getChartPageWithTree(Map<String, Object> p) {
+        BasePage<CmDashboardItem> page = itemRepository.selectChartPage(p);
+        List<CmDashboardItem> charts = page.getPageList();
+        List<String> chartIds = charts.stream().map(CmDashboardItem::getDashboardItemId).toList();
+        Map<String, List<CmDashboardItem>> byParent = fetchDescendantsByParent(chartIds);
 
+        List<CmDashboardItem> all = new ArrayList<>(charts);
+        byParent.values().forEach(all::addAll);
+        attachChildren(charts, all);
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("pageList", charts);
+        out.put("pageTotalCount", page.getPageTotalCount());
+        out.put("pageTotalPage", page.getPageTotalPage());
+        out.put("pageNo", page.getPageNo());
+        out.put("pageSize", page.getPageSize());
+        out.put("treeRows", buildTreeNodes(charts, byParent));
+        return out;
+    }
+
+    /** 차트ID 목록의 시리즈·항목을 배치(IN) 쿼리 2번으로 한 번에 가져와 parentId 기준 버킷팅
+     *  + sortOrd 정렬까지 끝낸 상태로 돌려준다. getChartPage/getItemTreeByChartIds/
+     *  getChartPageWithTree 가 전부 이 결과를 공유한다(중복 조회 방지). */
+    private Map<String, List<CmDashboardItem>> fetchDescendantsByParent(List<String> chartIds) {
+        Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
+        if (chartIds == null || chartIds.isEmpty()) return byParent;
+        List<CmDashboardItem> sers = itemRepository.findByParentDashboardItemIdIn(chartIds);
+        sers.forEach(s -> byParent.computeIfAbsent(s.getParentDashboardItemId(), k -> new ArrayList<>()).add(s));
+        List<String> seriesIds = sers.stream().map(CmDashboardItem::getDashboardItemId).toList();
+        if (!seriesIds.isEmpty()) {
+            List<CmDashboardItem> items = itemRepository.findByParentDashboardItemIdIn(seriesIds);
+            items.forEach(it -> byParent.computeIfAbsent(it.getParentDashboardItemId(), k -> new ArrayList<>()).add(it));
+        }
+        Comparator<CmDashboardItem> bySort = Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
+        byParent.values().forEach(v -> v.sort(bySort));
+        return byParent;
+    }
+
+    /** 차트 목록 + byParent(부모ID→자식 목록)로 평면 트리(lvl 1/2/3) 조립 */
+    private List<Map<String, Object>> buildTreeNodes(List<CmDashboardItem> charts, Map<String, List<CmDashboardItem>> byParent) {
         List<Map<String, Object>> out = new ArrayList<>();
-        for (CmDashboardItem ch : ordered) {
+        for (CmDashboardItem ch : charts) {
             Map<String, Object> chNode = treeNode(1, ch);
             chNode.put("dashboardId", ch.getDashboardId());
             out.add(chNode);
-            List<CmDashboardItem> sers = new ArrayList<>(itemRepository.findByParentDashboardItemId(ch.getDashboardItemId()));
-            sers.sort(bySort);
-            for (CmDashboardItem se : sers) {
+            for (CmDashboardItem se : byParent.getOrDefault(ch.getDashboardItemId(), List.of())) {
                 out.add(treeNode(2, se));
-                List<CmDashboardItem> items = new ArrayList<>(itemRepository.findByParentDashboardItemId(se.getDashboardItemId()));
-                items.sort(bySort);
-                for (CmDashboardItem it : items) out.add(treeNode(3, it));
+                for (CmDashboardItem it : byParent.getOrDefault(se.getDashboardItemId(), List.of())) {
+                    out.add(treeNode(3, it));
+                }
             }
         }
         return out;

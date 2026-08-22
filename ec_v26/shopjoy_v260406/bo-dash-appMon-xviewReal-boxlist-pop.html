@@ -91,6 +91,10 @@
 
 <!-- Vue 3 core -->
 <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+<!-- PDF 다운로드용 — boUtil.bofExportPdf 와 동일 방식(html2canvas 캡처 → jsPDF), 이 팝업은
+     boUtil.js 등 앱 전체 로드체인과 무관한 독립 화면이라 로컬로 인라인 구현한다 -->
+<script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
 
 <script>
   const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
@@ -101,6 +105,40 @@
       const selectedIdx = ref(null);
       const loading = ref(true);
       const dtab = ref('detail'); /* 'detail' | 'error' */
+      const rootRef = ref(null);
+      const pdfExporting = ref(false);
+
+      /* exportPdf — boUtil.bofExportPdf 축약 복제본(A4 폭 맞춤 + 페이지 넘침 시 이어붙이기) */
+      const exportPdf = async () => {
+        if (!rootRef.value || !window.html2canvas || !window.jspdf) return;
+        pdfExporting.value = true;
+        try {
+          const canvas = await window.html2canvas(rootRef.value, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const margin = 8;
+          const pageW = 210 - margin * 2;
+          const pageH = 297 - margin * 2;
+          const imgW = pageW;
+          const imgH = (canvas.height * imgW) / canvas.width;
+          let heightLeft = imgH;
+          let y = margin;
+          pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
+          heightLeft -= pageH;
+          while (heightLeft > 0) {
+            y = margin - (imgH - heightLeft);
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
+            heightLeft -= pageH;
+          }
+          pdf.save('박스선택트랜잭션목록_' + Date.now() + '.pdf');
+        } catch (e) {
+          console.error('[xview-boxlist-pop] PDF export error', e);
+        } finally {
+          pdfExporting.value = false;
+        }
+      };
 
       const cfSelected = computed(() => selectedIdx.value != null ? rows[selectedIdx.value] : null);
       const cfHasError = computed(() => !!(cfSelected.value && cfSelected.value.errorInfo));
@@ -141,13 +179,17 @@
       });
       onUnmounted(() => { window.removeEventListener('message', _onMsg); });
 
-      return { rows, selectedIdx, loading, dtab, cfSelected, cfHasError, selectRow, selectDtab, fnStatusColor, fnMethodClass, fnSec };
+      return { rows, selectedIdx, loading, dtab, cfSelected, cfHasError, selectRow, selectDtab, fnStatusColor, fnMethodClass, fnSec,
+        rootRef, pdfExporting, exportPdf };
     },
     template: `
+<div ref="rootRef" style="display:flex;flex-direction:column;height:100%;">
 <div class="xv-header">
   <span style="font-size:14px;font-weight:800;color:#e8587a;">🔥 박스 선택 트랜잭션 목록</span>
   <span style="font-size:11px;color:#888;">{{ loading ? '불러오는 중...' : '총 ' + rows.length + '건 · 응답시간 내림차순' }}</span>
   <span style="flex:1;"></span>
+  <button class="btn btn-sm" style="font-size:11px;" :disabled="pdfExporting" @click="exportPdf">
+    {{ pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
   <button class="btn btn_close" style="font-size:11px;" @click="window.close()">✕ 닫기</button>
 </div>
 <div class="xv-body">
@@ -246,6 +288,7 @@
     </template>
     <div v-else style="color:#aaa;text-align:center;padding:40px;">좌측 목록에서 트랜잭션을 선택하세요.</div>
   </div>
+</div>
 </div>
 `,
   });

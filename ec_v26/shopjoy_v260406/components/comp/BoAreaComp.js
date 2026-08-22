@@ -191,17 +191,54 @@ window.BoPage = {
     title:       { type: String, default: '' },   // 화면 제목(page-title). ● 아이콘 CSS 자동
     descSummary: { type: String, default: '' },   // 설명 요약(한 줄). 있으면 page-desc-bar 렌더
     descDetail:  { type: String, default: '' },   // 펼침 상세(▼더보기 시 노출). \n 줄바꿈 지원
+    showPdf:     { type: Boolean, default: true }, // 제목 우측 [📄 PDF 다운로드] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
+    showShare:   { type: Boolean, default: true }, // 제목 우측 [카카오톡 공유] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
   },
-  setup() {
+  setup(props) {
     const descOpen = Vue.ref(false);
-    return { descOpen };
+    /* pdfAreaRef — 화면 전체(제목+설명+본문 슬롯 전부) PDF 캡처 대상. BoPage 를 쓰는 모든
+       화면이 이 컴포넌트 하나로 PDF 다운로드를 자동으로 갖게 하기 위한 공통 구현(2026-08-22) —
+       화면마다 따로 ref/버튼을 심지 않는다. */
+    const pdfAreaRef = Vue.ref(null);
+    const pdfExporting = Vue.ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename((props.title || '화면') + '.pdf');
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, window.boApp?.showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+    /* handleShareKakao — 현재 BO 화면 URL을 카카오톡으로 공유(피드 템플릿).
+       ⚠ BO 는 로그인 필요 화면이라 받는 사람도 계정이 있어야 실제로 열린다 — 이건 카카오
+       공유 자체의 한계가 아니라 BO 접근제어 특성상 당연한 제약이라 화면에서 별도 처리하지 않는다. */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: (props.title || 'ShopJoy 관리자') + ' - ShopJoy BO',
+          description: props.descSummary || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: window.location.href,
+        });
+      } catch (e) {
+        window.boApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    return { descOpen, pdfAreaRef, pdfExporting, handleExportPdf, handleShareKakao };
   },
   template: `
-<div>
-  <div class="page-title" :style="$slots.actions ? 'display:flex;align-items:center;justify-content:space-between;' : ''">
+<div ref="pdfAreaRef">
+  <div class="page-title" :style="($slots.actions || showPdf || showShare) ? 'display:flex;align-items:center;justify-content:space-between;' : ''">
     <span><slot name="title">{{ title }}</slot></span>
-    <span v-if="$slots.actions" style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:400;">
+    <span v-if="$slots.actions || showPdf || showShare" style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:400;">
       <slot name="actions"></slot>
+      <button v-if="showShare" class="btn btn_kakao" @click="handleShareKakao">
+        💬 카카오톡 공유
+      </button>
+      <button v-if="showPdf" class="btn btn_pdf" :disabled="pdfExporting" @click="handleExportPdf">
+        {{ pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}
+      </button>
     </span>
   </div>
   <div v-if="descSummary" class="page-desc-bar">

@@ -248,6 +248,57 @@
     }
   };
 
+  /* _ensureKakaoShareReady — 로그인(_initKakao)과 별개로 Share 전용 최소 초기화.
+     같은 svKakaoJsKey 를 재사용한다(카카오는 로그인/공유가 같은 JS 키 하나로 동작). */
+  const _ensureKakaoShareReady = () => {
+    if (!window.Kakao) throw new Error(_errMsg('카카오톡 공유창을 열 수 없습니다 — Kakao SDK 가 로드되지 않았습니다.',
+      'index.html/bo.html 의 kakao SDK(t1.kakaocdn.net) 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
+    const jsKey = _key('svKakaoJsKey');
+    if (!jsKey) throw new Error(_errMsg('카카오톡 공유창을 열 수 없습니다 — Kakao JavaScript Key(svKakaoJsKey) 가 설정되지 않았습니다.',
+      '사이트 설정(AppStore)의 svKakaoJsKey(syApp.kakaoJsKey) 에 카카오 디벨로퍼스 JavaScript 키를 등록하세요.'));
+    try {
+      if (typeof Kakao.isInitialized === 'function' ? !Kakao.isInitialized() : true) Kakao.init(jsKey);
+    } catch (e) {
+      throw new Error(_errMsg('카카오톡 공유창을 열 수 없습니다 — Kakao SDK 초기화에 실패했습니다 (' + (e && e.message || '키 오류') + ').',
+        'svKakaoJsKey 가 유효한 JavaScript 키인지 확인하세요.'));
+    }
+    if (!window.Kakao.Share) {
+      throw new Error(_errMsg('카카오톡 공유창을 열 수 없습니다 — Kakao.Share 모듈이 없습니다.',
+        '카카오 디벨로퍼스 앱에서 [카카오 링크](메시지 템플릿) 사용 설정 여부와 로드된 SDK 번들을 확인하세요.'));
+    }
+  };
+
+  /**
+   * shareKakao — 카카오톡 공유(피드 템플릿, Kakao.Share.sendDefault).
+   *
+   * ⚠️ 카카오 공식 제약: url/imageUrl 은 반드시 "이미 공개돼 있는 웹 주소"여야 한다.
+   * 브라우저에서 방금 만든 파일(예: jsPDF 로 생성한 PDF Blob)은 공개 URL이 없어서
+   * 그 자체를 카카오톡 메시지에 첨부할 수 없다 — 공유되는 건 항상 "링크"(url) 다.
+   * PDF 자체를 보내고 싶다면 서버에 먼저 업로드해 공개 URL을 받아와야 하며,
+   * 그건 이 함수의 책임 밖(호출부에서 업로드 후 그 URL을 넘겨야 함).
+   *
+   * @param {Object} opts
+   * @param {string} opts.title       공유 카드 제목
+   * @param {string} [opts.description] 공유 카드 설명
+   * @param {string} [opts.imageUrl]  공유 카드 썸네일(공개 URL). 없으면 이미지 없이 공유
+   * @param {string} opts.url         공유될 링크(공개 URL, mobileWebUrl=webUrl 동일하게 사용)
+   */
+  const shareKakao = ({ title, description, imageUrl, url }) => {
+    _ensureKakaoShareReady();
+    _debug('카카오톡 공유', { title, url, imageUrl, jsKey: _key('svKakaoJsKey') });
+    const content = {
+      title: title || document.title,
+      description: description || '',
+      link: { mobileWebUrl: url, webUrl: url },
+    };
+    if (imageUrl) content.imageUrl = imageUrl;
+    Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content,
+      buttons: [{ title: '자세히 보기', link: { mobileWebUrl: url, webUrl: url } }],
+    });
+  };
+
   /* loginKakao */
   const loginKakao = () => new Promise((resolve, reject) => {
     try {
@@ -466,6 +517,8 @@
   window.coExtSdk = {
     // 소셜 로그인
     loginGoogle, loginKakao, loginNaver,
+    // 공유
+    shareKakao,
     // 결제
     getTossPayments, getTossPaymentWidgets, isTossTestKey,
     // 지도

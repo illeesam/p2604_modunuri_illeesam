@@ -367,6 +367,18 @@ public class BoCmDashboardController {
     }
 
     /**
+     * 항목관리 화면 전용 — "페이지 목록 + 트리"를 한 번에(응답 한 방에) 돌려준다.
+     * {@code /item/page} + {@code /item/tree}(chartIds) 를 프론트가 따로 부르면 원격 DB
+     * 환경에서 왕복이 2번 생겨 느리게 느껴진다(2026-08-22) — 화면은 이 엔드포인트 하나만 부른다.
+     * 파라미터는 {@code /item/page} 와 동일.
+     */
+    @GetMapping("/item/page-with-tree")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> itemPageWithTree(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getChartPageWithTree(p)));
+    }
+
+    /**
      * 그리드 조회 — CHART 항목마다 그리드 1개를 만들어 돌려준다.
      * {@code chartIds}(콤마구분, 서로 다른 대시보드 섞여도 됨)를 주면 그 차트들만 정확히 조회하고,
      * 없으면 {@code dashboardId} 하나로 그 안의 차트 전체를 조회한다(구 방식, 하위호환).

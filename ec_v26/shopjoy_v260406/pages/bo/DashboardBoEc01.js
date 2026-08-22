@@ -34,8 +34,28 @@ window.DashboardBoEc01 = {
     const uiState = reactive({
       filterExpand: false, activeTab: 'sales', tabMode: '4col', loading: false,
       infoPanel: null, /* { title, optJson, dataJson, top, left } */
-      dailyStatsLoading: false,
+      dailyStatsLoading: false, pdfExporting: false,
     });
+
+    /* pdfAreaRef — 화면 전체(헤더+KPI+필터+탭+차트그리드) PDF 캡처 대상 */
+    const pdfAreaRef = ref(null);
+    const handleExportPdf = async () => {
+      uiState.pdfExporting = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename('EC대시보드.pdf');
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, window.boApp?.showToast);
+      } finally {
+        uiState.pdfExporting = false;
+      }
+    };
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({ title: '온라인 쇼핑몰 매출 및 판매현황 - ShopJoy BO',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png', url: window.location.href });
+      } catch (e) {
+        window.boApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
 
     const dailyStats = reactive({
       dateLabel: '',
@@ -386,6 +406,7 @@ window.DashboardBoEc01 = {
         type:'bar', data: cfMonthlySales.value, barMaxWidth: 36,
         itemStyle: { color: { type:'linear', x:0,y:0,x2:0,y2:1, colorStops:[{offset:0,color:'#e8587a'},{offset:1,color:'#ff8aa5'}] }, borderRadius:[4,4,0,0] },
         emphasis: { itemStyle: { color:'#c73060' } },
+        label: { show:true, position:'top', fontSize:9, color:'#c73060', formatter: p => (p.value/10000).toFixed(0)+'만' },
       }],
     }));
 
@@ -397,8 +418,10 @@ window.DashboardBoEc01 = {
       xAxis: { type:'category', data: cfMonthLabels.value, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888' } },
       series: [
-        { name:'가입', type:'bar', data: cfMonthlyJoin.value,  barMaxWidth:20, itemStyle:{ color:'#3b82f6', borderRadius:[3,3,0,0] } },
-        { name:'탈퇴', type:'bar', data: cfMonthlyLeave.value, barMaxWidth:20, itemStyle:{ color:'#ef4444', borderRadius:[3,3,0,0] } },
+        { name:'가입', type:'bar', data: cfMonthlyJoin.value,  barMaxWidth:20, itemStyle:{ color:'#3b82f6', borderRadius:[3,3,0,0] },
+          label:{ show:true, position:'top', fontSize:9, color:'#3b82f6' } },
+        { name:'탈퇴', type:'bar', data: cfMonthlyLeave.value, barMaxWidth:20, itemStyle:{ color:'#ef4444', borderRadius:[3,3,0,0] },
+          label:{ show:true, position:'top', fontSize:9, color:'#ef4444' } },
       ],
     }));
 
@@ -413,6 +436,7 @@ window.DashboardBoEc01 = {
         lineStyle:{ color:'#10b981', width:2.5 },
         itemStyle:{ color:'#10b981' },
         areaStyle:{ color:{ type:'linear',x:0,y:0,x2:0,y2:1, colorStops:[{offset:0,color:'rgba(16,185,129,0.35)'},{offset:1,color:'rgba(16,185,129,0.02)'}] } },
+        label:{ show:true, position:'top', fontSize:9, color:'#10b981' },
       }],
     }));
 
@@ -425,6 +449,7 @@ window.DashboardBoEc01 = {
       series: [{
         type:'bar', data: cfMonthlyOrders.value, barMaxWidth:36,
         itemStyle:{ color:{ type:'linear',x:0,y:0,x2:0,y2:1, colorStops:[{offset:0,color:'#7b1fa2'},{offset:1,color:'#a855f7'}] }, borderRadius:[4,4,0,0] },
+        label:{ show:true, position:'top', fontSize:9, color:'#7b1fa2' },
       }],
     }));
 
@@ -479,7 +504,7 @@ window.DashboardBoEc01 = {
       series: [{
         type:'pie', radius:['40%','68%'], center:['38%','50%'],
         data: salesByChannel.value,
-        label:{ show:false },
+        label:{ show:true, position:'inside', formatter:'{c}%', fontSize:10, color:'#fff', fontWeight:'bold' },
         emphasis:{ label:{ show:true, fontSize:12, fontWeight:'bold' } },
       }],
     }));
@@ -496,7 +521,7 @@ window.DashboardBoEc01 = {
       series: [{
         type:'pie', radius:['40%','68%'], center:['38%','50%'],
         data: salesByDevice.value,
-        label:{ show:false },
+        label:{ show:true, position:'inside', formatter:'{c}%', fontSize:10, color:'#fff', fontWeight:'bold' },
         emphasis:{ label:{ show:true, fontSize:11, fontWeight:'bold' } },
       }],
     }));
@@ -513,7 +538,7 @@ window.DashboardBoEc01 = {
       series: [{
         type:'pie', radius:['40%','68%'], center:['38%','50%'],
         data: salesByTime.value,
-        label:{ show:false },
+        label:{ show:true, position:'inside', formatter:'{c}%', fontSize:9, color:'#fff', fontWeight:'bold' },
         emphasis:{ label:{ show:true, fontSize:11 } },
       }],
     }));
@@ -546,6 +571,7 @@ window.DashboardBoEc01 = {
         lineStyle:{ color:'#10b981', width:2 },
         itemStyle:{ color:'#10b981' },
         areaStyle:{ color:{ type:'linear',x:0,y:0,x2:0,y2:1, colorStops:[{offset:0,color:'rgba(16,185,129,0.3)'},{offset:1,color:'rgba(16,185,129,0.02)'}] } },
+        label:{ show:true, position:'top', fontSize:8, color:'#0d9668' },
       }],
     }));
 
@@ -574,6 +600,7 @@ window.DashboardBoEc01 = {
             areaStyle:{ color:'rgba(232,88,122,0.2)' },
             lineStyle:{ color:'#e8587a', width:2 },
             itemStyle:{ color:'#e8587a' },
+            label:{ show:true, fontSize:9, color:'#c73060', formatter: p => p.value },
           }],
         }] : [],
       };
@@ -594,9 +621,12 @@ window.DashboardBoEc01 = {
       xAxis: { type:'category', data: economySales.value.labels, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888', formatter: v => (v/1000000).toFixed(0)+'M' } },
       series: [
-        { name:'상위', type:'line', data: economySales.value.high,   smooth:true, symbolSize:4, lineStyle:{ color:'#7b1fa2' }, itemStyle:{ color:'#7b1fa2' }, areaStyle:{ color:'rgba(123,31,162,0.15)' } },
-        { name:'중위', type:'line', data: economySales.value.middle, smooth:true, symbolSize:4, lineStyle:{ color:'#3b82f6' }, itemStyle:{ color:'#3b82f6' }, areaStyle:{ color:'rgba(59,130,246,0.12)' } },
-        { name:'하위', type:'line', data: economySales.value.low,    smooth:true, symbolSize:4, lineStyle:{ color:'#10b981' }, itemStyle:{ color:'#10b981' }, areaStyle:{ color:'rgba(16,185,129,0.10)' } },
+        { name:'상위', type:'line', data: economySales.value.high,   smooth:true, symbolSize:4, lineStyle:{ color:'#7b1fa2' }, itemStyle:{ color:'#7b1fa2' }, areaStyle:{ color:'rgba(123,31,162,0.15)' },
+          label:{ show:true, position:'top', fontSize:8, color:'#7b1fa2' } },
+        { name:'중위', type:'line', data: economySales.value.middle, smooth:true, symbolSize:4, lineStyle:{ color:'#3b82f6' }, itemStyle:{ color:'#3b82f6' }, areaStyle:{ color:'rgba(59,130,246,0.12)' },
+          label:{ show:true, position:'bottom', fontSize:8, color:'#3b82f6' } },
+        { name:'하위', type:'line', data: economySales.value.low,    smooth:true, symbolSize:4, lineStyle:{ color:'#10b981' }, itemStyle:{ color:'#10b981' }, areaStyle:{ color:'rgba(16,185,129,0.10)' },
+          label:{ show:true, position:'bottom', fontSize:8, color:'#10b981' } },
       ],
     }));
 
@@ -612,7 +642,7 @@ window.DashboardBoEc01 = {
       series: [{
         type:'pie', radius:['40%','68%'], center:['38%','50%'],
         data: shippingTypes.value,
-        label:{ show:false },
+        label:{ show:true, position:'inside', formatter:'{c}%', fontSize:9, color:'#fff', fontWeight:'bold' },
         emphasis:{ label:{ show:true, fontSize:11 } },
       }],
     }));
@@ -649,11 +679,12 @@ window.DashboardBoEc01 = {
       cfOpt0301, cfOpt0302, cfOpt0303, cfOpt0304,
       cfOpt0401, cfOpt0402, cfOpt0403,
       fnOpenInfo, fnInfoTab, fnBuildApiParams,
+      pdfAreaRef, handleExportPdf, handleShareKakao,
     };
   },
 
   template: `
-<div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
+<div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'" ref="pdfAreaRef">
 
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
@@ -661,6 +692,9 @@ window.DashboardBoEc01 = {
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
     <span style="font-size:11px;color:#aaa;">{{ cfMonthLabels.length }}개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
+    <button class="btn btn_kakao" @click="handleShareKakao">💬 카카오톡 공유</button>
+    <button class="btn btn_pdf" :disabled="uiState.pdfExporting" @click="handleExportPdf">
+      {{ uiState.pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
   </div>
 
   <!-- 어제의 현황 KPI -->

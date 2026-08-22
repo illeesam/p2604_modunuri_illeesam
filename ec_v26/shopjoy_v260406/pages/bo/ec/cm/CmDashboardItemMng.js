@@ -183,6 +183,8 @@ window.CmDashboardItemMng = {
 
     /* handleSearchPanels — 항목 목록 조회 (평면 목록 + 3레벨 트리). 서버사이드 페이징(2026-08-22) —
        이번 페이지의 차트(1레벨)만 정확히 서버에서 받아온다(panelsPager.pageNo/pageSize 전달).
+       목록+트리를 getItemPage/getItemTree 두 번 나눠 부르면 원격 DB 환경에서 왕복이 2번 생겨
+       느리게 느껴진다 — getItemPageWithTree 하나로 묶어 한 번의 왕복으로 둘 다 받는다(2026-08-22).
        좌측에서 대시보드를 선택 안 하고 [조회]만 눌러도 우측 위젯항목목록은 항상 채운다 —
        선택된 게 있으면 그 대시보드만, 없으면 좌측에 로드된 전체 대시보드 기준.
        ⚠️ 페이지 번호는 여기서 건드리지 않는다 — 페이징 버튼(onPanelsSetPage)도 이 함수를 그대로
@@ -205,12 +207,17 @@ window.CmDashboardItemMng = {
         if (searchParam.itemNm) params.itemNm = searchParam.itemNm;
         if (dashState.selectedId) params.dashboardId = dashState.selectedId;
         else params.dashboardIds = dashboards.map(d => d.dashboardId).join(',');
-        const res = await boApiSvc.cmDashboard.getItemPage(params, '대시보드항목관리', '항목조회');
+        const res = await boApiSvc.cmDashboard.getItemPageWithTree(params, '대시보드항목관리', '항목조회');
         const d = res.data?.data || {};
         panels.splice(0, panels.length, ...(d.pageList || []));
         panelsPager.pageTotalCount = d.pageTotalCount || 0;
         panelsPager.pageTotalPage = d.pageTotalPage || 1;
-        await fnLoadTree();
+        const dashNmById = new Map(dashboards.map(dd => [dd.dashboardId, dd.dashboardNm]));
+        const rows = (d.treeRows || []).map(n => ({
+          ...n, _dashboardNm: n.lvl === 1 ? (dashNmById.get(n.dashboardId) || '') : '',
+        }));
+        treeRows.splice(0, treeRows.length, ...rows);
+        fnTreeCollapseAll();
         fnAttachChildCounts();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);

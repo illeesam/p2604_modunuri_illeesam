@@ -62,6 +62,8 @@
     getItemList(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/list', { params, ...hdr(uiNm, cmdNm) }); },
     /* 차트(1레벨) 서버사이드 페이징 — params: dashboardId|dashboardIds, useYn, itemNm, pageNo, pageSize */
     getItemPage(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/page', { params, ...hdr(uiNm, cmdNm) }); },
+    /* 위와 동일 params + 응답에 treeRows 까지 포함(한 번의 왕복으로 목록+트리 동시 조회) */
+    getItemPageWithTree(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/cm/dashboard/item/page-with-tree', { params, ...hdr(uiNm, cmdNm) }); },
     itemSave(cmd, body, uiNm, cmdNm)     { return global.boApi.post('/bo/ec/cm/dashboard/item/save/' + cmd, body, hdr(uiNm, cmdNm)); },
     itemSaveList(cmd, rows, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
     /* 시리즈·항목 편집결과를 정의행으로 동기화 (항목관리 저장) */

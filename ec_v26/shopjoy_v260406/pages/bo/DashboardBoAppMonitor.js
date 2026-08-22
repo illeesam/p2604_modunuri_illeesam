@@ -548,8 +548,9 @@ window.DashboardBoAppMonitor = {
         },
         series: [{
           type:'bar', data: top.map(t => t[1]), itemStyle:{ color:'#6366f1', borderRadius:[0,4,4,0] }, barMaxWidth: 16,
-          /* 막대 안(좌측)에 "uiNm > cmdNm" 표시 (x-ui-nm/x-cmd-nm 정보) */
-          label: { show:true, position:'insideLeft', fontSize:9.5, color:'#fff', fontWeight:700, formatter: p => fnUrlUiTag(top[p.dataIndex][0]) },
+          /* 막대 안(좌측)에 "uiNm > cmdNm + 호출건수" 함께 표시 */
+          label: { show:true, position:'insideLeft', fontSize:9.5, color:'#fff', fontWeight:700,
+            formatter: p => fnUrlUiTag(top[p.dataIndex][0]) + '  (' + p.value + '건)' },
         }],
       };
     });
@@ -585,8 +586,9 @@ window.DashboardBoAppMonitor = {
           type:'bar', data: top.map(t => t[1]),
           itemStyle: { color: p => fnRtGrade(p.value).color, borderRadius:[0,4,4,0] },
           barMaxWidth: 16,
-          /* 막대 안(좌측)에 "uiNm > cmdNm" 표시 (x-ui-nm/x-cmd-nm 정보) */
-          label: { show:true, position:'insideLeft', fontSize:9.5, color:'#fff', fontWeight:700, formatter: p => fnUrlUiTag(top[p.dataIndex][0]) },
+          /* 막대 안(좌측)에 "uiNm > cmdNm + 평균 응답시간" 함께 표시 */
+          label: { show:true, position:'insideLeft', fontSize:9.5, color:'#fff', fontWeight:700,
+            formatter: p => fnUrlUiTag(top[p.dataIndex][0]) + '  (' + p.value + 'ms)' },
         }],
       };
     });
@@ -632,7 +634,7 @@ window.DashboardBoAppMonitor = {
         series: [{
           type:'pie', radius:['40%','68%'], center:['38%','50%'],
           data: PT_GRADES.map((g, i) => ({ name: g.label, value: cnt[i], itemStyle:{ color: g.color } })),
-          label:{ show:false },
+          label:{ show:true, position:'inside', formatter:'{c}건', fontSize:10, color:'#fff', fontWeight:'bold' },
           emphasis:{ label:{ show:true, fontSize:11 } },
         }],
       };

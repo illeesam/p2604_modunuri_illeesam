@@ -118,6 +118,7 @@ window.PdProdMng = {
         if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.prodId); }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         if (colKey === 'btn_row_hist')   { return openHist(row.prodId); }
+        if (colKey === 'btn_row_newtab') { return props.navigate('pdProdDtl', { id: row.prodId }); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -534,6 +535,10 @@ window.PdProdMng = {
           </button>
           <button class="btn btn_row_hist" @click.stop="handleGridCellAction(gridId, 'btn_row_hist', p)">
             이력
+          </button>
+          <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="새 탭으로 상품상세 열기"
+            @click.stop="handleGridCellAction(gridId, 'btn_row_newtab', p)">
+            🗗
           </button>
         </div>
       </template>

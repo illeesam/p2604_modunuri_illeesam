@@ -74,6 +74,10 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_close:hover:not(:disabled)     { background: #e2e7ef; border-color: #c2cad6; }
 .btn_excel     { background: linear-gradient(135deg, #52c41a, #389e0d); color: #fff; box-shadow: 0 2px 6px rgba(82,196,26,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn_excel:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(82,196,26,.35); }
+.btn_pdf       { background: linear-gradient(135deg, #f97316, #c2410c); color: #fff; box-shadow: 0 2px 6px rgba(249,115,22,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn_pdf:hover:not(:disabled)       { box-shadow: 0 4px 12px rgba(249,115,22,.35); }
+.btn_kakao     { background: #FEE500; color: #191919; box-shadow: 0 2px 6px rgba(254,229,0,.35); padding: 4px 10px; font-size: 12px; border-radius: 6px; border: none; }
+.btn_kakao:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(254,229,0,.5); }
 .btn_excel_upload { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn_excel_upload:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
 /* ── 확장 의미 버튼 (2026-06-07) — 선택/확인/적용/전송=accent, 미리보기=blue, 유틸=gray ── */
