@@ -408,6 +408,9 @@ window.CmBlogMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 (2026-08-23) */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -519,7 +522,7 @@ window.CmBlogMng = {
     };
   },
   template: `
-<bo-page title="뉴스&블로그관리">
+<bo-page title="뉴스&블로그관리" :share-query="searchParam">
   <!-- ===== ■. 검색 ======================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -638,8 +641,11 @@ window.CmBlogMng = {
             <button v-if="!detailPanel.isNew" class="btn btn_delete" @click="handleBtnAction('detailPanel-delete')">
               삭제
             </button>
-            <button class="btn btn_cancel" @click="handleBtnAction('detailPanel-cancel')">
+            <button v-if="!detailPanel.isNew" class="btn btn_cancel" @click="handleBtnAction('detailPanel-cancel')">
               취소
+            </button>
+            <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
+              닫기
             </button>
           </template>
         </div>

@@ -157,6 +157,11 @@
   <script src="lib/license/licenseFo.js"></script>
   <!-- coUtil 먼저 — foApiAxios 인터셉터가 coUtil.cofShortApiUrl/cofCheckNmHeaders 등 사용 -->
   <script src="lib/utils/coUtil.js"></script>
+  <!-- jsPDF + html2canvas: 화면 영역을 그대로 캡처해 PDF 로 내려받는 기능용(coUtil.cofExportPdf).
+       한글 텍스트를 jsPDF 자체 폰트로 그리면 CJK 미지원이라 깨지므로, html2canvas 로 화면을
+       이미지화한 뒤 그 이미지를 jsPDF 에 얹는 방식을 쓴다 (2026-08-23, BO 와 동일 구성). -->
+  <script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <script src="lib/consts/coConsts.js"></script>
   <script src="lib/consts/foConsts.js"></script>
   <script src="lib/utils/foApiAxios.js"></script>

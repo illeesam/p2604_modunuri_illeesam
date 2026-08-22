@@ -707,12 +707,56 @@ window.DpDispWidgetLibDtl = {
       { key: 'clickTarget', label: '클릭 대상', type: 'text', placeholder: '/products 또는 이벤트명' },
     ];
 
+    /* fnShareUrl — 이 위젯라이브러리 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'dpDispWidgetLibDtl');
+      qs.set('id', form.libId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    /* handleShareKakao — 카카오톡 공유(피드 카드, 상세보기 모드 전용) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `위젯라이브러리 ${form.libId} - ShopJoy BO`,
+          description: form.desc || form.name || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    /* pdfAreaRef — 위젯라이브러리 상세 카드 캡처 대상. handleExportPdf — PDF 다운로드(상세보기 모드 전용) */
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`위젯라이브러리상세_${form.libId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
 
       modals,   // 모달 표시 상태 모음
       columns,
+      handleShareKakao, handleCopyLink, pdfAreaRef, pdfExporting, handleExportPdf,
       codes, form, errors,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfDtlMode, cfShowActions, cfIsNew, cfDisplayRows, cfFileListItems, // computed
@@ -726,6 +770,7 @@ window.DpDispWidgetLibDtl = {
     };
   },
   template: /* html */`
+<div ref="pdfAreaRef">
 <bo-container card-style="padding:0;">
   <!-- ===== ■. 헤더 (bo-container title + toolbar-actions) ================= -->
   <template #title>
@@ -735,6 +780,17 @@ window.DpDispWidgetLibDtl = {
     </span>
   </template>
   <template #toolbar-actions>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
     <div class="form-actions" v-if="cfShowActions" style="margin:0;gap:8px;">
       <button @click="handleBtnAction('libPickModal-open')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
         📋 전시위젯Lib 내용복사
@@ -948,5 +1004,6 @@ window.DpDispWidgetLibDtl = {
   <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget_lib' }" title="위젯 표시경로 선택" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
+</div>
 `
 };

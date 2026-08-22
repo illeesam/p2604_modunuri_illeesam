@@ -127,6 +127,9 @@ window.DpDispPanelMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleLoadAreas();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 (2026-08-23) */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -244,7 +247,7 @@ window.DpDispPanelMng = {
     };
   },
   template: /* html */`
-<bo-page title="전시패널관리" desc="영역 안의 위젯 묶음(패널) — 계층: UI > 영역 > 패널 > 위젯">
+<bo-page title="전시패널관리" desc="영역 안의 위젯 묶음(패널) — 계층: UI > 영역 > 패널 > 위젯" :share-query="searchParam">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"

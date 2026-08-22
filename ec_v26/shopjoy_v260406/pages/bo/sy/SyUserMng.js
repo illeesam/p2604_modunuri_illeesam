@@ -355,6 +355,9 @@ window.SyUserMng = {
       await fnLoadCodes();
       await handleSearchTree();
       expanded.add(null);
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 (2026-08-23) */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -429,7 +432,7 @@ window.SyUserMng = {
     };
   },
   template: /* html */`
-<bo-page title="사용자관리">
+<bo-page title="사용자관리" :share-query="searchParam">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />

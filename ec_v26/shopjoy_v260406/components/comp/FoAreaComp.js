@@ -206,10 +206,61 @@ window.FoPage = {
     crumbs:      { type: Array,  default: () => [] },// 브레드크럼 [{label, page?}]
     wrapClass:   { type: String, default: 'page-wrap' },  // 래퍼 클래스
     bare:        { type: Boolean, default: false }, // true=page-wrap 없이 슬롯만
+    showPdf:     { type: Boolean, default: true },  // 우측 상단 [PDF] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
+    showShare:   { type: Boolean, default: true },  // 우측 상단 [카카오톡 공유] 버튼
+    showLink:    { type: Boolean, default: true },  // 우측 상단 [🔗 링크 공유(URL만)] 버튼
   },
   emits: ['nav'],
+  setup(props) {
+    const pdfAreaRef = Vue.ref(null);
+    const pdfExporting = Vue.ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename((props.title || '화면') + '.pdf');
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, window.foApp?.showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+    /* handleShareKakao — 현재 FO 화면 URL을 카카오톡으로 공유(피드 템플릿) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: (props.title || 'ShopJoy') + ' - ShopJoy',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: window.location.href,
+        });
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        window.foApp?.showToast?.('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    return { pdfAreaRef, pdfExporting, handleExportPdf, handleShareKakao, handleCopyLink };
+  },
   template: `
-<div :class="bare ? '' : wrapClass">
+<div :class="bare ? '' : wrapClass" ref="pdfAreaRef">
+  <div v-if="showPdf || showShare || showLink" class="fo-page-utilbar">
+    <button v-if="showLink" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="showShare" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button v-if="showPdf" class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </div>
   <!-- ===== 페이지 타이틀 배너 ===== -->
   <slot name="banner">
     <div v-if="bannerImg" class="fo-page-banner">

@@ -68,10 +68,19 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_close     { background: #eaf2ee; color: #3f5249; border: 1px solid #cfe0d8; }
 .btn_close:hover:not(:disabled)     { background: #dcebe4; border-color: #bcd4c8; }
 .btn_excel     { background: linear-gradient(135deg, #52c41a, #389e0d); color: #fff; box-shadow: 0 2px 6px rgba(82,196,26,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
-.btn_pdf       { background: linear-gradient(135deg, #f97316, #c2410c); color: #fff; box-shadow: 0 2px 6px rgba(249,115,22,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
-.btn_pdf:hover:not(:disabled)       { box-shadow: 0 4px 12px rgba(249,115,22,.35); }
-.btn_kakao     { background: #FEE500; color: #191919; box-shadow: 0 2px 6px rgba(254,229,0,.35); padding: 4px 10px; font-size: 12px; border-radius: 6px; border: none; }
+/* 링크공유/카카오공유/PDF — 정사각형 아이콘 배지 (2026-08-23) */
+.btn_link, .btn_kakao, .btn_pdf {
+  width: 24px; height: 24px; padding: 0; border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; line-height: 1; flex-shrink: 0;
+}
+.btn_pdf       { background: transparent; box-shadow: none; width: 22px; }
+.btn_pdf svg   { width: 17px; height: 19px; }
+.btn_pdf:hover:not(:disabled) svg   { filter: drop-shadow(0 2px 4px rgba(226,55,44,.4)); }
+.btn_kakao     { background: #FEE500; color: #191919; box-shadow: 0 2px 6px rgba(254,229,0,.35); border: none; }
 .btn_kakao:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(254,229,0,.5); }
+.btn_link      { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
+.btn_link:hover:not(:disabled)      { background: #e2e7ef; border-color: #c2cad6; }
 .btn_excel:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(82,196,26,.35); }
 .btn_excel_upload { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn_excel_upload:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(22,119,255,.35); }

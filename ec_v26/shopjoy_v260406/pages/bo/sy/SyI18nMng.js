@@ -331,6 +331,9 @@ window.SyI18nMng = {
           <button class="btn btn_cancel" @click="handleBtnAction('msgForm-cancel')">
             취소
           </button>
+          <button class="btn btn_close" @click="handleBtnAction('msgForm-close')">
+            닫기
+          </button>
         </template>
       </div>
     </div>

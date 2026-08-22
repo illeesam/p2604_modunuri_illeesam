@@ -193,9 +193,26 @@ window.BoPage = {
     descDetail:  { type: String, default: '' },   // 펼침 상세(▼더보기 시 노출). \n 줄바꿈 지원
     showPdf:     { type: Boolean, default: true }, // 제목 우측 [📄 PDF 다운로드] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
     showShare:   { type: Boolean, default: true }, // 제목 우측 [카카오톡 공유] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
+    showLink:    { type: Boolean, default: true }, // 제목 우측 [🔗 링크 공유(URL만)] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
+    shareQuery:  { type: Object, default: null },  // 공유 URL에 함께 실을 검색조건(searchParam 등) — 없으면 현재 URL 그대로
   },
   setup(props) {
     const descOpen = Vue.ref(false);
+    /* fnBuildShareUrl — 현재 URL + shareQuery(검색조건)를 쿼리스트링으로 합쳐 공유 링크 생성.
+       화면이 검색조건을 URL 이 아닌 로컬 state(searchParam)로만 들고 있어도, 공유 시점의
+       조건을 받는 사람이 그대로 재현할 수 있게 한다(2026-08-23). */
+    const fnBuildShareUrl = () => {
+      const qs = new URLSearchParams(window.location.search);
+      if (props.shareQuery) {
+        Object.keys(props.shareQuery).forEach((k) => {
+          const v = props.shareQuery[k];
+          if (v !== null && v !== undefined && v !== '') qs.set(k, v);
+          else qs.delete(k);
+        });
+      }
+      const qsStr = qs.toString();
+      return `${window.location.origin}${window.location.pathname}${qsStr ? '?' + qsStr : ''}`;
+    };
     /* pdfAreaRef — 화면 전체(제목+설명+본문 슬롯 전부) PDF 캡처 대상. BoPage 를 쓰는 모든
        화면이 이 컴포넌트 하나로 PDF 다운로드를 자동으로 갖게 하기 위한 공통 구현(2026-08-22) —
        화면마다 따로 ref/버튼을 심지 않는다. */
@@ -219,25 +236,43 @@ window.BoPage = {
           title: (props.title || 'ShopJoy 관리자') + ' - ShopJoy BO',
           description: props.descSummary || '',
           imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
-          url: window.location.href,
+          url: fnBuildShareUrl(),
         });
       } catch (e) {
         window.boApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
       }
     };
-    return { descOpen, pdfAreaRef, pdfExporting, handleExportPdf, handleShareKakao };
+    /* handleCopyLink — 현재 BO 화면 URL을 클립보드에 복사(순수 URL만, 카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnBuildShareUrl());
+        window.boApp?.showToast?.('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        window.boApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    return { descOpen, pdfAreaRef, pdfExporting, handleExportPdf, handleShareKakao, handleCopyLink };
   },
   template: `
 <div ref="pdfAreaRef">
-  <div class="page-title" :style="($slots.actions || showPdf || showShare) ? 'display:flex;align-items:center;justify-content:space-between;' : ''">
+  <div class="page-title" :style="($slots.actions || showPdf || showShare || showLink) ? 'display:flex;align-items:center;justify-content:space-between;' : ''">
     <span><slot name="title">{{ title }}</slot></span>
-    <span v-if="$slots.actions || showPdf || showShare" style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:400;">
+    <span v-if="$slots.actions || showPdf || showShare || showLink" style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:400;">
       <slot name="actions"></slot>
-      <button v-if="showShare" class="btn btn_kakao" @click="handleShareKakao">
-        💬 카카오톡 공유
+      <button v-if="showLink" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">
+        🔗
       </button>
-      <button v-if="showPdf" class="btn btn_pdf" :disabled="pdfExporting" @click="handleExportPdf">
-        {{ pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}
+      <button v-if="showShare" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">
+        💬
+      </button>
+      <button v-if="showPdf" class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+        <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
       </button>
     </span>
   </div>

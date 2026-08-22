@@ -270,10 +270,55 @@ window.SyBbsDtl = {
         fmt: (v) => v === 'Y' ? '사용' : '미사용' },
     ];
 
+    /* fnShareUrl — 이 게시글 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'syBbsDtl');
+      qs.set('id', form.bbsId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    /* handleShareKakao — 카카오톡 공유(피드 카드, 상세보기 모드 전용) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `게시글 ${form.bbsId} - ShopJoy BO`,
+          description: form.bbsTitle || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    /* pdfAreaRef — 게시글 상세 카드 캡처 대상. handleExportPdf — PDF 다운로드(상세보기 모드 전용) */
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`게시글상세_${form.bbsId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
+      handleShareKakao, handleCopyLink,                                    // 카카오톡 공유 / 링크 복사 (상세보기)
+      pdfAreaRef, pdfExporting, handleExportPdf,                           // PDF 다운로드 (항상 노출)
       form, errors, showBbmModal, dtlId, attachGrpRef, refTableNm,  // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfAllowAttach, cfAttachMaxCount,                         // computed
@@ -282,8 +327,22 @@ window.SyBbsDtl = {
     };
   },
   template: /* html */`
+<div ref="pdfAreaRef">
 <bo-container :title="!active ? '게시글 상세' : (cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.bbsId)">
+  <template #toolbar-actions>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </template>
   <!-- ===== ■.■. 기본 정보 + 게시판 선택 ===================================== -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
@@ -359,5 +418,6 @@ window.SyBbsDtl = {
   </bo-modal>
   <!-- ===== □. 게시판 상세보기 팝업 ============================================= -->
 </bo-container>
+</div>
 `,
 };

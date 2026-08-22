@@ -178,6 +178,9 @@ window.CmNoticeMng = {
       const y = new Date().getFullYear();
       Object.assign(searchParam, { dateRangeStart: `${y - 3}-01-01`, dateRangeEnd: `${y}-12-31` });
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 (2026-08-23) */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -273,7 +276,7 @@ window.CmNoticeMng = {
     };
   },
   template: /* html */`
-<bo-page title="공지사항관리">
+<bo-page title="공지사항관리" :share-query="searchParam">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"

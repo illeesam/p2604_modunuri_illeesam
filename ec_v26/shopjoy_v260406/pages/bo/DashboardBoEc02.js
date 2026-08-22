@@ -57,6 +57,15 @@ window.DashboardBoEc02 = {
         window.boApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
       }
     };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        window.boApp?.showToast?.('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        window.boApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
 
     const COMP_IDS = [
       'COMP0101','COMP0102','COMP0103','COMP0104',
@@ -787,7 +796,7 @@ window.DashboardBoEc02 = {
       cfOpt0401, cfOpt0402, cfOpt0403,
       cfOptXview, onXviewBrush,
       fnOpenInfo, fnOpenXviewInfo, fnInfoTab, fnBuildApiParams,
-      pdfAreaRef, handleExportPdf, handleShareKakao,
+      pdfAreaRef, handleExportPdf, handleShareKakao, handleCopyLink,
     };
   },
 
@@ -800,9 +809,16 @@ window.DashboardBoEc02 = {
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
     <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
-    <button class="btn btn_kakao" @click="handleShareKakao">💬 카카오톡 공유</button>
-    <button class="btn btn_pdf" :disabled="uiState.pdfExporting" @click="handleExportPdf">
-      {{ uiState.pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
+    <button class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="uiState.pdfExporting" @click="handleExportPdf">
+      <span v-if="uiState.pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg></button>
   </div>
 
   <!-- 필터 -->

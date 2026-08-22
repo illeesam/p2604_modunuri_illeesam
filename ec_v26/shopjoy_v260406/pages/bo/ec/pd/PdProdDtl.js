@@ -1635,6 +1635,49 @@ window.PdProdDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* fnShareUrl — 이 상품 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'pdProdDtl');
+      qs.set('id', form.prodId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    /* handleShareKakao — 카카오톡 공유(피드 카드, 상세보기 모드 전용) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `상품 ${form.prodNm || form.prodId} - ShopJoy BO`,
+          description: form.prodNm || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    /* pdfAreaRef — 상품 상세 카드 캡처 대상. handleExportPdf — PDF 다운로드(항상 노출) */
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`상품상세_${form.prodId || 'new'}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
     /* onPreview — 이벤트 */
     const onPreview = () => {
       if (!cfHasProdId.value) { showToast('상품 등록 후 미리보기 가능합니다.', 'error'); return; }
@@ -1865,6 +1908,7 @@ window.PdProdDtl = {
 
     return {
       columns, handleBtnAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
+      handleShareKakao, handleCopyLink, pdfAreaRef, pdfExporting, handleExportPdf,   // 링크/카카오공유/PDF
       cfIsNew, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, mdModalOpen, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
@@ -1906,6 +1950,7 @@ window.PdProdDtl = {
       };
   },
   template: /* html */`
+<div ref="pdfAreaRef">
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <bo-container :title="!active ? '상품 상세' : (cfIsNew ? (fnProdTypeLabel() ? fnProdTypeLabel() + ' 상품 등록' : '상품 등록') : (cfDtlMode ? (fnProdTypeLabel() ? fnProdTypeLabel() + ' 상품 상세' : '상품 상세') : (fnProdTypeLabel() ? fnProdTypeLabel() + ' 상품수정' : '상품 수정')))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.prodId)">
@@ -1913,6 +1958,17 @@ window.PdProdDtl = {
     <button v-if="active ? (!cfIsNew) : false" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
       title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
       👁 미리보기
+    </button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
     </button>
   </template>
   <!-- ===== ■.■. 탭바 ==================================================== -->
@@ -2095,6 +2151,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2295,6 +2352,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2423,6 +2481,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2487,6 +2546,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2609,6 +2669,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2696,6 +2757,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2766,6 +2828,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
       <bo-cm-popup-modal v-if="prodPickerOpen" popup-cmd="cmPopup-prod-cate-pick" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :init-selected-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" :on-callback="fnProdPickerCallback" />
@@ -2998,6 +3061,7 @@ window.PdProdDtl = {
           저장
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -3040,6 +3104,7 @@ window.PdProdDtl = {
           :title="!cfBundleRateOk ? '안분율 합계가 100%여야 합니다.' : (cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : '')"
           @click="handleBtnAction('form-save')">저장</button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
       <bo-cm-popup-modal v-if="bundlePickerOpen" popup-cmd="cmPopup-bundle-pick" popup-code="prod"
@@ -3083,6 +3148,7 @@ window.PdProdDtl = {
           :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
           @click="handleBtnAction('form-save')">저장</button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
       <bo-cm-popup-modal v-if="setPickerOpen" popup-cmd="cmPopup-set-pick" popup-code="prod"
@@ -3142,6 +3208,7 @@ window.PdProdDtl = {
   </bo-modal>
   <!-- ===== □. 재고코드 선택 모달 ============================================= -->
 </bo-container>
+</div>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- 이력정보는 목록(PdProdMng) 관리컬럼의 [이력] 버튼으로만 노출된다 — 상세 하단 상시 렌더 폐지(2026-08-16) -->
 <!-- ===== ■. 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) ===== -->

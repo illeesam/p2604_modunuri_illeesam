@@ -136,6 +136,9 @@ window.CmPopupMng = {
 
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 (2026-08-23) */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       handleSearchList();
       handleSearchCodeGrps();
     };
@@ -624,7 +627,7 @@ window.CmPopupMng = {
     };
   },
   template: /* html */`
-<bo-page title="공통팝업관리"
+<bo-page title="공통팝업관리" :share-query="searchParam"
   desc-summary="공통 선택/조회 팝업의 정의(cm_popup)를 관리합니다. 각 팝업의 조회·목록 항목은 [항목관리]에서 설정합니다.">
   <!-- ===== ■. 검색 =========================================================== -->
   <bo-container>

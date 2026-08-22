@@ -368,6 +368,9 @@ window.PdQnaMng = {
             <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">
               취소
             </button>
+            <button class="btn btn_close" @click="handleBtnAction('form-close')">
+              닫기
+            </button>
           </template>
         </div>
       </div>

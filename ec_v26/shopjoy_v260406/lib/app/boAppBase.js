@@ -577,6 +577,38 @@
       Vue.watch(apiToastEnabled, (v) => { try { localStorage.setItem('modu-bo-sy-apiToastOpen', v ? 'true' : 'false'); } catch (e) {} });
       const onToggleApiToast = () => { apiToastEnabled.value = !apiToastEnabled.value; };
       const onToggleBoSetting = () => { boSettingShow.value = !boSettingShow.value; };
+
+      /* ── 설정 드롭다운 공유하기/카카오톡공유/PDF (현재 화면 전체, .bo-main 캡처) ── */
+      const boMainRef = ref(null);
+      const boPdfExporting = ref(false);
+      const handleShareKakao = () => {
+        try {
+          window.coExtSdk.shareKakao({
+            title: (document.title || 'ShopJoy 관리자') + ' - ShopJoy BO',
+            imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+            url: window.location.href,
+          });
+        } catch (e) {
+          window.boApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+        }
+      };
+      const handleCopyLink = async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          window.boApp?.showToast?.('링크가 복사되었습니다.', 'success');
+        } catch (e) {
+          window.boApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+        }
+      };
+      const handleExportPdf = async () => {
+        boPdfExporting.value = true;
+        try {
+          const filename = coUtil.cofBuildExportFilename((document.title || '화면') + '.pdf');
+          await window.boUtil.bofExportPdf(boMainRef.value, filename, window.boApp?.showToast);
+        } finally {
+          boPdfExporting.value = false;
+        }
+      };
       /* ── 화면 확대/축소 (zoom, 1%p 단위 80~150%) — 개인화 설정(DB) + localStorage 동시 저장
          CSS zoom은 표준은 아니지만 크롬/엣지/사파리 + 최신 파이어폭스(126+)에서 지원되며,
          텍스트만이 아니라 화면 전체(여백·아이콘 포함)가 함께 확대/축소된다. */
@@ -2206,6 +2238,7 @@
         setApiRes,
         closeApiResPanel,
         boSettingShow, apiToastEnabled, onToggleApiToast, onToggleBoSetting,
+        boMainRef, boPdfExporting, handleShareKakao, handleCopyLink, handleExportPdf, // 설정 드롭다운 공유/PDF
         fontZoom, onFontZoomDown, onFontZoomUp, onFontZoomReset,
         tabAutoKeepLimit, onTabAutoKeepDown, onTabAutoKeepUp, onTabAutoKeepReset,
         onRootClick,
@@ -2314,6 +2347,19 @@
             :style="boSettingShow ? 'background:rgba(232,88,122,0.18);border:1px solid rgba(232,88,122,0.45);color:#e8587a;' : 'background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);color:#e8587a;'">⚙</button>
           <div v-if="boSettingShow"
             style="position:absolute;right:0;top:calc(100% + 6px);width:250px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9000;overflow:hidden;padding:4px 0;">
+            <div style="display:flex;gap:6px;align-items:center;justify-content:center;padding:6px 14px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">
+              <button class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+              <button class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+              <button class="btn btn_pdf" title="PDF 다운로드" :disabled="boPdfExporting" @click="handleExportPdf">
+                <span v-if="boPdfExporting">⏳</span>
+                <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+                  <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+                  <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+                  <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+                </svg>
+              </button>
+            </div>
             <button @click="boSettingShow=false; uiState.sitemapShow=true; uiState.favPanelShow=false; hoveredTop=null"
               style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;"
               :style="uiState.sitemapShow ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:600;' : ''"
@@ -2648,7 +2694,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="bo-main">
+    <div class="bo-main" ref="boMainRef">
       <!-- ② TAB BAR -->
       <div class="bo-tab-bar-wrap" v-if="!cfEmbed && tabBarOpen">
         <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">‹</button>

@@ -169,6 +169,21 @@ body {
 .fo-area-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .fo-area-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
 .fo-area-count { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
+/* 링크공유/카카오공유/PDF — 정사각형 아이콘 배지 (BO 와 동일 스타일, 2026-08-23) */
+.fo-page-utilbar { display: flex; justify-content: flex-end; gap: 6px; padding: 6px 0; }
+.fo-page-utilbar .btn_link, .fo-page-utilbar .btn_kakao, .fo-page-utilbar .btn_pdf,
+.btn_link, .btn_kakao, .btn_pdf {
+  width: 24px; height: 24px; padding: 0; border-radius: 5px; border: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; line-height: 1; flex-shrink: 0; cursor: pointer;
+}
+.btn_pdf       { background: transparent; box-shadow: none; width: 22px; }
+.btn_pdf svg   { width: 17px; height: 19px; }
+.btn_pdf:hover:not(:disabled) svg   { filter: drop-shadow(0 2px 4px rgba(226,55,44,.4)); }
+.btn_kakao     { background: #FEE500; color: #191919; box-shadow: 0 2px 6px rgba(254,229,0,.35); }
+.btn_kakao:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(254,229,0,.5); }
+.btn_link      { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
+.btn_link:hover:not(:disabled)      { background: #e2e7ef; border-color: #c2cad6; }
 .fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; width: 100vw; display: flex; align-items: center; justify-content: center; }
 .fo-page-banner-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .fo-page-banner-dim { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(255,255,255,0.72) 0%, rgba(240,245,255,0.55) 45%, rgba(220,232,255,0.38) 100%); }

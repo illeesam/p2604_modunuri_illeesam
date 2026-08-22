@@ -332,6 +332,9 @@ window.MbMemberMng = {
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
       }
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 (2026-08-23) */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -408,7 +411,7 @@ window.MbMemberMng = {
     };
   },
   template: /* html */`
-<bo-page title="회원관리">
+<bo-page title="회원관리" :share-query="searchParam">
   <!-- ===== ■. 검색 ======================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->

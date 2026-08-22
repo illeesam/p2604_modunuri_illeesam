@@ -15,6 +15,37 @@ window.foAppHeader = {
     const userMenuRoot = ref(null);
     const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
+    /* ── 설정 드롭다운: 링크공유/카카오공유/PDF (현재 화면 전체, document.body 캡처) ── */
+    const pdfExporting = ref(false);
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: (document.title || 'ShopJoy') + ' - ShopJoy',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: window.location.href,
+        });
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        window.foApp?.showToast?.('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename((document.title || '화면') + '.pdf');
+        await coUtil.cofExportPdf(document.body, filename, window.foApp?.showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
     /* ── Profile 모달 ── */
     const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
                           postcode: '', address: '', addressDetail: '' });
@@ -42,6 +73,15 @@ window.foAppHeader = {
       // API 응답 toast 출력 토글
       } else if (cmd === 'settings-toggle-api-toast') {
         return emit('modu-fo-toggle-api-toast');
+      // 링크 공유(URL만)
+      } else if (cmd === 'settings-copy-link') {
+        return handleCopyLink();
+      // 카카오톡 공유
+      } else if (cmd === 'settings-share-kakao') {
+        return handleShareKakao();
+      // 현재 화면 PDF 다운로드
+      } else if (cmd === 'settings-export-pdf') {
+        return handleExportPdf();
       // 사용자 메뉴 드롭다운 토글
       } else if (cmd === 'userMenu-toggle') {
         return toggleUserMenu();
@@ -245,6 +285,7 @@ window.foAppHeader = {
     return {
       uiState, codes, userMenuRoot, addrSearchModal,                        // 상태 / refs
       handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch
+      pdfExporting,                                                        // 링크/카카오공유/PDF (설정 드롭다운)
       pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
       cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,                    // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
@@ -466,6 +507,19 @@ window.foAppHeader = {
       <!-- ===== ■.■.■. 설정 드롭다운 ============================================= -->
       <div v-if="appShowSettings"
         style="position:absolute;right:0;top:calc(100% + 8px);width:180px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
+        <div style="display:flex;gap:6px;align-items:center;justify-content:center;padding:6px 14px 10px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+          <button class="btn btn_link" title="링크 공유(URL만)" @click="handleBtnAction('settings-copy-link')">🔗</button>
+          <button class="btn btn_kakao" title="카카오톡 공유" @click="handleBtnAction('settings-share-kakao')">💬</button>
+          <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleBtnAction('settings-export-pdf')">
+            <span v-if="pdfExporting">⏳</span>
+            <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+              <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+              <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+              <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+            </svg>
+          </button>
+        </div>
         <button @click="handleBtnAction('settings-toggle-api-log')"
           style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
           :style="appShowApiLog?'background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);font-weight:700;':''"

@@ -526,6 +526,46 @@ window.PmCouponDtl = {
     const cfIssuedTop = computed(() => cfIssuedList.value.slice(0, 10));
     const cfUsedTop   = computed(() => cfUsedList.value.slice(0, 10));
 
+    /* fnShareUrl — 이 쿠폰 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'pmCouponDtl');
+      qs.set('id', form.couponId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `쿠폰 ${form.couponId} - ShopJoy BO`,
+          description: form.couponNm || form.couponCd || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`쿠폰상세_${form.couponId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
     columns.infoForm = [
@@ -582,6 +622,8 @@ window.PmCouponDtl = {
       coUtil, // 템플릿 cofAnd 접근용
       columns,
       codes, form, errors, vendors,         // 상태 / 데이터
+      handleShareKakao, handleCopyLink,                                    // 카카오톡 공유 / 링크 복사 (상세보기)
+      pdfAreaRef, pdfExporting, handleExportPdf,                           // PDF 다운로드 (항상 노출)
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, cfIssueTargetsColumns, tabs, // computed / reactive(tabs)
       tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal, showMdModal, showTargetPicker, // toRef
@@ -589,8 +631,22 @@ window.PmCouponDtl = {
     };
   },
   template: /* html */`
+<div ref="pdfAreaRef">
 <bo-container :title="!active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : (cfDtlMode ? '쿠폰 상세' : '쿠폰 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.couponId)">
+  <template #toolbar-actions>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </template>
   <!-- ===== ■. 영역 타이틀 (list-title) ====================================== -->
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
@@ -871,6 +927,7 @@ window.PmCouponDtl = {
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
 </bo-container>
+</div>
 <!-- ===== □. 본문 영역 =================================================== -->
 `
 };

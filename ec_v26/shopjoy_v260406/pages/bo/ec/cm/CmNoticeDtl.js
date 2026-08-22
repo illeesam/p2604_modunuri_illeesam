@@ -156,6 +156,49 @@ window.CmNoticeDtl = {
       }
     };
 
+    /* fnShareUrl — 이 공지사항 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'cmNoticeDtl');
+      qs.set('id', baseForm.noticeId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    /* handleShareKakao — 카카오톡 공유(피드 카드, 상세보기 모드 전용) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `공지사항 ${baseForm.noticeId} - ShopJoy BO`,
+          description: baseForm.noticeTitle || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    /* pdfAreaRef — 공지사항 상세 카드 캡처 대상. handleExportPdf — PDF 다운로드(상세보기 모드 전용) */
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`공지사항상세_${baseForm.noticeId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
     const columns = {};
@@ -180,12 +223,28 @@ window.CmNoticeDtl = {
       handleBtnAction,
       cfIsNew, cfReadonly, cfAttachRefId, attachGrpRef, refTableNm,
       showToast,
+      handleShareKakao, handleCopyLink,                                    // 카카오톡 공유 / 링크 복사 (상세보기)
+      pdfAreaRef, pdfExporting, handleExportPdf,                           // PDF 다운로드 (항상 노출)
     };
   },
   template: /* html */`
+<div ref="pdfAreaRef">
 <!-- ===== ■. 폼 영역 (제목/폼 모두 컨테이너 안에) ============================= -->
 <bo-container :title="!active ? '공지사항 상세' : (cfIsNew ? '공지사항 등록' : (cfReadonly ? '공지사항 상세' : '공지사항 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : baseForm.noticeId)">
+  <template #toolbar-actions>
+    <button v-if="active ? (cfReadonly ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfReadonly ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </template>
   <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title, 페이지 타이틀 아님) ========= -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="baseForm" :errors="errors"
     :readonly="cfReadonly" :cols="3" compact :show-actions="false">
@@ -219,5 +278,6 @@ window.CmNoticeDtl = {
     </template>
   </div>
 </bo-container>
+</div>
 `,
 };
