@@ -1,15 +1,21 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmDashboardItem;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmDashboardItemRepository;
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /** CmDashboardItem(대시보드 차트 패널 정의) QueryDSL Custom 구현체 */
@@ -18,6 +24,7 @@ import java.util.Map;
 public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmDashboardItemRepositoryImpl";
     private static final QCmDashboardItem cmDashboardItem = QCmDashboardItem.cmDashboardItem;
 
     /**
@@ -86,5 +93,67 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
 
         long affected = update.where(cmDashboardItem.dashboardItemId.eq(entity.getDashboardItemId())).execute();
         return (int) affected;
+    }
+
+    /**
+     * 차트(keyLevel=1) 서버사이드 페이징 조회.
+     *
+     * <p>itemNm 검색은 차트 자신의 이름뿐 아니라 그 아래 시리즈·항목까지 대상으로 한다 —
+     * item_key 조립 규칙({@code chartCd-seriesCd-itemCd})을 이용해, 자기 item_key 로 시작하는
+     * (자신 제외) 행 중에 이름이 일치하는 게 하나라도 있으면 그 차트를 포함시킨다(상관 서브쿼리
+     * EXISTS). 시리즈·항목을 굳이 join 해 오지 않아도 되어 쿼리가 단순하다.</p>
+     */
+    @Override
+    public BasePage<CmDashboardItem> selectChartPage(Map<String, Object> p) {
+        int pageNo = parseInt(p.get("pageNo"), 1);
+        int pageSize = parseInt(p.get("pageSize"), 30);
+        int offset = (pageNo - 1) * pageSize;
+
+        String dashboardId    = (String) p.get("dashboardId");
+        String dashboardIdsCsv = (String) p.get("dashboardIds");
+        String useYn          = (String) p.get("useYn");
+        String itemNm         = (String) p.get("itemNm");
+
+        BooleanBuilder cond = new BooleanBuilder();
+        cond.and(cmDashboardItem.keyLevel.eq(1));
+        if (dashboardId != null && !dashboardId.isBlank()) {
+            cond.and(cmDashboardItem.dashboardId.eq(dashboardId));
+        } else if (dashboardIdsCsv != null && !dashboardIdsCsv.isBlank()) {
+            List<String> ids = Arrays.stream(dashboardIdsCsv.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).toList();
+            if (!ids.isEmpty()) cond.and(cmDashboardItem.dashboardId.in(ids));
+        }
+        if (useYn != null && !useYn.isBlank()) {
+            cond.and(cmDashboardItem.useYn.eq(useYn));
+        }
+        if (itemNm != null && !itemNm.isBlank()) {
+            QCmDashboardItem descendant = new QCmDashboardItem("descendant");
+            cond.and(cmDashboardItem.itemNm.containsIgnoreCase(itemNm)
+                .or(JPAExpressions.selectOne().from(descendant)
+                    .where(descendant.itemKey.like(cmDashboardItem.itemKey.concat("-%"))
+                        .and(descendant.itemNm.containsIgnoreCase(itemNm)))
+                    .exists()));
+        }
+
+        JPAQuery<CmDashboardItem> baseQuery = queryFactory.selectFrom(cmDashboardItem).where(cond);
+
+        List<CmDashboardItem> pageList = baseQuery.clone()
+            .setHint("org.hibernate.comment", QRY_SRC + " :: selectChartPage() :: list")
+            .orderBy(cmDashboardItem.dashboardId.asc(), cmDashboardItem.sortOrd.asc(), cmDashboardItem.dashboardItemId.asc())
+            .offset(offset).limit(pageSize)
+            .fetch();
+
+        Long total = baseQuery.clone()
+            .setHint("org.hibernate.comment", QRY_SRC + " :: selectChartPage() :: cnt")
+            .select(cmDashboardItem.count())
+            .fetchOne();
+
+        BasePage<CmDashboardItem> res = new BasePage<>();
+        return res.setPageInfo(pageList, total == null ? 0 : total, pageNo, pageSize, null);
+    }
+
+    private static int parseInt(Object v, int def) {
+        if (v == null) return def;
+        try { return Integer.parseInt(String.valueOf(v).trim()); } catch (Exception e) { return def; }
     }
 }

@@ -339,11 +339,31 @@ public class BoCmDashboardController {
     /**
      * 항목 목록 3레벨 트리 — 차트(1) / 시리즈(2) / 항목(3).
      * 화면에서 들여쓰기로 그리도록 평면 배열로 준다. 각 노드에 lvl 과 조립된 itemCode 포함.
+     *
+     * <p>{@code chartIds}(콤마구분 dashboardItemId)를 주면 서로 다른 대시보드가 섞여도
+     * 그 차트들만 정확히 조립해 돌려준다(서버사이드 페이징으로 뜬 "이번 페이지 차트"용).
+     * 안 주면 기존처럼 {@code dashboardId} 하나의 전체 트리를 돌려준다(하위호환).</p>
      */
     @GetMapping("/item/tree")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> itemTree(
-            @RequestParam String dashboardId) {
+            @RequestParam(required = false) String dashboardId,
+            @RequestParam(required = false) String chartIds) {
+        if (chartIds != null && !chartIds.isBlank()) {
+            List<String> ids = java.util.Arrays.stream(chartIds.split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).toList();
+            return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getItemTreeByChartIds(ids)));
+        }
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getItemTree(dashboardId)));
+    }
+
+    /**
+     * 항목 목록 서버사이드 페이징 — 차트(1레벨) 단위. "대시보드 위젯항목 목록" 화면 전용.
+     * 파라미터: dashboardId(단일) 또는 dashboardIds(콤마구분) / useYn / itemNm / pageNo / pageSize.
+     */
+    @GetMapping("/item/page")
+    public ResponseEntity<ApiResponse<com.shopjoy.ecadminapi.common.data.BasePage<CmDashboardItem>>> itemPage(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getChartPage(p)));
     }
 
     /**

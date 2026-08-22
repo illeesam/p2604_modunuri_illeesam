@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardDataRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemRepository;
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -124,6 +125,54 @@ public class CmDashboardDataGridService {
                 : byParent.getOrDefault(sers.get(0).getDashboardItemId(), List.of());
             ch.setCols(cols.stream().map(CmDashboardDataGridService::brief).toList());
         }
+    }
+
+    /**
+     * 항목관리 화면 "대시보드 위젯항목 목록" 서버사이드 페이징 — 차트(1레벨) 단위.
+     *
+     * <p>{@code selectChartPage} 가 돌려준 이번 페이지 차트들에 한해서만 시리즈·항목을
+     * 채워({@code attachChildren}) 반환한다 — 페이지에 없는 차트의 하위행까지 매번 다 읽어올
+     * 필요가 없다(기존 "전체 로드 후 클라이언트 슬라이스" 방식의 성능 문제를 해소하는 게 목적).</p>
+     */
+    public BasePage<CmDashboardItem> getChartPage(Map<String, Object> p) {
+        BasePage<CmDashboardItem> page = itemRepository.selectChartPage(p);
+        List<CmDashboardItem> charts = page.getPageList();
+        List<CmDashboardItem> all = new ArrayList<>(charts);
+        for (CmDashboardItem ch : charts) all.addAll(descendantsOf(ch));
+        attachChildren(charts, all);
+        return page;
+    }
+
+    /**
+     * 특정 차트들(dashboardItemId 목록)의 3레벨 트리를 조립한다 — {@link #getItemTree(String)} 의
+     * "차트 지정" 버전. 서버사이드 페이징으로 이번 페이지에 뜬 차트만 트리를 채울 때 쓴다.
+     * 반환 순서는 입력한 {@code chartIds} 순서(=페이지 정렬 순서)를 그대로 따른다.
+     */
+    public List<Map<String, Object>> getItemTreeByChartIds(List<String> chartIds) {
+        if (chartIds == null || chartIds.isEmpty()) return List.of();
+        Map<String, CmDashboardItem> chartById = new LinkedHashMap<>();
+        itemRepository.findAllById(chartIds).forEach(c -> chartById.put(c.getDashboardItemId(), c));
+        List<CmDashboardItem> ordered = chartIds.stream()
+            .map(chartById::get).filter(java.util.Objects::nonNull).toList();
+
+        Comparator<CmDashboardItem> bySort =
+            Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
+
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (CmDashboardItem ch : ordered) {
+            Map<String, Object> chNode = treeNode(1, ch);
+            chNode.put("dashboardId", ch.getDashboardId());
+            out.add(chNode);
+            List<CmDashboardItem> sers = new ArrayList<>(itemRepository.findByParentDashboardItemId(ch.getDashboardItemId()));
+            sers.sort(bySort);
+            for (CmDashboardItem se : sers) {
+                out.add(treeNode(2, se));
+                List<CmDashboardItem> items = new ArrayList<>(itemRepository.findByParentDashboardItemId(se.getDashboardItemId()));
+                items.sort(bySort);
+                for (CmDashboardItem it : items) out.add(treeNode(3, it));
+            }
+        }
+        return out;
     }
 
     /** 화면이 쓰는 최소 정보만 */

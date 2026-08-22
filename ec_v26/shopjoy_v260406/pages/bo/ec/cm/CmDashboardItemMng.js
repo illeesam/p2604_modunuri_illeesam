@@ -159,7 +159,9 @@ window.CmDashboardItemMng = {
           resetDetailToNew();
         }
         /* 좌측에서 대시보드를 고르지 않고 [조회]만 눌러도 우측 위젯항목목록은 항상 채운다 —
-           선택된 게 있으면 그 대시보드만, 없으면 방금 조회된 전체 대시보드 기준(2026-08-21) */
+           선택된 게 있으면 그 대시보드만, 없으면 방금 조회된 전체 대시보드 기준(2026-08-21).
+           새 검색이므로 페이지는 1로 리셋 */
+        panelsPager.pageNo = 1;
         await handleSearchPanels();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
@@ -179,37 +181,37 @@ window.CmDashboardItemMng = {
       } catch (e) { console.warn('[항목 수 조회 오류]', e); }
     };
 
-    /* handleSearchPanels — 항목 목록 조회 (평면 목록 + 3레벨 트리).
-       좌측에서 대시보드를 선택 안 하고 [조회]만 누르면 전체 대시보드를 대상으로 조회한다
-       (2026-08-21) — getItemList 는 dashboardId 없이 siteId 만으로도 전체 항목을 돌려준다 */
+    /* handleSearchPanels — 항목 목록 조회 (평면 목록 + 3레벨 트리). 서버사이드 페이징(2026-08-22) —
+       이번 페이지의 차트(1레벨)만 정확히 서버에서 받아온다(panelsPager.pageNo/pageSize 전달).
+       좌측에서 대시보드를 선택 안 하고 [조회]만 눌러도 우측 위젯항목목록은 항상 채운다 —
+       선택된 게 있으면 그 대시보드만, 없으면 좌측에 로드된 전체 대시보드 기준.
+       ⚠️ 페이지 번호는 여기서 건드리지 않는다 — 페이징 버튼(onPanelsSetPage)도 이 함수를 그대로
+       재사용하므로, 새 검색(페이지 1로 리셋)은 호출부(handleSearchList/selectDash)가 책임진다. */
     const handleSearchPanels = async () => {
+      /* 대시보드 미선택 + 좌측 목록이 비었으면(검색 결과 0건 등) 호출 자체를 건너뛴다 —
+         dashboardIds 를 빈 문자열로 보내면 서버가 "필터 없음"으로 받아들여 전체 대시보드
+         기준으로 조회돼 버린다(의도와 반대) */
+      if (!dashState.selectedId && !dashboards.length) {
+        panels.splice(0, panels.length);
+        treeRows.splice(0, treeRows.length);
+        panelsPager.pageTotalCount = 0;
+        panelsPager.pageTotalPage = 1;
+        return;
+      }
       uiState.panelLoading = true;
       try {
-        const params = { siteId: cfSiteId.value };
+        const params = { pageNo: panelsPager.pageNo, pageSize: panelsPager.pageSize };
+        if (searchParam.useYn) params.useYn = searchParam.useYn;
+        if (searchParam.itemNm) params.itemNm = searchParam.itemNm;
         if (dashState.selectedId) params.dashboardId = dashState.selectedId;
-        const res = await boApiSvc.cmDashboard.getItemList(params, '대시보드항목관리', '항목조회');
-        let list = res.data?.data || [];
-        if (dashState.selectedId) list = list.filter(i => i.dashboardId === dashState.selectedId);
-        list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-        panels.splice(0, panels.length, ...list);
+        else params.dashboardIds = dashboards.map(d => d.dashboardId).join(',');
+        const res = await boApiSvc.cmDashboard.getItemPage(params, '대시보드항목관리', '항목조회');
+        const d = res.data?.data || {};
+        panels.splice(0, panels.length, ...(d.pageList || []));
+        panelsPager.pageTotalCount = d.pageTotalCount || 0;
+        panelsPager.pageTotalPage = d.pageTotalPage || 1;
         await fnLoadTree();
         fnAttachChildCounts();
-        /* 위젯항목명 검색 — 차트·시리즈·항목 어느 레벨의 이름이든 걸리면 그 차트를 남긴다.
-           fnLoadTree() 가 이미 전체 레벨(treeRows)을 채워둔 뒤라 여기서 바로 매칭한다.
-           item_key 는 항상 chartCd-seriesCd-itemCd 형식(codeOf 가 '-' 를 '_' 로 치환해
-           세그먼트가 안전)이라 첫 조각만 잘라내면 소속 차트를 바로 알 수 있다 */
-        const kw = (searchParam.itemNm || '').trim().toLowerCase();
-        if (kw) {
-          const matchedChartKeys = new Set(
-            treeRows.filter(n => (n.itemNm || '').toLowerCase().includes(kw))
-                    .map(n => (n.itemKey || '').split('-')[0]));
-          panels.splice(0, panels.length, ...panels.filter(p => matchedChartKeys.has(p.itemKey)));
-          treeRows.splice(0, treeRows.length,
-            ...treeRows.filter(n => matchedChartKeys.has((n.itemKey || '').split('-')[0])));
-        }
-        panelsPager.pageNo = 1;
-        panelsPager.pageTotalCount = panels.length;
-        panelsPager.pageTotalPage = Math.max(1, Math.ceil(panels.length / panelsPager.pageSize));
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
       } finally {
@@ -217,24 +219,21 @@ window.CmDashboardItemMng = {
       }
     };
 
-    /* fnLoadTree — 3레벨 트리 조회. 특정 대시보드가 선택돼 있으면 그것만, 아니면 좌측에 로드된
-       모든 대시보드를 각각 조회해 하나로 합친다(getItemTree 는 dashboardId 필수라 대시보드별로
-       나눠 부를 수밖에 없다) — 노드마다 _dashboardNm 을 붙여 그리드에서 구분해 보여준다(2026-08-21) */
+    /* fnLoadTree — 이번 페이지에 뜬 차트들(panels)의 3레벨 트리 조회.
+       chartIds(콤마구분 dashboardItemId)로 한 번에 받아온다 — 서로 다른 대시보드가 섞여도
+       정확히 그 차트들만 조립해서 온다(getItemTreeByChartIds). 노드마다 _dashboardNm 을 붙여
+       그리드에서 구분해 보여준다. generate-from-query 이후 재호출되기도 한다(새 시리즈/항목 반영) */
     const fnLoadTree = async () => {
       try {
-        if (dashState.selectedId) {
-          const dashNm = cfCurDash.value?.dashboardNm || '';
-          const res = await boApiSvc.cmDashboard.getItemTree(
-            { dashboardId: dashState.selectedId }, '대시보드항목관리', '항목트리조회');
-          const rows = (res.data?.data || []).map(n => ({ ...n, _dashboardNm: dashNm }));
-          treeRows.splice(0, treeRows.length, ...rows);
-        } else {
-          const results = await Promise.all(dashboards.map(d =>
-            boApiSvc.cmDashboard.getItemTree({ dashboardId: d.dashboardId }, '대시보드항목관리', '항목트리조회')
-              .then(res => (res.data?.data || []).map(n => ({ ...n, _dashboardNm: d.dashboardNm })))
-              .catch(() => [])));
-          treeRows.splice(0, treeRows.length, ...results.flat());
-        }
+        const chartIds = panels.map(p => p.dashboardItemId).filter(Boolean);
+        if (!chartIds.length) { treeRows.splice(0, treeRows.length); return; }
+        const res = await boApiSvc.cmDashboard.getItemTree(
+          { chartIds: chartIds.join(',') }, '대시보드항목관리', '항목트리조회');
+        const dashNmById = new Map(dashboards.map(d => [d.dashboardId, d.dashboardNm]));
+        const rows = (res.data?.data || []).map(n => ({
+          ...n, _dashboardNm: n.lvl === 1 ? (dashNmById.get(n.dashboardId) || '') : '',
+        }));
+        treeRows.splice(0, treeRows.length, ...rows);
         fnTreeCollapseAll();   /* 기본적으로 접힌 상태로 시작(2026-08-21) — 필요하면 [전체펼치기] */
       } catch (err) {
         treeRows.splice(0, treeRows.length);
@@ -270,6 +269,7 @@ window.CmDashboardItemMng = {
     const selectDash = (row) => {
       dashState.selectedId = row.dashboardId;
       resetDetailToNew();
+      panelsPager.pageNo = 1;
       handleSearchPanels();
     };
 
@@ -1486,15 +1486,12 @@ window.CmDashboardItemMng = {
     });
     const fnIsFirstSeries = (node) => cfFirstSeriesKeys.value.has(node.itemKey);
 
-    /* cfPagedPanels / cfPagedChartKeys — panelsPager 기준 이번 페이지의 차트(1레벨) 집합.
-       목록(그리드) 모드는 이 슬라이스를 그대로 rows 로 쓰고, 트리 모드는 이 집합에 속한
-       차트의 노드만 cfTreeVisible 에 남겨 부모(차트)·자식(시리즈·항목)이 페이지 경계로
-       갈라지지 않게 한다 */
-    const cfPagedPanels = computed(() => {
-      const start = (panelsPager.pageNo - 1) * panelsPager.pageSize;
-      return panels.slice(start, start + panelsPager.pageSize);
-    });
-    const cfPagedChartKeys = computed(() => new Set(cfPagedPanels.value.map(p => p.itemKey)));
+    /* cfPagedPanels / cfPagedChartKeys — 서버사이드 페이징(2026-08-22)으로 panels 자체가 이미
+       "이번 페이지 차트" 만 담고 있어 더 이상 슬라이스가 필요 없다. treeRows 도 이 차트들의
+       chartIds 로만 조회해오므로(fnLoadTree) cfTreeVisible 의 페이지 필터는 사실상 항상 통과하는
+       안전망으로만 남는다 — 계산 자체는 유지해 아래 로직 변경 없이 그대로 재사용한다 */
+    const cfPagedPanels = computed(() => panels);
+    const cfPagedChartKeys = computed(() => new Set(panels.map(p => p.itemKey)));
 
     /* cfTreeVisible — 접힘 상태 + "2번째 시리즈부터는 항목 생략" 규칙 + 이번 페이지 차트만 반영 */
     const cfTreeVisible = computed(() => treeRows.filter((n) => {
@@ -1526,13 +1523,11 @@ window.CmDashboardItemMng = {
     });
     const fnTreeNo = (node) => cfTreeNoMap.value.get(node.itemKey) || '';
 
-    /* onPanelsSetPage / onPanelsSizeChange — <bo-pager> 콜백. API 재호출 없이 이미 로드된
-       panels/treeRows 를 다시 슬라이스만 한다(트리·목록 두 모드가 이 pager 하나를 공유) */
-    const onPanelsSetPage = (n) => { panelsPager.pageNo = n; };
-    const onPanelsSizeChange = () => {
-      panelsPager.pageNo = 1;
-      panelsPager.pageTotalPage = Math.max(1, Math.ceil(panels.length / panelsPager.pageSize));
-    };
+    /* onPanelsSetPage / onPanelsSizeChange — <bo-pager> 콜백. 서버사이드 페이징(2026-08-22)이라
+       페이지/크기가 바뀔 때마다 handleSearchPanels() 로 다시 조회한다(트리·목록 두 모드가
+       이 pager 하나를 공유) */
+    const onPanelsSetPage = (n) => { panelsPager.pageNo = n; handleSearchPanels(); };
+    const onPanelsSizeChange = () => { panelsPager.pageNo = 1; handleSearchPanels(); };
 
     /* fnHasChild — 자식이 있는 노드만 ▼/▶ 아이콘을 보여준다.
        2번째 시리즈부터는 항목을 안 보여주므로(cfTreeVisible 규칙) 펼쳐도 나올 게 없다 —
