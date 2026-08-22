@@ -139,8 +139,11 @@
          한 번 자동 고정된 탭은 이후 탭이 더 늘어나도(쿼터를 넘어도) 계속 고정 유지되고,
          고정 탭이 닫혀 여유가 생기면 새로 여는 탭이 그 자리를 채운다.
          탭이 적을 때는 메모리·백그라운드 폴링 부담이 작아 굳이 수동 고정 없이도 편의를 준다.
-         ref 선언(개인화 설정 연동)은 이 아래 _lsGetNum/_savePref 정의 이후에 나온다 — addTab() 은
-         함수 실행 시점(setup() 완료 후)에만 tabAutoKeepLimit.value 를 읽으므로 선언 순서가 달라도 안전. */
+         2026-08-22: URL에 ?page=... 가 이미 있는 상태로 부팅하면(새창 진입, 직접 URL 접근 등)
+         readHash()가 setup() 도중 바로 addTab()을 호출한다 — 그래서 ref는 여기서 기본값(10)으로
+         먼저 선언해 TDZ 에러를 막고, 실제 저장된 개인화 값은 아래 _lsGetNum 정의 이후에 .value 로
+         적용한다(선언은 위, 값 적용은 아래). */
+      const tabAutoKeepLimit = ref(10);
       const autoKeptTabIds = reactive(new Set(['dashboard']));
       const cfEffectiveKeptIds = computed(() => new Set([...keptTabIds, ...autoKeptTabIds]));
 
@@ -157,9 +160,13 @@
       /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppCompPage.js) ── */
       const PAGE_COMP_MAP = window.BO_APP_COMP_PAGE;
 
-      /* addTab */
+      /* addTab — 독립화면(새창/URL 직접 접근 등)으로 열려 setup() 도중(readHash 경유) 바로
+         호출되는 경로가 있다. 그 시점엔 파일 뒤쪽에서 선언되는 값이 아직 없을 수 있으므로,
+         여기서 예상 못한 예외가 나도 탭 자체는 반드시 열리도록 try/catch 로 감싼다
+         (탭이 하나도 안 열리면 화면 전체가 백지로 보였던 사고 재발 방지). */
       const addTab = (tabId, labelOverride) => {
-        if (!openTabs.find((t) => t.id === tabId)) {
+        if (openTabs.find((t) => t.id === tabId)) return;
+        try {
           const pg = toPageFromTabId(tabId);
           const subId = toIdFromTabId(tabId);
           const baseLabel = PAGE_LABELS[pg] || pg;
@@ -168,11 +175,25 @@
           const label = labelOverride || (subId ? baseLabel + ' · ' + String(subId).slice(-4) : baseLabel);
           /* 자동고정 여부는 '현재 자동고정된 탭 개수'(열려있는 전체 탭 수가 아님) 기준 —
              자동고정 탭이 닫혀서 여유가 생기면(10개 미만) 새로 여는 탭이 그 자리를 채운다.
-             비고정 탭이 몇 개 더 열려있든 그건 자동고정 쿼터와 무관 */
-          const shouldAutoKeep = autoKeptTabIds.size < tabAutoKeepLimit.value;
+             비고정 탭이 몇 개 더 열려있든 그건 자동고정 쿼터와 무관.
+             임베드(새창) 모드는 탭바 자체가 없어 고정 개념이 무의미. */
+          const shouldAutoKeep = !embed.value && autoKeptTabIds.size < tabAutoKeepLimit.value;
           openTabs.push({ id: tabId, label });
           if (shouldAutoKeep) autoKeptTabIds.add(tabId);
+        } catch (e) {
+          console.error('[addTab] 탭 생성 중 오류 — 기본 라벨로 대체:', e);
+          if (!openTabs.find((t) => t.id === tabId)) openTabs.push({ id: tabId, label: labelOverride || tabId });
         }
+      };
+
+      /* setTabLabel — URL로 바로 진입(새창 등)한 화면은 addTab 시점엔 실제 제목(상품명 등)을
+         몰라 임시 라벨("화면명 · ID뒤4자리")로 열린다. 데이터 로드 후 자식 컴포넌트가 이 함수로
+         정확한 제목을 알려주면 탭 라벨 + 브라우저 탭 타이틀(활성 탭인 경우)을 갱신한다. */
+      const setTabLabel = (tabId, label) => {
+        if (!label) return;
+        const tab = openTabs.find((t) => t.id === tabId);
+        if (tab) tab.label = label;
+        if (cfActiveTabId.value === tabId) document.title = label + ' - ShopJoy BO';
       };
 
       /* closeTab */
@@ -270,7 +291,10 @@
          page/embed 만 덮어써야 하므로 location.search 를 파싱해서 병합한다) */
       const ctxNewWindow = () => {
         const qs = new URLSearchParams(location.search);
-        qs.set('page', ctxMenu.tabId);
+        const tabId = ctxMenu.tabId;
+        const subId = toIdFromTabId(tabId);
+        qs.set('page', subId ? toPageFromTabId(tabId) : tabId);
+        if (subId) qs.set('id', subId); else qs.delete('id');
         qs.set('embed', '1');
         window.open(`${location.pathname}?${qs.toString()}`, '_blank');
         closeCtxMenu();
@@ -290,10 +314,22 @@
       };
 
       /* ── 새창 열기 — 임베드 모드(상단 nav/탭바/사이드바 없이 화면만)
-         (2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — 기존 쿼리 유지 병합) ── */
-      const openNewWindow = (pgId) => {
+         (2026-08-22 해시(#)에서 쿼리스트링(?)으로 전환 — 기존 쿼리 유지 병합)
+         pgId 는 일반 page id 또는 결합 tabId('pdProdDtl__PR123' 등) 둘 다 받는다 — 즐겨찾기/
+         열린화면 목록처럼 이미 결합된 tabId만 들고 있는 호출부가 있어, id 를 안 넘기면 여기서
+         자동 분해한다(호출부마다 분해 책임 지우지 않기 위함). ── */
+      const openNewWindow = (pgId, id, dtlMode) => {
+        if (id == null) {
+          const subId = toIdFromTabId(pgId);
+          if (subId) { id = subId; pgId = toPageFromTabId(pgId); }
+        }
         const qs = new URLSearchParams(location.search);
         qs.set('page', pgId);
+        if (id != null) qs.set('id', id); else qs.delete('id');
+        /* dtlMode=new — id 없이 *Dtl 을 새창으로 열 때(신규 등록) URL에 명시적으로 남긴다.
+           Dtl 컴포넌트가 이미 전부 dtlMode:'view'|'edit'|'new' 를 문서화해 둔 기존 관례라,
+           "id 없음 = 신규"로 암묵 추론하는 것보다 명확하다(2026-08-22 사용자 제안). */
+        if (dtlMode) qs.set('dtlMode', dtlMode); else qs.delete('dtlMode');
         qs.set('embed', '1');
         window.open(`${location.pathname}?${qs.toString()}`, '_blank');
       };
@@ -387,15 +423,17 @@
       const embed = ref(false);
       const cfEmbed = computed(() => embed.value);
 
-      /* setTopMenu */
-      const setTopMenu = (topId) => {
+      /* setTopMenu — newWindow=true(Ctrl+클릭): 현재 화면은 그대로 두고 대상 화면만 새창으로 연다 */
+      const setTopMenu = (topId, newWindow = false) => {
+        const resolvedId = topId === 'home' ? 'dashboard' : LEFT_MENUS_ALL[topId]?.find((p) => p.id)?.id;
+        if (newWindow) {
+          if (resolvedId) openNewWindow(resolvedId);
+          return;
+        }
         activeTop.value = topId;
         hoveredTop.value = null;
         clearTimeout(_hoverTimer);
-        // 홈: 좌측 메뉴 없이 대시보드로 바로 이동
-        if (topId === 'home') { navigate('dashboard'); return; }
-        const first = LEFT_MENUS_ALL[topId]?.find((p) => p.id);
-        if (first) navigate(first.id);
+        if (resolvedId) navigate(resolvedId);
       };
 
       /* ── URL routing (2026-08-22 해시(#page=)에서 쿼리스트링(?page=)으로 전환 —
@@ -444,14 +482,51 @@
       };
       readHash(false);
 
-      /* navigate — pg에 '__' 포함 시 탭 ID로 간주하여 page/id 자동 분해 */
+      /* standaloneDtlMode — Dtl 을 독립 새창(embed)으로 열었을 때만 쓰는 view/edit 토글.
+         Mng 안에 인라인으로 끼워질 땐 Mng 자신의 detailPanel.openMode 가 이 역할을 하므로
+         이 ref 는 그때는 안 쓰인다(무시됨). 새창은 항상 화면 하나뿐이라 공유 ref 하나로 충분.
+         초기값: URL의 ?dtlMode=new 를 최우선으로 본다(신규 등록을 새창으로 열 때 openNewWindow가
+         명시적으로 남긴다 — 2026-08-22 사용자 제안. Dtl 컴포넌트들이 이미 dtlMode:'view'|'edit'|'new'
+         를 문서화해 둔 기존 관례라 "id 없음 = 신규" 암묵 추론보다 명확하다). 파라미터가 없는 예전
+         URL/직접 진입도 대비해, id 없이 *Dtl 페이지로 열렸으면 그래도 'edit' 로 안전하게 시작한다. */
+      const _initDtlModeParam = new URLSearchParams(String(window.location.search || '').replace(/^\?/, '')).get('dtlMode');
+      const standaloneDtlMode = ref(
+        (_initDtlModeParam === 'new' || _initDtlModeParam === 'edit') ? 'edit'
+        : (page.value && page.value.endsWith('Dtl') && !dtlId.value) ? 'edit'
+        : 'view'
+      );
+
+      /* navigate — pg에 '__' 포함 시 탭 ID로 간주하여 page/id 자동 분해.
+         단, '__cancelEdit__'/'__switchToEdit__' 같은 '__xxx__' 형태는 Dtl 컴포넌트가
+         원래 부모 Mng의 inlineNavigate 가 가로채는 걸 전제로 보내는 내부 전용 신호다.
+         Dtl 을 독립 새창(embed)으로 열면 가로챌 Mng 자체가 없어 여기까지 그대로 들어오는데,
+         이걸 tabId 로 잘못 분해하면 page='' 가 되어 404 로 빠진다(2026-08-22 발견).
+         이 신호가 여기 도달했다는 것 자체가 "가로채 줄 곳이 없다"는 뜻 — standaloneDtlMode 를
+         직접 토글해 새창 안에서도 실제로 수정/취소가 되게 한다(권한이 있으면 버튼 자체가 이미
+         노출되므로, 새창이라고 막을 이유가 없다 — 2026-08-22 사용자 피드백).
+         - __switchToEdit__: 보기→수정 전환.
+         - __closeDtl__: 모드 무관 무조건 닫기(진짜 [닫기] 버튼 전용 — 2026-08-22 편집 중에도
+           [닫기]는 취소가 아니라 그냥 닫혀야 한다는 피드백으로 신설).
+         - __cancelEdit__(그 외 전부): bo-form-area 표준 컴포넌트들의 [취소](편집중)/[닫기](보기중)가
+           똑같이 이 신호를 보낸다 — 편집중이면 보기로 되돌리고, 보기중이면(더 되돌릴 게 없으니) 닫는다. */
       const navigate = (pg, opts = {}) => {
+        if (typeof pg === 'string' && /^__.+__$/.test(pg)) {
+          if (pg === '__switchToEdit__') { standaloneDtlMode.value = 'edit'; return; }
+          if (pg === '__closeDtl__') {
+            if (embed.value) { try { window.close(); } catch (e) {} }
+            return;
+          }
+          if (standaloneDtlMode.value === 'edit') { standaloneDtlMode.value = 'view'; return; }
+          if (embed.value) { try { window.close(); } catch (e) {} }
+          return;
+        }
         // 탭 ID(odOrderKanban__ORD...) 를 직접 넘긴 경우 분해
         const subId = toIdFromTabId(pg);
         if (subId) {
           opts = Object.assign({}, opts, { id: subId });
           pg = toPageFromTabId(pg);
         }
+        standaloneDtlMode.value = 'view'; // 실제 페이지 이동이면(새 레코드 열람 등) 항상 view 로 리셋
         const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
         if (!isLoggedIn && pg !== 'dashboard') {
           showToast('로그인이 필요합니다.', 'error');
@@ -516,10 +591,11 @@
       const onFontZoomUp = () => { fontZoom.value = Math.min(FONT_ZOOM_MAX, fontZoom.value + 1); };
       const onFontZoomReset = () => { fontZoom.value = 100; };
 
-      /* ── 열린탭 자동고정 개수 (tabAutoKeepLimit, 1단위 3~30) — 개인화 설정(DB) + localStorage 동시 저장 */
+      /* ── 열린탭 자동고정 개수 (tabAutoKeepLimit, 1단위 3~30) — 개인화 설정(DB) + localStorage 동시 저장.
+         ref 선언 자체는 addTab 보다 앞에서 이미 했다(TDZ 방지) — 여기서는 저장된 값만 적용. */
       const TAB_AUTO_KEEP_MIN = 3;
       const TAB_AUTO_KEEP_MAX = 30;
-      const tabAutoKeepLimit = ref(_lsGetNum(_PREF_KEYS.tabAutoKeepLimit, 10));
+      tabAutoKeepLimit.value = _lsGetNum(_PREF_KEYS.tabAutoKeepLimit, 10);
       watch(tabAutoKeepLimit, (v) => _savePref(_PREF_KEYS.tabAutoKeepLimit, v));
       const onTabAutoKeepDown = () => { tabAutoKeepLimit.value = Math.max(TAB_AUTO_KEEP_MIN, tabAutoKeepLimit.value - 1); };
       const onTabAutoKeepUp = () => { tabAutoKeepLimit.value = Math.min(TAB_AUTO_KEEP_MAX, tabAutoKeepLimit.value + 1); };
@@ -1986,6 +2062,8 @@
         dtlId,
         initSearchValue,
         navigate,
+        setTabLabel,
+        standaloneDtlMode,
         errorMessage,
         recentServerErrors,
         cfDashboardComp,
@@ -2174,8 +2252,9 @@
       @mouseleave="onTopMenuLeave">
       <span v-for="tm in TOP_MENUS" :key="tm.id"
         class="top-nav-item" :class="{active: activeTop===tm.id}"
-        @click="setTopMenu(tm.id)"
-        @mouseenter="onTopMenuEnter(tm.id)">{{ tm.label }}</span>
+        @click="setTopMenu(tm.id, $event.ctrlKey || $event.metaKey)"
+        @auxclick="$event.button===1 ? setTopMenu(tm.id, true) : null"
+        @mouseenter="onTopMenuEnter(tm.id)" title="Ctrl+클릭/휠클릭: 새창">{{ tm.label }}</span>
     </div>
 
     <!-- 로그인/유저 영역 -->
@@ -2310,11 +2389,13 @@
     @click.stop>
     <div v-for="tm in TOP_MENUS" :key="tm.id"
       class="mega-dd-col" :class="{highlighted: hoveredTop===tm.id}">
-      <div class="mega-dd-top-lbl" @click="setTopMenu(tm.id)">{{ tm.label }}</div>
+      <div class="mega-dd-top-lbl" @click="setTopMenu(tm.id, $event.ctrlKey || $event.metaKey)"
+        @auxclick="$event.button===1 ? setTopMenu(tm.id, true) : null" title="Ctrl+클릭/휠클릭: 새창">{{ tm.label }}</div>
       <template v-for="item in (LEFT_MENUS[tm.id] || [])" :key="item.group || item.id">
         <div v-if="item.group" class="mega-dd-group">{{ item.group }}</div>
-        <div v-else class="mega-dd-item"
-          @click="navigate(item.id); hoveredTop=null">{{ item.label }}</div>
+        <div v-else class="mega-dd-item" title="Ctrl+클릭/휠클릭: 새창 (레이어 유지)"
+          @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : (navigate(item.id), hoveredTop=null)"
+          @auxclick="$event.button===1 ? openNewWindow(item.id) : null">{{ item.label }}</div>
       </template>
     </div>
   </div>
@@ -2327,10 +2408,14 @@
     </div>
     <div class="sitemap-body">
       <div v-for="tm in TOP_MENUS" :key="tm.id" class="sitemap-col">
-        <div class="sitemap-top-lbl" @click="setTopMenu(tm.id); uiState.sitemapShow=false">{{ tm.label }}</div>
+        <div class="sitemap-top-lbl" title="Ctrl+클릭/휠클릭: 새창 (레이어 유지)"
+          @click="($event.ctrlKey || $event.metaKey) ? setTopMenu(tm.id, true) : (setTopMenu(tm.id), uiState.sitemapShow=false)"
+          @auxclick="$event.button===1 ? setTopMenu(tm.id, true) : null">{{ tm.label }}</div>
         <template v-for="item in (LEFT_MENUS[tm.id] || [])" :key="item.group || item.id">
           <div v-if="item.group" class="sitemap-grp">{{ item.group }}</div>
-          <div v-else class="sitemap-lnk" @click="navigate(item.id); uiState.sitemapShow=false">{{ item.label }}</div>
+          <div v-else class="sitemap-lnk" title="Ctrl+클릭/휠클릭: 새창 (레이어 유지)"
+            @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : (navigate(item.id), uiState.sitemapShow=false)"
+            @auxclick="$event.button===1 ? openNewWindow(item.id) : null">{{ item.label }}</div>
         </template>
       </div>
     </div>
@@ -2344,8 +2429,9 @@
     </div>
     <div class="nav-fav-body">
       <div v-if="cfFavList.length===0" class="nav-fav-empty">즐겨찾기가 없습니다.<br>좌측 메뉴의 ★ 를 클릭해 추가하세요.</div>
-      <div v-for="fav in cfFavList" :key="fav.id" class="nav-fav-item"
-        @click="navigate(fav.id); uiState.favPanelShow=false">
+      <div v-for="fav in cfFavList" :key="fav.id" class="nav-fav-item" title="Ctrl+클릭/휠클릭: 새창 (레이어 유지)"
+        @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(fav.id) : (navigate(fav.id), uiState.favPanelShow=false)"
+        @auxclick="$event.button===1 ? openNewWindow(fav.id) : null">
         <span class="nav-fav-top">{{ fav.topLabel }}</span>
         <span class="nav-fav-sep">›</span>
         <span class="nav-fav-lbl">{{ fav.label }}</span>
@@ -2364,7 +2450,8 @@
         <template v-for="item in (activeTop === 'home' ? [] : (LEFT_MENUS[activeTop] || []))" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
           <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
-            @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+            @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : navigate(item.id)"
+            @auxclick="$event.button===1 ? openNewWindow(item.id) : null"
             :title="'Ctrl+클릭: 새창'">
             {{ item.label }}
             <span class="left-fav-star" :class="{active: isFav(item.id)}"
@@ -2380,7 +2467,8 @@
           <template v-if="!sysDashMenus.length">
             <div v-for="item in HOME_FALLBACK_DASH" :key="item.id"
               class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
-              @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+              @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : navigate(item.id)"
+            @auxclick="$event.button===1 ? openNewWindow(item.id) : null"
               :title="'Ctrl+클릭: 새창'">
               {{ item.label }}
               <span class="left-fav-star" :class="{active: isFav(item.id)}"
@@ -2397,8 +2485,9 @@
             <div v-else class="left-nav-item left-nav-sub-item"
               :class="{active: d.pageId ? cfActiveTabId===d.pageId : cfActiveTabId===('cmDashboardMyMng__'+d.dashboardId)}"
               :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px' }"
-              @click="d.pageId ? navigate(d.pageId) : navigate('cmDashboardMyMng', { id: d.dashboardId, tabLabel: d.label })"
-              title="공용 대시보드">
+              @click="($event.ctrlKey || $event.metaKey) ? (d.pageId ? openNewWindow(d.pageId) : openNewWindow('cmDashboardMyMng', d.dashboardId)) : (d.pageId ? navigate(d.pageId) : navigate('cmDashboardMyMng', { id: d.dashboardId, tabLabel: d.label }))"
+              @auxclick="$event.button===1 ? (d.pageId ? openNewWindow(d.pageId) : openNewWindow('cmDashboardMyMng', d.dashboardId)) : null"
+              title="공용 대시보드 (Ctrl+클릭/휠클릭: 새창)">
               <span style="margin-right:4px;">📊</span>{{ d.label }}
             </div>
           </template>
@@ -2411,8 +2500,9 @@
             </div>
             <div v-else class="left-nav-item left-nav-sub-item"
               :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px' }"
-              @click="navigate('cmDashboardMyMng', { id: d.dashboardId, tabLabel: d.dashboardNm })"
-              :title="d.mine ? '내 대시보드' : '공유받은 대시보드'">
+              @click="($event.ctrlKey || $event.metaKey) ? openNewWindow('cmDashboardMyMng', d.dashboardId) : navigate('cmDashboardMyMng', { id: d.dashboardId, tabLabel: d.dashboardNm })"
+              @auxclick="$event.button===1 ? openNewWindow('cmDashboardMyMng', d.dashboardId) : null"
+              :title="(d.mine ? '내 대시보드' : '공유받은 대시보드') + ' (Ctrl+클릭/휠클릭: 새창)'">
               <span style="margin-right:4px;">{{ d.mine ? '👤' : '🔗' }}</span>{{ d.dashboardNm }}
             </div>
           </template>
@@ -2421,7 +2511,8 @@
         <template v-for="item in (LEFT_MENUS_TAIL[activeTop] || [])" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
           <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
-            @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+            @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : navigate(item.id)"
+            @auxclick="$event.button===1 ? openNewWindow(item.id) : null"
             :title="'Ctrl+클릭: 새창'">
             {{ item.label }}
             <span class="left-fav-star" :class="{active: isFav(item.id)}"
@@ -2438,8 +2529,9 @@
           <template v-if="sidebarTab==='fav'">
             <div v-if="cfFavList.length===0" class="left-nav-open-empty">즐겨찾기가 없습니다.</div>
             <div v-for="fav in cfFavList" :key="fav.id"
-              class="left-nav-open-item" :class="{active: cfActiveTabId===fav.id}"
-              @click="navigate(fav.id)">
+              class="left-nav-open-item" :class="{active: cfActiveTabId===fav.id}" title="Ctrl+클릭/휠클릭: 새창"
+              @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(fav.id) : navigate(fav.id)"
+              @auxclick="$event.button===1 ? openNewWindow(fav.id) : null">
               <span @click.stop="toggleFavKeep(fav.id)"
                 :title="favKeepSet.has(fav.id) ? '고정 해제' : '고정 (열 때 상태 유지)'"
                 style="font-size:9px;cursor:pointer;margin-right:4px;flex-shrink:0;transition:all .15s;"
@@ -2456,8 +2548,9 @@
           <template v-if="sidebarTab==='open'">
             <div v-if="cfOpenTabsWithGroup.length===0" class="left-nav-open-empty">열린 화면이 없습니다.</div>
             <div v-for="tab in cfOpenTabsWithGroup" :key="tab.id"
-              class="left-nav-open-item" :class="{active: cfActiveTabId===tab.id}"
-              @click="navigate(tab.id)">
+              class="left-nav-open-item" :class="{active: cfActiveTabId===tab.id}" title="Ctrl+클릭/휠클릭: 새창"
+              @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(tab.id) : navigate(tab.id)"
+              @auxclick="$event.button===1 ? openNewWindow(tab.id) : null">
               <span class="left-nav-open-path">
                 <span class="left-nav-open-group">{{ tab.topLabel }}</span>
                 <span class="left-nav-open-sep"> › </span>
@@ -2558,7 +2651,7 @@
     <div class="bo-main">
       <!-- ② TAB BAR -->
       <div class="bo-tab-bar-wrap" v-if="!cfEmbed && tabBarOpen">
-        <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
+        <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">‹</button>
         <div class="bo-tab-bar" ref="tabBarRef">
           <div v-for="tab in openTabs" :key="tab.id" :data-tab-id="tab.id"
             class="bo-tab" :class="{active: cfActiveTabId===tab.id}"
@@ -2572,7 +2665,7 @@
             <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
           </div>
         </div>
-        <button class="tab-scroll-btn" @click="scrollTabs(1)" title="오른쪽">&#8250;</button>
+        <button class="tab-scroll-btn" @click="scrollTabs(1)" title="오른쪽">›</button>
       </div>
       <div class="bo-wrap">
         <!-- 초기화 중 로딩 표시 -->
@@ -2584,116 +2677,138 @@
           <span>로그인이 필요합니다.</span>
         </div>
         <template v-else>
-          <!-- 고정된 탭(수동 📌 + 탭 10개 미만 자동고정): v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
-          <component
-            v-for="keptId in cfEffectiveKeptIds" :key="'kept_' + keptId"
-            :is="PAGE_COMP_MAP[toPageFromTabId(keptId)]"
-            v-show="cfActiveTabId === keptId"
-            :navigate="navigate"
-            :dtl-id="toIdFromTabId(keptId)"
-            />
+          <!-- 고정된 탭(수동 📌 + 탭 10개 미만 자동고정): v-show로 항상 마운트 유지, 전환 시 상태 보존.
+               v-show를 동적 <component :is> 에 직접 걸면(특히 여러 개가 같은 컴포넌트 타입을 공유하거나
+               내부적으로 재사용될 때) 숨김이 안 먹는 경우가 있어(2026-08-22 발견 — 비활성 탭 내용이
+               화면에 같이 겹쳐 보임), 순수 <div> 래퍼에 v-show를 걸고 그 안에서 컴포넌트를 렌더한다. -->
+          <div v-for="keptId in cfEffectiveKeptIds" :key="'kept_' + keptId" v-show="cfActiveTabId === keptId" style="display:contents;">
+            <!-- 화면마다 개별 v-if 분기를 늘리는 대신(2026-08-22 pdProdMng/Dtl/Hist 3개만 임시로
+                 그렇게 하다 확장성 문제로 폐기) 공통으로 쓰일 법한 prop을 전부 한 번에 내려준다.
+                 컴포넌트가 선언 안 한 prop은 Vue가 조용히 무시(또는 루트에 미사용 속성으로만 남음)하므로
+                 안전 — 화면이 필요한 prop만 선언해 골라 쓰면 된다(새 화면 추가돼도 여기 수정 불필요). -->
+            <component
+              :is="PAGE_COMP_MAP[toPageFromTabId(keptId)]"
+              :navigate="navigate"
+              :dtl-id="toIdFromTabId(keptId)"
+              :prod-id="toIdFromTabId(keptId)"
+              :dtl-mode="standaloneDtlMode"
+              :init-search-value="initSearchValue"
+              :open-new-window="openNewWindow"
+              :set-tab-label="(label) => setTabLabel(keptId, label)"
+              />
+          </div>
           <!-- 비고정 현재 탭: 전환 시 재마운트 -->
           <div v-if="!cfEffectiveKeptIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
             <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
             <dashboard-bo-app-monitor v-else-if="page==='appMonitorDashboard'" :navigate="navigate" :show-toast="showToast" />
-            <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
-            <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
-            <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
+            <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
+            <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode"
+              :set-tab-label="(label) => setTabLabel(cfActiveTabId, label)" />
+            <pd-prod-hist v-else-if="page==='pdProdHist'" :navigate="navigate" :prod-id="dtlId" />
             <od-order-kanban v-else-if="page==='odOrderKanban'" :key="'kanban_' + dtlId" :order-id="dtlId" :claim-id="kanbanClaimId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
-            <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
+            <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
             <od-order-item-mng  v-else-if="page==='odOrderItemMng'"  :navigate="navigate" />
-            <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <od-order-item-dtl  v-else-if="page==='odOrderItemDtl'"  :navigate="navigate" :dtl-id="dtlId" :active="true" />
-            <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
-            <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" />
-            <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <od-order-item-dtl  v-else-if="page==='odOrderItemDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" :active="true" />
+            <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
+            <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <od-cart-mng  v-else-if="page==='odCartMng'"  :navigate="navigate" />
-            <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
-            <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <pm-cache-mng  v-else-if="page==='pmCacheMng'"  :navigate="navigate" />
-            <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" />
-            <pm-save-mng  v-else-if="page==='pmSaveMng'"  :navigate="navigate" />
-            <pm-gift-mng  v-else-if="page==='pmGiftMng'"  :navigate="navigate" />
-            <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" />
-            <pm-voucher-dtl  v-else-if="page==='pmVoucherDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <pm-cache-dtl  v-else-if="page==='pmCacheDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" />
+            <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
+            <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pm-cache-mng  v-else-if="page==='pmCacheMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" :open-new-window="openNewWindow" />
+            <pm-discnt-dtl v-else-if="page==='pmDiscntDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pm-save-mng  v-else-if="page==='pmSaveMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pm-save-dtl  v-else-if="page==='pmSaveDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pm-gift-mng  v-else-if="page==='pmGiftMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pm-gift-dtl  v-else-if="page==='pmGiftDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" :open-new-window="openNewWindow" />
+            <pm-voucher-dtl  v-else-if="page==='pmVoucherDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pm-cache-dtl  v-else-if="page==='pmCacheDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
             <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" />
             <dp-disp-ui-preview  v-else-if="page==='dpDispUiPreview'"  :navigate="navigate" />
             <dp-disp-panel-preview v-else-if="page==='dpDispPanelPreview'" :navigate="navigate" />
             <dp-disp-widget-preview v-else-if="page==='dpDispWidgetPreview'" :navigate="navigate" />
-            <dp-disp-area-mng  v-else-if="page==='dpDispAreaMng'"  :navigate="navigate" />
-            <dp-disp-area-dtl  v-else-if="page==='dpDispAreaDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-ui-mng  v-else-if="page==='dpDispUiMng'"  :navigate="navigate" />
-            <dp-disp-ui-dtl  v-else-if="page==='dpDispUiDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-widget-mng  v-else-if="page==='dpDispWidgetMng'"  :navigate="navigate" />
-            <dp-disp-widget-dtl  v-else-if="page==='dpDispWidgetDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-panel-dtl  v-else-if="page==='dpDispPanelDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" />
-            <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <dp-disp-area-mng  v-else-if="page==='dpDispAreaMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <dp-disp-area-dtl  v-else-if="page==='dpDispAreaDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <dp-disp-ui-mng  v-else-if="page==='dpDispUiMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <dp-disp-ui-dtl  v-else-if="page==='dpDispUiDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <dp-disp-widget-mng  v-else-if="page==='dpDispWidgetMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <dp-disp-widget-dtl  v-else-if="page==='dpDispWidgetDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <dp-disp-panel-dtl  v-else-if="page==='dpDispPanelDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <dp-disp-widget-lib-preview v-else-if="page==='dpDispWidgetLibPreview'" :navigate="navigate" />
-            <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
-            <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
-            <pm-plan-dtl  v-else-if="page==='pmPlanDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
+            <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" :init-search-value="initSearchValue" :open-new-window="openNewWindow" />
+            <pm-plan-dtl  v-else-if="page==='pmPlanDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" />
-            <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" />
-            <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <cm-chatt-mng     v-else-if="page==='cmChattMng'"     :navigate="navigate" />
-            <cm-chatt-dtl     v-else-if="page==='cmChattDtl'"     :navigate="navigate" :dtl-id="dtlId" />
+            <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <cm-chatt-mng     v-else-if="page==='cmChattMng'"     :navigate="navigate" :open-new-window="openNewWindow" />
+            <cm-chatt-dtl     v-else-if="page==='cmChattDtl'"     :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <cm-chatt-kanban  v-else-if="page==='cmChattKanban'"  :navigate="navigate" />
-            <sy-site-mng  v-else-if="page==='sySiteMng'"  :navigate="navigate" />
-            <sy-site-dtl  v-else-if="page==='sySiteDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <sy-site-mng  v-else-if="page==='sySiteMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-site-dtl  v-else-if="page==='sySiteDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-code-mng  v-else-if="page==='syCodeMng'"  :navigate="navigate" />
-            <sy-code-dtl  v-else-if="page==='syCodeDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <sy-code-dtl  v-else-if="page==='syCodeDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-brand-mng  v-else-if="page==='syBrandMng'"  :navigate="navigate" />
             <sy-attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" />
-            <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" />
-            <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" />
+            <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
             <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate" />
             <sy-vendor-info-mng v-else-if="page==='syVendorInfoMng'" :navigate="navigate" />
-            <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" />
-            <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" />
+            <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <pd-category-prod-mng v-else-if="page==='pdCategoryProdMng'" :navigate="navigate" />
             <pd-opt-code-mng-page v-else-if="page==='pdOptCodeMng'" :navigate="navigate" />
-            <sy-user-mng  v-else-if="page==='syUserMng'"  :navigate="navigate" />
-            <sy-user-dtl  v-else-if="page==='syUserDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <sy-user-mng  v-else-if="page==='syUserMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-user-dtl  v-else-if="page==='syUserDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-batch-mng  v-else-if="page==='syBatchMng'"  :navigate="navigate" />
-            <sy-batch-dtl  v-else-if="page==='syBatchDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <sy-batch-dtl  v-else-if="page==='syBatchDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-dept-mng  v-else-if="page==='syDeptMng'"  :navigate="navigate" />
             <sy-menu-mng  v-else-if="page==='syMenuMng'"  :navigate="navigate" />
             <sy-role-mng  v-else-if="page==='syRoleMng'"  :navigate="navigate" />
-            <cm-notice-mng  v-else-if="page==='cmNoticeMng'"  :navigate="navigate" />
-            <cm-faq-mng  v-else-if="page==='cmFaqMng'"  :navigate="navigate" />
+            <cm-notice-mng  v-else-if="page==='cmNoticeMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <cm-notice-dtl  v-else-if="page==='cmNoticeDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <cm-faq-mng  v-else-if="page==='cmFaqMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <cm-faq-dtl  v-else-if="page==='cmFaqDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <cm-blog-mng  v-else-if="page==='cmBlogMng'"  :navigate="navigate" />
             <cm-dashboard-mng  v-else-if="page==='cmDashboardMng'"  :navigate="navigate" />
             <cm-dashboard-item-mng  v-else-if="page==='cmDashboardItemMng'"  :navigate="navigate" />
             <cm-dashboard-data-mng  v-else-if="page==='cmDashboardDataMng'"  :navigate="navigate" />
-            <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" />
-            <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" :dtl-id="dtlId" />
+            <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <cm-dashboard-menu-mng  v-else-if="page==='cmDashboardMenuMng'"  :navigate="navigate" />
             <cm-dashboard-sys-menu-mng v-else-if="page==='cmDashboardSysMenuMng'" :navigate="navigate" />
             <cm-popup-mng  v-else-if="page==='cmPopupMng'"  :navigate="navigate" />
-            <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
+            <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-alarm-dtl  v-else-if="page==='syAlarmDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
             <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />
-            <sy-bbm-mng  v-else-if="page==='syBbmMng'"  :navigate="navigate" />
-            <sy-bbs-mng  v-else-if="page==='syBbsMng'"  :navigate="navigate" />
+            <sy-bbm-mng  v-else-if="page==='syBbmMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-bbm-dtl  v-else-if="page==='syBbmDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
+            <sy-bbs-mng  v-else-if="page==='syBbsMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <sy-bbs-dtl  v-else-if="page==='syBbsDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-i18n-mng  v-else-if="page==='syI18nMng'"  :navigate="navigate" />
             <!-- ── 회원 추가 ── -->
             <mb-mem-grade-mng  v-else-if="page==='mbMemGradeMng'"  :navigate="navigate" />
             <mb-mem-group-mng  v-else-if="page==='mbMemGroupMng'"  :navigate="navigate" />
             <!-- ── 상품 추가 ── -->
             <pd-dliv-tmplt-mng  v-else-if="page==='pdDlivTmpltMng'"  :navigate="navigate" />
-            <pd-single-prod-mng  v-else-if="page==='pdSingleProdMng'"  :navigate="navigate" />
-            <pd-option-prod-mng  v-else-if="page==='pdOptionProdMng'"  :navigate="navigate" />
-            <pd-group-prod-mng  v-else-if="page==='pdGroupProdMng'"  :navigate="navigate" />
-            <pd-set-prod-mng  v-else-if="page==='pdSetProdMng'"  :navigate="navigate" />
-            <pd-gift-prod-mng  v-else-if="page==='pdGiftProdMng'"  :navigate="navigate" />
+            <pd-single-prod-mng  v-else-if="page==='pdSingleProdMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pd-option-prod-mng  v-else-if="page==='pdOptionProdMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pd-group-prod-mng  v-else-if="page==='pdGroupProdMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pd-set-prod-mng  v-else-if="page==='pdSetProdMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
+            <pd-gift-prod-mng  v-else-if="page==='pdGiftProdMng'"  :navigate="navigate" :open-new-window="openNewWindow" />
             <pd-review-mng  v-else-if="page==='pdReviewMng'"  :navigate="navigate" />
             <pd-qna-mng  v-else-if="page==='pdQnaMng'"  :navigate="navigate" />
             <pd-restock-noti-mng v-else-if="page==='pdRestockNotiMng'" :navigate="navigate" />
@@ -2716,7 +2831,7 @@
             <st-erp-recon-mng  v-else-if="page==='stErpReconMng'"  :navigate="navigate" />
             <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" />
             <sy-user-login-hist  v-else-if="page==='syUserLoginHist'"  :navigate="navigate" />
-            <sy-exceldown-mng    v-else-if="page==='syExceldownMng'"    :navigate="navigate" :dtl-id="dtlId" />
+            <sy-exceldown-mng    v-else-if="page==='syExceldownMng'"    :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-api-log-mng      v-else-if="page==='syApiLogMng'"      :navigate="navigate" />
             <sy-send-msg-log-mng v-else-if="page==='sySendMsgLog'"     :navigate="navigate" />
             <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />

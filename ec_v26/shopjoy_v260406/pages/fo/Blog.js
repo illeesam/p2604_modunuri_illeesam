@@ -45,10 +45,11 @@ window.Blog = {
     };
 
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e = {}) => {
       console.log(' ■■ Blog.js : handleSelectAction -> ', cmd, param);
       // 블로그 포스트 클릭 (param: postId)
       if (cmd === 'blogs-rowView') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { return window.foApp.openNewWindow('blogView', param); }
         return props.navigate('blogView', { dtlId: param });
       // 페이지 번호 클릭
       } else if (cmd === 'blogs-pager-setPage') {
@@ -241,7 +242,8 @@ window.Blog = {
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
           Latest Posts
         </h3>
-        <div v-for="p in cfLatestPosts" :key="p.id" @click="handleSelectAction('blogs-rowView', p.id)"
+        <div v-for="p in cfLatestPosts" :key="p.id" title="Ctrl+클릭/휠클릭: 새창" @click="handleSelectAction('blogs-rowView', p.id, $event)"
+          @auxclick="$event.button===1 ? handleSelectAction('blogs-rowView', p.id, $event) : null"
           style="display:flex;gap:10px;margin-bottom:14px;cursor:pointer;padding:6px 0;"
           @mouseenter="$event.currentTarget.style.opacity='0.7'"
           @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -264,7 +266,8 @@ window.Blog = {
     <div>
       <div v-for="post in posts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
-        @click="handleSelectAction('blogs-rowView', post.id)"
+        title="Ctrl+클릭/휠클릭: 새창" @click="handleSelectAction('blogs-rowView', post.id, $event)"
+        @auxclick="$event.button===1 ? handleSelectAction('blogs-rowView', post.id, $event) : null"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
         <!-- ===== ■.■.■.■. 썸네일 =============================================== -->

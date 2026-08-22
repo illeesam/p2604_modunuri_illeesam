@@ -73,7 +73,7 @@ window.SyBbsDtl = {
         return props.navigate('__cancelEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
       // 보기모드 → 수정모드 전환 (수정 버튼)
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
@@ -341,7 +341,7 @@ window.SyBbsDtl = {
   </div>
   <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
     <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-    <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+    <button class="btn btn_cancel" v-if="!cfIsNew" @click="handleBtnAction('form-cancel')">취소</button>
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->

@@ -69,7 +69,8 @@ window.CmNoticeDtl = {
       if (cmd === 'baseForm-save')   return handleSave();
       if (cmd === 'baseForm-cancel') return props.navigate('__cancelEdit__');
       if (cmd === 'baseForm-edit')   return props.navigate('__switchToEdit__');
-      if (cmd === 'baseForm-close')  return props.navigate('__cancelEdit__');
+      if (cmd === 'baseForm-close')  return props.navigate('__closeDtl__');
+      if (cmd === 'baseForm-delete') return handleDelete();
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -142,6 +143,19 @@ window.CmNoticeDtl = {
       }
     };
 
+    /* handleDelete — 보기/편집모드 공통 [삭제] (2026-08-22 정책: 표준 버튼 = [수정][삭제][닫기] / [저장][삭제][취소][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !props.dtlId) return;
+      if (!(await showConfirm('삭제', `[${baseForm.noticeTitle}]을 삭제하시겠습니까?`))) return;
+      try {
+        await boApiSvc.cmNotice.remove(props.dtlId, '공지사항관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('cmNoticeMng', { reload: true });
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
     const columns = {};
@@ -194,11 +208,14 @@ window.CmNoticeDtl = {
   <div class="form-actions" v-if="active">
     <template v-if="cfReadonly">
       <button class="btn btn_edit"      @click="handleBtnAction('baseForm-edit')">수정</button>
+      <button class="btn btn_delete" v-if="!cfIsNew" @click="handleBtnAction('baseForm-delete')">삭제</button>
       <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
     </template>
     <template v-else>
       <button class="btn btn_save"   @click="handleBtnAction('baseForm-save')">저장</button>
-      <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
+      <button class="btn btn_delete" v-if="!cfIsNew" @click="handleBtnAction('baseForm-delete')">삭제</button>
+      <button class="btn btn_cancel" v-if="!cfIsNew" @click="handleBtnAction('baseForm-cancel')">취소</button>
+      <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
     </template>
   </div>
 </bo-container>

@@ -57,7 +57,10 @@ window.SyAlarmDtl = {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 표시경로 선택 모달 열기
       } else if (cmd === 'pathModal-open') {
         modals.isPathPickModal = true;
@@ -162,6 +165,22 @@ window.SyAlarmDtl = {
       }
     };
 
+    /* handleDelete — 보기모드 [삭제] (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.alarmId) { return; }
+      const ok = await showConfirm('삭제', `[${form.alarmTitle}]을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.syAlarm.remove(form.alarmId, '알람관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('syAlarmMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
     // ★ onMounted — 진입 시 코드 로드 + 상세 조회
     /* initPage — 화면 로드 시퀀스.
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
@@ -217,11 +236,12 @@ window.SyAlarmDtl = {
   <!-- ===== ■.■. 영역 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
   <!-- ===== ■.■. 폼 영역 ================================================== -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-cancel="!cfIsNew" :show-delete="!cfIsNew"
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"
     @edit="handleBtnAction('form-edit')"
-    @close="handleBtnAction('form-close')">
+    @close="handleBtnAction('form-close')"
+    @delete="handleBtnAction('form-delete')">
     <!-- ===== ■.■.■. 발송일시 (DateTimePicker) ================================= -->
     <template #sendDate>
       <bo-date-time-picker v-model="form.alarmSendDate" :readonly="cfDtlMode" />

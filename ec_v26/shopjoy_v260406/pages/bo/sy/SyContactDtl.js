@@ -68,7 +68,10 @@ window.SyContactDtl = {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 보기/편집모드에서 삭제 (2026-08-22 정책: 표준 버튼 = [수정][삭제][닫기] / [저장][삭제][취소][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 회원 참조 모달 열기
       } else if (cmd === 'member-ref') {
         return showRefModal('member', Number(form.memberId));
@@ -263,6 +266,22 @@ window.SyContactDtl = {
       } catch (err) { _afterApiErr(err); }
     };
 
+    /* handleDelete — 보기/편집모드 공통 [삭제] (2026-08-22 정책: 표준 버튼 = [수정][삭제][닫기] / [저장][삭제][취소][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !cfCurId.value) { return; }
+      const ok = await showConfirm('삭제', `[${form.contactTitle}]을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.syContact.remove(cfCurId.value, '문의관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('syContactMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
     // 사이트명 영역
@@ -348,13 +367,15 @@ window.SyContactDtl = {
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
           <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
           <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
         </template>
         <template v-else>
           <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
             저장
           </button>
-          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
+          <button class="btn btn_cancel" v-if="cfHasId" @click="handleBtnAction('form-cancel')">취소</button>
         </template>
       </div>
     </div>
@@ -386,13 +407,15 @@ window.SyContactDtl = {
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
           <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
           <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
         </template>
         <template v-else>
           <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
             답변 저장
           </button>
-          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
+          <button class="btn btn_cancel" v-if="cfHasId" @click="handleBtnAction('form-cancel')">취소</button>
         </template>
       </div>
     </div>

@@ -61,7 +61,7 @@ window.OdDlivDtl = {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
       // 주문 참조 모달 열기
       } else if (cmd === 'form-orderRef') {
         return showRefModal('order', form.orderId);
@@ -400,7 +400,7 @@ window.OdDlivDtl = {
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-cancel="!cfIsNew"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"
         @edit="handleBtnAction('form-edit')"

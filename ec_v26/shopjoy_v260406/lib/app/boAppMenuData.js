@@ -287,9 +287,13 @@
   PAGE_TO_TOP['odOrderKanban'] = 'order';
   PAGE_LABELS['odOrderKanban'] = '주문 칸반 보드';
 
+  PAGE_TO_TOP['pdProdHist'] = 'product';
+  PAGE_LABELS['pdProdHist'] = '상품 이력';
+
   const ALL_PAGES = [
     'dashboard',
     'odOrderKanban',
+    'pdProdHist',
     ...Object.values(LEFT_MENUS_ALL)
       .flat()
       .filter((p) => p.id)
@@ -300,11 +304,11 @@
       .map((p) => p.id.replace('Mng', 'Dtl')),
   ];
 
-  const MULTI_TAB_PAGES = new Set(['odOrderKanban', 'cmDashboardMyMng']);
+  const MULTI_TAB_PAGES = new Set(['odOrderKanban', 'cmDashboardMyMng', 'pdProdDtl', 'pdProdHist']);
 
   const toTabId = (pg, id) => {
-    if (pg.endsWith('Dtl')) return pg.replace('Dtl', 'Mng');
     if (MULTI_TAB_PAGES.has(pg) && id) return pg + '__' + id;
+    if (pg.endsWith('Dtl')) return pg.replace('Dtl', 'Mng');
     return pg;
   };
 

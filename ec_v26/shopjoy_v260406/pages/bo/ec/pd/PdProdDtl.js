@@ -10,6 +10,7 @@ window.PdProdDtl = {
     onListReload: { type: Function, default: () => {} },
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
     fixedProdTypeCd: { type: String, default: null }, // 신규 등록 시 상품유형 초기값 (유형별 개별 메뉴 진입 시)
+    setTabLabel:  { type: Function, default: () => {} }, // 상품명 로드 후 탭/브라우저 타이틀 갱신 (새창 진입 시 등)
   },
   setup(props) {
 
@@ -50,7 +51,7 @@ window.PdProdDtl = {
         return props.navigate('__cancelEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
       // 보기모드 → 수정모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
@@ -1262,6 +1263,7 @@ window.PdProdDtl = {
         if (p) {
           form.prodId         = p.prodId;
           form.prodNm         = p.prodNm || '';
+          props.setTabLabel(form.prodNm);
           form.prodCode       = p.prodCode || '';
           form.categoryId     = p.categoryId || '';
           form.brandId        = p.brandId || '';

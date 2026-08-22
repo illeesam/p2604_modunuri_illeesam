@@ -37,7 +37,10 @@ window.DpDispPanelDtl = {
         return props.navigate('__switchToEdit__');
       // 폼 닫기/취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 전체 펼치기/탭 보기 토글
       } else if (cmd === 'form-toggleViewAll') {
         viewAll.value = !viewAll.value;
@@ -680,6 +683,22 @@ window.DpDispPanelDtl = {
       }
     };
 
+    /* handleDelete — 삭제 */
+    const handleDelete = async () => {
+      if (cfIsNew.value) { return; }
+      const ok = await showConfirm('삭제', '삭제하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        await boApiSvc.dpPanel.remove(form.dispId || form.panelId, '전시패널관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('dpDispPanelMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
     /* -- 위젯미리보기 모달 -- */
     const preview = reactive({ show: false, tabLabel: '' });
 
@@ -1267,6 +1286,7 @@ window.DpDispPanelDtl = {
               <div class="form-actions" v-if="active">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
@@ -1599,6 +1619,7 @@ window.DpDispPanelDtl = {
               <div class="form-actions" v-if="active">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
@@ -1796,6 +1817,7 @@ window.DpDispPanelDtl = {
             <div class="form-actions" v-if="active">
               <template v-if="cfDtlMode">
                 <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
                 <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
               </template>
               <template v-else>
@@ -1976,6 +1998,7 @@ window.DpDispPanelDtl = {
               <div class="form-actions" v-if="active">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>

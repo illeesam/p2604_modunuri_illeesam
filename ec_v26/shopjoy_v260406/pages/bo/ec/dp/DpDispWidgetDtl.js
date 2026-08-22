@@ -37,7 +37,7 @@ window.DpDispWidgetDtl = {
         return props.navigate('__cancelEdit__');
       // 패널 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
       // 보기모드 → 수정모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
@@ -763,6 +763,9 @@ window.DpDispWidgetDtl = {
     </template>
     <template v-if="active ? (cfDtlMode) : false">
       <button @click="handleBtnAction('form-edit')" class="btn btn_edit" style="font-size:13px;">수정</button>
+      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn_delete" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
+        삭제
+      </button>
       <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </template>
   </template>

@@ -41,7 +41,8 @@ window.DpDispUiDtl = {
       if (cmd === 'baseForm-save')   return handleSave();
       if (cmd === 'baseForm-cancel') return props.navigate('__cancelEdit__');
       if (cmd === 'baseForm-edit')   return props.navigate('__switchToEdit__');
-      if (cmd === 'baseForm-close')  return props.navigate('__cancelEdit__');
+      if (cmd === 'baseForm-close')  return props.navigate('__closeDtl__');
+      if (cmd === 'baseForm-delete') return handleDelete();
       if (cmd === 'pathModal-open')  { modals.isPathPickModal = true; return; }
       if (cmd === 'areas-goAreaMng') return props.navigate('dpDispAreaMng');
       console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -126,6 +127,20 @@ window.DpDispUiDtl = {
       }
     };
 
+    /* handleDelete — 삭제 */
+    const handleDelete = async () => {
+      if (cfIsNew.value) { return; }
+      const ok = await showConfirm('삭제', '삭제하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        await boApiSvc.dpUi.remove(baseForm.uiId, '전시UI관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('dpDispUiMng', { reload: true });
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -169,7 +184,12 @@ window.DpDispUiDtl = {
   :title-id="!active ? '' : (cfIsNew ? '' : baseForm.uiId)">
   <!-- ===== ■. 폼 영역 ===================================================== -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="baseForm" :errors="errors"
-    :readonly="cfReadonly" :cols="2" compact :show-actions="false" />
+    :readonly="cfReadonly" :cols="2" compact :show-actions="active" :show-cancel="!cfIsNew" :show-delete="!cfIsNew"
+    @save="handleBtnAction('baseForm-save')"
+    @cancel="handleBtnAction('baseForm-cancel')"
+    @edit="handleBtnAction('baseForm-edit')"
+    @close="handleBtnAction('baseForm-close')"
+    @delete="handleBtnAction('baseForm-delete')" />
   <!-- ===== ■. 하위 영역 목록 (수정 시에만) =================================== -->
   <div v-if="!cfIsNew" style="margin-top:14px;">
     <div class="toolbar">
@@ -180,17 +200,6 @@ window.DpDispUiDtl = {
       </div>
     </div>
     <bo-grid bare :columns="columns.areasGrid" :rows="areas" row-key="areaId" empty-text="소속 영역이 없습니다. 전시영역관리에서 등록하세요." />
-  </div>
-  <!-- ===== ■. 폼 액션 ===================================================== -->
-  <div class="form-actions" v-if="active">
-    <template v-if="cfReadonly">
-      <button class="btn btn_edit"  @click="handleBtnAction('baseForm-edit')">수정</button>
-      <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
-    </template>
-    <template v-else>
-      <button class="btn btn_save"   @click="handleBtnAction('baseForm-save')">저장</button>
-      <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
-    </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
   <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_ui' }" title="전시UI 표시경로 선택" :on-callback="fnCallbackModal" />

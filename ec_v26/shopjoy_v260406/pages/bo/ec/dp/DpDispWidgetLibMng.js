@@ -3,6 +3,7 @@ window.DpDispWidgetLibMng = {
   name: 'DpDispWidgetLibMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
+    openNewWindow: { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
   },
   setup(props) {
 
@@ -38,6 +39,7 @@ window.DpDispWidgetLibMng = {
         return handleSearchList('DEFAULT');
       // 위젯Lib 신규 등록 (인라인 패널)
       } else if (cmd === 'widgetLibs-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('dpDispWidgetLibDtl', null, 'new'); }
         return openNew();
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
@@ -59,7 +61,7 @@ window.DpDispWidgetLibMng = {
     };
 
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e) => {
       console.log(' ■■ DpDispWidgetLibMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 크기 변경
       if (cmd === 'widgetLibs-pager-sizeChange') {
@@ -69,6 +71,7 @@ window.DpDispWidgetLibMng = {
         return handleDelete(param);
       // 행 수정 버튼 → 상세 편집 모드
       } else if (cmd === 'widgetLibs-rowEdit') {
+        if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('dpDispWidgetLibDtl', param, 'edit'); }
         return handleLoadDetail(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
@@ -86,6 +89,7 @@ window.DpDispWidgetLibMng = {
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('dpDispWidgetLibDtl', row.widgetLibId); }
           return handleLoadDetail(row.widgetLibId);
         }
       } else {
@@ -262,7 +266,11 @@ window.DpDispWidgetLibMng = {
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispWidgetLibMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
       /* 취소/닫기: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
@@ -421,7 +429,9 @@ window.DpDispWidgetLibMng = {
           </span>
         </div>
         <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
-        <button class="btn btn_new" @click="handleBtnAction('widgetLibs-add')">
+        <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+          @click="handleBtnAction('widgetLibs-add', $event)"
+          @auxclick="handleBtnAction('widgetLibs-add', $event)">
           + 신규
         </button>
       </template>
@@ -435,7 +445,9 @@ window.DpDispWidgetLibMng = {
         <template #row-actions="{ row, gridId }">
           <div class="actions">
             <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>
-            <button class="btn btn_row_edit" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
+            <button class="btn btn_row_edit"
+              @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId, $event)"
+              @auxclick.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId, $event)">
               수정
             </button>
             <button class="btn btn_row_delete" @click.stop="handleSelectAction('widgetLibs-rowDelete', row)">

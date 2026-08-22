@@ -31,10 +31,11 @@ window.Like = {
     };
 
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e = {}) => {
       console.log(' ■■ Like.js : handleSelectAction -> ', cmd, param);
       // 상품 선택 (param: prod)
       if (cmd === 'likes-rowSelect') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { return window.foApp.openNewWindow('prodView', param.prodId); }
         return window.foApp.selectProd(param);
       // 좋아요 해제 (param: prodId)
       } else if (cmd === 'likes-rowToggleLike') {
@@ -71,7 +72,7 @@ window.Like = {
       @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
       @mouseleave="$event.currentTarget.style.boxShadow=''">
       <!-- ===== ■.■.■. 이미지 ================================================= -->
-      <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="handleSelectAction('likes-rowSelect', p)">
+      <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="handleSelectAction('likes-rowSelect', p, $event)" @auxclick="$event.button===1 ? handleSelectAction('likes-rowSelect', p, $event) : null">
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;color:#fff;"
           :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355' }">
@@ -87,7 +88,7 @@ window.Like = {
         </button>
       </div>
       <!-- ===== ■.■.■. 정보 ================================================== -->
-      <div style="padding:14px 16px;" @click="handleSelectAction('likes-rowSelect', p)">
+      <div style="padding:14px 16px;" @click="handleSelectAction('likes-rowSelect', p, $event)" @auxclick="$event.button===1 ? handleSelectAction('likes-rowSelect', p, $event) : null">
         <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);margin-bottom:4px;">
           {{ p.prodNm }}
         </div>

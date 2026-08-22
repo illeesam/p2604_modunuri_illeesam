@@ -764,7 +764,8 @@ window.BoGrid = {
       } else if (cmd === 'grid-row-dblclick') {
         return emit('row-dblclick', param.row);
       } else if (cmd === 'grid-cell-click') {
-        return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
+        return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx,
+          ctrlKey: !!param.event?.ctrlKey, metaKey: !!param.event?.metaKey, button: param.event?.button });
       } else if (cmd === 'grid-row-ref-click') {
         const id = param.col.refKey ? param.row[param.col.refKey] : param.row[param.col.key];
         return emit('ref-click', { row: param.row, col: param.col, type: param.col.refLink, id });
@@ -1064,13 +1065,15 @@ window.BoGrid = {
               ≡
             </td>
             <td v-if="showRowNo" :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'" title="보기"
-            @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx })">
+            @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx, event: $event })"
+            @auxclick="$event.button===1 ? handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx, event: $event }) : null">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
                 <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';' : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
-                @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
+                @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null"
+                @auxclick="coUtil.cofAnd(rowClickable, $event.button===1) ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                   <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
                   :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
@@ -1151,7 +1154,8 @@ window.BoGrid = {
                     </button>
                   </div>
                   <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) — 제목 클릭은 cell-click 으로 분리 -->
-                  <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })"
+                  <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event })"
+                  @auxclick.stop="$event.button===1 ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null"
                   :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
                     {{ U.cellText(col, row) }}
                   </span>
@@ -1349,7 +1353,8 @@ window.BoGridCrud = {
       } else if (cmd === 'grid-row-dblclick') {
         return emit('row-dblclick', param.row, param.idx);
       } else if (cmd === 'grid-cell-click') {
-        return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
+        return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx,
+          ctrlKey: !!param.event?.ctrlKey, metaKey: !!param.event?.metaKey, button: param.event?.button });
       } else if (cmd === 'grid-row-cell-change') {
         const row = param.row;
         if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', { cmd: props.gridId, row, col: param.col, colKey: param.col?.key });
@@ -1556,7 +1561,8 @@ window.BoGridCrud = {
           ⠿
         </td>
         <td v-if="cfShowNo" :style="'text-align:' + (cfTreeMode ? 'left' : 'center') + ';font-size:11px;color:#999;cursor:pointer;white-space:nowrap;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'" title="보기"
-          @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx })">
+          @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx, event: $event })"
+          @auxclick.stop="$event.button===1 ? handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx, event: $event }) : null">
           {{ cfTreeMode ? cfTreeNoList[idx] : (idx + 1) }}
         </td>
         <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
@@ -1629,7 +1635,8 @@ window.BoGridCrud = {
                       @click.stop="col.parentPick.clear ? col.parentPick.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">x</span>
               </span>
             </div>
-            <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col, ci, idx })"
+            <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col, ci, idx, event: $event })"
+                  @auxclick.stop="$event.button===1 ? handleSelectAction('grid-cell-click', { row: fnRow(item), col, ci, idx, event: $event }) : null"
                   :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">
               {{ U.cellText(col, fnRow(item)) }}
             </span>
@@ -2481,8 +2488,11 @@ window.BoFormArea = {
     cancelLabel: { type: String,  default: '취소' },
     editLabel:   { type: String,  default: '수정' },
     closeLabel:  { type: String,  default: '닫기' },
+    deleteLabel: { type: String,  default: '삭제' },
+    showDelete:  { type: Boolean, default: true }, // 보기모드에 [삭제] 노출 여부 — 신규 등록 등 삭제 대상 없을 때 false
+    showCancel:  { type: Boolean, default: true }, // 편집모드에 [취소] 노출 여부 — 신규 등록(되돌아갈 보기화면이 없음)일 때 false
   },
-  emits: ['save', 'cancel', 'edit', 'close'],
+  emits: ['save', 'cancel', 'edit', 'close', 'delete'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
@@ -2541,6 +2551,8 @@ window.BoFormArea = {
         return emit('edit');
       } else if (cmd === 'form-close') {
         return emit('close');
+      } else if (cmd === 'form-delete') {
+        return emit('delete');
       } else if (cmd === 'form-pathPick-clear') {
         props.form[param.col.key] = null;
       } else if (cmd === 'form-pick-clear') {
@@ -2762,6 +2774,10 @@ window.BoFormArea = {
     <button class="btn btn_edit" :class="compact?'btn-sm':''" @click="handleBtnAction('form-edit')">
       {{ editLabel }}
     </button>
+    <!-- 보기모드에서도 [삭제] 바로 노출(2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) -->
+    <button v-if="showDelete" class="btn btn_delete" :class="compact?'btn-sm':''" @click="handleBtnAction('form-delete')">
+      {{ deleteLabel }}
+    </button>
     <button class="btn btn_close" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
       {{ closeLabel }}
     </button>
@@ -2770,8 +2786,18 @@ window.BoFormArea = {
     <button class="btn btn_save" :class="compact?'btn-sm':''" @click="handleBtnAction('form-save')">
       {{ saveLabel }}
     </button>
-    <button class="btn btn_cancel" :class="compact?'btn-sm':''" @click="handleBtnAction('form-cancel')">
+    <!-- 편집모드에서도 [삭제] 노출(2026-08-22 정책: 편집모드 표준 버튼 = [저장][삭제(기존만)][취소][닫기]) -->
+    <button v-if="showDelete" class="btn btn_delete" :class="compact?'btn-sm':''" @click="handleBtnAction('form-delete')">
+      {{ deleteLabel }}
+    </button>
+    <!-- 신규 등록(되돌아갈 보기화면 자체가 없음)은 [취소] 숨김 — 2026-08-22 사용자 피드백 -->
+    <button v-if="showCancel" class="btn btn_cancel" :class="compact?'btn-sm':''" @click="handleBtnAction('form-cancel')">
       {{ cancelLabel }}
+    </button>
+    <!-- 편집 중에도 [닫기]는 별도로 노출 — [취소]는 보기모드로 되돌리고, [닫기]는 모드 무관 무조건
+         닫는다(2026-08-22 사용자 피드백: 새창에서 편집 중 닫기가 사라지는 문제). -->
+    <button class="btn btn_close" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
+      {{ closeLabel }}
     </button>
   </template>
   <slot name="actions-after">

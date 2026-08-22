@@ -71,9 +71,15 @@ window.PmDiscntDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 폼 닫기 (2026-08-22 발견 — 버튼이 'form-cancel'을 잘못 호출하고 있어 별도 케이스가 없었음)
+      } else if (cmd === 'form-close') {
+        return props.navigate('__closeDtl__');
       // 보기모드 → 수정모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
+      // 삭제 (2026-08-22 정책: 보기모드/편집모드 표준 버튼 = [수정][삭제][닫기] / [저장][삭제][취소][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 탭 전환
       } else if (cmd === 'tab-select') {
         uiState.tab = param;
@@ -326,6 +332,22 @@ window.PmDiscntDtl = {
       } catch (err) { _afterApiErr(err); }
     };
 
+    /* handleDelete — 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !cfCurId.value) { return; }
+      const ok = await showConfirm('삭제', `[${form.discntNm}] 할인을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.pmDiscnt.remove(cfCurId.value, '할인관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('pmDiscntMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
     const cfSelectedVendorNm = computed(() => {
       if (!form.vendorId) { return '소속업체 선택'; }
       const v = vendors.find(x => x.vendorId === form.vendorId);
@@ -429,13 +451,16 @@ window.PmDiscntDtl = {
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
@@ -473,13 +498,16 @@ window.PmDiscntDtl = {
       </div>
       <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 상세정보 ================================================== -->
@@ -516,13 +544,16 @@ window.PmDiscntDtl = {
       </div>
       <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 적용대상 ================================================== -->
@@ -556,7 +587,8 @@ window.PmDiscntDtl = {
       </div>
       <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
+        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 미리보기 ================================================== -->

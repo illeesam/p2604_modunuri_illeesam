@@ -3,6 +3,7 @@ window.OdClaimMng = {
   name: 'OdClaimMng',
   props: {
     navigate:          { type: Function, required: true }, // 페이지 이동
+    openNewWindow:     { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭) — OdClaimDtl 기본 dtlMode='view'라 독립 페이지는 자동 읽기전용
     initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
@@ -46,8 +47,9 @@ window.OdClaimMng = {
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 신규 클레임 등록 (인라인 Dtl) → 빈 폼 + 활성(저장/취소 노출)
+      // 신규 클레임 등록 (인라인 Dtl) → 빈 폼 + 활성(저장/취소 노출) / Ctrl·휠클릭 시 새창
       } else if (cmd === 'claims-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('odClaimDtl', null, 'new'); }
         return openNew();
       // 변경작업 모달 열기
       } else if (cmd === 'actionsModal-open') {
@@ -316,7 +318,11 @@ window.OdClaimMng = {
         return;
       }
       /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -740,7 +746,9 @@ window.OdClaimMng = {
       <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
-      <button class="btn btn_new" @click="handleBtnAction('claims-add')">
+      <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+        @click="handleBtnAction('claims-add', $event)"
+        @auxclick="handleBtnAction('claims-add', $event)">
         + 신규
       </button>
     </template>
@@ -751,14 +759,16 @@ window.OdClaimMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleBtnAction('claims-sort', key)"
-        grid-id="claims-cellClick" @cell-click="e => { if (e.col?.link) handleSelectAction('claims-rowEdit', e.row.claimId); }"
+        grid-id="claims-cellClick" @cell-click="e => { if (e.col?.link) { (e.ctrlKey || e.metaKey || e.button === 1) ? props.openNewWindow('odClaimDtl', e.row.claimId) : handleSelectAction('claims-rowEdit', e.row.claimId); } }"
         @toggle-check="id => handleSelectAction('claims-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('claims-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions
             table-max-height="540px">
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn_row_edit" @click="handleSelectAction('claims-rowEdit', row.claimId)">
+            <button class="btn btn_row_edit"
+              @click="e => { (e.ctrlKey || e.metaKey || e.button === 1) ? props.openNewWindow('odClaimDtl', row.claimId, 'edit') : handleSelectAction('claims-rowEdit', row.claimId); }"
+              @auxclick="e => { (e.ctrlKey || e.metaKey || e.button === 1) ? props.openNewWindow('odClaimDtl', row.claimId, 'edit') : handleSelectAction('claims-rowEdit', row.claimId); }">
               수정
             </button>
             <button class="btn btn_row_delete" @click="handleSelectAction('claims-rowDelete', row)">

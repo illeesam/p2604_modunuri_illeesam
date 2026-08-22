@@ -3,6 +3,7 @@ window.OdDlivMng = {
   name: 'OdDlivMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
+    openNewWindow: { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭) — OdDlivDtl 기본 dtlMode='view'라 독립 페이지는 자동 읽기전용
   },
   setup(props) {
 
@@ -45,8 +46,9 @@ window.OdDlivMng = {
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 신규 배송 등록 (인라인 Dtl) — 빈 폼 + 활성(저장/취소 노출)
+      // 신규 배송 등록 (인라인 Dtl) — 빈 폼 + 활성(저장/취소 노출) / Ctrl·휠클릭 시 새창
       } else if (cmd === 'dlivs-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('odDlivDtl', null, 'new'); }
         detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit';
         detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++;
         return;
@@ -283,7 +285,11 @@ window.OdDlivMng = {
         return;
       }
       /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -610,7 +616,9 @@ window.OdDlivMng = {
       <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
-      <button class="btn btn_new" @click="handleBtnAction('dlivs-add')">
+      <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+        @click="handleBtnAction('dlivs-add', $event)"
+        @auxclick="handleBtnAction('dlivs-add', $event)">
         + 신규
       </button>
     </template>
@@ -621,14 +629,16 @@ window.OdDlivMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleBtnAction('dlivs-sort', key)"
-        grid-id="dlivs-cellClick" @cell-click="e => { if (e.col?.link) handleSelectAction('dlivs-rowEdit', e.row.dlivId); }"
+        grid-id="dlivs-cellClick" @cell-click="e => { if (e.col?.link) { (e.ctrlKey || e.metaKey || e.button === 1) ? props.openNewWindow('odDlivDtl', e.row.dlivId) : handleSelectAction('dlivs-rowEdit', e.row.dlivId); } }"
         @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('dlivs-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions
             table-max-height="540px">
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn_row_edit" @click="handleSelectAction('dlivs-rowEdit', row.dlivId)">
+            <button class="btn btn_row_edit"
+              @click="e => { (e.ctrlKey || e.metaKey || e.button === 1) ? props.openNewWindow('odDlivDtl', row.dlivId, 'edit') : handleSelectAction('dlivs-rowEdit', row.dlivId); }"
+              @auxclick="e => { (e.ctrlKey || e.metaKey || e.button === 1) ? props.openNewWindow('odDlivDtl', row.dlivId, 'edit') : handleSelectAction('dlivs-rowEdit', row.dlivId); }">
               수정
             </button>
             <button class="btn btn_row_delete" @click="handleSelectAction('dlivs-rowDelete', row)">

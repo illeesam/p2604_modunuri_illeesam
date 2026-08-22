@@ -34,7 +34,7 @@ window.DpDispWidgetLibDtl = {
         return handleDelete();
       // 폼 닫기/취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
@@ -747,6 +747,9 @@ window.DpDispWidgetLibDtl = {
     </div>
     <div class="form-actions" v-if="active ? (cfDtlMode) : false" style="margin:0;gap:8px;">
       <button @click="handleBtnAction('form-edit')" class="btn btn_edit" style="font-size:13px;">수정</button>
+      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn_delete" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
+        삭제
+      </button>
       <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </div>
     <bo-cm-popup-modal v-if="libPickOpen" popup-cmd="cmPopup-widget-lib-pick" popup-code="widgetLib" :on-callback="fnCallbackModal" />

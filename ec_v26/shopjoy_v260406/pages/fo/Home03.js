@@ -66,13 +66,14 @@ window.Home03 = {
     };
 
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e = {}) => {
       console.log(' ■■ Home03.js : handleSelectAction -> ', cmd, param);
       // 카테고리 선택 → 상품목록 이동
       if (cmd === 'categories-rowSelect') {
         return props.navigate('prodList');
       // 상품 카드 선택
       } else if (cmd === 'prods-rowSelect') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { return window.foApp.openNewWindow('prodView', param.prodId); }
         return selectProd(param);
       // 좋아요 토글
       } else if (cmd === 'prods-rowLike') {
@@ -242,10 +243,11 @@ window.Home03 = {
     </div>
     <div class="home-prod-grid">
       <div v-for="p in cfAllHomeProds" :key="p.prodId"
-        style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
+        style="cursor:pointer;transition:transform .25s,box-shadow .25s;" title="Ctrl+클릭: 새창"
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
-        @click="handleSelectAction('prods-rowSelect', p)">
+        @click="handleSelectAction('prods-rowSelect', p, $event)"
+        @auxclick="$event.button===1 ? handleSelectAction('prods-rowSelect', p, $event) : null">
         <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
           @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
           @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
@@ -382,10 +384,11 @@ window.Home03 = {
   </div>
   <div class="home-sale-grid">
     <div v-for="p in cfSaleProds" :key="'sale'+p.prodId"
-        style="cursor:pointer;text-align:center;transition:transform .25s;"
+        style="cursor:pointer;text-align:center;transition:transform .25s;" title="Ctrl+클릭: 새창"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="handleSelectAction('prods-rowSelect', p)">
+        @click="handleSelectAction('prods-rowSelect', p, $event)"
+        @auxclick="$event.button===1 ? handleSelectAction('prods-rowSelect', p, $event) : null">
       <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.originalPrice ? p.priceNum : false" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">

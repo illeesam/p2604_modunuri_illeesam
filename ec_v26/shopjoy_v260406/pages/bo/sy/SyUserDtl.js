@@ -62,7 +62,10 @@ window.SyUserDtl = {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'addr-search') {
         modals.isAddrSearchModal = true;
@@ -153,6 +156,22 @@ window.SyUserDtl = {
         await (cfIsNew.value ? boApiSvc.syUser.create(body, '사용자관리', '등록') : boApiSvc.syUser.update(form.userId, body, '사용자관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syUserMng', { reload: true }); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* handleDelete — 보기모드 [삭제] (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.userId) { return; }
+      const ok = await showConfirm('삭제', `[${form.userNm}] 사용자를 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.syUser.remove(form.userId, '사용자관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('syUserMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -317,11 +336,14 @@ window.SyUserDtl = {
   <div class="form-actions" v-if="active">
     <template v-if="cfDtlMode">
       <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
     <template v-else>
       <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+      <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
   </div>
   <!-- ===== □.□. 폼 액션 ================================================== -->

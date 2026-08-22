@@ -51,10 +51,11 @@ window.EventPage = {
     };
 
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e = {}) => {
       console.log(' ■■ Event.js : handleSelectAction -> ', cmd, param);
       // 이벤트 카드 클릭 (param: eventId)
       if (cmd === 'events-rowView') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { return window.foApp.openNewWindow('eventView', param); }
         return props.navigate('eventView', { eventId: param });
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -267,7 +268,8 @@ window.EventPage = {
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in events" :key="ev.id"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
-      @click="handleSelectAction('events-rowView', ev.id)"
+      title="Ctrl+클릭/휠클릭: 새창" @click="handleSelectAction('events-rowView', ev.id, $event)"
+      @auxclick="$event.button===1 ? handleSelectAction('events-rowView', ev.id, $event) : null"
       @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
       @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
       <!-- ===== ■.■.■. 이벤트 배너 썸네일 ========================================== -->

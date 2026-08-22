@@ -757,7 +757,7 @@ window.CompareModal = {
   setup(props, { emit }) {
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
+    const handleBtnAction = (cmd, param = {}, e = {}) => {
       console.log(' ■■ CompareModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         emit('close');
@@ -768,6 +768,7 @@ window.CompareModal = {
         emit('close');
         return;
       } else if (cmd === 'compare-view') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { window.foApp.openNewWindow('prodView', param.prodId); return; }
         if (props.selectProd) props.selectProd(param);
         emit('close');
         return;
@@ -864,7 +865,8 @@ window.CompareModal = {
           <p style="font-size:0.75rem;color:var(--text-secondary);line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;">
             {{ p.desc }}
           </p>
-          <button class="btn-outline" style="width:100%;padding:7px;font-size:0.78rem;" @click="handleBtnAction('compare-view', p)">
+          <button class="btn-outline" style="width:100%;padding:7px;font-size:0.78rem;" title="Ctrl+클릭/휠클릭: 새창" @click="handleBtnAction('compare-view', p, $event)"
+            @auxclick="$event.button===1 ? handleBtnAction('compare-view', p, $event) : null">
             상세보기
           </button>
         </div>

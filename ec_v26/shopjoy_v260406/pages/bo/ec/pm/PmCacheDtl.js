@@ -273,7 +273,7 @@ window.PmCacheDtl = {
     </div>
     <!-- ===== ■.■.■. 폼 영역 ================================================ -->
     <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="false" :show-cancel="!cfIsNew">
       <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
       <template #memberId>
         <div style="display:flex;gap:8px;align-items:center;">

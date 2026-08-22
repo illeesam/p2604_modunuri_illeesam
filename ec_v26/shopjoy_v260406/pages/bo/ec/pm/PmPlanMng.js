@@ -3,6 +3,7 @@ window.PmPlanMng = {
   name: 'PmPlanMng',
   props: {
     navigate:          { type: Function, required: true }, // 페이지 이동
+    openNewWindow:     { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
     initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
@@ -46,8 +47,9 @@ window.PmPlanMng = {
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 기획전 신규 등록
+      // 기획전 신규 등록 (Ctrl·휠클릭 시 새창)
       } else if (cmd === 'plans-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('pmPlanDtl', null, 'new'); }
         return openNew();
       // 기획전 엑셀 다운로드 모달 열기
       } else if (cmd === 'plans-excel') {
@@ -96,11 +98,12 @@ window.PmPlanMng = {
       console.log(' ■■ PmPlanMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'plans-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.planId); }
+        if (colKey === 'btn_row_edit')   { if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('pmPlanDtl', row.planId, 'edit'); } return handleLoadDetail(row.planId); }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('pmPlanDtl', row.planId); }
           return loadView(row.planId);
         }
       } else {
@@ -243,7 +246,11 @@ window.PmPlanMng = {
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'pmPlanMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -366,7 +373,9 @@ window.PmPlanMng = {
         <button class="btn btn_excel" @click="handleBtnAction('plans-excel')">
           📥 엑셀
         </button>
-        <button class="btn btn_new" @click="handleBtnAction('plans-add')">
+        <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+          @click="handleBtnAction('plans-add', $event)"
+          @auxclick="handleBtnAction('plans-add', $event)">
           + 신규
         </button>
       </div>
@@ -383,7 +392,7 @@ window.PmPlanMng = {
       </template>
       <template #row-actions="{ row: p, gridId }">
         <div class="actions">
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', p)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', p, $event)" @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', p, $event)">
             수정
           </button>
           <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', p)">
@@ -437,7 +446,7 @@ window.PmPlanMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('plans-cellClick', 'btn_row_edit', p)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('plans-cellClick', 'btn_row_edit', p, $event)" @auxclick.stop="handleGridCellAction('plans-cellClick', 'btn_row_edit', p, $event)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
           <button class="btn btn_row_delete" @click.stop="handleGridCellAction('plans-cellClick', 'btn_row_delete', p)" style="font-size:11px;padding:4px 12px;">

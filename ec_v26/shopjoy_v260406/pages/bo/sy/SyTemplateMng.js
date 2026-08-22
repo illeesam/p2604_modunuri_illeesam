@@ -3,6 +3,7 @@ window.SyTemplateMng = {
   name: 'SyTemplateMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
+    openNewWindow: { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
   },
   setup(props) {
 
@@ -41,8 +42,9 @@ window.SyTemplateMng = {
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
-      // 템플릿 신규 등록 (인라인 패널)
+      // 템플릿 신규 등록 (인라인 패널 / Ctrl·휠클릭 시 새창)
       } else if (cmd === 'templates-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('syTemplateDtl', null, 'new'); }
         return openNew();
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
@@ -105,11 +107,15 @@ window.SyTemplateMng = {
       console.log(' ■■ SyTemplateMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'templates-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.templateId); }
+        if (colKey === 'btn_row_edit') {
+          if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('syTemplateDtl', row.templateId, 'edit'); }
+          return handleLoadDetail(row.templateId);
+        }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('syTemplateDtl', row.templateId); }
           return loadView(row.templateId);
         }
       } else {
@@ -314,7 +320,11 @@ window.SyTemplateMng = {
         return;
       }
       /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -438,7 +448,9 @@ window.SyTemplateMng = {
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
           <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
-          <button class="btn btn_new" @click="handleBtnAction('templates-add')">
+          <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+            @click="handleBtnAction('templates-add', $event)"
+            @auxclick="handleBtnAction('templates-add', $event)">
             + 신규
           </button>
         </div>
@@ -461,7 +473,9 @@ window.SyTemplateMng = {
               <button class="btn btn_send btn-xs" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
                 발송
               </button>
-              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
+              <button class="btn btn_row_edit"
+                @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)"
+                @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)">
                 수정
               </button>
               <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">

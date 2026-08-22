@@ -3,6 +3,7 @@ window.PdProdMng = {
   name: 'PdProdMng',
   props: {
     navigate:          { type: Function, required: true }, // 페이지 이동
+    openNewWindow:     { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
     initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
     fixedProdTypeCd:   { type: String,   default: null },  // 상품유형 고정 (단품/옵션/묶음/세트/사은품 개별 메뉴 진입 시)
   },
@@ -61,8 +62,9 @@ window.PdProdMng = {
         searchParam.cate = '';
         searchParam.categoryId = '';
         return;
-      // 상품 신규 등록 (인라인 패널)
+      // 상품 신규 등록 (인라인 패널 / Ctrl·휠클릭 시 새창)
       } else if (cmd === 'prods-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('pdProdDtl', null, 'new'); }
         return openNew();
       // 상품 목록 재조회
       } else if (cmd === 'prods-reload') {
@@ -115,13 +117,23 @@ window.PdProdMng = {
       console.log(' ■■ PdProdMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'prods-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.prodId); }
+        if (colKey === 'btn_row_edit') {
+          if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('pdProdDtl', row.prodId, 'edit'); }
+          return handleLoadDetail(row.prodId);
+        }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
-        if (colKey === 'btn_row_hist')   { return openHist(row.prodId); }
-        if (colKey === 'btn_row_newtab') { return props.navigate('pdProdDtl', { id: row.prodId }); }
+        if (colKey === 'btn_row_hist') {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('pdProdHist', row.prodId); }
+          return openHist(row.prodId);
+        }
+        if (colKey === 'btn_row_newtab') {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('pdProdDtl', row.prodId); }
+          return props.navigate('pdProdDtl', { id: row.prodId, tabLabel: row.prodNm });
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('pdProdDtl', row.prodId); }
           return loadView(row.prodId);
         }
       } else {
@@ -273,7 +285,11 @@ window.PdProdMng = {
         return;
       }
       /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -506,7 +522,9 @@ window.PdProdMng = {
       <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
-      <button class="btn btn_new" @click="handleBtnAction('prods-add')">
+      <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+        @click="handleBtnAction('prods-add', $event)"
+        @auxclick="handleBtnAction('prods-add', $event)">
         + 신규
       </button>
     </template>
@@ -527,17 +545,22 @@ window.PdProdMng = {
             @click.stop="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', p)">
+          <button class="btn btn_row_edit"
+            @click.stop="handleGridCellAction(gridId, 'btn_row_edit', p, $event)"
+            @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', p, $event)">
             수정
           </button>
           <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', p)">
             삭제
           </button>
-          <button class="btn btn_row_hist" @click.stop="handleGridCellAction(gridId, 'btn_row_hist', p)">
+          <button class="btn btn_row_hist" title="Ctrl+클릭/휠클릭: 새창"
+            @click.stop="handleGridCellAction(gridId, 'btn_row_hist', p, $event)"
+            @auxclick.stop="$event.button===1 ? handleGridCellAction(gridId, 'btn_row_hist', p, $event) : null">
             이력
           </button>
-          <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="새 탭으로 상품상세 열기"
-            @click.stop="handleGridCellAction(gridId, 'btn_row_newtab', p)">
+          <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="새 탭으로 상품상세 열기 (Ctrl+클릭/휠클릭: 새창)"
+            @click.stop="handleGridCellAction(gridId, 'btn_row_newtab', p, $event)"
+            @auxclick.stop="$event.button===1 ? handleGridCellAction(gridId, 'btn_row_newtab', p, $event) : null">
             🗗
           </button>
         </div>

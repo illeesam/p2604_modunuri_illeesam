@@ -18,27 +18,97 @@ window.MbMemberDtl = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { watch, ref, reactive, onMounted } = Vue;
+    const { watch, ref, reactive, computed, onMounted } = Vue;
     const currentId = ref(props.detailModal.dtlId); // 현재 선택된 회원 ID (이력 컴포넌트 key용)
     const codes = reactive({ member_grades: [], member_statuses: [] }); // 공통코드
+    const showToast   = window.boApp.showToast;
+    const showConfirm = window.boApp.showConfirm;
+
+    /* cfStandalone — 부모 Mng 없이 독립 새창(Ctrl+클릭 등)으로 바로 열린 경우.
+       인라인 임베드는 부모가 항상 실제 detailPanel 객체를 :detail-modal 로 넘기고, 독립 진입은
+       boAppBase.js 의 공용 prop 세트에 detailModal 이 없어 선언 default({})를 그대로 받는다.
+       "detailModal이 비어있다"로 판별해야 신규 등록(dtlId 없음) 독립창도 정확히 잡힌다
+       (dtlId 유무만으로 판별하면 신규 등록 독립창이 false 로 오판정되던 버그, 2026-08-22 발견).
+       standalone* 은 이 화면 자체 상태다 (부모 콜백 handleSave/closeDetail/switchToEdit 이 전부 기본 no-op 이라 대신 필요). */
+    const cfStandalone = computed(() => !props.detailModal || Object.keys(props.detailModal).length === 0);
+    const standaloneForm = reactive({});
+    const standaloneErrors = reactive({});
+    const standaloneEditing = ref(false); // props.dtlMode 는 boAppBase.js standaloneDtlMode 가 관리
+
+    /* fnLoadStandalone — 독립 진입 시 이 화면이 직접 회원 데이터를 조회 (인라인은 부모가 이미 넣어줌) */
+    const fnLoadStandalone = async (id) => {
+      if (!id) return;
+      try {
+        const res = await window.boApiSvc.mbMember.getById(id, '회원관리', '상세조회');
+        const d = res.data?.data || res.data;
+        if (d) Object.assign(standaloneForm, d);
+      } catch (err) { console.error('[MbMemberDtl fnLoadStandalone]', err); }
+    };
+    onMounted(() => { if (cfStandalone.value) fnLoadStandalone(props.dtlId); });
+    watch(() => props.dtlId, (id) => { if (cfStandalone.value) fnLoadStandalone(id); });
+    /* props.dtlMode('view'/'edit')를 이 화면의 편집 토글로 그대로 반영 */
+    watch(() => props.dtlMode, (m) => { standaloneEditing.value = (m === 'edit'); }, { immediate: true });
+
+    const cfForm     = computed(() => cfStandalone.value ? standaloneForm : (props.detailModal.form || {}));
+    const cfErrors   = computed(() => cfStandalone.value ? standaloneErrors : props.errors);
+    const cfDtlId    = computed(() => cfStandalone.value ? props.dtlId : props.detailModal.dtlId);
+    const cfIsNew    = computed(() => cfStandalone.value ? !props.dtlId : !!props.detailModal.isNew);
+    const cfActive   = computed(() => cfStandalone.value ? standaloneEditing.value : props.active);
+
+    /* fnSaveStandalone — 독립 진입 시 자체 저장 (인라인은 부모 handleSave 위임) */
+    const fnSaveStandalone = async () => {
+      Object.keys(standaloneErrors).forEach(k => delete standaloneErrors[k]);
+      if (!standaloneForm.loginId) standaloneErrors.loginId = '로그인ID를 입력해주세요.';
+      else if (!coUtil.cofIsValidEmail(standaloneForm.loginId)) standaloneErrors.loginId = '로그인ID는 이메일 형식이어야 합니다.';
+      if (!standaloneForm.memberNm) standaloneErrors.memberNm = '이름을 입력해주세요.';
+      if (!coUtil.cofIsValidEmail(standaloneForm.memberEmail)) standaloneErrors.memberEmail = '올바른 이메일 형식이 아닙니다.';
+      if (!coUtil.cofIsValidMobile(standaloneForm.memberPhone)) standaloneErrors.memberPhone = '올바른 휴대전화 형식이 아닙니다. (예: 010-1234-5678)';
+      if (Object.keys(standaloneErrors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) return;
+      try {
+        await window.boApiSvc.mbMember.update(standaloneForm.memberId, standaloneForm, '회원관리', '저장');
+        showToast('저장되었습니다.', 'success');
+        props.navigate('__cancelEdit__'); // boAppBase.js standaloneDtlMode 를 view 로 되돌림
+        await fnLoadStandalone(props.dtlId); // 서버 기준으로 새로고침
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* fnDeleteStandalone — 독립 진입 시 자체 삭제 (삭제 후엔 볼 것이 없으니 창을 닫는다) */
+    const fnDeleteStandalone = async () => {
+      const ok = await showConfirm('삭제', `[${standaloneForm.memberNm || cfDtlId.value}] 회원을 삭제하시겠습니까?`);
+      if (!ok) return;
+      try {
+        await window.boApiSvc.mbMember.remove(standaloneForm.memberId, '회원관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        try { window.close(); } catch (e) {}
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemberDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장 (부모 콜백)
+      // 폼 저장 (부모 콜백 — 독립 진입이면 자체 저장)
       if (cmd === 'form-save') {
-        return props.handleSave();
-      // 폼 삭제 (부모 콜백)
+        return cfStandalone.value ? fnSaveStandalone() : props.handleSave();
+      // 폼 삭제 (부모 콜백 — 독립 진입이면 자체 삭제)
       } else if (cmd === 'form-delete') {
-        return props.handleDelete();
-      // 폼 닫기 (부모 콜백)
+        return cfStandalone.value ? fnDeleteStandalone() : props.handleDelete();
+      // 폼 취소 (편집 중 되돌리기 — 독립 진입이면 보기 모드로 복귀, 인라인은 닫기와 동일 취급)
+      } else if (cmd === 'form-cancel') {
+        return cfStandalone.value ? props.navigate('__cancelEdit__') : props.closeDetail();
+      // 폼 닫기 (모드 무관 무조건 닫기 — 독립 진입이면 새창을 진짜로 닫는다. 부모 콜백은 기존 그대로)
       } else if (cmd === 'form-close') {
-        return props.closeDetail();
-      // 보기→수정 전환 (부모 콜백)
+        return cfStandalone.value ? props.navigate('__closeDtl__') : props.closeDetail();
+      // 보기→수정 전환 (부모 콜백 — 독립 진입이면 boAppBase.js standaloneDtlMode 전환 신호)
       } else if (cmd === 'form-switch-edit') {
-        return props.switchToEdit();
+        return cfStandalone.value ? props.navigate('__switchToEdit__') : props.switchToEdit();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -102,28 +172,30 @@ window.MbMemberDtl = {
     return {
       columns,
       currentId,       // 상태 / 데이터
+      cfStandalone, cfForm, cfErrors, cfDtlId, cfIsNew, cfActive, // 독립 새창 지원
       handleBtnAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
   template: /* html */`
 <!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
 <bo-container body-style="padding:12px;"
-  :title="!active ? '회원 상세' : (detailModal.isNew ? '회원 등록' : '회원 수정')"
-  :title-id="!active ? '' : (detailModal.isNew ? '' : (detailModal.form?.memberId || ''))">
+  :title="!cfActive ? '회원 상세' : (cfIsNew ? '회원 등록' : '회원 수정')"
+  :title-id="!cfActive ? '' : (cfIsNew ? '' : (cfForm.memberId || ''))">
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
-  <!-- detailModal 기본값이 {} 라 form 이 없을 수 있다 (부모 Mng 없이 단독 진입 등) → 빈 폼으로 렌더 -->
-  <bo-form-area plain-readonly :columns="columns.baseForm" :form="detailModal.form || {}" :errors="errors"
-    :readonly="!active" :cols="3" compact :show-actions="false" />
+  <!-- cfForm — 인라인은 detailModal.form(부모 제공), 독립 진입은 이 화면이 직접 조회한 standaloneForm -->
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="cfForm" :errors="cfErrors"
+    :readonly="!cfActive" :cols="3" compact :show-actions="false" />
   <!-- ===== □.■. 폼 영역 ================================================== -->
   <!-- ===== ■.■. 하단 액션 (Mng 인라인 상세 패널 표준 — 처리버튼은 하단 중앙 정렬) ============== -->
-  <div v-if="detailModal.dtlId" class="form-actions">
-    <template v-if="!active">
+  <div v-if="cfDtlId" class="form-actions">
+    <template v-if="!cfActive">
       <button class="btn btn_edit" @click="handleBtnAction('form-switch-edit')">수정</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
-    <template v-if="active">
+    <template v-if="cfActive">
       <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-      <button v-if="!detailModal.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
   </div>

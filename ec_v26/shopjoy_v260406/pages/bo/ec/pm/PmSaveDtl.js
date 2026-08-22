@@ -36,6 +36,9 @@ window.PmSaveDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 폼 닫기 (2026-08-22 발견 — 기존에 핸들러 자체가 없어 버튼이 무반응이었음)
+      } else if (cmd === 'form-close') {
+        return props.navigate('__closeDtl__');
       // 보기모드 → 수정모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
@@ -434,7 +437,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false" :show-cancel="!cfIsNew" />
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
@@ -453,7 +456,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
       <bo-form-area plain-readonly :columns="columns.targetForm" :form="form" :errors="{}" :cols="3" compact
-        :show-actions="false" :readonly="cfDtlMode">
+        :show-actions="false" :readonly="cfDtlMode" :show-cancel="!cfIsNew">
         <template #issueGrades>
           <bo-multi-check-select
             v-model="form.issueGrades"

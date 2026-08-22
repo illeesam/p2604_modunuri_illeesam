@@ -3,6 +3,7 @@ window.CmFaqMng = {
   name: 'CmFaqMng',
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
+    openNewWindow: { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
   },
   setup(props) {
 
@@ -34,6 +35,7 @@ window.CmFaqMng = {
         resetDetailToNew();
         return handleSearchList('DEFAULT');
       } else if (cmd === 'faqs-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('cmFaqDtl', null, 'new'); }
         return openNew();
       } else if (cmd === 'faqs-excel') {
         excelModal.show = true;
@@ -66,10 +68,11 @@ window.CmFaqMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ CmFaqMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'faqs-cellClick') {
-        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.faqId); }
+        if (colKey === 'btn_row_edit')   { if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('cmFaqDtl', row.faqId, 'edit'); } return handleLoadDetail(row.faqId); }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('cmFaqDtl', row.faqId); }
           return loadView(row.faqId);
         }
       } else {
@@ -198,7 +201,11 @@ window.CmFaqMng = {
         resetDetailToNew();
         return;
       }
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailModal.dtlId && detailModal.dtlId !== '__new__') { detailModal.dtlMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -318,7 +325,9 @@ window.CmFaqMng = {
         <button class="btn btn_excel" @click="handleBtnAction('faqs-excel')">
           📥 엑셀
         </button>
-        <button class="btn btn_new" @click="handleBtnAction('faqs-add')">
+        <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+          @click="handleBtnAction('faqs-add', $event)"
+          @auxclick="handleBtnAction('faqs-add', $event)">
           + 신규
         </button>
       </template>
@@ -333,7 +342,7 @@ window.CmFaqMng = {
         <template #row-actions="{ row, gridId, pinStyle }">
           <td :style="'white-space:nowrap;' + pinStyle">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
+              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)" @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)">
                 수정
               </button>
               <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">

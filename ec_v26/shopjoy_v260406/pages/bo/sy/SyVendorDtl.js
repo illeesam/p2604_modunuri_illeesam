@@ -55,7 +55,10 @@ window.SyVendorDtl = {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'addr-search') {
         modals.isAddrSearchModal = true;
@@ -121,6 +124,22 @@ window.SyVendorDtl = {
         const res = await (cfIsNew.value ? boApiSvc.syVendor.create({ ...form }, '판매자관리', '등록') : boApiSvc.syVendor.update(form.vendorId, { ...form }, '판매자관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syVendorMng', { reload: true }); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* handleDelete — 보기모드 [삭제] (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.vendorId) { return; }
+      const ok = await showConfirm('삭제', `[${form.vendorNm}] 업체를 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.syVendor.remove(form.vendorId, '판매자관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('syVendorMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -203,11 +222,12 @@ window.SyVendorDtl = {
   <!-- ===== ■.■. 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
   <!-- ===== ■.■. 폼 영역 ================================================== -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-cancel="!cfIsNew" :show-delete="!cfIsNew"
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"
     @edit="handleBtnAction('form-edit')"
-    @close="handleBtnAction('form-close')">
+    @close="handleBtnAction('form-close')"
+    @delete="handleBtnAction('form-delete')">
     <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
     <template #addr>
       <div v-if="cfDtlMode" class="readonly-field-plain">

@@ -3,6 +3,7 @@ window.OdOrderMng = {
   name: 'OdOrderMng',
   props: {
     navigate:          { type: Function, required: true }, // 페이지 이동
+    openNewWindow:     { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
     initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
@@ -47,8 +48,9 @@ window.OdOrderMng = {
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 신규 주문 등록 (인라인 Dtl)
+      // 신규 주문 등록 (인라인 Dtl / Ctrl·휠클릭 시 새창)
       } else if (cmd === 'orders-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('odOrderDtl', null, 'new'); }
         detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++;
         return;
       // 변경작업 모달 열기
@@ -135,6 +137,7 @@ window.OdOrderMng = {
       if (cmd === 'orders-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
         if (colKey === 'btn_row_edit') {
+          if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('odOrderDtl', row.orderId, 'edit'); }
           if (window._odOrderDtlState) window._odOrderDtlState.activeTab = 'items';
           detailPanel.selectedId = row.orderId; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
           return;
@@ -149,6 +152,7 @@ window.OdOrderMng = {
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('odOrderDtl', row.orderId); }
           if (window._odOrderDtlState) window._odOrderDtlState.activeTab = 'items';
           detailPanel.selectedId = row.orderId; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
           return;
@@ -304,7 +308,11 @@ window.OdOrderMng = {
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'odOrderMng') { if (opts.reload) { handleSearchData('RELOAD'); } resetDetailToNew(); return; }
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (detailPanel.selectedId && detailPanel.selectedId !== '__new__') { detailPanel.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -633,7 +641,9 @@ window.OdOrderMng = {
       <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
-      <button class="btn btn_new" @click="handleBtnAction('orders-add')">
+      <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+        @click="handleBtnAction('orders-add', $event)"
+        @auxclick="handleBtnAction('orders-add', $event)">
         + 신규
       </button>
     </template>
@@ -651,7 +661,7 @@ window.OdOrderMng = {
             table-max-height="540px">
         <template #row-actions="{ row, gridId }">
           <div class="actions">
-            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)" @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)">수정</button>
             <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
             <button class="btn btn_row_kanban" style="background:#8b5cf6;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban', row)">📋 칸반</button>
             <button class="btn btn_row_kanban_pop" title="칸반 보드를 새 창으로 열기" style="background:#6d28d9;color:#fff;border:none;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban_pop', row)">⧉</button>

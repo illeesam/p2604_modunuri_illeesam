@@ -57,7 +57,7 @@ window.CmChattDtl = {
         return props.navigate('__cancelEdit__');
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
       // 보기모드 → 수정모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
@@ -67,6 +67,9 @@ window.CmChattDtl = {
       // 채팅 종료
       } else if (cmd === 'chat-close') {
         return closeChat();
+      // 채팅 삭제 (2026-08-22 정책: 보기모드 표준 버튼에 [삭제] 포함)
+      } else if (cmd === 'chat-delete') {
+        return handleDelete();
       // 목록으로 이동 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'chat-back') {
         return props.navigate('__cancelEdit__');
@@ -256,6 +259,23 @@ window.CmChattDtl = {
       } catch (err) {
         console.error('[closeChat]', err);
         showToast(err.response?.data?.message || '종료 처리 실패', 'error');
+      }
+    };
+
+    /* handleDelete — 채팅 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기] — 이 화면은 [수정] 없이 [삭제][목록으로]) */
+    const handleDelete = async () => {
+      if (!props.dtlId) { return; }
+      const ok = await showConfirm('삭제', `[${uiState.chat?.subject || ''}] 채팅을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.cmChatt.remove(props.dtlId, '채팅관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        fnStopPoll();
+        props.navigate('cmChattMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -452,6 +472,7 @@ window.CmChattDtl = {
                 <button v-if="cfChatActive" class="btn btn_cancel" @click="handleBtnAction('chat-close')">
                   채팅 종료
                 </button>
+                <button class="btn btn_delete" @click="handleBtnAction('chat-delete')">삭제</button>
                 <button class="btn btn_list" @click="handleBtnAction('chat-back')">목록으로</button>
               </div>
             </div>

@@ -67,7 +67,10 @@ window.SyTemplateDtl = {
         return props.navigate('__switchToEdit__');
       // 보기모드 닫기 → 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       // 미리보기 모달 열기
       } else if (cmd === 'previewModal-open') {
         uiState.previewOpen = true;
@@ -151,6 +154,22 @@ window.SyTemplateDtl = {
           : boApiSvc.syTemplate.update(form.templateId, { ...form }, '템플릿관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syTemplateMng', { reload: true }); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* handleDelete — 보기모드 [삭제] (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.templateId) { return; }
+      const ok = await showConfirm('삭제', `[${form.templateNm}] 템플릿을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.syTemplate.remove(form.templateId, '템플릿관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('syTemplateMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -247,6 +266,7 @@ window.SyTemplateDtl = {
   <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
   <div class="form-actions" v-if="active ? (cfDtlMode) : false">
     <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+    <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
     <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </div>
   <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
@@ -255,7 +275,8 @@ window.SyTemplateDtl = {
       📨 발송하기
     </button>
     <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-    <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+    <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+    <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
   </div>
   <!-- ===== □.□. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
   <!-- ===== □. 카드 영역 =================================================== -->

@@ -651,6 +651,40 @@ Vue `app.component('EcOrderMng', window.EcOrderMng)` → 템플릿에서 `<ec-or
 
 목록 행의 "수정" 클릭 → Mng 하단에 Dtl 인라인 임베드. `loadDetail(id)` / `closeDetail()` / `inlineNavigate`로 분리 제어. 탭/뷰모드는 `window._ec{X}DtlState`로 행 전환에도 유지.
 
+### Dtl 보기/편집모드 표준 버튼 + 독립 새창(embed) 지원 ⭐⭐ (2026-08-22 확정)
+
+**표준 버튼 구성**:
+- **보기모드**(`readonly`/`dtlMode==='view'`): **[수정][삭제][닫기]** 3개 (기존 [수정][닫기] 2개에서 확장 — 보기 상태에서도 삭제를 바로 하도록 통일)
+- **편집모드**(`!readonly`/`dtlMode==='edit'`, 신규 등록 포함): **[저장][삭제(기존 레코드만)][취소][닫기]** — [취소]는 편집을 취소하고 보기로 되돌리고, **[닫기]는 모드 무관 무조건 닫는다**(편집 중이라고 [닫기]가 사라지거나 취소와 같은 동작을 하면 안 됨)
+- `bo-form-area`(공용 컴포넌트, `components/comp/BoAreaComp.js`)가 `:readonly`/`:show-actions`만 주면 이 버튼 세트를 자동 렌더한다. `@save`/`@cancel`/`@edit`/`@close`/`@delete` 5개 이벤트 전부 연결 필수(연결 안 하면 버튼은 보여도 클릭 시 조용히 무시됨). 신규 등록(레코드 없음)에는 `:show-delete="false"`로 삭제 버튼 숨김.
+- `bo-form-area`를 안 쓰고 버튼을 직접 그리는 화면(예: `MbMemberDtl.js`)도 동일하게 4-세트(보기 3개/편집 4개)를 수동으로 맞춰야 한다.
+- **신규 등록 상태에는 [취소] 불필요** ⭐ (2026-08-22) — 되돌아갈 "기존 값"이 없으므로 신규 등록 편집 화면은 [저장][닫기] 2개만 노출. `bo-form-area`에 `showCancel` prop(기본 `true`) 추가 — Dtl 쪽에서 `:show-cancel="!cfIsNew"` 로 신규일 때만 꺼서 사용. (`showDelete` 도 동일하게 신규일 때 `:show-delete="!cfIsNew"` 로 끄는 것이 표준 — 저장 전 레코드는 삭제할 대상이 없음.)
+
+**독립 새창을 신규 등록 모드로 열기 — `dtlMode=new` URL 파라미터** ⭐ (2026-08-22):
+- 목록 화면의 `[+ 신규]` 버튼도 Ctrl+클릭/휠클릭 시 새창으로 열리게 한다. 이때 `id` 가 없으므로 `standaloneDtlMode` 를 추론(id 유무)에만 맡기면 애매해질 수 있어, 명시적으로 `openNewWindow(pgId, id, dtlMode)` 세 번째 인자에 `'new'` 를 넘긴다.
+  ```js
+  // Mng의 handleBtnAction (템플릿에 props가 바로 노출되지 않으므로 반드시 JS 디스패치 경유)
+  if (param && (param.ctrlKey || param.metaKey || param.button === 1)) {
+    return props.openNewWindow('sySiteDtl', null, 'new');
+  }
+  return openNew();
+  // 템플릿: @click="handleBtnAction('sites-add', $event)" @auxclick="handleBtnAction('sites-add', $event)"
+  ```
+- `openNewWindow`는 `dtlMode` 가 있으면 URL 쿼리에 `&dtlMode=new` 를 추가하고, 없으면 제거한다.
+- `boAppBase.js`의 `standaloneDtlMode` 초기값은 URL의 `dtlMode=new` 를 최우선으로 확인하고(`'edit'`), 없으면 기존 방식(`*Dtl` 페이지인데 `dtlId` 없음 → `'edit'`, 그 외 `'view'`)으로 폴백한다.
+- 새 Mng 화면에 `[+ 신규]` 를 추가할 때 이 Ctrl/휠클릭 + `dtlMode=new` 전달을 빠뜨리지 말 것. 표준 모델: `SySiteMng.js`.
+
+**행 클릭(보기) 시 `active` 플래그 필수**: 목록에서 "번호"/제목 클릭으로 보기모드를 열 때, `active`(또는 `show`)를 `true`로 설정해야 버튼 영역이 노출된다. `handleLoadDetail`(수정 버튼)만 `active=true`를 켜고 `loadView`(보기)는 빼먹는 실수가 잦다(2026-08-22 `SySiteMng.js`에서 발견 — 보기모드로 열면 버튼이 아예 안 보이는 버그). `loadView`/`openDetailView`도 반드시 `active=true`를 설정할 것.
+
+**독립 새창(Ctrl+클릭/휠클릭으로 열리는 팝업) 지원 — `navigate()` 내부 신호 3종**:
+Dtl 컴포넌트는 버튼 클릭 시 `props.navigate('__xxx__')` 형태의 내부 전용 신호를 보낸다. 원래 부모 Mng의 `inlineNavigate`가 가로채 처리하는 걸 전제로 하는데, 새창으로 독립적으로 열리면 가로챌 Mng가 없어 `lib/app/boAppBase.js`의 진짜 `navigate()`까지 그대로 들어온다. 거기서 공통 처리한다:
+- `'__switchToEdit__'`: 보기→편집 전환. `standaloneDtlMode.value = 'edit'`.
+- `'__closeDtl__'`: **[닫기] 전용**. 모드 무관 무조건 새창을 닫는다(`window.close()`). 인라인일 땐 부모의 `inlineNavigate`가 `resetDetailToNew()`로 처리.
+- `'__cancelEdit__'`(그 외 전부 — bo-form-area 표준 컴포넌트의 [취소]와 보기모드 시절의 옛 [닫기]가 공유): 새창에서 현재 `edit` 모드면 `view`로 되돌리고, 이미 `view`면 닫는다. **인라인일 땐 부모의 `inlineNavigate`가 "편집 중이던 기존 레코드면 `openMode(dtlMode)`를 `view`로만 되돌리고, 신규 등록(`selectedId/dtlId === '__new__'`)이면 `resetDetailToNew()`로 초기화"하도록 분기해야 한다** — 기존 레코드 편집을 취소했는데 상세 패널 자체가 빈 신규 폼으로 리셋되는 건 버그다(2026-08-22 발견).
+- 새 Dtl 컴포넌트를 만들 때 이 3개 신호 처리를 빠뜨리지 말 것. 표준 모델: `SySiteDtl.js` + `SySiteMng.js`의 `inlineNavigate`.
+
+**독립 새창에서 실제 편집/삭제 되게 하기**: `boAppBase.js`가 `standaloneDtlMode`(view/edit 공유 ref)를 만들어 새창으로 열린 Dtl에 `:dtl-mode`로 내려준다. Dtl 컴포넌트는 `props.dtlMode`를 `cfDtlMode`/`cfReadonly` 등으로 반영해 실제 읽기전용/편집 UI를 토글해야 하며, 저장/삭제는 그 컴포넌트가 **직접 API를 호출**할 수 있어야 한다(부모 Mng의 콜백 prop에만 의존하는 구조 — 예: 개선 전 `MbMemberDtl.js` — 는 새창에서 완전히 먹통이 된다). 데이터 조회도 `props.dtlId`를 직접 받아 스스로 조회해야 새창에서 정상 동작한다(부모가 채워주는 중첩 객체에만 의존 금지).
+
 **Dtl 인라인 패널 폭** ⭐ (2026-05-25):
 - Mng가 좌측 트리 + 우측 목록의 grid 레이아웃을 사용하는 경우, **Dtl 인라인 패널은 전체 폭(좌측 트리 영역까지)을 사용**한다.
 - 두 가지 동등한 방법:

@@ -358,6 +358,20 @@
       navigate('prodView');
     };
 
+    /* openNewWindow — Ctrl+클릭 시 현재 화면은 그대로 두고 대상 화면만 새 브라우저 창으로 연다.
+       BO(boAppBase.js openNewWindow)와 동일 취지 — FO는 embed 개념이 없어 전체 화면 그대로 연다.
+       페이지별 id 파라미터 이름이 다르므로(prodid/eventId/dtlId) 여기서 매핑한다. */
+    const openNewWindow = (pageId, id) => {
+      const params = new URLSearchParams();
+      params.set('page', pageId);
+      if (id != null) {
+        if (pageId === 'prodView') params.set('prodid', id);
+        else if (pageId === 'eventView') params.set('eventId', id);
+        else if (pageId === 'blogView' || pageId === 'blogEdit') params.set('dtlId', id);
+      }
+      window.open(window.location.pathname + '?' + params.toString(), '_blank');
+    };
+
     /* ── Likes (좋아요/위시리스트) ── */
     /* ⛔ likes 는 절대 재할당하지 않는다 — 재할당하면 reactive 프록시가 평범한 Set 으로 바뀌어
        추적이 끊긴다. 그러면 헤더 하트 뱃지·상품카드 하트색·위시리스트 목록이 갱신되지 않는다.
@@ -729,6 +743,7 @@
       toggleLike,
       isLiked,
       selectProd,
+      openNewWindow,
       get compareList()   { return compareList; },
       toggleCompare,
       isCompared,
@@ -742,7 +757,7 @@
       apiProgressLabel,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
-      prods, selectedProd, selectProd,
+      prods, selectedProd, selectProd, openNewWindow,
       cart, cfCartCount, addToCart, removeFromCart, updateCartQty, clearCart,
       likes, toggleLike, isLiked, cfLikeCount,
       compareList, toggleCompare, isCompared, clearCompare, cfCompareCount,

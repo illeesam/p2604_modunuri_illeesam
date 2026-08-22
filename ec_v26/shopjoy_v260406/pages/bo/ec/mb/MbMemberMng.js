@@ -3,6 +3,7 @@ window.MbMemberMng = {
   name: 'MbMemberMng',
   props: {
     navigate:          { type: Function, required: true }, // 페이지 이동
+    openNewWindow:     { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
     initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
@@ -62,13 +63,14 @@ window.MbMemberMng = {
     };
 
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e = null) => {
       console.log(' ■■ MbMemberMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 크기 변경
       if (cmd === 'members-pager-sizeChange') {
         return onSizeChange();
-      // 행 수정 버튼 → 인라인 상세 편집 모드
+      // 행 수정 버튼 → 인라인 상세 편집 모드 (Ctrl+클릭/휠클릭 시 새창 편집모드)
       } else if (cmd === 'members-rowEdit') {
+        if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('mbMemberDtl', param.memberId, 'edit'); }
         return openDetail(param);
       // 행 이력 버튼 → 목록 하단 이력정보 표시
       } else if (cmd === 'members-rowHist') {
@@ -85,6 +87,7 @@ window.MbMemberMng = {
         // 보기모드 트리거 컬럼: 행번호(__no__) 또는 link 셀 → 보기모드(저장/취소 숨김)
         const VIEW_COLS = ['__no__'];
         if (VIEW_COLS.includes(colKey) || (e.col && e.col.link)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('mbMemberDtl', row.memberId); }
           return openView(row);
         }
       } else {
@@ -427,7 +430,7 @@ window.MbMemberMng = {
       grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
             table-max-height="540px">
       <template #row-actions="{ row }">
-        <button class="btn btn_row_edit" @click.stop="handleSelectAction('members-rowEdit', row)">
+        <button class="btn btn_row_edit" @click.stop="handleSelectAction('members-rowEdit', row, $event)" @auxclick.stop="handleSelectAction('members-rowEdit', row, $event)">
           수정
         </button>
         <button class="btn btn_row_hist" @click.stop="handleSelectAction('members-rowHist', row)">

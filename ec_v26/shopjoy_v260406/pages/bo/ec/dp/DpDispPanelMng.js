@@ -6,6 +6,7 @@ window.DpDispPanelMng = {
   name: 'DpDispPanelMng',
   props: {
     navigate: { type: Function, required: true }, // 페이지 이동
+    openNewWindow: { type: Function, default: () => {} }, // 실제 새 브라우저 창으로 열기 (Ctrl+클릭)
   },
   setup(props) {
 
@@ -73,7 +74,10 @@ window.DpDispPanelMng = {
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')    { baseGrid.pager.pageNo = 1; return handleSearchList(); }
       if (cmd === 'searchParam-reset')   { Object.assign(searchParam, searchParamInit); baseGrid.reset(); resetDetailToNew(); return handleSearchList(); }
-      if (cmd === 'panels-add')           return openDetailNew();
+      if (cmd === 'panels-add') {
+        if (param && (param.ctrlKey || param.metaKey || param.button === 1)) { return props.openNewWindow('dpDispPanelDtl', null, 'new'); }
+        return openDetailNew();
+      }
       if (cmd === 'baseDetail-close')     return resetDetailToNew();
       if (cmd === 'panels-sort')          return baseGrid.onSort(param);
       if (cmd === 'panels-pager-setPage') return baseGrid.setPage(param);
@@ -89,11 +93,17 @@ window.DpDispPanelMng = {
     /* handleGridCellAction — 그리드 셀 클릭 라우터 */
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       if (cmd === 'panels-cellClick') {
-        if (colKey === 'btn_row_edit')    return openDetailEdit(row.panelId);
+        if (colKey === 'btn_row_edit') {
+          if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return props.openNewWindow('dpDispPanelDtl', row.panelId, 'edit'); }
+          return openDetailEdit(row.panelId);
+        }
         if (colKey === 'btn_row_delete')  return handleDelete(row);
         if (colKey === 'btn_row_preview') return handleOpenPreview('panel', row.panelId);
         const VIEW_COLS = ['__no__'];
-        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) return openDetailView(row.panelId);
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (e.ctrlKey || e.metaKey || e.button === 1) { return props.openNewWindow('dpDispPanelDtl', row.panelId); }
+          return openDetailView(row.panelId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -176,7 +186,11 @@ window.DpDispPanelMng = {
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispPanelMng') { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') {
+        if (baseDetail.selectedId && baseDetail.selectedId !== '__new__') { baseDetail.openMode = 'view'; return; }
+        resetDetailToNew(); return;
+      }
+      if (pg === '__closeDtl__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') return baseDetail.switchToEdit();
       props.navigate(pg, opts);
     };
@@ -240,7 +254,11 @@ window.DpDispPanelMng = {
   <bo-container title="전시패널목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
-      <button class="btn btn_new" @click="handleBtnAction('panels-add')">+ 신규</button>
+      <button class="btn btn_new" title="Ctrl+클릭/휠클릭: 새창"
+        @click="handleBtnAction('panels-add', $event)"
+        @auxclick="handleBtnAction('panels-add', $event)">
+        + 신규
+      </button>
     </template>
     <bo-grid bare :columns="columns.baseGrid" :rows="panels" :pager="baseGrid.pager" row-key="panelId" :selected-key="baseDetail.selectedId"
       :sort-state="baseGrid"
@@ -251,7 +269,11 @@ window.DpDispPanelMng = {
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>
-          <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+          <button class="btn btn_row_edit" style="white-space:nowrap;"
+            @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)"
+            @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)">
+            수정
+          </button>
           <button class="btn btn_row_delete" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
         </div>
       </template>

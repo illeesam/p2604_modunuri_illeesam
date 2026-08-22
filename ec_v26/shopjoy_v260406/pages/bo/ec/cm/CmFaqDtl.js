@@ -64,7 +64,10 @@ window.CmFaqDtl = {
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
       } else if (cmd === 'form-close') {
-        return props.navigate('__cancelEdit__');
+        return props.navigate('__closeDtl__');
+      // 삭제 (2026-08-22 정책: 보기모드/편집모드 표준 버튼 = [수정][삭제][닫기] / [저장][삭제][취소][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
       } else if (cmd === 'pathModal-open') {
         modals.isPathPickModal = true;
         return;
@@ -181,6 +184,22 @@ window.CmFaqDtl = {
       }
     };
 
+    /* handleDelete — 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.faqId) { return; }
+      const ok = await showConfirm('삭제', `[${form.faqQuestion}]을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.cmFaq.remove(form.faqId, 'FAQ관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('cmFaqMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
     // 기본 폼
@@ -233,11 +252,14 @@ window.CmFaqDtl = {
   <div class="form-actions" v-if="active">
     <template v-if="cfDtlMode">
       <button class="btn btn_edit"  @click="handleBtnAction('form-edit')">수정</button>
+      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
     <template v-else>
       <button class="btn btn_save"   @click="handleBtnAction('form-save')">저장</button>
+      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
       <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->

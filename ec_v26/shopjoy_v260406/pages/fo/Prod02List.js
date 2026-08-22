@@ -96,7 +96,7 @@ window.Prod02List = {
     };
 
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
+    const handleSelectAction = (cmd, param = {}, e = {}) => {
       console.log(' ■■ Prod02List.js : handleSelectAction -> ', cmd, param);
       // 카테고리 토글
       if (cmd === 'categories-rowToggle') {
@@ -109,6 +109,7 @@ window.Prod02List = {
         return toggleSize(param);
       // 상품 카드 선택
       } else if (cmd === 'prods-rowSelect') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { return window.foApp.openNewWindow('prodView', param.prodId); }
         return selectProd(param);
       // 좋아요 토글
       } else if (cmd === 'prods-rowLike') {
@@ -546,7 +547,9 @@ window.Prod02List = {
 <!-- ===== ■. 상품 그리드 ================================================== -->
 <div v-else class="grid-3">
   <div v-for="p in pager.pageList" :key="p.prodId"
-      class="prod-card" style="cursor:pointer;" @click="handleSelectAction('prods-rowSelect', p)">
+      class="prod-card" style="cursor:pointer;" title="Ctrl+클릭/휠클릭: 새창"
+      @click="handleSelectAction('prods-rowSelect', p, $event)"
+      @auxclick="$event.button===1 ? handleSelectAction('prods-rowSelect', p, $event) : null">
     <!-- ===== ■.■.■. 썸네일 ================================================= -->
     <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;"
         @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
@@ -649,7 +652,8 @@ window.Prod02List = {
           </span>
         </template>
       </div>
-      <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="handleSelectAction('prods-rowSelect', p)">
+      <button class="btn-outline" style="width:100%;padding:9px;" title="Ctrl+클릭/휠클릭: 새창" @click.stop="handleSelectAction('prods-rowSelect', p, $event)"
+        @auxclick.stop="$event.button===1 ? handleSelectAction('prods-rowSelect', p, $event) : null">
         상세보기
       </button>
     </div>
