@@ -135,11 +135,12 @@
         else keptTabIds.add(tabId);
       };
 
-      /* AUTO_KEEP_TAB_LIMIT — 탭을 열 당시 열린 탭 총수가 이 개수 미만이면 그 탭은 자동 고정(상태 유지).
-         한 번 자동 고정된 탭은 이후 탭이 더 늘어나도(임계값을 넘어도) 계속 고정 유지 —
-         "새로 여는 탭부터만" 자동고정이 안 걸리게 하기 위함(기존 탭 상태가 갑자기 풀리는 것 방지).
-         탭이 적을 때는 메모리·백그라운드 폴링 부담이 작아 굳이 수동 고정 없이도 편의를 준다. */
-      const AUTO_KEEP_TAB_LIMIT = 10;
+      /* tabAutoKeepLimit — 탭을 열 당시 '현재 자동고정된 탭 개수'가 이 값 미만이면 그 탭도 자동 고정(상태 유지).
+         한 번 자동 고정된 탭은 이후 탭이 더 늘어나도(쿼터를 넘어도) 계속 고정 유지되고,
+         고정 탭이 닫혀 여유가 생기면 새로 여는 탭이 그 자리를 채운다.
+         탭이 적을 때는 메모리·백그라운드 폴링 부담이 작아 굳이 수동 고정 없이도 편의를 준다.
+         ref 선언(개인화 설정 연동)은 이 아래 _lsGetNum/_savePref 정의 이후에 나온다 — addTab() 은
+         함수 실행 시점(setup() 완료 후)에만 tabAutoKeepLimit.value 를 읽으므로 선언 순서가 달라도 안전. */
       const autoKeptTabIds = reactive(new Set(['dashboard']));
       const cfEffectiveKeptIds = computed(() => new Set([...keptTabIds, ...autoKeptTabIds]));
 
@@ -168,7 +169,7 @@
           /* 자동고정 여부는 '현재 자동고정된 탭 개수'(열려있는 전체 탭 수가 아님) 기준 —
              자동고정 탭이 닫혀서 여유가 생기면(10개 미만) 새로 여는 탭이 그 자리를 채운다.
              비고정 탭이 몇 개 더 열려있든 그건 자동고정 쿼터와 무관 */
-          const shouldAutoKeep = autoKeptTabIds.size < AUTO_KEEP_TAB_LIMIT;
+          const shouldAutoKeep = autoKeptTabIds.size < tabAutoKeepLimit.value;
           openTabs.push({ id: tabId, label });
           if (shouldAutoKeep) autoKeptTabIds.add(tabId);
         }
@@ -316,6 +317,8 @@
         leftMenuOpen:  'ui.left_menu_open',
         tabBarOpen:    'ui.tab_bar_open',
         rightPanelOpen:'ui.right_panel_open',
+        fontZoom:         'ui.font_zoom',
+        tabAutoKeepLimit: 'ui.tab_auto_keep_limit',
       };
       const _savePref = (key, value) => {
         if (_suppressPrefSave) return;
@@ -333,6 +336,8 @@
           if (p[_PREF_KEYS.leftMenuOpen]   !== undefined) leftMenuOpen.value   = p[_PREF_KEYS.leftMenuOpen]   === 'true';
           if (p[_PREF_KEYS.tabBarOpen]     !== undefined) tabBarOpen.value     = p[_PREF_KEYS.tabBarOpen]     === 'true';
           if (p[_PREF_KEYS.rightPanelOpen] !== undefined) rightPanelOpen.value = p[_PREF_KEYS.rightPanelOpen] === 'true';
+          if (p[_PREF_KEYS.fontZoom]         !== undefined) fontZoom.value         = Number(p[_PREF_KEYS.fontZoom])         || 100;
+          if (p[_PREF_KEYS.tabAutoKeepLimit] !== undefined) tabAutoKeepLimit.value = Number(p[_PREF_KEYS.tabAutoKeepLimit]) || 10;
         } finally {
           _suppressPrefSave = false;
         }
@@ -340,6 +345,11 @@
       const _lsGet = (key, def) => {
         const v = localStorage.getItem('modu-bo-' + key.replace(/\./g, '-'));
         return v !== null ? v === 'true' : def;
+      };
+      const _lsGetNum = (key, def) => {
+        const v = localStorage.getItem('modu-bo-' + key.replace(/\./g, '-'));
+        const n = v !== null ? Number(v) : NaN;
+        return Number.isFinite(n) ? n : def;
       };
 
       /* ── 메뉴 상태 (localStorage 선로드 + DB 동기화) ── */
@@ -492,6 +502,28 @@
       Vue.watch(apiToastEnabled, (v) => { try { localStorage.setItem('modu-bo-sy-apiToastOpen', v ? 'true' : 'false'); } catch (e) {} });
       const onToggleApiToast = () => { apiToastEnabled.value = !apiToastEnabled.value; };
       const onToggleBoSetting = () => { boSettingShow.value = !boSettingShow.value; };
+      /* ── 화면 확대/축소 (zoom, 1%p 단위 80~150%) — 개인화 설정(DB) + localStorage 동시 저장
+         CSS zoom은 표준은 아니지만 크롬/엣지/사파리 + 최신 파이어폭스(126+)에서 지원되며,
+         텍스트만이 아니라 화면 전체(여백·아이콘 포함)가 함께 확대/축소된다. */
+      const FONT_ZOOM_MIN = 80;
+      const FONT_ZOOM_MAX = 150;
+      const fontZoom = ref(_lsGetNum(_PREF_KEYS.fontZoom, 100));
+      watch(fontZoom, (v) => {
+        document.documentElement.style.zoom = v / 100;
+        _savePref(_PREF_KEYS.fontZoom, v);
+      }, { immediate: true });
+      const onFontZoomDown = () => { fontZoom.value = Math.max(FONT_ZOOM_MIN, fontZoom.value - 1); };
+      const onFontZoomUp = () => { fontZoom.value = Math.min(FONT_ZOOM_MAX, fontZoom.value + 1); };
+      const onFontZoomReset = () => { fontZoom.value = 100; };
+
+      /* ── 열린탭 자동고정 개수 (tabAutoKeepLimit, 1단위 3~30) — 개인화 설정(DB) + localStorage 동시 저장 */
+      const TAB_AUTO_KEEP_MIN = 3;
+      const TAB_AUTO_KEEP_MAX = 30;
+      const tabAutoKeepLimit = ref(_lsGetNum(_PREF_KEYS.tabAutoKeepLimit, 10));
+      watch(tabAutoKeepLimit, (v) => _savePref(_PREF_KEYS.tabAutoKeepLimit, v));
+      const onTabAutoKeepDown = () => { tabAutoKeepLimit.value = Math.max(TAB_AUTO_KEEP_MIN, tabAutoKeepLimit.value - 1); };
+      const onTabAutoKeepUp = () => { tabAutoKeepLimit.value = Math.min(TAB_AUTO_KEEP_MAX, tabAutoKeepLimit.value + 1); };
+      const onTabAutoKeepReset = () => { tabAutoKeepLimit.value = 10; };
       /* ── API Progress Overlay ──
          apiProgressLabel: 호출 성격에 맞는 문구. 조회(GET)는 '조회중입니다...',
          저장·삭제 등 변경은 '처리중입니다...'. axios 래퍼가 _showProgress 2번째 인자로 준다. */
@@ -2096,6 +2128,8 @@
         setApiRes,
         closeApiResPanel,
         boSettingShow, apiToastEnabled, onToggleApiToast, onToggleBoSetting,
+        fontZoom, onFontZoomDown, onFontZoomUp, onFontZoomReset,
+        tabAutoKeepLimit, onTabAutoKeepDown, onTabAutoKeepUp, onTabAutoKeepReset,
         onRootClick,
         toggleRelatedSite,
         openRelatedLink,
@@ -2200,7 +2234,7 @@
             style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;transition:all .15s;"
             :style="boSettingShow ? 'background:rgba(232,88,122,0.18);border:1px solid rgba(232,88,122,0.45);color:#e8587a;' : 'background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);color:#e8587a;'">⚙</button>
           <div v-if="boSettingShow"
-            style="position:absolute;right:0;top:calc(100% + 6px);width:200px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9000;overflow:hidden;padding:4px 0;">
+            style="position:absolute;right:0;top:calc(100% + 6px);width:250px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9000;overflow:hidden;padding:4px 0;">
             <button @click="boSettingShow=false; uiState.sitemapShow=true; uiState.favPanelShow=false; hoveredTop=null"
               style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;"
               :style="uiState.sitemapShow ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:600;' : ''"
@@ -2232,6 +2266,28 @@
               <span>API 토스트</span>
               <span style="margin-left:auto;font-size:10px;border-radius:8px;padding:1px 6px;font-weight:700;" :style="apiToastEnabled?'background:#e8587a;color:#fff;':'background:#e8e8e8;color:#888;'">{{ apiToastEnabled ? 'ON' : 'OFF' }}</span>
             </button>
+            <div style="width:100%;padding:9px 14px;display:flex;align-items:center;gap:8px;color:#374151;font-size:13px;">
+              <span>🔍</span>
+              <span>화면 크기</span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+                <button @click.stop="onFontZoomDown" title="축소"
+                  style="width:22px;height:22px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;line-height:1;color:#555;">－</button>
+                <span @click.stop="onFontZoomReset" title="100%로 초기화" style="min-width:36px;text-align:center;font-size:11px;font-weight:600;color:#888;cursor:pointer;">{{ fontZoom }}%</span>
+                <button @click.stop="onFontZoomUp" title="확대"
+                  style="width:22px;height:22px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;line-height:1;color:#555;">＋</button>
+              </span>
+            </div>
+            <div style="width:100%;padding:9px 14px;display:flex;align-items:center;gap:8px;color:#374151;font-size:13px;">
+              <span>📌</span>
+              <span>열린탭 자동고정</span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+                <button @click.stop="onTabAutoKeepDown" title="줄이기"
+                  style="width:22px;height:22px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;line-height:1;color:#555;">－</button>
+                <span @click.stop="onTabAutoKeepReset" title="기본값(10개)으로 초기화" style="min-width:24px;text-align:center;font-size:11px;font-weight:600;color:#888;cursor:pointer;">{{ tabAutoKeepLimit }}</span>
+                <button @click.stop="onTabAutoKeepUp" title="늘리기"
+                  style="width:22px;height:22px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;line-height:1;color:#555;">＋</button>
+              </span>
+            </div>
           </div>
         </div>
       </template>
@@ -2512,7 +2568,7 @@
               :title="keptTabIds.has(tab.id) ? '고정 해제' : (cfEffectiveKeptIds.has(tab.id) ? '자동 고정됨 (열린 탭 10개 미만) · 클릭 시 수동 고정' : '고정 (탭 전환 시 상태 유지)')"
               style="font-size:9px;cursor:pointer;margin-right:1px;transition:all .15s;flex-shrink:0;line-height:1;"
               :style="cfEffectiveKeptIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
-            <span class="tab-label" :class="{'tab-label-lg': tab.label.length > 6}">{{ tab.label }}</span>
+            <span class="tab-label" :class="{'tab-label-lg': tab.label.length > 10}">{{ tab.label }}</span>
             <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
           </div>
         </div>
