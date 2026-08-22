@@ -856,13 +856,14 @@ window.PmCouponDtl = {
     <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')" style="min-width:120px;">삭제</button>
     <button class="btn btn_close" @click="handleBtnAction('form-close')" style="min-width:120px;">닫기</button>
   </div>
-  <!-- 수정모드: [저장][삭제(기존만)][취소(기존만)] -->
+  <!-- 수정모드: [저장][삭제(기존만)][취소(기존만)][닫기] -->
   <div v-if="coUtil.cofAnd(active, !cfDtlMode)" style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
     <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleBtnAction('form-save')" style="min-width:120px;">
       저장
     </button>
     <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')" style="min-width:120px;">삭제</button>
     <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
+    <button class="btn btn_close" @click="handleBtnAction('form-close')" style="min-width:120px;">닫기</button>
   </div>
 <!-- 발급대상 피커 모달 -->
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='PRODUCT')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :init-selected-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />

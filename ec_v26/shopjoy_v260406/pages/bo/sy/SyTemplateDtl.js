@@ -277,6 +277,7 @@ window.SyTemplateDtl = {
     <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
     <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
     <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </div>
   <!-- ===== □.□. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
   <!-- ===== □. 카드 영역 =================================================== -->

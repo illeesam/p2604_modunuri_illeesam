@@ -459,6 +459,7 @@ window.PmEventDtl = {
         </button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 배너이미지 ================================================= -->
@@ -497,6 +498,7 @@ window.PmEventDtl = {
         </button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 기본정보 ================================================== -->
@@ -532,6 +534,7 @@ window.PmEventDtl = {
         </button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 이벤트 내용 (HTML 에디터) ===================================== -->
@@ -563,6 +566,7 @@ window.PmEventDtl = {
         </button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 대상 상품 ================================================= -->

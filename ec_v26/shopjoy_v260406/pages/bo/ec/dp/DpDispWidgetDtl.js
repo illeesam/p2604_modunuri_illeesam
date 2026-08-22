@@ -621,12 +621,12 @@ window.DpDispWidgetDtl = {
       try {
         const res = await boApiSvc.dpWidget.remove(form.widgetId || form.libId, '전시위젯관리', '삭제');
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
+        props.navigate('dpDispWidgetMng', { reload: true });
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
-      props.navigate('dpDispWidgetMng', { reload: true });
     };
 
     /* -- 위젯Lib 선택 팝업 / 참조 미리보기 — 실 dp_widget_lib (목업형 어댑터) -- */
@@ -759,6 +759,7 @@ window.DpDispWidgetDtl = {
       <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn_delete" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
       </button>
+      <button v-if="!cfIsNew" @click="handleBtnAction('form-cancel')" class="btn btn_cancel" style="font-size:13px;">취소</button>
       <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </template>
     <template v-if="active ? (cfDtlMode) : false">

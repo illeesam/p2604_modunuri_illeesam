@@ -472,6 +472,7 @@ window.PmGiftDtl = {
         </button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
@@ -512,6 +513,7 @@ window.PmGiftDtl = {
         <button class="btn btn_save" :disabled="cfSaveDisabled" @click="handleBtnAction('form-save')">저장</button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 발급대상 ================================================== -->
@@ -533,6 +535,7 @@ window.PmGiftDtl = {
         </button>
         <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
         <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
     <!-- ===== □.□. 공개대상 ================================================== -->

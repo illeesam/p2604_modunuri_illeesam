@@ -598,7 +598,7 @@ window.OdClaimDtl = {
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-cancel="!cfIsNew"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-cancel="!cfIsNew" :show-delete="false"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"
         @edit="handleBtnAction('form-edit')"

@@ -174,7 +174,7 @@ window.SyBatchDtl = {
   :title-id="cfIsNew ? '' : form.batchId">
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-    :readonly="cfDtlMode" :cols="3" compact
+    :readonly="cfDtlMode" :cols="3" compact :show-delete="false"
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"
     @edit="handleBtnAction('form-edit')"

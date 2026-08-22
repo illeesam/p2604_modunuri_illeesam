@@ -342,7 +342,7 @@ window.StSettleEtcAdjMng = {
     </div>
     <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) — readonly 시 BoFormArea 가 [수정][닫기] 자동 노출 ===== -->
     <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
-      :cols="3" :readonly="cfDtlMode" plain-readonly
+      :cols="3" :readonly="cfDtlMode" plain-readonly :show-delete="false"
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" />
   </bo-container>

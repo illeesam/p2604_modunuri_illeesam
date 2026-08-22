@@ -168,7 +168,7 @@ window.SyCodeDtl = {
   <!-- ===== ■.■. 헤더 제목 슬롯 (list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
   <!-- ===== ■.■. 폼 영역 ================================================== -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
-    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-delete="false"
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"
     @edit="handleBtnAction('form-edit')"

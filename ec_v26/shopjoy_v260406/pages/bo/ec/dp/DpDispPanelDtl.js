@@ -35,7 +35,10 @@ window.DpDispPanelDtl = {
       // 폼 편집 모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
-      // 폼 닫기/취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
+      // 폼 편집 취소 → 보기모드로 되돌림
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 모드 무관 무조건 닫기
       } else if (cmd === 'form-close') {
         return props.navigate('__closeDtl__');
       // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
@@ -1290,7 +1293,10 @@ window.DpDispPanelDtl = {
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
+                  <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+                  <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
               </div>
             </div>
@@ -1623,7 +1629,10 @@ window.DpDispPanelDtl = {
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
+                  <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+                  <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
               </div>
             </div>
@@ -1821,7 +1830,10 @@ window.DpDispPanelDtl = {
                 <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
               </template>
               <template v-else>
-                <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
+                <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+                <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+                <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+                <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
               </template>
             </div>
           </div>
@@ -2002,7 +2014,10 @@ window.DpDispPanelDtl = {
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
+                  <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+                  <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
               </div>
             </template>

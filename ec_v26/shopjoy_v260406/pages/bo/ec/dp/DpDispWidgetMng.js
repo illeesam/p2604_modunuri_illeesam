@@ -613,7 +613,8 @@ window.DpDispWidgetMng = {
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
                 {{ wTypeLabel(row.widgetTypeCd) }}
               </span>
-              <span class="title-link" @click="handleGridCellAction('widgets-cellClick', 'widgetInfo', row)"
+              <span class="title-link" @click="handleGridCellAction('widgets-cellClick', 'widgetInfo', row, $event)"
+                @auxclick="handleGridCellAction('widgets-cellClick', 'widgetInfo', row, $event)"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===row.widgetId?'color:#e8587a;':'color:#222;')">
                 {{ row.widgetNm }}
               </span>

@@ -342,6 +342,7 @@ window.SyBbsDtl = {
   <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
     <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
     <button class="btn btn_cancel" v-if="!cfIsNew" @click="handleBtnAction('form-cancel')">취소</button>
+    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->

@@ -376,6 +376,7 @@ window.SyContactDtl = {
           </button>
           <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
           <button class="btn btn_cancel" v-if="cfHasId" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
         </template>
       </div>
     </div>
@@ -416,6 +417,7 @@ window.SyContactDtl = {
           </button>
           <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
           <button class="btn btn_cancel" v-if="cfHasId" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
         </template>
       </div>
     </div>

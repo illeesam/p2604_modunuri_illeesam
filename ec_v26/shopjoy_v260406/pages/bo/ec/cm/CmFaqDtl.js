@@ -258,7 +258,7 @@ window.CmFaqDtl = {
     <template v-else>
       <button class="btn btn_save"   @click="handleBtnAction('form-save')">저장</button>
       <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
   </div>
