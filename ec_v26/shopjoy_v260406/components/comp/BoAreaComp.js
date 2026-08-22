@@ -1213,11 +1213,14 @@ window.BoGridCrud = {
      *  flatRows    : 화면이 평탄화한 래퍼 배열 (예: [{node,depth},...])
      *  rowAccessor : (flatItem)=>실제 행객체(_row_status/_row_check 보유)
      *  treeRowKey  : (flatItem,idx)=>:key (없으면 idx)
-     *  트리 모드는 번호/ID/드래그 컬럼 자동 비활성(개념 없음),
+     *  트리 모드는 ID/드래그 컬럼은 자동 비활성(개념 없음).
+     *  번호 컬럼은 treeRowDepth 를 주면 계층형 번호(1 / 1.1 / 1.1.1)로 자동 표시,
+     *  안 주면(기존 화면 호환) 계속 비활성.
      *  셀은 전부 #cell-{key} 슬롯 위임. slot props: { node, row, idx } */
-    flatRows:    { type: Array,    default: null },
-    rowAccessor: { type: Function, default: null },
-    treeRowKey:  { type: Function, default: null },
+    flatRows:     { type: Array,    default: null },
+    rowAccessor:  { type: Function, default: null },
+    treeRowKey:   { type: Function, default: null },
+    treeRowDepth: { type: Function, default: null },   // (flatItem)=>depth(0-base). 주면 번호 컬럼에 계층형 번호 표시
   },
   emits: ['scroll-end', 'add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
           'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick', 'cell-click', 'row-click'],
@@ -1232,7 +1235,19 @@ window.BoGridCrud = {
     const cfDispRows = Vue.computed(() => cfTreeMode.value ? props.flatRows : props.rows);
     /* 트리 모드에서 자동 비활성화되는 고정컬럼 */
     const cfShowDrag = Vue.computed(() => props.draggable  && !cfTreeMode.value);
-    const cfShowNo   = Vue.computed(() => props.showRowNo  && !cfTreeMode.value);
+    const cfShowNo   = Vue.computed(() => props.showRowNo  && (!cfTreeMode.value || typeof props.treeRowDepth === 'function'));
+    /* cfTreeNoList — 트리 모드 계층형 번호(1 / 1.1 / 1.1.1 ...). flatRows 는 이미 부모→자식
+       순서로 평탄화돼 있으므로, 깊이별 카운터를 두고 훑으면서 번호를 매긴다(깊이 0=1레벨). */
+    const cfTreeNoList = Vue.computed(() => {
+      if (!cfTreeMode.value || typeof props.treeRowDepth !== 'function') return [];
+      const counters = [];
+      return props.flatRows.map((item) => {
+        const depth = props.treeRowDepth(item) || 0;
+        counters[depth] = (counters[depth] || 0) + 1;
+        counters.length = depth + 1;
+        return counters.join('.');
+      });
+    });
     const cfShowId   = Vue.computed(() => props.showRowId  && !cfTreeMode.value);
     const cfVisibleCount = Vue.computed(() =>
       props.rows.filter(r => r._row_status !== 'D').length);
@@ -1426,7 +1441,7 @@ window.BoGridCrud = {
 
     return { U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
              sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls, fnPinBg,
-             cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, pinLeftStyle, pinRightStyle, fnRowSelected, handleBtnAction, handleSelectAction };
+             cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, cfTreeNoList, pinLeftStyle, pinRightStyle, fnRowSelected, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card">
@@ -1464,7 +1479,7 @@ window.BoGridCrud = {
         <tr>
           <th v-if="cfShowDrag" class="col-drag" :style="pinLeftStyle(0, 6)">
           </th>
-          <th v-if="cfShowNo" :style="'width:36px;text-align:center;' + pinLeftStyle(cfShowDrag ? 28 : 0, 6)">
+          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';' + pinLeftStyle(cfShowDrag ? 28 : 0, 6)">
             번호
           </th>
           <th v-if="cfShowId" class="col-id" :style="pinLeftStyle(cfPinIdLeft, 6, true)">
@@ -1503,9 +1518,9 @@ window.BoGridCrud = {
         <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           ⠿
         </td>
-        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'" title="보기"
+        <td v-if="cfShowNo" :style="'text-align:' + (cfTreeMode ? 'left' : 'center') + ';font-size:11px;color:#999;cursor:pointer;white-space:nowrap;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'" title="보기"
           @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx })">
-          {{ idx + 1 }}
+          {{ cfTreeMode ? cfTreeNoList[idx] : (idx + 1) }}
         </td>
         <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}

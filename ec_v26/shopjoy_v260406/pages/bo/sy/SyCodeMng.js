@@ -854,7 +854,7 @@ window.SyCodeMng = {
     <bo-grid-crud
         :columns="columns.treeGrid"
         :rows="uiState.gridRows" row-key="codeId"
-        :flat-rows="flatTree" :row-accessor="treeRowAccessor" :tree-row-key="treeRowKeyFn"
+        :flat-rows="flatTree" :row-accessor="treeRowAccessor" :tree-row-key="treeRowKeyFn" :tree-row-depth="it => it.depth"
         list-title="트리 형식 편집" max-height="400px"
         @add="handleBtnAction('codes-add')" @save="handleBtnAction('codes-save')"
         @delete-checked="handleBtnAction('codes-deleteChecked')" @cancel-checked="handleBtnAction('codes-cancelChecked')"

@@ -1510,6 +1510,22 @@ window.CmDashboardItemMng = {
       return true;
     }));
 
+    /* cfTreeNoMap — 계층형 번호(1 / 1.1 / 1.1.1 / 1.2 / 2 ...). cfTreeVisible 은 이미 부모→자식
+       순서로 정렬된 평면 배열이므로, 레벨별 카운터를 두고 훑으면서 번호를 매긴다.
+       1레벨(차트) 카운터는 현재 페이지 시작 오프셋부터 이어서 매겨 페이지가 바뀌어도
+       번호가 끊기지 않게 한다(다른 Mng 목록의 "번호 = (pageNo-1)*pageSize + idx + 1" 규칙과 동일). */
+    const cfTreeNoMap = computed(() => {
+      const map = new Map();
+      const counters = [0, (panelsPager.pageNo - 1) * panelsPager.pageSize, 0, 0];
+      cfTreeVisible.value.forEach((n) => {
+        counters[n.lvl] = (counters[n.lvl] || 0) + 1;
+        for (let l = n.lvl + 1; l < counters.length; l++) counters[l] = 0;
+        map.set(n.itemKey, Array.from({ length: n.lvl }, (_, i) => counters[i + 1]).join('.'));
+      });
+      return map;
+    });
+    const fnTreeNo = (node) => cfTreeNoMap.value.get(node.itemKey) || '';
+
     /* onPanelsSetPage / onPanelsSizeChange — <bo-pager> 콜백. API 재호출 없이 이미 로드된
        panels/treeRows 를 다시 슬라이스만 한다(트리·목록 두 모드가 이 pager 하나를 공유) */
     const onPanelsSetPage = (n) => { panelsPager.pageNo = n; };
@@ -1684,7 +1700,7 @@ window.CmDashboardItemMng = {
       dashState, panelDetail, panelForm, panelErrors, columns, util,
       cfCurDash, cfDtlMode,
       /* 3레벨 트리 */
-      treeRows, treeState, cfTreeVisible,
+      treeRows, treeState, cfTreeVisible, cfTreeNoMap, fnTreeNo,
       panelsPager, cfPagedPanels, onPanelsSetPage, onPanelsSizeChange,
       fnHasChild, fnToggleNode, fnTreeExpandAll, fnTreeCollapseAll, fnIsFirstSeries,
       fnLvlBullet, fnLvlColor, fnLvlLabel, fnRefItemNm,
@@ -1757,6 +1773,7 @@ window.CmDashboardItemMng = {
           <table class="bo-table bo-table-narrow">
             <thead>
               <tr>
+                <th style="width:64px;text-align:left;">번호</th>
                 <th style="width:120px;">대시보드명</th>
                 <th style="width:56px;">레벨</th>
                 <th style="min-width:220px;">항목명 (차트 · 시리즈 · 항목)</th>
@@ -1772,6 +1789,7 @@ window.CmDashboardItemMng = {
             <tbody>
               <tr v-for="node in cfTreeVisible" :key="node.itemKey"
                 :class="node.lvl === 1 ? (panelDetail.selectedId === node.dashboardItemId ? 'bo-row-selected' : '') : ''">
+                <td style="text-align:left;font-size:11px;color:#94a3b8;white-space:nowrap;">{{ fnTreeNo(node) }}</td>
                 <td style="font-size:11px;color:#64748b;white-space:nowrap;">
                   {{ node.lvl === 1 ? (node._dashboardNm || '-') : '' }}</td>
                 <td style="text-align:center;">
