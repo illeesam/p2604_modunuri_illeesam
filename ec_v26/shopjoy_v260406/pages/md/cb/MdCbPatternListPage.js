@@ -59,7 +59,16 @@ window.MdCbPatternListPage = {
       return { icon: '🧩', label: '기호 도안', cls: 'symbol' };
     };
 
-    onMounted(fnLoad);
+    /* "내 코바늘 도안" 메뉴(?mine=1)로 들어오면 검색어에 내 회원명만 채워서 조회 —
+       별도 memberId 필터 API 없이 기존 작성자 검색(searchValue)을 그대로 재사용 */
+    onMounted(() => {
+      const qs = new URLSearchParams(location.search);
+      if (qs.get('mine') === '1') {
+        const myNm = window.foAuth?.state?.user?.memberNm;
+        if (myNm) searchParam.searchValue = myNm;
+      }
+      fnLoad();
+    });
 
     return { searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange, onOpen, onNew, fnFmtDate, fnThumbStyle, fnPatternType,
       viewMode, onSetViewMode };

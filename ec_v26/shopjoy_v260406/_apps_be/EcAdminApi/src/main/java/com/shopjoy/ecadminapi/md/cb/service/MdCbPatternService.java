@@ -56,6 +56,7 @@ public class MdCbPatternService {
     public MdCbPattern create(MdCbPattern body) {
         body.setPatternId(CmUtil.generateId("cb_pattern"));
         if (body.getPatternStatusCd() == null) body.setPatternStatusCd("DRAFT");
+        body.setMemberId(SecurityUtil.getAuthUser().authId()); // FO 회원이 작성 — 목록 화면 작성자 검색(memberNm 조인)이 이 값을 사용
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

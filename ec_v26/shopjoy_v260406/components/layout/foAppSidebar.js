@@ -49,6 +49,7 @@ window.foAppSidebar = {
        navTo() 의 SPA pageId 이동이 아니라 href 로 실제 페이지 전체 이동한다. */
     const MODULE_ITEMS = [
       { menuId: 'cobanul', menuNm: '코바늘 도안', href: 'mdCbCobanul.html' },
+      { menuId: 'myCobanul', menuNm: '내 코바늘 도안', href: 'mdCbCobanul.html?mine=1' },
     ];
     const DEV_TOOLS_ITEMS = [
       { menuId: 'xsStore', menuNm: 'Store 정보관리' },
