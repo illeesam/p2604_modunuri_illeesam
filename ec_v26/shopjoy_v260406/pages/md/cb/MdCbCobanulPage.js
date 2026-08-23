@@ -846,7 +846,14 @@ window.MdCbCobanulPage = {
 
     /* onSave — 도안 저장(메타+격자+재료 일괄) */
     const onSave = async () => {
-      if (!form.patternNm) { props.showToast('도안명을 입력해주세요.', 'error'); return; }
+      /* 도안명 미입력 → "{도안유형}_YYYYMMDD_hhmm" 으로 자동 부여.
+         ⭐ 접미어 "_YYYYMMDD_hhmm" 가 붙어 있으면 자동 생성된 이름으로 본다(소스젠과 공통 규칙). */
+      if (!form.patternNm || !form.patternNm.trim()) {
+        const d = new Date();
+        const z = n => String(n).padStart(2, '0');
+        const kind = (cfPatternType.value && cfPatternType.value.label) ? cfPatternType.value.label.replace(/\s+/g, '') : '코바늘도안';
+        form.patternNm = `${kind}_${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}`;
+      }
       uiState.loading = true;
       try {
         if (uiState.autoThumb) await fnGenerateAutoThumb();
@@ -939,7 +946,7 @@ window.MdCbCobanulPage = {
         <div class="cb-toolbar-fields">
           <div class="cb-name-field">
             <span class="cb-field-label">도안명</span>
-            <input v-model="form.patternNm" :readonly="cfReadonly" placeholder="도안명을 입력하세요" class="form-control cb-name-input" />
+            <input v-model="form.patternNm" :readonly="cfReadonly" placeholder="비우면 유형_날짜시각 자동" class="cb-name-input" />
           </div>
           <div class="cb-thumb-field">
             <span class="cb-field-label">대표이미지</span>

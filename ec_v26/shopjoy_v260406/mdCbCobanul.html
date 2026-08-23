@@ -38,6 +38,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
   <script>window.FO_SITE_NO = window.FO_SITE_NO || '01';</script>
   <link rel="stylesheet" href="assets/css/foGlobalStyle01.css">
+  <!-- 모듈 공통 스타일 — 반드시 foGlobalStyle 다음(버튼 톤을 모듈용으로 덮어씀) -->
+  <link rel="stylesheet" href="assets/css/mdModuleStyle.css">
 
   <!-- ■ H3.1: Loading Indicator Styles ■ -->
   <style>
@@ -153,9 +155,16 @@
       background:var(--bg-base,#f7f7f8); border-radius:10px; padding:12px 14px; }
     .cb-toolbar-fields { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; }
     .cb-detail-bottom-actions { display:flex; gap:8px; justify-content:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border,#e2e2e2); }
-    .cb-name-field { display:flex; flex-direction:column; gap:3px; }
-    .cb-field-label { font-size:10.5px; font-weight:700; color:var(--text-muted,#999); text-transform:uppercase; letter-spacing:.04em; }
-    .cb-name-input { width:380px; }
+    .cb-name-field { display:flex; flex-direction:column; gap:5px; }
+    .cb-field-label { font-size:11px; font-weight:700; color:var(--text-secondary,#777); letter-spacing:-0.01em; }
+    /* 도안명 입력 — 모듈 표준 입력 규격(소스젠 Schema 행과 동일) */
+    .cb-name-input { width:380px; height:34px; padding:6px 11px; font-size:12.5px;
+      border:1px solid var(--border,#dcdcdc); border-radius:8px; background:var(--bg-card,#fff);
+      color:var(--text-primary,#333); box-sizing:border-box; transition:border-color .15s, box-shadow .15s; }
+    .cb-name-input::placeholder { color:#bfbfbf; }
+    .cb-name-input:focus { border-color:var(--accent,#c9a96e); outline:none;
+      box-shadow:0 0 0 3px rgba(201,169,110,0.13); }
+    .cb-name-input:read-only { background:#f6f6f7; color:var(--text-secondary,#777); border-color:#e6e6e6; }
     .cb-thumb-field { display:flex; flex-direction:column; gap:3px; }
     .cb-thumb-box { position:relative; width:38px; height:38px; border-radius:8px; border:1.5px dashed var(--border,#ccc);
       background:var(--bg-card,#fff); cursor:pointer; display:flex; align-items:center; justify-content:center;
