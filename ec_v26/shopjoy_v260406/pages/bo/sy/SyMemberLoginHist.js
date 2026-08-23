@@ -295,6 +295,10 @@ window.SyMemberLoginHist = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
     };
     onMounted(initPage);
@@ -471,7 +475,7 @@ window.SyMemberLoginHist = {
     };
   },
   template: /* html */`
-<bo-page title="회원로그인이력"
+<bo-page title="회원로그인이력" :share-query="searchParam"
   desc-summary="회원의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다."
   desc-detail="• 로그인 로그: mbh_member_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: mbh_member_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함)">
   <!-- ===== ■. 검색 ====================================================== -->

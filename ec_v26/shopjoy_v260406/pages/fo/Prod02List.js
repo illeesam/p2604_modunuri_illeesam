@@ -35,6 +35,16 @@ window.Prod02List = {
     const selSizes      = reactive(new Set());
     const selCats       = reactive(new Set());
 
+    /* cfShareQuery — 공유 URL에 실을 필터 요약 (uiState 전체가 아니라 검색에 실제 쓰이는 값만 추림) */
+    const cfShareQuery = computed(() => ({
+      searchValue: uiState.searchText || '',
+      priceMin: uiState.priceMin || '',
+      priceMax: uiState.priceMax || '',
+      categoryIds: selCats.size ? [...selCats].join(',') : '',
+      colors: selColors.size ? [...selColors].join(',') : '',
+      sizes: selSizes.size ? [...selSizes].join(',') : '',
+    }));
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -291,6 +301,14 @@ window.Prod02List = {
 
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      /* 공유된 링크(fo-page shareQuery)로 들어온 경우 URL 쿼리의 필터를 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      if (_qs.has('searchValue')) uiState.searchText = _qs.get('searchValue');
+      if (_qs.has('priceMin'))    uiState.priceMin = _qs.get('priceMin');
+      if (_qs.has('priceMax'))    uiState.priceMax = _qs.get('priceMax');
+      if (_qs.has('categoryIds')) _qs.get('categoryIds').split(',').filter(Boolean).forEach(v => selCats.add(v));
+      if (_qs.has('colors'))      _qs.get('colors').split(',').filter(Boolean).forEach(v => selColors.add(v));
+      if (_qs.has('sizes'))       _qs.get('sizes').split(',').filter(Boolean).forEach(v => selSizes.add(v));
       handleSearchList();
     };
     onMounted(initPage);
@@ -311,7 +329,7 @@ window.Prod02List = {
        uiState, allProds,       // 상태 / 데이터
       selColors, selSizes, selCats, // 필터 상태
       handleBtnAction, handleSelectAction, // dispatch
-      cfAllColors, cfAllSizes, cfAllCats, cfHasFilter, // computed
+      cfAllColors, cfAllSizes, cfAllCats, cfHasFilter, cfShareQuery, // computed
       fnCategoryLabel, isLiked, // 헬퍼 / 컬럼
       onSearch,              // FoSearchArea @search 직결용 + 폴백
       selectProd, addToCart, // 모달 전달용
@@ -323,6 +341,7 @@ window.Prod02List = {
 <fo-page title="상품 목록" eyebrow="Shopping"
   banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
   banner-align="center 40%"
+  :share-query="cfShareQuery"
   :crumbs="[{ label:'홈', page:'home' }, { label:'상품목록' }]"
   @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 배너 슬롯 (Site 02 Edition Ribbon + 풀블리드 배너 유지) ============ -->

@@ -404,7 +404,15 @@ window.OdOrderItemMng = {
             siteOptions.splice(0, siteOptions.length, ...(await window.boUtil.bofLoadSiteOptions()));
     };
 
-    const initPage = async () => { await fnLoadCodes(); Object.assign(searchParamInit, searchParam); await handleSearchList(); };
+    const initPage = async () => {
+      await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
+      Object.assign(searchParamInit, searchParam);
+      await handleSearchList();
+    };
 
     onMounted(() => { initPage(); });
 
@@ -688,7 +696,7 @@ window.OdOrderItemMng = {
     };
   },
   template: `
-<bo-page title="주문항목관리">
+<bo-page title="주문항목관리" :share-query="searchParam">
 
   <!-- ===== ■. 검색 ============================================================ -->
   <bo-container>

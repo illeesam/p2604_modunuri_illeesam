@@ -252,6 +252,10 @@ window.PdDlivTmpltMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -335,7 +339,7 @@ window.PdDlivTmpltMng = {
     };
   },
   template: `
-<bo-page title="배송템플릿관리"
+<bo-page title="배송템플릿관리" :share-query="searchParam"
   desc-summary="배송템플릿은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다."
   :desc-detail="['✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 상품 등록 시 템플릿을 연결해 재사용합니다.','✔ 도서·산간 지역 추가 배송비, 반품지 주소를 함께 관리합니다.','✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.','예) 3만원 이상 무료배송, 제주·도서 추가 3,000원'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 ====================================================== -->

@@ -146,6 +146,10 @@ window.StSettleAdjMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await Promise.all([handleSearchData('DEFAULT'), fnLoadSettles()]);
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -337,7 +341,7 @@ window.StSettleAdjMng = {
     };
   },
   template: /* html */`
-<bo-page title="정산조정"
+<bo-page title="정산조정" :share-query="searchParam"
   desc-summary="정산건에 업체별 추가·차감 조정 항목을 입력하여 최종 정산액을 보정합니다."
   :desc-detail="['• 조정 유형: 패널티 / 보너스 / 오류수정 / 기타','• 조정 항목은 담당자 승인 후 정산마감에 반영됩니다.','• 승인 상태: 대기 / 승인 / 반려','• 마감 완료된 정산건의 조정은 재오픈 후 처리해야 합니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 =================================================== -->

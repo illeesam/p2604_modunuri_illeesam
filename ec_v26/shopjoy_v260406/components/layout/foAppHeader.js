@@ -40,7 +40,8 @@ window.foAppHeader = {
       pdfExporting.value = true;
       try {
         const filename = coUtil.cofBuildExportFilename((document.title || '화면') + '.pdf');
-        await coUtil.cofExportPdf(document.body, filename, window.foApp?.showToast);
+        const curUser = (window.sfGetFoAuthUser ? window.sfGetFoAuthUser() : null) || {};
+        await coUtil.cofExportPdf(document.body, filename, window.foApp?.showToast, curUser);
       } finally {
         pdfExporting.value = false;
       }

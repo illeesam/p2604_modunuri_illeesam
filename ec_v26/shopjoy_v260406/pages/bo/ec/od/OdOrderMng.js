@@ -144,11 +144,11 @@ window.OdOrderMng = {
         }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         if (colKey === 'btn_row_kanban') {
+          // Ctrl+클릭/휠클릭: 같은 칸반을 탭 대신 별도 창으로 — 목록을 보면서 상태를 옮길 때 사용
+          if (e && (e.ctrlKey || e.metaKey || e.button === 1)) { return fnOpenKanbanPopup(row.orderId); }
           props.navigate('odOrderKanban', { orderId: row.orderId });
           return;
         }
-        // [⧉] 같은 칸반을 탭 대신 별도 창으로 — 목록을 보면서 상태를 옮길 때 사용
-        if (colKey === 'btn_row_kanban_pop') { return fnOpenKanbanPopup(row.orderId); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -291,6 +291,10 @@ window.OdOrderMng = {
         searchParam.searchValue = props.initSearchValue;
         searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchData('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -508,7 +512,7 @@ window.OdOrderMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    /* fnOpenKanbanPopup — [⧉] 클릭 시 칸반 보드를 별도 창으로 (클레임관리와 공통 로직) */
+    /* fnOpenKanbanPopup — [📋 칸반] Ctrl+클릭/휠클릭 시 칸반 보드를 별도 창으로 (클레임관리와 공통 로직) */
     const fnOpenKanbanPopup = (orderId) => boUtil.bofOpenKanbanPopup(orderId, null, props.showToast);
 
     // 기본 검색
@@ -623,7 +627,7 @@ window.OdOrderMng = {
     };
   },
   template: /* html */`
-<bo-page title="주문관리">
+<bo-page title="주문관리" :share-query="searchParam">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
@@ -663,8 +667,7 @@ window.OdOrderMng = {
           <div class="actions">
             <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)" @auxclick.stop="handleGridCellAction(gridId, 'btn_row_edit', row, $event)">수정</button>
             <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
-            <button class="btn btn_row_kanban" style="background:#8b5cf6;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban', row)">📋 칸반</button>
-            <button class="btn btn_row_kanban_pop" title="칸반 보드를 새 창으로 열기" style="background:#6d28d9;color:#fff;border:none;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban_pop', row)">⧉</button>
+            <button class="btn btn_row_kanban" title="Ctrl+클릭/휠클릭: 새 창으로 칸반 열기" style="background:#8b5cf6;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban', row, $event)" @auxclick.stop="handleGridCellAction(gridId, 'btn_row_kanban', row, $event)">📋 칸반</button>
           </div>
         </template>
       </bo-grid>

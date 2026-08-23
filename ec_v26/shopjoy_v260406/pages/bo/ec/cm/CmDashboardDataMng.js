@@ -613,6 +613,11 @@ window.CmDashboardDataMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await fnLoadRefs();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원
+         (이 화면은 초기 자동조회가 없어 값만 채우고, 조회는 기존처럼 [조회] 버튼으로 실행) */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
     };
     onMounted(initPage);
 
@@ -1230,7 +1235,7 @@ window.CmDashboardDataMng = {
     };
   },
   template: /* html */ `
-<bo-page title="대시보드 데이타관리"
+<bo-page title="대시보드 데이타관리" :share-query="searchParam"
   desc-summary="좌측 대시보드를 선택하면 우측에 위젯항목목록이 표시됩니다. 체크한 항목만 아래 대시보드 위젯데이타에 input_opts(조회조건 구성) 별로 묶여 나타나며, 그룹마다 기간·상품·업체 조건을 따로 조회·저장합니다. 시리즈(행) × 항목(열) 매트릭스에 값을 직접 입력합니다.">
   <bo-container>
     <bo-search-area :loading="uiState.itemLoading" :columns="columns.baseSearch" :param="searchParam"

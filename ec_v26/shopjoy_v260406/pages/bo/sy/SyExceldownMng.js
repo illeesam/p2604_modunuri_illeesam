@@ -331,6 +331,10 @@ window.SyExceldownMng = {
          단 알림에서 특정 건으로 진입한 경우엔 그 건이 반드시 보이도록 필터를 비운다. */
       searchParam.regBy   = props.dtlId ? '' : fnAuthId();
       searchParam.regByNm = props.dtlId ? '' : fnAuthNm();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
       if (props.dtlId) { await handleToggleDetail(props.dtlId); }
 
@@ -358,7 +362,7 @@ window.SyExceldownMng = {
     };
   },
   template: /* html */`
-<bo-page title="엑셀다운로드"
+<bo-page title="엑셀다운로드" :share-query="searchParam"
   desc-summary="엑셀다운로드 는 즉시·예약 다운로드 요청의 진행상태와 생성 파일을 관리합니다."
   :desc-detail="['✔ 예약 요청은 대기열에 쌓였다가 순서대로 생성됩니다.','✔ 진행중/대기 건은 강제취소할 수 있습니다.','✔ 완료 파일은 보관기간이 지나면 자동 삭제됩니다(이력은 유지).'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 ======================================================== -->

@@ -124,6 +124,10 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -192,7 +196,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     };
   },
   template: /* html */`
-<bo-page title="결제-정산 대사" desc-summary="결제 승인·취소 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다." :desc-detail="['• PG사 결제금액(pg_amt) vs 정산 수집금액(settle_amt) 차이를 자동 비교합니다.','• 결제수단: 무통장/가상계좌/토스/카카오/네이버/핸드폰','• 차이 발생 시 PG사 정산 리포트와 대조 후 조정 처리합니다.'].join(String.fromCharCode(10))">
+<bo-page title="결제-정산 대사" :share-query="searchParam" desc-summary="결제 승인·취소 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다." :desc-detail="['• PG사 결제금액(pg_amt) vs 정산 수집금액(settle_amt) 차이를 자동 비교합니다.','• 결제수단: 무통장/가상계좌/토스/카카오/네이버/핸드폰','• 차이 발생 시 PG사 정산 리포트와 대조 후 조정 처리합니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />

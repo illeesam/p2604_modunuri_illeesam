@@ -225,6 +225,10 @@ window.MbMemGradeMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -285,7 +289,7 @@ window.MbMemGradeMng = {
     };
   },
   template: `
-<bo-page title="회원등급관리">
+<bo-page title="회원등급관리" :share-query="searchParam">
   <!-- ===== ■. 검색 ======================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->

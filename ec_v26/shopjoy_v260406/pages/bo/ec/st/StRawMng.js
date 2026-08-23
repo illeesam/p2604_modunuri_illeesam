@@ -157,6 +157,10 @@ const raws = reactive([]);
        코드도 목록도 아예 로드되지 않았다. */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -392,7 +396,7 @@ const raws = reactive([]);
       doCollect, buildExcelParams, };
   },
   template: /* html */`
-<bo-page title="정산수집원장"
+<bo-page title="정산수집원장" :share-query="searchParam"
   desc-summary="주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다."
   :desc-detail="['• 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다.','• 수집 단위: od_order_item / od_claim_item (상품 행 단위)','• [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다.','• 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 =================================================== -->

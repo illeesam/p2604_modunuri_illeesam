@@ -127,6 +127,10 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -198,7 +202,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     };
   },
   template: /* html */`
-<bo-page title="주문-정산 대사"
+<bo-page title="주문-정산 대사" :share-query="searchParam"
   desc-summary="주문 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다."
   :desc-detail="['• 주문금액(order_amt) vs 정산수집 금액(recon_amt) 차이를 자동 비교합니다.','• 차이 상태: 일치 / 차이발생 / 검토중 / 처리완료','• 차이 발생 건은 원인 파악 후 조정(StSettleAdjMng)으로 처리하거나 수동 대사 확인합니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 ================================================= -->

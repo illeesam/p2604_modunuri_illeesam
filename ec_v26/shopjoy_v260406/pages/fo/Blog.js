@@ -170,6 +170,9 @@ window.Blog = {
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
       if (props.dtlId) { searchParam.blogCateId = props.dtlId; }
+      /* 공유된 링크(fo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
       loadCategories();
       loadLatestPosts();
       handleSearchList();
@@ -201,6 +204,7 @@ window.Blog = {
 <fo-page title="News &amp; Blog" eyebrow="ShopJoy"
   banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
   banner-align="center 40%"
+  :share-query="searchParam"
   :crumbs="[{ label:'홈', page:'home' }, { label:'Blog' }]"
   @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 검색 ====================================================== -->

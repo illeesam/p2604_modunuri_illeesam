@@ -192,6 +192,10 @@ window.PdCategoryMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
       await handleGridSearch();
       Object.assign(searchParam, { siteId: (window.boCommonFilter && window.boCommonFilter.siteId)
@@ -552,7 +556,7 @@ window.PdCategoryMng = {
   },
 
   template: `
-<bo-page title="카테고리관리"
+<bo-page title="카테고리관리" :share-query="searchParam"
     desc-summary="카테고리관리는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다."
     :desc-detail="['✔ 대·중·소 3단계로 카테고리 트리를 구성합니다.','✔ 정렬순서·표시여부를 설정하고 상품과 연결합니다.','✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.','예) 의류 > 상의 > 티셔츠, 전자기기 > 스마트폰'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 ====================================================== -->

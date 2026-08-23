@@ -199,6 +199,10 @@ window.SyPropMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
       fetchData();
     };
@@ -403,7 +407,7 @@ window.SyPropMng = {
     };
   },
   template: /* html */`
-<bo-page title="프로퍼티관리">
+<bo-page title="프로퍼티관리" :share-query="searchParam">
   <template #actions>
     <button class="btn" style="font-size:12px;padding:4px 12px;background:#f0f0f0;border:1px solid #d0d0d0;border-radius:6px;cursor:pointer;color:#444;"
       title="저장된 프로퍼티를 런타임에 즉시 반영합니다 (Pinia store 갱신)"

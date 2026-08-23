@@ -134,6 +134,10 @@ window.CmDashboardItemMng = {
 
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList();
     };
     onMounted(initPage);
@@ -1725,7 +1729,7 @@ window.CmDashboardItemMng = {
     };
   },
   template: /* html */ `
-<bo-page title="대시보드 항목관리"
+<bo-page title="대시보드 항목관리" :share-query="searchParam"
   desc-summary="대시보드에 속한 항목을 등록·수정합니다. 대시보드 정의는 대시보드 관리, 배치·크기는 대시보드 항목배치 화면을 이용하세요.">
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"

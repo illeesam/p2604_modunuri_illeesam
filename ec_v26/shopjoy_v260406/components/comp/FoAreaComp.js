@@ -209,16 +209,31 @@ window.FoPage = {
     showPdf:     { type: Boolean, default: true },  // 우측 상단 [PDF] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
     showShare:   { type: Boolean, default: true },  // 우측 상단 [카카오톡 공유] 버튼
     showLink:    { type: Boolean, default: true },  // 우측 상단 [🔗 링크 공유(URL만)] 버튼
+    shareQuery:  { type: Object, default: null },   // 공유 URL에 함께 실을 검색조건 — 없으면 현재 URL 그대로
   },
   emits: ['nav'],
   setup(props) {
     const pdfAreaRef = Vue.ref(null);
     const pdfExporting = Vue.ref(false);
+    /* fnBuildShareUrl — 현재 URL + shareQuery(검색조건)를 쿼리스트링으로 합쳐 공유 링크 생성 */
+    const fnBuildShareUrl = () => {
+      const qs = new URLSearchParams(window.location.search);
+      if (props.shareQuery) {
+        Object.keys(props.shareQuery).forEach((k) => {
+          const v = props.shareQuery[k];
+          if (v !== null && v !== undefined && v !== '') qs.set(k, v);
+          else qs.delete(k);
+        });
+      }
+      const qsStr = qs.toString();
+      return `${window.location.origin}${window.location.pathname}${qsStr ? '?' + qsStr : ''}`;
+    };
     const handleExportPdf = async () => {
       pdfExporting.value = true;
       try {
         const filename = coUtil.cofBuildExportFilename((props.title || '화면') + '.pdf');
-        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, window.foApp?.showToast);
+        const curUser = (window.sfGetFoAuthUser ? window.sfGetFoAuthUser() : null) || {};
+        await coUtil.cofExportPdf(pdfAreaRef.value, filename, window.foApp?.showToast, curUser);
       } finally {
         pdfExporting.value = false;
       }
@@ -229,7 +244,7 @@ window.FoPage = {
         window.coExtSdk.shareKakao({
           title: (props.title || 'ShopJoy') + ' - ShopJoy',
           imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
-          url: window.location.href,
+          url: fnBuildShareUrl(),
         });
       } catch (e) {
         window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
@@ -238,7 +253,7 @@ window.FoPage = {
     /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
     const handleCopyLink = async () => {
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(fnBuildShareUrl());
         window.foApp?.showToast?.('링크가 복사되었습니다.', 'success');
       } catch (e) {
         window.foApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);

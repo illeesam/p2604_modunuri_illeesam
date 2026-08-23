@@ -131,6 +131,10 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -216,7 +220,7 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
     };
   },
   template: /* html */`
-<bo-page title="ERP 전표대사"
+<bo-page title="ERP 전표대사" :share-query="searchParam"
   desc-summary="ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다."
   :desc-detail="['• ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다.','• 차이 상태: 일치 / 차이발생 / 오류','• [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다.','• 유형 필터: 정산지급 / 수수료 / 조정 / 기타'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 ================================================= -->

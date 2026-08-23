@@ -101,6 +101,10 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -217,7 +221,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     };
   },
   template: /* html */`
-<bo-page title="정산지급관리"
+<bo-page title="정산지급관리" :share-query="searchParam"
   desc-summary="마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다."
   :desc-detail="['• 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청','• [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다.','• 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다.','• 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 ================================================= -->

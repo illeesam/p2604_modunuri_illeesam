@@ -126,6 +126,10 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await handleSearchList('DEFAULT');
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -201,7 +205,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     };
   },
   template: /* html */`
-<bo-page title="클레임-정산 대사"
+<bo-page title="클레임-정산 대사" :share-query="searchParam"
   desc-summary="클레임(취소·반품·교환) 환불 데이터와 정산 조정액 간 불일치를 검출하고 대사 처리합니다."
   :desc-detail="['• 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다.','• 클레임 유형: 취소 / 반품 / 교환','• 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 =================================================== -->

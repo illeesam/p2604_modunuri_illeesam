@@ -139,6 +139,10 @@ window.StSettleEtcAdjMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
       await Promise.all([handleSearchData('DEFAULT'), fnLoadSettles()]);
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -303,7 +307,7 @@ window.StSettleEtcAdjMng = {
     };
   },
   template: /* html */`
-<bo-page title="정산기타조정"
+<bo-page title="정산기타조정" :share-query="searchParam"
   desc-summary="배송비·반품비·패널티 등 정산조정 외 기타 항목을 별도 관리합니다."
   :desc-detail="['• 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다.','• 항목 유형: 배송비 / 반품배송비 / 패널티 / 인센티브 / 세금조정 / 기타','• 가산/차감 방향을 함께 지정해야 합니다.','• 승인 개념이 없어 등록 즉시 정산마감 집계에 포함됩니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 ================================================= -->
