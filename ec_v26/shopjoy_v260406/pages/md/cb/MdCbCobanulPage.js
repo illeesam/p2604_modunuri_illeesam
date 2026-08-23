@@ -27,6 +27,179 @@ function fnGenDescText(rowCount, colCount, cellMap, symbolMap) {
   return lines.join('\n');
 }
 
+/* ══════════════════════════ 기호 SVG 아이콘 생성기 ══════════════════════════
+   유니코드에는 코바늘 도안 기호(부채꼴, 방울 모양 등)에 대응하는 글자가 없어서, symbol_char
+   텍스트 대신 symbol_cd taxonomy 기준으로 24x24 라인아트 SVG를 그때그때 조합해 그린다.
+   "사용자 제공 코바늘_기호_확정본_모음 PDF" 의 실제 도안 모양을 최대한 그대로 따른다.
+   매칭되는 cd가 없으면 null을 반환해 symbolChar 텍스트로 폴백한다. */
+const CB_SVG_STROKE = 'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
+
+/* fnPostHead — 세로 기둥 기호(짧은뜨기~네길긴뜨기). ticks=기둥에 그어지는 사선 개수(0=긴뜨기).
+   wideBar=true 면 긴뜨기처럼 위쪽에 넓은 가로바, false 면 한길긴뜨기 이상처럼 짧은 캡. */
+function fnPostHead(cx, ticks, wideBar) {
+  const topY = 6, botY = 20;
+  let s = `<line x1="${cx}" y1="${botY}" x2="${cx}" y2="${topY}"/>`;
+  s += wideBar ? `<line x1="${cx - 4}" y1="${topY}" x2="${cx + 4}" y2="${topY}"/>`
+               : `<line x1="${cx - 2}" y1="${topY}" x2="${cx + 2}" y2="${topY}"/>`;
+  for (let i = 0; i < ticks; i++) {
+    const y = topY + 4 + i * 3.4;
+    s += `<line x1="${cx - 2.6}" y1="${y + 1.6}" x2="${cx + 2.6}" y2="${y - 1.6}"/>`;
+  }
+  return s;
+}
+
+/* fnCross — 교차뜨기(X자). ticks=각 다리 위쪽에 그어지는 사선 개수(짧은뜨기·긴뜨기=0). */
+function fnCross(ticks) {
+  let s = '<line x1="6" y1="20" x2="18" y2="7"/><line x1="18" y1="20" x2="6" y2="7"/>';
+  for (let i = 0; i < ticks; i++) {
+    const t = 8 + i * 3;
+    s += `<line x1="${9 - i}" y1="${t}" x2="${13 - i}" y2="${t - 3}"/>`;
+    s += `<line x1="${15 + i}" y1="${t}" x2="${11 + i}" y2="${t - 3}"/>`;
+  }
+  return s;
+}
+
+/* fnFanUp — 늘려뜨기(1코→N코): 아래 한 점에서 위로 N갈래 부채꼴. legKind: 'x'|'plain'|'tick' */
+function fnFanUp(n, legKind) {
+  const apex = { x: 12, y: 20 };
+  const spread = n === 2 ? 5 : 7;
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const tx = 12 + (i - (n - 1) / 2) * spread;
+    const ty = 7;
+    s += `<line x1="${apex.x}" y1="${apex.y}" x2="${tx}" y2="${ty}"/>`;
+    if (legKind === 'x') s += `<line x1="${tx - 2}" y1="${ty - 2}" x2="${tx + 2}" y2="${ty + 2}"/><line x1="${tx + 2}" y1="${ty - 2}" x2="${tx - 2}" y2="${ty + 2}"/>`;
+    else if (legKind === 'bar') s += `<line x1="${tx - 2.5}" y1="${ty}" x2="${tx + 2.5}" y2="${ty}"/>`;
+    else if (legKind === 'tick') { s += `<line x1="${tx - 2.5}" y1="${ty}" x2="${tx + 2.5}" y2="${ty}"/>`; s += `<line x1="${tx - 1.5}" y1="${ty + 4}" x2="${tx + 1.5}" y2="${ty + 1}"/>`; }
+  }
+  return s;
+}
+
+/* fnFanDown — 모아뜨기(N코→1코): 아래 N갈래에서 위 한 점으로 모임 + 위쪽 공유 가로바 */
+function fnFanDown(n, legKind) {
+  const apex = { x: 12, y: 7 };
+  const spread = n >= 4 ? 8 : n === 3 ? 6.5 : 5;
+  let s = `<line x1="${apex.x - 4}" y1="${apex.y}" x2="${apex.x + 4}" y2="${apex.y}"/>`;
+  for (let i = 0; i < n; i++) {
+    const bx = 12 + (i - (n - 1) / 2) * spread;
+    s += `<line x1="${bx}" y1="20" x2="${apex.x}" y2="${apex.y}"/>`;
+    if (legKind === 'x') s += `<line x1="${bx - 2}" y1="13" x2="${bx + 2}" y2="17"/><line x1="${bx + 2}" y1="13" x2="${bx - 2}" y2="17"/>`;
+    else if (legKind === 'tick') s += `<line x1="${bx - 1.8}" y1="15" x2="${bx + 1.8}" y2="12"/>`;
+  }
+  return s;
+}
+
+/* fnHook — 걸어뜨기(앞/뒤걸어뜨기): 세로기둥 + 밑동에 고리(오른쪽/왼쪽으로 여는 갈고리 모양) */
+function fnHook(ticks, dir) {
+  // 기둥을 y=16까지만 그리고(밑동 4px을 비워), 그 자리에 고리(오른쪽/왼쪽으로 여는 갈고리)를 붙인다
+  const s = fnPostHead(12, ticks, ticks === 0).replace('y1="20" x2="12"', 'y1="16" x2="12"');
+  const sweep = dir === 'F' ? 1 : 0;
+  return s + `<path d="M12 16 A4 4 0 1 ${sweep} ${dir === 'F' ? 15 : 9} 21"/>`;
+}
+
+/* fnBobble — 구슬·팝콘뜨기: 뾰족한 타원(잎 모양) + 내부 세로줄 N개 + 위쪽 바. popCap=true 면 팝콘 특유의 작은 캡 타원 추가 */
+function fnBobble(n, popCap) {
+  let s = `<path d="M12 20 C7 17 7 9 12 6 C17 9 17 17 12 20 Z"/>`;
+  for (let i = 0; i < n; i++) {
+    const x = 12 + (i - (n - 1) / 2) * (8 / Math.max(n - 1, 1));
+    s += `<line x1="${x}" y1="18.5" x2="${x}" y2="7.5"/>`;
+  }
+  s += popCap ? `<ellipse cx="12" cy="5" rx="2.4" ry="1.3"/>` : `<line x1="9" y1="6" x2="15" y2="6"/>`;
+  return s;
+}
+
+/* fnRing — 링(원형) 시작점 표시: 밑동에 작은 원 */
+function fnRing() { return `<circle cx="12" cy="19" r="2.6"/>`; }
+
+/* fnSymbolSvg — symbolCd → SVG 내부 마크업(<svg> 없이 path/line 만). 매칭 없으면 null */
+function fnSymbolSvg(cd) {
+  switch (cd) {
+    case 'CHAIN': return `<ellipse cx="12" cy="13" rx="7" ry="4"/>`;
+    case 'SLIP':  return `<ellipse cx="12" cy="13" rx="5" ry="3" fill="currentColor"/>`;
+    case 'SC':    return fnCross(0);
+    case 'HDC':   return fnPostHead(12, 0, true);
+    case 'DC':    return fnPostHead(12, 1, false);
+    case 'TR':    return fnPostHead(12, 2, false);
+    case 'DTR':   return fnPostHead(12, 3, false);
+    case 'TR4':   return fnPostHead(12, 4, false);
+    case 'INC':      return fnFanUp(2, 'plain');
+    case 'DEC':      return fnFanDown(2, 'plain');
+    case 'SCINC2':   return fnFanUp(2, 'x');
+    case 'SCINC3':   return fnFanUp(3, 'x');
+    case 'SCDEC2':   return fnFanDown(2, 'x');
+    case 'SCDEC3':   return fnFanDown(3, 'x');
+    case 'SCFP':     return fnCross(0);
+    case 'SCBP':     return fnCross(0);
+    case 'HDCINC3':  return fnFanUp(3, 'bar');
+    case 'HDCDEC2':  return fnFanDown(2, 'plain');
+    case 'HDCDEC3':  return fnFanDown(3, 'plain');
+    case 'DCINC2':   return fnFanUp(2, 'tick');
+    case 'DCINC3':   return fnFanUp(3, 'tick');
+    case 'DCDEC2':   return fnFanDown(2, 'tick');
+    case 'DCDEC3':   return fnFanDown(3, 'tick');
+    case 'DCDEC4':   return fnFanDown(4, 'tick');
+    case 'HDCFP':    return fnHook(0, 'F');
+    case 'HDCBP':    return fnHook(0, 'B');
+    case 'DCFP':     return fnHook(1, 'F');
+    case 'DCBP':     return fnHook(1, 'B');
+    case 'HDCCROSS': return fnCross(0);
+    case 'DCCROSS':  return fnCross(1);
+    case 'DCCROSSR': return fnCross(1);
+    case 'DCCROSSL': return fnCross(1);
+    case 'TRCROSS':  return fnCross(2);
+    case 'DCPUFF3':  return fnBobble(3, false);
+    case 'DCPUFF3V': return fnBobble(3, false) + `<circle cx="12" cy="13" r="1" fill="currentColor"/>`;
+    case 'TRPUFF5':  return fnBobble(5, false);
+    case 'DCPOP5':   return fnBobble(5, true);
+    case 'TRPOP6':   return fnBobble(6, true);
+    case 'DCFAN5':   return fnFanUp(5, 'bar');
+    case 'SHELL':    return fnFanUp(5, 'bar');
+    case 'DCXST':    return fnCross(1);
+    case 'TRXST':    return fnCross(2);
+    case 'BOBBLEDECO': return `<circle cx="12" cy="13" r="3.2"/><line x1="12" y1="6" x2="12" y2="9.5"/><line x1="12" y1="16.5" x2="12" y2="20"/><line x1="6" y1="13" x2="9" y2="13"/><line x1="15" y1="13" x2="18" y2="13"/>`;
+    case 'PICOT':    return `<circle cx="12" cy="15" r="3"/><line x1="12" y1="12" x2="12" y2="6"/>`;
+    case 'SCRING':   return fnCross(0) + fnRing();
+    case 'DCRING':   return fnPostHead(12, 1, false) + fnRing();
+    default: return null;
+  }
+}
+
+/* fnParseDescText — 한글 도안 설명 텍스트 → 격자(cells) 역변환(fnGenDescText 의 반대 방향).
+   "N단: 기호명 N코, 기호명 N코, ..." 형식의 줄을 파싱해 그 단(row)을 왼쪽부터 순서대로 채운다.
+   "N단:" 이 없는 줄은 등장 순서를 단 번호로 사용. 등록된 기호명과 일치하지 않는 조각은 건너뛴다
+   (오탈자·미등록 기호를 조용히 무시 — 부분적으로라도 채워지는 편이 전부 실패하는 것보다 낫다). */
+function fnParseDescText(text, symbols) {
+  const nameToId = {};
+  symbols.forEach(s => { nameToId[s.symbolNm] = s.symbolId; });
+  const cells = {};
+  let rowCount = 0;
+  let maxCol = 0;
+  let unmatched = 0;
+  const lines = (text || '').split('\n').map(l => l.trim()).filter(Boolean);
+  lines.forEach((line, idx) => {
+    const head = line.match(/^(\d+)\s*단\s*[:：]\s*(.+)$/);
+    const rowNo = head ? Number(head[1]) : (idx + 1);
+    const body = head ? head[2] : line;
+    rowCount = Math.max(rowCount, rowNo);
+    let col = 0;
+    body.split(',').forEach(seg => {
+      seg = seg.trim();
+      if (!seg) return;
+      const m = seg.match(/^(.+?)\s*(\d+)\s*코$/);
+      if (!m) { unmatched++; return; }
+      const symbolId = nameToId[m[1].trim()];
+      if (!symbolId) { unmatched++; return; }
+      const count = Number(m[2]);
+      for (let i = 0; i < count; i++) {
+        col++;
+        cells[rowNo + '_' + col] = { symbolId, colorHex: null };
+      }
+    });
+    maxCol = Math.max(maxCol, col);
+  });
+  return { cells, rowCount, maxCol, unmatched };
+}
+
 /* 배색 빠른 팔레트 — 4열 x 5행 고정 스와치(직접 배색 입력으로 언제든 덮어쓸 수 있다).
    실 색상은 너무 진하고 쨍한 원색보다 부드러운 톤이 보기 편해서 파스텔 계열로 구성(흑/백만 원색 유지). */
 const PRESET_COLORS = [
@@ -43,6 +216,17 @@ const GRID_PRESETS = [
   { label: '15×20', row: 15, col: 20 },
   { label: '20×30', row: 20, col: 30 },
   { label: '30×40', row: 30, col: 40 },
+];
+
+/* 기호 팔레트 그룹 — "코바늘_기호_확정본_모음" PDF 의 목차(1~6장)와 동일한 분류.
+   symbol_cd 로 소속을 판정하고, 어느 그룹에도 없는 기호(향후 추가분 포함)는 "기타"로 폴백한다. */
+const SYMBOL_GROUPS = [
+  { label: '1. 기본 뜨기', cds: ['CHAIN', 'SLIP', 'SC', 'HDC', 'DC', 'TR', 'DTR', 'TR4', 'INC', 'DEC'] },
+  { label: '2. 짧은뜨기 응용', cds: ['SCINC2', 'SCINC3', 'SCDEC2', 'SCDEC3', 'SCFP', 'SCBP'] },
+  { label: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', cds: ['HDCINC3', 'HDCDEC2', 'HDCDEC3', 'DCINC2', 'DCINC3', 'DCDEC2', 'DCDEC3', 'DCDEC4'] },
+  { label: '4. 걸어뜨기·교차뜨기', cds: ['HDCFP', 'HDCBP', 'DCFP', 'DCBP', 'HDCCROSS', 'DCCROSS', 'DCCROSSR', 'DCCROSSL', 'TRCROSS'] },
+  { label: '5. 구슬·팝콘·무늬뜨기', cds: ['DCPUFF3', 'DCPUFF3V', 'TRPUFF5', 'DCPOP5', 'TRPOP6', 'DCFAN5', 'SHELL'] },
+  { label: '6. 특수 무늬 기호', cds: ['DCXST', 'TRXST', 'BOBBLEDECO', 'PICOT', 'SCRING', 'DCRING'] },
 ];
 
 window.MdCbCobanulPage = {
@@ -73,8 +257,35 @@ window.MdCbCobanulPage = {
       symbols.forEach(s => { m[s.symbolId] = s; });
       return m;
     });
-    /* cfPaletteSymbols — 등록된 기호 앞에 "지우개(빈칸)" 브러시를 추가한 팔레트 표시용 목록 */
-    const cfPaletteSymbols = computed(() => [{ symbolId: null, symbolChar: '⌫', symbolNm: '지우개(빈칸)' }, ...symbols]);
+    /* cfGroupedSymbols — 기호 팔레트를 PDF 목차(1~6장) 순서로 묶는다. 어느 그룹에도 없는 기호는 "기타"로 폴백 */
+    const cfGroupedSymbols = computed(() => {
+      const used = new Set();
+      const groups = SYMBOL_GROUPS.map(g => {
+        const items = g.cds.map(cd => symbols.find(s => s.symbolCd === cd)).filter(Boolean);
+        items.forEach(s => used.add(s.symbolId));
+        return { label: g.label, items };
+      }).filter(g => g.items.length);
+      const rest = symbols.filter(s => !used.has(s.symbolId));
+      if (rest.length) groups.push({ label: '기타', items: rest });
+      return groups;
+    });
+
+    /* fnSymIcon — symbolCd 기반 SVG 마크업(<svg>...) 반환. 매칭 없으면 null(symbolChar 텍스트로 폴백) */
+    const fnSymIcon = (sym) => {
+      const inner = sym && sym.symbolCd ? fnSymbolSvg(sym.symbolCd) : null;
+      // fill/stroke 는 svg 루트에 지정해 자식 line/ellipse/circle 이 상속받게 한다
+      // (line 등은 stroke 속성이 없으면 기본값 none 이라 아무것도 안 그려짐 — 실제로 겪은 버그)
+      return inner ? `<svg viewBox="0 0 24 24" class="cb-sym-svg" ${CB_SVG_STROKE}>${inner}</svg>` : null;
+    };
+    /* fnCellDisplay — 격자 셀 하나의 표시용 { svg, char } 조회 */
+    const fnCellDisplay = (r, c) => {
+      const cell = cellMap[r + '_' + c];
+      if (!cell) return null;
+      const sym = symbolMap.value[cell.symbolId];
+      if (!sym) return null;
+      return { svg: fnSymIcon(sym), char: sym.symbolChar };
+    };
+
     const yarnMap = computed(() => {
       const m = {};
       yarns.forEach(y => { m[y.yarnId] = y; });
@@ -230,6 +441,22 @@ window.MdCbCobanulPage = {
       form.descText = fnGenDescText(form.rowCount, form.maxStitchCount, cellMap, symbolMap.value);
     };
 
+    /* onParseDesc — 반대 방향: 설명 텍스트를 파싱해 격자를 채운다(기존 격자 내용은 지워짐) */
+    const onParseDesc = () => {
+      if (!form.descText || !form.descText.trim()) { props.showToast('먼저 도안 설명을 입력해주세요.', 'error'); return; }
+      if (!confirm('현재 격자 내용을 지우고 도안 설명으로부터 다시 채우시겠습니까?')) return;
+      const { cells, rowCount, maxCol, unmatched } = fnParseDescText(form.descText, symbols);
+      if (Object.keys(cells).length === 0) {
+        props.showToast('인식할 수 있는 기호를 찾지 못했습니다. "N단: 기호명 N코, 기호명 N코, ..." 형식으로 입력해주세요.', 'error');
+        return;
+      }
+      Object.keys(cellMap).forEach(k => delete cellMap[k]);
+      Object.assign(cellMap, cells);
+      form.rowCount = Math.max(form.rowCount, rowCount);
+      form.maxStitchCount = Math.max(form.maxStitchCount, maxCol);
+      props.showToast(unmatched > 0 ? `격자에 반영했습니다. (인식하지 못한 구간 ${unmatched}개는 건너뜀)` : '격자에 반영되었습니다.', unmatched > 0 ? 'info' : 'success');
+    };
+
     /* ── 대표이미지(썸네일) — 목록 화면 카드에 표시될 이미지. 공통 업로드 API로 CDN URL만 저장 ── */
     const onOpenThumbPicker = () => { if (cfReadonly.value || uiState.thumbUploading) return; thumbInputRef.value?.click(); };
     const onThumbFileChange = async (e) => {
@@ -319,9 +546,9 @@ window.MdCbCobanulPage = {
     onUnmounted(() => { window.removeEventListener('mouseup', onGlobalMouseUp); });
 
     return {
-      symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfPaletteSymbols, cfRows, cfCols, cfReadonly,
-      PRESET_COLORS, GRID_PRESETS, thumbInputRef,
-      onNewPattern, onBackToList, onCellMouseDown, onCellMouseEnter, onGenDesc, onSave, onDeletePattern,
+      symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfGroupedSymbols, cfRows, cfCols, cfReadonly,
+      PRESET_COLORS, GRID_PRESETS, thumbInputRef, fnSymIcon, fnCellDisplay,
+      onNewPattern, onBackToList, onCellMouseDown, onCellMouseEnter, onGenDesc, onParseDesc, onSave, onDeletePattern,
       onSwitchToEdit, onCancelEdit, onOpenThumbPicker, onThumbFileChange, onRemoveThumb, onResetForm,
       onPickPresetColor, onPickYarnColor, onAddPatternYarn, onRemovePatternYarn,
       onApplyGridPreset, onAddRowTop, onAddRowBottom, onAddColLeft, onAddColRight,
@@ -420,7 +647,8 @@ window.MdCbCobanulPage = {
               :style="cellMap[r+'_'+c] ? ('background:' + (cellMap[r+'_'+c].colorHex || '#fff') + ';') : ''"
               @mousedown.prevent="onCellMouseDown(r, c)"
               @mouseenter="onCellMouseEnter(r, c)">
-              {{ cellMap[r+'_'+c] ? (symbolMap[cellMap[r+'_'+c].symbolId] || {}).symbolChar : '' }}
+              <span v-if="fnCellDisplay(r,c) && fnCellDisplay(r,c).svg" v-html="fnCellDisplay(r,c).svg"></span>
+              <template v-else>{{ fnCellDisplay(r,c) ? fnCellDisplay(r,c).char : '' }}</template>
             </div>
           </div>
         </div>
@@ -429,10 +657,13 @@ window.MdCbCobanulPage = {
       <div class="cb-desc-area">
         <div class="cb-desc-head">
           <span class="cb-desc-title">한글 도안 설명</span>
-          <button v-if="!cfReadonly" class="btn btn-sm btn-secondary" @click="onGenDesc">🔄 격자로부터 생성</button>
+          <div v-if="!cfReadonly" style="display:flex;gap:6px;">
+            <button class="btn btn-sm btn-secondary" @click="onParseDesc">📝→🧩 설명으로 격자 만들기</button>
+            <button class="btn btn-sm btn-secondary" @click="onGenDesc">🔄 격자로부터 생성</button>
+          </div>
         </div>
         <textarea v-model="form.descText" :readonly="cfReadonly" rows="6" class="form-control cb-desc-textarea"
-          placeholder="[격자로부터 생성] 버튼을 누르면 격자 내용을 바탕으로 한글 설명이 자동으로 채워집니다. 직접 수정도 가능합니다."></textarea>
+          placeholder="[격자로부터 생성] 버튼을 누르면 격자 내용을 바탕으로 한글 설명이 자동으로 채워집니다. 반대로 &quot;1단: 사슬뜨기 12코&quot; 같은 설명을 직접 입력하고 [설명으로 격자 만들기]를 누르면 격자가 자동으로 채워집니다."></textarea>
       </div>
     </div>
 
@@ -440,13 +671,21 @@ window.MdCbCobanulPage = {
     <div class="cb-panel cb-panel-side" :class="{ 'cb-locked': cfReadonly }">
       <div class="cb-side-title">기호 팔레트</div>
       <div class="cb-symbol-grid">
-        <div v-for="s in cfPaletteSymbols" :key="s.symbolId || '__eraser__'"
-          class="cb-symbol-btn" :class="{ active: uiState.activeSymbolId===s.symbolId, 'cb-symbol-btn-eraser': s.symbolId===null }"
-          :title="s.symbolNm + (s.symbolDesc ? (' — ' + s.symbolDesc) : '')"
-          @click="uiState.activeSymbolId = s.symbolId">
-          {{ s.symbolChar }}
-        </div>
+        <div class="cb-symbol-btn cb-symbol-btn-eraser" :class="{ active: uiState.activeSymbolId===null }"
+          title="지우개(빈칸)" @click="uiState.activeSymbolId = null">⌫</div>
       </div>
+      <template v-for="grp in cfGroupedSymbols" :key="grp.label">
+        <div class="cb-symbol-group-title">{{ grp.label }}</div>
+        <div class="cb-symbol-grid">
+          <div v-for="s in grp.items" :key="s.symbolId"
+            class="cb-symbol-btn" :class="{ active: uiState.activeSymbolId===s.symbolId }"
+            :title="s.symbolNm + (s.symbolDesc ? (' — ' + s.symbolDesc) : '')"
+            @click="uiState.activeSymbolId = s.symbolId">
+            <span v-if="fnSymIcon(s)" v-html="fnSymIcon(s)"></span>
+            <template v-else>{{ s.symbolChar }}</template>
+          </div>
+        </div>
+      </template>
       <div class="cb-symbol-name">{{ (symbolMap[uiState.activeSymbolId] || {}).symbolNm || '' }}</div>
 
       <div class="cb-side-title">배색</div>
