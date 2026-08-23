@@ -914,6 +914,7 @@ window.BoMultiCheckSelect = {
     wrap:        { type: Boolean, default: false },    // true=값을 앞뒤 separator 로 감쌈(^A^B^ 형식). 폼 입력용
     emptyValue:  { type: String,  default: '' },       // 전부 해제 시 emit 값(예: '^NONE^'). 기본 ''
     plain:       { type: Boolean, default: false },    // true=박스/드롭다운 없이 순수 라벨(readonly-field-plain)만 표시 (보기모드용)
+    listAll:     { type: Boolean, default: false },    // true=전부 선택 시에도 '전체 (N)' 대신 실제 라벨 나열("A, B (N)..."). 필터 아닌 순수 폼 필드용
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -975,13 +976,13 @@ window.BoMultiCheckSelect = {
 
     const cfDisplay = computed(() => {
       if (noneMode.value) return '- 선택없음 -';
-      if (cfIsAll.value) return props.wrap ? '전체 (' + cfNorm.value.length + ')' : props.placeholder;
+      if (cfIsAll.value && !props.listAll) return props.wrap ? '전체 (' + cfNorm.value.length + ')' : props.placeholder;
       const sel = cfSelected.value;
       const labels = cfNorm.value.filter(o => sel.has(o.value)).map(o => o.label);
       if (labels.length === 0) return '- 선택없음 -';
       if (labels.length <= 2) return labels.join(', ');
-      // 3개 이상: 앞 2개 라벨 + (전체개수)...
-      return labels.slice(0, 2).join(', ') + ' (' + labels.length + ')...';
+      // 3개 이상: 라벨을 최대한 다 나열 + 끝에 (전체개수). 박스 폭에 안 들어가면 CSS ellipsis가 알아서 자름.
+      return labels.join(', ') + ' (' + labels.length + ')';
     });
 
     /* serializeSet — 선택 Set → 문자열. wrap 이면 앞뒤 separator 로 감쌈(^A^B^). */

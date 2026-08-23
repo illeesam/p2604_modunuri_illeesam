@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PmDiscntItemDto {
@@ -25,6 +26,8 @@ public class PmDiscntItemDto {
         private String discntId;        // 할인ID (pm_discnt.discnt_id)
         private String targetTypeCd;    // 대상유형 — PROMO_TARGET_TYPE {ALL:전체, PRODUCT:상품, CATEGORY:카테고리, VENDOR:업체, BRAND:브랜드, MEMBER_GRADE:회원등급}
         private String targetId;        // 대상ID (category_id/prod_id/grade_cd)
+        private LocalDate applyStartDate; // 적용시작일 (pm_discnt.start_date, 조인)
+        private LocalDate applyEndDate;   // 적용종료일 (pm_discnt.end_date, 조인)
         private String regBy;           // 등록자
         private LocalDateTime regDate;  // 등록일
         private String regSiteId;       // 등록 사이트ID

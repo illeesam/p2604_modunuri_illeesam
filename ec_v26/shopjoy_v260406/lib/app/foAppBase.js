@@ -497,20 +497,22 @@
 
     const cfCartCount = computed(() => cart.reduce((s, i) => s + i.qty, 0));
 
-    /* addToCart */
+    /* addToCart — color/size 는 옵션 없는 상품이면 null 로 넘어올 수 있어 기본값으로 보정 */
     const addToCart = (prod, color, size, qty = 1) => {
+      const c = color || { name: '기본' };
+      const s = size || 'FREE';
       const existing = cart.find(i =>
         i.prod.prodId === prod.prodId &&
-        i.color.name === color.name &&
-        i.size === size
+        i.color.name === c.name &&
+        i.size === s
       );
       if (existing) {
         existing.qty += qty;
       } else {
-        cart.push({ cartId: genId(), prod, color, size, qty });
+        cart.push({ cartId: genId(), prod, color: c, size: s, qty });
       }
       saveCart();
-      showToast(`장바구니에 담았습니다! (${color.name} / ${size})`, 'success');
+      showToast(`장바구니에 담았습니다! (${c.name} / ${s})`, 'success');
     };
 
     /* removeFromCart */

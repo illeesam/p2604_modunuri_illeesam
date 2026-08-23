@@ -183,7 +183,7 @@ body {
 .btn_kakao:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(254,229,0,.5); }
 .btn_link      { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
 .btn_link:hover:not(:disabled)      { background: #e2e7ef; border-color: #c2cad6; }
-.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; width: 100vw; display: flex; align-items: center; justify-content: center; }
+.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-top: -36px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; width: 100vw; display: flex; align-items: center; justify-content: center; }
 .fo-page-banner-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .fo-page-banner-dim { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(255,255,255,0.72) 0%, rgba(240,245,255,0.55) 45%, rgba(220,232,255,0.38) 100%); }
 .fo-page-banner-body { position: relative; z-index: 1; text-align: center; }
@@ -766,7 +766,7 @@ footer {
 
 /* ── Page padding helper ── */
 .page-wrap { padding: 36px 32px; max-width: 1100px; margin: 0 auto; }
-@media (max-width: 767px) { .page-wrap { padding: 24px 16px; } }
+@media (max-width: 767px) { .page-wrap { padding: 24px 16px; } .fo-page-banner { margin-top: -24px; } }
 .prod-top-wrap { padding: 0; }
 /* 페이지 타이틀 배너: page-wrap 상단 padding 상쇄 후 full-width */
 .page-banner-full { margin-top: -36px; }

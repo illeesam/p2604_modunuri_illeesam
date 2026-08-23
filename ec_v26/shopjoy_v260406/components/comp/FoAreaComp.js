@@ -206,9 +206,11 @@ window.FoPage = {
     crumbs:      { type: Array,  default: () => [] },// 브레드크럼 [{label, page?}]
     wrapClass:   { type: String, default: 'page-wrap' },  // 래퍼 클래스
     bare:        { type: Boolean, default: false }, // true=page-wrap 없이 슬롯만
-    showPdf:     { type: Boolean, default: true },  // 우측 상단 [PDF] 버튼 — 공통기능, 화면별로 끄고 싶으면 false
-    showShare:   { type: Boolean, default: true },  // 우측 상단 [카카오톡 공유] 버튼
-    showLink:    { type: Boolean, default: true },  // 우측 상단 [🔗 링크 공유(URL만)] 버튼
+    /* 배너 상단 PDF/공유/링크 버튼 — foAppHeader.js 설정 드롭다운에 동일 기능(현재 화면 전체 캡처)이
+       이미 있어 중복이라 기본 off 로 전환(2026-08-23). 화면별로 필요하면 개별 :show-xxx="true" 로 opt-in. */
+    showPdf:     { type: Boolean, default: false }, // 우측 상단 [PDF] 버튼
+    showShare:   { type: Boolean, default: false }, // 우측 상단 [카카오톡 공유] 버튼
+    showLink:    { type: Boolean, default: false }, // 우측 상단 [🔗 링크 공유(URL만)] 버튼
     shareQuery:  { type: Object, default: null },   // 공유 URL에 함께 실을 검색조건 — 없으면 현재 URL 그대로
   },
   emits: ['nav'],

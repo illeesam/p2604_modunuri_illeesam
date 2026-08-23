@@ -347,18 +347,18 @@ window.PdProdMng = {
     };
 
 
-    /* 상품 상태 배지 */
-    const _PROD_STATUS_FB = { 'ON_SALE': 'badge-green', 'SOLD_OUT': 'badge-red', 'SUSPENDED': 'badge-gray', 'DRAFT': 'badge-blue', 'REVIEW': 'badge-orange', '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' };
+    /* 상품 상태 배지 — PROD_STATUS_CD 실제 등록값 기준(ACTIVE/INACTIVE/SOLDOUT/DRAFT) */
+    const _PROD_STATUS_FB = { 'ACTIVE': 'badge-green', 'SOLDOUT': 'badge-red', 'INACTIVE': 'badge-gray', 'DRAFT': 'badge-blue' };
 
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('PRODUCT_STATUS', s, _PROD_STATUS_FB[s] || 'badge-gray');
+    const fnStatusBadge = s => coUtil.cofCodeBadge('PROD_STATUS_CD', s, _PROD_STATUS_FB[s] || 'badge-gray');
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPT_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE_CD'], {compNm: 'PdProdMng'});
-      codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+      await codeStore.saLoadCodes(['PROD_STATUS_CD', 'OPT_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE_CD'], {compNm: 'PdProdMng'});
+      codes.product_statuses = codeStore.sgGetGrpCodes('PROD_STATUS_CD');
       codes.option_types = codeStore.sgGetGrpCodes('OPT_TYPE');
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
       codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
@@ -489,21 +489,25 @@ window.PdProdMng = {
 
     // 기본 그리드
     columns.baseGrid = [
-      { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
+      { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true, pin: 'left', width: '220px',
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'prodTypeCdNm', label: '상품유형', align: 'center', fmt: (v, p) => v || p.prodTypeCd || '-' },
+      { key: 'prodTypeCdNm', label: '상품유형', align: 'center', pin: 'left', width: '90px', fmt: (v, p) => v || p.prodTypeCd || '-' },
       { key: 'prodOptStdCd', label: '옵션카테고리', align: 'center', fmt: (v) => v || '-' },
       { key: 'prodOpt1TypeCd', label: '옵션1', align: 'center', fmt: (v, p) => fnOptTypeCol(p, 1) },
       { key: 'prodOpt2TypeCd', label: '옵션2', align: 'center', fmt: (v, p) => fnOptTypeCol(p, 2) },
-      { key: 'cateNm',       label: '카테고리' },
       { key: 'stdPrice',    label: '정가',   align: 'right', fmt: (v) => coUtil.cofWon(v) },
       { key: 'salePrice',    label: '판매가', align: 'right', fmt: (v, p) => fnFinalPriceCol(p) },
+      { key: 'saleDiscntRate', label: '판매할인율',   align: 'right', fmt: (v) => v != null ? v + '%' : '-' },
+      { key: 'saleDiscntAmt',  label: '판매할인금액', align: 'right', fmt: (v) => v != null ? coUtil.cofWon(v) : '-' },
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
       { key: 'saleCount',    label: '판매수량', align: 'right', fmt: (v) => (v || 0).toLocaleString() + '개' },
+      { key: 'cateNm',       label: '카테고리' },
       { key: 'brandNm',      label: '브랜드' },
       { key: 'prodStatusCd', label: '판매상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
-      { key: 'saleStartDate', label: '판매시작일', fmt: (v) => v ? coUtil.cofYmd(v) : '2000-01-01' },
-      { key: 'saleEndDate',   label: '판매종료일', fmt: (v) => v ? coUtil.cofYmd(v) : '9999-12-31' },
+      { key: 'dispStartDate', label: '전시시작일시', fmt: (v) => v ? String(v).slice(0, 16).replace('T', ' ') : '-' },
+      { key: 'dispEndDate',   label: '전시종료일시', fmt: (v) => v ? String(v).slice(0, 16).replace('T', ' ') : '-' },
+      { key: 'saleStartDate', label: '판매시작일시', fmt: (v) => v ? String(v).slice(0, 16).replace('T', ' ') : '-' },
+      { key: 'saleEndDate',   label: '판매종료일시', fmt: (v) => v ? String(v).slice(0, 16).replace('T', ' ') : '-' },
       { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;' },
     ];

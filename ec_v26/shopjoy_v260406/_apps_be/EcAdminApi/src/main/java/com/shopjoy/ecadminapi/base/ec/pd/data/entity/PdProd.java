@@ -76,6 +76,11 @@ public class PdProd extends BaseEntity {
     @Column(name = "sale_price")
     private Long salePrice;
 
+    @Comment("통화코드 (KRW/USD/CNY/JPY, 기본 KRW) - 정가/판매가 등 금액 필드의 표시 기준 통화. 환율 변환은 하지 않음")
+    @Column(name = "curr_cd", length = 3)
+    @Size(max = 3, message = "currCd 는 3자 이내여야 합니다.")
+    private String currCd;
+
     @Comment("판매할인율 (%) — 정가 대비. sale_discnt_amt 와 상호 동기화되는 입력 편의용 보조값")
     @Column(name = "sale_discnt_rate")
     private BigDecimal saleDiscntRate;
@@ -146,13 +151,21 @@ public class PdProd extends BaseEntity {
     @Column(name = "view_count")
     private Integer viewCount;
 
-    @Comment("판매기간 시작 (NULL=즉시)")
-    @Column(name = "sale_start_date")
+    @Comment("판매기간 시작 (NOT NULL — 미입력 시 등록시각으로 자동 설정, '즉시'를 NULL 대신 실제 시각으로 표현)")
+    @Column(name = "sale_start_date", nullable = false)
     private LocalDateTime saleStartDate;
 
     @Comment("판매기간 종료 (NULL=무기한)")
     @Column(name = "sale_end_date")
     private LocalDateTime saleEndDate;
+
+    @Comment("전시기간 시작 (NOT NULL — 미입력 시 등록시각으로 자동 설정) - sale_start_date 이전이면 출시예정 표시")
+    @Column(name = "disp_start_date", nullable = false)
+    private LocalDateTime dispStartDate;
+
+    @Comment("전시기간 종료 (NULL=무기한) - 상품페이지 노출 종료 시점")
+    @Column(name = "disp_end_date")
+    private LocalDateTime dispEndDate;
 
     @Comment("최소구매수량 (기본 1)")
     @Column(name = "min_buy_qty")

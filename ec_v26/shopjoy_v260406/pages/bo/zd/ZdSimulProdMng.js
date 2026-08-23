@@ -193,7 +193,11 @@
         runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, randF, pick, previewOnly, _makeSimulId }) => {
           if (mode === 'create') {
             const type      = _pickType();
-            const salePrice = _round(randInt(domCfg.priceMin, domCfg.priceMax));
+            /* 정가 → 판매할인율(0~30%) 적용 → 판매가 (std_price/sale_discnt_rate/sale_discnt_amt/sale_price 정합) */
+            const stdPrice       = _round(randInt(domCfg.priceMin, domCfg.priceMax));
+            const saleDiscntRate = randInt(0, 30);
+            const saleDiscntAmt  = _round(stdPrice * saleDiscntRate / 100);
+            const salePrice      = Math.max(0, stdPrice - saleDiscntAmt);
             const costRate  = randInt(domCfg.costRateMin, domCfg.costRateMax);
             const costPrice = _round(salePrice * costRate / 100);
             const stock     = randInt(domCfg.stockMin, domCfg.stockMax);
@@ -211,7 +215,7 @@
             /* 상품 자체 임시 ID — 본 ID에 tmp- 접두어, body.prodId로 전송 */
             const tmpProdId = 'tmp-prod-01';
             const body = {
-              prodNm, salePrice,
+              prodNm, stdPrice, salePrice, saleDiscntRate, saleDiscntAmt,
               purchasePrice: costPrice,           /* pd_prod.purchase_price */
               prodStock: isOption ? 0 : stock,    /* pd_prod.prod_stock */
               prodTypeCd: type.cd,                /* pd_prod.prod_type_cd (SINGLE/OPTION/SET) */
@@ -418,7 +422,13 @@
             } else if (action === 'price') {
               const rate = randInt(domCfg.priceChangeRateMin, domCfg.priceChangeRateMax);
               const newPrice = _round(Math.max(1000, (target.salePrice || 10000) * (1 + rate / 100)));
-              body.salePrice = newPrice; desc = '가격 ' + (rate >= 0 ? '+' : '') + rate + '% → ' + newPrice.toLocaleString() + '원';
+              body.salePrice = newPrice;
+              /* 정가가 있으면 판매할인율/할인금액도 새 판매가 기준으로 재계산 — 정가 없는(레거시) 상품은 건드리지 않음 */
+              if (target.stdPrice) {
+                body.saleDiscntAmt  = Math.max(0, target.stdPrice - newPrice);
+                body.saleDiscntRate = Math.round((body.saleDiscntAmt / target.stdPrice) * 10000) / 100;
+              }
+              desc = '가격 ' + (rate >= 0 ? '+' : '') + rate + '% → ' + newPrice.toLocaleString() + '원';
             } else if (action === 'stock') {
               const add = randInt(domCfg.stockAddMin, domCfg.stockAddMax);
               body.stockQty = Math.max(0, (target.stockQty || 0) + add);

@@ -42,6 +42,7 @@ public class PdProdDto {
         private String prodCode;            // 상품코드(SKU)
         private Long stdPrice;             // 정가
         private Long salePrice;             // 판매가
+        private String currCd;              // 통화코드 (KRW/USD/CNY/JPY, 기본 KRW) - 환율 변환은 하지 않음
         private BigDecimal saleDiscntRate;  // 판매할인율(%) — 정가 대비, saleDiscntAmt 와 상호 동기화되는 보조값
         private Long saleDiscntAmt;         // 판매할인금액(원) — 정가-판매가 최종 기준값
         private Long purchasePrice;         // 매입가(원가) — 내부 관리용
@@ -59,6 +60,8 @@ public class PdProdDto {
         private Integer viewCount;          // 조회수
         private LocalDateTime saleStartDate; // 판매기간 시작 (NULL=즉시)
         private LocalDateTime saleEndDate;  // 판매기간 종료 (NULL=무기한)
+        private LocalDateTime dispStartDate; // 전시기간 시작 (NULL=즉시) - sale_start_date 이전이면 출시예정 표시
+        private LocalDateTime dispEndDate;  // 전시기간 종료 (NULL=무기한)
         private Integer minBuyQty;          // 최소구매수량 (기본 1)
         private Integer maxBuyQty;          // 최대구매수량 (NULL=무제한)
         private Integer dayMaxBuyQty;       // 1일 최대구매수량 (NULL=무제한)

@@ -140,13 +140,17 @@ window.Home01 = {
       return all.slice(0, 8);
     });
 
+    /* fnProdTypeLabel — 상품유형 한글 라벨 (PROD_TYPE_CD: SINGLE/OPTION/GROUP/SET/GIFT) */
+    const PROD_TYPE_LABELS = { SINGLE: '단품', OPTION: '옵션상품', SET: '세트상품', GROUP: '묶음상품', GIFT: '사은품' };
+    const fnProdTypeLabel = p => (p && PROD_TYPE_LABELS[p.prodTypeCd]) || '';
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       uiState, banners, siteConfig,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       cfAllHomeProds, cfSaleProds,                         // computed
-      isLiked, likeShake,                  // 헬퍼
+      isLiked, likeShake, fnProdTypeLabel,  // 헬퍼
       selectProd, toggleLike, addToCart, // 모달 전달용
     };
   },
@@ -276,6 +280,12 @@ window.Home01 = {
             </button>
           </div>
         </div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+          <span style="font-size:0.66rem;color:#999;font-family:monospace;">#{{ p.prodId }}</span>
+          <span v-if="fnProdTypeLabel(p)" class="badge" style="font-size:0.66rem;background:#f5f5f5;border:1px solid #eee;color:#888;">
+            {{ fnProdTypeLabel(p) }}
+          </span>
+        </div>
         <div style="font-size:0.88rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">
           {{ p.prodNm }}
         </div>
@@ -381,6 +391,12 @@ window.Home01 = {
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.originalPrice ? p.priceNum : false" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
         -{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
+      </span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:3px;">
+      <span style="font-size:0.66rem;color:#999;font-family:monospace;">#{{ p.prodId }}</span>
+      <span v-if="fnProdTypeLabel(p)" class="badge" style="font-size:0.66rem;background:#f5f5f5;border:1px solid #eee;color:#888;">
+        {{ fnProdTypeLabel(p) }}
       </span>
     </div>
     <div style="font-size:0.85rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">

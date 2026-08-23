@@ -1291,6 +1291,60 @@ body['_preview_이미지(색상별)'] = opt1Items.map(o1 => ({
 - `_preview_` 키는 실제 API 호출 시 백엔드에서 무시됨 (미리보기 전용)
 - `ZdPreviewTable`에서 노란 배경으로 시각적 구분 표시
 
+## §8. 고정값 래퍼 컴포넌트 패턴 (2026-08-23 ⭐)
+
+### 8.1 배경 — 왜 필요한가
+
+BO 탭 시스템은 **핀 고정(📌)된 탭**을 범용 동적 컴포넌트 한 줄로 렌더한다 (`lib/app/boAppBase.js`):
+
+```html
+<component :is="PAGE_COMP_MAP[toPageFromTabId(keptId)]"
+  :navigate="navigate" :dtl-id="..." :dtl-mode="..." :open-new-window="..." ... />
+```
+
+이 경로는 `PAGE_COMP_MAP[pageId]`로 **컴포넌트 태그 이름만** 동적으로 바뀔 뿐,
+pageId별로 다른 prop 값을 추가로 흘려보낼 수 없다 — 모든 pageId가 위에 나열된
+공통 prop 세트만 받는다 (신규 화면 추가 시 이 블록을 수정하지 않아도 되게 하려는
+의도적 설계, §4.7 이하 참조).
+
+탭은 **"열린 탭 10개 미만이면 자동 고정"** 되므로 실사용에서 이 경로를 타는 게 흔하다
+(비활성 탭은 하단의 명시적 `v-else-if` 체인을 타므로 거기서는 prop을 자유롭게 추가할 수
+있지만, 핀 고정되는 순간 위 범용 경로로 넘어간다).
+
+### 8.2 패턴 — prop 값을 컴포넌트 정체성으로 바꿔치기
+
+**같은 화면인데 메뉴 진입점마다 다른 고정값(prop)이 필요한 경우** (예: 상품관리 좌측
+메뉴의 "단품상품등록/옵션상품등록/묶음상품등록/세트상품등록/사은품등록" — 전부
+`PdProdMng`를 `fixedProdTypeCd`만 다르게 줘서 재사용), 그 고정값을 **자체 컴포넌트로
+감싸서 pageId별로 다른 태그 이름**을 갖게 만든다:
+
+```js
+// pages/bo/ec/pd/PdSetProdMng.js — PdProdMng 래퍼, prodTypeCd=SET 고정
+window.PdSetProdMng = {
+  name: 'PdSetProdMng',
+  props: { navigate: {...}, openNewWindow: {...}, initSearchValue: {...} },
+  template: `<pd-prod-mng :navigate="navigate" :open-new-window="openNewWindow"
+    :init-search-value="initSearchValue" fixed-prod-type-cd="SET" />`,
+};
+```
+
+`boAppCompPage.js`(`window.BO_APP_COMP_PAGE`)에서 `pdSetProdMng: 'pd-set-prod-mng'`로
+매핑 — 이러면 핀 고정 탭이어도 `fixedProdTypeCd`가 항상 살아있다.
+
+- 적용 사례: `PdSingleProdMng.js` / `PdOptionProdMng.js` / `PdGroupProdMng.js` /
+  `PdSetProdMng.js` / `PdGiftProdMng.js` (전부 `PdProdMng` + `fixed-prod-type-cd`)
+- ⛔ **이 12줄짜리 래퍼들을 "불필요한 중복"으로 보고 삭제하거나 `PdProdMng`로
+  직접 라우팅하도록 되돌리지 말 것** — 삭제하면 해당 메뉴의 탭이 핀 고정되는 순간
+  유형 필터가 사라지는 회귀가 재현된다 (2026-08-23 확인)
+
+### 8.3 이 패턴이 필요 없는 경우 — Dtl(상세)
+
+Dtl 화면은 `dtlId`로 실제 레코드를 불러와 **레코드 자신의 데이터**(예: `prodTypeCd`)로
+동작을 분기하므로, 라우팅 시점에 타입을 고정할 필요가 없다. `fixedProdTypeCd` 같은
+prop은 신규 등록 시 기본값 용도로만 쓰이고, 이는 Mng의 인라인 임베드가
+`props.fixedProdTypeCd`를 그대로 전달하는 방식으로 이미 처리된다 — 핀 고정 탭
+시나리오와 무관하다. 그러므로 `PdSetProdDtl.js` 류의 타입별 Dtl 래퍼는 만들지 않는다.
+
 ## 관련 정책
 - 611. 전시관리 정책
 - 911. 시스템공통 정책 (ID 생성 규칙)

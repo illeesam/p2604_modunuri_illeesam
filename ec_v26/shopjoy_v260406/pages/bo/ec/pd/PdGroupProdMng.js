@@ -1,4 +1,6 @@
-/* ShopJoy Admin - 묶음상품등록 (PdProdMng 래퍼, prodTypeCd=GROUP 고정) */
+/* ShopJoy Admin - 묶음상품등록 (PdProdMng 래퍼, prodTypeCd=GROUP 고정)
+   ⛔ 불필요한 중복으로 보고 삭제/PdProdMng 직접 라우팅 금지 — 핀 고정 탭에서 유형필터가 사라지는 회귀 재현됨.
+   이유 → _doc/정책서/sy/sy.51.프로그램설계정책.md §8 고정값 래퍼 컴포넌트 패턴 */
 window.PdGroupProdMng = {
   name: 'PdGroupProdMng',
   props: {

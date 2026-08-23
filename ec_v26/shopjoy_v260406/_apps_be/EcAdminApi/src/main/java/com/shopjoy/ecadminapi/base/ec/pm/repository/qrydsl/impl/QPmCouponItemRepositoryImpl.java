@@ -13,6 +13,7 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponItem;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponItemRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -33,7 +34,8 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     private static final QSySite siteEx = new QSySite("site_ex");
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
-    private static final QPmCouponItem pmCouponItem = QPmCouponItem.pmCouponItem;    /*
+    private static final QPmCouponItem pmCouponItem = QPmCouponItem.pmCouponItem;
+    private static final QPmCoupon couponEx = QPmCoupon.pmCoupon;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * COUPON_ITEM_TARGET  {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
      */
@@ -44,6 +46,8 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                         pmCouponItem.couponId,       // 쿠폰ID (pm_coupon.coupon_id)
                         pmCouponItem.targetTypeCd,   // 대상유형 — COUPON_ITEM_TARGET {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
                         pmCouponItem.targetId,       // 대상ID (prod_id / category_id / vendor_id / brand_id)
+                        couponEx.validFrom.as("applyStartDate"),  // 적용시작일 (pm_coupon.valid_from, 조인)
+                        couponEx.validTo.as("applyEndDate"),      // 적용종료일 (pm_coupon.valid_to, 조인)
                         pmCouponItem.regBy,  // 등록자
                         pmCouponItem.regDate,  // 등록일시
                         pmCouponItem.regSiteId,  // 등록사이트ID
@@ -53,6 +57,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                         siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmCouponItem)
+                .leftJoin(couponEx).on(couponEx.couponId.eq(pmCouponItem.couponId)) // 쿠폰 (적용기간 조인)
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmCouponItem.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmCouponItem.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmCouponItem.siteId)) // 사이트

@@ -118,10 +118,10 @@ window.PdCategoryMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['CATEGORY_DEPTH', 'PRODUCT_STATUS', 'CATEGORY_STATUS_CD'], {compNm: 'PdCategoryMng'});
+      await codeStore.saLoadCodes(['CATEGORY_DEPTH', 'PROD_STATUS_CD', 'CATEGORY_STATUS_CD'], {compNm: 'PdCategoryMng'});
       try {
         codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
-        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.product_statuses = codeStore.sgGetGrpCodes('PROD_STATUS_CD');
         codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS_CD');
       } catch (err) {
         console.error('[fnLoadCodes]', err);

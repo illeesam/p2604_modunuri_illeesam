@@ -904,10 +904,31 @@ window.BoGrid = {
       return base;
     };
 
-    /* ── ▼ 좌/우 고정(pin) 컬럼 — 번호(+체크/드래그) 항상 좌측 고정, 첫 데이터 컬럼(id/제목류) 좌측 고정,
-       관리(rowActions) 항상 우측 고정. 가로스크롤 없는 그리드는 시각적 변화 없음(안전). */
+    /* ── ▼ 좌/우 고정(pin) 컬럼 — 번호(+체크/드래그) 항상 좌측 고정, pin:'left' 로 opt-in 한 데이터 컬럼들
+       좌측 고정(여러 개 가능 — 앞에서부터 순서대로 width 누적), 관리(rowActions) 항상 우측 고정.
+       가로스크롤 없는 그리드는 시각적 변화 없음(안전).
+       ⚠ pin:'left' 컬럼은 반드시 width 를 명시할 것 — tdStyle 이 기본으로 overflow:hidden 말줄임을
+       적용해 그 폭에서 잘리므로 실제 렌더 폭이 width 와 어긋나지 않는다(폭 미지정 시 다음 고정 컬럼과
+       겹칠 수 있음 — 폭 예측 불가한 컬럼을 고정하지 말라던 예전 단일고정 제약을 width 강제로 해소). */
     const cfPinNoLeft    = Vue.computed(() => (props.selectable ? 36 : 0) + (props.draggable ? 28 : 0));
     const cfPinFirstLeft = Vue.computed(() => cfPinNoLeft.value + (props.showRowNo ? 36 : 0));
+    /* 좌측고정 컬럼별 누적 left offset(px). width 미지정 시 100px 로 폴백(단일고정 기존 동작과 동일). */
+    const cfPinLeftOffset = Vue.computed(() => {
+      const map = {};
+      let acc = cfPinFirstLeft.value;
+      for (const col of props.columns) {
+        if (col.pin !== 'left') continue;
+        map[col.key] = acc;
+        acc += (parseInt(col.width, 10) || 100);
+      }
+      return map;
+    });
+    /* 좌측고정 마지막 컬럼 key — 그 컬럼에만 경계 그림자(edge shadow) 표시 */
+    const cfPinLeftLastKey = Vue.computed(() => {
+      let last = null;
+      for (const col of props.columns) if (col.pin === 'left') last = col.key;
+      return last;
+    });
     /* 선택행(.bo-row-selected) 은 tr 에 outline 을 그리는데, sticky(고정) 셀은 그 위에 자기 배경을 덧칠해
        outline 이 지나가는 상/하단(과 고정영역 좌우 끝) 구간을 가려버린다. selected=true 인 고정 셀에는
        inset box-shadow 로 같은 파란 테두리를 직접 그려 넣어 끊김 없이 이어지게 한다. */
@@ -1019,7 +1040,7 @@ window.BoGrid = {
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle,
-             cfPinNoLeft, cfPinFirstLeft, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected, onRowMouseEnter, onRowMouseLeave,
+             cfPinNoLeft, cfPinFirstLeft, cfPinLeftOffset, cfPinLeftLastKey, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected, onRowMouseEnter, onRowMouseLeave,
              columns: cfEffectiveCols };
   },
   template: /* html */`
@@ -1049,12 +1070,12 @@ window.BoGrid = {
     <table class="bo-table" :class="{ 'crud-grid': draggable || showSave, 'bo-table-narrow': narrow }">
       <thead>
         <tr>
-          <th v-if="selectable" :style="'width:36px;text-align:center;' + pinLeftStyle(0, 6)">
+          <th v-if="selectable" :style="'width:36px;text-align:center;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(0, 6)">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
-          <th v-if="draggable" :style="'width:28px;' + pinLeftStyle(selectable ? 36 : 0, 6)">
+          <th v-if="draggable" :style="'width:28px;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(selectable ? 36 : 0, 6)">
           </th>
-          <th v-if="showRowNo" :style="'width:36px;text-align:center;' + pinLeftStyle(cfPinNoLeft, 6)">
+          <th v-if="showRowNo" :style="'width:36px;text-align:center;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinNoLeft, 6)">
             번호
           </th>
           <slot name="head">
@@ -1065,7 +1086,7 @@ window.BoGrid = {
                  컬럼(이름+ID 합성 텍스트 등)을 임의로 고정하면 auto 테이블 레이아웃에서 sticky 폭
                  계산이 어긋나 텍스트가 겹쳐 보이는 문제가 있어 자동고정 대신 명시적 opt-in만 허용. -->
             <th v-for="(col, ci) in columns" :key="col.key" :class="col.cls"
-            :style="thResizeStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 6, true) : '')"
+            :style="thResizeStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinLeftOffset[col.key], 6, col.key === cfPinLeftLastKey) + 'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' : '')"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
@@ -1076,7 +1097,7 @@ window.BoGrid = {
                 @mousedown.stop="onResizeStart($event, col)"></div>
             </th>
           </slot>
-          <th v-if="rowActions || $slots['head-actions']" :style="'min-width:40px;text-align:center;white-space:nowrap;' + pinRightStyle(6, true)">
+          <th v-if="rowActions || $slots['head-actions']" :style="'min-width:40px;text-align:center;white-space:nowrap;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinRightStyle(6, true)">
             <slot name="head-actions">
               관리
             </slot>
@@ -1106,7 +1127,7 @@ window.BoGrid = {
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';' : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinLeftOffset[col.key], 4, col.key === cfPinLeftLastKey, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';' : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
                 @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null"
                 @auxclick="coUtil.cofAnd(rowClickable, $event.button===1) ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
@@ -1554,12 +1575,12 @@ window.BoGridCrud = {
     <table class="bo-table crud-grid">
       <thead>
         <tr>
-          <th v-if="cfShowDrag" class="col-drag" :style="pinLeftStyle(0, 6)">
+          <th v-if="cfShowDrag" class="col-drag" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(0, 6)">
           </th>
-          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';' + pinLeftStyle(cfShowDrag ? 28 : 0, 6)">
+          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfShowDrag ? 28 : 0, 6)">
             번호
           </th>
-          <th v-if="cfShowId" class="col-id" :style="pinLeftStyle(cfPinIdLeft, 6, true)">
+          <th v-if="cfShowId" class="col-id" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinIdLeft, 6, true)">
             ID
           </th>
           <th v-if="showRowStatus" class="col-status">
@@ -1579,7 +1600,7 @@ window.BoGridCrud = {
               </span>
             </th>
           </slot>
-          <th class="col-act" :style="'text-align:center;' + pinRightStyle(6, true)">
+          <th class="col-act" :style="'text-align:center;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinRightStyle(6, true)">
             <slot name="head-actions">{{ actionHeader }}</slot>
           </th>
         </tr>
@@ -2668,6 +2689,10 @@ window.BoFormArea = {
     <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
     <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
     {{ col.label }}
+    <span v-if="col.desc" :title="col.desc"
+      style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:10px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
+      i
+    </span>
   </div>
     <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지)
          slot 타입도 col.label 이 있으면 위쪽 라벨 모드에서 자동 렌더 (라벨 누락 방지).
@@ -2676,6 +2701,10 @@ window.BoFormArea = {
     {{ col.label }}
     <span v-if="col.required ? (!readonly) : false" class="req">
     *
+  </span>
+    <span v-if="col.helpText" :title="col.helpText"
+      style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:9px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
+    i
   </span>
     <span v-if="col.hint" class="form-hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
     {{ col.hint }}
@@ -2689,11 +2718,19 @@ window.BoFormArea = {
 <span v-if="col.required ? (!readonly) : false" class="req">
 *
 </span>
+<span v-if="col.helpText" :title="col.helpText"
+  style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:9px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
+i
+</span>
 </label>
 <label v-else-if="col.type === 'slot' ? (!labelLeft ? (col.label ? (!col.hideLabel) : false) : false) : false" class="form-label">
 {{ col.label }}
 <span v-if="col.required ? (!readonly) : false" class="req">
 *
+</span>
+<span v-if="col.helpText" :title="col.helpText"
+  style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:9px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
+i
 </span>
 <span v-if="col.hint" class="form-hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
 {{ col.hint }}
@@ -3017,7 +3054,7 @@ window.BoGroupTable = {
                 key: col.key, label: col.label, rowspan: totalRows, colspan: 1, title: col.headerTip || '',
                 thStyle: 'text-align:center;vertical-align:middle;'
                   + (col.width ? 'width:' + col.width + 'px;' : '')
-                  + (col.pin ? 'background:' + (col.thBg || '#f0f4f8') + ';' : '')
+                  + (col.pin ? 'background:' + (col.thBg || 'linear-gradient(180deg,#d0e6f9,#9fc6ef)') + ';color:#1a4f7d;border-bottom:2px solid #4a8ac2;' : '')
                   + fnPinStyle(col, 5)
                   + (col.thStyle || ''),
               });

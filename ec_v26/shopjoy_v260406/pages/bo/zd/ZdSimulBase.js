@@ -436,7 +436,7 @@
   <div v-if="logs.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">
     <div style="font-size:36px;margin-bottom:8px;">🔇</div>
     <div style="font-size:13px;">아직 실행 이력이 없습니다.</div>
-    <div style="font-size:11px;margin-top:4px;">▶ 시작 또는 ⚡ 1회 실행을 눌러주세요.</div>
+    <div style="font-size:11px;margin-top:4px;">▶ 스케줄시작 또는 회실행을 눌러주세요.</div>
   </div>
   <bo-grid v-else
     :rows="logs"

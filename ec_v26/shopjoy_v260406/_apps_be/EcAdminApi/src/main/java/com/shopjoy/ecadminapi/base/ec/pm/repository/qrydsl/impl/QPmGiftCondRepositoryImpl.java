@@ -55,6 +55,8 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                         pmGiftCond.minOrderAmt,    // 최소주문금액 (ORDER_AMT 조건)
                         pmGiftCond.targetTypeCd,   // 대상유형 — PRODUCT/CATEGORY/MEMBER_GRADE
                         pmGiftCond.targetId,       // 대상ID
+                        pmGift.startDate.as("applyStartDate"),  // 적용시작일 (pm_gift.start_date, 조인)
+                        pmGift.endDate.as("applyEndDate"),      // 적용종료일 (pm_gift.end_date, 조인)
                         pmGiftCond.regBy,  // 등록자
                         pmGiftCond.regDate,  // 등록일시
                         pmGiftCond.regSiteId,  // 등록사이트ID

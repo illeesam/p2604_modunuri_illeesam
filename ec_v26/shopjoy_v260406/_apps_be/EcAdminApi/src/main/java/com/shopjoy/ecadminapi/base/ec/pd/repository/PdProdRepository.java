@@ -10,6 +10,6 @@ import java.util.List;
 public interface PdProdRepository extends JpaRepository<PdProd, String>, QPdProdRepository {
 
     @Query("SELECT p FROM PdProd p " +
-           "WHERE p.prodStatusCd IN ('DRAFT', 'ACTIVE')")
+           "WHERE p.prodStatusCd IN ('SCHEDULED', 'ACTIVE')")
     List<PdProd> findSyncTargets();
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PmCouponItemDto {
@@ -25,6 +26,8 @@ public class PmCouponItemDto {
         private String couponId;        // 쿠폰ID (pm_coupon.coupon_id)
         private String targetTypeCd;    // 대상유형 — PROMO_TARGET_TYPE {ALL:전체, PRODUCT:상품, CATEGORY:카테고리, VENDOR:업체, BRAND:브랜드, MEMBER_GRADE:회원등급}
         private String targetId;        // 대상ID (prod_id/category_id/vendor_id/brand_id)
+        private LocalDate applyStartDate; // 적용시작일 (pm_coupon.valid_from, 조인)
+        private LocalDate applyEndDate;   // 적용종료일 (pm_coupon.valid_to, 조인)
         private String regBy;           // 등록자
         private LocalDateTime regDate;  // 등록일
         private String regSiteId;       // 등록 사이트ID

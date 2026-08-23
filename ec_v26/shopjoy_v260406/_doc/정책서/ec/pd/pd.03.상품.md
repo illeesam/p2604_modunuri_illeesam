@@ -10,13 +10,18 @@
 - 상품 재고 관리
 - 판매기간 / 구매제한 / 혜택적용 설정
 
-## 상품 상태 (PRODUCT_STATUS)
+## 상품 상태 (PROD_STATUS_CD)
+> 2026-08-23 정정 — 코드그룹명은 `PROD_STATUS_CD`(구 `PRODUCT_STATUS` 는 실제 코드에 등록된 적 없는
+> 오기). `STOPPED`/`DISCONTINUED` 도 등록된 적 없는 설계 시안이라 `INACTIVE`로 대체하고, 배치의
+> 자동 전환 대상을 명확히 하기 위해 `SCHEDULED`(판매예정)를 신설했다. 상세 상태표는 → `pd.01.상품상태표.md`.
+
 | 상태 | 코드 | 설명 |
 |------|------|------|
-| 활성 | ACTIVE | 판매 중인 상품 |
-| 준비중 | DRAFT | 작성 중인 상품 |
-| 중단 | STOPPED | 일시 판매 중단 |
-| 단종 | DISCONTINUED | 판매 종료 |
+| 임시저장 | DRAFT | 작성 중인 상품. 배치가 자동 전환하지 않음 |
+| 판매예정 | SCHEDULED | 등록 완료, 판매시작일 대기 중. 판매시작일 도달 시 배치가 ACTIVE로 자동 전환 |
+| 판매중 | ACTIVE | 판매 중인 상품. 판매종료일 경과 시 배치가 INACTIVE로 자동 전환 |
+| 품절 | SOLDOUT | 재고 소진. 관리자/재고 판단 영역(배치 미개입) |
+| 중지 | INACTIVE | 판매 중단. 관리자 재활성화 가능(배치 미개입) |
 
 ## 주요 정책
 
@@ -29,7 +34,7 @@
   - 카테고리
   - 상세설명 (HTML)
   - 상품이미지 (최소 1개)
-- **초기상태**: DRAFT
+- **초기상태**: DRAFT (등록 완료 후 관리자가 SCHEDULED로 직접 전환해야 판매기간 배치 대상이 됨)
 - **브랜드**: 선택사항
 - **업체**: 판매자/판매자 상품은 vendor_id 지정
 - **담당MD**: 등록 시 로그인한 본인 자동 설정 (변경 가능) — `pd_prod.md_user_id` (FK: sy_user.user_id)
@@ -48,14 +53,20 @@
 - **DRAFT**: 작성 중, 판매 불가
   - 임시저장 기능
   - 자동삭제: 30일 미저장 시
+  - `PROD_SALE_STATUS_SYNC` 배치가 절대 건드리지 않음 — 판매기간을 먼저 입력해 둔 미완성 초안이
+    날짜 도달만으로 실수 공개되는 걸 막기 위함
+- **SCHEDULED**: 판매예정 — 등록 완료, 판매시작일 대기 중
+  - 판매 불가, 카트에 담기 불가 (전시기간 조건 충족 시 "출시예정" 노출은 가능)
+  - 판매시작일시 도달 시 배치가 자동으로 ACTIVE 전환
 - **ACTIVE**: 판매 중
   - 재고 0이면 자동으로 품절 표시
-- **STOPPED**: 일시 중단
+  - 판매종료일시 경과 시 배치가 자동으로 INACTIVE 전환
+- **SOLDOUT**: 품절
+  - 재고 소진. 노출은 되나 주문 불가
+  - 재입고 시 관리자가 ACTIVE로 수동 전환
+- **INACTIVE**: 중지
   - 판매 불가, 카트에 담기 불가
-  - 기간 지정 후 자동 복구 가능
-- **DISCONTINUED**: 단종
-  - 검색 결과에서 제외
-  - 상세페이지 접근 불가
+  - 관리자가 수동으로 재활성화(ACTIVE 전환) 가능 — 배치는 개입하지 않음
 
 ### 4. 재고 관리
 - **재고단위**: SKU별 개별 관리
@@ -111,7 +122,7 @@
 | purchase_price | 매입가(원가) | BIGINT 내부용 |
 | margin_rate | 마진율 | DECIMAL(5,2) 내부용 |
 | prod_stock | 재고 | INTEGER 기본값 0 |
-| prod_status_cd | 상태 | PRODUCT_STATUS 코드 |
+| prod_status_cd | 상태 | PROD_STATUS_CD 코드 |
 | prod_status_cd_before | 변경전상태 | 상태변경 추적 |
 | category_id | 카테고리 | 소분류만 허용 |
 | vendor_id | 업체 | 판매자 상품 시 필수 |
@@ -337,6 +348,7 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 - pd_prod_rel: `(prod_id, rel_prod_id, prod_rel_type_cd)` UNIQUE 제약으로 중복 연결 방지
 
 ## 변경이력
+- 2026-08-23: 상품 상태 코드그룹명 `PRODUCT_STATUS`(오기)→`PROD_STATUS_CD` 정정, 실제 등록된 적 없는 `STOPPED`/`DISCONTINUED`를 `SOLDOUT`/`INACTIVE`로 교체, `SCHEDULED`(판매예정) 신설 반영 — `PdProdSaleStatusSyncJob` 배치가 SCHEDULED→ACTIVE·ACTIVE→INACTIVE만 자동 전환하고 DRAFT는 건드리지 않음
 - 2026-04-19: 연관상품·코디상품(pd_prod_rel) 섹션 추가, PROD_REL_TYPE 코드 정의 (REL_PROD/CODY_PROD), pd_prod_sku statusCd/saleCnt 필드 반영, 담당MD(md_user_id) 정책 추가
 - 2026-07-12: pd_prod_img opt_item_id_1/2 → prod_opt1_id/2 컬럼명 업데이트
 - 2026-04-19: 리뷰(pd_review/attach/comment) 섹션 추가, opt_item_id_1/2 반영, content_type_cd DETAIL/NOTICE/GUIDE/SIZE_GUIDE 코드 정리, 배송템플릿·문의유형 코드 레이블 추가

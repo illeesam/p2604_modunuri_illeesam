@@ -234,6 +234,12 @@ window.Prod01List = {
     /* fnCategoryLabel — coUtil.cofCategoryLabel 위임 (categoryId → categoryNm) */
     const fnCategoryLabel = p => coUtil.cofCategoryLabel(p);
 
+    /* fnProdTypeIcon/Label — 상품유형 아이콘(단품 제외) / 라벨. PROD_TYPE_CD: SINGLE/OPTION/GROUP/SET/GIFT */
+    const PROD_TYPE_ICONS  = { OPTION: '🎨', SET: '🧩', GROUP: '📦', GIFT: '🎁' };
+    const PROD_TYPE_LABELS = { SINGLE: '단품', OPTION: '옵션상품', SET: '세트상품', GROUP: '묶음상품', GIFT: '사은품' };
+    const fnProdTypeIcon  = p => PROD_TYPE_ICONS[p?.prodTypeCd] || '';
+    const fnProdTypeLabel = p => PROD_TYPE_LABELS[p?.prodTypeCd] || '';
+
     /* toggle* — coUtil.cofToggleSet 위임 (Set 토글) */
     const toggleColor = name => coUtil.cofToggleSet(selColors, name);
     const toggleSize  = sz   => coUtil.cofToggleSet(selSizes, sz);
@@ -335,7 +341,7 @@ window.Prod01List = {
       selColors, selSizes, selCats, // 필터 상태
       handleBtnAction, handleSelectAction, // dispatch
       cfAllColors, cfAllSizes, cfAllCats, cfHasFilter, cfShareQuery, // computed
-      fnCategoryLabel, isLiked, // 헬퍼 / 컬럼
+      fnCategoryLabel, fnProdTypeIcon, fnProdTypeLabel, isLiked, // 헬퍼 / 컬럼
       onSearch,              // FoSearchArea @search 직결용 + 폴백
       selectProd, addToCart, // 모달 전달용
       compareList, isCompared, clearCompare, removeCompare, // 비교함
@@ -542,12 +548,18 @@ window.Prod01List = {
       <span v-if="!p.image" style="font-size:3rem;opacity:0.3;">
         📷
       </span>
-      <span v-if="p.badge==='NEW'" class="badge badge-new" style="position:absolute;top:12px;left:12px;">
-        NEW
-      </span>
-      <span v-else-if="p.badge==='인기'" class="badge badge-hot" style="position:absolute;top:12px;left:12px;">
-        인기
-      </span>
+      <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;">
+        <span v-if="fnProdTypeIcon(p)" :title="fnProdTypeLabel(p)"
+            style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.92);box-shadow:0 1px 4px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:0.85rem;">
+          {{ fnProdTypeIcon(p) }}
+        </span>
+        <span v-if="p.badge==='NEW'" class="badge badge-new">
+          NEW
+        </span>
+        <span v-else-if="p.badge==='인기'" class="badge badge-hot">
+          인기
+        </span>
+      </div>
       <span v-if="p.originalPrice"
           style="position:absolute;top:12px;right:12px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:800;padding:3px 7px;border-radius:10px;">
         {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%
@@ -589,13 +601,20 @@ window.Prod01List = {
       </div>
     </div>
     <div style="padding:16px;">
-      <!-- ===== ■.■.■.■. 상품명 + 카테고리 ======================================== -->
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
-        <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;flex:1;line-height:1.4;">
-          {{ p.prodNm }}
+      <!-- ===== ■.■.■.■. ID + 상품유형 + 카테고리 (윗줄) ======================================== -->
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:4px;">
+        <span style="font-size:0.68rem;color:var(--text-muted);font-family:monospace;">#{{ p.prodId }}</span>
+        <span v-if="fnProdTypeLabel(p)" class="badge" style="font-size:0.68rem;background:var(--bg-base);border:1px solid var(--border);color:var(--text-secondary);">
+          {{ fnProdTypeLabel(p) }}
         </span>
-        <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">
+        <span class="badge badge-cat" style="font-size:0.68rem;">
           {{ fnCategoryLabel(p) }}
+        </span>
+      </div>
+      <!-- ===== ■.■.■.■. 상품명 (독립 한 줄) ======================================== -->
+      <div style="margin-bottom:6px;">
+        <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;line-height:1.4;">
+          {{ p.prodNm }}
         </span>
       </div>
       <!-- ===== ■.■.■.■. 설명 ================================================ -->

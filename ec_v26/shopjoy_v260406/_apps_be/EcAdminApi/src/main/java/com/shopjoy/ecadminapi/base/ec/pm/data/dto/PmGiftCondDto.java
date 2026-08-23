@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PmGiftCondDto {
@@ -26,6 +27,8 @@ public class PmGiftCondDto {
         private String condTypeCd;      // 조건유형 — COND_TYPE_CD {ORDER_AMT:주문금액, PRODUCT:특정상품, MEMBER_GRADE:회원등급, CATEGORY_INCLUDED:카테고리 포함, MIN_AMT:최소구매금액, PROD_INCLUDED:상품 포함}
         private String condTypeCdNm;  // 코드 라벨
         private Long minOrderAmt;       // 최소주문금액 (ORDER_AMT 조건)
+        private LocalDate applyStartDate; // 적용시작일 (pm_gift.start_date, 조인)
+        private LocalDate applyEndDate;   // 적용종료일 (pm_gift.end_date, 조인)
         private String targetTypeCd;    // 대상유형 (PRODUCT/CATEGORY/MEMBER_GRADE)
         private String targetId;        // 대상ID
         private String regBy;           // 등록자

@@ -13,6 +13,7 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntItem;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntItemRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -33,7 +34,8 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
     private static final QSySite siteEx = new QSySite("site_ex");
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
-    private static final QPmDiscntItem pmDiscntItem = QPmDiscntItem.pmDiscntItem;    /*
+    private static final QPmDiscntItem pmDiscntItem = QPmDiscntItem.pmDiscntItem;
+    private static final QPmDiscnt discntEx = QPmDiscnt.pmDiscnt;    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * DISCNT_ITEM_TARGET  {CATEGORY: '카테고리', PRODUCT: '상품', MEMBER_GRADE: '회원등급'} (Entity 주석 대상ID 설명 기준)
      */
@@ -44,6 +46,8 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                         pmDiscntItem.discntId,       // 할인ID (pm_discnt.discnt_id)
                         pmDiscntItem.targetTypeCd,   // 대상유형 — DISCNT_ITEM_TARGET {CATEGORY, PRODUCT, MEMBER_GRADE}
                         pmDiscntItem.targetId,       // 대상ID (category_id/prod_id/grade_cd)
+                        discntEx.startDate.as("applyStartDate"),  // 적용시작일 (pm_discnt.start_date, 조인)
+                        discntEx.endDate.as("applyEndDate"),      // 적용종료일 (pm_discnt.end_date, 조인)
                         pmDiscntItem.regBy,  // 등록자
                         pmDiscntItem.regDate,  // 등록일시
                         pmDiscntItem.regSiteId,  // 등록사이트ID
@@ -53,6 +57,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                         siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmDiscntItem)
+                .leftJoin(discntEx).on(discntEx.discntId.eq(pmDiscntItem.discntId)) // 할인정책 (적용기간 조인)
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmDiscntItem.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmDiscntItem.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmDiscntItem.siteId)) // 사이트

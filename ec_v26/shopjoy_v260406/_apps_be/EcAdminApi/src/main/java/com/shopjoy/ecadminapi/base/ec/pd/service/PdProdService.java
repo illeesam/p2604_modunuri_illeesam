@@ -82,6 +82,10 @@ public class PdProdService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        /* 판매/전시 시작일은 NOT NULL — "즉시" 의미를 NULL 대신 등록 시각 자체로 표현한다.
+           종료일(sale_end_date/disp_end_date)은 계속 NULL=무기한 허용(건드리지 않음). */
+        if (body.getSaleStartDate() == null) body.setSaleStartDate(LocalDateTime.now());
+        if (body.getDispStartDate() == null) body.setDispStartDate(LocalDateTime.now());
         PdProd saved = pdProdRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

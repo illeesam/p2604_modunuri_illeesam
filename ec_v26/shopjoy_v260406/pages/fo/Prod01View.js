@@ -672,6 +672,10 @@ window.Prod01View = {
       return (window.SITE_CONFIG?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
 
+    /* fnProdTypeLabel — 상품유형 한글 라벨 (PROD_TYPE_CD: SINGLE/OPTION/GROUP/SET/GIFT) */
+    const PROD_TYPE_LABELS = { SINGLE: '단품', OPTION: '옵션상품', GROUP: '묶음상품', SET: '세트상품', GIFT: '사은품' };
+    const fnProdTypeLabel = p => (p && PROD_TYPE_LABELS[p.prodTypeCd]) || '';
+
     /* -- 옵션 재고 상태 (목업: 색상 + 사이즈) -- */
     const cfColorStockMap = computed(() => {
       const p = svProduct;
@@ -955,7 +959,7 @@ window.Prod01View = {
       cfQuickBuyTotal, cfDisplayPrice, cfVisibleSizes, cfPhotoNavIdx, cfPhotoGridPageCount, cfPhotoGridItems,   // computed - 가격/사이즈/포토
       sizeGuideRows, sizeGuideColsShort, styleItems, TABS,                                // 데이터 (정적)
       tabBarRef, detailSecRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef, buyBtnRef,                       // ref
-      getSizeDelta, fnCategoryLabel, stars, colorStatus, sizeStatus, isLiked, toggleLike, handleShareKakao,     // 헬퍼
+      getSizeDelta, fnCategoryLabel, fnProdTypeLabel, stars, colorStatus, sizeStatus, isLiked, toggleLike, handleShareKakao,     // 헬퍼
     };
   },
 
@@ -1065,14 +1069,20 @@ window.Prod01View = {
         <!-- ===== ■.■.■.■. 우: 구매 옵션 ========================================== -->
         <div>
           <fo-container card-style="padding:clamp(16px,3vw,28px);position:sticky;top:20px;">
-            <!-- ===== ■.■.■.■.■.■. 상품명 + 카테고리 ==================================== -->
-            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
-              <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;line-height:1.3;">
-                {{ prod.prodNm }}
-              </h1>
+            <!-- ===== ■.■.■.■.■.■. 상품유형 + 카테고리 배지 (상품명 위) ==================================== -->
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+              <span v-if="fnProdTypeLabel(prod)" style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--bg-base);border:1px solid var(--border);color:var(--text-secondary);flex-shrink:0;white-space:nowrap;">
+                {{ fnProdTypeLabel(prod) }}
+              </span>
               <span style="font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--blue-dim);color:var(--blue);flex-shrink:0;white-space:nowrap;">
                 {{ fnCategoryLabel(prod) }}
               </span>
+            </div>
+            <!-- ===== ■.■.■.■.■.■. 상품명 ==================================== -->
+            <div style="margin-bottom:4px;">
+              <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);line-height:1.3;">
+                {{ prod.prodNm }}
+              </h1>
             </div>
             <!-- ===== ■.■.■.■.■.■. 별점 미리보기 ======================================= -->
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
@@ -1220,13 +1230,13 @@ window.Prod01View = {
           <button class="btn btn_cart" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleBtnAction('cart-add')">
             🛒 장바구니 담기
           </button>
-          <button @click="handleBtnAction('prod-toggleLike', prod.prodId)" :title="isLiked?.(prod.prodId) ? '찜 해제' : '찜하기'" :style="{ width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px', background: isLiked?.(prod.prodId) ? '#fee2e2' : 'var(--bg-card)', cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center', transition:'all .15s', }">
+          <button @click="handleBtnAction('prod-toggleLike', prod.prodId)" :title="isLiked?.(prod.prodId) ? '찜 해제' : '찜하기'" :style="{ width:'40px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px', background: isLiked?.(prod.prodId) ? '#fee2e2' : 'var(--bg-card)', cursor:'pointer',fontSize:'1.4rem',display:'flex',alignItems:'center',justifyContent:'center', transition:'all .15s', }">
           <span :style="{ color: isLiked?.(prod.prodId) ? '#ef4444' : '#9ca3af' }">
           {{ isLiked?.(prod.prodId) ? '♥' : '♡' }}
         </span>
       </button>
       <button @click="handleBtnAction('prod-shareKakao')" title="카카오톡 공유"
-        style="width:52px;flex-shrink:0;border:none;border-radius:10px;background:#FEE500;color:#191919;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:all .15s;">
+        style="width:40px;flex-shrink:0;border:none;border-radius:10px;background:#FEE500;color:#191919;cursor:pointer;font-size:1.3rem;display:flex;align-items:center;justify-content:center;transition:all .15s;">
         💬
       </button>
     </div>

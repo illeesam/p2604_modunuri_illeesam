@@ -94,9 +94,9 @@ window.PdCategoryProdMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS'], {compNm: 'PdCategoryProdMng'});
+      await codeStore.saLoadCodes(['PROD_STATUS_CD'], {compNm: 'PdCategoryProdMng'});
       try {
-        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.product_statuses = codeStore.sgGetGrpCodes('PROD_STATUS_CD');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }

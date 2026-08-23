@@ -7,7 +7,7 @@
      실행 제어 카드 공통 컴포넌트.
      - 작업 유형 토글 (생성 / 수정)
      - bo-form-area 기본 설정 (countMin/Max, interval, duration)
-     - ▶ 시작 / ⏹ 정지 / ⚡ 1회 버튼
+     - ▶ 스케줄시작 / ⏹ 정지 / 회실행 버튼
      - 진행 바 (실행 중일 때)
      - 통계 미니 카드 (총실행 / 성공 / 실패)
      - 성공률 바
@@ -116,6 +116,8 @@
 
     <!-- 실행 주기 인라인 select (시작 버튼 왼쪽) -->
     <div style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+      <button class="btn" style="padding:3px 9px;font-size:12px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7c3aed;" @click="onPreview">🔍 시뮬정보생성</button>
+      <span style="width:1px;height:20px;background:#cbd5e1;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
       <span style="font-size:11px;color:#94a3b8;white-space:nowrap;">🕐</span>
       <select v-model.number="cfg.intervalVal" :disabled="cfIsRunning"
         style="font-size:11px;padding:3px 5px;border:1px solid #e2e8f0;border-radius:5px;background:#f8fafc;color:#334155;height:26px;cursor:pointer;">
@@ -143,14 +145,12 @@
         <option v-for="v in [1,3,5,10,30,60]" :key="v" :value="v">{{ v }}분</option>
       </select>
       <!-- 실행 버튼 -->
-      <button v-if="!cfIsRunning" class="btn btn_search" style="padding:3px 14px;font-size:12px;margin-left:4px;" @click="onStart">▶ 시작</button>
+      <button v-if="!cfIsRunning" class="btn btn_search" style="padding:3px 14px;font-size:12px;margin-left:4px;" @click="onStart">▶ 스케줄시작</button>
       <button v-else class="btn btn_delete" style="padding:3px 14px;font-size:12px;margin-left:4px;" @click="onStop">⏹ 정지</button>
       <span style="width:1px;height:20px;background:#cbd5e1;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
       <input type="number" v-model.number="runOnceCount" min="1" max="100"
         style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;padding:3px 4px;height:26px;" />
       <button class="btn btn_preview" style="padding:3px 9px;font-size:12px;" @click="onRunOnce">회실행</button>
-      <span style="width:1px;height:20px;background:#cbd5e1;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
-      <button class="btn" style="padding:3px 9px;font-size:12px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7c3aed;" @click="onPreview">🔍 시뮬정보생성</button>
     </div>
   </div>
 
@@ -356,7 +356,7 @@
       </tr></thead>
       <tbody v-if="!logs.length">
         <tr><td colspan="11" style="text-align:center;padding:24px;color:#94a3b8;">
-          아직 실행 이력이 없습니다. ▶ 시작 또는 ⚡ 1회 실행을 눌러주세요.
+          아직 실행 이력이 없습니다. ▶ 스케줄시작 또는 회실행을 눌러주세요.
         </td></tr>
       </tbody>
       <template v-for="(row, idx) in logs" :key="row.ts+'_'+row.targetId+'_'+idx">

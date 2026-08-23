@@ -17,7 +17,7 @@ window.PdRestockNotiMng = {
     const checkedIds = reactive(new Set());        // 선택된 알림 ID Set
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({
-      PRODUCT_STATUS: [],
+      PROD_STATUS_CD: [],
       SEND_YN: [],
     });
     const siteOptions = reactive([]);  // 사이트 선택 옵션 (BO 는 강제 필터 없음 — 선택적 검색용)
@@ -139,9 +139,9 @@ window.PdRestockNotiMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'SEND_YN'], {compNm: 'PdRestockNotiMng'});
+      await codeStore.saLoadCodes(['PROD_STATUS_CD', 'SEND_YN'], {compNm: 'PdRestockNotiMng'});
       try {
-        codes.PRODUCT_STATUS = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.PROD_STATUS_CD = codeStore.sgGetGrpCodes('PROD_STATUS_CD');
         codes.SEND_YN = codeStore.sgGetGrpCodes('SEND_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);

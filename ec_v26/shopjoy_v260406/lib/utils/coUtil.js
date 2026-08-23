@@ -537,8 +537,8 @@
       footerDiv.style.cssText = 'position:fixed;left:-9999px;top:0;width:700px;background:#ffffff;'
         + 'color:#c2c2c2;font-size:9px;line-height:1.5;font-family:"Noto Sans KR",sans-serif;'
         + 'word-break:break-all;padding:2px;';
-      footerDiv.innerHTML = `File: ${outFilename} · URL: ${pageUrl}<br>Generated: ${generatedAt}`
-        + (userLine ? ` · ${userLine}` : '');
+      footerDiv.innerHTML = `URL: ${pageUrl}<br>Generated: ${generatedAt}`
+        + (userLine ? ` · ${userLine}` : '') + ` · File: ${outFilename}`;
       document.body.appendChild(footerDiv);
       let footerImgData = null, footerImgW = 0, footerImgH = 0;
       try {

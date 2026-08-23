@@ -17,6 +17,8 @@ window.foAppHeader = {
 
     /* ── 설정 드롭다운: 링크공유/카카오공유/PDF (현재 화면 전체, document.body 캡처) ── */
     const pdfExporting = ref(false);
+    /* cfCompareCount — 상품비교함 담긴 개수 (foAppBase.js window.foApp.compareList, reactive 공유) */
+    const cfCompareCount = computed(() => window.foApp?.compareList?.length || 0);
     const handleShareKakao = () => {
       try {
         window.coExtSdk.shareKakao({
@@ -102,6 +104,10 @@ window.foAppHeader = {
       } else if (cmd === 'nav-go-like') {
         props.navigate('like');
         return closeUserMenu();
+      // 상품비교 — 상품목록으로 이동(비교함은 그 화면 플로팅 버튼에서 확인)
+      } else if (cmd === 'nav-go-prodList') {
+        props.navigate('prodList');
+        return handleBtnAction('settings-toggle');
       // 장바구니 이동
       } else if (cmd === 'cart-go') {
         props.navigate('cart');
@@ -286,7 +292,7 @@ window.foAppHeader = {
     return {
       uiState, codes, userMenuRoot, addrSearchModal,                        // 상태 / refs
       handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch
-      pdfExporting,                                                        // 링크/카카오공유/PDF (설정 드롭다운)
+      pdfExporting, cfCompareCount,                                        // 링크/카카오공유/PDF (설정 드롭다운) / 상품비교 개수
       pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
       cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,                    // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
@@ -391,7 +397,7 @@ window.foAppHeader = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 우측: 로그인/유저 → 테마 순 ======================================= -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+  <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
 
     <!-- ===== ■.■. 🔔 알림 종 (회원에게 온 알림 + 오류정보 누적) — 로그인 시에만 ==== -->
     <co-noti-bell v-if="cfIsLogin" ctx="fo" :navigate="navigate" />
@@ -462,7 +468,7 @@ window.foAppHeader = {
     <!-- ===== ■.■. 좋아요(위시리스트) 아이콘 ======================================== -->
     <!-- ===== ■.■. 버튼 영역 ================================================= -->
     <button type="button" @click="handleBtnAction('nav-go-like')"
-      style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
+      style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
       title="위시리스트"
       @mouseenter="$event.currentTarget.style.borderColor='var(--blue)';$event.currentTarget.style.background='var(--blue-dim)'"
       @mouseleave="$event.currentTarget.style.borderColor='var(--border)';$event.currentTarget.style.background='var(--bg-card)'">
@@ -478,7 +484,7 @@ window.foAppHeader = {
     <!-- ===== ■.■. 장바구니: 아이콘 + 뱃지(개수) ==================================== -->
     <button type="button" @click="handleBtnAction('cart-go')"
       class="header-cart-link"
-      style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
+      style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
       :aria-label="appCartCount > 0 ? ('장바구니, ' + (appCartCount > 99 ? '99개 이상' : appCartCount + '개') + ' 상품') : '장바구니, 비어 있음'"
       title="장바구니">
       <span class="header-cart-icon-wrap" style="position:relative;display:flex;align-items:center;justify-content:center;">
@@ -502,25 +508,20 @@ window.foAppHeader = {
     <!-- ===== ■.■. 설정 아이콘 ================================================ -->
     <div data-fo-settings style="position:relative;flex-shrink:0;">
       <button @click="handleBtnAction('settings-toggle')"
-        style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;font-size:15px;color:var(--text-secondary);transition:all 0.2s;"
+        style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;font-size:14px;color:var(--text-secondary);transition:all 0.2s;"
         :style="appShowSettings?'border-color:var(--accent,#c9a96e);background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);':''"
         title="설정">⚙</button>
       <!-- ===== ■.■.■. 설정 드롭다운 ============================================= -->
       <div v-if="appShowSettings"
-        style="position:absolute;right:0;top:calc(100% + 8px);width:180px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
-        <div style="display:flex;gap:6px;align-items:center;justify-content:center;padding:6px 14px 10px;border-bottom:1px solid var(--border);margin-bottom:4px;">
-          <button class="btn btn_link" title="링크 공유(URL만)" @click="handleBtnAction('settings-copy-link')">🔗</button>
-          <button class="btn btn_kakao" title="카카오톡 공유" @click="handleBtnAction('settings-share-kakao')">💬</button>
-          <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleBtnAction('settings-export-pdf')">
-            <span v-if="pdfExporting">⏳</span>
-            <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
-              <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
-              <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
-              <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
-            </svg>
-          </button>
-        </div>
+        style="position:absolute;right:0;top:calc(100% + 8px);width:220px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
+        <button @click="handleBtnAction('nav-go-prodList')"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background='transparent'">
+          <span style="font-size:13px;">⚖️</span>
+          <span>상품비교</span>
+          <span v-if="cfCompareCount" style="margin-left:auto;font-size:10px;background:#e8e8e8;border-radius:8px;padding:1px 5px;color:#666;">{{ cfCompareCount }}</span>
+        </button>
         <button @click="handleBtnAction('settings-toggle-api-log')"
           style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
           :style="appShowApiLog?'background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);font-weight:700;':''"
@@ -541,9 +542,25 @@ window.foAppHeader = {
         </button>
       </div>
     </div>
-  </div>
 
     <!-- ===== □.□. 설정 아이콘 ================================================ -->
+    <!-- ===== ■.■. 링크복사 / 카카오공유 / PDF (최상단 우측 고정 아이콘) ============================ -->
+    <button type="button" @click="handleBtnAction('settings-copy-link')" title="링크 공유(URL만)"
+      style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">🔗</button>
+    <button type="button" @click="handleBtnAction('settings-share-kakao')" title="카카오톡 공유"
+      style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">💬</button>
+    <button type="button" @click="handleBtnAction('settings-export-pdf')" title="PDF 다운로드" :disabled="pdfExporting"
+      style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;">
+      <span v-if="pdfExporting" style="font-size:14px;">⏳</span>
+      <svg v-else width="15" height="17" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </div>
+
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. ══ Profile 모달 ══ ======================================== -->
   <!-- ===== ■. 영역 ====================================================== -->

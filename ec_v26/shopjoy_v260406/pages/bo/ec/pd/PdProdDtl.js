@@ -1,5 +1,13 @@
 /* ShopJoy Admin - 상품관리 상세/등록 */
 window._pdProdDtlState = window._pdProdDtlState || { tab: 'info', tabMode: 'tab' };
+/* 신상품/베스트/성인상품/당일배송/강제품절 — 5개 독립 Y/N 필드를 BoMultiCheckSelect 로 통합 표시하기 위한 옵션 목록 */
+const PROD_FLAG_OPTIONS = [
+  { value: 'isNew',         label: '신상품' },
+  { value: 'isBest',        label: '베스트' },
+  { value: 'adltYn',        label: '성인상품' },
+  { value: 'sameDayDlivYn', label: '당일배송' },
+  { value: 'soldOutYn',     label: '강제품절' },
+];
 window.PdProdDtl = {
   name: 'PdProdDtl',
   props: {
@@ -30,7 +38,7 @@ window.PdProdDtl = {
     const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
-    const grpCodes = reactive({ PRODUCT_STATUS: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [], DLIV_METHOD: [] });
+    const grpCodes = reactive({ PROD_STATUS_CD: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [], DLIV_METHOD: [] });
 
     /* fnProdTypeLabel — 상품유형 코드값 → 라벨 (영역 타이틀에 "옵션 상품수정" 식으로 붙일 때 사용) */
     const fnProdTypeLabel = () => (grpCodes.PROD_TYPE.find(c => c.codeValue === form.prodTypeCd) || {}).codeLabel || '';
@@ -316,12 +324,12 @@ window.PdProdDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER', 'DLIV_METHOD_CD'], {compNm: 'PdProdDtl'});
+        await codeStore.saLoadCodes(['PROD_STATUS_CD', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER', 'DLIV_METHOD_CD'], {compNm: 'PdProdDtl'});
         if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);
         if (codeStore.sgGetGrpCodes) {
-          grpCodes.PRODUCT_STATUS  = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+          grpCodes.PROD_STATUS_CD  = codeStore.sgGetGrpCodes('PROD_STATUS_CD');
           grpCodes.PROD_TYPE = codeStore.sgGetGrpCodes('PROD_TYPE_CD');
           grpCodes.PROD_PLAN_STATUS = codeStore.sgGetGrpCodes('PROD_PLAN_STATUS');
           grpCodes.OPT_STOCK_STATUS = codeStore.sgGetGrpCodes('OPT_STOCK_STATUS');
@@ -576,9 +584,9 @@ window.PdProdDtl = {
       mdUserId: '',
       prodTypeCd: 'OPTION', prodStatusCd: 'DRAFT', unsaleMsg: '',
       dlivTmpltId: '', dlivMethodCd: '',
-      stdPrice: 0, salePrice: 0, saleDiscntRate: null, saleDiscntAmt: null, purchasePrice: null, marginRate: null,
+      stdPrice: 0, salePrice: 0, currCd: 'KRW', saleDiscntRate: null, saleDiscntAmt: null, purchasePrice: null, marginRate: null,
       platformFeeRate: null, platformFeeAmount: null,
-      saleStartDate: '', saleEndDate: '',
+      saleStartDate: '', saleEndDate: '', dispStartDate: '', dispEndDate: '',
       minBuyQty: 1, maxBuyQty: null, dayMaxBuyQty: null, idMaxBuyQty: null,
       adltYn: 'N', sameDayDlivYn: 'N', soldOutYn: 'N',
       couponUseYn: 'Y', saveUseYn: 'Y', discntUseYn: 'Y',
@@ -590,6 +598,8 @@ window.PdProdDtl = {
     const errors = reactive({});
     const schema = yup.object({
       prodNm:    yup.string().required('상품명을 입력해주세요.'),
+      prodTypeCd: yup.string().required('상품유형을 선택해주세요.'),
+      dlivTmpltId: yup.string().required('배송템플릿을 선택해주세요.'),
       stdPrice: yup.number().typeError('숫자 입력').min(0).required('정가를 입력해주세요.'),
       salePrice: yup.number().typeError('숫자 입력').min(0).required('판매가를 입력해주세요.'),
     });
@@ -634,6 +644,24 @@ window.PdProdDtl = {
 
     /* fnDateTime — 보기모드 날짜/시간 표시용 (YYYY-MM-DD HH:mm) */
     const fnDateTime = (v) => (v ? String(v).substring(0, 16).replace('T', ' ') : '-');
+
+    /* fnRemainingTime — 종료일(LocalDate)까지 남은 기간을 년/월/일/시간 단위로 표시 (프로모션 적용기간 그리드용) */
+    const fnRemainingTime = (endDate) => {
+      if (!endDate) return '무기한';
+      const end = new Date(String(endDate).slice(0, 10) + 'T23:59:59');
+      const diffMs = end.getTime() - Date.now();
+      if (diffMs <= 0) return '만료';
+      let hours = Math.floor(diffMs / 3600000);
+      const years = Math.floor(hours / (24 * 365)); hours -= years * 24 * 365;
+      const months = Math.floor(hours / (24 * 30)); hours -= months * 24 * 30;
+      const days = Math.floor(hours / 24); hours -= days * 24;
+      const parts = [];
+      if (years) parts.push(years + '년');
+      if (months) parts.push(months + '개월');
+      if (days) parts.push(days + '일');
+      parts.push(hours + '시간');
+      return parts.join(' ');
+    };
 
     // 1레벨 — 옵션 카테고리 선택용
     const cfOptTypeLevel1Codes = computed(() =>
@@ -827,6 +855,23 @@ window.PdProdDtl = {
       generateSkus();
     };
 
+    /* cfProdFlags — 신상품/베스트/성인상품/당일배송/강제품절 5개 Y/N 필드를 BoMultiCheckSelect 용
+       콤마 결합 문자열로 가교. get: 현재 Y 인 필드들의 key 나열. set: 체크된 key 만 Y, 나머지 N. */
+    const cfProdFlags = computed({
+      get: () => PROD_FLAG_OPTIONS.filter(o => form[o.value] === 'Y').map(o => o.value).join(','),
+      set: (val) => {
+        const active = new Set((val || '').split(',').filter(Boolean));
+        PROD_FLAG_OPTIONS.forEach(o => { form[o.value] = active.has(o.value) ? 'Y' : 'N'; });
+      },
+    });
+
+    /* fnEnforceBaseSku — 정책: 옵션상품의 첫 번째 옵션조합(기준상품)은 추가금액 0원 고정.
+       상품목록/홈 화면은 sale_price(추가금 미포함)를 대표가로 보여주므로, 그 가격이 실제
+       구매 가능한 조합과 일치하려면 최소 1개(첫 조합)는 add_price=0 이어야 한다. */
+    const fnEnforceBaseSku = () => { if (skus.length) skus[0].addPrice = 0; };
+    /* cfBaseSkuId — 기준상품(첫 번째 옵션조합) SKU의 _id. 필터링된 목록에서도 원본 skus[0] 기준으로 판정 */
+    const cfBaseSkuId = computed(() => skus[0]?._id || null);
+
     /* generateSkus — 생성 Skus */
     const generateSkus = () => {
       if (optGroups.length === 0) { skus.length = 0; return; }
@@ -851,6 +896,7 @@ window.PdProdDtl = {
         }));
       }
       skus.splice(0, skus.length, ...newSkus);
+      fnEnforceBaseSku();
     };
     const cfTotalStock = computed(() => safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
@@ -863,6 +909,7 @@ window.PdProdDtl = {
       if (target < 0 || target >= skus.length) { return; }
       const [moved] = skus.splice(idx, 1);
       skus.splice(target, 0, moved);
+      fnEnforceBaseSku();
     };
 
     // -- SKU 필터 (1단/2단/재고) - uiState 참조
@@ -1299,6 +1346,7 @@ window.PdProdDtl = {
           form.dlivMethodCd   = p.dlivMethodCd || '';
           form.stdPrice      = p.stdPrice || 0;
           form.salePrice      = p.salePrice || 0;
+          form.currCd        = p.currCd || 'KRW';
           form.saleDiscntRate     = p.saleDiscntRate != null ? p.saleDiscntRate : null;
           form.saleDiscntAmt      = p.saleDiscntAmt  != null ? p.saleDiscntAmt  : null;
           form.purchasePrice  = p.purchasePrice || null;
@@ -1306,6 +1354,8 @@ window.PdProdDtl = {
           form.platformFeeAmount = p.platformFeeAmount != null ? p.platformFeeAmount : null;
           form.saleStartDate  = p.saleStartDate || '';
           form.saleEndDate    = p.saleEndDate || '';
+          form.dispStartDate  = p.dispStartDate || '';
+          form.dispEndDate    = p.dispEndDate || '';
           form.minBuyQty      = p.minBuyQty || 1;
           form.maxBuyQty      = p.maxBuyQty || null;
           form.dayMaxBuyQty   = p.dayMaxBuyQty || null;
@@ -1356,7 +1406,7 @@ window.PdProdDtl = {
           if (tabData.rels.length) { relProds.splice(0, relProds.length, ...tabData.rels); }
 
           // SKU — tabData.skus에서 채움
-          if (tabData.skus.length) { skus.splice(0, skus.length, ...tabData.skus); }
+          if (tabData.skus.length) { skus.splice(0, skus.length, ...tabData.skus); fnEnforceBaseSku(); }
 
           // 옵션 사용 여부 — DB 값 우선 반영 (없으면 true 기본)
           if (p.useOptYn !== undefined) { uiState.useOpt = p.useOptYn === 'Y'; }
@@ -1455,6 +1505,11 @@ window.PdProdDtl = {
         Object.keys(errors).forEach(k => delete errors[k]);
         try { await schema.validate(form, { abortEarly: false }); }
         catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+        /* 카테고리는 별도 배열(prodCategories)이라 Yup 스키마로 못 잡음 — info 탭에서만 수동 검증 */
+        if (tabId === 'info' && !prodCategories.length) {
+          showToast('카테고리를 1개 이상 선택해주세요.', 'error');
+          return;
+        }
 
         const isCreate = !cfHasProdId.value; // info 신규
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
@@ -1836,32 +1891,49 @@ window.PdProdDtl = {
       // 1행: 상품명 / 상품코드(SKU) / 상품유형
       { key: 'prodNm',       label: '상품명', type: 'text', required: true, placeholder: '상품명' },
       { key: 'prodCode',     label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
-      { key: 'prodTypeCd',   label: '상품유형 (prod_type_cd)', type: 'select', nullable: false,
+      { key: 'prodTypeCd',   label: '상품유형 (prod_type_cd)', type: 'select', nullable: false, required: true,
         options: () => grpCodes.PROD_TYPE },
       // 2행: 카테고리 / 브랜드 / 업체
-      { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories' },
+      { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories', required: true },
       { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
       { key: 'vendorId',     label: '업체', type: 'slot', name: 'vendor' },
       { type: 'group', label: '담당 · 상태' },
-      // 3행: 담당MD / 배송템플릿 / 상태
+      // 3행: 담당MD / 상품상태 (빈칸 1 — 담당·상태 성격에 맞는 세 번째 필드 없음)
       { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
-      { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
-      { key: 'prodStatusCd', label: '상태 (prod_status_cd)', type: 'select',
-        options: () => grpCodes.PRODUCT_STATUS },
+      { key: 'prodStatusCd', label: '상품상태 (prod_status_cd)', type: 'select',
+        options: () => grpCodes.PROD_STATUS_CD,
+        helpText: 'DRAFT(임시저장)/SCHEDULED(판매예정)/ACTIVE(판매중)/SOLDOUT(품절)/INACTIVE(중지). 등록을 마쳤으면 DRAFT→SCHEDULED로 직접 전환해야 판매시작일에 배치가 자동으로 ACTIVE 처리(DRAFT는 미완성 초안으로 간주해 배치가 건드리지 않음). ACTIVE→INACTIVE(판매종료일 경과)도 매시간 배치가 자동 처리.' },
+      { type: 'group', label: '배송' },
+      // 4행: 배송템플릿 / 배송방법 override (빈칸 1)
+      { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt', required: true },
       { key: 'dlivMethodCd', label: '배송방법 override (dliv_method_cd)', type: 'select',
         options: () => grpCodes.DLIV_METHOD, nullLabel: '배송템플릿 기본값 사용',
         hint: '긴급 발송 등 이 상품만 다른 배송방법을 써야 할 때만 지정 (수수료는 배송수수료정책에 따름)' },
-      { type: 'group', label: '상세속성 · 판매기간' },
-      // 4행: 미판매메시지 / 무게 / 사이즈
+      { type: 'group', label: '상세속성 · 판매기간',
+        desc: '판매상태(PROD_STATUS_CD): DRAFT(임시저장)/SCHEDULED(판매예정)/ACTIVE(판매중)/SOLDOUT(품절)/INACTIVE(중지). '
+          + 'DRAFT는 작성 중인 미완성 초안이라 배치가 절대 건드리지 않음 — 등록을 다 마쳤으면 관리자가 직접 SCHEDULED로 전환해야 함. '
+          + '판매시작일시 도달 시 SCHEDULED→ACTIVE, 판매종료일시 경과 시 ACTIVE→INACTIVE로 매시간 배치가 자동 전환 '
+          + '(SOLDOUT과 수동 INACTIVE 전환은 재고·관리자 판단 영역이라 배치가 건드리지 않음). '
+          + '전시기간은 판매 전 상품페이지 노출 구간 — 전시시작일시 이후·판매시작일시 이전이면 "출시예정"으로 노출(구매불가). '
+          + '판매·전시기간 모두 NULL=즉시/무기한.' },
+      // 5행: 판매상태(담당·상태 항목과 동일 값 — 판매기간 문맥에서 다시 확인하도록 중복 배치) / 미판매메시지 / 무게
+      { key: 'prodStatusCd', label: '판매상태 (prod_status_cd)', type: 'select',
+        options: () => grpCodes.PROD_STATUS_CD,
+        helpText: '판매기간과 직접 연동되는 상태값. SCHEDULED→ACTIVE(판매시작일 도달)·ACTIVE→INACTIVE(판매종료일 경과)는 매시간 배치가 자동 처리. DRAFT는 미완성 초안 취급이라 배치 대상에서 제외되므로, 판매기간을 설정했다면 SCHEDULED로 바꿔둬야 자동 전환됨.' },
       { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
       { key: 'weight',       label: '무게 (kg)', type: 'number', min: 0, placeholder: '예: 0.35' },
+      // 6행: 사이즈 / 판매시작 / 판매종료
       { key: 'sizeInfoCd',   label: '사이즈 (size_info_cd)', type: 'select',
         options: () => ['FREE','XS','S','M','L','XL','XXL'] },
-      // 5행: 판매시작 / 판매종료 / (빈)
       { key: 'saleStartDate', label: '판매 시작일시', type: 'slot', name: 'saleStart',
         hint: 'NULL=즉시' },
       { key: 'saleEndDate',   label: '판매 종료일시', type: 'slot', name: 'saleEnd',
+        hint: 'NULL=무기한' },
+      // 7행: 전시시작 / 전시종료 (빈칸 1) — 판매 전 상품페이지 노출 기간 (sale 기간보다 이르면 출시예정 표시)
+      { key: 'dispStartDate', label: '전시 시작일시', type: 'slot', name: 'dispStart',
+        hint: 'NULL=즉시. 판매시작일 이전이면 출시예정 표시' },
+      { key: 'dispEndDate',   label: '전시 종료일시', type: 'slot', name: 'dispEnd',
         hint: 'NULL=무기한' },
     ];
     // 상세설정 통합 (광고 노출 기간 + 구매 제한) — cols=3 한 행 3필드 채움
@@ -1877,13 +1949,16 @@ window.PdProdDtl = {
       { key: 'dayMaxBuyQty',   label: '1일 최대구매수량 (day_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
       { key: 'idMaxBuyQty',    label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
     ];
-    // 기본 가격 — [가격] 정가/판매가/판매할인, [원가·마진·수수료] 매입가/마진율/플랫폼수수료율·금액 2개 그룹으로 분리
+    // 기본 가격 — 정가/판매가/판매할인(그룹 헤더 없이 바로 시작, 상위 "기본 가격" 제목이 이미 안내 아이콘을 겸함),
+    // [원가·마진·수수료] 매입가/마진율/플랫폼수수료율·금액 은 하위 그룹으로 분리
     columns.basePriceForm = [
-      { type: 'group', label: '가격' },
       { key: 'stdPrice',         label: '정가 (std_price)', type: 'number', required: true, min: 0, placeholder: '0',
         onChange: (v, form) => fnSyncFromStdPrice(form) },
       { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0',
         onChange: (v, form) => fnSyncFromSalePrice(form) },
+      { key: 'currCd',           label: '통화 (curr_cd)', type: 'select',
+        options: () => [{ value: 'KRW', label: '원 (KRW)' }, { value: 'USD', label: '달러 (USD)' }, { value: 'CNY', label: '위안화 (CNY)' }, { value: 'JPY', label: '엔화 (JPY)' }],
+        helpText: '금액 필드(정가/판매가 등)의 표시 기준 통화만 지정 — 환율 자동 변환은 하지 않음.' },
       { key: 'saleDiscntRate',        label: '판매할인율 (sale_discnt_rate)', type: 'number', min: 0, max: 100,
         placeholder: '(예: 20)', hint: '% — 입력 시 판매가 자동계산', onChange: (v, form) => fnSyncFromSaleDiscntRate(form) },
       { key: 'saleDiscntAmt',         label: '판매할인금액 (sale_discnt_amt)', type: 'number', min: 0,
@@ -1905,10 +1980,13 @@ window.PdProdDtl = {
       { key: 'couponId',     label: '쿠폰 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
-      { key: 'regDate',      label: '연결일시', align: 'center',
-        fmt: v => v ? String(v).slice(0, 16) : '' },
+      { key: 'applyStartDate', label: '적용시작일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '즉시' },
+      { key: 'applyEndDate',   label: '적용종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
+      { key: '_remainTime',    label: '남은기간', align: 'center', fmt: (v, r) => fnRemainingTime(r.applyEndDate) },
     ];
     // 프로모션 탭 — 적립금 목록 그리드 (pm_save_item 행)
+    // ⚠ pm_save 는 정책 마스터가 아닌 회원별 적립/사용 원장(거래이력) 구조라 적용기간(시작/종료일) 개념이 없음
+    //   — 쿠폰/할인/사은품과 달리 적용기간 컬럼 추가 보류 (2026-08-23, 별도 설계 결정 필요)
     columns.promoSaveGrid = [
       { key: 'saveId',     label: '적립금 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
@@ -1921,8 +1999,9 @@ window.PdProdDtl = {
       { key: 'discntId',     label: '할인 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
-      { key: 'regDate',      label: '연결일시', align: 'center',
-        fmt: v => v ? String(v).slice(0, 16) : '' },
+      { key: 'applyStartDate', label: '적용시작일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '즉시' },
+      { key: 'applyEndDate',   label: '적용종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
+      { key: '_remainTime',    label: '남은기간', align: 'center', fmt: (v, r) => fnRemainingTime(r.applyEndDate) },
     ];
     // 프로모션 탭 — 사은품 조건 그리드 (pm_gift_cond 행)
     columns.promoGiftGrid = [
@@ -1931,8 +2010,9 @@ window.PdProdDtl = {
         badge: () => 'badge-green', fmt: v => v || 'PRODUCT' },
       { key: 'condTypeCd',   label: '조건유형', style: 'width:100px;', align: 'center',
         fmt: v => v || '-' },
-      { key: 'regDate',      label: '연결일시', align: 'center',
-        fmt: v => v ? String(v).slice(0, 16) : '' },
+      { key: 'applyStartDate', label: '적용시작일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '즉시' },
+      { key: 'applyEndDate',   label: '적용종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
+      { key: '_remainTime',    label: '남은기간', align: 'center', fmt: (v, r) => fnRemainingTime(r.applyEndDate) },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -1944,7 +2024,7 @@ window.PdProdDtl = {
       tabPage, tabData, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, mdModalOpen, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       optGroups, skus, cfTotalStock, generateSkus, moveSku,
-      cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
+      cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered, cfBaseSkuId, cfProdFlags, PROD_FLAG_OPTIONS,
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, getOptValCodes,
       fnBuildLevel1Items, fnBuildLevel2Items,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
@@ -1967,7 +2047,7 @@ window.PdProdDtl = {
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeFind, safeFilter,
       grpCodes, fnProdTypeLabel,
-      fnMdRowStyle, fnRemainSkuRowStyle, fnDateTime,
+      fnMdRowStyle, fnRemainSkuRowStyle, fnDateTime, fnRemainingTime,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
       showToast,
@@ -2083,6 +2163,14 @@ window.PdProdDtl = {
           <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.saleEndDate ? fnDateTime(form.saleEndDate) : '무기한' }}</div>
           <bo-date-time-picker v-else v-model="form.saleEndDate" placeholder-date="무기한" />
         </template>
+        <template #dispStart>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.dispStartDate ? fnDateTime(form.dispStartDate) : '즉시' }}</div>
+          <bo-date-time-picker v-else v-model="form.dispStartDate" placeholder-date="즉시" />
+        </template>
+        <template #dispEnd>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.dispEndDate ? fnDateTime(form.dispEndDate) : '무기한' }}</div>
+          <bo-date-time-picker v-else v-model="form.dispEndDate" placeholder-date="무기한" />
+        </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
       <bo-cm-popup-modal v-if="catPickerOpen" popup-cmd="cmPopup-category-pick" popup-code="category"
@@ -2092,41 +2180,21 @@ window.PdProdDtl = {
       <bo-cm-popup-modal v-if="mdModalOpen" popup-cmd="cmPopup-md-pick" popup-code="user"
         title="담당MD 선택" :on-callback="fnCallbackModal"
         @close="handleBtnAction('mdModal-close')" />
-      <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) — 보기모드는 배지로 표시 ============== -->
-      <div v-if="cfDtlMode" style="display:flex;flex-wrap:wrap;gap:8px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
-        <span class="badge" :class="form.isNew==='Y' ? 'badge-green' : 'badge-gray'">신상품</span>
-        <span class="badge" :class="form.isBest==='Y' ? 'badge-green' : 'badge-gray'">베스트</span>
-        <span class="badge" :class="form.adltYn==='Y' ? 'badge-green' : 'badge-gray'">성인상품</span>
-        <span class="badge" :class="form.sameDayDlivYn==='Y' ? 'badge-green' : 'badge-gray'">당일배송</span>
-        <span class="badge" :class="form.soldOutYn==='Y' ? 'badge-red' : 'badge-gray'">강제품절</span>
-      </div>
-      <div v-else style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />
-          신상품
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <input type="checkbox" :checked="form.isBest==='Y'" @change="form.isBest=$event.target.checked?'Y':'N'" />
-          베스트
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <input type="checkbox" :checked="form.adltYn==='Y'" @change="form.adltYn=$event.target.checked?'Y':'N'" />
-          성인상품
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <input type="checkbox" :checked="form.sameDayDlivYn==='Y'" @change="form.sameDayDlivYn=$event.target.checked?'Y':'N'" />
-          당일배송
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
-          <input type="checkbox" :checked="form.soldOutYn==='Y'" @change="form.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
-          <span style="color:#e8587a;">강제품절</span>
-        </label>
+      <!-- ===== ■.■.■. 신상품/베스트/성인상품/당일배송/강제품절 (BoMultiCheckSelect, 1/3 폭) ============== -->
+      <div style="width:33%;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
+        <label class="form-label" style="margin-bottom:6px;display:block;">상품 속성 (신상품·베스트·성인상품·당일배송·강제품절)</label>
+        <bo-multi-check-select v-model="cfProdFlags" :options="PROD_FLAG_OPTIONS" :show-all="false" wrap list-all
+          placeholder="선택 안 함" :plain="cfDtlMode" :disabled="cfDtlMode" min-width="100%" />
       </div>
       <!-- ===== ■.■.■. 기본 가격 (BoFormArea 자동 렌더) ============================ -->
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
       <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
         기본 가격
         <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
+        <span title="정가·판매가·판매할인율·판매할인금액은 서로 동기화됩니다 — 넷 중 어느 것을 고쳐도 나머지가 자동 재계산됩니다. 판매할인금액이 항상 &quot;정가-판매가&quot; 기준의 최종 저장값입니다."
+          style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:10px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
+          i
+        </span>
       </div>
       <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
@@ -2598,8 +2666,28 @@ window.PdProdDtl = {
           할인 적용 가능 (discnt_use_yn)
         </label>
       </div>
-      <!-- ===== ■.■.■. 쿠폰 목록설정 ========================================= -->
+      <!-- ===== ■.■.■. 할인적용설정 (혜택 큰 순 1위 — 정가 자체를 낮추는 직접할인) =========================================== -->
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 16px;" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          할인적용설정
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoDiscnts.length }}건</span>
+          <span v-if="!form.discntUseYn || form.discntUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-discnt-reload')">🔄 재조회</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-primary" @click="handleBtnAction('promo-discnt-add')">+ 할인 추가</button>
+        </div>
+      </div>
+      <bo-grid bare :columns="columns.promoDiscntGrid" :rows="tabData.promoDiscnts"
+        row-key="discntItemId"
+        empty-text="이 상품에 연결된 할인이 없습니다.">
+        <template v-if="!cfDtlMode" #row-actions="{ row: r }">
+          <button class="btn btn_row_delete" @click="handleBtnAction('promo-discnt-delete', r.discntItemId)">삭제</button>
+        </template>
+      </bo-grid>
+      <!-- ===== ■.■.■. 쿠폰 목록설정 ========================================= -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
           쿠폰 목록설정
@@ -2636,26 +2724,6 @@ window.PdProdDtl = {
         empty-text="이 상품에 연결된 적립금이 없습니다.">
         <template v-if="!cfDtlMode" #row-actions="{ row: r }">
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-save-delete', r.saveItemId)">삭제</button>
-        </template>
-      </bo-grid>
-      <!-- ===== ■.■.■. 할인적용설정 =========================================== -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">
-          할인적용설정
-          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoDiscnts.length }}건</span>
-          <span v-if="!form.discntUseYn || form.discntUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-discnt-reload')">🔄 재조회</button>
-          <button v-if="!cfDtlMode" class="btn btn-sm btn-primary" @click="handleBtnAction('promo-discnt-add')">+ 할인 추가</button>
-        </div>
-      </div>
-      <bo-grid bare :columns="columns.promoDiscntGrid" :rows="tabData.promoDiscnts"
-        row-key="discntItemId"
-        empty-text="이 상품에 연결된 할인이 없습니다.">
-        <template v-if="!cfDtlMode" #row-actions="{ row: r }">
-          <button class="btn btn_row_delete" @click="handleBtnAction('promo-discnt-delete', r.discntItemId)">삭제</button>
         </template>
       </bo-grid>
       <!-- ===== ■.■.■. 사은품 목록설정 =========================================== -->
@@ -2961,7 +3029,10 @@ window.PdProdDtl = {
                   <button type="button" @click="handleBtnAction('sku-move',{sku,dir:'down'})" :disabled="ii===cfSkusFiltered.length-1"
                     style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;padding:0;color:#666;" title="아래로">▼</button>
                 </td>
-                <td style="padding:2px 6px;"><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
+                <td style="padding:2px 6px;">
+                  <span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span>
+                  <span v-if="sku._id===cfBaseSkuId" class="badge badge-blue" style="font-size:10px;margin-left:3px;" title="첫 번째 옵션조합 — 상품목록/홈 대표가로 노출되는 기준상품. 추가금액 0원 고정">기준상품</span>
+                </td>
                 <td v-if="optGroups.length>1" style="padding:2px 6px;border-right:2px solid #e0e8ff;">
                   <span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 }}</span>
                 </td>
@@ -2978,7 +3049,9 @@ window.PdProdDtl = {
                 </td>
                 <td style="padding:2px 4px;background:#fffff8;border-right:2px solid #e0e8ff;">
                   <input type="number" v-model.number="sku.addPrice" placeholder="0"
-                    style="width:100%;font-size:12px;border:1px solid #e8d49a;border-radius:4px;padding:2px 5px;height:22px;text-align:right;" />
+                    :disabled="sku._id===cfBaseSkuId" :title="sku._id===cfBaseSkuId ? '기준상품은 추가금액 0원 고정' : ''"
+                    style="width:100%;font-size:12px;border:1px solid #e8d49a;border-radius:4px;padding:2px 5px;height:22px;text-align:right;"
+                    :style="sku._id===cfBaseSkuId ? 'background:#f5f5f5;color:#999;cursor:not-allowed;' : ''" />
                 </td>
                 <!-- ===== 재고 섹션 (녹색 배경) ======================================= -->
                 <td style="padding:2px 4px;background:#f8fff8;">
