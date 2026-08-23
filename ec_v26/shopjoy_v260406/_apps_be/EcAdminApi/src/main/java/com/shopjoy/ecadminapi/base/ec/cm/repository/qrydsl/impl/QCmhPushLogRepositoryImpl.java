@@ -143,7 +143,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /** 검색조건 빌드 */
     /* searchType 예: "channelCd,failReason,logId,memberId,pushLogContent" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(

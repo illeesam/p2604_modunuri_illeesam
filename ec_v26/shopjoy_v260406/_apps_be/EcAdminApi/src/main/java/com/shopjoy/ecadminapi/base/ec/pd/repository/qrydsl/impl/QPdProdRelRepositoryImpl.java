@@ -145,7 +145,6 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /** 단건/목록/페이지 공용 base query */
     /* searchType 예: "prodId,prodRelId,prodRelTypeCd,relProdId,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(

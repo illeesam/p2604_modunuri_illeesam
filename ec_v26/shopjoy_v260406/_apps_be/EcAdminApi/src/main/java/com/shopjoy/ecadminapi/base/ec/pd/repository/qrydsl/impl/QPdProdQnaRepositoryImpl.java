@@ -156,8 +156,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /** 단건/목록/페이지 공용 base query */
-    /** 검색조건 빌드 — Mapper XML pdProdQnaCond 와 동일 동작 (DTO Request 필드 한정) */
     /* searchType 예: "answContent,answUserId,answYn,dispYn,memberId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
