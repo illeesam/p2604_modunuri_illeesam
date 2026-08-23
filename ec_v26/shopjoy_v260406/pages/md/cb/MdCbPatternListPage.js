@@ -49,9 +49,13 @@ window.MdCbPatternListPage = {
       return 'background:linear-gradient(135deg, hsl(' + h + ',72%,90%), hsl(' + ((h + 40) % 360) + ',68%,80%));';
     };
 
+    /* fnPatternType — 목록에서는 격자 셀 데이터를 따로 조회하지 않으므로(N+1 방지), roundDescText
+       존재 여부만으로 원형 도안 여부를 판단한다(상세화면 cfPatternType 과 같은 기준의 목록판). */
+    const fnPatternType = (p) => (p.roundDescText && p.roundDescText.trim()) ? { icon: '🌀', label: '원형 도안' } : null;
+
     onMounted(fnLoad);
 
-    return { searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange, onOpen, onNew, fnFmtDate, fnThumbStyle,
+    return { searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange, onOpen, onNew, fnFmtDate, fnThumbStyle, fnPatternType,
       viewMode, onSetViewMode };
   },
   template: /* html */`
@@ -89,6 +93,7 @@ window.MdCbPatternListPage = {
         <div class="cb-pattern-badges">
           <span class="cb-badge cb-badge-mono">#{{ p.patternId }}</span>
           <span class="cb-badge">{{ p.rowCount }}단 × {{ p.maxStitchCount }}코</span>
+          <span v-if="fnPatternType(p)" class="cb-badge cb-badge-round">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
         </div>
         <div class="cb-pattern-card-nm">{{ p.patternNm }}</div>
         <div class="cb-pattern-card-meta">
@@ -124,7 +129,10 @@ window.MdCbPatternListPage = {
               <span v-else class="cb-list-thumb-icon">🧶</span>
             </div>
           </td>
-          <td class="cb-list-table-nm">{{ p.patternNm }}</td>
+          <td class="cb-list-table-nm">
+            {{ p.patternNm }}
+            <span v-if="fnPatternType(p)" class="cb-badge cb-badge-round cb-badge-inline">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
+          </td>
           <td>{{ p.rowCount }}단 × {{ p.maxStitchCount }}코</td>
           <td>{{ p.regUserNm || p.memberNm || '알 수 없음' }}</td>
           <td>{{ fnFmtDate(p.regDate) }}</td>
