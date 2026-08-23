@@ -15,6 +15,7 @@
     { id: 'customer', label: '고객센터' },
     { id: 'settle', label: '정산' },
     { id: 'system', label: '시스템' },
+    { id: 'module', label: '모듈' },   // 코바늘 등 독립 FO 모듈의 BO 관리화면 — 그룹으로 계속 추가
     { id: 'devtools', label: '개발도구' },
     { id: 'simul', label: '시뮬레이션' },
   ];
@@ -246,6 +247,14 @@
       { id: 'zdSimulNotiError',  label: '오류정보생성' },
       { group: '이력' },
       { id: 'zdSimulLogMng', label: '시뮬로그' },
+    ],
+    /* 모듈 — 독립 FO 모듈(자체 HTML 진입점 + 자체 헤더/사이드바)의 BO 관리화면.
+       모듈이 늘어날 때마다 이 배열 안에 { group: '모듈명' } 블록을 계속 추가한다. */
+    module: [
+      { group: '코바늘' },
+      { id: 'mdCbPatternMng', label: '도안관리' },
+      { id: 'mdCbSymbolMng', label: '기호관리' },
+      { id: 'mdCbYarnMng', label: '실관리' },
     ],
   };
 

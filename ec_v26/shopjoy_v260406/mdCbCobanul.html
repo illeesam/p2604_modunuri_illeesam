@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>코바늘 도안 제작</title>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       독립 FO 모듈 표준 부트스트랩 — index.html 의 B2~B3 스크립트 블록과 동일 순서.
+       "앞으로 추가될 모듈들도 이런 패턴" (2026-08-23) — 새 모듈은 이 파일을 복사한 뒤
+       B99 섹션의 콘텐츠 컴포넌트(window.MdCbCobanulPage)만 자기 pages/md/{모듈}/*.js 로 바꾸면 된다.
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ H1.1: CDN Core Runtime ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+
+  <!-- ■ H1.2: CDN Libraries ■ -->
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+
+  <!-- ■ H1.2a: Social Login / Payment / Map SDK (외부 CDN, 키는 로그인 후 server init data 로 주입) ■
+       index.html 과 동일 목록 — 상단 헤더의 카카오공유/소셜로그인이 이 스크립트들에 의존한다. -->
+  <!-- Google Identity Services (GIS) — One Tap / OAuth2 popup -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Kakao JavaScript SDK -->
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+          integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+          crossorigin="anonymous"></script>
+  <!-- Naver Login SDK (구버전 jQuery 의존 없음) -->
+  <script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
+  <!-- Toss Payments SDK v2 -->
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+  <!-- Naver Map / Kakao Map: 키가 필요해 로그인 후 동적 로드 → coExtSdk.js 가 동적 <script> 주입 -->
+
+  <!-- ■ H1.3: Fonts & CSS ■ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <script>window.FO_SITE_NO = window.FO_SITE_NO || '01';</script>
+  <link rel="stylesheet" href="assets/css/foGlobalStyle01.css">
+
+  <!-- ■ H3.1: Loading Indicator Styles ■ -->
+  <style>
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#c9a96e;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+
+    /* ══════════════════════════ 코바늘 도안 제작 화면 전용 스타일 ══════════════════════════ */
+    .cb-page { max-width:1280px; margin:0 auto; padding:28px 20px 60px; }
+    .cb-page-title { font-size:21px; font-weight:800; margin-bottom:18px; color:var(--text-primary,#333); letter-spacing:-0.01em; }
+
+    .cb-layout { display:grid; grid-template-columns:220px 1fr 260px; gap:18px; align-items:start; }
+    .cb-layout-2col { grid-template-columns:1fr 260px; }
+    @media (max-width:960px) { .cb-layout, .cb-layout-2col { grid-template-columns:1fr; } }
+
+    .cb-panel { background:var(--bg-card,#fff); border:1px solid var(--border,#eee); border-top:3px solid var(--accent,#c9a96e);
+      border-radius:var(--radius,12px); box-shadow:var(--shadow,0 4px 16px rgba(0,0,0,0.05)); padding:16px; }
+
+    /* 보기모드 잠금 — 편집 컨트롤을 숨기지 않고 흐리게+클릭 불가로만 처리(전 화면 표준 정책) */
+    .cb-locked { pointer-events:none; opacity:.55; filter:grayscale(.15); }
+
+    .cb-empty-hint { color:var(--text-muted,#aaa); font-size:12px; text-align:center; padding:18px 4px; line-height:1.5; }
+
+    /* ── 목록 화면 ── */
+    .cb-hero { background:linear-gradient(135deg, var(--bg-base,#f7f6f4) 0%, var(--accent-dim,#fdf6ea) 100%);
+      border:1px solid var(--border,#eee); border-radius:16px; padding:30px 28px; margin-bottom:22px; position:relative; overflow:hidden; }
+    .cb-hero::after { content:'🧶'; position:absolute; right:24px; top:50%; transform:translateY(-50%); font-size:76px;
+      opacity:.12; pointer-events:none; }
+    .cb-hero-eyebrow { font-size:11px; letter-spacing:.16em; font-weight:800; color:var(--accent,#c9a96e); margin-bottom:8px; }
+    .cb-hero-title { font-size:26px; font-weight:800; color:var(--text-primary,#222); margin-bottom:6px; letter-spacing:-0.01em; }
+    .cb-hero-sub { font-size:13px; color:var(--text-secondary,#777); position:relative; z-index:1; }
+    .cb-list-head { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
+    .cb-view-toggle { display:flex; border:1px solid var(--border,#ddd); border-radius:8px; overflow:hidden; flex-shrink:0; }
+    .cb-view-toggle button { width:34px; height:34px; border:none; background:var(--bg-card,#fff);
+      color:var(--text-secondary,#888); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center;
+      transition:var(--transition,all .15s); border-right:1px solid var(--border,#ddd); }
+    .cb-view-toggle button:last-child { border-right:none; }
+    .cb-view-toggle button:hover { background:var(--bg-base,#f5f5f5); }
+    .cb-view-toggle button.active { background:var(--accent,#c9a96e); color:#fff; }
+    .cb-search-bar { display:flex; gap:8px; flex:1; min-width:220px; }
+    .cb-search-input { flex:1; max-width:420px; }
+    .cb-list-count { font-size:13px; color:var(--text-secondary,#666); margin-bottom:12px; }
+
+    /* ── 일반목록(테이블) ── */
+    .cb-list-table-wrap { background:var(--bg-card,#fff); border:1px solid var(--border,#eee); border-radius:var(--radius,12px);
+      box-shadow:var(--shadow,0 2px 10px rgba(0,0,0,0.04)); overflow:hidden; margin-bottom:22px; }
+    .cb-list-table { width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; }
+    .cb-list-table thead th { text-align:left; padding:11px 10px; background:var(--bg-base,#f7f7f8);
+      color:var(--text-secondary,#666); font-weight:700; font-size:12px; border-bottom:1px solid var(--border,#eee); white-space:nowrap; }
+    .cb-list-table tbody td { padding:12px 10px; border-bottom:1px solid var(--border,#f0f0f0); color:var(--text-primary,#333);
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cb-list-table tbody tr { cursor:pointer; transition:var(--transition,background .12s); }
+    .cb-list-table tbody tr:hover { background:var(--bg-base,#fafafa); }
+    .cb-list-table tbody tr:last-child td { border-bottom:none; }
+    .cb-list-table-nm { font-weight:700; }
+    .cb-list-table-arrow { color:var(--text-muted,#ccc); font-size:16px; text-align:center; }
+    .cb-list-table tbody tr:hover .cb-list-table-arrow { color:var(--accent,#c9a96e); }
+    .cb-list-table .cb-empty-hint { padding:32px 4px; }
+    .cb-card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:18px; margin-bottom:22px; }
+    .cb-pattern-card { background:var(--bg-card,#fff); border:1px solid var(--border,#eee); border-radius:var(--radius,12px);
+      box-shadow:var(--shadow,0 2px 10px rgba(0,0,0,0.04)); overflow:hidden; cursor:pointer; transition:var(--transition,all .15s);
+      display:flex; flex-direction:column; }
+    .cb-pattern-card:hover { border-color:var(--accent,#c9a96e); transform:translateY(-3px); box-shadow:0 10px 24px rgba(0,0,0,0.10); }
+    .cb-pattern-thumb { aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; }
+    .cb-pattern-thumb-icon { font-size:40px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.12)); }
+    .cb-pattern-card-body { padding:14px 14px 16px; display:flex; flex-direction:column; flex:1; }
+    .cb-pattern-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+    .cb-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700;
+      background:var(--bg-base,#f2f2f3); color:var(--text-secondary,#666); }
+    .cb-badge-mono { font-family:monospace; font-weight:600; color:var(--text-muted,#999); }
+    .cb-pattern-card-nm { font-size:15px; font-weight:700; color:var(--text-primary,#333); margin-bottom:8px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cb-pattern-card-meta { display:flex; justify-content:space-between; align-items:center; font-size:11.5px;
+      color:var(--text-secondary,#666); margin-bottom:12px; }
+    .cb-pattern-card-author { font-weight:600; }
+    .cb-pattern-card-date { color:var(--text-muted,#aaa); }
+    .cb-card-btn { margin-top:auto; width:100%; border-radius:8px; font-weight:600; }
+    .fo-grid-pager { display:flex; align-items:center; justify-content:center; gap:5px; flex-wrap:wrap; }
+    .fo-grid-pager button { min-width:30px; height:30px; padding:0 8px; border:1px solid var(--border,#ddd);
+      border-radius:7px; background:var(--bg-card,#fff); color:var(--text-secondary,#666); cursor:pointer; font-size:12px; }
+    .fo-grid-pager button:hover:not(:disabled) { border-color:var(--accent,#c9a96e); color:var(--text-primary,#333); }
+    .fo-grid-pager button.on { background:var(--accent,#c9a96e); border-color:var(--accent,#c9a96e); color:#fff; font-weight:700; }
+    .fo-grid-pager button:disabled { opacity:.4; cursor:default; }
+    .fo-grid-pager-size { height:30px; border-radius:7px; border:1px solid var(--border,#ddd); font-size:12px; padding:0 6px; }
+
+    /* ── 상세/편집 화면 상단 ── */
+    .cb-detail-head { display:flex; align-items:center; margin-bottom:20px; }
+    .cb-detail-id { font-size:13px; font-weight:400; color:var(--text-muted,#999); margin-left:8px; font-family:monospace; vertical-align:middle; }
+    .cb-back-btn { border-radius:9px; font-weight:700; white-space:nowrap; }
+
+    /* ── 중앙: 격자 편집기 ── */
+    .cb-panel-editor { padding:18px; }
+    .cb-editor-toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;
+      background:var(--bg-base,#f7f7f8); border-radius:10px; padding:10px 12px; }
+    .cb-toolbar-actions { display:flex; gap:8px; margin-left:auto; padding-left:12px; border-left:1px solid var(--border,#ddd); }
+    .cb-name-field { display:flex; flex-direction:column; gap:3px; }
+    .cb-field-label { font-size:10.5px; font-weight:700; color:var(--text-muted,#999); text-transform:uppercase; letter-spacing:.04em; }
+    .cb-name-input { width:170px; }
+    .cb-grid-presets { display:flex; gap:5px; }
+    .cb-preset-btn { padding:6px 10px; font-size:12px; border-radius:7px; border:1px solid var(--border,#ddd);
+      background:var(--bg-card,#fff); color:var(--text-secondary,#666); cursor:pointer; transition:var(--transition,all .15s); font-weight:600; }
+    .cb-preset-btn:hover { border-color:var(--accent,#c9a96e); color:var(--text-primary,#333); }
+    .cb-preset-btn.active { background:var(--accent,#c9a96e); border-color:var(--accent,#c9a96e); color:#fff; }
+    .cb-size-label { font-size:12px; color:var(--text-secondary,#666); display:flex; align-items:center; gap:5px; font-weight:600; }
+    .cb-size-input { width:56px; padding:5px 6px; border-radius:6px; border:1px solid var(--border,#ddd); text-align:center;
+      background:var(--bg-card,#fff); }
+    .cb-save-btn { border-radius:9px; font-weight:700; padding:8px 22px; }
+    .cb-del-btn { border-radius:9px; font-weight:700; padding:8px 16px; }
+
+    .cb-grid-wrap { position:relative; padding:26px; display:inline-flex; max-width:100%; }
+    .cb-grid-scroll { overflow:auto; max-height:560px; border:1px solid var(--border,#eee); border-radius:8px;
+      background:var(--bg-base,#fafafa); padding:2px; }
+    .cb-grid-row { display:flex; }
+    .cb-cell { width:28px; height:28px; border:1px solid var(--border,#e2e2e2); display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:14px; user-select:none; flex-shrink:0; background:var(--bg-card,#fff); transition:outline-color .1s; }
+    .cb-cell:hover { outline:2px solid var(--accent,#c9a96e); outline-offset:-2px; z-index:1; position:relative; }
+
+    .cb-edge-btn { position:absolute; width:26px; height:26px; border-radius:50%; border:1px solid var(--border,#ddd);
+      background:var(--bg-card,#fff); color:var(--accent,#c9a96e); font-size:15px; font-weight:800; line-height:1;
+      cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center;
+      transition:var(--transition,all .15s); z-index:2; }
+    .cb-edge-btn:hover { background:var(--accent,#c9a96e); color:#fff; transform:scale(1.08); }
+    .cb-edge-top    { top:-6px;    left:50%; transform:translateX(-50%); }
+    .cb-edge-bottom { bottom:-6px; left:50%; transform:translateX(-50%); }
+    .cb-edge-left   { left:-6px;   top:50%;  transform:translateY(-50%); }
+    .cb-edge-right  { right:-6px;  top:50%;  transform:translateY(-50%); }
+    .cb-edge-top:hover, .cb-edge-bottom:hover { transform:translateX(-50%) scale(1.08); }
+    .cb-edge-left:hover, .cb-edge-right:hover { transform:translateY(-50%) scale(1.08); }
+
+    .cb-desc-area { margin-top:16px; }
+    .cb-desc-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
+    .cb-desc-title { font-size:13px; font-weight:700; color:var(--text-primary,#333); }
+    .cb-desc-textarea { width:100%; font-size:13px; border-radius:8px; transition:border-color .15s; }
+    .cb-desc-textarea:focus { border-color:var(--accent,#c9a96e); outline:none; }
+
+    /* ── 우측: 기호 팔레트 / 배색 / 사용 실 ── */
+    .cb-panel-side { display:flex; flex-direction:column; }
+    .cb-side-title { font-size:12px; font-weight:800; color:var(--text-secondary,#777); letter-spacing:.02em;
+      margin:16px 0 8px; text-transform:uppercase; }
+    .cb-side-title:first-child { margin-top:0; }
+
+    .cb-symbol-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
+    .cb-symbol-btn { aspect-ratio:1; border:1.5px solid var(--border,#ddd); border-radius:7px; display:flex; align-items:center;
+      justify-content:center; font-size:13px; cursor:pointer; background:var(--bg-base,#fafafa); transition:var(--transition,all .15s); }
+    .cb-symbol-btn:hover { border-color:var(--accent,#c9a96e); transform:translateY(-1px); }
+    .cb-symbol-btn.active { border-color:var(--accent,#c9a96e); background:var(--accent-dim,#fdf6ea);
+      box-shadow:0 0 0 3px rgba(201,169,110,0.18); }
+    .cb-symbol-btn-eraser { color:var(--text-muted,#999); font-size:14px; }
+    .cb-symbol-name { font-size:12px; color:var(--text-secondary,#666); margin-top:8px; min-height:16px; text-align:center; }
+
+    .cb-color-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
+    .cb-color-swatch { aspect-ratio:1; border-radius:7px; cursor:pointer; border:2px solid rgba(0,0,0,0.06);
+      transition:var(--transition,transform .12s); }
+    .cb-color-swatch:hover { transform:scale(1.1); }
+    .cb-color-swatch.active { outline:2px solid var(--accent,#c9a96e); outline-offset:2px; }
+    .cb-color-custom { width:100%; height:32px; margin-top:8px; border-radius:7px; border:1px solid var(--border,#ddd); cursor:pointer; }
+
+    .cb-yarn-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+    .cb-yarn-swatch { aspect-ratio:1; border-radius:50%; cursor:pointer; border:2px solid rgba(0,0,0,0.08);
+      transition:var(--transition,transform .12s); }
+    .cb-yarn-swatch:hover { transform:scale(1.15); }
+    .cb-yarn-swatch.active { outline:2px solid var(--accent,#c9a96e); outline-offset:2px; }
+
+    .cb-yarn-chips { display:flex; flex-direction:column; gap:6px; }
+    .cb-yarn-chip { display:flex; align-items:center; gap:6px; background:var(--bg-base,#f7f7f8);
+      border:1px solid var(--border,#eee); border-radius:8px; padding:5px 7px; }
+    .cb-yarn-chip-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; border:1px solid rgba(0,0,0,0.1); }
+    .cb-yarn-chip-nm { font-size:12px; font-weight:600; color:var(--text-primary,#333); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; max-width:64px; }
+    .cb-yarn-chip-desc { flex:1; min-width:0; border:none; background:transparent; font-size:11px;
+      color:var(--text-secondary,#666); padding:2px 4px; }
+    .cb-yarn-chip-desc:focus { outline:1px solid var(--accent,#c9a96e); border-radius:4px; }
+    .cb-yarn-chip-del { color:#e8587a; font-size:11px; opacity:.6; cursor:pointer; padding:2px 4px; flex-shrink:0; }
+    .cb-yarn-chip-del:hover { opacity:1; }
+
+    .cb-toast-stack { position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+    .cb-toast { padding:10px 16px; border-radius:8px; font-size:13px; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.15); min-width:200px; }
+    .cb-toast.info { background:#333; }
+    .cb-toast.success { background:#2e7d32; }
+    .cb-toast.error { background:#c62828; }
+  </style>
+</head>
+<body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
+  <div id="app"></div>
+
+  <!-- ■ B2.1: Axios & Utility Wrappers ■ -->
+  <script src="lib/license/licenseFo.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <!-- jsPDF + html2canvas: 화면 영역을 그대로 캡처해 PDF 로 내려받는 기능용(coUtil.cofExportPdf, 헤더 PDF 아이콘) -->
+  <script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="lib/utils/foApiAxios.js"></script>
+  <script src="lib/utils/foUtil.js"></script>
+  <script src="lib/env/foEnvConsts.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
+  <script src="lib/utils/coAuth.js"></script>
+
+  <!-- ■ B2.2: 공통 API 서비스 ■ -->
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/mdCbApiSvc.js"></script>
+
+  <!-- ■ B2.3: Config ■ -->
+  <script src="lib/app/foAppConfig.js"></script>
+
+  <!-- ■ B3.1: Pinia Stores ■ -->
+  <script src="lib/stores/fo/foAppInitStore.js"></script>
+  <script src="lib/stores/fo/foAppStore.js"></script>
+  <script src="lib/stores/fo/foAuthStore.js"></script>
+  <script src="lib/stores/fo/foCodeStore.js"></script>
+
+  <!-- ■ B3.2: Auth orchestrator (foAuthStore 의존) ■ -->
+  <script src="lib/app/foAppAuth.js"></script>
+
+  <!-- ■ B3.2: Layout Components (ShopJoy 공통 헤더/사이드바/푸터) ■ -->
+  <script src="components/layout/foAppFooter.js"></script>
+  <script src="components/layout/foAppHeader.js"></script>
+  <script src="components/layout/foAppSidebar.js"></script>
+
+  <!-- ■ B3.3: Base Components & 로그인 모달 ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/FoComp.js"></script>
+  <script src="components/comp/FoAreaComp.js"></script>
+  <script src="components/comp/CoWidgetComp.js"></script>
+  <!-- Login.js 의 "회원선택"(개발용) 서브모달이 bo-multi-check-select 를 씀(FO/BO 공용 위젯) -->
+  <script src="components/comp/BoComp.js"></script>
+  <script src="pages/fo/Login.js"></script>
+
+  <!-- ■ B3.4: 독립 모듈 공용 셸 (theme/auth/사이드바/토스트 — index.html 의 foAppBase.js 축약판) ■ -->
+  <script src="lib/app/foModuleShell.js"></script>
+
+  <!-- ■ B4.1: 이 모듈의 콘텐츠 컴포넌트 (pages/md/{모듈}/) — 목록/상세 분리(2026-08-23) ■ -->
+  <script src="pages/md/cb/MdCbPatternListPage.js"></script>
+  <script src="pages/md/cb/MdCbCobanulPage.js"></script>
+
+  <!-- ■ B99: 메인 앱 부트스트랩 (반드시 마지막) ■ -->
+  <script>
+    (function () {
+      const { createApp, computed } = Vue;
+
+      const pinia = Pinia.createPinia();
+      window.foAuth.init(pinia);
+
+      const ModuleRoot = {
+        name: 'CbCobanulModuleRoot',
+        setup() {
+          const shell = window.foModuleShell.create();
+          /* 이 모듈은 index.html 라우팅 밖이라 page 값이 고정 — 헤더/사이드바가 현재 메뉴를
+             하이라이트할 근거로만 쓰고, 실제 화면 전환에는 관여하지 않는다. */
+          const page = computed(() => 'cobanul');
+          /* 목록/상세 2뷰 — 쿼리스트링 기준(해시 라우터 없이 전체 새로고침으로 전환).
+             view=editor 이거나 patternId 가 있으면 상세(편집), 그 외엔 목록. */
+          const qs = new URLSearchParams(location.search);
+          const curView = (qs.get('view') === 'editor' || qs.get('patternId')) ? 'editor' : 'list';
+          return { ...shell, page, curView };
+        },
+        template: /* html */`
+<div style="min-height:100vh;display:flex;flex-direction:column;">
+  <fo-app-header
+    :page="page" :theme="theme" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
+    :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :app-cart-count="cfCartCount" :app-like-count="cfLikeCount"
+    :app-auth="auth" :on-app-show-login="onShowLogin" :on-app-logout="onLogout"
+    :app-show-settings="showSettings" :app-show-api-log="showApiLog"
+    :app-api-logs="foApiLogs" :app-api-toast="apiToastEnabled"
+    @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-toggle-mobile="toggleMobileMenu"
+    @modu-fo-toggle-settings="showSettings=!showSettings"
+    @modu-fo-toggle-api-log="onToggleApiLog"
+    @modu-fo-toggle-api-toast="onToggleApiToast"
+  />
+  <div style="flex:1;display:flex;overflow:hidden;position:relative;">
+    <fo-app-sidebar
+      v-show="cfShowSidebar || uiState.mobileOpen"
+      :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
+      :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
+      @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-close-mobile="closeMobileMenu"
+    />
+    <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
+    <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
+      <md-cb-pattern-list-page v-if="curView==='list'" :show-toast="showToast" />
+      <md-cb-cobanul-page v-else :show-toast="showToast" />
+      <fo-app-footer :config="config" :navigate="navigate" />
+    </main>
+  </div>
+
+  <login v-if="uiState.showLogin" :show-toast="showToast" @close="uiState.showLogin=false" />
+
+  <div v-if="toasts.length" class="cb-toast-stack">
+    <div v-for="t in toasts" :key="t.id" class="cb-toast" :class="t.type">{{ t.msg }}</div>
+  </div>
+</div>
+`,
+      };
+
+      const app = createApp(ModuleRoot);
+      app.use(pinia);
+      /* foAppComp.js 의 foRegisterComponents(app) 는 체이닝 도중 하나라도 window.X 가
+         undefined 면 (Vue app.component(name, falsy) 가 getter 로 오동작해 this 대신 undefined 를
+         반환) 체인이 끊겨 크래시한다 — index.html 은 모든 페이지 컴포넌트를 다 로드해서 문제가 없었을 뿐.
+         이 모듈은 일부만 로드하므로 체이닝 없이 개별 호출로 등록한다(하나가 undefined 여도 다음 줄에
+         영향 없음). */
+      app.component('FoAppHeader', window.foAppHeader);
+      app.component('FoAppSidebar', window.foAppSidebar);
+      app.component('FoAppFooter', window.foAppFooter);
+      app.component('Login', window.Login);
+      app.component('FoPage', window.FoPage);
+      app.component('FoContainer', window.FoContainer);
+      app.component('FoSearchArea', window.FoSearchArea);
+      app.component('FoFormArea', window.FoFormArea);
+      app.component('FoGrid', window.FoGrid);
+      app.component('FoGridCrud', window.FoGridCrud);
+      app.component('FoModal', window.FoModal);
+      app.component('FoRowCancelDelete', window.FoRowCancelDelete);
+      app.component('FoPager', window.FoPager);
+      app.component('FoTabBar', window.FoTabBar);
+      app.component('BaseAttachGrp', window.BaseAttachGrp);
+      app.component('BaseHtmlEditor', window.BaseHtmlEditor);
+      app.component('BaseTossPayWidget', window.BaseTossPayWidget);
+      app.component('CoBarcodeWidget', window.CoBarcodeWidget);
+      app.component('CoCountdownWidget', window.CoCountdownWidget);
+      app.component('BoMultiCheckSelect', window.BoMultiCheckSelect);
+      app.component('MdCbPatternListPage', window.MdCbPatternListPage);
+      app.component('MdCbCobanulPage', window.MdCbCobanulPage);
+      app.mount('#app');
+
+      const loadingEl = document.getElementById('_boot_loading');
+      if (loadingEl) {
+        loadingEl.classList.add('done');
+        setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
+      }
+    })();
+  </script>
+</body>
+</html>

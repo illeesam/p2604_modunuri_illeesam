@@ -2805,6 +2805,9 @@
             <sy-code-mng  v-else-if="page==='syCodeMng'"  :navigate="navigate" />
             <sy-code-dtl  v-else-if="page==='syCodeDtl'"  :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />
             <sy-brand-mng  v-else-if="page==='syBrandMng'"  :navigate="navigate" />
+            <md-cb-symbol-mng  v-else-if="page==='mdCbSymbolMng'"  :navigate="navigate" />
+            <md-cb-yarn-mng  v-else-if="page==='mdCbYarnMng'"  :navigate="navigate" />
+            <md-cb-pattern-mng  v-else-if="page==='mdCbPatternMng'"  :navigate="navigate" />
             <sy-attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" />
             <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :open-new-window="openNewWindow" />
             <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />

@@ -44,6 +44,10 @@ window.boRegisterComponents = function (app) {
     .component('PdQnaMng', window.PdQnaMng)
     .component('PdRestockNotiMng', window.PdRestockNotiMng)
     .component('PdTagMng', window.PdTagMng)
+    /* ── pages/bo/md/cb/ — 코바늘(모듈 관리) ── */
+    .component('MdCbSymbolMng', window.MdCbSymbolMng)
+    .component('MdCbYarnMng', window.MdCbYarnMng)
+    .component('MdCbPatternMng', window.MdCbPatternMng)
     /* ── pages/co/ec/ — 주문 칸반 ── */
     .component('OdOrderKanban', window.OdOrderKanban)
     /* ── pages/bo/ec/ — 주문 ── */
