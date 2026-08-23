@@ -235,18 +235,23 @@ window.MdCbCobanulPage = {
     showToast: { type: Function, default: () => {} }, // 토스트 알림
   },
   setup(props) {
-    const { reactive, ref, computed, onMounted, onUnmounted } = Vue;
+    const { reactive, ref, computed, watch, onMounted, onUnmounted } = Vue;
 
     const symbols = reactive([]);
     const yarns = reactive([]);
     const patternYarns = reactive([]); // [{ yarnId, usageDesc }] — 이 도안에 사용된 실(재료) 목록
     const uiState = reactive({
-      loading: false, activeSymbolId: null, activeColor: '#333333', activeYarnId: null,
+      loading: false, activeSymbolId: null,
+      activeColor: localStorage.getItem('modu-md-cb-active-color') || '#333333', // 마지막으로 고른 배색을 다음에도 기본값으로
+      activeYarnId: null,
       isPainting: false, dragMode: 'paint', thumbUploading: false,
       dtlMode: 'edit', // 'view' | 'edit' — 목록에서 행 클릭=보기, [수정] 클릭=수정모드 (신규 작성은 항상 edit)
+      chartMode: 'symbol', // 'symbol'(기호 도안, 편집 가능) | 'color'(배색 도안 — 색상 칸+구간 개수, 읽기전용 미리보기)
     });
     const cfReadonly = computed(() => uiState.dtlMode === 'view');
     const thumbInputRef = ref(null);
+    /* 배색을 고를 때마다 다음 세션의 기본값으로 영속화(직접 색상 입력 v-model 도 포함해야 해서 watch 사용) */
+    watch(() => uiState.activeColor, (v) => { try { localStorage.setItem('modu-md-cb-active-color', v); } catch (_) {} });
 
     const form = reactive({ patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', thumbnailUrl: '' });
     /* cells: { "row_col": { symbolId, colorHex } } */
@@ -284,6 +289,19 @@ window.MdCbCobanulPage = {
       const sym = symbolMap.value[cell.symbolId];
       if (!sym) return null;
       return { svg: fnSymIcon(sym), char: sym.symbolChar };
+    };
+
+    /* fnColorRunStart — "배색 도안" 보기 전용. (r,c)가 같은 색이 연속되는 구간의 시작 칸이면
+       그 구간 길이를 반환(구간 중간 칸이면 null) — 시작 칸에만 "몇 코"인지 숫자를 겹쳐 보여주기 위함 */
+    const fnColorRunStart = (r, c) => {
+      const cell = cellMap[r + '_' + c];
+      if (!cell || !cell.colorHex) return null;
+      const prev = cellMap[r + '_' + (c - 1)];
+      if (prev && prev.colorHex === cell.colorHex) return null;
+      let count = 1;
+      let cc = c + 1;
+      while (cellMap[r + '_' + cc] && cellMap[r + '_' + cc].colorHex === cell.colorHex) { count++; cc++; }
+      return count;
     };
 
     const yarnMap = computed(() => {
@@ -547,7 +565,7 @@ window.MdCbCobanulPage = {
 
     return {
       symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfGroupedSymbols, cfRows, cfCols, cfReadonly,
-      PRESET_COLORS, GRID_PRESETS, thumbInputRef, fnSymIcon, fnCellDisplay,
+      PRESET_COLORS, GRID_PRESETS, thumbInputRef, fnSymIcon, fnCellDisplay, fnColorRunStart,
       onNewPattern, onBackToList, onCellMouseDown, onCellMouseEnter, onGenDesc, onParseDesc, onSave, onDeletePattern,
       onSwitchToEdit, onCancelEdit, onOpenThumbPicker, onThumbFileChange, onRemoveThumb, onResetForm,
       onPickPresetColor, onPickYarnColor, onAddPatternYarn, onRemovePatternYarn,
@@ -623,7 +641,13 @@ window.MdCbCobanulPage = {
         </div>
       </div>
 
-      <div class="cb-grid-wrap" :class="{ 'cb-locked': cfReadonly }">
+      <div class="cb-chart-mode-toggle">
+        <button :class="{ active: uiState.chartMode==='symbol' }" @click="uiState.chartMode='symbol'">🧩 기호 도안</button>
+        <button :class="{ active: uiState.chartMode==='color' }" @click="uiState.chartMode='color'">🎨 배색 도안</button>
+      </div>
+
+      <!-- 기호 도안(편집 가능) -->
+      <div v-if="uiState.chartMode==='symbol'" class="cb-grid-wrap" :class="{ 'cb-locked': cfReadonly }">
         <div class="cb-edge-group cb-edge-top">
           <button class="cb-edge-btn" title="윗단 줄이기" @click="onRemoveRowTop">－</button>
           <button class="cb-edge-btn" title="윗단 늘리기" @click="onAddRowTop">＋</button>
@@ -652,6 +676,22 @@ window.MdCbCobanulPage = {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 배색 도안(읽기전용 미리보기) — 색상 칸 + 같은 색 연속 구간마다 개수 표시 + 단/코 눈금 -->
+      <div v-else class="cb-chart-wrap">
+        <div class="cb-chart-row cb-chart-axis-row">
+          <div class="cb-chart-corner"></div>
+          <div v-for="c in cfCols" :key="c" class="cb-chart-axis-cell">{{ c }}</div>
+        </div>
+        <div v-for="r in cfRows" :key="r" class="cb-chart-row">
+          <div class="cb-chart-axis-cell">{{ r }}</div>
+          <div v-for="c in cfCols" :key="c" class="cb-chart-cell"
+            :style="cellMap[r+'_'+c] && cellMap[r+'_'+c].colorHex ? ('background:' + cellMap[r+'_'+c].colorHex + ';') : ''">
+            <span v-if="fnColorRunStart(r,c)" class="cb-chart-count">{{ fnColorRunStart(r,c) }}</span>
+          </div>
+        </div>
+        <div v-if="!Object.keys(cellMap).length" class="cb-empty-hint">기호 도안에서 칸을 칠하면 여기에 배색 도안이 자동으로 만들어집니다.</div>
       </div>
 
       <div class="cb-desc-area">
