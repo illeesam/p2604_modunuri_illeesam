@@ -2851,7 +2851,7 @@ window.PdProdDtl = {
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <!-- ===== ■.■.■. 회원 적용가능 프로모션정보 (읽기전용 — pm_coupon_prod/pm_save_prod 전개 + 회원 발급여부, 2x2) ===== -->
-      <div class="section-title">회원 적용가능 프로모션정보</div>
+      <div class="section-title">(정보확인) 회원 적용가능 프로모션정보</div>
       <div style="display:flex;align-items:center;gap:8px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
         <span style="font-size:13px;font-weight:700;">회원검색</span>
         <span style="font-size:12px;color:#333;">{{ uiState.applicableMemberNm ? (uiState.applicableMemberNm + ' (' + uiState.applicableMemberId + ')') : '전체 상품 적용가능 프로모션 표시 중' }}</span>

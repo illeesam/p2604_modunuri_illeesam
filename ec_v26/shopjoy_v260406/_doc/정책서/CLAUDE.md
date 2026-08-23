@@ -247,6 +247,7 @@
 | **BoGrid 컬럼 속성화** ⭐ | `sy.51.프로그램설계정책.md` §4.6 — #cell- 슬롯 대신 columns 의 fmt/badge/cellStyle/cellClass/edit 로 (AG-Grid colDef 식) |
 | **BoFormArea 폼 자동 렌더** ⭐ | `sy.51.프로그램설계정책.md` §4.7 — Dtl 의 form-row 보일러플레이트를 `baseFormColumns`/`infoFormColumns` 정의로 대체 (BO Dtl 28개 전환 완료) |
 | **화면 영역 표준 뼈대** ⭐ | `base/base.UX-bo.md` §6.12 — `<bo-page>`(화면 래퍼) / `<bo-container>`(영역 래퍼, bare) / `.bo-2col`(2열). FO 대응 `<fo-page>`(배너 흡수) / `<fo-container>` / `.fo-2col`. 날 `page-title`+`card` 마크업 폐기 |
+| **탭 내부 그룹 구분** ⭐ | `base/base.UX-bo.md` §12.4 — 한 Dtl 탭 안에서 여러 그리드/섹션을 나누는 소제목은 `class="section-title"` 하나로 통일(핑크 불릿+밑줄 자동). 별도 `<hr>` 병기 금지. 참조: `PdProdDtl.js` 프로모션 탭 |
 | **소스 코드 포매팅** ⭐ | `base/base.코드스타일-admin-vue.md` §12 — template HTML 2칸 들여쓰기 + JS 빈줄 1줄 압축. `boApp.js` 예외. 일반 IDE 포매터 금지(전용 도구만) |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **기능을 어디에 만드는가 (레이어)** ⭐ | `base/base.기술-api.md` §3.4-A / §4 — 단순CRUD=base, 외부연동·발송=co/cm, 관리자=bo, 사용자=fo |

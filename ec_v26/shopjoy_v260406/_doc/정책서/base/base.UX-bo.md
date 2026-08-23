@@ -1413,6 +1413,40 @@ props: { ..., active: { type: Boolean, default: true } }
 >   `formMode`/`dtlMode`/`cfSelectedRow` — 각 화면 실제 변수에 맞춰 적용.
 > - 2단계 종속 화면(SyVendorUser/PdReview)은 상위 미선택 시 안내문구를, 하위 미선택 시 빈 폼+버튼숨김.
 
+### 12.4 탭 내부 그룹 구분 — `.section-title` ⭐ (2026-08-23)
+
+한 Dtl 탭 안에 여러 그리드/섹션이 세로로 나열될 때(예: 프로모션 탭의 "할인/쿠폰/적립금/사은품"
+4개 그리드와, 그 아래 "회원 적용가능 쿠폰/적립금" 4개 그리드), 서로 다른 의미 단위를 나누는
+그룹 제목은 임의의 `<div style="font-weight:700;...">` 를 새로 만들지 말고 **`class="section-title"`
+하나만 붙인다**.
+
+```html
+<!-- ✅ 표준 -->
+<div class="section-title">상품 프로모션 정보</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <!-- 할인/쿠폰/적립금/사은품 그리드 4개 -->
+</div>
+
+<div class="section-title">회원 적용가능 프로모션정보</div>
+<!-- 회원검색 + 4개 그리드 -->
+
+<!-- ❌ 금지 — 그룹마다 색/굵기를 새로 정의 -->
+<div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;">상품 프로모션 정보</div>
+```
+
+- `.section-title` 은 원래 `BoFormArea` 의 `{ type: 'group', label: '...' }` (§4.7, 폼 필드 묶음용)가
+  쓰는 클래스와 **같은 CSS**(`assets/css/boGlobalStyle0N.css`) — 핑크 불릿(`::before{content:"●"}`)
+  + 하단 핑크 밑줄(`border-bottom`)이 자동 적용된다. 폼 필드 그룹이든 그리드/섹션 그룹이든 "탭 안에서
+  더 작은 의미 단위로 나눈다"는 목적이 같으므로 시각적으로 동일하게 취급한다.
+- 탭 맨 첫 그룹은 `style="margin-top:0;"` 를 덧붙여 상단 여백을 없앤다(그 외에는 기본 `margin:18px 0 10px`
+  그대로 사용).
+- **바로 위에 별도 `<hr>` 구분선을 추가로 넣지 않는다** — `.section-title` 자체의 `border-bottom` 이
+  구분선 역할을 이미 하므로 겹치면 이중선이 된다.
+- 도움말 아이콘이 필요하면 `col.desc` 슬롯과 동일하게 `title` 속성을 단 원형 `i` 아이콘을 라벨 옆에
+  직접 추가한다(§4.7 그룹 `desc` 아이콘 패턴 참조) — `.section-title` 자체엔 desc 슬롯이 없다(BoFormArea
+  전용이므로 순수 HTML 문자열로 쓸 때는 아이콘 마크업을 직접 붙인다).
+- 참조 모델: [`pages/bo/ec/pd/PdProdDtl.js`](../../../pages/bo/ec/pd/PdProdDtl.js) 프로모션 탭 — "상품 프로모션 정보"/"회원 적용가능 프로모션정보" 2개 그룹.
+
 ---
 
 ## 13. 인라인 그리드 편집
