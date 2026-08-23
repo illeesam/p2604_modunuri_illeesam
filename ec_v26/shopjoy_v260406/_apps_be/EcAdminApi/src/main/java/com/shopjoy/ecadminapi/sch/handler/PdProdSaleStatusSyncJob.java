@@ -13,14 +13,18 @@ import java.util.List;
 
 /**
  * 상품 판매기간(saleStartDate/saleEndDate) 기준 판매상태(prodStatusCd) 자동 동기화.
- * PROD_STATUS_CD 실제 등록 코드: DRAFT(임시저장)/SCHEDULED(판매예정)/ACTIVE(판매중)/SOLDOUT(품절)/INACTIVE(중지)
- * — pd.03 정책서의 STOPPED/DISCONTINUED 는 sy_code 에 등록돼 있지 않은 값이라 사용하지 않는다.
  *
- * SCHEDULED/ACTIVE 만 배치 대상 — DRAFT 는 "아직 작성 중"인 관리자 수동 상태라 배치가 절대 건드리지
- * 않는다(2026-08-23 변경: 이전엔 DRAFT 도 자동 전환 대상이었으나, 판매기간만 설정된 미완성 초안이
- * 날짜 도달만으로 실수로 공개되는 걸 막기 위해 SCHEDULED 로 분리). 관리자가 등록을 다 마치고 상태를
- * DRAFT→SCHEDULED 로 직접 바꿔야 이후 판매시작일에 배치가 ACTIVE 로 전환한다.
- * INACTIVE/SOLDOUT 은 관리자 수동/재고 기반 상태라 배치가 건드리지 않는다.
+ * <p>PROD_STATUS_CD 실제 등록 코드(2026-08-23 4종으로 재정리): DRAFT(임시저장)/ACTIVE(전시중)/
+ * INACTIVE(판매중지)/ENDED(판매종료). 예전에 있던 SCHEDULED(판매예정)/SOLDOUT(품절)은 별도 상태로
+ * 두지 않고 ACTIVE(전시중) 하나로 흡수했다 — "지금 진짜 살 수 있는지"(판매예정/판매중/품절)는 상태가
+ * 아니라 판매기간(sale_start_date~sale_end_date)과 재고(sold_out_yn)를 FO 조회 시점에 직접 계산해서
+ * 판단한다(전시중이기만 하면 노출은 되고, 그 안에서 배지만 달라짐). 상세 → FoPdProdService.
+ *
+ * <p><b>배치가 관여하는 상태는 ACTIVE↔INACTIVE 둘뿐이다</b> — 판매기간을 벗어나면 ACTIVE→INACTIVE로
+ * 내리고, (관리자가 종료일을 다시 미래로 늘리는 등) 판매기간 안으로 돌아오면 INACTIVE→ACTIVE로
+ * 되돌린다. DRAFT(작성 중)와 ENDED(관리자가 명시적으로 완전히 끝낸 판매종료)는 배치가 절대 건드리지
+ * 않는다 — DRAFT는 미완성 초안이 날짜만으로 실수 공개되는 걸 막기 위함이고, ENDED는 관리자의 최종
+ * 결정이라 날짜가 바뀐다고 되살아나면 안 되기 때문이다(되살리려면 관리자가 직접 ACTIVE로 전환).
  */
 @Slf4j
 @Component
@@ -58,17 +62,16 @@ public class PdProdSaleStatusSyncJob implements SchBatchJobHandler {
     }
 
     /**
-     * start(sale_start_date)는 2026-08-23부터 NOT NULL(등록 시 자동 현재시각 채움)이라 null 분기가 없다.
+     * start(sale_start_date)는 NOT NULL(등록 시 자동 현재시각 채움)이라 null 분기가 없다.
      * end(sale_end_date)는 여전히 NULL=무기한 허용이라 그 분기만 남긴다.
      */
     private String resolveProdStatus(LocalDateTime now, String curStatus, LocalDateTime start, LocalDateTime end) {
-        if ("SCHEDULED".equals(curStatus)) {
-            if (!now.isBefore(start) && (end == null || !now.isAfter(end))) return "ACTIVE";
-            return null;
-        }
+        boolean withinPeriod = !now.isBefore(start) && (end == null || !now.isAfter(end));
         if ("ACTIVE".equals(curStatus)) {
-            if (end != null && now.isAfter(end)) return "INACTIVE";
-            return null;
+            return withinPeriod ? null : "INACTIVE";
+        }
+        if ("INACTIVE".equals(curStatus)) {
+            return withinPeriod ? "ACTIVE" : null;
         }
         return null;
     }

@@ -54,7 +54,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QVwSyCode     codeProdTypeCd = new QVwSyCode("cd_pt");
     private static final QVwSyCode     codeSizeInfoCd = new QVwSyCode("cd_sz");    /*
      * baseListQuery / selectById — 코드성 필드 예시 코드값 (sy_code 등록 기준)
-     * PROD_STATUS_CD  {DRAFT: '임시저장', SCHEDULED: '판매예정', ACTIVE: '판매중', SOLDOUT: '품절', INACTIVE: '중지'}
+     * PROD_STATUS_CD  {DRAFT: '임시저장', ACTIVE: '전시중', INACTIVE: '판매중지', ENDED: '판매종료'}
      * PROD_TYPE_CD   (PROD_TYPE)    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'} — Entity 주석 기준 예시(코드그룹 미등록)
      * SIZE_INFO_CD   (PRODUCT_SIZE)    {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
      * IS_NEW/IS_BEST/ADLT_YN/SAME_DAY_DLIV_YN/SOLD_OUT_YN/COUPON_USE_YN/SAVE_USE_YN/DISCNT_USE_YN/SIMUL_YN  {Y: '예', N: '아니오'}
@@ -80,7 +80,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.marginRate,                 // 마진율(%) — 내부 관리용
                         pdProd.platformFeeRate,             // 플랫폼수수료 율(%) — 내부 관리용
                         pdProd.platformFeeAmount,           // 플랫폼수수료 금액(원) — 내부 관리용
-                        pdProd.prodStatusCd,                 // 상태 — PROD_STATUS_CD {DRAFT:임시저장, SCHEDULED:판매예정, ACTIVE:판매중, SOLDOUT:품절, INACTIVE:중지}
+                        pdProd.prodStatusCd,                 // 상태 — PROD_STATUS_CD {DRAFT:임시저장, ACTIVE:전시중, INACTIVE:판매중지, ENDED:판매종료}
                         pdProd.prodStatusCdBefore,           // 변경 전 상품상태 — 동일 코드그룹
                         pdProd.contentHtml,                // 상세설명 (HTML)
                         pdProd.weight,                     // 무게(kg)
@@ -171,7 +171,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.marginRate,                 // 마진율(%) — 내부 관리용
                         pdProd.platformFeeRate,             // 플랫폼수수료 율(%) — 내부 관리용
                         pdProd.platformFeeAmount,           // 플랫폼수수료 금액(원) — 내부 관리용
-                        pdProd.prodStatusCd,                 // 상태 — PROD_STATUS_CD {DRAFT:임시저장, SCHEDULED:판매예정, ACTIVE:판매중, SOLDOUT:품절, INACTIVE:중지}
+                        pdProd.prodStatusCd,                 // 상태 — PROD_STATUS_CD {DRAFT:임시저장, ACTIVE:전시중, INACTIVE:판매중지, ENDED:판매종료}
                         pdProd.prodStatusCdBefore,           // 변경 전 상품상태 — 동일 코드그룹
                         pdProd.thumbnailUrl,                // 썸네일URL (직접 컬럼값. COALESCE 서브쿼리는 baseListQuery 참고)
                         pdProd.contentHtml,                 // 상세설명 (HTML)
@@ -383,34 +383,27 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
     /**
-     * currentYn='Y' 일 때만 "지금 노출 대상" 조건 — 전시기간(disp_start_date~disp_end_date) 이내
-     * AND 상태가 SCHEDULED/ACTIVE/SOLDOUT 중 하나(화이트리스트 — DRAFT/INACTIVE 는 제외).
-     *
-     * <p>DRAFT/INACTIVE 를 빼는 "제외" 방식 대신 노출 허용 상태를 직접 나열하는 "허용" 방식을 쓴다 —
-     * 지금은 PROD_STATUS_CD 가 5개뿐이라 결과는 같지만, 나중에 상태값이 하나 더 늘면 제외 방식은
-     * "모르는 새 상태도 일단 노출"로 열려버린다. 노출 여부처럼 기본을 막아야 하는 조건은 허용값만
-     * 나열해 새 상태가 추가돼도 기본은 비노출이 되도록 하는 편이 안전하다.
-     *
-     * <p>노출(카탈로그에 보이는가)과 구매가능(지금 살 수 있는가)은 별개 개념이라 분리했다 — 이 조건은
-     * "노출" 만 거른다. "구매가능" 여부는 prod_status_cd 그 자체로 이미 판별되므로(SCHEDULED=출시예정·
-     * 구매불가, ACTIVE=판매중·구매가능, SOLDOUT=품절·구매불가) FO 는 응답에 실려오는 prod_status_cd 를
-     * 보고 배지·구매버튼을 분기하면 된다(별도 계산 필드 불필요 — PdProdSaleStatusSyncJob 이 판매기간을
-     * 이미 이 상태값에 매시간 반영해 두기 때문).
+     * currentYn='Y' 일 때만 "지금 노출 대상" 조건 — 상태 ACTIVE(전시중) AND 전시기간
+     * (disp_start_date~disp_end_date) 이내. 2026-08-23 재정리: PROD_STATUS_CD 를 DRAFT/ACTIVE/
+     * INACTIVE/ENDED 4종으로 단순화하면서, 예전 SCHEDULED(판매예정)·SOLDOUT(품절)은 별도 상태가
+     * 아니라 ACTIVE 하나로 흡수됐다 — 노출 여부는 이 조건 하나로 끝나고, ACTIVE 안에서
+     * "판매예정/판매중/품절" 세부 구분은 상태가 아니라 판매기간(sale_start_date~sale_end_date)과
+     * 재고(sold_out_yn)를 FO 가 응답 시점에 직접 계산해 배지로만 보여준다 — 상세 → FoPdProdService.
      *
      * <p>FO 는 FoPdProdService 가 요청마다 currentYn='Y' 를 강제 세팅하므로 항상 적용된다(끌 수 없음).
      * BO 는 기본 미적용(전체 조회)이며, "지금 노출중인 것만" 미리보기 시에만 'Y' 를 보낸다.
      * 기준시각은 메서드 진입 시 1회 계산해 시작/종료 비교가 동일 시점을 공유하게 한다.
      *
-     * <p>disp_start_date 는 2026-08-23부터 NOT NULL(등록 시 자동으로 현재시각 채움 — "즉시"를 NULL 대신
-     * 실제 시각으로 표현)이라 시작일 쪽은 IS NULL 분기 없이 단순 비교만 하면 된다. 종료일(disp_end_date)은
-     * 여전히 NULL=무기한 허용이라 그 분기만 남긴다.
+     * <p>disp_start_date 는 NOT NULL(등록 시 자동으로 현재시각 채움 — "즉시"를 NULL 대신 실제 시각으로
+     * 표현)이라 시작일 쪽은 IS NULL 분기 없이 단순 비교만 하면 된다. 종료일(disp_end_date)은 여전히
+     * NULL=무기한 허용이라 그 분기만 남긴다.
      */
     private BooleanExpression andCurrentYnProd(String currentYn) {
         if (!"Y".equals(currentYn)) return null;
         LocalDateTime now = LocalDateTime.now();
         return pdProd.dispStartDate.loe(now)
                 .and(pdProd.dispEndDate.isNull().or(pdProd.dispEndDate.goe(now)))
-                .and(pdProd.prodStatusCd.in("SCHEDULED", "ACTIVE", "SOLDOUT"));
+                .and(pdProd.prodStatusCd.eq("ACTIVE"));
     }
 
     /* searchType 예: "adltYn,advrtStmt,brandId,categoryId,contentHtml" 등 (콤마 조합, 미지정 시 전체 OR) */

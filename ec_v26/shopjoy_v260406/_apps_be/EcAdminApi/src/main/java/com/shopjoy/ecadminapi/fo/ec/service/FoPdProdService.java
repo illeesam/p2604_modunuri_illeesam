@@ -73,18 +73,44 @@ public class FoPdProdService {
 
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
-        req.setCurrentYn("Y");   // FO 강제 — 판매중 + 판매기간 이내만 (아래 주석 참조)
+        req.setCurrentYn("Y");   // FO 강제 — 전시중(ACTIVE) + 전시기간 이내만 (아래 주석 참조)
         List<PdProdDto.Item> list = pdProdRepository.selectList(req);
+        list.forEach(FoPdProdService::_fillSaleStateCd);
         _listFillRelations(list);
         return list;
     }
 
     /** getPageData — 조회 */
     public BasePage<PdProdDto.Item> getPageData(PdProdDto.Request req) {
-        req.setCurrentYn("Y");   // FO 강제 — 판매중 + 판매기간 이내만 (아래 주석 참조)
+        req.setCurrentYn("Y");   // FO 강제 — 전시중(ACTIVE) + 전시기간 이내만 (아래 주석 참조)
         BasePage<PdProdDto.Item> res = pdProdService.getPageData(req);
+        res.getPageList().forEach(FoPdProdService::_fillSaleStateCd);
         _listFillRelations(res.getPageList());
         return res;
+    }
+
+    /**
+     * saleStateCd 계산 — "노출(전시중)"과 "구매가능(판매중)"은 별개 개념이라 상태 컬럼 하나로 합치지
+     * 않고 응답 시점에 판매기간(sale_start_date~sale_end_date)·재고(sold_out_yn)로 직접 판정한다.
+     * prod_status_cd 는 이미 currentYn='Y' 필터에서 ACTIVE(전시중)로 걸러졌으므로 여기선 그 안에서
+     * SCHEDULED(출시예정)/ON_SALE(판매중)/SOLDOUT(품절)/ENDED(판매기간종료, 배치 반영 전 짧은 유예)만
+     * 가른다. FO 화면은 이 값 하나로 배지·구매버튼 활성화 여부를 결정하면 된다.
+     */
+    private static void _fillSaleStateCd(PdProdDto.Item prod) {
+        if ("Y".equals(prod.getSoldOutYn())) {
+            prod.setSaleStateCd("SOLDOUT");
+            return;
+        }
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime start = prod.getSaleStartDate();
+        java.time.LocalDateTime end = prod.getSaleEndDate();
+        if (start != null && now.isBefore(start)) {
+            prod.setSaleStateCd("SCHEDULED");
+        } else if (end != null && now.isAfter(end)) {
+            prod.setSaleStateCd("ENDED");
+        } else {
+            prod.setSaleStateCd("ON_SALE");
+        }
     }
 
     /**
@@ -136,6 +162,7 @@ public class FoPdProdService {
     public PdProdDto.Item getDetail(String prodId) {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId + "::" + CmUtil.svcCallerInfo(this));
+        _fillSaleStateCd(prod);
         _itemFillRelations(prod);
         return prod;
     }

@@ -348,7 +348,7 @@ window.PdProdMng = {
 
 
     /* 상품 상태 배지 — PROD_STATUS_CD 실제 등록값 기준(ACTIVE/INACTIVE/SOLDOUT/DRAFT) */
-    const _PROD_STATUS_FB = { 'ACTIVE': 'badge-green', 'SOLDOUT': 'badge-red', 'INACTIVE': 'badge-gray', 'DRAFT': 'badge-blue' };
+    const _PROD_STATUS_FB = { 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray', 'ENDED': 'badge-red', 'DRAFT': 'badge-blue', 'SOLDOUT': 'badge-red', 'SCHEDULED': 'badge-blue' };
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROD_STATUS_CD', s, _PROD_STATUS_FB[s] || 'badge-gray');

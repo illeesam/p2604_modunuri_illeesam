@@ -25,11 +25,11 @@ window.PmCouponDtl = {
       COUPON_STATUS_DTL: [], COUPON_TYPE: [],
       PM_PROD_TARGET: [], PM_ISSUE_GRADE: [],
       COUPON_USE_LIMIT: [], COUPON_ISSUE_DISP: [], COUPON_TARGET: [], COUPON_APPLY: [],
-      COUPON_DISC_TYPE: [],
+      COUPON_DISC_TYPE: [], COUPON_APPLY_SCOPE_CD: [],
     });
 
     const form = reactive({
-      couponId: null, couponTypeCd: '', couponCd: '', couponNm: '',
+      couponId: null, couponTypeCd: '', couponCd: '', couponNm: '', applyScopeCd: '',
       discountType: '', discountVal: '', discountRate: null, discountAmt: null, minOrderAmt: '', maxDiscountAmt: '',
       couponStatusCd: '', validFrom: '', validTo: '', issueLimit: '', useLimit: '',
       targetTypeCd: 'PRODUCT', issueTargets: [],
@@ -293,7 +293,7 @@ window.PmCouponDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['COUPON_STATUS_DTL', 'COUPON_TYPE_CD', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE', 'COUPON_USE_LIMIT', 'COUPON_ISSUE_DISP', 'COUPON_TARGET', 'COUPON_APPLY', 'COUPON_DISC_TYPE'], {compNm: 'PmCouponDtl'});
+      await codeStore.saLoadCodes(['COUPON_STATUS_DTL', 'COUPON_TYPE_CD', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE', 'COUPON_USE_LIMIT', 'COUPON_ISSUE_DISP', 'COUPON_TARGET', 'COUPON_APPLY', 'COUPON_DISC_TYPE', 'COUPON_APPLY_SCOPE_CD'], {compNm: 'PmCouponDtl'});
       codes.COUPON_STATUS_DTL    = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
       codes.COUPON_TYPE          = codeStore.sgGetGrpCodes('COUPON_TYPE_CD');
       codes.PM_PROD_TARGET       = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
@@ -303,6 +303,7 @@ window.PmCouponDtl = {
       codes.COUPON_TARGET          = codeStore.sgGetGrpCodes('COUPON_TARGET');
       codes.COUPON_APPLY           = codeStore.sgGetGrpCodes('COUPON_APPLY');
       codes.COUPON_DISC_TYPE       = codeStore.sgGetGrpCodes('COUPON_DISC_TYPE');
+      codes.COUPON_APPLY_SCOPE_CD  = codeStore.sgGetGrpCodes('COUPON_APPLY_SCOPE_CD');
     };
 
     /* handleInitForm — 처리 */
@@ -572,6 +573,9 @@ window.PmCouponDtl = {
       { type: 'group', label: '기본정보 · 할인조건' },
       { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
         options: () => codes.COUPON_TYPE },
+      { key: 'applyScopeCd',   label: '적용범위', type: 'select', nullable: false,
+        options: () => codes.COUPON_APPLY_SCOPE_CD,
+        hint: '주문할인/상품할인/배송비할인 — 상품상세 프로모션탭의 "회원 적용가능 쿠폰" 분류 기준' },
       { key: 'couponNm',       label: '쿠폰명', type: 'text', required: true, placeholder: '쿠폰명 입력' },
       { key: 'couponCd',       label: '쿠폰코드', type: 'text', required: true,
         placeholder: '코드 자동생성/직접입력', mono: true },

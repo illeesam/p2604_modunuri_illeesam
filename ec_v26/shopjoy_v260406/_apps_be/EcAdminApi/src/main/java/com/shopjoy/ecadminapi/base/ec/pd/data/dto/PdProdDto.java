@@ -49,8 +49,8 @@ public class PdProdDto {
         private BigDecimal marginRate;      // 마진율 (%) — 내부 관리용
         private BigDecimal platformFeeRate; // 플랫폼수수료 율 (%) — 내부 관리용
         private Long platformFeeAmount;     // 플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용
-        private String prodStatusCd;        // 상태 — PROD_STATUS_CD {ACTIVE:판매중, INACTIVE:중지, SOLDOUT:품절, DRAFT:임시저장}
-        private String prodStatusCdBefore;  // 변경 전 상품상태 — PROD_STATUS_CD {ACTIVE:판매중, INACTIVE:중지, SOLDOUT:품절, DRAFT:임시저장}
+        private String prodStatusCd;        // 상태 — PROD_STATUS_CD {DRAFT:임시저장, ACTIVE:전시중, INACTIVE:판매중지, ENDED:판매종료}
+        private String prodStatusCdBefore;  // 변경 전 상품상태 — 동일 코드그룹
         private String thumbnailUrl;        // 썸네일URL
         private String contentHtml;         // 상세설명 (HTML)
         private BigDecimal weight;          // 무게(kg)
@@ -58,10 +58,11 @@ public class PdProdDto {
         private String isNew;               // 신상품여부 Y/N
         private String isBest;              // 베스트여부 Y/N
         private Integer viewCount;          // 조회수
-        private LocalDateTime saleStartDate; // 판매기간 시작 (NULL=즉시)
+        private LocalDateTime saleStartDate; // 판매기간 시작 (NOT NULL — 등록시각 자동기입)
         private LocalDateTime saleEndDate;  // 판매기간 종료 (NULL=무기한)
-        private LocalDateTime dispStartDate; // 전시기간 시작 (NULL=즉시) - sale_start_date 이전이면 출시예정 표시
+        private LocalDateTime dispStartDate; // 전시기간 시작 (NOT NULL — 등록시각 자동기입)
         private LocalDateTime dispEndDate;  // 전시기간 종료 (NULL=무기한)
+        private String saleStateCd;         // (FO 전용 계산값, DB컬럼 아님) {SCHEDULED:출시예정, ON_SALE:판매중(구매가능), SOLDOUT:품절, ENDED:판매기간종료} — FoPdProdService 가 saleStartDate/saleEndDate/soldOutYn 으로 매 응답마다 계산. BO 응답에는 세팅 안 함(null)
         private Integer minBuyQty;          // 최소구매수량 (기본 1)
         private Integer maxBuyQty;          // 최대구매수량 (NULL=무제한)
         private Integer dayMaxBuyQty;       // 1일 최대구매수량 (NULL=무제한)

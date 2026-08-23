@@ -93,6 +93,18 @@ window.PdProdDtl = {
           .then(r => tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(r.data?.data || [])))
           .catch(() => {});
         return;
+      } else if (cmd === 'promo-applicable-coupon-reload') {
+        if (!cfCurProdId.value) return;
+        boApiSvc.pmCoupon.getList({ prodId: cfCurProdId.value }, '상품관리', '적용가능쿠폰재조회')
+          .then(r => tabData.promoApplicableCoupons.splice(0, tabData.promoApplicableCoupons.length, ...(r.data?.data || [])))
+          .catch(() => {});
+        return;
+      } else if (cmd === 'promo-applicable-save-reload') {
+        if (!cfCurProdId.value) return;
+        boApiSvc.pmSave.getList({ prodId: cfCurProdId.value }, '상품관리', '적용가능적립금재조회')
+          .then(r => tabData.promoApplicableSaves.splice(0, tabData.promoApplicableSaves.length, ...(r.data?.data || [])))
+          .catch(() => {});
+        return;
       } else if (cmd === 'promo-coupon-delete') {
         if (!param) return;
         showConfirm('삭제', '이 상품을 쿠폰 대상에서 제거하시겠습니까?').then(ok => {
@@ -350,7 +362,7 @@ window.PdProdDtl = {
       rels:    { pageNo: 1, pageSize: 10, totalCount: 0 },
     });
     // 탭별 전체 데이터 (페이징은 프론트 슬라이스)
-    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [], promoGifts: [] });
+    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [], promoGifts: [], promoApplicableCoupons: [], promoApplicableSaves: [] });
 
 
     /* 상품 onTabPageChange */
@@ -499,18 +511,23 @@ window.PdProdDtl = {
           }
           // 프로모션 — 이 상품에 연결된 쿠폰/적립금/할인/사은품 항목 조회 (junction 테이블)
           try {
-            const [cr, sr2, dr, gr] = await Promise.all([
+            const [cr, sr2, dr, gr, acr, asr] = await Promise.all([
               boApiSvc.pmCouponItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '쿠폰조회'),
               boApiSvc.pmSaveItem.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '적립금조회'),
               boApiSvc.pmDiscntItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '할인조회'),
               boApiSvc.pmGiftCond.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '사은품조회'),
+              boApiSvc.pmCoupon.getList(    { prodId: props.dtlId }, '상품관리', '적용가능쿠폰조회'),
+              boApiSvc.pmSave.getList(      { prodId: props.dtlId }, '상품관리', '적용가능적립금조회'),
             ]);
             tabData.promoCoupons.splice(0, tabData.promoCoupons.length, ...(cr.data?.data || []));
             tabData.promoSaves.splice(0,   tabData.promoSaves.length,   ...(sr2.data?.data || []));
             tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(dr.data?.data || []));
             tabData.promoGifts.splice(0,   tabData.promoGifts.length,   ...(gr.data?.data || []));
+            tabData.promoApplicableCoupons.splice(0, tabData.promoApplicableCoupons.length, ...(acr.data?.data || []));
+            tabData.promoApplicableSaves.splice(0, tabData.promoApplicableSaves.length, ...(asr.data?.data || []));
           } catch (_) {
             tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
+            tabData.promoApplicableCoupons.splice(0); tabData.promoApplicableSaves.splice(0);
           }
           // 판매계획 로드
           try {
@@ -549,6 +566,7 @@ window.PdProdDtl = {
       tabData.opts.groups.splice(0); tabData.opts.items.splice(0);
       tabData.bundleItems.splice(0); tabData.setItems.splice(0);
       tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
+      tabData.promoApplicableCoupons.splice(0); tabData.promoApplicableSaves.splice(0);
     });
 
     watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
@@ -1475,6 +1493,12 @@ window.PdProdDtl = {
     /* info 외 탭의 [저장] 버튼은 prodId 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => topTab.value !== 'info' && !cfHasProdId.value);
 
+    /* 내 적용가능 쿠폰 목록 — 한 번 조회한 tabData.promoApplicableCoupons 를 couponTypeCd 로 3분류
+       (클라이언트 필터. 이미 로드된 소량 목록의 단순 분류이므로 watch/재조회 없이 computed 로 처리) */
+    const cfApplicableOrderCoupons = computed(() => tabData.promoApplicableCoupons.filter(c => c.couponTypeCd === 'ORDER_DISCNT'));
+    const cfApplicableProdCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.couponTypeCd === 'PROD_DISCNT'));
+    const cfApplicableDlivCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.couponTypeCd === 'DLIV_DISCNT'));
+
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (showToast) { showToast(msg, 'success'); }
@@ -1902,7 +1926,7 @@ window.PdProdDtl = {
       { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
       { key: 'prodStatusCd', label: '상품상태 (prod_status_cd)', type: 'select',
         options: () => grpCodes.PROD_STATUS_CD,
-        helpText: 'DRAFT(임시저장)/SCHEDULED(판매예정)/ACTIVE(판매중)/SOLDOUT(품절)/INACTIVE(중지). 등록을 마쳤으면 DRAFT→SCHEDULED로 직접 전환해야 판매시작일에 배치가 자동으로 ACTIVE 처리(DRAFT는 미완성 초안으로 간주해 배치가 건드리지 않음). ACTIVE→INACTIVE(판매종료일 경과)도 매시간 배치가 자동 처리.' },
+        helpText: 'DRAFT(임시저장)/ACTIVE(전시중)/INACTIVE(판매중지)/ENDED(판매종료) 4종. "지금 판매중/판매예정/품절"인지는 이 상태가 아니라 판매기간·재고로 FO가 그때그때 판단 — ACTIVE(전시중)는 노출 여부만 뜻함. ACTIVE↔INACTIVE는 판매기간 벗어나면(또는 다시 들어오면) 매시간 배치가 자동 전환하고, DRAFT·ENDED는 배치가 절대 건드리지 않음(관리자만 전환).' },
       { type: 'group', label: '배송' },
       // 4행: 배송템플릿 / 배송방법 override (빈칸 1)
       { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt', required: true },
@@ -1910,16 +1934,21 @@ window.PdProdDtl = {
         options: () => grpCodes.DLIV_METHOD, nullLabel: '배송템플릿 기본값 사용',
         hint: '긴급 발송 등 이 상품만 다른 배송방법을 써야 할 때만 지정 (수수료는 배송수수료정책에 따름)' },
       { type: 'group', label: '상세속성 · 판매기간',
-        desc: '판매상태(PROD_STATUS_CD): DRAFT(임시저장)/SCHEDULED(판매예정)/ACTIVE(판매중)/SOLDOUT(품절)/INACTIVE(중지). '
-          + 'DRAFT는 작성 중인 미완성 초안이라 배치가 절대 건드리지 않음 — 등록을 다 마쳤으면 관리자가 직접 SCHEDULED로 전환해야 함. '
-          + '판매시작일시 도달 시 SCHEDULED→ACTIVE, 판매종료일시 경과 시 ACTIVE→INACTIVE로 매시간 배치가 자동 전환 '
-          + '(SOLDOUT과 수동 INACTIVE 전환은 재고·관리자 판단 영역이라 배치가 건드리지 않음). '
-          + '전시기간은 판매 전 상품페이지 노출 구간 — 전시시작일시 이후·판매시작일시 이전이면 "출시예정"으로 노출(구매불가). '
-          + '판매·전시기간 모두 NULL=즉시/무기한.' },
+        desc: '상품상태(PROD_STATUS_CD)는 DRAFT(임시저장)/ACTIVE(전시중)/INACTIVE(판매중지)/ENDED(판매종료) 4종뿐이다. '
+          + '예전엔 판매예정·판매중·품절을 각각 다른 상태로 뒀지만, 이 셋은 노출(전시중) 여부와 무관하게 '
+          + '"지금 진짜 살 수 있는가"만 다른 것이라 상태를 늘리는 대신 FO가 응답 시점에 판매기간(sale_start_date~'
+          + 'sale_end_date)과 재고(sold_out_yn)를 직접 계산해서 판매예정/판매중/품절 배지를 매긴다 — ACTIVE(전시중)는 '
+          + '"노출된다"만 뜻하고 실제 구매 가능 여부와는 별개다. '
+          + 'ACTIVE↔INACTIVE는 판매기간을 벗어나면(또는 관리자가 종료일을 늘려 다시 기간 안으로 들어오면) 매시간 '
+          + '배치가 자동으로 전환한다. DRAFT(작성 중)와 ENDED(관리자가 명시적으로 끝낸 판매종료)는 배치가 절대 '
+          + '건드리지 않는다 — DRAFT는 미완성 초안이 날짜만으로 실수 공개되는 걸 막기 위함이고, ENDED는 관리자의 '
+          + '최종 결정이라 날짜가 바뀐다고 되살아나면 안 되기 때문(되살리려면 관리자가 직접 ACTIVE로 전환). '
+          + '전시기간은 상품페이지 노출 구간(disp_start_date~disp_end_date) — 이 기간 밖이면 상태가 ACTIVE여도 FO에 안 보인다. '
+          + '판매·전시 시작일은 NOT NULL(미입력 시 등록시각 자동기입), 종료일은 NULL=무기한.' },
       // 5행: 판매상태(담당·상태 항목과 동일 값 — 판매기간 문맥에서 다시 확인하도록 중복 배치) / 미판매메시지 / 무게
       { key: 'prodStatusCd', label: '판매상태 (prod_status_cd)', type: 'select',
         options: () => grpCodes.PROD_STATUS_CD,
-        helpText: '판매기간과 직접 연동되는 상태값. SCHEDULED→ACTIVE(판매시작일 도달)·ACTIVE→INACTIVE(판매종료일 경과)는 매시간 배치가 자동 처리. DRAFT는 미완성 초안 취급이라 배치 대상에서 제외되므로, 판매기간을 설정했다면 SCHEDULED로 바꿔둬야 자동 전환됨.' },
+        helpText: 'ACTIVE(전시중)↔INACTIVE(판매중지)는 판매기간(위 시작/종료일)을 벗어나거나 다시 들어오면 매시간 배치가 자동 전환. 판매예정/품절 구분은 이 값이 아니라 FO가 판매기간·재고로 그때그때 계산. DRAFT·ENDED는 배치가 손대지 않는 관리자 전용 상태.' },
       { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
       { key: 'weight',       label: '무게 (kg)', type: 'number', min: 0, placeholder: '예: 0.35' },
@@ -2014,6 +2043,32 @@ window.PdProdDtl = {
       { key: 'applyEndDate',   label: '적용종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
       { key: '_remainTime',    label: '남은기간', align: 'center', fmt: (v, r) => fnRemainingTime(r.applyEndDate) },
     ];
+    // 프로모션 탭 — 내 적용가능 쿠폰 목록 (읽기전용 미리보기). "상품 쿠폰 목록"(pm_coupon_item, 이 상품에
+    // 직접 연결한 것만)과 달리 pm_coupon_prod(전개 테이블)를 통해 ALL/CATEGORY/VENDOR/BRAND 등
+    // 다른 방식으로 지정된 쿠폰까지 포함해 "고객이 실제로 이 상품에 쓸 수 있는" 전체 쿠폰을 보여준다.
+    columns.promoApplicableCouponGrid = [
+      { key: 'couponId',   label: '쿠폰 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'couponNm',   label: '쿠폰명' },
+      { key: 'targetTypeCd', label: '적용대상', style: 'width:90px;', align: 'center',
+        badge: () => 'badge-purple', fmt: (v, r) => r.targetTypeCdNm || v || '-' },
+      { key: 'couponTypeCd', label: '할인', align: 'center',
+        fmt: (v, r) => r.discountRate ? (r.discountRate + '%') : (r.discountAmt ? coUtil.cofWon(r.discountAmt) : '-') },
+      { key: 'validFrom',  label: '유효시작일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '즉시' },
+      { key: 'validTo',    label: '유효종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
+      { key: 'couponStatusCd', label: '상태', style: 'width:80px;', align: 'center',
+        badge: (r) => r.couponStatusCd === 'ACTIVE' ? 'badge-green' : (r.couponStatusCd === 'EXPIRED' ? 'badge-gray' : 'badge-red'),
+        fmt: (v, r) => r.couponStatusCdNm || v || '-' },
+    ];
+    // 프로모션 탭 — 내 적용가능 적립금 목록 (읽기전용 미리보기, pm_save_prod 전개 기준)
+    // ⚠ pm_save 는 회원별 적립/사용 원장 구조라 coupon 처럼 이름·유효기간을 갖는 정책 레코드가 아닐 수
+    //   있음(pd.08/§적립금 아키텍처 갭 — 기존에 알려진 이슈, 이 그리드가 새로 만든 문제는 아님)
+    columns.promoApplicableSaveGrid = [
+      { key: 'saveId',      label: '적립금 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'saveTypeCd',  label: '유형', style: 'width:100px;', align: 'center',
+        badge: () => 'badge-purple', fmt: (v, r) => r.saveTypeCdNm || v || '-' },
+      { key: 'saveAmt',     label: '적립액', align: 'right', fmt: v => v != null ? coUtil.cofWon(v) : '-' },
+      { key: 'expireDate',  label: '만료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
+    ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
@@ -2021,6 +2076,7 @@ window.PdProdDtl = {
       columns, handleBtnAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
       handleShareKakao, handleCopyLink, pdfAreaRef, pdfExporting, handleExportPdf,   // 링크/카카오공유/PDF
       cfIsNew, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, codeGrpModal, openCodeGrpModal,
+      cfApplicableOrderCoupons, cfApplicableProdCoupons, cfApplicableDlivCoupons,
       tabPage, tabData, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, mdModalOpen, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       optGroups, skus, cfTotalStock, generateSkus, moveSku,
@@ -2666,11 +2722,15 @@ window.PdProdDtl = {
           할인 적용 가능 (discnt_use_yn)
         </label>
       </div>
-      <!-- ===== ■.■.■. 할인적용설정 (혜택 큰 순 1위 — 정가 자체를 낮추는 직접할인) =========================================== -->
+      <!-- ===== ■.■.■. 상품 프로모션 정보 (할인/쿠폰/적립금/사은품, 2열 그리드) =========================================== -->
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 16px;" />
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;">상품 프로모션 정보</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <!-- 상품 할인 목록 (혜택 큰 순 1위 — 정가 자체를 낮추는 직접할인) -->
+      <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          할인적용설정
+          상품 할인 목록
           <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoDiscnts.length }}건</span>
           <span v-if="!form.discntUseYn || form.discntUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
         </div>
@@ -2686,11 +2746,12 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-discnt-delete', r.discntItemId)">삭제</button>
         </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 쿠폰 목록설정 ========================================= -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      </div>
+      <!-- 상품 쿠폰 목록 -->
+      <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          쿠폰 목록설정
+          상품 쿠폰 목록
           <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoCoupons.length }}건</span>
           <span v-if="!form.couponUseYn || form.couponUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
         </div>
@@ -2706,11 +2767,12 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-coupon-delete', r.couponItemId)">삭제</button>
         </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 적립금 목록설정 ======================================= -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      </div>
+      <!-- 상품 적립금 목록 -->
+      <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          적립금 목록설정
+          상품 적립금 목록
           <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoSaves.length }}건</span>
           <span v-if="!form.saveUseYn || form.saveUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
         </div>
@@ -2726,11 +2788,12 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-save-delete', r.saveItemId)">삭제</button>
         </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 사은품 목록설정 =========================================== -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      </div>
+      <!-- 상품 사은품 목록 -->
+      <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          사은품 목록설정
+          상품 사은품 목록
           <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoGifts.length }}건</span>
         </div>
         <div style="display:flex;gap:6px;">
@@ -2745,6 +2808,8 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-gift-delete', r.giftCondId)">삭제</button>
         </template>
       </bo-grid>
+      </div>
+      </div>
       </fieldset>
       <!-- 프로모션 피커 모달 4개 — fieldset 밖에 배치 (fieldset disabled 영향 차단) -->
       <bo-cm-popup-modal v-if="uiState.promoPicker === 'coupon'" popup-code="coupon" @select="r => handleBtnAction('promo-coupon-pick', r)" @close="uiState.promoPicker = null" />
@@ -2755,6 +2820,7 @@ window.PdProdDtl = {
       </pm-discnt-pick-modal>
       <bo-cm-popup-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
       </pm-gift-pick-modal>
+      <!-- 상품 프로모션 정보 그룹의 저장/취소/닫기 — 내 적용가능 프로모션정보(읽기전용) 보다 위, 편집 그룹 바로 아래 배치 -->
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -2765,6 +2831,84 @@ window.PdProdDtl = {
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      </div>
+      <!-- ===== ■.■.■. 내 적용가능 프로모션정보 (읽기전용 — pm_coupon_prod/pm_save_prod 전개 기준, ALL/CATEGORY/VENDOR/BRAND 포함, 2x2) ===== -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;">내 적용가능 프로모션정보</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <!-- 내 적용가능 주문 쿠폰 목록 -->
+      <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          내 적용가능 주문 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableOrderCoupons.length }}건</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-coupon-reload')">🔄 재조회</button>
+        </div>
+      </div>
+      <div class="pd-applicable-coupon-grid">
+        <style>.pd-applicable-coupon-grid thead th{background:linear-gradient(180deg,#fdeec8,#f8d878)!important;color:#7a5a06!important;border-bottom:2px solid #d9ae2f!important;}</style>
+        <bo-grid bare :columns="columns.promoApplicableCouponGrid" :rows="cfApplicableOrderCoupons"
+          row-key="couponId"
+          empty-text="이 상품에 적용 가능한 주문 쿠폰이 없습니다.">
+        </bo-grid>
+      </div>
+      </div>
+      <!-- 내 적용가능 상품 쿠폰 목록 -->
+      <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          내 적용가능 상품 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(상품당 1개)</span>
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableProdCoupons.length }}건</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-coupon-reload')">🔄 재조회</button>
+        </div>
+      </div>
+      <div class="pd-applicable-coupon-grid">
+        <bo-grid bare :columns="columns.promoApplicableCouponGrid" :rows="cfApplicableProdCoupons"
+          row-key="couponId"
+          empty-text="이 상품에 적용 가능한 상품 쿠폰이 없습니다.">
+        </bo-grid>
+      </div>
+      </div>
+      <!-- 내 적용가능 배송비 쿠폰 목록 -->
+      <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          내 적용가능 배송비 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableDlivCoupons.length }}건</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-coupon-reload')">🔄 재조회</button>
+        </div>
+      </div>
+      <div class="pd-applicable-coupon-grid">
+        <bo-grid bare :columns="columns.promoApplicableCouponGrid" :rows="cfApplicableDlivCoupons"
+          row-key="couponId"
+          empty-text="이 상품에 적용 가능한 배송비 쿠폰이 없습니다.">
+        </bo-grid>
+      </div>
+      </div>
+      <!-- 내 적용가능 적립금 목록 -->
+      <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          내 적용가능 적립금 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoApplicableSaves.length }}건</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-save-reload')">🔄 재조회</button>
+        </div>
+      </div>
+      <div class="pd-applicable-coupon-grid">
+        <bo-grid bare :columns="columns.promoApplicableSaveGrid" :rows="tabData.promoApplicableSaves"
+          row-key="saveId"
+          empty-text="이 상품에 적용 가능한 적립금이 없습니다.">
+        </bo-grid>
+      </div>
+      </div>
       </div>
     </div>
     <!-- ══════════════════════════════════════

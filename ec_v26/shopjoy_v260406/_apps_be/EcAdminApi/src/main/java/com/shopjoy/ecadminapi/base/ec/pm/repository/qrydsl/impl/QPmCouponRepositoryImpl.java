@@ -16,6 +16,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponProd;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
@@ -47,8 +48,10 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     private static final QVwSyCode  codeCouponStatusCd = new QVwSyCode("cd_cs");
     private static final QVwSyCode  codeTargetTypeCd = new QVwSyCode("cd_tt");
     private static final QVwSyCode  codeMemGradeCd = new QVwSyCode("cd_mg");
+    private static final QVwSyCode  codeApplyScopeCd = new QVwSyCode("cd_as");
     // EXISTS 서브쿼리용 별칭 (대상상품/업체/담당MD 필터 — pm_coupon_prod → pd_prod → sy_vendor/sy_user)
     private static final QPmCouponProd couponProdEx = new QPmCouponProd("coupon_prod_ex");
+    private static final QPmCouponIssue couponIssueEx = new QPmCouponIssue("coupon_issue_ex");
     private static final QPdProd       pProdEx      = new QPdProd("p_prod_ex");
     private static final QSyVendor     syVendorEx   = new QSyVendor("sy_vendor_ex");
     private static final QSyUser       syUserEx     = new QSyUser("sy_user_ex");    /*
@@ -101,6 +104,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                         codeCouponStatusCd.codeLabel.as("couponStatusCdNm"),   // 쿠폰상태 코드라벨 (조인)
                         codeTargetTypeCd.codeLabel.as("targetTypeCdNm"),     // 적용대상 코드라벨 (조인)
                         codeMemGradeCd.codeLabel.as("memGradeCdNm"),        // 적용등급 코드라벨 (조인)
+                        pmCoupon.applyScopeCd,                              // 적용범위 — COUPON_APPLY_SCOPE_CD {ORDER:주문할인, PRODUCT:상품할인, DELIVERY:배송비할인}
+                        codeApplyScopeCd.codeLabel.as("applyScopeCdNm"),    // 적용범위 코드라벨 (조인)
                         pmCoupon.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -112,6 +117,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 .leftJoin(codeCouponStatusCd).on(codeCouponStatusCd.codeGrp.eq("COUPON_STATUS_CD").and(codeCouponStatusCd.codeValue.eq(pmCoupon.couponStatusCd))) // 쿠폰상태
                 .leftJoin(codeTargetTypeCd).on(codeTargetTypeCd.codeGrp.eq("COUPON_TARGET").and(codeTargetTypeCd.codeValue.eq(pmCoupon.targetTypeCd))) // 쿠폰대상
                 .leftJoin(codeMemGradeCd).on(codeMemGradeCd.codeGrp.eq("MEMBER_GRADE").and(codeMemGradeCd.codeValue.eq(pmCoupon.memGradeCd))) // 회원등급
+                .leftJoin(codeApplyScopeCd).on(codeApplyScopeCd.codeGrp.eq("COUPON_APPLY_SCOPE_CD").and(codeApplyScopeCd.codeValue.eq(pmCoupon.applyScopeCd))) // 적용범위
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmCoupon.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmCoupon.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmCoupon.siteId)) // 사이트
@@ -138,9 +144,11 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         whereList.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId())); // 쿠폰ID 필터
         whereList.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd())); // 상태 — COUPON_STATUS_CD {ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료}
+        whereList.add(QdslUtil.strEq(pmCoupon.applyScopeCd, search.getApplyScopeCd())); // 적용범위 — COUPON_APPLY_SCOPE_CD {ORDER, PRODUCT, DELIVERY}
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
+        whereList.add(andMemberIssued(search.getMemberId()));
         whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
         whereList.add(QdslUtil.strEq(pmCoupon.siteId, search.getSiteId())); // 사이트ID
@@ -176,9 +184,11 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         whereList.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId())); // 쿠폰ID 필터
         whereList.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd())); // 상태 — COUPON_STATUS_CD {ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료}
+        whereList.add(QdslUtil.strEq(pmCoupon.applyScopeCd, search.getApplyScopeCd())); // 적용범위 — COUPON_APPLY_SCOPE_CD {ORDER, PRODUCT, DELIVERY}
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
+        whereList.add(andMemberIssued(search.getMemberId()));
         whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
         whereList.add(QdslUtil.strEq(pmCoupon.siteId, search.getSiteId())); // 사이트ID
@@ -239,6 +249,17 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 .exists());
         }
         return sub.exists();
+    }
+
+    /** andMemberIssued — 이 회원(memberId)에게 발급(pm_coupon_issue)되었고 아직 미사용(use_yn!='Y')인 쿠폰만.
+     *  "회원 적용가능 쿠폰" 미리보기(PdProdDtl 프로모션 탭)에서 상품/전개 필터와 함께 AND 결합해 쓴다. */
+    private BooleanExpression andMemberIssued(String memberId) {
+        if (!StringUtils.hasText(memberId)) return null;
+        return JPAExpressions.selectOne().from(couponIssueEx)
+            .where(couponIssueEx.couponId.eq(pmCoupon.couponId),
+                   couponIssueEx.memberId.eq(memberId),
+                   couponIssueEx.useYn.ne("Y").or(couponIssueEx.useYn.isNull()))
+            .exists();
     }
 
     /**

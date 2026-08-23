@@ -392,6 +392,7 @@
 
   /* ── pm: 쿠폰 ───────────────────────────────────────────────── */
   boApiSvc.pmCoupon = {
+    getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/pm/coupon', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm, opt)   { return global.boApi.get(   '/bo/ec/pm/coupon/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pm/coupon/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pm/coupon', body, hdr(uiNm, cmdNm)); },
@@ -468,6 +469,7 @@
 
   /* ── pm: 적립금 ─────────────────────────────────────────────── */
   boApiSvc.pmSave = {
+    getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/pm/save', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm, opt)   { return global.boApi.get(   '/bo/ec/pm/save/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pm/save/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pm/save', body, hdr(uiNm, cmdNm)); },

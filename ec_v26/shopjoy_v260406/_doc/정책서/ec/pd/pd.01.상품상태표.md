@@ -13,21 +13,25 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 ## 1. 상태 코드 표
 
 ### 1-A. 상품 상태 — `pd_prod.prod_status_cd` (코드그룹 `PROD_STATUS_CD`)
-상품의 판매 가능 여부를 나타내는 라이프사이클 상태.
-DRAFT → SCHEDULED → ACTIVE ↔ INACTIVE 로 전이하며, 재고 소진 시 SOLDOUT 으로 표시된다.
+상품의 **노출(전시) 라이프사이클**만 나타내는 상태. "지금 진짜 살 수 있는가"(판매예정/판매중/품절)는
+이 상태에 없다 — ACTIVE(전시중) 안에서 FO가 판매기간·재고를 응답 시점에 직접 계산해 판정한다(§1-A-1 참조).
+DRAFT → ACTIVE ↔ INACTIVE → ENDED 로 전이한다.
 
 | 코드값 | 코드라벨 | 비고 |
 |--------|---------|------|
-| DRAFT     | 임시저장 | 작성 중인 미완성 상품. 사용자에게 미노출. **배치가 절대 자동 전환하지 않음**(관리자가 등록을 마친 뒤 SCHEDULED로 직접 전환해야 함) |
-| SCHEDULED | 판매예정 | 등록 완료 · 판매시작일 대기 중. `PROD_SALE_STATUS_SYNC` 배치가 판매시작일시 도달 시 ACTIVE로 자동 전환 |
-| ACTIVE    | 판매중   | 정상 노출·주문 가능. 배치가 판매종료일시 경과 시 INACTIVE로 자동 전환 |
-| SOLDOUT   | 품절     | 재고 소진. 노출은 되나 주문 불가. 관리자/재고 판단 영역 — 배치가 건드리지 않음 |
-| INACTIVE  | 중지     | 판매 중단. 관리자 재활성화 가능 — 배치가 건드리지 않음(ACTIVE→INACTIVE 자동 전환만 배치 담당) |
+| DRAFT    | 임시저장 | 작성 중인 미완성 상품. 사용자에게 미노출. 배치가 절대 자동 전환하지 않음(관리자가 등록을 마친 뒤 ACTIVE로 직접 전환해야 함) |
+| ACTIVE   | 전시중   | FO에 노출됨(전시기간 조건도 별도 충족해야 함, §1-A 하단). 이 안에서 판매예정/판매중/품절 세부 구분은 상태가 아니라 계산값 |
+| INACTIVE | 판매중지 | FO 미노출. 판매기간(`sale_start_date`~`sale_end_date`)을 벗어나면 배치가 ACTIVE에서 자동 전환, 기간 안으로 돌아오면(관리자가 종료일 연장 등) 배치가 다시 ACTIVE로 자동 복귀 |
+| ENDED    | 판매종료 | FO 미노출. 관리자가 명시적으로 완전히 끝낸 최종 상태 — 배치가 절대 건드리지 않음(되살리려면 관리자가 직접 ACTIVE로 전환) |
 
-> **2026-08-23 추가** — `PdProdSaleStatusSyncJob`(`PROD_SALE_STATUS_SYNC`, 매시간)이 SCHEDULED→ACTIVE·
-> ACTIVE→INACTIVE 두 전이만 자동 처리하도록 `SCHEDULED` 상태를 신설했다. 이전에는 DRAFT를 배치가 직접
-> ACTIVE로 전환했는데, 판매기간(`sale_start_date`)만 먼저 입력된 미완성 초안이 날짜 도달만으로 실수로
-> 공개되는 문제가 있어 DRAFT는 배치 대상에서 제외하고 SCHEDULED를 중간 상태로 분리했다.
+> **2026-08-23 재정리** — 상태를 5종(DRAFT/SCHEDULED/ACTIVE/SOLDOUT/INACTIVE)에서 4종(DRAFT/ACTIVE/
+> INACTIVE/ENDED)으로 단순화했다. `SCHEDULED`(판매예정)와 `SOLDOUT`(품절)은 별도 상태로 두지 않고
+> `ACTIVE`(전시중) 하나로 흡수 — FO 입장에서 둘 다 "전시중이긴 하지만 지금 구매는 안 되는" 케이스라
+> 상태를 늘리는 대신 `FoPdProdService`가 매 응답마다 판매기간(`sale_start_date`~`sale_end_date`)과
+> 재고(`sold_out_yn`)로 `SCHEDULED`/`ON_SALE`/`SOLDOUT`/`ENDED` 를 계산해 내려준다(DB 컬럼 아님, 응답
+> 전용 계산 필드 `saleStateCd`). 대신 관리자가 판매를 완전히 끝내는 명시적 결정을 표현할 상태가 없어서
+> `ENDED`(판매종료)를 신설했다 — `INACTIVE`(판매중지)는 판매기간에 연동돼 배치가 왔다갔다 자동 전환하는
+> 반면, `ENDED`는 순수 관리자 결정이라 배치가 절대 개입하지 않는다는 점이 다르다.
 >
 > **2026-07-31 정정** — 표는 실제 `sy_code.PROD_STATUS_CD`(당시는 `PROD_STATUS` 오기) 기준으로 맞췄다.
 > 이전 문서의 `STOPPED`(중단) / `DISCONTINUED`(단종) 는 코드그룹에 등록된 적이 없는
@@ -35,6 +39,17 @@ DRAFT → SCHEDULED → ACTIVE ↔ INACTIVE 로 전이하며, 재고 소진 시 
 > 또 테이블명이 `ec_prod` 로 적혀 있었으나 실제는 `pd_prod` 다.
 > 데이터에 섞여 있던 비표준 `SELLING` 38건은 `ACTIVE` 로 정규화했다
 > (→ [sy.08 공통코드](../../sy/sy.08.공통코드.md) §상태값은 반드시 sy_code 에 있는 값만 저장).
+
+#### 1-A-1. 구매가능 세부상태 — `saleStateCd` (계산값, DB 컬럼 아님)
+`prod_status_cd = ACTIVE`(전시중)인 상품에 한해 FO 응답 시점에 계산되는 값. 상태 코드가 아니므로
+BO 목록·검색 조건으로 쓸 수 없고, 오직 FO가 배지·구매버튼 활성화 여부를 정하는 데만 쓴다.
+
+| 값 | 의미 | 판정 기준 |
+|----|------|-----------|
+| SCHEDULED | 출시예정 | `now < sale_start_date` |
+| ON_SALE   | 판매중(구매가능) | `sold_out_yn != 'Y'` 이고 판매기간 이내 |
+| SOLDOUT   | 품절 | `sold_out_yn = 'Y'` |
+| ENDED     | 판매기간 종료 | `now > sale_end_date` (배치가 다음 실행 때 INACTIVE로 내리기 전 짧은 유예 구간에만 잠깐 나타남) |
 
 ---
 
@@ -76,14 +91,16 @@ DIGITAL·MADE·FOOD는 표준 클레임 정책 예외 적용.
 
 ### 2-A. 상품 상태별 액션 가능 여부 — `prod_status_cd`(기준) × 액션
 `STOPPED`/`DISCONTINUED`는 실제 등록된 적 없는 코드값이라 아래 표에서 제외했다(§1-A 참조).
+장바구니/주문/쿠폰적용은 `ACTIVE`(전시중) 상태여도 §1-A-1의 `saleStateCd`가 `ON_SALE`일 때만
+실제로 가능하다 — 이 표는 `prod_status_cd` 단독 기준이라 `ACTIVE` 행의 ✅는 "그 경우가 있을 수 있다"는
+뜻이지 항상 가능하다는 뜻이 아니다.
 
 | `prod_status_cd` | 사용자노출 | 장바구니 | 주문 | 쿠폰적용 | 수정 | 재활성화 |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
 | DRAFT<br>임시저장      | ❌ | ❌ | ❌ | ❌ | ✅ | -  |
-| SCHEDULED<br>판매예정  | ✅(출시예정) | ❌ | ❌ | ❌ | ✅ | -  |
-| ACTIVE<br>판매중       | ✅ | ✅ | ✅ | ✅ | ✅ | -  |
-| SOLDOUT<br>품절        | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| INACTIVE<br>중지       | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| ACTIVE<br>전시중       | ✅ | ✅(saleStateCd=ON_SALE 일 때만) | ✅(〃) | ✅(〃) | ✅ | -  |
+| INACTIVE<br>판매중지   | ❌ | ❌ | ❌ | ❌ | ✅ | ✅(배치 자동 또는 관리자 수동) |
+| ENDED<br>판매종료      | ❌ | ❌ | ❌ | ❌ | ✅ | ✅(관리자 수동만, 배치 미개입) |
 
 ---
 
@@ -104,4 +121,5 @@ GENERAL만 표준 클레임 정책 전체 적용. 나머지 유형은 각각 예
 
 - 2026-04-18: 초기 작성
 - 2026-04-18: 헤딩 형식 변경 (타이틀 좌측·컬럼명 우측) + 설명 추가
-- 2026-08-23: `SCHEDULED`(판매예정) 코드값 신설 반영, §2-A 매트릭스를 실제 코드값(DRAFT/SCHEDULED/ACTIVE/SOLDOUT/INACTIVE) 기준으로 재작성 — `PdProdSaleStatusSyncJob` 참조
+- 2026-08-23 (1차): `SCHEDULED`(판매예정) 코드값 신설, §2-A 매트릭스를 실제 코드값(DRAFT/SCHEDULED/ACTIVE/SOLDOUT/INACTIVE) 기준으로 재작성 — `PdProdSaleStatusSyncJob` 참조
+- 2026-08-23 (2차, 최종): 위 5종을 DRAFT/ACTIVE(전시중)/INACTIVE(판매중지)/ENDED(판매종료) 4종으로 재정리. SCHEDULED·SOLDOUT은 별도 상태 폐기, ACTIVE로 흡수하고 FO 응답 계산값 `saleStateCd`(§1-A-1)로 대체. ENDED 신설(관리자 전용, 배치 미개입) — FoPdProdService/QPdProdRepositoryImpl/PdProdSaleStatusSyncJob 동반 수정

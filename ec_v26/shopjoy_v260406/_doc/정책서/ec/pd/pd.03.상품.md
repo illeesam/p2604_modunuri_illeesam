@@ -11,17 +11,17 @@
 - 판매기간 / 구매제한 / 혜택적용 설정
 
 ## 상품 상태 (PROD_STATUS_CD)
-> 2026-08-23 정정 — 코드그룹명은 `PROD_STATUS_CD`(구 `PRODUCT_STATUS` 는 실제 코드에 등록된 적 없는
-> 오기). `STOPPED`/`DISCONTINUED` 도 등록된 적 없는 설계 시안이라 `INACTIVE`로 대체하고, 배치의
-> 자동 전환 대상을 명확히 하기 위해 `SCHEDULED`(판매예정)를 신설했다. 상세 상태표는 → `pd.01.상품상태표.md`.
+> 2026-08-23 최종 정리 — `prod_status_cd`는 **노출(전시) 라이프사이클만** 나타낸다. "지금 진짜 살 수
+> 있는가"(판매예정/판매중/품절)는 상태가 아니라 FO가 응답 시점에 판매기간·재고로 계산하는 `saleStateCd`
+> (DB 컬럼 아님)로 대체했다 — 상세 → `pd.01.상품상태표.md` §1-A-1. 그 결과 상태는 4종으로 단순화.
+> (이 문서의 구버전이 쓰던 `PRODUCT_STATUS`/`STOPPED`/`DISCONTINUED`는 등록된 적 없는 오기였다.)
 
 | 상태 | 코드 | 설명 |
 |------|------|------|
-| 임시저장 | DRAFT | 작성 중인 상품. 배치가 자동 전환하지 않음 |
-| 판매예정 | SCHEDULED | 등록 완료, 판매시작일 대기 중. 판매시작일 도달 시 배치가 ACTIVE로 자동 전환 |
-| 판매중 | ACTIVE | 판매 중인 상품. 판매종료일 경과 시 배치가 INACTIVE로 자동 전환 |
-| 품절 | SOLDOUT | 재고 소진. 관리자/재고 판단 영역(배치 미개입) |
-| 중지 | INACTIVE | 판매 중단. 관리자 재활성화 가능(배치 미개입) |
+| 임시저장 | DRAFT | 작성 중인 상품. FO 미노출. 배치가 자동 전환하지 않음(관리자만 ACTIVE로 전환) |
+| 전시중 | ACTIVE | FO에 노출됨(전시기간 조건도 충족해야 함). 판매예정/판매중/품절 세부는 `saleStateCd` 계산값으로 구분 |
+| 판매중지 | INACTIVE | FO 미노출. 판매기간을 벗어나면 배치가 ACTIVE에서 자동 전환, 기간 안으로 복귀하면 배치가 다시 ACTIVE로 자동 전환 |
+| 판매종료 | ENDED | FO 미노출. 관리자가 명시적으로 완전히 끝낸 최종 상태 — 배치가 절대 건드리지 않음 |
 
 ## 주요 정책
 
@@ -34,7 +34,7 @@
   - 카테고리
   - 상세설명 (HTML)
   - 상품이미지 (최소 1개)
-- **초기상태**: DRAFT (등록 완료 후 관리자가 SCHEDULED로 직접 전환해야 판매기간 배치 대상이 됨)
+- **초기상태**: DRAFT (등록 완료 후 관리자가 ACTIVE로 직접 전환해야 FO에 노출되고 판매기간 배치 대상이 됨)
 - **브랜드**: 선택사항
 - **업체**: 판매자/판매자 상품은 vendor_id 지정
 - **담당MD**: 등록 시 로그인한 본인 자동 설정 (변경 가능) — `pd_prod.md_user_id` (FK: sy_user.user_id)
@@ -50,23 +50,23 @@
 - **가격변경**: 최대 일 3회까지만 변경 가능
 
 ### 3. 상품 상태 관리
-- **DRAFT**: 작성 중, 판매 불가
+- **DRAFT**: 작성 중, FO 미노출
   - 임시저장 기능
   - 자동삭제: 30일 미저장 시
   - `PROD_SALE_STATUS_SYNC` 배치가 절대 건드리지 않음 — 판매기간을 먼저 입력해 둔 미완성 초안이
     날짜 도달만으로 실수 공개되는 걸 막기 위함
-- **SCHEDULED**: 판매예정 — 등록 완료, 판매시작일 대기 중
-  - 판매 불가, 카트에 담기 불가 (전시기간 조건 충족 시 "출시예정" 노출은 가능)
-  - 판매시작일시 도달 시 배치가 자동으로 ACTIVE 전환
-- **ACTIVE**: 판매 중
-  - 재고 0이면 자동으로 품절 표시
-  - 판매종료일시 경과 시 배치가 자동으로 INACTIVE 전환
-- **SOLDOUT**: 품절
-  - 재고 소진. 노출은 되나 주문 불가
-  - 재입고 시 관리자가 ACTIVE로 수동 전환
-- **INACTIVE**: 중지
-  - 판매 불가, 카트에 담기 불가
-  - 관리자가 수동으로 재활성화(ACTIVE 전환) 가능 — 배치는 개입하지 않음
+- **ACTIVE**: 전시중 — FO 노출(전시기간 조건도 충족해야 함)
+  - 이 안에서 "지금 진짜 살 수 있는가"는 `saleStateCd` 계산값(판매예정/판매중/품절)으로 구분되며
+    상태 전환이 아니다 — 재고 0이어도, 판매시작일 전이어도 상태는 여전히 ACTIVE
+  - 판매종료일시 경과 시 배치가 자동으로 INACTIVE 전환, 이후 관리자가 종료일을 다시 미래로 늘리면
+    배치가 자동으로 ACTIVE 복귀
+- **INACTIVE**: 판매중지 — FO 미노출
+  - 판매기간(시작~종료일)을 벗어나면 배치가 자동 전환, 기간 안으로 돌아오면 배치가 자동 복귀
+  - 관리자가 수동으로도 전환 가능하나, 판매기간이 여전히 유효한 상태에서 수동으로 중지해도 다음
+    배치 실행 때 자동으로 ACTIVE 복귀될 수 있음 — 되돌아가지 않게 완전히 끝내려면 ENDED 사용
+- **ENDED**: 판매종료 — FO 미노출
+  - 관리자가 명시적으로 완전히 끝낸 최종 상태. 배치가 절대 건드리지 않음(양방향 다 미개입)
+  - 되살리려면 관리자가 직접 ACTIVE로 전환
 
 ### 4. 재고 관리
 - **재고단위**: SKU별 개별 관리
@@ -348,7 +348,8 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 - pd_prod_rel: `(prod_id, rel_prod_id, prod_rel_type_cd)` UNIQUE 제약으로 중복 연결 방지
 
 ## 변경이력
-- 2026-08-23: 상품 상태 코드그룹명 `PRODUCT_STATUS`(오기)→`PROD_STATUS_CD` 정정, 실제 등록된 적 없는 `STOPPED`/`DISCONTINUED`를 `SOLDOUT`/`INACTIVE`로 교체, `SCHEDULED`(판매예정) 신설 반영 — `PdProdSaleStatusSyncJob` 배치가 SCHEDULED→ACTIVE·ACTIVE→INACTIVE만 자동 전환하고 DRAFT는 건드리지 않음
+- 2026-08-23 (1차): 상품 상태 코드그룹명 `PRODUCT_STATUS`(오기)→`PROD_STATUS_CD` 정정, 실제 등록된 적 없는 `STOPPED`/`DISCONTINUED`를 `SOLDOUT`/`INACTIVE`로 교체, `SCHEDULED`(판매예정) 신설 반영
+- 2026-08-23 (2차, 최종): 위 5종(DRAFT/SCHEDULED/ACTIVE/SOLDOUT/INACTIVE)을 DRAFT/ACTIVE(전시중)/INACTIVE(판매중지)/ENDED(판매종료) 4종으로 재정리. `prod_status_cd`는 노출 라이프사이클만 담당하고, 판매예정/판매중/품절 구분은 FO 응답 계산값 `saleStateCd`(DB 컬럼 아님, `pd.01.상품상태표.md` §1-A-1)로 이전. ENDED 신설(관리자 전용, 배치 미개입). ACTIVE↔INACTIVE는 배치가 양방향 자동 전환(판매기간 이탈/복귀)
 - 2026-04-19: 연관상품·코디상품(pd_prod_rel) 섹션 추가, PROD_REL_TYPE 코드 정의 (REL_PROD/CODY_PROD), pd_prod_sku statusCd/saleCnt 필드 반영, 담당MD(md_user_id) 정책 추가
 - 2026-07-12: pd_prod_img opt_item_id_1/2 → prod_opt1_id/2 컬럼명 업데이트
 - 2026-04-19: 리뷰(pd_review/attach/comment) 섹션 추가, opt_item_id_1/2 반영, content_type_cd DETAIL/NOTICE/GUIDE/SIZE_GUIDE 코드 정리, 배송템플릿·문의유형 코드 레이블 추가

@@ -123,6 +123,11 @@ public class PmCoupon extends BaseEntity {
     @Size(max = 20, message = "memGradeCd 는 20자 이내여야 합니다.")
     private String memGradeCd;
 
+    @Comment("적용범위 (코드: COUPON_APPLY_SCOPE_CD — ORDER:주문할인/PRODUCT:상품할인/DELIVERY:배송비할인)")
+    @Column(name = "apply_scope_cd", length = 20)
+    @Size(max = 20, message = "applyScopeCd 는 20자 이내여야 합니다.")
+    private String applyScopeCd;
+
     @Comment("자사(사이트) 분담율 (%) — 기본 100%")
     @Column(name = "self_cdiv_rate")
     private BigDecimal selfCdivRate;

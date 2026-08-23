@@ -19,8 +19,9 @@ public class PmCouponDto {
         @Size(max = 1) private String useYn;     // 사용여부 필터 Y/N
         @Size(max = 21) private String couponId; // 쿠폰ID 필터
         private List<String> couponIds;                // PK 다건 IN
-        @Size(max = 21) private String memberId; // 회원ID 필터
+        @Size(max = 21) private String memberId; // 회원ID 필터 — 이 회원에게 발급(pm_coupon_issue)되었고 아직 미사용인 쿠폰만 (EXISTS)
         @Size(max = 20) private String couponStatusCd; // 상태 — COUPON_STATUS_CD {ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료}
+        @Size(max = 20) private String applyScopeCd;   // 적용범위 필터 — COUPON_APPLY_SCOPE_CD {ORDER:주문할인, PRODUCT:상품할인, DELIVERY:배송비할인}
         @Size(max = 21)  private String prodId;         // 대상상품 ID 필터 (EXISTS eq via pm_coupon_prod)
         @Size(max = 200) private String prodNm;         // 대상상품명 필터 (EXISTS LIKE via pm_coupon_prod→pd_prod)
         @Size(max = 21)  private String vendorId;       // 업체 ID 필터 (EXISTS eq via pm_coupon_prod→pd_prod)
@@ -50,6 +51,8 @@ public class PmCouponDto {
         private String couponStatusCdBefore; // 변경 전 쿠폰상태
         private String useYn;                // 사용여부 Y/N
         private String targetTypeCd;         // 적용대상 — PROMO_TARGET_TYPE {ALL:전체, PRODUCT:상품, CATEGORY:카테고리, VENDOR:업체, BRAND:브랜드, MEMBER_GRADE:회원등급}
+        private String applyScopeCd;         // 적용범위 — COUPON_APPLY_SCOPE_CD {ORDER:주문할인, PRODUCT:상품할인, DELIVERY:배송비할인}
+        private String applyScopeCdNm;       // 적용범위 코드명 (화면 표시용)
         private String targetValue;          // 적용대상값
         private String memGradeCd;           // 적용 회원등급 코드 (NULL=전체) — MEMBER_GRADE {BASIC:일반, GOLD:우수, NORMAL:일반, VIP:VIP, BRONZE:브론즈, SILVER:실버}
         private BigDecimal selfCdivRate;     // 자사(사이트) 분담율 (%) — 기본 100%
