@@ -11,6 +11,7 @@ CREATE TABLE shopjoy_2604.md_cb_pattern (
     row_count         INTEGER      DEFAULT 0,
     max_stitch_count  INTEGER      DEFAULT 0,
     desc_text         TEXT,
+    round_desc_text   TEXT,
     thumbnail_url     VARCHAR(500),
     pattern_status_cd VARCHAR(20)  DEFAULT 'DRAFT',
     use_yn            VARCHAR(1)   DEFAULT 'Y'::bpchar,
@@ -30,6 +31,7 @@ COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.pattern_desc IS '도안 설명';
 COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.row_count IS '총 단수 (격자 세로 길이)';
 COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.max_stitch_count IS '최대 코수 (격자 가로 길이)';
 COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.desc_text IS '격자로부터 생성된 한글 도안 설명 (자동생성 결과 캐시, 저장 시 갱신)';
+COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.round_desc_text IS '원형(라운드) 도안 입력 텍스트 (원형뜨기 전용 별도 입력, 사각형 격자와 독립)';
 COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.thumbnail_url IS '썸네일 이미지 URL';
 COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.pattern_status_cd IS '상태 — CB_PATTERN_STATUS_CD {DRAFT:작성중, PUBLISHED:공개, PRIVATE:비공개}';
 COMMENT ON COLUMN shopjoy_2604.md_cb_pattern.use_yn IS '사용여부 Y/N (삭제 대체 플래그)';

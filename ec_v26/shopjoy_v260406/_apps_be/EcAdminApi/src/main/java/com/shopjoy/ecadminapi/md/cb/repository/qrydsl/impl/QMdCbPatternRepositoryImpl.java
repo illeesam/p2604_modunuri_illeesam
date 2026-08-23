@@ -50,6 +50,7 @@ public class QMdCbPatternRepositoryImpl implements QMdCbPatternRepository {
                         mdCbPattern.rowCount,           // 총 단수
                         mdCbPattern.maxStitchCount,     // 최대 코수
                         mdCbPattern.descText,           // 한글 도안 설명
+                        mdCbPattern.roundDescText,      // 원형(라운드) 도안 입력 텍스트
                         mdCbPattern.thumbnailUrl,       // 썸네일
                         mdCbPattern.patternStatusCd,    // 상태
                         codeStatusCd.codeLabel.as("patternStatusCdNm"),  // 상태 코드라벨 (조인)
@@ -169,6 +170,7 @@ public class QMdCbPatternRepositoryImpl implements QMdCbPatternRepository {
         if (entity.getRowCount()        != null) { update.set(mdCbPattern.rowCount,        entity.getRowCount());        hasAny = true; }
         if (entity.getMaxStitchCount()  != null) { update.set(mdCbPattern.maxStitchCount,  entity.getMaxStitchCount());  hasAny = true; }
         if (entity.getDescText()        != null) { update.set(mdCbPattern.descText,        entity.getDescText());        hasAny = true; }
+        if (entity.getRoundDescText()   != null) { update.set(mdCbPattern.roundDescText,   entity.getRoundDescText());   hasAny = true; }
         if (entity.getThumbnailUrl()    != null) { update.set(mdCbPattern.thumbnailUrl,    entity.getThumbnailUrl());    hasAny = true; }
         if (entity.getPatternStatusCd() != null) { update.set(mdCbPattern.patternStatusCd, entity.getPatternStatusCd()); hasAny = true; }
         if (entity.getUseYn()           != null) { update.set(mdCbPattern.useYn,           entity.getUseYn());           hasAny = true; }

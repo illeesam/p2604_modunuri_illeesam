@@ -81,6 +81,7 @@ window.FoPager = {
  *   tab       (String)   현재 선택된 탭 id
  *   tabMode   (String)   'tab' | '1col' | '2col' | '3col' | '4col' (기본 'tab')
  *   showModes (Boolean)  뷰모드 아이콘 그룹 노출 여부 (기본 false — FO 는 보통 탭만 사용)
+ *   dense     (Boolean)  탭 개수가 많을 때(예: 예제 모음) 작은 크기로 여러 줄 줄바꿈 허용 (기본 false)
  *
  * Emits:
  *   tab-select(id)       탭 클릭
@@ -99,6 +100,7 @@ window.FoTabBar = {
     showModes:   { type: Boolean, default: false },
     maxCols:     { type: Number,  default: 4 },
     orientation: { type: String,  default: 'horizontal' }, // 'horizontal' | 'vertical'
+    dense:       { type: Boolean, default: false }, // 탭 많음(예: 예제 모음) — 작게 + 줄바꿈 허용
   },
   emits: ['tab-select', 'mode-select'],
   setup(props, { emit }) {
@@ -122,17 +124,19 @@ window.FoTabBar = {
   : 'display:flex;gap:8px;margin-bottom:14px;align-items:stretch;'">
   <div :style="orientation==='vertical'
     ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);min-width:160px;'
-    : 'flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);'">
+    : (dense
+      ? 'flex:1;display:flex;flex-wrap:wrap;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);'
+      : 'flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);')">
     <template v-for="t in tabs" :key="t?.id">
       <button v-if="t.visible===undefined || t.visible" @click="onTab(t.id)" :disabled="!isTabMode()"
         :style="{
-          flex: orientation==='vertical' ? 'none' : 1,
+          flex: (orientation==='vertical' || dense) ? 'none' : 1,
           width: orientation==='vertical' ? '100%' : 'auto',
-          padding:'7px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
-          fontSize:'12.5px', borderRadius:'9px', transition:'all .18s',
+          padding: dense ? '4px 9px' : '7px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
+          fontSize: dense ? '11px' : '12.5px', borderRadius:'9px', transition:'all .18s',
           display:'inline-flex', alignItems:'center',
           justifyContent: orientation==='vertical' ? 'flex-start' : 'center',
-          gap:'6px',
+          gap: dense ? '4px' : '6px',
           opacity: isTabMode() ? 1 : 0.55,
           fontWeight: tab===t.id ? 800 : 600,
           background: (isTabMode() && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',

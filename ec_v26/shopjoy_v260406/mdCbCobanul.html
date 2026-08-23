@@ -138,6 +138,9 @@
     /* ── 상세/편집 화면 상단 ── */
     .cb-detail-head { display:flex; align-items:center; margin-bottom:20px; }
     .cb-detail-id { font-size:13px; font-weight:400; color:var(--text-muted,#999); margin-left:8px; font-family:monospace; vertical-align:middle; }
+    .cb-pattern-type-badge { display:inline-flex; align-items:center; font-size:12px; font-weight:700; color:var(--accent,#c9a96e);
+      background:rgba(201,169,110,0.12); border:1px solid rgba(201,169,110,0.35); border-radius:20px;
+      padding:3px 10px; margin-left:8px; vertical-align:middle; }
     .cb-back-btn { border-radius:8px; font-weight:700; white-space:nowrap; padding:7px 14px; font-size:13px; }
 
     /* ── 중앙: 격자 편집기 ── */
@@ -158,6 +161,9 @@
     .cb-thumb-placeholder { font-size:15px; color:var(--text-muted,#aaa); }
     .cb-thumb-remove { position:absolute; top:-4px; right:-4px; width:15px; height:15px; border-radius:50%;
       background:#e8587a; color:#fff; font-size:9px; display:flex; align-items:center; justify-content:center; line-height:1; }
+    .cb-thumb-auto-toggle { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text-secondary,#666);
+      cursor:pointer; max-width:110px; line-height:1.3; }
+    .cb-thumb-auto-toggle input[type="checkbox"] { width:12px; height:12px; margin:0; flex-shrink:0; cursor:pointer; }
     .cb-size-field { display:flex; flex-direction:column; gap:3px; }
     .cb-size-input { width:56px; padding:5px 6px; border-radius:6px; border:1px solid var(--border,#ddd); text-align:center;
       background:var(--bg-card,#fff); }
@@ -180,15 +186,33 @@
     .cb-chart-wrap { overflow:auto; max-height:600px; width:fit-content; max-width:100%; margin:0 auto;
       border:1px solid var(--border,#eee); border-radius:8px; background:var(--bg-card,#fff); padding:8px; }
     .cb-chart-row { display:flex; }
-    .cb-chart-corner { width:24px; height:20px; flex-shrink:0; }
+    .cb-chart-corner { width:28px; height:20px; flex-shrink:0; }
     .cb-chart-axis-row { position:sticky; top:0; background:var(--bg-card,#fff); z-index:1; }
-    .cb-chart-axis-cell { width:22px; height:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    .cb-chart-axis-cell { width:28px; height:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
       font-size:9px; color:var(--text-muted,#999); font-family:monospace; }
-    .cb-chart-row .cb-chart-axis-cell:first-child { width:24px; background:var(--bg-card,#fff); position:sticky; left:0; z-index:1; }
-    .cb-chart-cell { width:22px; height:22px; flex-shrink:0; border:1px solid rgba(0,0,0,0.06); position:relative;
+    .cb-chart-row .cb-chart-axis-cell:first-child { width:28px; background:var(--bg-card,#fff); position:sticky; left:0; z-index:1; }
+    .cb-chart-cell { width:28px; height:28px; flex-shrink:0; border:1px solid rgba(0,0,0,0.06); position:relative;
       background:var(--bg-base,#fafafa); }
     .cb-chart-count { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      font-size:9px; font-weight:800; color:#000; text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 3px #fff; pointer-events:none; }
+      font-size:10px; font-weight:800; color:#000; text-shadow:0 0 2px #fff,0 0 2px #fff,0 0 3px #fff; pointer-events:none; }
+
+    /* ── 원형(라운드) 도안 — 사각형 격자와 독립된 입력+미리보기(미리보기가 위, 입력이 아래) ── */
+    .cb-round-wrap { display:flex; flex-direction:column; gap:16px; align-items:center; }
+    .cb-round-input { width:100%; }
+    .cb-round-hint { margin-top:6px; font-size:11px; color:var(--text-muted,#999); line-height:1.5; }
+    .cb-round-preview { position:relative; flex-shrink:0; margin:0 auto; border:1px solid var(--border,#eee);
+      border-radius:8px; background:var(--bg-base,#fafafa); }
+    .cb-round-guide-svg { position:absolute; inset:0; width:100%; height:100%; }
+    .cb-round-guide { fill:none; stroke:var(--border,#ddd); stroke-width:1; stroke-dasharray:3 3; }
+    .cb-round-label { font-size:11px; font-weight:700; fill:var(--text-secondary,#777); }
+    .cb-round-center { fill:var(--accent,#c9a96e); opacity:.3; }
+    .cb-round-center-label, .cb-round-center-icon, .cb-round-stitch { position:absolute; transform:translate(-50%,-50%);
+      display:flex; align-items:center; justify-content:center; pointer-events:none; }
+    .cb-round-center-icon { color:var(--accent,#c9a96e); }
+    .cb-round-center-label { font-size:10px; font-weight:800; color:var(--text-secondary,#666); }
+    .cb-round-stitch-char { font-size:13px; font-weight:700; color:var(--text-primary,#333); }
+    .cb-round-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      text-align:center; font-size:12px; color:var(--text-muted,#aaa); line-height:1.6; padding:20px; }
 
     .cb-grid-wrap { position:relative; padding:26px; display:flex; width:fit-content; max-width:100%; margin:0 auto; }
     .cb-grid-scroll { overflow:auto; max-height:560px; border:1px solid var(--border,#eee); border-radius:8px;
@@ -216,6 +240,10 @@
     .cb-desc-title { font-size:13px; font-weight:700; color:var(--text-primary,#333); }
     .cb-desc-textarea { width:100%; font-size:13px; border-radius:8px; transition:border-color .15s; }
     .cb-desc-textarea:focus { border-color:var(--accent,#c9a96e); outline:none; }
+    .cb-desc-examples { margin-top:10px; }
+    .cb-desc-example-body { display:flex; align-items:flex-start; gap:10px; margin-top:8px; }
+    .cb-desc-example-pre { flex:1; margin:0; padding:10px 12px; background:var(--bg-base,#f7f7f8); border:1px solid var(--border,#eee);
+      border-radius:8px; font-size:12px; font-family:monospace; color:var(--text-secondary,#555); white-space:pre-wrap; line-height:1.6; }
 
     /* ── 우측: 기호 팔레트 / 배색 / 사용 실 ── */
     .cb-panel-side { display:flex; flex-direction:column; }
@@ -373,8 +401,8 @@
     />
     <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
     <main class="layout-main" style="flex:1;overflow-y:auto;min-width:0;">
-      <md-cb-pattern-list-page v-if="curView==='list'" :show-toast="showToast" />
-      <md-cb-cobanul-page v-else :show-toast="showToast" />
+      <md-cb-pattern-list-page v-if="curView==='list'" :show-toast="showToast" :show-confirm="showConfirm" />
+      <md-cb-cobanul-page v-else :show-toast="showToast" :show-confirm="showConfirm" />
       <fo-app-footer :config="config" :navigate="navigate" />
     </main>
   </div>
@@ -383,6 +411,19 @@
 
   <div v-if="toasts.length" class="cb-toast-stack">
     <div v-for="t in toasts" :key="t.id" class="cb-toast" :class="t.type">{{ t.msg }}</div>
+  </div>
+
+  <!-- CONFIRM MODAL — index.html(foAppBase.js)과 동일한 디자인 컨펌(window.confirm() 대체) -->
+  <div v-if="confirmState.show" class="modal-overlay" style="z-index:10000;" @click.self="closeConfirm(false)">
+    <div class="modal-box">
+      <div class="modal-icon icon-warning">⚠️</div>
+      <div class="modal-title">{{ confirmState.title }}</div>
+      <div class="modal-msg">{{ confirmState.msg }}</div>
+      <div class="modal-actions" style="gap:10px;">
+        <button class="btn-outline" @click="closeConfirm(false)" style="padding:10px 20px;">취소</button>
+        <button class="btn-blue" @click="closeConfirm(true)" style="padding:10px 20px;">확인</button>
+      </div>
+    </div>
   </div>
 </div>
 `,

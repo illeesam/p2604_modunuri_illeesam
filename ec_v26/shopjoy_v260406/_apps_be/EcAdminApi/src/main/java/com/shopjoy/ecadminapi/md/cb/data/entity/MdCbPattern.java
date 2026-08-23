@@ -57,6 +57,10 @@ public class MdCbPattern extends BaseEntity {
     @Column(name = "desc_text", columnDefinition = "TEXT")
     private String descText;
 
+    @Comment("원형(라운드) 도안 입력 텍스트 (원형뜨기 전용 별도 입력, 사각형 격자와 독립)")
+    @Column(name = "round_desc_text", columnDefinition = "TEXT")
+    private String roundDescText;
+
     @Comment("썸네일 이미지 URL")
     @Column(name = "thumbnail_url", length = 500)
     @Size(max = 500, message = "thumbnailUrl 는 500자 이내여야 합니다.")

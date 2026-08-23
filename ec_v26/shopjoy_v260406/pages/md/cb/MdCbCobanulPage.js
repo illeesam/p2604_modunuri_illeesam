@@ -164,6 +164,96 @@ function fnSymbolSvg(cd) {
   }
 }
 
+/* fnMagicRingIcon — 원형뜨기 시작점(매직링/MR) 전용 나선 아이콘. 작가마다 소용돌이·"M"·동그라미 등
+   여러 표기가 쓰이지만(사용자 제공 참고 이미지), 이 화면은 소용돌이 하나로 통일해 표시한다.
+   아르키메데스 나선을 다각선으로 근사 — 사슬 원형 시작(속이 빈 원)과 한눈에 구분되게 한다. */
+function fnMagicRingIcon() {
+  const cx = 12, cy = 12, turns = 1.6, steps = 30, maxR = 7;
+  let d = '';
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const angle = t * turns * 2 * Math.PI - Math.PI / 2;
+    const r = t * maxR;
+    const x = (cx + r * Math.cos(angle)).toFixed(1);
+    const y = (cy + r * Math.sin(angle)).toFixed(1);
+    d += (i === 0 ? 'M' : 'L') + x + ',' + y + ' ';
+  }
+  return `<svg viewBox="0 0 24 24" class="cb-sym-svg" ${CB_SVG_STROKE}><path d="${d.trim()}"/></svg>`;
+}
+
+/* ══════════════════════ "도안을 대표이미지로 첨부" — 자동 썸네일 생성 ══════════════════════
+   업로드된 사진 대신, 지금 그려진 도안 자체(격자 또는 원형)를 순수 SVG로 다시 그려 PNG로
+   래스터화한다. 화면에 이미 떠 있는 DOM(HTML div 격자 / 겹쳐진 원형 stitch)을 그대로 캡처하는
+   대신 데이터(cellMap/cfRoundChart)로부터 새로 그리는 이유: 라이브 DOM 캡처엔 html2canvas 같은
+   외부 라이브러리가 필요한데(로컬 CDN 미보유), 우리가 이미 가진 좌표 데이터로 SVG 문자열을
+   직접 조립하면 의존성 없이 훨씬 가볍고 정확하게 재현할 수 있다. */
+const CB_THUMB_CELL_PX = 24;
+
+/* fnSizeIconSvg — fnSymIcon()/fnMagicRingIcon() 이 만든 <svg viewBox="0 0 24 24" class="cb-sym-svg">
+   는 CSS(.cb-sym-svg)로만 크기를 지정하므로, 페이지 스타일시트가 없는 독립 SVG 문서(썸네일 캡처용)
+   안에 그대로 넣으면 크기가 깨진다 — width/height 속성을 직접 박아 넣어 크기를 고정한다. */
+function fnSizeIconSvg(svgStr, size) {
+  return svgStr.replace('viewBox="0 0 24 24"', `viewBox="0 0 24 24" width="${size}" height="${size}"`);
+}
+
+/* fnBuildGridThumbSvg — 기호 격자(cellMap)를 그대로 SVG 문서 하나로 재구성 */
+function fnBuildGridThumbSvg(rowCount, colCount, cellMap, symbolMap) {
+  const cell = CB_THUMB_CELL_PX;
+  const w = colCount * cell, h = rowCount * cell;
+  let body = '';
+  for (let r = 1; r <= rowCount; r++) {
+    for (let c = 1; c <= colCount; c++) {
+      const x = (c - 1) * cell, y = (r - 1) * cell;
+      const data = cellMap[r + '_' + c];
+      const fill = data && data.colorHex ? data.colorHex : '#ffffff';
+      body += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" fill="${fill}" stroke="#e2e2e2" stroke-width="1"/>`;
+      const sym = data && data.symbolId ? symbolMap[data.symbolId] : null;
+      const inner = sym && sym.symbolCd ? fnSymbolSvg(sym.symbolCd) : null;
+      if (inner) {
+        const pad = 2, size = cell - pad * 2;
+        body += `<g transform="translate(${x + pad},${y + pad})">${fnSizeIconSvg(`<svg viewBox="0 0 24 24" ${CB_SVG_STROKE}>${inner}</svg>`, size)}</g>`;
+      }
+    }
+  }
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="#ffffff"/>${body}</svg>`, w, h };
+}
+
+/* fnBuildRoundThumbSvg — cfRoundChart 계산 결과(반지름·좌표·아이콘)를 그대로 SVG 문서로 재구성 */
+function fnBuildRoundThumbSvg(chart) {
+  const { box, half, rounds, start } = chart;
+  let body = '';
+  rounds.forEach(rd => {
+    body += `<circle cx="${half}" cy="${half}" r="${rd.radius}" fill="none" stroke="#ddd" stroke-width="1" stroke-dasharray="3 3"/>`;
+    rd.points.forEach(pt => {
+      const x = half + pt.x, y = half + pt.y;
+      if (pt.svg) body += `<g transform="translate(${x - 11},${y - 11})">${fnSizeIconSvg(pt.svg, 22)}</g>`;
+      else body += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="13" font-weight="700" fill="#333">${pt.char}</text>`;
+    });
+  });
+  if (start) body += `<circle cx="${half}" cy="${half}" r="10" fill="#c9a96e" opacity="0.3"/>`;
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${box}" height="${box}" viewBox="0 0 ${box} ${box}"><rect width="${box}" height="${box}" fill="#fafafa"/>${body}</svg>`, w: box, h: box };
+}
+
+/* fnSvgToPngBlob — 위에서 조립한 SVG 문자열을 오프스크린 <img>+<canvas> 로 PNG Blob 변환 */
+function fnSvgToPngBlob(svgString, w, h) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('캔버스 변환 실패')), 'image/png');
+    };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+
 /* fnParseDescText — 한글 도안 설명 텍스트 → 격자(cells) 역변환(fnGenDescText 의 반대 방향).
    "N단: 기호명 N코, 기호명 N코, ..." 형식의 줄을 파싱해 그 단(row)을 왼쪽부터 순서대로 채운다.
    "N단:" 이 없는 줄은 등장 순서를 단 번호로 사용. 등록된 기호명과 일치하지 않는 조각은 건너뛴다
@@ -200,6 +290,61 @@ function fnParseDescText(text, symbols) {
   return { cells, rowCount, maxCol, unmatched };
 }
 
+/* fnParseRoundText — "원형(라운드) 도안" 입력 텍스트 파싱.
+   사각형 격자(cellMap)와는 완전히 별도의 데이터/뷰. 형식:
+     시작: 매직링 원형 시작 6   (또는 "사슬 원형 시작 N")
+     1: 짧은뜨기 6
+     2: 2코늘리기 6
+     3: (짧은뜨기, 2코늘리기)*6
+   "시작:" 줄은 "매직링"(또는 "MR")이 들어있으면 매직링(나선 아이콘), 아니면 사슬 원형 시작(속이 빈
+   원)으로 표시한다 — 실제 뜨개에서 작가마다 표기가 다른 두 시작 기법을 모두 지원. "(A, B)*K" 는
+   괄호 안 나열을 K번 반복해 전개한다("A,B,A,B,...", K번). 괄호가 없는 줄은 콤마로 나열된
+   "기호명 N코" 조각을 그대로 나열 순서대로 채운다. 등록된 기호명과 일치하지 않으면 symbolId 없이
+   이름 텍스트만 남겨 아이콘 대신 첫 글자로 표시한다(입력 오탈자도 조용히 허용 — 미리보기가
+   부분적으로라도 나오는 편이 낫다). */
+function fnParseRoundText(text, symbols) {
+  const nameToId = {};
+  symbols.forEach(s => { nameToId[s.symbolNm] = s.symbolId; });
+  let start = null;
+  const rounds = [];
+  const lines = (text || '').split('\n').map(l => l.trim()).filter(Boolean);
+  lines.forEach(line => {
+    const m = line.match(/^([^:：]+)[:：]\s*(.+)$/);
+    if (!m) return;
+    const head = m[1].trim();
+    const body = m[2].trim();
+    if (head === '시작') {
+      const nm = body.match(/(\d+)\s*$/);
+      const type = /매직\s*링|MR\b/i.test(body) ? 'magicring' : 'chain'; // "매직링 원형 시작 N" | "사슬 원형 시작 N"
+      start = { type, total: nm ? Number(nm[1]) : 0 };
+      return;
+    }
+    const roundNo = Number(head.replace(/[^0-9]/g, ''));
+    if (!roundNo) return;
+    const items = [];
+    const pushSeg = (seg) => {
+      seg = seg.trim();
+      if (!seg) return;
+      const cm = seg.match(/^(.+?)\s*(\d+)\s*코?\s*$/);
+      const symbolNm = cm ? cm[1].trim() : seg;
+      const count = cm ? Number(cm[2]) : 1;
+      for (let i = 0; i < count; i++) items.push({ symbolNm, symbolId: nameToId[symbolNm] || null });
+    };
+    let hasGroup = false;
+    body.replace(/\(([^)]+)\)\s*\*\s*(\d+)/g, (whole, inner, repeatStr) => {
+      hasGroup = true;
+      const repeat = Number(repeatStr);
+      const segs = inner.split(',');
+      for (let r = 0; r < repeat; r++) segs.forEach(pushSeg);
+      return whole;
+    });
+    if (!hasGroup) body.split(',').forEach(pushSeg);
+    if (items.length > 0) rounds.push({ roundNo, items, total: items.length });
+  });
+  rounds.sort((a, b) => a.roundNo - b.roundNo);
+  return { start, rounds };
+}
+
 /* 배색 빠른 팔레트 — 4열 x 5행 고정 스와치(직접 배색 입력으로 언제든 덮어쓸 수 있다).
    실 색상은 너무 진하고 쨍한 원색보다 부드러운 톤이 보기 편해서 파스텔 계열로 구성(흑/백만 원색 유지). */
 const PRESET_COLORS = [
@@ -218,6 +363,99 @@ const GRID_PRESETS = [
   { label: '30×40', row: 30, col: 40 },
 ];
 
+/* "설명으로 격자 만들기" 예제 — 등록된 기호명 그대로 사용한 "N단: 기호명 N코, ..." 형식 샘플.
+   각각 [이 예제 넣기]로 한글 도안 설명에 바로 채워 넣고 바로 테스트해볼 수 있다. */
+const DESC_EXAMPLES = [
+  { id: 'basic', label: '기본 사각형', text: '1단: 사슬뜨기 10코\n2단: 짧은뜨기 10코\n3단: 짧은뜨기 10코\n4단: 짧은뜨기 10코' },
+  { id: 'incdec', label: '늘림·모아뜨기', text: '1단: 사슬뜨기 8코\n2단: 짧은뜨기 2코 늘려뜨기 8코\n3단: 짧은뜨기 8코, 짧은뜨기 2코 모아뜨기 4코' },
+  { id: 'stripe', label: '줄무늬', text: '1단: 사슬뜨기 12코\n2단: 한길긴뜨기 12코\n3단: 짧은뜨기 12코' },
+  { id: 'widen', label: '점점 넓어지는 사각형', text: '1단: 사슬뜨기 6코\n2단: 짧은뜨기 6코\n3단: 짧은뜨기 3코, 2코늘리기 3코\n4단: 짧은뜨기 6코, 2코늘리기 3코' },
+  { id: 'narrow', label: '점점 좁아지는 사각형', text: '1단: 사슬뜨기 12코\n2단: 짧은뜨기 12코\n3단: 2코모아뜨기 6코\n4단: 2코모아뜨기 3코' },
+  { id: 'hdcbasic', label: '긴뜨기 기본', text: '1단: 사슬뜨기 10코\n2단: 긴뜨기 10코\n3단: 긴뜨기 10코' },
+  { id: 'dcbasic', label: '한길긴뜨기 기본', text: '1단: 사슬뜨기 10코\n2단: 한길긴뜨기 10코\n3단: 한길긴뜨기 10코' },
+  { id: 'trmix', label: '두길긴뜨기 혼합', text: '1단: 사슬뜨기 12코\n2단: 두길긴뜨기 6코, 한길긴뜨기 6코\n3단: 짧은뜨기 12코' },
+  { id: 'rib', label: '리브(앞뒤 걸어뜨기)', text: '1단: 사슬뜨기 10코\n2단: 짧은뜨기 10코\n3단: 짧은뜨기 앞걸어뜨기 5코, 짧은뜨기 뒤걸어뜨기 5코' },
+  { id: 'scinc3', label: '짧은뜨기 3코 늘림·모아뜨기', text: '1단: 사슬뜨기 9코\n2단: 짧은뜨기 3코 늘려뜨기 9코\n3단: 짧은뜨기 9코, 짧은뜨기 3코 모아뜨기 3코' },
+  { id: 'hdcgrow', label: '긴뜨기 늘림·모아뜨기', text: '1단: 사슬뜨기 9코\n2단: 긴뜨기 3코 늘려뜨기 9코\n3단: 긴뜨기 9코, 긴뜨기 2코 모아뜨기 4코' },
+  { id: 'dcgrow', label: '한길긴뜨기 늘림·모아뜨기', text: '1단: 사슬뜨기 8코\n2단: 한길긴뜨기 2코 늘려뜨기 8코\n3단: 한길긴뜨기 8코, 한길긴뜨기 2코 모아뜨기 4코' },
+  { id: 'dcdec4', label: '4코모아뜨기 마무리', text: '1단: 사슬뜨기 16코\n2단: 한길긴뜨기 16코\n3단: 한길긴뜨기 4코 모아뜨기 4코' },
+  { id: 'crossrow', label: '교차무늬 줄', text: '1단: 사슬뜨기 12코\n2단: 긴뜨기 12코\n3단: 긴뜨기 1코 교차뜨기 6코' },
+  { id: 'crossrl', label: '오른쪽·왼쪽 교차 리듬', text: '1단: 사슬뜨기 12코\n2단: 한길긴뜨기 12코\n3단: 한길긴뜨기 오른쪽 위 교차뜨기 3코, 한길긴뜨기 왼쪽 위 교차뜨기 3코' },
+  { id: 'trcross', label: '두길긴뜨기 교차', text: '1단: 사슬뜨기 10코\n2단: 두길긴뜨기 10코\n3단: 두길긴뜨기 1코 교차뜨기 5코' },
+  { id: 'puffrow', label: '구슬뜨기 줄무늬', text: '1단: 사슬뜨기 10코\n2단: 한길긴뜨기 10코\n3단: 한길긴뜨기 3코 구슬뜨기 5코, 사슬뜨기 5코' },
+  { id: 'puffv', label: '변형구슬 강조', text: '1단: 사슬뜨기 8코\n2단: 한길긴뜨기 8코\n3단: 한길긴뜨기 3코 변형구슬뜨기 4코, 짧은뜨기 4코' },
+  { id: 'popcornrow', label: '팝콘무늬 줄', text: '1단: 사슬뜨기 10코\n2단: 한길긴뜨기 10코\n3단: 한길긴뜨기 5코 팝콘뜨기 5코, 사슬뜨기 5코' },
+  { id: 'fanshell', label: '솔잎·조개무늬 혼합', text: '1단: 사슬뜨기 16코\n2단: 한길긴뜨기 5잎 솔잎뜨기 4코, 조개무늬뜨기 4코' },
+];
+
+/* "원형(라운드) 도안 입력" 예제 — 등록된 기호명을 그대로 사용한 다양한 원형뜨기 샘플.
+   각각 [이 예제 넣기]로 원형 도안 입력란에 바로 채워 넣고 미리보기로 바로 확인해볼 수 있다.
+   group 은 SYMBOL_GROUPS 와 동일한 라벨(PDF 목차 1~6장)을 그대로 사용 — 예제 탭도 팔레트와
+   같은 분류 기준으로 묶어서 보여준다(cfGroupedRoundExamples). */
+const ROUND_EXAMPLES = [
+  // 1. 기본 뜨기
+  { id: 'basic', group: '1. 기본 뜨기', label: '기본 원형(도넛)', text: '시작: 사슬 원형 시작 6\n1: 짧은뜨기 6\n2: 짧은뜨기 6\n3: 짧은뜨기 6' },
+  { id: 'inc', group: '1. 기본 뜨기', label: '표준 증편(모티브)', text: '시작: 매직링 원형 시작 6\n1: 짧은뜨기 6\n2: 2코늘리기 6\n3: (짧은뜨기, 2코늘리기)*6\n4: (짧은뜨기 2코, 2코늘리기)*6' },
+  { id: 'tube', group: '1. 기본 뜨기', label: '통 원형(모자 옆면)', text: '시작: 매직링 원형 시작 8\n1: 짧은뜨기 8\n2: 짧은뜨기 8\n3: 짧은뜨기 8\n4: 짧은뜨기 8\n5: 짧은뜨기 8' },
+  { id: 'crownclose', group: '1. 기본 뜨기', label: '정수리 마무리(모아뜨기)', text: '시작: 매직링 원형 시작 6\n1: 짧은뜨기 6\n2: 2코늘리기 6\n3: (짧은뜨기, 2코늘리기)*6\n4: 짧은뜨기 18\n5: 2코모아뜨기 9' },
+  { id: 'chainstart', group: '1. 기본 뜨기', label: '사슬 시작 기본', text: '시작: 사슬 원형 시작 6\n1: 짧은뜨기 6\n2: 짧은뜨기 6' },
+  { id: 'slipjoin', group: '1. 기본 뜨기', label: '빼뜨기 마무리', text: '시작: 매직링 원형 시작 6\n1: 짧은뜨기 6\n2: 빼뜨기 6' },
+  { id: 'hdcbasic2', group: '1. 기본 뜨기', label: '긴뜨기 원형(매직링)', text: '시작: 매직링 원형 시작 8\n1: 긴뜨기 8\n2: 긴뜨기 8' },
+  { id: 'dcbasic2', group: '1. 기본 뜨기', label: '한길긴뜨기 원형(매직링)', text: '시작: 매직링 원형 시작 8\n1: 한길긴뜨기 8\n2: 한길긴뜨기 8' },
+  { id: 'trbasic', group: '1. 기본 뜨기', label: '두길긴뜨기 원형', text: '시작: 사슬 원형 시작 8\n1: 두길긴뜨기 8\n2: 두길긴뜨기 8' },
+
+  // 2. 짧은뜨기 응용
+  { id: 'rib', group: '2. 짧은뜨기 응용', label: '리브 원형', text: '시작: 매직링 원형 시작 8\n1: 짧은뜨기 8\n2: (짧은뜨기 앞걸어뜨기, 짧은뜨기 뒤걸어뜨기)*4' },
+  { id: 'scinc2motif', group: '2. 짧은뜨기 응용', label: '짧은뜨기 2코 늘림 모티브', text: '시작: 매직링 원형 시작 6\n1: 짧은뜨기 2코 늘려뜨기 6\n2: (짧은뜨기, 짧은뜨기 2코 늘려뜨기)*6' },
+  { id: 'scinc3motif', group: '2. 짧은뜨기 응용', label: '짧은뜨기 3코 늘림 모티브', text: '시작: 매직링 원형 시작 4\n1: 짧은뜨기 3코 늘려뜨기 4\n2: (짧은뜨기 2코, 짧은뜨기 3코 늘려뜨기)*4' },
+  { id: 'scdec2close', group: '2. 짧은뜨기 응용', label: '짧은뜨기 2코모아 마무리', text: '시작: 매직링 원형 시작 12\n1: 짧은뜨기 12\n2: 짧은뜨기 2코 모아뜨기 6' },
+  { id: 'scdec3close2', group: '2. 짧은뜨기 응용', label: '짧은뜨기 3코모아 마무리', text: '시작: 매직링 원형 시작 12\n1: 짧은뜨기 12\n2: 짧은뜨기 3코 모아뜨기 4' },
+  { id: 'scfpring', group: '2. 짧은뜨기 응용', label: '짧은뜨기 앞걸어뜨기 원형', text: '시작: 매직링 원형 시작 8\n1: 짧은뜨기 8\n2: 짧은뜨기 앞걸어뜨기 8' },
+  { id: 'scbpring', group: '2. 짧은뜨기 응용', label: '짧은뜨기 뒤걸어뜨기 원형', text: '시작: 매직링 원형 시작 8\n1: 짧은뜨기 8\n2: 짧은뜨기 뒤걸어뜨기 8' },
+  { id: 'ribwide', group: '2. 짧은뜨기 응용', label: '넓은 리브 원형', text: '시작: 매직링 원형 시작 12\n1: 짧은뜨기 12\n2: (짧은뜨기 앞걸어뜨기 3코, 짧은뜨기 뒤걸어뜨기 3코)*2' },
+
+  // 3. 긴뜨기·한길긴뜨기 늘림/모아뜨기
+  { id: 'hdcinc3motif', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '긴뜨기 3코 늘림 모티브', text: '시작: 매직링 원형 시작 4\n1: 긴뜨기 3코 늘려뜨기 4\n2: (긴뜨기 2코, 긴뜨기 3코 늘려뜨기)*4' },
+  { id: 'hdcdec2close', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '긴뜨기 2코모아 마무리', text: '시작: 매직링 원형 시작 10\n1: 긴뜨기 10\n2: 긴뜨기 2코 모아뜨기 5' },
+  { id: 'hdcdec3close2', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '긴뜨기 3코모아 마무리', text: '시작: 매직링 원형 시작 9\n1: 긴뜨기 9\n2: 긴뜨기 3코 모아뜨기 3' },
+  { id: 'dcinc2motif', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '한길긴뜨기 2코 늘림 모티브', text: '시작: 매직링 원형 시작 6\n1: 한길긴뜨기 2코 늘려뜨기 6\n2: (한길긴뜨기, 한길긴뜨기 2코 늘려뜨기)*6' },
+  { id: 'dcinc3motif', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '한길긴뜨기 3코 늘림 모티브', text: '시작: 매직링 원형 시작 4\n1: 한길긴뜨기 3코 늘려뜨기 4\n2: (한길긴뜨기 2코, 한길긴뜨기 3코 늘려뜨기)*4' },
+  { id: 'dcdec2close', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '한길긴뜨기 2코모아 마무리', text: '시작: 매직링 원형 시작 10\n1: 한길긴뜨기 10\n2: 한길긴뜨기 2코 모아뜨기 5' },
+  { id: 'dcdec3close2', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '한길긴뜨기 3코모아 마무리', text: '시작: 매직링 원형 시작 9\n1: 한길긴뜨기 9\n2: 한길긴뜨기 3코 모아뜨기 3' },
+  { id: 'dcdec4close', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '한길긴뜨기 4코모아 마무리', text: '시작: 매직링 원형 시작 8\n1: 한길긴뜨기 8\n2: 한길긴뜨기 4코 모아뜨기 2' },
+  { id: 'dcgrowmotif2', group: '3. 긴뜨기·한길긴뜨기 늘림/모아뜨기', label: '한길긴뜨기 증편 모티브', text: '시작: 매직링 원형 시작 6\n1: 한길긴뜨기 2코 늘려뜨기 6\n2: (한길긴뜨기, 한길긴뜨기 2코 늘려뜨기)*6\n3: (한길긴뜨기 2코, 한길긴뜨기 2코 늘려뜨기)*6' },
+
+  // 4. 걸어뜨기·교차뜨기
+  { id: 'cross', group: '4. 걸어뜨기·교차뜨기', label: '교차무늬 원형', text: '시작: 사슬 원형 시작 8\n1: 한길긴뜨기 8\n2: (한길긴뜨기 1코 교차뜨기, 사슬뜨기 1코)*4' },
+  { id: 'crossr', group: '4. 걸어뜨기·교차뜨기', label: '오른쪽 위 교차 원형', text: '시작: 사슬 원형 시작 8\n1: 한길긴뜨기 8\n2: (한길긴뜨기 오른쪽 위 교차뜨기, 사슬뜨기 1코)*4' },
+  { id: 'crossl', group: '4. 걸어뜨기·교차뜨기', label: '왼쪽 위 교차 원형', text: '시작: 사슬 원형 시작 8\n1: 한길긴뜨기 8\n2: (한길긴뜨기 왼쪽 위 교차뜨기, 사슬뜨기 1코)*4' },
+  { id: 'hdcfpring', group: '4. 걸어뜨기·교차뜨기', label: '긴뜨기 앞걸어뜨기 원형', text: '시작: 매직링 원형 시작 8\n1: 긴뜨기 8\n2: 긴뜨기 앞걸어뜨기 8' },
+  { id: 'hdcbpring', group: '4. 걸어뜨기·교차뜨기', label: '긴뜨기 뒤걸어뜨기 원형', text: '시작: 매직링 원형 시작 8\n1: 긴뜨기 8\n2: 긴뜨기 뒤걸어뜨기 8' },
+  { id: 'dcfpring', group: '4. 걸어뜨기·교차뜨기', label: '한길긴뜨기 앞걸어뜨기 원형', text: '시작: 매직링 원형 시작 8\n1: 한길긴뜨기 8\n2: 한길긴뜨기 앞걸어뜨기 8' },
+  { id: 'dcbpring', group: '4. 걸어뜨기·교차뜨기', label: '한길긴뜨기 뒤걸어뜨기 원형', text: '시작: 매직링 원형 시작 8\n1: 한길긴뜨기 8\n2: 한길긴뜨기 뒤걸어뜨기 8' },
+  { id: 'hdccrossmotif', group: '4. 걸어뜨기·교차뜨기', label: '긴뜨기 교차 모티브', text: '시작: 사슬 원형 시작 8\n1: 긴뜨기 8\n2: (긴뜨기 1코 교차뜨기, 사슬뜨기 1코)*4' },
+
+  // 5. 구슬·팝콘·무늬뜨기
+  { id: 'shell', group: '5. 구슬·팝콘·무늬뜨기', label: '조개무늬 원형', text: '시작: 사슬 원형 시작 8\n1: 조개무늬뜨기 8\n2: (사슬뜨기 2코, 조개무늬뜨기)*8' },
+  { id: 'popcorn', group: '5. 구슬·팝콘·무늬뜨기', label: '팝콘무늬 원형', text: '시작: 사슬 원형 시작 6\n1: (한길긴뜨기 5코 팝콘뜨기, 사슬뜨기 2코)*6\n2: (사슬뜨기 3코, 짧은뜨기)*6' },
+  { id: 'puff', group: '5. 구슬·팝콘·무늬뜨기', label: '구슬무늬 원형', text: '시작: 매직링 원형 시작 6\n1: (한길긴뜨기 3코 구슬뜨기, 사슬뜨기 1코)*6' },
+  { id: 'puffv', group: '5. 구슬·팝콘·무늬뜨기', label: '변형구슬 원형', text: '시작: 매직링 원형 시작 6\n1: (한길긴뜨기 3코 변형구슬뜨기, 사슬뜨기 1코)*6' },
+  { id: 'trpuff', group: '5. 구슬·팝콘·무늬뜨기', label: '두길구슬 원형', text: '시작: 매직링 원형 시작 6\n1: (두길긴뜨기 5코 구슬뜨기, 사슬뜨기 2코)*6' },
+  { id: 'trpop', group: '5. 구슬·팝콘·무늬뜨기', label: '두길팝콘 원형', text: '시작: 매직링 원형 시작 6\n1: (두길긴뜨기 6코 팝콘뜨기, 사슬뜨기 2코)*6' },
+  { id: 'fan', group: '5. 구슬·팝콘·무늬뜨기', label: '솔잎무늬 원형', text: '시작: 매직링 원형 시작 8\n1: 짧은뜨기 8\n2: (한길긴뜨기 5잎 솔잎뜨기, 짧은뜨기)*4' },
+  { id: 'shellring2', group: '5. 구슬·팝콘·무늬뜨기', label: '조개무늬 겹단 원형', text: '시작: 매직링 원형 시작 6\n1: 조개무늬뜨기 6\n2: (사슬뜨기 1코, 조개무늬뜨기)*6\n3: (사슬뜨기 2코, 조개무늬뜨기)*6' },
+  { id: 'trpopchain', group: '5. 구슬·팝콘·무늬뜨기', label: '두길팝콘 확장 무늬', text: '시작: 매직링 원형 시작 6\n1: (두길긴뜨기 6코 팝콘뜨기, 사슬뜨기 3코)*6' },
+
+  // 6. 특수 무늬 기호
+  { id: 'xst', group: '6. 특수 무늬 기호', label: 'X자뜨기 원형', text: '시작: 사슬 원형 시작 8\n1: 한길긴뜨기 8\n2: (1길긴뜨기 X자뜨기, 사슬뜨기 1코)*4' },
+  { id: 'trxst', group: '6. 특수 무늬 기호', label: '두길X자 원형', text: '시작: 사슬 원형 시작 8\n1: 두길긴뜨기 8\n2: (2길긴뜨기 X자뜨기, 사슬뜨기 1코)*4' },
+  { id: 'bobble', group: '6. 특수 무늬 기호', label: '칠보무늬 원형', text: '시작: 매직링 원형 시작 6\n1: (칠보뜨기, 사슬뜨기 2코)*6' },
+  { id: 'picot', group: '6. 특수 무늬 기호', label: '피코장식 원형', text: '시작: 매직링 원형 시작 6\n1: 짧은뜨기 6\n2: (짧은뜨기, 피코뜨기)*6' },
+  { id: 'ring', group: '6. 특수 무늬 기호', label: '링뜨기 원형', text: '시작: 매직링 원형 시작 6\n1: (짧은뜨기 링뜨기, 사슬뜨기 2코)*6' },
+  { id: 'trxstring', group: '6. 특수 무늬 기호', label: '두길X자 확장 원형', text: '시작: 사슬 원형 시작 10\n1: 두길긴뜨기 10\n2: (2길긴뜨기 X자뜨기, 사슬뜨기 1코)*5' },
+  { id: 'bobblering2', group: '6. 특수 무늬 기호', label: '칠보무늬 겹단 원형', text: '시작: 매직링 원형 시작 6\n1: (칠보뜨기, 사슬뜨기 2코)*6\n2: (사슬뜨기 3코, 짧은뜨기)*6' },
+];
+
 /* 기호 팔레트 그룹 — "코바늘_기호_확정본_모음" PDF 의 목차(1~6장)와 동일한 분류.
    symbol_cd 로 소속을 판정하고, 어느 그룹에도 없는 기호(향후 추가분 포함)는 "기타"로 폴백한다. */
 const SYMBOL_GROUPS = [
@@ -233,6 +471,7 @@ window.MdCbCobanulPage = {
   name: 'MdCbCobanulPage',
   props: {
     showToast: { type: Function, default: () => {} }, // 토스트 알림
+    showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
     const { reactive, ref, computed, watch, onMounted, onUnmounted } = Vue;
@@ -245,15 +484,42 @@ window.MdCbCobanulPage = {
       activeColor: localStorage.getItem('modu-md-cb-active-color') || '#333333', // 마지막으로 고른 배색을 다음에도 기본값으로
       activeYarnId: null,
       isPainting: false, dragMode: 'paint', thumbUploading: false,
+      autoThumb: true, // "도안을 대표이미지로 첨부하기" 체크(기본 ON) — 저장 시 도안 자체를 이미지로 만들어 대표이미지로 사용
       dtlMode: 'edit', // 'view' | 'edit' — 목록에서 행 클릭=보기, [수정] 클릭=수정모드 (신규 작성은 항상 edit)
       chartMode: 'symbol', // 'symbol'(기호 도안, 편집 가능) | 'color'(배색 도안 — 색상 칸+구간 개수, 읽기전용 미리보기)
+      descExampleTab: DESC_EXAMPLES[0].id,
+      roundExampleTab: ROUND_EXAMPLES[0].id,
     });
+    const descExampleTabs = reactive(DESC_EXAMPLES.map(e => ({ id: e.id, label: e.label })));
+    const cfCurrentDescExample = computed(() => DESC_EXAMPLES.find(e => e.id === uiState.descExampleTab) || DESC_EXAMPLES[0]);
+    const onUseDescExample = () => {
+      form.descText = cfCurrentDescExample.value.text;
+    };
+    /* cfGroupedRoundExamples — 원형 예제 탭을 SYMBOL_GROUPS 와 동일한 분류(PDF 1~6장)로 묶는다.
+       팔레트(cfGroupedSymbols)와 같은 라벨을 재사용해, 팔레트에서 본 분류 그대로 예제도 찾을 수 있게 한다. */
+    const cfGroupedRoundExamples = computed(() => {
+      const order = SYMBOL_GROUPS.map(g => g.label);
+      return order
+        .map(label => ({ label, tabs: ROUND_EXAMPLES.filter(e => e.group === label).map(e => ({ id: e.id, label: e.label })) }))
+        .filter(g => g.tabs.length);
+    });
+    const cfCurrentRoundExample = computed(() => ROUND_EXAMPLES.find(e => e.id === uiState.roundExampleTab) || ROUND_EXAMPLES[0]);
+    const onUseRoundExample = () => {
+      form.roundDescText = cfCurrentRoundExample.value.text;
+    };
     const cfReadonly = computed(() => uiState.dtlMode === 'view');
+    /* cfPatternType — 격자에 칠해진 내용이 있으면 "격자 도안", 없고 원형 텍스트만 있으면 "원형 도안".
+       신규 작성 등 둘 다 비어있으면 배지를 아예 표시하지 않는다(아직 유형이 정해지지 않음). */
+    const cfPatternType = computed(() => {
+      if (Object.keys(cellMap).length > 0) return { icon: '🧩', label: '격자 도안' };
+      if (form.roundDescText && form.roundDescText.trim()) return { icon: '🌀', label: '원형 도안' };
+      return null;
+    });
     const thumbInputRef = ref(null);
     /* 배색을 고를 때마다 다음 세션의 기본값으로 영속화(직접 색상 입력 v-model 도 포함해야 해서 watch 사용) */
     watch(() => uiState.activeColor, (v) => { try { localStorage.setItem('modu-md-cb-active-color', v); } catch (_) {} });
 
-    const form = reactive({ patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', thumbnailUrl: '' });
+    const form = reactive({ patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', roundDescText: '', thumbnailUrl: '' });
     /* cells: { "row_col": { symbolId, colorHex } } */
     const cellMap = reactive({});
 
@@ -304,6 +570,33 @@ window.MdCbCobanulPage = {
       return count;
     };
 
+    /* cfRoundChart — 원형(라운드) 도안 미리보기 계산. 각 단(round)을 동심원으로 배치하고
+       각 코(stitch)를 12시 방향에서 시계방향으로 균등 배분한다(rd.items.length 개 각도). */
+    const cfRoundChart = computed(() => {
+      const { start, rounds } = fnParseRoundText(form.roundDescText, symbols);
+      const baseR = 46, gap = 34;
+      const list = rounds.map((rd, idx) => {
+        const radius = baseR + idx * gap;
+        const n = rd.items.length || 1;
+        let total = 0;
+        const points = rd.items.map((it, i) => {
+          const angle = (-90 + (360 / n) * i) * Math.PI / 180;
+          const sym = it.symbolId ? symbolMap.value[it.symbolId] : null;
+          total += (sym && sym.stitchProduce) || 1; // 링 라벨은 "작업한 기호 개수"가 아니라 실제 뜨개 관례대로 "그 단이 끝난 뒤의 총 코수"
+          return {
+            x: Math.round(radius * Math.cos(angle) * 10) / 10,
+            y: Math.round(radius * Math.sin(angle) * 10) / 10,
+            svg: sym ? fnSymIcon(sym) : null,
+            char: sym ? sym.symbolChar : (it.symbolNm ? it.symbolNm[0] : '?'),
+          };
+        });
+        return { roundNo: rd.roundNo, total, radius, points };
+      });
+      const maxRadius = list.length ? list[list.length - 1].radius : baseR;
+      const box = Math.ceil((maxRadius + 40) * 2);
+      return { start, rounds: list, box, half: box / 2 };
+    });
+
     const yarnMap = computed(() => {
       const m = {};
       yarns.forEach(y => { m[y.yarnId] = y; });
@@ -325,10 +618,11 @@ window.MdCbCobanulPage = {
 
     /* onNewPattern — 신규 도안으로 초기화(같은 화면 안에서, URL도 patternId 없이 되돌림) */
     const onNewPattern = () => {
-      Object.assign(form, { patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', thumbnailUrl: '' });
+      Object.assign(form, { patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', roundDescText: '', thumbnailUrl: '' });
       Object.keys(cellMap).forEach(k => delete cellMap[k]);
       patternYarns.splice(0, patternYarns.length);
       uiState.dtlMode = 'edit';
+      uiState.chartMode = 'symbol';
       history.replaceState(null, '', 'mdCbCobanul.html?view=editor');
     };
 
@@ -348,7 +642,7 @@ window.MdCbCobanulPage = {
       const p = res.data?.data;
       if (!p) { props.showToast('존재하지 않는 도안입니다.', 'error'); return; }
       Object.assign(form, { patternId: p.patternId, patternNm: p.patternNm, rowCount: p.rowCount || 15,
-        maxStitchCount: p.maxStitchCount || 20, descText: p.descText || '', thumbnailUrl: p.thumbnailUrl || '' });
+        maxStitchCount: p.maxStitchCount || 20, descText: p.descText || '', roundDescText: p.roundDescText || '', thumbnailUrl: p.thumbnailUrl || '' });
       Object.keys(cellMap).forEach(k => delete cellMap[k]);
       const cellRes = await mdCbApiSvc.patternCell.getList(p.patternId, '코바늘도안', '격자조회');
       (cellRes.data?.data || []).forEach(c => {
@@ -357,6 +651,9 @@ window.MdCbCobanulPage = {
       const yarnRes = await mdCbApiSvc.patternYarn.getList(p.patternId, '코바늘도안', '재료조회');
       patternYarns.splice(0, patternYarns.length, ...(yarnRes.data?.data || []).map(y => ({ yarnId: y.yarnId, usageDesc: y.usageDesc || '' })));
       uiState.dtlMode = 'view'; // 목록에서 들어온 진입은 항상 보기모드로 시작 — [수정] 클릭시에만 편집
+      /* 격자가 비어있고 원형 도안 텍스트만 있으면(원형 전용으로 만든 도안) 진입 시 바로 원형 도안
+         모드로 보여준다 — 기호 도안(빈 격자)이 먼저 뜨면 "아무것도 없다"로 오해하기 쉽다. */
+      uiState.chartMode = (Object.keys(cellMap).length === 0 && form.roundDescText.trim()) ? 'round' : 'symbol';
     };
 
     /* ── 셀 페인팅(클릭 1회 또는 드래그로 여러 칸 연속 칠하기) ──────────────
@@ -460,9 +757,9 @@ window.MdCbCobanulPage = {
     };
 
     /* onParseDesc — 반대 방향: 설명 텍스트를 파싱해 격자를 채운다(기존 격자 내용은 지워짐) */
-    const onParseDesc = () => {
+    const onParseDesc = async () => {
       if (!form.descText || !form.descText.trim()) { props.showToast('먼저 도안 설명을 입력해주세요.', 'error'); return; }
-      if (!confirm('현재 격자 내용을 지우고 도안 설명으로부터 다시 채우시겠습니까?')) return;
+      if (!await props.showConfirm('격자 다시 채우기', '현재 격자 내용을 지우고 도안 설명으로부터 다시 채우시겠습니까?')) return;
       const { cells, rowCount, maxCol, unmatched } = fnParseDescText(form.descText, symbols);
       if (Object.keys(cells).length === 0) {
         props.showToast('인식할 수 있는 기호를 찾지 못했습니다. "N단: 기호명 N코, 기호명 N코, ..." 형식으로 입력해주세요.', 'error');
@@ -502,10 +799,33 @@ window.MdCbCobanulPage = {
     };
     const onRemoveThumb = () => { form.thumbnailUrl = ''; };
 
+    /* fnGenerateAutoThumb — "도안을 대표이미지로 첨부하기" 체크 시 저장 직전 호출.
+       격자에 칠해진 내용이 있으면 기호 격자를, 없고 원형 도안만 있으면 원형 차트를 이미지로 만들어
+       업로드하고 form.thumbnailUrl 을 그 결과로 덮어쓴다. 실패해도 저장 자체는 계속 진행한다
+       (throw 하지 않고 조용히 넘어감 — 자동 썸네일은 부가 기능이지 저장을 막을 이유가 아니다). */
+    const fnGenerateAutoThumb = async () => {
+      const hasGrid = Object.keys(cellMap).length > 0;
+      const chart = cfRoundChart.value;
+      const hasRound = !hasGrid && chart.rounds.length > 0;
+      if (!hasGrid && !hasRound) return;
+      try {
+        const built = hasGrid
+          ? fnBuildGridThumbSvg(form.rowCount, form.maxStitchCount, cellMap, symbolMap.value)
+          : fnBuildRoundThumbSvg(chart);
+        const blob = await fnSvgToPngBlob(built.svg, built.w, built.h);
+        const fd = new FormData();
+        fd.append('files', blob, 'pattern-thumb.png');
+        fd.append('businessCode', 'md_cb_pattern');
+        const res = await coApiSvc.cmUpload.uploadMulti(fd, '코바늘도안', '대표이미지자동생성');
+        const uploaded = (res.data?.data?.files || [])[0];
+        if (uploaded) form.thumbnailUrl = uploaded.cdnImgUrl || form.thumbnailUrl;
+      } catch (e) { /* 자동 생성 실패 시 기존 썸네일 유지하고 저장은 계속 진행 */ }
+    };
+
     /* onResetForm — 신규 작성 중 입력한 내용을 전부 지우고 처음 상태로("취소"는 기존 레코드 전용이라
        빈 신규 작성에는 대신 이 버튼을 쓴다) */
-    const onResetForm = () => {
-      if (!confirm('입력한 내용을 모두 초기화하시겠습니까?')) return;
+    const onResetForm = async () => {
+      if (!await props.showConfirm('초기화', '입력한 내용을 모두 초기화하시겠습니까?')) return;
       onNewPattern();
     };
 
@@ -514,8 +834,9 @@ window.MdCbCobanulPage = {
       if (!form.patternNm) { props.showToast('도안명을 입력해주세요.', 'error'); return; }
       uiState.loading = true;
       try {
+        if (uiState.autoThumb) await fnGenerateAutoThumb();
         const body = { patternNm: form.patternNm, rowCount: form.rowCount, maxStitchCount: form.maxStitchCount,
-          descText: form.descText, thumbnailUrl: form.thumbnailUrl };
+          descText: form.descText, roundDescText: form.roundDescText, thumbnailUrl: form.thumbnailUrl };
         let patternId = form.patternId;
         if (!patternId) {
           const res = await mdCbApiSvc.pattern.create(body, '코바늘도안', '등록');
@@ -544,7 +865,7 @@ window.MdCbCobanulPage = {
     /* onDeletePattern — 도안 삭제 후 목록으로 이동 */
     const onDeletePattern = async () => {
       if (!form.patternId) return;
-      if (!confirm(form.patternNm + ' 도안을 삭제하시겠습니까?')) return;
+      if (!await props.showConfirm('삭제', form.patternNm + ' 도안을 삭제하시겠습니까?')) return;
       await mdCbApiSvc.pattern.remove(form.patternId, '코바늘도안', '삭제');
       onBackToList();
     };
@@ -564,8 +885,10 @@ window.MdCbCobanulPage = {
     onUnmounted(() => { window.removeEventListener('mouseup', onGlobalMouseUp); });
 
     return {
-      symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfGroupedSymbols, cfRows, cfCols, cfReadonly,
+      symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfGroupedSymbols, cfRows, cfCols, cfReadonly, cfPatternType, cfRoundChart,
       PRESET_COLORS, GRID_PRESETS, thumbInputRef, fnSymIcon, fnCellDisplay, fnColorRunStart,
+      descExampleTabs, cfCurrentDescExample, onUseDescExample,
+      cfGroupedRoundExamples, cfCurrentRoundExample, onUseRoundExample, fnMagicRingIcon,
       onNewPattern, onBackToList, onCellMouseDown, onCellMouseEnter, onGenDesc, onParseDesc, onSave, onDeletePattern,
       onSwitchToEdit, onCancelEdit, onOpenThumbPicker, onThumbFileChange, onRemoveThumb, onResetForm,
       onPickPresetColor, onPickYarnColor, onAddPatternYarn, onRemovePatternYarn,
@@ -580,6 +903,7 @@ window.MdCbCobanulPage = {
     <h1 class="cb-hero-title">
       🧶 {{ !form.patternId ? '새 도안 만들기' : (cfReadonly ? '도안 상세보기' : '도안 편집') }}
       <span v-if="form.patternId" class="cb-detail-id">#{{ form.patternId }}</span>
+      <span v-if="cfPatternType" class="cb-pattern-type-badge">{{ cfPatternType.icon }} {{ cfPatternType.label }}</span>
     </h1>
     <div class="cb-hero-sub">
       {{ !form.patternId ? '기호와 배색으로 나만의 도안을 만들어보세요'
@@ -609,6 +933,9 @@ window.MdCbCobanulPage = {
               <span v-if="form.thumbnailUrl && !cfReadonly" class="cb-thumb-remove" @click.stop="onRemoveThumb" title="제거">✕</span>
             </div>
             <input ref="thumbInputRef" type="file" accept="image/*" style="display:none" @change="onThumbFileChange" />
+            <label v-if="!cfReadonly" class="cb-thumb-auto-toggle" title="저장 시 지금 그린 도안(격자 또는 원형)을 이미지로 만들어 대표이미지로 사용합니다.">
+              <input type="checkbox" v-model="uiState.autoThumb" /> 도안을 대표이미지로 첨부하기
+            </label>
           </div>
           <div class="cb-size-field">
             <span class="cb-field-label">단수</span>
@@ -644,6 +971,7 @@ window.MdCbCobanulPage = {
       <div class="cb-chart-mode-toggle">
         <button :class="{ active: uiState.chartMode==='symbol' }" @click="uiState.chartMode='symbol'">🧩 기호 도안</button>
         <button :class="{ active: uiState.chartMode==='color' }" @click="uiState.chartMode='color'">🎨 배색 도안</button>
+        <button :class="{ active: uiState.chartMode==='round' }" @click="uiState.chartMode='round'">🌀 원형 도안</button>
       </div>
 
       <!-- 기호 도안(편집 가능) -->
@@ -679,7 +1007,7 @@ window.MdCbCobanulPage = {
       </div>
 
       <!-- 배색 도안(읽기전용 미리보기) — 색상 칸 + 같은 색 연속 구간마다 개수 표시 + 단/코 눈금 -->
-      <div v-else class="cb-chart-wrap">
+      <div v-else-if="uiState.chartMode==='color'" class="cb-chart-wrap">
         <div class="cb-chart-row cb-chart-axis-row">
           <div class="cb-chart-corner"></div>
           <div v-for="c in cfCols" :key="c" class="cb-chart-axis-cell">{{ c }}</div>
@@ -694,7 +1022,53 @@ window.MdCbCobanulPage = {
         <div v-if="!Object.keys(cellMap).length" class="cb-empty-hint">기호 도안에서 칸을 칠하면 여기에 배색 도안이 자동으로 만들어집니다.</div>
       </div>
 
-      <div class="cb-desc-area">
+      <!-- 원형(라운드) 도안 — 사각형 격자와 독립된 별도 입력. 원형뜨기(도넛/코스터/모티브 등) 전용 -->
+      <div v-else class="cb-round-wrap">
+        <div class="cb-round-preview" :style="{ width: cfRoundChart.box + 'px', height: cfRoundChart.box + 'px' }">
+          <svg class="cb-round-guide-svg" :viewBox="'0 0 ' + cfRoundChart.box + ' ' + cfRoundChart.box">
+            <circle v-for="rd in cfRoundChart.rounds" :key="'g'+rd.roundNo"
+              :cx="cfRoundChart.half" :cy="cfRoundChart.half" :r="rd.radius" class="cb-round-guide" />
+            <text v-for="rd in cfRoundChart.rounds" :key="'l'+rd.roundNo"
+              :x="cfRoundChart.half" :y="cfRoundChart.half - rd.radius - 8" text-anchor="middle" class="cb-round-label">{{ rd.roundNo }}({{ rd.total }})</text>
+            <circle v-if="cfRoundChart.start && cfRoundChart.start.type!=='magicring'" :cx="cfRoundChart.half" :cy="cfRoundChart.half" r="10" class="cb-round-center" />
+          </svg>
+          <div v-if="cfRoundChart.start && cfRoundChart.start.type==='magicring'" class="cb-round-center-icon"
+            :style="{ left: cfRoundChart.half + 'px', top: cfRoundChart.half + 'px' }" title="매직링(MR) — 원형뜨기 시작" v-html="fnMagicRingIcon()"></div>
+          <div v-if="cfRoundChart.start" class="cb-round-center-label"
+            :style="{ left: cfRoundChart.half + 'px', top: (cfRoundChart.half + (cfRoundChart.start.type==='magicring' ? 15 : 0)) + 'px' }">{{ cfRoundChart.start.total }}</div>
+          <template v-for="rd in cfRoundChart.rounds" :key="rd.roundNo">
+            <div v-for="(pt, i) in rd.points" :key="rd.roundNo + '_' + i" class="cb-round-stitch"
+              :style="{ left: (cfRoundChart.half + pt.x) + 'px', top: (cfRoundChart.half + pt.y) + 'px' }">
+              <span v-if="pt.svg" v-html="pt.svg"></span>
+              <span v-else class="cb-round-stitch-char">{{ pt.char }}</span>
+            </div>
+          </template>
+          <div v-if="!cfRoundChart.rounds.length" class="cb-round-empty">아래에 원형 도안을 입력하면<br>여기에 미리보기가 표시됩니다.</div>
+        </div>
+        <div class="cb-round-input">
+          <div class="cb-desc-head">
+            <span class="cb-desc-title">원형(라운드) 도안 입력</span>
+          </div>
+          <textarea v-if="!cfReadonly" v-model="form.roundDescText" rows="7" class="form-control cb-desc-textarea"
+            placeholder="시작: 매직링 원형 시작 6&#10;1: 짧은뜨기 6&#10;2: 2코늘리기 6&#10;3: (짧은뜨기, 2코늘리기)*6"></textarea>
+          <pre v-else class="cb-desc-example-pre">{{ form.roundDescText || '입력된 원형 도안 설명이 없습니다.' }}</pre>
+          <div class="cb-round-hint">시작 줄은 "매직링 원형 시작 N" 또는 "사슬 원형 시작 N" 두 가지를 지원합니다(매직링은 🌀 나선 아이콘으로 표시). 각 단은 "기호명 N코" 를 콤마로 나열하거나 "(기호명, 기호명)*K" 형식으로 반복 구간을 표기할 수 있습니다. 등록된 기호명과 정확히 일치해야 아이콘으로 표시됩니다.</div>
+
+          <div v-if="!cfReadonly" class="cb-desc-examples">
+            <template v-for="grp in cfGroupedRoundExamples" :key="grp.label">
+              <div class="cb-symbol-group-title">{{ grp.label }}</div>
+              <fo-tab-bar :tabs="grp.tabs" :tab="uiState.roundExampleTab" dense
+                @tab-select="id => uiState.roundExampleTab = id" />
+            </template>
+            <div class="cb-desc-example-body">
+              <pre class="cb-desc-example-pre">{{ cfCurrentRoundExample.text }}</pre>
+              <button class="btn btn-sm btn-secondary" @click="onUseRoundExample">이 예제 넣기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="uiState.chartMode!=='round'" class="cb-desc-area">
         <div class="cb-desc-head">
           <span class="cb-desc-title">한글 도안 설명</span>
           <div v-if="!cfReadonly" style="display:flex;gap:6px;">
@@ -704,6 +1078,15 @@ window.MdCbCobanulPage = {
         </div>
         <textarea v-model="form.descText" :readonly="cfReadonly" rows="6" class="form-control cb-desc-textarea"
           placeholder="[격자로부터 생성] 버튼을 누르면 격자 내용을 바탕으로 한글 설명이 자동으로 채워집니다. 반대로 &quot;1단: 사슬뜨기 12코&quot; 같은 설명을 직접 입력하고 [설명으로 격자 만들기]를 누르면 격자가 자동으로 채워집니다."></textarea>
+
+        <div v-if="!cfReadonly" class="cb-desc-examples">
+          <fo-tab-bar :tabs="descExampleTabs" :tab="uiState.descExampleTab" dense
+            @tab-select="id => uiState.descExampleTab = id" />
+          <div class="cb-desc-example-body">
+            <pre class="cb-desc-example-pre">{{ cfCurrentDescExample.text }}</pre>
+            <button class="btn btn-sm btn-secondary" @click="onUseDescExample">이 예제 넣기</button>
+          </div>
+        </div>
       </div>
     </div>
 

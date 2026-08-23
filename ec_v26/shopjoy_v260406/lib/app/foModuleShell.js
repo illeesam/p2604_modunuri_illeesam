@@ -59,6 +59,13 @@
       if (duration > 0) setTimeout(() => { const i = toasts.findIndex((t) => t.id === id); if (i >= 0) toasts.splice(i, 1); }, duration);
     };
 
+    /* ── Confirm (디자인 컨펌 모달) — foAppBase.js 의 showConfirm 과 동일한 Promise 기반 계약.
+       독립 모듈은 window.confirm() 같은 브라우저 기본 대화상자를 쓰지 않고 이 모달을 사용한다. */
+    const confirmState = reactive({ show: false, title: '', msg: '', type: 'warning', resolve: null });
+    const showConfirm = (title, msg, type = 'warning') =>
+      new Promise(r => Object.assign(confirmState, { show: true, title, msg, type, resolve: r }));
+    const closeConfirm = r => { confirmState.show = false; confirmState.resolve?.(r); };
+
     /* ── Auth ── */
     const auth = window.foAuth.state;
     const onShowLogin = () => { uiState.showLogin = true; };
@@ -90,6 +97,7 @@
       sidebarOpen, uiState, closeMobileMenu, toggleMobileMenu, cfShowSidebar,
       foApiLogs, showApiLog, showSettings, apiToastEnabled, onToggleApiLog, onToggleApiToast,
       toasts, showToast,
+      confirmState, showConfirm, closeConfirm,
       auth, onShowLogin, onLogout,
       cfCartCount, cfLikeCount,
       config, navigate,
