@@ -76,6 +76,14 @@ public class PdProd extends BaseEntity {
     @Column(name = "sale_price")
     private Long salePrice;
 
+    @Comment("판매할인율 (%) — 정가 대비. sale_discnt_amt 와 상호 동기화되는 입력 편의용 보조값")
+    @Column(name = "sale_discnt_rate")
+    private BigDecimal saleDiscntRate;
+
+    @Comment("판매할인금액 (원) — 정가-판매가 최종 기준값. sale_price/sale_discnt_rate 편집 시 항상 재계산되어 저장됨")
+    @Column(name = "sale_discnt_amt")
+    private Long saleDiscntAmt;
+
     @Comment("매입가(원가) — 내부 관리용")
     @Column(name = "purchase_price")
     private Long purchasePrice;

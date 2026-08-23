@@ -576,7 +576,7 @@ window.PdProdDtl = {
       mdUserId: '',
       prodTypeCd: 'OPTION', prodStatusCd: 'DRAFT', unsaleMsg: '',
       dlivTmpltId: '', dlivMethodCd: '',
-      stdPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
+      stdPrice: 0, salePrice: 0, saleDiscntRate: null, saleDiscntAmt: null, purchasePrice: null, marginRate: null,
       platformFeeRate: null, platformFeeAmount: null,
       saleStartDate: '', saleEndDate: '',
       minBuyQty: 1, maxBuyQty: null, dayMaxBuyQty: null, idMaxBuyQty: null,
@@ -1056,6 +1056,43 @@ window.PdProdDtl = {
     const onDividerMousedown = (e) => { uiState.isDraggingDivider = true; e.preventDefault(); };
     let _divMoveH = null, _divUpH = null;
 
+    /* 판매할인 3방향 동기화 (정가 대비) — 할인율/할인금액/판매가 중 어느 것을 고쳐도 나머지 자동 반영.
+       discnt_amt(원)가 항상 최종 저장 기준값 — 할인율은 입력 편의용 보조 필드. */
+    const fnSyncFromSaleDiscntRate = (form) => {
+      const std = Number(form.stdPrice || 0);
+      if (form.saleDiscntRate == null || form.saleDiscntRate === '') { form.saleDiscntAmt = null; return; }
+      const amt = Math.round(std * Number(form.saleDiscntRate) / 100);
+      form.saleDiscntAmt = amt;
+      form.salePrice = Math.max(0, std - amt);
+    };
+    const fnSyncFromSaleDiscntAmt = (form) => {
+      const std = Number(form.stdPrice || 0);
+      if (form.saleDiscntAmt == null || form.saleDiscntAmt === '') { form.saleDiscntRate = null; return; }
+      const amt = Number(form.saleDiscntAmt);
+      form.salePrice = Math.max(0, std - amt);
+      form.saleDiscntRate = std > 0 ? Math.round((amt / std) * 10000) / 100 : null;
+    };
+    const fnSyncFromSalePrice = (form) => {
+      const std = Number(form.stdPrice || 0);
+      if (std <= 0) { form.saleDiscntAmt = null; form.saleDiscntRate = null; return; }
+      const amt = std - Number(form.salePrice || 0);
+      form.saleDiscntAmt = amt;
+      form.saleDiscntRate = Math.round((amt / std) * 10000) / 100;
+    };
+    // 정가 변경 시 재기준: 할인율이 설정돼 있으면 할인율 기준으로, 없고 할인금액만 있으면 금액 고정 기준으로 재계산.
+    // 둘 다 없으면(레거시 상품) 판매가를 건드리지 않는다.
+    const fnSyncFromStdPrice = (form) => {
+      const std = Number(form.stdPrice || 0);
+      if (form.saleDiscntRate != null && form.saleDiscntRate !== '') {
+        const amt = Math.round(std * Number(form.saleDiscntRate) / 100);
+        form.saleDiscntAmt = amt;
+        form.salePrice = Math.max(0, std - amt);
+      } else if (form.saleDiscntAmt != null && form.saleDiscntAmt !== '') {
+        form.salePrice = Math.max(0, std - Number(form.saleDiscntAmt));
+        form.saleDiscntRate = std > 0 ? Math.round((Number(form.saleDiscntAmt) / std) * 10000) / 100 : null;
+      }
+    };
+
     // -- 계산값
     const cfMarginRateCalc = computed(() => {
       if (!form.salePrice || !form.purchasePrice) { return null; }
@@ -1262,6 +1299,8 @@ window.PdProdDtl = {
           form.dlivMethodCd   = p.dlivMethodCd || '';
           form.stdPrice      = p.stdPrice || 0;
           form.salePrice      = p.salePrice || 0;
+          form.saleDiscntRate     = p.saleDiscntRate != null ? p.saleDiscntRate : null;
+          form.saleDiscntAmt      = p.saleDiscntAmt  != null ? p.saleDiscntAmt  : null;
           form.purchasePrice  = p.purchasePrice || null;
           form.platformFeeRate   = p.platformFeeRate   != null ? p.platformFeeRate   : null;
           form.platformFeeAmount = p.platformFeeAmount != null ? p.platformFeeAmount : null;
@@ -1838,10 +1877,18 @@ window.PdProdDtl = {
       { key: 'dayMaxBuyQty',   label: '1일 최대구매수량 (day_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
       { key: 'idMaxBuyQty',    label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
     ];
-    // 기본 가격 (3 rows: 정가/판매가, 매입가/마진율, 플랫폼수수료율/금액)
+    // 기본 가격 — [가격] 정가/판매가/판매할인, [원가·마진·수수료] 매입가/마진율/플랫폼수수료율·금액 2개 그룹으로 분리
     columns.basePriceForm = [
-      { key: 'stdPrice',         label: '정가 (std_price)', type: 'number', required: true, min: 0, placeholder: '0' },
-      { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0' },
+      { type: 'group', label: '가격' },
+      { key: 'stdPrice',         label: '정가 (std_price)', type: 'number', required: true, min: 0, placeholder: '0',
+        onChange: (v, form) => fnSyncFromStdPrice(form) },
+      { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0',
+        onChange: (v, form) => fnSyncFromSalePrice(form) },
+      { key: 'saleDiscntRate',        label: '판매할인율 (sale_discnt_rate)', type: 'number', min: 0, max: 100,
+        placeholder: '(예: 20)', hint: '% — 입력 시 판매가 자동계산', onChange: (v, form) => fnSyncFromSaleDiscntRate(form) },
+      { key: 'saleDiscntAmt',         label: '판매할인금액 (sale_discnt_amt)', type: 'number', min: 0,
+        placeholder: '(원)', hint: '원 — 판매가·할인율에 항상 동기화되는 최종 기준값', onChange: (v, form) => fnSyncFromSaleDiscntAmt(form) },
+      { type: 'group', label: '원가 · 마진 · 수수료' },
       { key: 'purchasePrice',     label: '매입가 / 원가 (purchase_price)', type: 'number', placeholder: '(선택)',
         hint: '내부관리용' },
       { key: '_marginRate',       label: '마진율 (margin_rate)', type: 'slot', name: 'marginRate' },

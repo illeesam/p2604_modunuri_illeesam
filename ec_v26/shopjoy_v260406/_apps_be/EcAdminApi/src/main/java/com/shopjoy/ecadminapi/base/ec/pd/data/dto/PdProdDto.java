@@ -42,6 +42,8 @@ public class PdProdDto {
         private String prodCode;            // 상품코드(SKU)
         private Long stdPrice;             // 정가
         private Long salePrice;             // 판매가
+        private BigDecimal saleDiscntRate;  // 판매할인율(%) — 정가 대비, saleDiscntAmt 와 상호 동기화되는 보조값
+        private Long saleDiscntAmt;         // 판매할인금액(원) — 정가-판매가 최종 기준값
         private Long purchasePrice;         // 매입가(원가) — 내부 관리용
         private BigDecimal marginRate;      // 마진율 (%) — 내부 관리용
         private BigDecimal platformFeeRate; // 플랫폼수수료 율 (%) — 내부 관리용

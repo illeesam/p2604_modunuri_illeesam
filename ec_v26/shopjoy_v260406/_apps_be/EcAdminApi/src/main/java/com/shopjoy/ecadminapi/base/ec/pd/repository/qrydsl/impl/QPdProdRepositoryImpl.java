@@ -73,6 +73,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodCode,                  // 상품코드(SKU)
                         pdProd.stdPrice,                 // 정가
                         pdProd.salePrice,                 // 판매가
+                        pdProd.saleDiscntRate,             // 판매할인율(%) - 정가 대비, sale_discnt_amt 와 상호 동기화되는 보조값
+                        pdProd.saleDiscntAmt,              // 판매할인금액(원) - 정가-판매가 최종 기준값
                         pdProd.purchasePrice,              // 매입가(원가) — 내부 관리용
                         pdProd.marginRate,                 // 마진율(%) — 내부 관리용
                         pdProd.platformFeeRate,             // 플랫폼수수료 율(%) — 내부 관리용
@@ -159,6 +161,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodCode,                  // 상품코드(SKU)
                         pdProd.stdPrice,                 // 정가
                         pdProd.salePrice,                 // 판매가
+                        pdProd.saleDiscntRate,             // 판매할인율(%) - 정가 대비, sale_discnt_amt 와 상호 동기화되는 보조값
+                        pdProd.saleDiscntAmt,              // 판매할인금액(원) - 정가-판매가 최종 기준값
                         pdProd.purchasePrice,              // 매입가(원가) — 내부 관리용
                         pdProd.marginRate,                 // 마진율(%) — 내부 관리용
                         pdProd.platformFeeRate,             // 플랫폼수수료 율(%) — 내부 관리용
@@ -440,6 +444,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (entity.getProdStatusCdBefore() != null) { update.set(pdProd.prodStatusCdBefore, entity.getProdStatusCdBefore()); hasAny = true; }
         if (entity.getProdNm()             != null) { update.set(pdProd.prodNm,             entity.getProdNm());             hasAny = true; }
         if (entity.getSalePrice()          != null) { update.set(pdProd.salePrice,          entity.getSalePrice());          hasAny = true; }
+        if (entity.getSaleDiscntRate()     != null) { update.set(pdProd.saleDiscntRate,     entity.getSaleDiscntRate());     hasAny = true; }
+        if (entity.getSaleDiscntAmt()      != null) { update.set(pdProd.saleDiscntAmt,      entity.getSaleDiscntAmt());      hasAny = true; }
         if (entity.getThumbnailUrl()       != null) { update.set(pdProd.thumbnailUrl,       entity.getThumbnailUrl());       hasAny = true; }
         if (entity.getIsBest()             != null) { update.set(pdProd.isBest,             entity.getIsBest());             hasAny = true; }
         if (entity.getIsNew()              != null) { update.set(pdProd.isNew,              entity.getIsNew());              hasAny = true; }
