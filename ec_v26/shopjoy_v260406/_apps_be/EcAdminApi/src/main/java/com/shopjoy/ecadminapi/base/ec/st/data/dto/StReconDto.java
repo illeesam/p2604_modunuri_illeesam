@@ -23,7 +23,9 @@ public class StReconDto {
         private String reconId;                    // 대사ID (YYMMDDhhmmss+rand4)
         private String vendorId;                     // 업체ID
         private String reconTypeCd;                    // 대사유형 — RECON_TYPE_CD (ORDER/PAY/CLAIM/VENDOR)
+        private String reconTypeCdNm;  // 코드 라벨
         private String reconStatusCd;                    // 대사상태 — RECON_STATUS_CD (MATCHED/MISMATCH/RESOLVED)
+        private String reconStatusCdNm;  // 코드 라벨
         private String reconStatusCdBefore;                // 변경 전 대사상태
         private String settleId;                             // 정산ID (st_settle.settle_id)
         private String settleRawId;                            // 수집원장ID (st_settle_raw.settle_raw_id)

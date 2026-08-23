@@ -26,7 +26,9 @@ public class StErpVoucherDto {
         private String settleId;                        // 정산ID (st_settle.settle_id)
         private String settleYm;                         // 정산년월 (YYYYMM)
         private String erpVoucherTypeCd;                  // 전표유형 — ERP_VOUCHER_TYPE_CD (SETTLE/RETURN/ADJ/PAY)
+        private String erpVoucherTypeCdNm;  // 코드 라벨
         private String erpVoucherStatusCd;                 // 전표상태 — ERP_VOUCHER_STATUS_CD (DRAFT/CONFIRMED/SENT/MATCHED/MISMATCH/ERROR)
+        private String erpVoucherStatusCdNm;  // 코드 라벨
         private String erpVoucherStatusCdBefore;            // 변경 전 전표상태
         private LocalDate voucherDate;                       // 전표 기준일자
         private String erpVoucherDesc;                        // 전표 적요

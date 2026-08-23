@@ -22,7 +22,9 @@ public class StSettleEtcAdjDto {
         private String settleEtcAdjId;             // 기타조정ID
         private String settleId;                     // 정산ID (st_settle.settle_id)
         private String etcAdjTypeCd;                   // 기타조정유형 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
+        private String etcAdjTypeCdNm;  // 코드 라벨
         private String etcAdjDirCd;                     // 가산/차감 — ETC_ADJ_DIR_CD (ADD/DEDUCT)
+        private String etcAdjDirCdNm;  // 코드 라벨
         private Long etcAdjAmt;                           // 기타조정 금액
         private String etcAdjReason;                       // 사유
         private String settleEtcAdjMemo;                     // 메모

@@ -35,6 +35,7 @@ public class StSettleDto {
         private Long etcAdjAmt;                                       // 기타조정 합계
         private Long finalSettleAmt;                                   // 최종 정산금액
         private String settleStatusCd;                                 // 상태 — SETTLE_STATUS_CD (DRAFT/CONFIRMED/CLOSED/PAID)
+        private String settleStatusCdNm;  // 코드 라벨
         private String settleStatusCdBefore;                             // 변경 전 상태
         private String settleMemo;                                        // 정산 메모
         private String regBy;                                              // 등록자

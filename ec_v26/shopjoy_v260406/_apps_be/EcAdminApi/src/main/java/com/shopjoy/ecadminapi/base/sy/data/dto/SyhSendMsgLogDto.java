@@ -29,6 +29,7 @@ public class SyhSendMsgLogDto {
         // ── syh_send_msg_log ──────────────────────────────────────────
         private String logId;  // 로그ID (YYMMDDhhmmss+rand4)
         private String channelCd;  // 발송채널 (코드: MSG_CHANNEL)
+        private String channelCdNm;  // 코드 라벨
         private String templateId;  // 템플릿ID (sy_template.template_id)
         private String templateCode;  // 템플릿코드 스냅샷
         private String memberId;  // 대상 회원ID (ec_member.member_id, 비회원 NULL)

@@ -23,6 +23,7 @@ public class StSettleAdjDto {
         private String settleAdjId;              // 정산조정ID
         private String settleId;                   // 정산ID (st_settle.settle_id)
         private String adjTypeCd;                    // 조정유형 — ADJ_TYPE_CD (ADD/DEDUCT)
+        private String adjTypeCdNm;  // 코드 라벨
         private Long adjAmt;                           // 조정금액 (양수, 유형에 따라 가산/차감)
         private String adjReason;                       // 조정 사유
         private String settleAdjMemo;                     // 메모

@@ -26,6 +26,7 @@ public class StSettleItemDto {
         private String vendorId;                           // 업체ID
         private String prodId;                               // 상품ID
         private String settleItemTypeCd;                      // 항목유형 — SETTLE_ITEM_TYPE_CD (SALE/CANCEL/RETURN)
+        private String settleItemTypeCdNm;  // 코드 라벨
         private LocalDateTime orderDate;                        // 주문일시
         private Integer orderQty;                                // 주문수량
         private Long unitPrice;                                   // 단가

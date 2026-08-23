@@ -24,10 +24,12 @@ public class StSettlePayDto {
         private String vendorId;                     // 업체ID (sy_vendor.vendor_id)
         private Long payAmt;                           // 지급금액
         private String payMethodCd;                      // 지급수단 — PAY_METHOD
+        private String payMethodCdNm;  // 코드 라벨
         private String bankNm;                             // 은행명
         private String bankAccount;                          // 계좌번호
         private String bankHolder;                            // 예금주
         private String payStatusCd;                             // 지급상태 — SETTLE_PAY_STATUS (PENDING/COMPLT/FAILED)
+        private String payStatusCdNm;  // 코드 라벨
         private String payStatusCdBefore;                         // 변경 전 상태
         private LocalDateTime payDate;                              // 실지급 일시
         private String payBy;                                        // 지급처리자 (sy_user.user_id)

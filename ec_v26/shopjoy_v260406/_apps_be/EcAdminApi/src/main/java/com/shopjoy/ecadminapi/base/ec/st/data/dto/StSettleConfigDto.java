@@ -24,6 +24,7 @@ public class StSettleConfigDto {
         private String vendorId;                      // 업체ID (NULL=전체 기준)
         private String categoryId;                     // 카테고리ID (NULL=전체 기준)
         private String settleCycleCd;                    // 정산주기 — SETTLE_CYCLE_CD (DAILY/WEEKLY/MONTHLY)
+        private String settleCycleCdNm;  // 코드 라벨
         private Integer settleDay;                         // 정산일 (월 N일, MONTHLY 시 사용)
         private BigDecimal commissionRate;                   // 수수료율 (%)
         private Long minSettleAmt;                             // 최소 정산금액
