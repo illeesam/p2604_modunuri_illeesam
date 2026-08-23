@@ -14,4 +14,6 @@ public interface PdProdStockRepository extends JpaRepository<PdProdStock, String
     Optional<PdProdStock> findByStockCode(String stockCode);
 
     Optional<PdProdStock> findByProdId(String prodId);
+
+    List<PdProdStock> findByProdIdIn(List<String> prodIds);
 }

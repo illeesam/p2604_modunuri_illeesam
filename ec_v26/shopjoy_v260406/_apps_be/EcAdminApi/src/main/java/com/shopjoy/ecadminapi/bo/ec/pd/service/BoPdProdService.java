@@ -6,14 +6,19 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdImgDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdStockRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdImgService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdSkuService;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
+import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +35,8 @@ public class BoPdProdService {
     private final PdProdImgService      pdProdImgService;
     private final PdProdOptService      pdProdOptService;
     private final PdProdSkuService      pdProdSkuService;
+    private final PdProdStockRepository pdProdStockRepository;
+    private final PmDiscntService       pmDiscntService;
 
     /* 키조회 */
     public PdProdDto.Item getById(String id) {
@@ -77,6 +84,76 @@ public class BoPdProdService {
             .filter(s -> !"N".equals(s.getUseYn()))
             .mapToInt(s -> s.getStock() != null ? s.getStock() : 0)
             .sum());
+
+        _fillSaleCount(List.of(prod));
+        _fillDiscountInfo(List.of(prod));
+    }
+
+    /** _fillSaleCount — pd_prod_stock.sale_count 를 prodId 기준 합산해 채운다 (한 상품이 여러 stock_code 를 가질 수 있음). */
+    private void _fillSaleCount(List<PdProdDto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+        List<String> prodIds = list.stream()
+            .map(PdProdDto.Item::getProdId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+        if (prodIds.isEmpty()) return;
+
+        Map<String, Integer> saleCountMap = pdProdStockRepository.findByProdIdIn(prodIds).stream()
+            .collect(Collectors.groupingBy(PdProdStock::getProdId,
+                Collectors.summingInt(s -> s.getSaleCount() != null ? s.getSaleCount() : 0)));
+
+        for (PdProdDto.Item prod : list) {
+            prod.setSaleCount(saleCountMap.getOrDefault(prod.getProdId(), 0));
+        }
+    }
+
+    /**
+     * _fillDiscountInfo — 상품에 직접 지정된(discntTargetCd=PRODUCT) 활성 프로모션할인 중
+     * 정률/정액 상관없이 실제 할인액이 가장 큰 것을 골라 discntPrice/discntRate/appliedDiscntNm 를 채운다.
+     * 카테고리/전체 대상 할인은 이 목록 화면 표시 범위에서 제외(직접 지정 할인만 — 스코프 확대는 별도 논의).
+     */
+    private void _fillDiscountInfo(List<PdProdDto.Item> list) {
+        if (list == null || list.isEmpty()) return;
+        LocalDate today = LocalDate.now();
+
+        for (PdProdDto.Item prod : list) {
+            if (prod.getProdId() == null) continue;
+            Long basePrice = prod.getSalePrice() != null ? prod.getSalePrice() : prod.getStdPrice();
+            if (basePrice == null || basePrice <= 0) continue;
+
+            PmDiscntDto.Request req = new PmDiscntDto.Request();
+            req.setProdId(prod.getProdId());
+            req.setDiscntStatusCd("ACTIVE");
+            List<PmDiscntDto.Item> candidates = pmDiscntService.getList(req);
+
+            long bestAmt = 0;
+            PmDiscntDto.Item bestDiscnt = null;
+            for (PmDiscntDto.Item d : candidates) {
+                if (!"Y".equals(d.getUseYn())) continue;
+                if (d.getStartDate() != null && d.getStartDate().isAfter(today)) continue;
+                if (d.getEndDate() != null && d.getEndDate().isBefore(today)) continue;
+                if (d.getDiscntValue() == null) continue;
+
+                long amt;
+                if ("RATE".equals(d.getDiscntValTypeCd())) {
+                    amt = basePrice * d.getDiscntValue().longValue() / 100;
+                    if (d.getMaxDiscntAmt() != null && amt > d.getMaxDiscntAmt()) amt = d.getMaxDiscntAmt();
+                } else if ("AMOUNT".equals(d.getDiscntValTypeCd())) {
+                    amt = d.getDiscntValue().longValue();
+                } else {
+                    continue; // SHIP_FREE 등 가격 표시 대상 아님
+                }
+                if (amt > bestAmt) { bestAmt = amt; bestDiscnt = d; }
+            }
+
+            if (bestDiscnt != null && bestAmt > 0) {
+                long finalPrice = Math.max(0, basePrice - bestAmt);
+                prod.setDiscntPrice(finalPrice);
+                prod.setAppliedDiscntNm(bestDiscnt.getDiscntNm());
+                prod.setDiscntRate((int) Math.round(bestAmt * 100.0 / basePrice));
+            }
+        }
     }
 
     /**
@@ -133,6 +210,9 @@ public class BoPdProdService {
                 prod.setThumbnailUrl(thumbUrl);
             }
         }
+
+        _fillSaleCount(list);
+        _fillDiscountInfo(list);
     }
 
     @Transactional public PdProd create(PdProd body) { return pdProdService.create(body); }

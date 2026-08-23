@@ -62,6 +62,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                         pmDiscnt.discntId,               // 할인ID (PK, YYMMDDhhmmss+rand4)
                         pmDiscnt.discntNm,                // 할인명
                         pmDiscnt.discntTypeCd,           // 할인유형 — DISCNT_TYPE {PROD, ORDER, SHIP, SHIP_FREE}
+                        pmDiscnt.discntValTypeCd,        // 할인방식 — DISCNT_VAL_TYPE {RATE:정률, AMOUNT:정액, SHIP_FREE:해당없음}
                         pmDiscnt.discntTargetCd,         // 할인대상 — DISCNT_TARGET {ALL, CATEGORY, PRODUCT, MEMBER_GRADE}
                         pmDiscnt.discntValue,            // 할인값 (정률이면 %, 정액이면 원)
                         pmDiscnt.minOrderAmt,             // 최소주문금액

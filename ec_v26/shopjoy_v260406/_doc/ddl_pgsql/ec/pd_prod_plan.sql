@@ -6,7 +6,7 @@ CREATE TABLE shopjoy_2604.pd_prod_plan (
     start_datetime  TIMESTAMP,
     end_datetime    TIMESTAMP,
     plan_status_cd  VARCHAR(20),  -- SCHEDULED / ACTIVE / ENDED / CANCELLED
-    list_price      BIGINT,
+    std_price      BIGINT,
     sale_price      BIGINT,
     purchase_price  BIGINT,
     sort_ord        INTEGER,
@@ -24,7 +24,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.prod_id        IS '상품ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.start_datetime IS '시작일시';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.end_datetime   IS '종료일시';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.plan_status_cd IS '계획상태 (SCHEDULED/ACTIVE/ENDED/CANCELLED)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.list_price     IS '정가';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.std_price     IS '정가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.sale_price     IS '판매가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.purchase_price IS '매입가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.sort_ord       IS '정렬순서';

@@ -36,6 +36,7 @@ public class PmDiscntDto {
         private String discntId;             // 할인ID (YYMMDDhhmmss+rand4)
         private String discntNm;             // 할인명
         private String discntTypeCd;         // 할인유형 — DISCNT_TYPE {PROD:상품할인, ORDER:주문할인, SHIP:배송비할인, SHIP_FREE:무료배송, AMOUNT:정액할인, RATE:정률할인}
+        private String discntValTypeCd;      // 할인방식 — DISCNT_VAL_TYPE {RATE:정률, AMOUNT:정액, SHIP_FREE:해당없음}
         private String discntTargetCd;       // 할인대상 — DISCNT_TARGET_CD {ALL:전체, CATEGORY:카테고리, PRODUCT:상품, MEMBER_GRADE:회원등급, BEST:베스트상품, CLEARANCE:균일가/재고정리, DEVICE:기기별, LIMITED:한정수량 외 2개}
         private BigDecimal discntValue;      // 할인값 (정률이면 %, 정액이면 원)
         private Long minOrderAmt;            // 최소주문금액

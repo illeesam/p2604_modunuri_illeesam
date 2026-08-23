@@ -71,7 +71,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodNm,                    // 상품명
                         pdProd.prodTypeCd,                 // 상품유형 — {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'}
                         pdProd.prodCode,                  // 상품코드(SKU)
-                        pdProd.listPrice,                 // 정가
+                        pdProd.stdPrice,                 // 정가
                         pdProd.salePrice,                 // 판매가
                         pdProd.purchasePrice,              // 매입가(원가) — 내부 관리용
                         pdProd.marginRate,                 // 마진율(%) — 내부 관리용
@@ -157,7 +157,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodNm,                    // 상품명
                         pdProd.prodTypeCd,                 // 상품유형 — {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'}
                         pdProd.prodCode,                  // 상품코드(SKU)
-                        pdProd.listPrice,                 // 정가
+                        pdProd.stdPrice,                 // 정가
                         pdProd.salePrice,                 // 판매가
                         pdProd.purchasePrice,              // 매입가(원가) — 내부 관리용
                         pdProd.marginRate,                 // 마진율(%) — 내부 관리용

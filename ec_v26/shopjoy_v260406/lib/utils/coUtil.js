@@ -1178,7 +1178,7 @@
 
     var main = imgs.find(function (im) { return im.isThumb === 'Y'; }) || imgs[0];
     var mainImage = cofImgSrc((main && (main.cdnImgUrl || main.cdnThumbUrl)) || '');
-    var priceVal = prod.salePrice || prod.listPrice || prod.price || 0;
+    var priceVal = prod.salePrice || prod.stdPrice || prod.price || 0;
 
     return Object.assign({}, prod, {
       price: priceVal,

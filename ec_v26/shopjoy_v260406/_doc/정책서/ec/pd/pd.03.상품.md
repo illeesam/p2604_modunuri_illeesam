@@ -106,8 +106,8 @@
 | prod_id | 상품ID | YYMMDDhhmmss+rand4 |
 | prod_nm | 상품명 | 200자 이내 필수 |
 | prod_code | SKU | 50자 이내 필수 |
-| list_price | 정가 | BIGINT 필수 |
-| sale_price | 판매가 | BIGINT ≤ list_price |
+| std_price | 정가 | BIGINT 필수 |
+| sale_price | 판매가 | BIGINT ≤ std_price |
 | purchase_price | 매입가(원가) | BIGINT 내부용 |
 | margin_rate | 마진율 | DECIMAL(5,2) 내부용 |
 | prod_stock | 재고 | INTEGER 기본값 0 |

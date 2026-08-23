@@ -183,8 +183,8 @@ window.Prod01List = {
         pager.pageTotalPage = d.pageTotalPage || 1;         // 서버 총페이지 그대로 사용
         const rows = (d.pageList || []).map(p => assignImage({
           ...p,
-          priceNum: typeof p.salePrice === 'number' ? p.salePrice : (typeof p.listPrice === 'number' ? p.listPrice : 0),
-          price: (typeof p.salePrice === 'number' ? p.salePrice : (typeof p.listPrice === 'number' ? p.listPrice : 0)).toLocaleString() + '원',
+          priceNum: typeof p.salePrice === 'number' ? p.salePrice : (typeof p.stdPrice === 'number' ? p.stdPrice : 0),
+          price: (typeof p.salePrice === 'number' ? p.salePrice : (typeof p.stdPrice === 'number' ? p.stdPrice : 0)).toLocaleString() + '원',
         }));
         allProds.splice(0, allProds.length, ...rows);       // 필터옵션 계산용: 현재 페이지 행
         /* 모바일 무한스크롤은 2페이지+ 누적, PC/첫페이지는 교체 (서버사이드 페이징) */

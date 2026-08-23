@@ -34,7 +34,7 @@
 
 ### 5. 가격 관련
 - **규칙**: `price` 단독 사용 금지, 반드시 수식어 필수
-- **예시**: `list_price` (정가), `sale_price` (판매가), `unit_price` (단가), `item_price` (소계)
+- **예시**: `std_price` (정가), `sale_price` (판매가), `unit_price` (단가), `item_price` (소계)
 
 ### 6. 코드형 컬럼 ⭐
 
@@ -239,7 +239,8 @@ order_kind_cd   VARCHAR(20)
 | cnt | 건수/개수 | 복합어만 | sale_cnt, view_cnt |
 | qty | 수량 | 복합어만 | order_qty, claim_qty, stock_qty |
 | amt | 금액 | 복합어만 | cache_amt, refund_amt, discnt_amt |
-| price | 가격 | 복합어만 | list_price, sale_price, unit_price |
+| price | 가격 | 복합어만 | std_price, sale_price, unit_price |
+| std | 표준/정가 | `list` 대신 사용(목록·배열과 혼동 방지) | std_price (정가) |
 | stock | 재고 | 복합어만 | prod_stock, prod_opt_stock |
 | title | 제목 | 복합어만 | event_title, review_title |
 | content | 내용 | 복합어만 | event_content, review_content |
@@ -401,7 +402,7 @@ order_kind_cd   VARCHAR(20)
 
 | 약어 | 한글명 |
 |------|--------|
-| list_price | 정가 (원래가격) |
+| std_price | 정가 (원래가격) |
 | unit_price | 단가 |
 | sale_price | 판매가 |
 | item_price | 소계 (unit_price × order_qty) |

@@ -27,7 +27,7 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null, stockCodePickerSearch: '', stockCodePickerList: [] });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ PRODUCT_STATUS: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [], DLIV_METHOD: [] });
@@ -256,11 +256,6 @@ window.PdProdDtl = {
       } else if (cmd === 'skuStockCode-pick') {
         uiState.stockCodePickerSku = param;
         uiState.stockCodePickerOpen = true;
-        uiState.stockCodePickerSearch = '';
-        uiState.stockCodePickerList = [];
-        return fnLoadStockCodes('');
-      } else if (cmd === 'skuStockCode-search') {
-        return fnLoadStockCodes(uiState.stockCodePickerSearch);
       } else if (cmd === 'skuStockCode-select') {
         if (uiState.stockCodePickerSku) { uiState.stockCodePickerSku.stockCode = param.stockCode; }
         uiState.stockCodePickerOpen = false;
@@ -581,7 +576,7 @@ window.PdProdDtl = {
       mdUserId: '',
       prodTypeCd: 'OPTION', prodStatusCd: 'DRAFT', unsaleMsg: '',
       dlivTmpltId: '', dlivMethodCd: '',
-      listPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
+      stdPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
       platformFeeRate: null, platformFeeAmount: null,
       saleStartDate: '', saleEndDate: '',
       minBuyQty: 1, maxBuyQty: null, dayMaxBuyQty: null, idMaxBuyQty: null,
@@ -595,7 +590,7 @@ window.PdProdDtl = {
     const errors = reactive({});
     const schema = yup.object({
       prodNm:    yup.string().required('상품명을 입력해주세요.'),
-      listPrice: yup.number().typeError('숫자 입력').min(0).required('정가를 입력해주세요.'),
+      stdPrice: yup.number().typeError('숫자 입력').min(0).required('정가를 입력해주세요.'),
       salePrice: yup.number().typeError('숫자 입력').min(0).required('판매가를 입력해주세요.'),
     });
 
@@ -870,17 +865,6 @@ window.PdProdDtl = {
       skus.splice(target, 0, moved);
     };
 
-    /* fnLoadStockCodes — 재고코드 모달 검색 */
-    const fnLoadStockCodes = async (search) => {
-      try {
-        const res = await boApiSvc.pdProd.getSkuStockCodes({ searchValue: search, pageSize: 50 }).catch(() => null);
-        const list = res?.data?.data?.pageList || res?.data?.data || [];
-        uiState.stockCodePickerList = Array.isArray(list) ? list : [];
-      } catch (e) {
-        uiState.stockCodePickerList = [];
-      }
-    };
-
     // -- SKU 필터 (1단/2단/재고) - uiState 참조
     const cfSkuFilter1Options = computed(() => [...new Set(skus.map(s => s._nm1).filter(Boolean))]);
     const cfSkuFilter2Options = computed(() => {
@@ -1078,8 +1062,8 @@ window.PdProdDtl = {
       return ((form.salePrice - form.purchasePrice) / form.salePrice * 100).toFixed(2);
     });
     const cfDiscountRate = computed(() => {
-      if (!form.listPrice || form.listPrice <= 0) { return 0; }
-      return Math.round((1 - form.salePrice / form.listPrice) * 100);
+      if (!form.stdPrice || form.stdPrice <= 0) { return 0; }
+      return Math.round((1 - form.salePrice / form.stdPrice) * 100);
     });
     // 플랫폼수수료: amount 우선 — amount 가 비어 있으면 rate × salePrice 로 환산
     const cfPlatformFee = computed(() => {
@@ -1124,7 +1108,7 @@ window.PdProdDtl = {
     const selectProdItem = (p) => {
       const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm,
         cateNm: p.cateNm || p.categoryNm || '',
-        listPrice: p.listPrice || p.price || 0,
+        stdPrice: p.stdPrice || p.price || 0,
         prodStatusCd: p.prodStatusCd || '' };
       if (uiState.prodPickerOpen === 'rel') { relProds.push(row); }
       else { codeProds.push(row); }
@@ -1213,7 +1197,7 @@ window.PdProdDtl = {
     });
 
     /* addPlanRow — 추가 */
-    const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
+    const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', stdPrice: form.stdPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
 
     /* onPlanChange — 이벤트 */
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
@@ -1276,7 +1260,7 @@ window.PdProdDtl = {
           form.unsaleMsg      = p.unsaleMsg || '';
           form.dlivTmpltId    = p.dlivTmpltId || '';
           form.dlivMethodCd   = p.dlivMethodCd || '';
-          form.listPrice      = p.listPrice || 0;
+          form.stdPrice      = p.stdPrice || 0;
           form.salePrice      = p.salePrice || 0;
           form.purchasePrice  = p.purchasePrice || null;
           form.platformFeeRate   = p.platformFeeRate   != null ? p.platformFeeRate   : null;
@@ -1494,7 +1478,7 @@ window.PdProdDtl = {
                 startDate: r.startDate || '', startTime: r.startTime || '00:00',
                 endDate: r.endDate || '',     endTime: r.endTime || '23:59',
                 planStatus: r.planStatus || 'SCHEDULED',
-                listPrice: r.listPrice || null, salePrice: r.salePrice || null,
+                stdPrice: r.stdPrice || null, salePrice: r.salePrice || null,
                 purchasePrice: r.purchasePrice || null,
               })),
           };
@@ -1779,7 +1763,7 @@ window.PdProdDtl = {
     ];
     /* BoGrid 컬럼 — 판매계획 (selectable + 인라인 편집)
      * _start/_end: bo-date-time-picker 커스텀 컴포넌트 슬롯 KEEP
-     * planStatus/listPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
+     * planStatus/stdPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
      */
     columns.planGrid = [
       { key: '_start',       label: '시작일시', style: 'width:196px;',
@@ -1788,7 +1772,7 @@ window.PdProdDtl = {
         dateTimePick: { dateKey: 'endDate', timeKey: 'endTime', showNow: false, showClear: false, dateWidth: '116px', timeWidth: '72px' } },
       { key: 'planStatus',   label: '상태',    style: 'width:80px;',
         edit: 'select', options: () => grpCodes.PROD_PLAN_STATUS },
-      { key: 'listPrice',    label: '정가',    style: 'width:90px;', edit: 'number', align: 'right' },
+      { key: 'stdPrice',    label: '정가',    style: 'width:90px;', edit: 'number', align: 'right' },
       { key: 'salePrice',    label: '판매가',  style: 'width:90px;', edit: 'number', align: 'right' },
       { key: 'purchasePrice', label: '매입가', style: 'width:80px;', edit: 'number', align: 'right' },
     ];
@@ -1856,7 +1840,7 @@ window.PdProdDtl = {
     ];
     // 기본 가격 (3 rows: 정가/판매가, 매입가/마진율, 플랫폼수수료율/금액)
     columns.basePriceForm = [
-      { key: 'listPrice',         label: '정가 (list_price)', type: 'number', required: true, min: 0, placeholder: '0' },
+      { key: 'stdPrice',         label: '정가 (std_price)', type: 'number', required: true, min: 0, placeholder: '0' },
       { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0' },
       { key: 'purchasePrice',     label: '매입가 / 원가 (purchase_price)', type: 'number', placeholder: '(선택)',
         hint: '내부관리용' },
@@ -1915,7 +1899,7 @@ window.PdProdDtl = {
       optGroups, skus, cfTotalStock, generateSkus, moveSku,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, getOptValCodes,
-      fnBuildLevel1Items, fnBuildLevel2Items, fnLoadStockCodes,
+      fnBuildLevel1Items, fnBuildLevel2Items,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
       onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput, fnOptItem2Label,
@@ -1943,10 +1927,6 @@ window.PdProdDtl = {
       catDragoverIdx, dragBlockIdx, dragImgIdx, dragOptGrpId, dragOptItemIdx,
       dragoverBlockIdx, dragoverImgIdx, dragoverOptItemIdx, isDraggingDivider,
       previewDevice, skuFilter1, skuFilter2, skuFilterStock, splitPct,
-      stockCodePickerOpen: Vue.toRef(uiState, 'stockCodePickerOpen'),
-      stockCodePickerList: Vue.toRef(uiState, 'stockCodePickerList'),
-      stockCodePickerSearch: Vue.toRef(uiState, 'stockCodePickerSearch'),
-      stockCodePickerSku: Vue.toRef(uiState, 'stockCodePickerSku'),
       };
   },
   template: /* html */`
@@ -2116,7 +2096,7 @@ window.PdProdDtl = {
       <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
         <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
           <div>
-            <div style="font-size:14px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
+            <div style="font-size:14px;font-weight:700;">{{ (form.stdPrice||0).toLocaleString() }}원</div>
             <div style="font-size:10px;color:#888;">정가</div>
           </div>
           <div>
@@ -3158,54 +3138,10 @@ window.PdProdDtl = {
   </div>
   <!-- ===== /dtl-tab-grid ============================================== -->
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  <!-- ===== ■. 재고코드 선택 모달 ============================================= -->
-  <bo-modal :show="stockCodePickerOpen" title="📦 재고코드 선택" box-style="width:520px;max-height:70vh;" @close="handleBtnAction('skuStockCode-close')">
-    <div style="margin-bottom:12px;">
-      <div v-if="stockCodePickerSku" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#166534;">
-        📌 선택 SKU: <strong>{{ stockCodePickerSku._nm1 }}{{ stockCodePickerSku._nm2 ? ' / '+stockCodePickerSku._nm2 : '' }}</strong>
-        &nbsp;(현재: <code style="background:#d1fae5;padding:1px 4px;border-radius:3px;">{{ stockCodePickerSku.stockCode || '미설정' }}</code>)
-      </div>
-      <div style="display:flex;gap:6px;">
-        <input class="form-control" v-model="stockCodePickerSearch" placeholder="재고코드 또는 이름 검색" style="flex:1;font-size:12px;"
-          @keyup.enter="handleBtnAction('skuStockCode-search')" />
-        <button class="btn btn_search" @click="handleBtnAction('skuStockCode-search')">조회</button>
-      </div>
-    </div>
-    <div v-if="stockCodePickerList.length===0" style="text-align:center;color:#aaa;padding:24px 0;font-size:12px;">
-      조회 버튼으로 재고코드를 검색하거나, 아래에서 직접 입력하세요.
-    </div>
-    <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead>
-        <tr style="background:#f0fdf4;border-bottom:2px solid #86efac;">
-          <th style="padding:6px 10px;text-align:left;font-weight:600;color:#166534;">재고코드</th>
-          <th style="padding:6px 10px;text-align:left;font-weight:600;color:#166534;">이름</th>
-          <th style="padding:6px 10px;text-align:right;font-weight:600;color:#166534;">재고수량</th>
-          <th style="padding:6px 6px;width:50px;"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="row in stockCodePickerList" :key="row.stockCode||row.skuCode"
-          style="border-bottom:1px solid #e0e0e0;cursor:pointer;"
-          @click="handleBtnAction('skuStockCode-select', row)">
-          <td style="padding:5px 10px;font-family:monospace;color:#166534;">{{ row.stockCode||row.skuCode }}</td>
-          <td style="padding:5px 10px;color:#333;">{{ row.stockNm||row.skuNm||'-' }}</td>
-          <td style="padding:5px 10px;text-align:right;color:#555;">{{ (row.stock||0).toLocaleString() }}</td>
-          <td style="padding:5px 6px;text-align:center;">
-            <button class="btn btn-xs btn_select" style="font-size:11px;">선택</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div style="margin-top:14px;border-top:1px solid #e0e0e0;padding-top:12px;">
-      <div style="font-size:11px;color:#888;margin-bottom:6px;">직접 입력</div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <input class="form-control" v-model="stockCodePickerSearch" placeholder="재고코드 직접 입력 후 [확인]"
-          style="flex:1;font-size:12px;font-family:monospace;" />
-        <button class="btn btn_confirm" style="white-space:nowrap;"
-          @click="handleBtnAction('skuStockCode-select', {stockCode: stockCodePickerSearch})">확인</button>
-      </div>
-    </div>
-  </bo-modal>
+  <!-- ===== ■. 재고코드 선택 모달 (공통팝업 — popup-code="prodStock") ============= -->
+  <bo-cm-popup-modal v-if="uiState.stockCodePickerOpen" popup-cmd="cmPopup-prodStock-pick" popup-code="prodStock"
+    :title="uiState.stockCodePickerSku ? ('📦 재고코드 선택 — ' + uiState.stockCodePickerSku._nm1 + (uiState.stockCodePickerSku._nm2 ? ' / ' + uiState.stockCodePickerSku._nm2 : '')) : '📦 재고코드 선택'"
+    @select="r => handleBtnAction('skuStockCode-select', r)" @close="handleBtnAction('skuStockCode-close')" />
   <!-- ===== □. 재고코드 선택 모달 ============================================= -->
 </bo-container>
 </div>

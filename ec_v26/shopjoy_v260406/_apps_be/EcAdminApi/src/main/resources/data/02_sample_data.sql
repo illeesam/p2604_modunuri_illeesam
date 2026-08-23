@@ -210,7 +210,7 @@ UPDATE pd_category SET parent_category_id = 'CAT0000000000003' WHERE category_id
 -- ============================================================
 -- [PD] 상품
 -- ============================================================
-INSERT INTO pd_prod (prod_id, site_id, category_id, prod_nm, prod_code, brand_id, vendor_id, list_price, sale_price, purchase_price, prod_status_cd, reg_by, reg_date)
+INSERT INTO pd_prod (prod_id, site_id, category_id, prod_nm, prod_code, brand_id, vendor_id, std_price, sale_price, purchase_price, prod_status_cd, reg_by, reg_date)
 VALUES
   ('PRD0000000000001', '2604010000000001', 'CAT0000000000031', '나이키 에어맥스 270',      'P-NIKE-001',    'BRD0000000000001', 'VND0000000000001', 179000,  159000,  80000,   'ACTIVE',  'SYSTEM', NOW()),
   ('PRD0000000000002', '2604010000000001', 'CAT0000000000031', '나이키 조던 1 레트로',     'P-NIKE-002',    'BRD0000000000001', 'VND0000000000001', 259000,  239000,  120000,  'ACTIVE',  'SYSTEM', NOW()),

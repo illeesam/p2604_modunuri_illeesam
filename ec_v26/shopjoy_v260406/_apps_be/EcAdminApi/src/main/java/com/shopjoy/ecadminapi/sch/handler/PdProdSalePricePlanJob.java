@@ -71,8 +71,8 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
             // pd_prod 가격 반영
             prodRepository.findById(plan.getProdId()).ifPresent(prod -> {
                 boolean changed = false;
-                if (plan.getListPrice() != null && !plan.getListPrice().equals(prod.getListPrice())) {
-                    prod.setListPrice(plan.getListPrice());
+                if (plan.getStdPrice() != null && !plan.getStdPrice().equals(prod.getStdPrice())) {
+                    prod.setStdPrice(plan.getStdPrice());
                     changed = true;
                 }
                 if (plan.getSalePrice() != null && !plan.getSalePrice().equals(prod.getSalePrice())) {
@@ -86,8 +86,8 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
                 if (changed) {
                     prod.setUpdDate(now);
                     prodRepository.save(prod);
-                    log.info("[{}] 가격 반영: prodId={} listPrice={} salePrice={}",
-                        batchCode(), prod.getProdId(), prod.getListPrice(), prod.getSalePrice());
+                    log.info("[{}] 가격 반영: prodId={} stdPrice={} salePrice={}",
+                        batchCode(), prod.getProdId(), prod.getStdPrice(), prod.getSalePrice());
                 }
             });
         }

@@ -69,8 +69,8 @@ public class PdProd extends BaseEntity {
     private String prodCode;
 
     @Comment("정가")
-    @Column(name = "list_price")
-    private Long listPrice;
+    @Column(name = "std_price")
+    private Long stdPrice;
 
     @Comment("판매가")
     @Column(name = "sale_price")

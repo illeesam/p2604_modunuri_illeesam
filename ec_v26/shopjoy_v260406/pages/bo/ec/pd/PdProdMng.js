@@ -469,16 +469,41 @@ window.PdProdMng = {
           { key: 'siteId', type: 'select', label: '사이트', options: () => siteOptions, nullLabel: '전체' },
     ];
 
+    /* fnOptTypeLabel — 옵션유형 코드 → 라벨 (OPT_TYPE 코드그룹) */
+    const fnOptTypeLabel = (cd) => (codes.option_types.find(c => c.codeValue === cd) || {}).codeLabel || cd;
+
+    /* fnOptTypeCol — 옵션1/옵션2 컬럼: "라벨(값개수)" 표시. prodOpts 는 목록조회 시 서버가 함께 채워준다 */
+    const fnOptTypeCol = (p, level) => {
+      const typeCd = level === 1 ? p.prodOpt1TypeCd : p.prodOpt2TypeCd;
+      if (!typeCd) return '-';
+      const cnt = (p.prodOpts || []).filter(o => o.prodOptTypeLevel === level).length;
+      return `${fnOptTypeLabel(typeCd)}(${cnt})`;
+    };
+
+    /* fnFinalPriceCol — 판매가 컬럼: 프로모션 할인 적용가 > 판매가 > 정상가 순 우선 표시 */
+    const fnFinalPriceCol = (p) => {
+      if (p.discntPrice != null) return `${coUtil.cofWon(p.discntPrice)} (${p.discntRate}%↓)`;
+      if (p.salePrice != null) return coUtil.cofWon(p.salePrice);
+      return coUtil.cofWon(p.stdPrice);
+    };
+
     // 기본 그리드
     columns.baseGrid = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'prodTypeCdNm', label: '상품유형', align: 'center', fmt: (v, p) => v || p.prodTypeCd || '-' },
+      { key: 'prodOptStdCd', label: '옵션카테고리', align: 'center', fmt: (v) => v || '-' },
+      { key: 'prodOpt1TypeCd', label: '옵션1', align: 'center', fmt: (v, p) => fnOptTypeCol(p, 1) },
+      { key: 'prodOpt2TypeCd', label: '옵션2', align: 'center', fmt: (v, p) => fnOptTypeCol(p, 2) },
       { key: 'cateNm',       label: '카테고리' },
-      { key: 'listPrice',    label: '가격', fmt: (v) => (coUtil.cofWon(v)) },
+      { key: 'stdPrice',    label: '정가',   align: 'right', fmt: (v) => coUtil.cofWon(v) },
+      { key: 'salePrice',    label: '판매가', align: 'right', fmt: (v, p) => fnFinalPriceCol(p) },
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
+      { key: 'saleCount',    label: '판매수량', align: 'right', fmt: (v) => (v || 0).toLocaleString() + '개' },
       { key: 'brandNm',      label: '브랜드' },
-      { key: 'prodStatusCd', label: '상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
+      { key: 'prodStatusCd', label: '판매상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
+      { key: 'saleStartDate', label: '판매시작일', fmt: (v) => v ? coUtil.cofYmd(v) : '2000-01-01' },
+      { key: 'saleEndDate',   label: '판매종료일', fmt: (v) => v ? coUtil.cofYmd(v) : '9999-12-31' },
       { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;' },
     ];

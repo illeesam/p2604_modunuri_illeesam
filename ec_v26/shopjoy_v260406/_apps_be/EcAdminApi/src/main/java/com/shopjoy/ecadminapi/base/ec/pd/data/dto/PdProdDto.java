@@ -40,7 +40,7 @@ public class PdProdDto {
         private String prodNm;              // 상품명
         private String prodTypeCd;          // 상품유형 — PROD_TYPE_CD {SINGLE:단품, OPTION:옵션상품, GROUP:묶음상품, SET:세트상품, GIFT:사은품}
         private String prodCode;            // 상품코드(SKU)
-        private Long listPrice;             // 정가
+        private Long stdPrice;             // 정가
         private Long salePrice;             // 판매가
         private Long purchasePrice;         // 매입가(원가) — 내부 관리용
         private BigDecimal marginRate;      // 마진율 (%) — 내부 관리용
@@ -96,6 +96,10 @@ public class PdProdDto {
         private String prodOpt2TypeCd;   // 옵션유형2 분류코드 (예: SIZE)
         // ── Tier 1 상세 연관정보 (getDetail/_listFillRelations 시 채움) ──
         private Integer prodStock;                            // SKU 재고 합산 (목록용)
+        private Integer saleCount;                            // 판매수량 합산 (pd_prod_stock.sale_count, 목록용)
+        private Long discntPrice;                             // 프로모션 할인 적용가 (활성 상품할인 중 최고할인 적용, 없으면 NULL)
+        private Integer discntRate;                            // 적용된 할인율(%) — 정액할인이면 판매가 대비 환산율
+        private String appliedDiscntNm;                        // 적용된 할인정책명 (discntPrice 산출 근거)
         private List<PdProdImgDto.Item>         prodImgs;     // 상품 이미지 목록
         private List<PdProdOptDto.Item>         prodOpts;     // 옵션값 목록 (pd_prod_opt)
         private List<PdProdSkuDto.Item>         prodSkus;     // SKU 목록

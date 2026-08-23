@@ -37,7 +37,7 @@ public class BoPdProdPlanController {
 
     /**
      * 전체 교체 저장.
-     * body: { "plans": [ { startDate, startTime, endDate, endTime, planStatus, listPrice, salePrice, purchasePrice } ] }
+     * body: { "plans": [ { startDate, startTime, endDate, endTime, planStatus, stdPrice, salePrice, purchasePrice } ] }
      */
     @PutMapping
     @Transactional
@@ -75,7 +75,7 @@ public class BoPdProdPlanController {
                 .startDatetime(startDt)
                 .endDatetime(endDt)
                 .planStatusCd(statusCd)
-                .listPrice(toLong(row.get("listPrice")))
+                .stdPrice(toLong(row.get("stdPrice")))
                 .salePrice(toLong(row.get("salePrice")))
                 .purchasePrice(toLong(row.get("purchasePrice")))
                 .sortOrd(sortOrd++)

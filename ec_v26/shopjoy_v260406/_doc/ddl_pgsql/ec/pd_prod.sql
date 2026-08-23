@@ -11,7 +11,7 @@ CREATE TABLE shopjoy_2604.pd_prod (
     prod_nm               VARCHAR(200)  NOT NULL,
     prod_type_cd          VARCHAR(20)   DEFAULT 'SINGLE'::character varying,
     prod_code             VARCHAR(50)  ,
-    list_price            BIGINT        DEFAULT 0,
+    std_price            BIGINT        DEFAULT 0,
     sale_price            BIGINT        DEFAULT 0,
     purchase_price        BIGINT       ,
     margin_rate           NUMERIC(5,2) ,
@@ -61,7 +61,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.md_user_id IS '담당MD (sy_user.user_id)
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_nm IS '상품명';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_type_cd IS '상품유형 (코드: PROD_TYPE — SINGLE/GROUP/SET)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_code IS '상품코드(SKU)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.list_price IS '정가';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.std_price IS '정가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_price IS '판매가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.purchase_price IS '매입가(원가) — 내부 관리용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.margin_rate IS '마진율 (%) — 내부 관리용';

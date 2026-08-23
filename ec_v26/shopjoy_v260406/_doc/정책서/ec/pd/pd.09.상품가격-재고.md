@@ -11,7 +11,7 @@
 ### 가격 필드 체계
 ```
 pd_prod
-  list_price       정가 (소비자 기준 원래 가격)
+  std_price       정가 (소비자 기준 원래 가격)
   sale_price       판매가 (실제 결제 기준가)
   purchase_price   매입가 (원가 — 내부 관리용, 화면 미노출)
   margin_rate      마진율 % (내부 관리용)
@@ -20,14 +20,14 @@ pd_prod_sku
   add_price        옵션 추가금액 (기본 0원)
 
 최종 판매가 = sale_price + add_price
-할인율 (%) = (list_price - sale_price) / list_price × 100
+할인율 (%) = (std_price - sale_price) / std_price × 100
 ```
 
 ### 필드 규칙
 | 필드 | 타입 | 규칙 |
 |---|---|---|
-| `list_price` | BIGINT | 0 이상 필수. `sale_price` 이상이어야 함 |
-| `sale_price` | BIGINT | 0 이상 필수. `list_price` 이하 |
+| `std_price` | BIGINT | 0 이상 필수. `sale_price` 이상이어야 함 |
+| `sale_price` | BIGINT | 0 이상 필수. `std_price` 이하 |
 | `purchase_price` | BIGINT | NULL 허용 (선택 입력) |
 | `margin_rate` | DECIMAL(5,2) | NULL 허용. `purchase_price` 입력 시 자동 계산 가능 |
 | `add_price` | BIGINT | 0 이상. SKU별 독립. 마이너스 불가 |
@@ -113,7 +113,7 @@ order_item_id : OI-20260419-001
 [상품]
 prod_id      : A-PROD-001
 prod_nm      : 프리미엄 핸드크림 세트
-list_price   : 35,000원
+std_price   : 35,000원
 sale_price   : 25,000원
 purchase_price: 10,000원
 margin_rate  : 60.00%
