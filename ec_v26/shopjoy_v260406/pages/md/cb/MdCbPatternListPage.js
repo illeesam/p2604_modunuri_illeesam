@@ -49,9 +49,15 @@ window.MdCbPatternListPage = {
       return 'background:linear-gradient(135deg, hsl(' + h + ',72%,90%), hsl(' + ((h + 40) % 360) + ',68%,80%));';
     };
 
-    /* fnPatternType — 목록에서는 격자 셀 데이터를 따로 조회하지 않으므로(N+1 방지), roundDescText
-       존재 여부만으로 원형 도안 여부를 판단한다(상세화면 cfPatternType 과 같은 기준의 목록판). */
-    const fnPatternType = (p) => (p.roundDescText && p.roundDescText.trim()) ? { icon: '🌀', label: '원형 도안' } : null;
+    /* fnPatternType — 도안을 3가지로 분류해 배지로 표시.
+       원형 도안: roundDescText 가 있으면 (격자보다 우선 — 원형 전용으로 만든 도안).
+       배색 도안: 격자 셀에 서로 다른 색이 2가지 이상 쓰였으면(distinctColorCount, 목록 API가 서브쿼리로 계산해서 내려줌).
+       기호 도안: 그 외 전부(단색이거나 색 없이 기호만 쓴 격자). */
+    const fnPatternType = (p) => {
+      if (p.roundDescText && p.roundDescText.trim()) return { icon: '🌀', label: '원형 도안', cls: 'round' };
+      if (Number(p.distinctColorCount) >= 2) return { icon: '🎨', label: '배색 도안', cls: 'color' };
+      return { icon: '🧩', label: '기호 도안', cls: 'symbol' };
+    };
 
     onMounted(fnLoad);
 
@@ -93,7 +99,7 @@ window.MdCbPatternListPage = {
         <div class="cb-pattern-badges">
           <span class="cb-badge cb-badge-mono">#{{ p.patternId }}</span>
           <span class="cb-badge">{{ p.rowCount }}단 × {{ p.maxStitchCount }}코</span>
-          <span v-if="fnPatternType(p)" class="cb-badge cb-badge-round">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
+          <span class="cb-badge" :class="'cb-badge-' + fnPatternType(p).cls">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
         </div>
         <div class="cb-pattern-card-nm">{{ p.patternNm }}</div>
         <div class="cb-pattern-card-meta">
@@ -131,7 +137,7 @@ window.MdCbPatternListPage = {
           </td>
           <td class="cb-list-table-nm">
             {{ p.patternNm }}
-            <span v-if="fnPatternType(p)" class="cb-badge cb-badge-round cb-badge-inline">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
+            <span class="cb-badge cb-badge-inline" :class="'cb-badge-' + fnPatternType(p).cls">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
           </td>
           <td>{{ p.rowCount }}단 × {{ p.maxStitchCount }}코</td>
           <td>{{ p.regUserNm || p.memberNm || '알 수 없음' }}</td>

@@ -29,6 +29,7 @@ public class MdCbPatternDto {
         private Integer maxStitchCount;       // 최대 코수
         private String descText;              // 한글 도안 설명 (자동생성 캐시)
         private String roundDescText;         // 원형(라운드) 도안 입력 텍스트
+        private Long distinctColorCount;      // 격자 셀에 쓰인 서로 다른 배색 수(color_hex distinct) — 목록에서 기호/배색 도안 구분용
         private String thumbnailUrl;          // 썸네일 이미지 URL
         private String patternStatusCd;       // 상태 — CB_PATTERN_STATUS_CD {DRAFT:작성중, PUBLISHED:공개, PRIVATE:비공개}
         private String patternStatusCdNm;     // 상태 코드명 (화면 표시용)

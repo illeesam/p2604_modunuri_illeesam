@@ -508,10 +508,14 @@ window.MdCbCobanulPage = {
       form.roundDescText = cfCurrentRoundExample.value.text;
     };
     const cfReadonly = computed(() => uiState.dtlMode === 'view');
-    /* cfPatternType — 격자에 칠해진 내용이 있으면 "격자 도안", 없고 원형 텍스트만 있으면 "원형 도안".
-       신규 작성 등 둘 다 비어있으면 배지를 아예 표시하지 않는다(아직 유형이 정해지지 않음). */
+    /* cfPatternType — 목록(MdCbPatternListPage.fnPatternType)과 같은 3가지 분류.
+       격자에 칠해진 내용이 있으면 색 종류 수로 "배색 도안"/"기호 도안" 구분(단색·색없음=기호),
+       격자가 비어있고 원형 텍스트만 있으면 "원형 도안". 둘 다 비어있으면(신규 작성 등) 배지 없음. */
     const cfPatternType = computed(() => {
-      if (Object.keys(cellMap).length > 0) return { icon: '🧩', label: '격자 도안' };
+      if (Object.keys(cellMap).length > 0) {
+        const colors = new Set(Object.values(cellMap).map(c => c.colorHex).filter(Boolean));
+        return colors.size >= 2 ? { icon: '🎨', label: '배색 도안' } : { icon: '🧩', label: '기호 도안' };
+      }
       if (form.roundDescText && form.roundDescText.trim()) return { icon: '🌀', label: '원형 도안' };
       return null;
     });
@@ -954,18 +958,6 @@ window.MdCbCobanulPage = {
             </div>
           </div>
         </div>
-        <div class="cb-toolbar-actions">
-          <template v-if="cfReadonly">
-            <button v-if="form.patternId" class="btn btn_delete cb-del-btn" @click="onDeletePattern">삭제</button>
-            <button class="btn btn_edit cb-save-btn" @click="onSwitchToEdit">수정</button>
-          </template>
-          <template v-else>
-            <button v-if="!form.patternId" class="btn btn_reset cb-del-btn" @click="onResetForm">초기화</button>
-            <button v-if="form.patternId" class="btn btn_cancel cb-del-btn" @click="onCancelEdit">취소</button>
-            <button v-if="form.patternId" class="btn btn_delete cb-del-btn" @click="onDeletePattern">삭제</button>
-            <button class="btn btn_save cb-save-btn" @click="onSave" :disabled="uiState.loading">저장</button>
-          </template>
-        </div>
       </div>
 
       <div class="cb-chart-mode-toggle">
@@ -1087,6 +1079,19 @@ window.MdCbCobanulPage = {
             <button class="btn btn-sm btn-secondary" @click="onUseDescExample">이 예제 넣기</button>
           </div>
         </div>
+      </div>
+
+      <div class="cb-detail-bottom-actions">
+        <template v-if="cfReadonly">
+          <button class="btn btn_edit cb-save-btn" @click="onSwitchToEdit">수정</button>
+          <button v-if="form.patternId" class="btn btn_delete cb-del-btn" @click="onDeletePattern">삭제</button>
+        </template>
+        <template v-else>
+          <button class="btn btn_save cb-save-btn" @click="onSave" :disabled="uiState.loading">저장</button>
+          <button v-if="form.patternId" class="btn btn_delete cb-del-btn" @click="onDeletePattern">삭제</button>
+          <button v-if="form.patternId" class="btn btn_cancel cb-del-btn" @click="onCancelEdit">취소</button>
+          <button v-if="!form.patternId" class="btn btn_reset cb-del-btn" @click="onResetForm">초기화</button>
+        </template>
       </div>
     </div>
 

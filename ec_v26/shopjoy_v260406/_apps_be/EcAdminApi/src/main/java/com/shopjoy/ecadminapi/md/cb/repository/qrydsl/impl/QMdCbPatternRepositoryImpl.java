@@ -10,9 +10,12 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.jpa.JPAExpressions;
 import com.shopjoy.ecadminapi.md.cb.data.dto.MdCbPatternDto;
 import com.shopjoy.ecadminapi.md.cb.data.entity.MdCbPattern;
 import com.shopjoy.ecadminapi.md.cb.data.entity.QMdCbPattern;
+import com.shopjoy.ecadminapi.md.cb.data.entity.QMdCbPatternCell;
 import com.shopjoy.ecadminapi.md.cb.repository.qrydsl.QMdCbPatternRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
@@ -39,6 +42,7 @@ public class QMdCbPatternRepositoryImpl implements QMdCbPatternRepository {
     private static final QMdCbPattern mdCbPattern = QMdCbPattern.mdCbPattern;
     private static final QMbMember memberEx = QMbMember.mbMember;
     private static final QVwSyCode codeStatusCd = new QVwSyCode("cd_ps");
+    private static final QMdCbPatternCell patternCellEx = new QMdCbPatternCell("pattern_cell_ex");
 
     private JPAQuery<MdCbPatternDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -51,6 +55,11 @@ public class QMdCbPatternRepositoryImpl implements QMdCbPatternRepository {
                         mdCbPattern.maxStitchCount,     // 최대 코수
                         mdCbPattern.descText,           // 한글 도안 설명
                         mdCbPattern.roundDescText,      // 원형(라운드) 도안 입력 텍스트
+                        ExpressionUtils.as(              // 격자 셀에 쓰인 서로 다른 배색 수 — 목록에서 기호/배색 도안 구분용
+                            JPAExpressions.select(patternCellEx.colorHex.countDistinct())
+                                .from(patternCellEx)
+                                .where(patternCellEx.patternId.eq(mdCbPattern.patternId).and(patternCellEx.colorHex.isNotNull())),
+                            "distinctColorCount"),
                         mdCbPattern.thumbnailUrl,       // 썸네일
                         mdCbPattern.patternStatusCd,    // 상태
                         codeStatusCd.codeLabel.as("patternStatusCdNm"),  // 상태 코드라벨 (조인)
