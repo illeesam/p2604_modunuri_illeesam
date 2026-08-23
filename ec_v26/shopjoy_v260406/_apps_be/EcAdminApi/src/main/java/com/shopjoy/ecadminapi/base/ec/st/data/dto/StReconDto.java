@@ -45,6 +45,8 @@ public class StReconDto {
         private String regUserNm;  // 등록자명 (조인)
         private String updBy;                                                // 수정자
         private LocalDateTime updDate;                                       // 수정일시
+        private String vendorNm;  // 업체명 (조인)
+        private String settleRawNm;  // 수집원장 상품명 스냅샷 (조인)
     }
 
 }

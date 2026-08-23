@@ -37,6 +37,8 @@ public class StSettleItemDto {
         private Long settleItemAmt;                                    // 항목 정산금액
         private String regBy;                                            // 등록자
         private LocalDateTime regDate;                                    // 등록일시
+        private String orderNm;  // 주문 회원명 (조인)
+        private String orderItemNm;  // 주문항목 상품명 (조인)
         private String regSiteId;                                          // 등록 사이트ID
         private String regSiteNm;  // 등록사이트명 (조인)
         private String regUserNm;  // 등록자명 (조인)
