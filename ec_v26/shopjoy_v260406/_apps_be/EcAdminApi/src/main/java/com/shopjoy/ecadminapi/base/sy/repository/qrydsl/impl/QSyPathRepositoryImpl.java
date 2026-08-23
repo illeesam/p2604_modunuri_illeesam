@@ -77,9 +77,9 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
-        whereList.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
-        whereList.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd())); // 업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / sy_prop)
+        whereList.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId())); // 부모 경로ID (sy_path.path_id, 루트는 NULL)
+        whereList.add(QdslUtil.strEq(syPath.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -108,9 +108,9 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int limit    = pageSize;
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
-        whereList.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
-        whereList.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd())); // 업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / sy_prop)
+        whereList.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId())); // 부모 경로ID (sy_path.path_id, 루트는 NULL)
+        whereList.add(QdslUtil.strEq(syPath.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery();
@@ -132,15 +132,15 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         BasePage<SyPathDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "bizCd,parentPathId,pathId,pathLabel,pathRemark" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bizCd", syPath.bizCd),
-            QdslUtil.FieldDef.like("parentPathId", syPath.parentPathId),
-            QdslUtil.FieldDef.like("pathId", syPath.pathId),
-            QdslUtil.FieldDef.like("pathLabel", syPath.pathLabel),
-            QdslUtil.FieldDef.like("pathRemark", syPath.pathRemark),
-            QdslUtil.FieldDef.like("useYn", syPath.useYn)
+            QdslUtil.FieldDef.like("bizCd", syPath.bizCd), // 업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / sy_prop)
+            QdslUtil.FieldDef.like("parentPathId", syPath.parentPathId), // 부모 경로ID (sy_path.path_id, 루트는 NULL)
+            QdslUtil.FieldDef.like("pathId", syPath.pathId), // 경로ID (PK, auto)
+            QdslUtil.FieldDef.like("pathLabel", syPath.pathLabel), // 경로 라벨 (한글 표시명)
+            QdslUtil.FieldDef.like("pathRemark", syPath.pathRemark), // 비고
+            QdslUtil.FieldDef.like("useYn", syPath.useYn) // 사용여부 Y/N
         ));
     }
 

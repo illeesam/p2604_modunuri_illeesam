@@ -38,7 +38,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleClose stSettleClose   = QStSettleClose.stSettleClose;
     private static final QSySite        sySite = QSySite.sySite;
-    private static final QVwSyCode        cdScs = new QVwSyCode("cd_scs");    /*
+    private static final QVwSyCode        codeCloseStatusCd = new QVwSyCode("cd_scs");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_CLOSE_STATUS  {DRAFT: '임시마감', CONFIRMED: '확정마감', PAID: '지급완료'}
      * (Entity 주석상 closeStatusCd 흐름: CLOSED/REOPENED — sy_code 실 데이터와 값 표기가 다름)
@@ -55,13 +55,13 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                         stSettleClose.closeDate,          // 처리일시
                         stSettleClose.regBy,              // 등록자
                         stSettleClose.regDate,            // 등록일시
-                        cdScs.codeLabel.as("closeStatusCdNm"),         // 마감상태명 (sy_code 조인)
+                        codeCloseStatusCd.codeLabel.as("closeStatusCdNm"),         // 마감상태명 (sy_code 조인)
                         stSettleClose.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleClose)
-                .innerJoin(cdScs).on(cdScs.codeGrp.eq("CLOSE_STATUS_CD").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd))) // 마감상태
+                .innerJoin(codeCloseStatusCd).on(codeCloseStatusCd.codeGrp.eq("CLOSE_STATUS_CD").and(codeCloseStatusCd.codeValue.eq(stSettleClose.closeStatusCd))) // 마감상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleClose.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleClose.regBy)) // 등록자
                 ;
@@ -82,7 +82,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()));
+        whereList.add(QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId())); // 마감이력ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleClose.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleClose.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -114,7 +114,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()));
+        whereList.add(QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId())); // 마감이력ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleClose.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleClose.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -140,13 +140,14 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "closeBy,closeReason,closeStatusCd,settleCloseId,settleId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("closeBy", stSettleClose.closeBy),
-            QdslUtil.FieldDef.like("closeReason", stSettleClose.closeReason),
-            QdslUtil.FieldDef.like("closeStatusCd", stSettleClose.closeStatusCd),
-            QdslUtil.FieldDef.like("settleCloseId", stSettleClose.settleCloseId),
-            QdslUtil.FieldDef.like("settleId", stSettleClose.settleId)
+            QdslUtil.FieldDef.like("closeBy", stSettleClose.closeBy), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("closeReason", stSettleClose.closeReason), // 마감/재오픈 사유
+            QdslUtil.FieldDef.like("closeStatusCd", stSettleClose.closeStatusCd), // 마감상태 — CLOSE_STATUS_CD (CLOSED/REOPENED)
+            QdslUtil.FieldDef.like("settleCloseId", stSettleClose.settleCloseId), // 마감이력ID 필터
+            QdslUtil.FieldDef.like("settleId", stSettleClose.settleId) // 정산ID (st_settle.settle_id)
         ));
     }
 

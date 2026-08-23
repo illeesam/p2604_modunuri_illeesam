@@ -34,14 +34,17 @@ public class PmGiftDto {
         private String giftId;               // 사은품ID (YYMMDDhhmmss+rand4)
         private String giftNm;               // 사은품명
         private String giftTypeCd;           // 사은품유형 — GIFT_TYPE_CD {PRODUCT:상품, SAMPLE:샘플, ETC:기타, LIMITED:한정수량, NEW_MEMBER:신규회원, NORMAL:일반, REVIEW:리뷰작성, SEASONAL:시즌 외 1개}
+        private String giftTypeCdNm;  // 코드 라벨
         private String prodId;               // 연결 상품ID (pd_prod.prod_id)
         private Integer giftStock;           // 사은품 재고
         private String giftDesc;             // 사은품 설명
         private LocalDate startDate;         // 시작일시
         private LocalDate endDate;           // 종료일시
         private String giftStatusCd;         // 상태 — GIFT_STATUS_CD {ACTIVE:활성, INACTIVE:비활성, ENDED:종료, SOLDOUT:품절}
+        private String giftStatusCdNm;  // 코드 라벨
         private String giftStatusCdBefore;   // 변경 전 상태
         private String memGradeCd;           // 적용 회원등급 코드 (NULL=전체) — MEMBER_GRADE {BASIC:일반, GOLD:우수, NORMAL:일반, VIP:VIP, BRONZE:브론즈, SILVER:실버}
+        private String memGradeCdNm;  // 코드 라벨
         private Long minOrderAmt;            // 최소주문금액 — 사은품 지급 기준 금액
         private Integer minOrderQty;         // 최소주문수량 (NULL=제한없음)
         private BigDecimal selfCdivRate;     // 자사(사이트) 분담율 (%) — 기본 100%

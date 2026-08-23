@@ -84,7 +84,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId()));
+        whereList.add(QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId())); // 결제변경이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -114,7 +114,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId()));
+        whereList.add(QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId())); // 결제변경이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhPayChgHistDto.Item> query = baseSelColumnQuery();
@@ -138,19 +138,20 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chgReason,chgTypeCd,chgUserId,memo,orderId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chgReason", odhPayChgHist.chgReason),
-            QdslUtil.FieldDef.like("chgTypeCd", odhPayChgHist.chgTypeCd),
-            QdslUtil.FieldDef.like("chgUserId", odhPayChgHist.chgUserId),
-            QdslUtil.FieldDef.like("memo", odhPayChgHist.memo),
-            QdslUtil.FieldDef.like("orderId", odhPayChgHist.orderId),
-            QdslUtil.FieldDef.like("payChgHistId", odhPayChgHist.payChgHistId),
-            QdslUtil.FieldDef.like("payId", odhPayChgHist.payId),
-            QdslUtil.FieldDef.like("payStatusCdAfter", odhPayChgHist.payStatusCdAfter),
-            QdslUtil.FieldDef.like("payStatusCdBefore", odhPayChgHist.payStatusCdBefore),
-            QdslUtil.FieldDef.like("pgResponse", odhPayChgHist.pgResponse),
-            QdslUtil.FieldDef.like("refundPgTid", odhPayChgHist.refundPgTid)
+            QdslUtil.FieldDef.like("chgReason", odhPayChgHist.chgReason), // 변경 사유 (예: PG 승인 완료, 수동 환불 등)
+            QdslUtil.FieldDef.like("chgTypeCd", odhPayChgHist.chgTypeCd), // 변경유형 (코드: PAYMENT_CHG_TYPE)
+            QdslUtil.FieldDef.like("chgUserId", odhPayChgHist.chgUserId), // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+            QdslUtil.FieldDef.like("memo", odhPayChgHist.memo), // 메모
+            QdslUtil.FieldDef.like("orderId", odhPayChgHist.orderId), // 주문ID (od_order.)
+            QdslUtil.FieldDef.like("payChgHistId", odhPayChgHist.payChgHistId), // 결제변경이력ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("payId", odhPayChgHist.payId), // 결제ID (od_pay.)
+            QdslUtil.FieldDef.like("payStatusCdAfter", odhPayChgHist.payStatusCdAfter), // 변경 후 결제상태 (코드: PAY_STATUS)
+            QdslUtil.FieldDef.like("payStatusCdBefore", odhPayChgHist.payStatusCdBefore), // 변경 전 결제상태 (코드: PAY_STATUS)
+            QdslUtil.FieldDef.like("pgResponse", odhPayChgHist.pgResponse), // PG 응답 데이터 (JSON)
+            QdslUtil.FieldDef.like("refundPgTid", odhPayChgHist.refundPgTid) // 환불 거래ID (환불 시 PG로부터 받은 ID)
         ));
     }
 

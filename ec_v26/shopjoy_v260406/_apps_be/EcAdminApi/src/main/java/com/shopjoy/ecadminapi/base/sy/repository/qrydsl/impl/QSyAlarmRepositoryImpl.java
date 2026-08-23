@@ -42,9 +42,9 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyAlarm syAlarm = QSyAlarm.syAlarm;
-    private static final QVwSyCode cdAt = new QVwSyCode("cd_at");
-    private static final QVwSyCode cdAc = new QVwSyCode("cd_ac");
-    private static final QVwSyCode cdAtt = new QVwSyCode("cd_att");
+    private static final QVwSyCode codeAlarmTypeCd = new QVwSyCode("cd_at");
+    private static final QVwSyCode codeChannelCd = new QVwSyCode("cd_ac");
+    private static final QVwSyCode codeTargetTypeCd = new QVwSyCode("cd_att");
 
     /*
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
@@ -73,17 +73,17 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                         syAlarm.regDate,          // 등록일시
                         syAlarm.updBy,            // 수정자
                         syAlarm.updDate,          // 수정일시
-                        cdAt.codeLabel.as("alarmTypeCdNm"),       // 알림유형 라벨 (sy_code ALARM_TYPE 조인)
-                        cdAc.codeLabel.as("channelCdNm"),         // 발송채널 라벨 (sy_code ALARM_CHANNEL 조인)
-                        cdAtt.codeLabel.as("targetTypeCdNm"),      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
+                        codeAlarmTypeCd.codeLabel.as("alarmTypeCdNm"),       // 알림유형 라벨 (sy_code ALARM_TYPE 조인)
+                        codeChannelCd.codeLabel.as("channelCdNm"),         // 발송채널 라벨 (sy_code ALARM_CHANNEL 조인)
+                        codeTargetTypeCd.codeLabel.as("targetTypeCdNm"),      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
                         syAlarm.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syAlarm)
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE_CD").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd))) // 알림유형
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd))) // 알림채널
-                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd))) // 알림대상유형
+                .leftJoin(codeAlarmTypeCd).on(codeAlarmTypeCd.codeGrp.eq("ALARM_TYPE_CD").and(codeAlarmTypeCd.codeValue.eq(syAlarm.alarmTypeCd))) // 알림유형
+                .leftJoin(codeChannelCd).on(codeChannelCd.codeGrp.eq("ALARM_CHANNEL").and(codeChannelCd.codeValue.eq(syAlarm.channelCd))) // 알림채널
+                .leftJoin(codeTargetTypeCd).on(codeTargetTypeCd.codeGrp.eq("ALARM_TARGET_TYPE").and(codeTargetTypeCd.codeValue.eq(syAlarm.targetTypeCd))) // 알림대상유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syAlarm.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syAlarm.regBy)) // 등록자
                 ;
@@ -104,9 +104,9 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()));
-        whereList.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId())); // 알림ID 필터
+        whereList.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus())); // 발송상태 필터
+        whereList.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd())); // 알림유형 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -137,9 +137,9 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()));
-        whereList.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId())); // 알림ID 필터
+        whereList.add(QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus())); // 발송상태 필터
+        whereList.add(QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd())); // 알림유형 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyAlarmDto.Item> query = baseQuery();
@@ -163,8 +163,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -172,18 +170,19 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 : null;
     }
 
+    /* searchType 예: "alarmId,alarmMsg,alarmStatusCd,alarmTitle,alarmTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("alarmId", syAlarm.alarmId),
-            QdslUtil.FieldDef.like("alarmMsg", syAlarm.alarmMsg),
-            QdslUtil.FieldDef.like("alarmStatusCd", syAlarm.alarmStatusCd),
-            QdslUtil.FieldDef.like("alarmTitle", syAlarm.alarmTitle),
-            QdslUtil.FieldDef.like("alarmTypeCd", syAlarm.alarmTypeCd),
-            QdslUtil.FieldDef.like("channelCd", syAlarm.channelCd),
-            QdslUtil.FieldDef.like("pathId", syAlarm.pathId),
-            QdslUtil.FieldDef.like("targetId", syAlarm.targetId),
-            QdslUtil.FieldDef.like("targetTypeCd", syAlarm.targetTypeCd),
-            QdslUtil.FieldDef.like("templateId", syAlarm.templateId)
+            QdslUtil.FieldDef.like("alarmId", syAlarm.alarmId), // 알림ID 필터
+            QdslUtil.FieldDef.like("alarmMsg", syAlarm.alarmMsg), // 발송내용
+            QdslUtil.FieldDef.like("alarmStatusCd", syAlarm.alarmStatusCd), // 발송상태 — ALARM_STATUS
+            QdslUtil.FieldDef.like("alarmTitle", syAlarm.alarmTitle), // 알림제목
+            QdslUtil.FieldDef.like("alarmTypeCd", syAlarm.alarmTypeCd), // 알림유형 — ALARM_TYPE_CD
+            QdslUtil.FieldDef.like("channelCd", syAlarm.channelCd), // 발송채널 — ALARM_CHANNEL
+            QdslUtil.FieldDef.like("pathId", syAlarm.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("targetId", syAlarm.targetId), // 대상ID (회원ID 또는 등급코드)
+            QdslUtil.FieldDef.like("targetTypeCd", syAlarm.targetTypeCd), // 대상유형 — ALARM_TARGET_TYPE
+            QdslUtil.FieldDef.like("templateId", syAlarm.templateId) // 템플릿ID
         ));
     }
 

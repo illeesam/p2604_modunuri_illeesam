@@ -44,7 +44,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private static final QPmSave   pmSave    = QPmSave.pmSave;
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
-    private static final QVwSyCode   cdSt = new QVwSyCode("cd_st");
+    private static final QVwSyCode   codeSaveTypeCd = new QVwSyCode("cd_st");
     // EXISTS 서브쿼리용 별칭 (대상상품/업체/담당MD 필터 — pm_save_prod → pd_prod → sy_vendor/sy_user)
     private static final QPmSaveProd saveProdEx = new QPmSaveProd("save_prod_ex");
     private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
@@ -60,6 +60,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                         pmSave.saveId,        // 적립금ID (PK, YYMMDDhhmmss+rand4)
                         pmSave.memberId,      // 회원ID (mb_member.member_id)
                         pmSave.saveTypeCd,    // 적립금유형 — SAVE_TYPE {EARN, USE, EXPIRE, CANCEL, ADMIN}
+                        codeSaveTypeCd.codeLabel.as("saveTypeCdNm"), // 코드 라벨
                         pmSave.saveAmt,       // 변동액 (양수:적립, 음수:차감)
                         pmSave.balanceAmt,    // 처리 후 잔액
                         pmSave.refTypeCd,     // 연관유형 (ORDER/EVENT/ADMIN 등)
@@ -76,7 +77,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 ))
                 .from(pmSave)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(pmSave.memberId)) // 회원
-                .innerJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE_CD").and(cdSt.codeValue.eq(pmSave.saveTypeCd))) // 적립금유형
+                .innerJoin(codeSaveTypeCd).on(codeSaveTypeCd.codeGrp.eq("SAVE_TYPE_CD").and(codeSaveTypeCd.codeValue.eq(pmSave.saveTypeCd))) // 적립금유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSave.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSave.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmSave.siteId)) // 사이트
@@ -99,7 +100,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds()));
+        whereList.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds())); // PK 다건 IN
         whereList.add(QdslUtil.strEq(pmSave.saveId, search.getSaveId()));
         whereList.add(QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()));
         whereList.add(QdslUtil.strEq(pmSave.memberId, search.getMemberId()));
@@ -107,7 +108,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSave.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSave.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -136,7 +137,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds()));
+        whereList.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds())); // PK 다건 IN
         whereList.add(QdslUtil.strEq(pmSave.saveId, search.getSaveId()));
         whereList.add(QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()));
         whereList.add(/* ⚠ memberId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
@@ -146,7 +147,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSave.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSave.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery();
@@ -181,7 +182,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
             .where(saveProdEx.saveId.eq(pmSave.saveId));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(saveProdEx.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(saveProdEx.prodId, search.getProdId())); // 대상상품 ID 필터 (EXISTS eq via pm_save_prod)
         whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(saveProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
@@ -207,6 +208,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         return sub.exists();
     }
 
+    /* searchType 예: "memberId,refId,refTypeCd,saveId,saveMemo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("memberId", pmSave.memberId),

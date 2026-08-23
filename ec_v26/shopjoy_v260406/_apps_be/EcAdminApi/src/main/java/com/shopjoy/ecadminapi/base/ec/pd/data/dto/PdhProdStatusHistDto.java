@@ -21,6 +21,7 @@ public class PdhProdStatusHistDto {
         private String prodStatusHistId;  // 이력ID
         private String prodId;  // 상품ID
         private String beforeStatusCd;  // 이전상태 — PROD_STATUS_CD {ACTIVE:판매중, INACTIVE:중지, SOLDOUT:품절, DRAFT:임시저장}
+        private String beforeStatusCdNm;  // 코드 라벨
         private String afterStatusCd;  // 변경상태 — PROD_STATUS_CD {ACTIVE:판매중, INACTIVE:중지, SOLDOUT:품절, DRAFT:임시저장}
         private String memo;  // 처리메모
         private String procUserId;  // 처리자 (sy_user.user_id)

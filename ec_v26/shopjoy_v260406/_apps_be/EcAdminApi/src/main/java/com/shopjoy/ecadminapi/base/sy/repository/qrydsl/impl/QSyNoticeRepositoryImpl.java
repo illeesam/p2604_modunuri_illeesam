@@ -80,10 +80,10 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
-        whereList.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
-        whereList.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
+        whereList.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId())); // 공지ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus())); // 상태
+        whereList.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd())); // 공지유형 (코드: NOTICE_TYPE)
+        whereList.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed())); // 상단고정 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -113,10 +113,10 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
-        whereList.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
-        whereList.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
+        whereList.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId())); // 공지ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus())); // 상태
+        whereList.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd())); // 공지유형 (코드: NOTICE_TYPE)
+        whereList.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed())); // 상단고정 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery();
@@ -139,15 +139,15 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         BasePage<SyNoticeDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "contentHtml,isFixed,noticeId,noticeStatusCd,noticeTitle" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("contentHtml", syNotice.contentHtml),
-            QdslUtil.FieldDef.like("isFixed", syNotice.isFixed),
-            QdslUtil.FieldDef.like("noticeId", syNotice.noticeId),
-            QdslUtil.FieldDef.like("noticeStatusCd", syNotice.noticeStatusCd),
-            QdslUtil.FieldDef.like("noticeTitle", syNotice.noticeTitle),
-            QdslUtil.FieldDef.like("noticeTypeCd", syNotice.noticeTypeCd)
+            QdslUtil.FieldDef.like("contentHtml", syNotice.contentHtml), // 내용 (HTML)
+            QdslUtil.FieldDef.like("isFixed", syNotice.isFixed), // 상단고정 Y/N
+            QdslUtil.FieldDef.like("noticeId", syNotice.noticeId), // 공지ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("noticeStatusCd", syNotice.noticeStatusCd), // 상태 (ACTIVE/INACTIVE)
+            QdslUtil.FieldDef.like("noticeTitle", syNotice.noticeTitle), // 제목
+            QdslUtil.FieldDef.like("noticeTypeCd", syNotice.noticeTypeCd) // 공지유형 (코드: NOTICE_TYPE)
         ));
     }
 

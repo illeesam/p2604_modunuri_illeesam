@@ -83,9 +83,9 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
-        whereList.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
-        whereList.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId())); // 다국어ID 필터
+        whereList.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd())); // 적용범위 필터 — I18N_SCOPE_CD {FO:프론트, BO:관리자, COMMON:공통}
+        whereList.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -115,9 +115,9 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
-        whereList.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
-        whereList.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId())); // 다국어ID 필터
+        whereList.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd())); // 적용범위 필터 — I18N_SCOPE_CD {FO:프론트, BO:관리자, COMMON:공통}
+        whereList.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery();
@@ -141,19 +141,20 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "i18nCategory,i18nDesc,i18nId,i18nKey,i18nMsgKo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("i18nCategory", syI18n.i18nCategory),
-            QdslUtil.FieldDef.like("i18nDesc", syI18n.i18nDesc),
-            QdslUtil.FieldDef.like("i18nId", syI18n.i18nId),
-            QdslUtil.FieldDef.like("i18nKey", syI18n.i18nKey),
+            QdslUtil.FieldDef.like("i18nCategory", syI18n.i18nCategory), // 키 첫 세그먼트 필터 (common/error/link/paging 등)
+            QdslUtil.FieldDef.like("i18nDesc", syI18n.i18nDesc), // 키 설명 (번역자 참고용)
+            QdslUtil.FieldDef.like("i18nId", syI18n.i18nId), // 다국어ID 필터
+            QdslUtil.FieldDef.like("i18nKey", syI18n.i18nKey), // 다국어 키 필터 (예: common.bt.save, error.FORBIDDEN)
             /* 번역 본문으로도 찾을 수 있게 — "저장" 으로 검색해 해당 키를 찾는 용도 */
-            QdslUtil.FieldDef.like("i18nMsgKo", syI18n.i18nMsgKo),
-            QdslUtil.FieldDef.like("i18nMsgEn", syI18n.i18nMsgEn),
-            QdslUtil.FieldDef.like("i18nMsgCn", syI18n.i18nMsgCn),
-            QdslUtil.FieldDef.like("i18nMsgJa", syI18n.i18nMsgJa),
-            QdslUtil.FieldDef.like("i18nScopeCd", syI18n.i18nScopeCd),
-            QdslUtil.FieldDef.like("useYn", syI18n.useYn)
+            QdslUtil.FieldDef.like("i18nMsgKo", syI18n.i18nMsgKo), // 한국어 메시지 (플레이스홀더 {0},{1} 지원)
+            QdslUtil.FieldDef.like("i18nMsgEn", syI18n.i18nMsgEn), // 영어 메시지 (플레이스홀더 {0},{1} 지원)
+            QdslUtil.FieldDef.like("i18nMsgCn", syI18n.i18nMsgCn), // 중국어 메시지 (플레이스홀더 {0},{1} 지원)
+            QdslUtil.FieldDef.like("i18nMsgJa", syI18n.i18nMsgJa), // 일본어 메시지 (플레이스홀더 {0},{1} 지원)
+            QdslUtil.FieldDef.like("i18nScopeCd", syI18n.i18nScopeCd), // 적용범위 필터 — I18N_SCOPE_CD {FO:프론트, BO:관리자, COMMON:공통}
+            QdslUtil.FieldDef.like("useYn", syI18n.useYn) // 사용여부 필터 Y/N
         ));
     }
 

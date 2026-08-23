@@ -123,8 +123,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andDeptIdIn(search));
-        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
+        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus())); // 상태 검색값 — USER_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole())); // 역할ID 검색값 (sy_role.role_id)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("last_login_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -158,8 +158,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andDeptIdIn(search));
-        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
+        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus())); // 상태 검색값 — USER_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole())); // 역할ID 검색값 (sy_role.role_id)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("last_login_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -191,8 +191,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     public long selectCount(SyUserDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andDeptIdIn(search));
-        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
+        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus())); // 상태 검색값 — USER_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole())); // 역할ID 검색값 (sy_role.role_id)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("last_login_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -215,24 +215,21 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 : null;
     }
 
-    /* ============================================================
-     * 정렬조건 — sort 문자열 파싱 ("userId asc, regDate desc")
-     * ============================================================ */
-
+    /* searchType 예: "authMethodCd,deptId,loginId,loginPwdHash,profileAttachId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("authMethodCd", syUser.authMethodCd),
-            QdslUtil.FieldDef.like("deptId", syUser.deptId),
-            QdslUtil.FieldDef.like("loginId", syUser.loginId),
-            QdslUtil.FieldDef.like("loginPwdHash", syUser.loginPwdHash),
-            QdslUtil.FieldDef.like("profileAttachId", syUser.profileAttachId),
-            QdslUtil.FieldDef.like("roleId", syUser.roleId),
-            QdslUtil.FieldDef.like("userEmail", syUser.userEmail),
-            QdslUtil.FieldDef.like("userId", syUser.userId),
-            QdslUtil.FieldDef.like("userMemo", syUser.userMemo),
-            QdslUtil.FieldDef.like("userNm", syUser.userNm),
-            QdslUtil.FieldDef.like("userPhone", syUser.userPhone),
-            QdslUtil.FieldDef.like("userStatusCd", syUser.userStatusCd)
+            QdslUtil.FieldDef.like("authMethodCd", syUser.authMethodCd), // 인증방식 — AUTH_METHOD_CD
+            QdslUtil.FieldDef.like("deptId", syUser.deptId), // 부서ID 검색값
+            QdslUtil.FieldDef.like("loginId", syUser.loginId), // 로그인 아이디
+            QdslUtil.FieldDef.like("loginPwdHash", syUser.loginPwdHash), // 비밀번호 (bcrypt)
+            QdslUtil.FieldDef.like("profileAttachId", syUser.profileAttachId), // 프로필 첨부아이디
+            QdslUtil.FieldDef.like("roleId", syUser.roleId), // 역할ID (sy_role.role_id)
+            QdslUtil.FieldDef.like("userEmail", syUser.userEmail), // 이메일
+            QdslUtil.FieldDef.like("userId", syUser.userId), // 사용자ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("userMemo", syUser.userMemo), // 메모
+            QdslUtil.FieldDef.like("userNm", syUser.userNm), // 사용자명
+            QdslUtil.FieldDef.like("userPhone", syUser.userPhone), // 연락처
+            QdslUtil.FieldDef.like("userStatusCd", syUser.userStatusCd) // 상태 — USER_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
         ));
     }
 

@@ -85,9 +85,9 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()));
-        whereList.add(QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()));
-        whereList.add(QdslUtil.strEq(syTemplate.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syTemplate.templateId, search.getTemplateId())); // 템플릿ID 검색값
+        whereList.add(QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd())); // 템플릿유형 검색값
+        whereList.add(QdslUtil.strEq(syTemplate.useYn, search.getUseYn())); // 사용여부 검색값 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syTemplate.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syTemplate.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -120,9 +120,9 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()));
-        whereList.add(QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()));
-        whereList.add(QdslUtil.strEq(syTemplate.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syTemplate.templateId, search.getTemplateId())); // 템플릿ID 검색값
+        whereList.add(QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd())); // 템플릿유형 검색값
+        whereList.add(QdslUtil.strEq(syTemplate.useYn, search.getUseYn())); // 사용여부 검색값 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syTemplate.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syTemplate.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -148,8 +148,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -157,17 +155,18 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 : null;
     }
 
+    /* searchType 예: "pathId,sampleParams,templateCode,templateContent,templateId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("pathId", syTemplate.pathId),
-            QdslUtil.FieldDef.like("sampleParams", syTemplate.sampleParams),
-            QdslUtil.FieldDef.like("templateCode", syTemplate.templateCode),
-            QdslUtil.FieldDef.like("templateContent", syTemplate.templateContent),
-            QdslUtil.FieldDef.like("templateId", syTemplate.templateId),
-            QdslUtil.FieldDef.like("templateNm", syTemplate.templateNm),
-            QdslUtil.FieldDef.like("templateSubject", syTemplate.templateSubject),
-            QdslUtil.FieldDef.like("templateTypeCd", syTemplate.templateTypeCd),
-            QdslUtil.FieldDef.like("useYn", syTemplate.useYn)
+            QdslUtil.FieldDef.like("pathId", syTemplate.pathId), // 표시경로ID 검색값
+            QdslUtil.FieldDef.like("sampleParams", syTemplate.sampleParams), // 치환변수 예시 (JSON)
+            QdslUtil.FieldDef.like("templateCode", syTemplate.templateCode), // 템플릿코드 검색값
+            QdslUtil.FieldDef.like("templateContent", syTemplate.templateContent), // 내용 (치환변수 포함)
+            QdslUtil.FieldDef.like("templateId", syTemplate.templateId), // 템플릿ID 검색값
+            QdslUtil.FieldDef.like("templateNm", syTemplate.templateNm), // 템플릿명
+            QdslUtil.FieldDef.like("templateSubject", syTemplate.templateSubject), // 제목 (이메일용)
+            QdslUtil.FieldDef.like("templateTypeCd", syTemplate.templateTypeCd), // 템플릿유형 검색값
+            QdslUtil.FieldDef.like("useYn", syTemplate.useYn) // 사용여부 검색값 Y/N
         ));
     }
 

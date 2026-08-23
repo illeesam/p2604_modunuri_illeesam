@@ -37,7 +37,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMemberSns mbMemberSns    = QMbMemberSns.mbMemberSns;
     private static final QMbMember    mbMember  = QMbMember.mbMember;
-    private static final QVwSyCode      cdSc = new QVwSyCode("cd_sc");    /*
+    private static final QVwSyCode      codeSnsChannelCd = new QVwSyCode("cd_sc");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SNS_CHANNEL_CD (코드: SNS_CHANNEL_CD)  {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
      */
@@ -47,6 +47,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                         mbMemberSns.memberSnsId,   // SNS연동ID (PK)
                         mbMemberSns.memberId,      // 회원ID (mb_member.member_id)
                         mbMemberSns.snsChannelCd,  // SNS채널코드 — SNS_CHANNEL {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
+                        codeSnsChannelCd.codeLabel.as("snsChannelCdNm"), // SNS채널 코드 라벨
                         mbMemberSns.snsUserId,     // SNS 플랫폼 사용자ID
                         mbMemberSns.regBy,         // 등록자ID
                         mbMemberSns.regDate,        // 등록일시
@@ -58,7 +59,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 ))
                 .from(mbMemberSns)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId)) // 회원
-                .innerJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL_CD").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd))) // SNS채널
+                .innerJoin(codeSnsChannelCd).on(codeSnsChannelCd.codeGrp.eq("SNS_CHANNEL_CD").and(codeSnsChannelCd.codeValue.eq(mbMemberSns.snsChannelCd))) // SNS채널 (snsChannelCd NOT NULL 이라 innerJoin 안전)
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMemberSns.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMemberSns.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(mbMemberSns.siteId)) // 사이트
@@ -79,13 +80,13 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds()));
-        whereList.add(QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId()));
+        whereList.add(QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId())); // SNS연동ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberSns.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberSns.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -113,13 +114,13 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds()));
-        whereList.add(QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId()));
+        whereList.add(QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId())); // SNS연동ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberSns.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberSns.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery();
@@ -142,12 +143,13 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "memberId,memberSnsId,snsChannelCd,snsUserId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("memberId", mbMemberSns.memberId),
-            QdslUtil.FieldDef.like("memberSnsId", mbMemberSns.memberSnsId),
-            QdslUtil.FieldDef.like("snsChannelCd", mbMemberSns.snsChannelCd),
-            QdslUtil.FieldDef.like("snsUserId", mbMemberSns.snsUserId)
+            QdslUtil.FieldDef.like("memberId", mbMemberSns.memberId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("memberSnsId", mbMemberSns.memberSnsId), // SNS연동ID 필터
+            QdslUtil.FieldDef.like("snsChannelCd", mbMemberSns.snsChannelCd), // SNS채널코드 — SNS_CHANNEL_CD
+            QdslUtil.FieldDef.like("snsUserId", mbMemberSns.snsUserId) // SNS 플랫폼 사용자ID
         ));
     }
 

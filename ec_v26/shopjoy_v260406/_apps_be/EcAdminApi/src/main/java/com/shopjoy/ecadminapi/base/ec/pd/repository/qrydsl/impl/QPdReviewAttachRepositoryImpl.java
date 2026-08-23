@@ -82,14 +82,14 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     @Override
     public List<PdReviewAttachDto.Item> selectList(PdReviewAttachDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
-        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
-        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
-        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId())); // 미디어ID (단건 조회 필터)
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId())); // 상품ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId())); // 사이트ID (검색 필터)
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
@@ -118,14 +118,14 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()));
-        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()));
-        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()));
-        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId())); // 미디어ID (단건 조회 필터)
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId())); // 상품ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReviewAttach.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId())); // 사이트ID (검색 필터)
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin();
@@ -177,14 +177,14 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 ;
     }
 
-    /** 검색조건 빌드 — Mapper XML pdReviewAttachCond 와 동일 동작 */
+    /* searchType 예: "attachId,mediaTypeCd,reviewAttachId,reviewId,thumbUrl" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachId", pdReviewAttach.attachId),
-            QdslUtil.FieldDef.like("mediaTypeCd", pdReviewAttach.mediaTypeCd),
-            QdslUtil.FieldDef.like("reviewAttachId", pdReviewAttach.reviewAttachId),
-            QdslUtil.FieldDef.like("reviewId", pdReviewAttach.reviewId),
-            QdslUtil.FieldDef.like("thumbUrl", pdReviewAttach.thumbUrl)
+            QdslUtil.FieldDef.like("attachId", pdReviewAttach.attachId), // 첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회
+            QdslUtil.FieldDef.like("mediaTypeCd", pdReviewAttach.mediaTypeCd), // 미디어유형 — MEDIA_TYPE_CD {IMAGE:이미지, VIDEO:동영상, DOCUMENT:문서}
+            QdslUtil.FieldDef.like("reviewAttachId", pdReviewAttach.reviewAttachId), // 미디어ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("reviewId", pdReviewAttach.reviewId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("thumbUrl", pdReviewAttach.thumbUrl) // 동영상 썸네일URL (이미지는 sy_attach.url 사용)
         ));
     }
 

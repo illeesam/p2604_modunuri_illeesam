@@ -25,6 +25,7 @@ public class PdhProdSkuStockHistDto {
         private Integer stockAfter;  // 변경 후 재고수량
         private Integer chgQty;  // 변동수량 (양수=입고, 음수=출고/판매)
         private String chgReasonCd;  // 변동사유 — CHG_REASON_CD {SALE:판매, PURCHASE:입고, RETURN:반품, EXCHANGE:교환, ADJUST:조정, CLAIM:클레임, ADMIN:관리자조정}
+        private String chgReasonCdNm;  // 코드 라벨
         private String chgReason;  // 변동사유 상세
         private String orderItemId;  // 연관 주문상품ID (od_order_item.order_item_id, SALE/RETURN/EXCHANGE/CLAIM 시)
         private String chgBy;  // 처리자 (sy_user.user_id)

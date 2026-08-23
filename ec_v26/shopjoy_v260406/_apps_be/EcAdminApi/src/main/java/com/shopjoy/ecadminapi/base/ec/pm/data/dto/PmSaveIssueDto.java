@@ -22,6 +22,7 @@ public class PmSaveIssueDto {
         private String saveIssueId;  // 적립지급ID (YYMMDDhhmmss+rand4)
         private String memberId;  // 회원ID (mb_member.member_id)
         private String saveIssueTypeCd;  // 지급유형 (코드: SAVE_ISSUE_TYPE — ORDER/EVENT/REVIEW/REFERRAL/ADMIN)
+        private String saveIssueTypeCdNm;  // 코드 라벨
         private Long saveAmt;  // 지급 적립금액
         private BigDecimal saveRate;  // 적립률 (%, 구매적립 시)
         private String refTypeCd;  // 참조유형 (ORDER/EVENT/REVIEW/ADMIN)
@@ -31,6 +32,7 @@ public class PmSaveIssueDto {
         private String prodId;  // 상품ID (pd_prod.prod_id, 적립 기준 상품)
         private LocalDateTime expireDate;  // 소멸예정일
         private String issueStatusCd;  // 지급상태 (코드: SAVE_ISSUE_STATUS — PENDING/CONFIRMED/EXPIRED/CANCELED)
+        private String issueStatusCdNm;  // 코드 라벨
         private String issueStatusCdBefore;  // 변경 전 지급상태
         private String saveMemo;  // 지급 메모
         private String regBy;  // 등록자

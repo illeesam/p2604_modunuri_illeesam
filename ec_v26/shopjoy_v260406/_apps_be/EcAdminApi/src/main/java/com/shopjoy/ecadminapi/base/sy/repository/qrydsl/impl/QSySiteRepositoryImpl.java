@@ -43,8 +43,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSySite sySite = QSySite.sySite;
-    private static final QVwSyCode cdSt = new QVwSyCode("cd_st");
-    private static final QVwSyCode cdSs = new QVwSyCode("cd_ss");    /*
+    private static final QVwSyCode codeSiteTypeCd = new QVwSyCode("cd_st");
+    private static final QVwSyCode codeSiteStatusCd = new QVwSyCode("cd_ss");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SITE_TYPE   {EC: '이커머스', ADMIN: '관리자', API: 'API'}
      * SITE_STATUS {ACTIVE: '활성', MAINTENANCE: '점검중', INACTIVE: '비활성'}
@@ -73,15 +73,15 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                         sySite.updBy,            // 수정자
                         sySite.updDate,          // 수정일시
                         sySite.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
-                        cdSt.codeLabel.as("siteTypeCdNm"),     // 사이트유형 라벨 (sy_code SITE_TYPE 조인)
-                        cdSs.codeLabel.as("siteStatusCdNm"),    // 상태 라벨 (sy_code SITE_STATUS 조인)
+                        codeSiteTypeCd.codeLabel.as("siteTypeCdNm"),     // 사이트유형 라벨 (sy_code SITE_TYPE 조인)
+                        codeSiteStatusCd.codeLabel.as("siteStatusCdNm"),    // 상태 라벨 (sy_code SITE_STATUS 조인)
                         sySite.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(sySite)
-                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE_CD").and(cdSt.codeValue.eq(sySite.siteTypeCd))) // 사이트유형
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS_CD").and(cdSs.codeValue.eq(sySite.siteStatusCd))) // 사이트상태
+                .leftJoin(codeSiteTypeCd).on(codeSiteTypeCd.codeGrp.eq("SITE_TYPE_CD").and(codeSiteTypeCd.codeValue.eq(sySite.siteTypeCd))) // 사이트유형
+                .leftJoin(codeSiteStatusCd).on(codeSiteStatusCd.codeGrp.eq("SITE_STATUS_CD").and(codeSiteStatusCd.codeValue.eq(sySite.siteStatusCd))) // 사이트상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(sySite.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(sySite.regBy)) // 등록자
                 ;
@@ -103,8 +103,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(sySite.siteStatusCd, search.getStatus())); // 상태 검색값
+        whereList.add(QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd())); // 사이트유형 검색값 — SITE_TYPE_CD {EC:이커머스, ADMIN:관리자, API:API}
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(sySite.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(sySite.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -137,8 +137,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(sySite.siteStatusCd, search.getStatus())); // 상태 검색값
+        whereList.add(QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd())); // 사이트유형 검색값 — SITE_TYPE_CD {EC:이커머스, ADMIN:관리자, API:API}
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(sySite.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(sySite.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -164,8 +164,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -173,24 +171,25 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 : null;
     }
 
+    /* searchType 예: "configJson,faviconUrl,logoUrl,pathId,siteAddress" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("configJson", sySite.configJson),
-            QdslUtil.FieldDef.like("faviconUrl", sySite.faviconUrl),
-            QdslUtil.FieldDef.like("logoUrl", sySite.logoUrl),
-            QdslUtil.FieldDef.like("pathId", sySite.pathId),
-            QdslUtil.FieldDef.like("siteAddress", sySite.siteAddress),
-            QdslUtil.FieldDef.like("siteBusinessNo", sySite.siteBusinessNo),
-            QdslUtil.FieldDef.like("siteCeo", sySite.siteCeo),
-            QdslUtil.FieldDef.like("siteCode", sySite.siteCode),
-            QdslUtil.FieldDef.like("siteDesc", sySite.siteDesc),
-            QdslUtil.FieldDef.like("siteDomain", sySite.siteDomain),
-            QdslUtil.FieldDef.like("siteEmail", sySite.siteEmail),
-            QdslUtil.FieldDef.like("siteNm", sySite.siteNm),
-            QdslUtil.FieldDef.like("sitePhone", sySite.sitePhone),
-            QdslUtil.FieldDef.like("siteStatusCd", sySite.siteStatusCd),
-            QdslUtil.FieldDef.like("siteTypeCd", sySite.siteTypeCd),
-            QdslUtil.FieldDef.like("siteZipCode", sySite.siteZipCode)
+            QdslUtil.FieldDef.like("configJson", sySite.configJson), // 확장설정 (JSON)
+            QdslUtil.FieldDef.like("faviconUrl", sySite.faviconUrl), // 파비콘URL
+            QdslUtil.FieldDef.like("logoUrl", sySite.logoUrl), // 로고URL
+            QdslUtil.FieldDef.like("pathId", sySite.pathId), // 표시경로ID 검색값
+            QdslUtil.FieldDef.like("siteAddress", sySite.siteAddress), // 주소
+            QdslUtil.FieldDef.like("siteBusinessNo", sySite.siteBusinessNo), // 사업자번호
+            QdslUtil.FieldDef.like("siteCeo", sySite.siteCeo), // 대표자명
+            QdslUtil.FieldDef.like("siteCode", sySite.siteCode), // 사이트코드
+            QdslUtil.FieldDef.like("siteDesc", sySite.siteDesc), // 사이트설명
+            QdslUtil.FieldDef.like("siteDomain", sySite.siteDomain), // 도메인
+            QdslUtil.FieldDef.like("siteEmail", sySite.siteEmail), // 대표이메일
+            QdslUtil.FieldDef.like("siteNm", sySite.siteNm), // 사이트명
+            QdslUtil.FieldDef.like("sitePhone", sySite.sitePhone), // 대표전화
+            QdslUtil.FieldDef.like("siteStatusCd", sySite.siteStatusCd), // 상태 — SITE_STATUS_CD
+            QdslUtil.FieldDef.like("siteTypeCd", sySite.siteTypeCd), // 사이트유형 — SITE_TYPE_CD {EC:이커머스, ADMIN:관리자, API:API}
+            QdslUtil.FieldDef.like("siteZipCode", sySite.siteZipCode) // 우편번호
         ));
     }
 

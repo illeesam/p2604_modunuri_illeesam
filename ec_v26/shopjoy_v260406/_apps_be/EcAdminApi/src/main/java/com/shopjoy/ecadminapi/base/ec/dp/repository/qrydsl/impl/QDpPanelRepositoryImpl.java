@@ -95,17 +95,17 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     public List<DpPanelDto.Item> selectList(DpPanelDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId()));
-        whereList.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()));
+        whereList.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId())); // 영역ID 필터
+        whereList.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds())); // 상위 FK 다건 IN
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId()));
-        whereList.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()));
-        whereList.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()));
-        whereList.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId())); // 패널ID 필터
+        whereList.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd())); // 전시상태 필터 — DISP_PANEL_STATUS_CD {SHOW:노출, HIDE:숨김}
+        whereList.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd())); // 표시유형 필터
+        whereList.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpPanel.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpPanel.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -133,17 +133,17 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId()));
-        whereList.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()));
+        whereList.add(QdslUtil.strEq(dpPanel.areaId, search.getAreaId())); // 영역ID 필터
+        whereList.add(QdslUtil.strIn(dpPanel.areaId, search.getAreaIds())); // 상위 FK 다건 IN
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId()));
-        whereList.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()));
-        whereList.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()));
-        whereList.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpPanel.panelId, search.getPanelId())); // 패널ID 필터
+        whereList.add(QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd())); // 전시상태 필터 — DISP_PANEL_STATUS_CD {SHOW:노출, HIDE:숨김}
+        whereList.add(QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd())); // 표시유형 필터
+        whereList.add(QdslUtil.strEq(dpPanel.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpPanel.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpPanel.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
 
@@ -162,8 +162,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         BasePage<DpPanelDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -171,17 +169,18 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 : null;
     }
 
+    /* searchType 예: "contentJson,dispPanelStatusCd,dispPanelStatusCdBefore,panelId,panelNm" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("contentJson", dpPanel.contentJson),
-            QdslUtil.FieldDef.like("dispPanelStatusCd", dpPanel.dispPanelStatusCd),
-            QdslUtil.FieldDef.like("dispPanelStatusCdBefore", dpPanel.dispPanelStatusCdBefore),
-            QdslUtil.FieldDef.like("panelId", dpPanel.panelId),
-            QdslUtil.FieldDef.like("panelNm", dpPanel.panelNm),
-            QdslUtil.FieldDef.like("panelTypeCd", dpPanel.panelTypeCd),
-            QdslUtil.FieldDef.like("pathId", dpPanel.pathId),
-            QdslUtil.FieldDef.like("useYn", dpPanel.useYn),
-            QdslUtil.FieldDef.like("visibilityTargets", dpPanel.visibilityTargets)
+            QdslUtil.FieldDef.like("contentJson", dpPanel.contentJson), // 패널콘텐츠 (JSON - 위젯 목록 및 설정)
+            QdslUtil.FieldDef.like("dispPanelStatusCd", dpPanel.dispPanelStatusCd), // 전시상태 필터 — DISP_PANEL_STATUS_CD {SHOW:노출, HIDE:숨김}
+            QdslUtil.FieldDef.like("dispPanelStatusCdBefore", dpPanel.dispPanelStatusCdBefore), // 변경 전 패널상태 — DISP_PANEL_STATUS_CD {SHOW:노출, HIDE:숨김}
+            QdslUtil.FieldDef.like("panelId", dpPanel.panelId), // 패널ID 필터
+            QdslUtil.FieldDef.like("panelNm", dpPanel.panelNm), // 패널명
+            QdslUtil.FieldDef.like("panelTypeCd", dpPanel.panelTypeCd), // 표시유형 필터
+            QdslUtil.FieldDef.like("pathId", dpPanel.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("useYn", dpPanel.useYn), // 사용여부 Y/N 필터
+            QdslUtil.FieldDef.like("visibilityTargets", dpPanel.visibilityTargets) // 공개대상 (^CODE^CODE^ 형식)
         ));
     }
 

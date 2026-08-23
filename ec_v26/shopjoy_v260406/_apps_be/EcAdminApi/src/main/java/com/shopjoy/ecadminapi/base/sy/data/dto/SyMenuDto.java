@@ -30,6 +30,7 @@ public class SyMenuDto {
         private String parentMenuId;  // 상위메뉴ID
         private String menuUrl;  // 메뉴URL
         private String menuTypeCd;  // 메뉴유형 (코드: MENU_TYPE — PAGE/FOLDER/LINK)
+        private String menuTypeCdNm;  // 코드 라벨
         private String iconClass;  // 아이콘 CSS 클래스
         private Integer sortOrd;  // 정렬순서
         private String useYn;  // 사용여부 Y/N

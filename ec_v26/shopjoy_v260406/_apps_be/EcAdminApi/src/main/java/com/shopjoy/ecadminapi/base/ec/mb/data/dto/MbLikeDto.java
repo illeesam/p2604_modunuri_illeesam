@@ -26,6 +26,7 @@ public class MbLikeDto {
         private String likeId;                 // 좋아요ID (YYMMDDhhmmss+rand4)
         private String memberId;               // 회원ID (mb_member.member_id)
         private String targetTypeCd;            // 대상유형 — LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
+        private String targetTypeCdNm;  // 코드 라벨
         private String targetId;                // 대상ID
         private String regBy;                   // 등록자
         private LocalDateTime regDate;          // 등록일시

@@ -41,8 +41,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private static final QStSettlePay stSettlePay     = QStSettlePay.stSettlePay;
     private static final QSyVendor    syVendor   = QSyVendor.syVendor;
     private static final QSySite      sySite   = QSySite.sySite;
-    private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");
-    private static final QVwSyCode      cdSps = new QVwSyCode("cd_sps");    /*
+    private static final QVwSyCode      codePayMethodCd = new QVwSyCode("cd_pmc");
+    private static final QVwSyCode      codePayStatusCd = new QVwSyCode("cd_sps");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * PAY_METHOD_CD      (Entity 주석 명시값 없음. sy_code 에도 'PAY_METHOD_CD' 그룹 데이터 없음 —
      *                      od_refund_method.pay_method_cd DDL 코멘트 기준 유사 코드그룹 'PAY_METHOD' 값 참고: BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
@@ -69,16 +69,16 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                         stSettlePay.updBy,                 // 수정자
                         stSettlePay.updDate,               // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
-                        cdPmc.codeLabel.as("payMethodCdNm"),            // 지급수단명 (sy_code 조인)
-                        cdSps.codeLabel.as("payStatusCdNm"),             // 지급상태명 (sy_code 조인)
+                        codePayMethodCd.codeLabel.as("payMethodCdNm"),            // 지급수단명 (sy_code 조인)
+                        codePayStatusCd.codeLabel.as("payStatusCdNm"),             // 지급상태명 (sy_code 조인)
                         stSettlePay.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettlePay)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId)) // 업체
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd))) // 결제수단
-                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd))) // 정산지급상태
+                .leftJoin(codePayMethodCd).on(codePayMethodCd.codeGrp.eq("PAY_METHOD").and(codePayMethodCd.codeValue.eq(stSettlePay.payMethodCd))) // 결제수단
+                .leftJoin(codePayStatusCd).on(codePayStatusCd.codeGrp.eq("SETTLE_PAY_STATUS").and(codePayStatusCd.codeValue.eq(stSettlePay.payStatusCd))) // 정산지급상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettlePay.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettlePay.regBy)) // 등록자
                 ;
@@ -99,8 +99,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()));
-        whereList.add(QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()));
+        whereList.add(QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId())); // 정산지급ID 필터
+        whereList.add(QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd())); // 지급상태 필터 — SETTLE_PAY_STATUS (PENDING/COMPLT/FAILED)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettlePay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettlePay.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -132,8 +132,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()));
-        whereList.add(QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()));
+        whereList.add(QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId())); // 정산지급ID 필터
+        whereList.add(QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd())); // 지급상태 필터 — SETTLE_PAY_STATUS (PENDING/COMPLT/FAILED)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettlePay.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettlePay.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -159,20 +159,20 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "bankAccount,bankHolder,bankNm,payBy,payMethodCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bankAccount", stSettlePay.bankAccount),
-            QdslUtil.FieldDef.like("bankHolder", stSettlePay.bankHolder),
-            QdslUtil.FieldDef.like("bankNm", stSettlePay.bankNm),
-            QdslUtil.FieldDef.like("payBy", stSettlePay.payBy),
-            QdslUtil.FieldDef.like("payMethodCd", stSettlePay.payMethodCd),
-            QdslUtil.FieldDef.like("payStatusCd", stSettlePay.payStatusCd),
-            QdslUtil.FieldDef.like("payStatusCdBefore", stSettlePay.payStatusCdBefore),
-            QdslUtil.FieldDef.like("settleId", stSettlePay.settleId),
-            QdslUtil.FieldDef.like("settlePayId", stSettlePay.settlePayId),
-            QdslUtil.FieldDef.like("settlePayMemo", stSettlePay.settlePayMemo),
-            QdslUtil.FieldDef.like("vendorId", stSettlePay.vendorId)
+            QdslUtil.FieldDef.like("bankAccount", stSettlePay.bankAccount), // 계좌번호
+            QdslUtil.FieldDef.like("bankHolder", stSettlePay.bankHolder), // 예금주
+            QdslUtil.FieldDef.like("bankNm", stSettlePay.bankNm), // 은행명
+            QdslUtil.FieldDef.like("payBy", stSettlePay.payBy), // 지급처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("payMethodCd", stSettlePay.payMethodCd), // 지급수단 — PAY_METHOD
+            QdslUtil.FieldDef.like("payStatusCd", stSettlePay.payStatusCd), // 지급상태 필터 — SETTLE_PAY_STATUS (PENDING/COMPLT/FAILED)
+            QdslUtil.FieldDef.like("payStatusCdBefore", stSettlePay.payStatusCdBefore), // 변경 전 상태
+            QdslUtil.FieldDef.like("settleId", stSettlePay.settleId), // 정산ID (st_settle.settle_id)
+            QdslUtil.FieldDef.like("settlePayId", stSettlePay.settlePayId), // 정산지급ID 필터
+            QdslUtil.FieldDef.like("settlePayMemo", stSettlePay.settlePayMemo), // 메모
+            QdslUtil.FieldDef.like("vendorId", stSettlePay.vendorId) // 업체ID (sy_vendor.vendor_id)
         ));
     }
 

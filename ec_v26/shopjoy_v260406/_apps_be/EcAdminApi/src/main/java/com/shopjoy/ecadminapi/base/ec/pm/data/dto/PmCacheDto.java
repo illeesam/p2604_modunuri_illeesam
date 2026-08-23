@@ -26,6 +26,7 @@ public class PmCacheDto {
         private String memberId;         // 회원ID
         private String memberNm;         // 회원명
         private String cacheTypeCd;      // 유형 — CACHE_TYPE_CD {EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸, ADMIN_ADJ:관리자조정, BONUS:보너스, CHARGE:충전 외 1개}
+        private String cacheTypeCdNm;  // 코드 라벨
         private Long cacheAmt;           // 금액 (양수:적립 / 음수:차감)
         private Long balanceAmt;         // 처리후 잔액
         private String refId;            // 참조ID (주문ID 등)

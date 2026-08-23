@@ -81,13 +81,13 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdRel.prodRelId, search.getProdRelId()));
-        whereList.add(QdslUtil.strEq(pdProdRel.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdRel.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pdProdRel.prodRelId, search.getProdRelId())); // 연관관계ID 필터
+        whereList.add(QdslUtil.strEq(pdProdRel.prodId, search.getProdId())); // 기준 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdRel.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdRel.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdRel.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -116,13 +116,13 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdRel.prodRelId, search.getProdRelId()));
-        whereList.add(QdslUtil.strEq(pdProdRel.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdRel.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pdProdRel.prodRelId, search.getProdRelId())); // 연관관계ID 필터
+        whereList.add(QdslUtil.strEq(pdProdRel.prodId, search.getProdId())); // 기준 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdRel.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdRel.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdRel.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdRel.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdRelDto.Item> query = baseSelColumnQuery();
@@ -146,14 +146,14 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
     }
 
     /** 단건/목록/페이지 공용 base query */
-    /** 검색조건 빌드 — Mapper XML pdProdRelCond 와 동일 동작 (DTO Request 필드 한정) */
+    /* searchType 예: "prodId,prodRelId,prodRelTypeCd,relProdId,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("prodId", pdProdRel.prodId),
-            QdslUtil.FieldDef.like("prodRelId", pdProdRel.prodRelId),
-            QdslUtil.FieldDef.like("prodRelTypeCd", pdProdRel.prodRelTypeCd),
-            QdslUtil.FieldDef.like("relProdId", pdProdRel.relProdId),
-            QdslUtil.FieldDef.like("useYn", pdProdRel.useYn)
+            QdslUtil.FieldDef.like("prodId", pdProdRel.prodId), // 기준 상품ID 필터
+            QdslUtil.FieldDef.like("prodRelId", pdProdRel.prodRelId), // 연관관계ID 필터
+            QdslUtil.FieldDef.like("prodRelTypeCd", pdProdRel.prodRelTypeCd), // 관계유형 코드 (PROD_REL_TYPE: REL_PROD:연관상품/CODY_PROD:코디상품)
+            QdslUtil.FieldDef.like("relProdId", pdProdRel.relProdId), // 연관 대상 상품ID (pd_prod.prod_id)
+            QdslUtil.FieldDef.like("useYn", pdProdRel.useYn) // 사용여부 필터 Y/N
         ));
     }
 

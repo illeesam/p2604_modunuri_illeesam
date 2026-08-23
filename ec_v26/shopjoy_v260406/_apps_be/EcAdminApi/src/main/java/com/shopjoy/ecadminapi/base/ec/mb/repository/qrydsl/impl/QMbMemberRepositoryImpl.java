@@ -39,8 +39,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMember mbMember     = QMbMember.mbMember;
     private static final QSySite   sySite     = QSySite.sySite;
-    private static final QVwSyCode   cdGr  = new QVwSyCode("cd_gr");
-    private static final QVwSyCode   cdMs  = new QVwSyCode("cd_ms");    /*
+    private static final QVwSyCode   codeGradeCd  = new QVwSyCode("cd_gr");
+    private static final QVwSyCode   codeMemberStatusCd  = new QVwSyCode("cd_ms");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GRADE_CD (코드: MEMBER_GRADE)          {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
      * MEMBER_STATUS_CD (코드: MEMBER_STATUS_CD) {ACTIVE: '활성', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴'}
@@ -72,8 +72,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                         mbMember.regDate,                 // 등록일
                         mbMember.updBy,                   // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbMember.updDate,                 // 수정일
-                        cdGr.codeLabel.as("gradeCdNm"),                // 등급 코드라벨 (sy_code MEMBER_GRADE 조인)
-                        cdMs.codeLabel.as("memberStatusCdNm"),          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
+                        codeGradeCd.codeLabel.as("gradeCdNm"),                // 등급 코드라벨 (sy_code MEMBER_GRADE 조인)
+                        codeMemberStatusCd.codeLabel.as("memberStatusCdNm"),          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
                         mbMember.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -81,8 +81,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                         siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbMember)
-                .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd))) // 회원등급
-                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS_CD").and(cdMs.codeValue.eq(mbMember.memberStatusCd))) // 회원상태
+                .leftJoin(codeGradeCd).on(codeGradeCd.codeGrp.eq("MEMBER_GRADE").and(codeGradeCd.codeValue.eq(mbMember.gradeCd))) // 회원등급
+                .leftJoin(codeMemberStatusCd).on(codeMemberStatusCd.codeGrp.eq("MEMBER_STATUS_CD").and(codeMemberStatusCd.codeValue.eq(mbMember.memberStatusCd))) // 회원상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMember.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMember.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(mbMember.siteId)) // 사이트
@@ -105,14 +105,14 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()));
-        whereList.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()));
+        whereList.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd())); // 등급 드롭다운 — MEMBER_GRADE
+        whereList.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd())); // 상태 드롭다운 — MEMBER_STATUS_CD
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMember.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMember.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -141,14 +141,14 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()));
-        whereList.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()));
+        whereList.add(QdslUtil.strEq(mbMember.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd())); // 등급 드롭다운 — MEMBER_GRADE
+        whereList.add(QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd())); // 상태 드롭다운 — MEMBER_STATUS_CD
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("join_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMember.joinDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMember.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMember.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery();
@@ -172,23 +172,23 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     }
 
     /** 공용 base query */
-    /* searchType 사용 예  searchType = "memberId,memberNm,loginId,memberPhone" (Entity 필드명) */
+    /* searchType 예: "gradeCd,loginId,loginPwdHash,memberAddr,memberAddrDetail" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("gradeCd", mbMember.gradeCd),
-            QdslUtil.FieldDef.like("loginId", mbMember.loginId),
+            QdslUtil.FieldDef.like("gradeCd", mbMember.gradeCd), // 등급 드롭다운 — MEMBER_GRADE
+            QdslUtil.FieldDef.like("loginId", mbMember.loginId), // 이메일 (로그인 ID)
             QdslUtil.FieldDef.like("loginPwdHash", mbMember.loginPwdHash),
-            QdslUtil.FieldDef.like("memberAddr", mbMember.memberAddr),
-            QdslUtil.FieldDef.like("memberAddrDetail", mbMember.memberAddrDetail),
-            QdslUtil.FieldDef.like("memberEmail", mbMember.memberEmail),
-            QdslUtil.FieldDef.like("memberGender", mbMember.memberGender),
-            QdslUtil.FieldDef.like("memberId", mbMember.memberId),
-            QdslUtil.FieldDef.like("memberMemo", mbMember.memberMemo),
-            QdslUtil.FieldDef.like("memberNm", mbMember.memberNm),
-            QdslUtil.FieldDef.like("memberPhone", mbMember.memberPhone),
-            QdslUtil.FieldDef.like("memberStatusCd", mbMember.memberStatusCd),
-            QdslUtil.FieldDef.like("memberStatusCdBefore", mbMember.memberStatusCdBefore),
-            QdslUtil.FieldDef.like("memberZipCode", mbMember.memberZipCode)
+            QdslUtil.FieldDef.like("memberAddr", mbMember.memberAddr), // 주소
+            QdslUtil.FieldDef.like("memberAddrDetail", mbMember.memberAddrDetail), // 상세주소
+            QdslUtil.FieldDef.like("memberEmail", mbMember.memberEmail), // 회원 이메일 (수신용, 로그인ID와 별개)
+            QdslUtil.FieldDef.like("memberGender", mbMember.memberGender), // 성별 M/F
+            QdslUtil.FieldDef.like("memberId", mbMember.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("memberMemo", mbMember.memberMemo), // 메모
+            QdslUtil.FieldDef.like("memberNm", mbMember.memberNm), // 회원명
+            QdslUtil.FieldDef.like("memberPhone", mbMember.memberPhone), // 연락처
+            QdslUtil.FieldDef.like("memberStatusCd", mbMember.memberStatusCd), // 상태 드롭다운 — MEMBER_STATUS_CD
+            QdslUtil.FieldDef.like("memberStatusCdBefore", mbMember.memberStatusCdBefore), // 변경 전 회원상태 — MEMBER_STATUS_CD
+            QdslUtil.FieldDef.like("memberZipCode", mbMember.memberZipCode) // 우편번호
         ));
     }
 

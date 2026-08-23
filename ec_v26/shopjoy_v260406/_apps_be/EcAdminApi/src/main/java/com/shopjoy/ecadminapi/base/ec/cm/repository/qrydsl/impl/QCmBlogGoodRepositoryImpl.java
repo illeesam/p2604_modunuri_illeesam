@@ -61,7 +61,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     public List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId()));
+        whereList.add(QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId())); // 좋아요ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogGood.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogGood.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -92,7 +92,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId()));
+        whereList.add(QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId())); // 좋아요ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogGood.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogGood.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -118,12 +118,12 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /** 검색조건 빌드 */
+    /* searchType 예: "blogId,blogGoodId,userId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("blogId", cmBlogGood.blogId),
-            QdslUtil.FieldDef.like("blogGoodId", cmBlogGood.blogGoodId),
-            QdslUtil.FieldDef.like("userId", cmBlogGood.userId)
+            QdslUtil.FieldDef.like("blogId", cmBlogGood.blogId), // 블로그ID (cm_blog.blog_id)
+            QdslUtil.FieldDef.like("blogGoodId", cmBlogGood.blogGoodId), // 좋아요ID 필터
+            QdslUtil.FieldDef.like("userId", cmBlogGood.userId) // 사용자ID (sy_member.user_id)
         ));
     }
 

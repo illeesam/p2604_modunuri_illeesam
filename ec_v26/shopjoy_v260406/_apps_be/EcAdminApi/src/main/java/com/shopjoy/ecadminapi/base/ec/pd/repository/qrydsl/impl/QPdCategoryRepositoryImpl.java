@@ -45,7 +45,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     }
     private static final QPdCategory p1  = new QPdCategory("p1");
     private static final QPdCategory p2  = new QPdCategory("p2");
-    private static final QVwSyCode     cdCs = new QVwSyCode("cd_cs");
+    private static final QVwSyCode     codeCategoryStatusCd = new QVwSyCode("cd_cs");
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -70,7 +70,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                         pdCategory.updDate,    // 수정일시
                         p1.categoryNm.as("parentCategoryNm"),           // 상위 카테고리명 (조인)
                         p2.categoryNm.as("grandParentCategoryNm"),      // 최상위(조부모) 카테고리명 (조인)
-                        cdCs.codeLabel.as("categoryStatusCdNm"),         // 카테고리상태 코드라벨 (조인, sy_code.USE_YN)
+                        codeCategoryStatusCd.codeLabel.as("categoryStatusCdNm"),         // 카테고리상태 코드라벨 (조인, sy_code.USE_YN)
                         pdCategory.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -80,7 +80,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 .from(pdCategory)
                 .leftJoin(p1).on(p1.categoryId.eq(pdCategory.parentCategoryId)) // 카테고리
                 .leftJoin(p2).on(p2.categoryId.eq(p1.parentCategoryId)) // 카테고리
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("USE_YN").and(cdCs.codeValue.eq(pdCategory.categoryStatusCd))) // 사용여부
+                .leftJoin(codeCategoryStatusCd).on(codeCategoryStatusCd.codeGrp.eq("USE_YN").and(codeCategoryStatusCd.codeValue.eq(pdCategory.categoryStatusCd))) // 사용여부
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdCategory.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pdCategory.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pdCategory.siteId)) // 사이트
@@ -103,11 +103,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()));
+        whereList.add(QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId())); // 카테고리ID 필터
         whereList.add(andParentCategoryIdIn(search));
-        whereList.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus())); // 카테고리상태 필터 — CATEGORY_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdCategory.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdCategory.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -136,11 +136,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()));
+        whereList.add(QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId())); // 카테고리ID 필터
         whereList.add(andParentCategoryIdIn(search));
-        whereList.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus())); // 카테고리상태 필터 — CATEGORY_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdCategory.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdCategory.siteId, search.getSiteId())); // 사이트ID 필터
 
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery();
 
@@ -164,8 +164,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     }
 
     /** 단건/목록/페이지 공용 base query */
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
     private BooleanExpression andParentCategoryIdIn(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCategoryId())
@@ -173,15 +171,16 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 : null;
     }
 
+    /* searchType 예: "categoryDesc,categoryId,categoryNm,categoryStatusCd,categoryStatusCdBefore" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("categoryDesc", pdCategory.categoryDesc),
-            QdslUtil.FieldDef.like("categoryId", pdCategory.categoryId),
-            QdslUtil.FieldDef.like("categoryNm", pdCategory.categoryNm),
-            QdslUtil.FieldDef.like("categoryStatusCd", pdCategory.categoryStatusCd),
-            QdslUtil.FieldDef.like("categoryStatusCdBefore", pdCategory.categoryStatusCdBefore),
-            QdslUtil.FieldDef.like("imgUrl", pdCategory.imgUrl),
-            QdslUtil.FieldDef.like("parentCategoryId", pdCategory.parentCategoryId)
+            QdslUtil.FieldDef.like("categoryDesc", pdCategory.categoryDesc), // 설명
+            QdslUtil.FieldDef.like("categoryId", pdCategory.categoryId), // 카테고리ID 필터
+            QdslUtil.FieldDef.like("categoryNm", pdCategory.categoryNm), // 카테고리명
+            QdslUtil.FieldDef.like("categoryStatusCd", pdCategory.categoryStatusCd), // 상태 — CATEGORY_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+            QdslUtil.FieldDef.like("categoryStatusCdBefore", pdCategory.categoryStatusCdBefore), // 변경 전 카테고리상태 — CATEGORY_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+            QdslUtil.FieldDef.like("imgUrl", pdCategory.imgUrl), // 이미지URL
+            QdslUtil.FieldDef.like("parentCategoryId", pdCategory.parentCategoryId) // 상위 카테고리ID 필터
         ));
     }
 

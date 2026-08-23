@@ -24,7 +24,9 @@ public class PdDlivTmpltDto {
         private String vendorId;            // 업체ID (sy_vendor.vendor_id)
         private String dlivTmpltNm;         // 템플릿명
         private String dlivMethodCd;        // 배송방법코드 — DLIV_METHOD_CD {COURIER:택배, DIRECT:직접배송, PICKUP:방문수령}
+        private String dlivMethodCdNm;  // 코드 라벨
         private String dlivPayTypeCd;       // 배송비결제유형 — DLIV_PAY_TYPE_CD {PREPAY:선불, COD:착불}
+        private String dlivPayTypeCdNm;  // 코드 라벨
         private String dlivCourierCd;       // 배송 택배사 코드
         private Long dlivCost;              // 기본 배송비
         private Long freeDlivMinAmt;        // 무료배송 최소 주문금액

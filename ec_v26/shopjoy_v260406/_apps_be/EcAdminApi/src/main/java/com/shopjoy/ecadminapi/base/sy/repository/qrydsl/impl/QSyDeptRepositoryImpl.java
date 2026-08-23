@@ -44,7 +44,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         this.syDeptRepository = syDeptRepository;
     }
     private static final QSyUser syUser = QSyUser.syUser;
-    private static final QVwSyCode cdDt = new QVwSyCode("cd_dt");    /*
+    private static final QVwSyCode codeDeptTypeCd = new QVwSyCode("cd_dt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * DEPT_TYPE {HQ: '본사', DEV: '개발팀', DEV_BACKEND: '백엔드', DEV_FRONTEND: '프론트엔드', MKT: '마케팅팀', LOGIS: '물류팀'}
      * USE_YN    {Y: '사용', N: '미사용'}
@@ -57,6 +57,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                         syDept.deptNm,         // 부서명
                         syDept.parentDeptId,   // 상위부서ID
                         syDept.deptTypeCd,     // 부서유형 — DEPT_TYPE {HQ: '본사', DEV: '개발팀', DEV_BACKEND: '백엔드', DEV_FRONTEND: '프론트엔드', MKT: '마케팅팀', LOGIS: '물류팀'}
+                        codeDeptTypeCd.codeLabel.as("deptTypeCdNm"), // 코드 라벨
                         syDept.managerId,      // 부서장 (sy_user.user_id)
                         syDept.sortOrd,        // 정렬순서
                         syDept.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
@@ -71,7 +72,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 ))
                 .from(syDept)
                 .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId)) // 사용자
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE_CD").and(cdDt.codeValue.eq(syDept.deptTypeCd))) // 부서유형
+                .leftJoin(codeDeptTypeCd).on(codeDeptTypeCd.codeGrp.eq("DEPT_TYPE_CD").and(codeDeptTypeCd.codeValue.eq(syDept.deptTypeCd))) // 부서유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syDept.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syDept.regBy)) // 등록자
                 ;
@@ -93,8 +94,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andParentDeptIdIn(search));
-        whereList.add(QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()));
-        whereList.add(QdslUtil.strEq(syDept.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd())); // 부서유형 필터
+        whereList.add(QdslUtil.strEq(syDept.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syDept.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syDept.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -126,8 +127,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andParentDeptIdIn(search));
-        whereList.add(QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()));
-        whereList.add(QdslUtil.strEq(syDept.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd())); // 부서유형 필터
+        whereList.add(QdslUtil.strEq(syDept.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syDept.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syDept.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -153,8 +154,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 포함 (자기참조 재귀 CTE) */
     private BooleanExpression andParentDeptIdIn(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentDeptId())
@@ -162,16 +161,17 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 : null;
     }
 
+    /* searchType 예: "deptCode,deptId,deptNm,deptRemark,deptTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("deptCode", syDept.deptCode),
-            QdslUtil.FieldDef.like("deptId", syDept.deptId),
-            QdslUtil.FieldDef.like("deptNm", syDept.deptNm),
-            QdslUtil.FieldDef.like("deptRemark", syDept.deptRemark),
-            QdslUtil.FieldDef.like("deptTypeCd", syDept.deptTypeCd),
-            QdslUtil.FieldDef.like("managerId", syDept.managerId),
-            QdslUtil.FieldDef.like("parentDeptId", syDept.parentDeptId),
-            QdslUtil.FieldDef.like("useYn", syDept.useYn)
+            QdslUtil.FieldDef.like("deptCode", syDept.deptCode), // 부서코드
+            QdslUtil.FieldDef.like("deptId", syDept.deptId), // 부서ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("deptNm", syDept.deptNm), // 부서명
+            QdslUtil.FieldDef.like("deptRemark", syDept.deptRemark), // 비고
+            QdslUtil.FieldDef.like("deptTypeCd", syDept.deptTypeCd), // 부서유형 — DEPT_TYPE_CD
+            QdslUtil.FieldDef.like("managerId", syDept.managerId), // 부서장 (sy_user.user_id)
+            QdslUtil.FieldDef.like("parentDeptId", syDept.parentDeptId), // 상위부서ID 필터
+            QdslUtil.FieldDef.like("useYn", syDept.useYn) // 사용여부 필터 Y/N
         ));
     }
 

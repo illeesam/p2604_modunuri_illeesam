@@ -40,7 +40,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private static final QPmGiftCond pmGiftCond    = QPmGiftCond.pmGiftCond;
     private static final QPmGift     pmGift  = QPmGift.pmGift;
     private static final QSySite     sySite  = QSySite.sySite;
-    private static final QVwSyCode     cdGct = new QVwSyCode("cd_gct");    /*
+    private static final QVwSyCode     codeCondTypeCd = new QVwSyCode("cd_gct");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GIFT_COND_TYPE  {ORDER_AMT: '주문금액', PRODUCT: '특정상품', MEMBER_GRADE: '회원등급'}
      * targetTypeCd    {PRODUCT: '상품', CATEGORY: '카테고리', MEMBER_GRADE: '회원등급'} (Entity 주석 기준)
@@ -51,6 +51,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                         pmGiftCond.giftCondId,     // 사은품조건ID (PK)
                         pmGiftCond.giftId,         // 사은품ID (pm_gift.gift_id)
                         pmGiftCond.condTypeCd,     // 조건유형 — GIFT_COND_TYPE {ORDER_AMT: '주문금액', PRODUCT: '특정상품', MEMBER_GRADE: '회원등급'}
+                        codeCondTypeCd.codeLabel.as("condTypeCdNm"), // 코드 라벨
                         pmGiftCond.minOrderAmt,    // 최소주문금액 (ORDER_AMT 조건)
                         pmGiftCond.targetTypeCd,   // 대상유형 — PRODUCT/CATEGORY/MEMBER_GRADE
                         pmGiftCond.targetId,       // 대상ID
@@ -64,7 +65,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 ))
                 .from(pmGiftCond)
                 .innerJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId)) // 사은품
-                .innerJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd))) // 조건유형
+                .innerJoin(codeCondTypeCd).on(codeCondTypeCd.codeGrp.eq("COND_TYPE_CD").and(codeCondTypeCd.codeValue.eq(pmGiftCond.condTypeCd))) // 조건유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmGiftCond.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmGiftCond.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmGiftCond.siteId)) // 사이트
@@ -87,14 +88,14 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()));
+        whereList.add(QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId())); // 사은품조건ID 필터
+        whereList.add(QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId())); // 사은품ID 필터 (pm_gift.gift_id)
+        whereList.add(QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd())); // 대상유형 필터 (PRODUCT/CATEGORY/MEMBER_GRADE)
+        whereList.add(QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId())); // 대상ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -123,14 +124,14 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()));
+        whereList.add(QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId())); // 사은품조건ID 필터
+        whereList.add(QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId())); // 사은품ID 필터 (pm_gift.gift_id)
+        whereList.add(QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd())); // 대상유형 필터 (PRODUCT/CATEGORY/MEMBER_GRADE)
+        whereList.add(QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId())); // 대상ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGiftCond.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery();
@@ -153,13 +154,14 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "condTypeCd,giftCondId,giftId,targetId,targetTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("condTypeCd", pmGiftCond.condTypeCd),
-            QdslUtil.FieldDef.like("giftCondId", pmGiftCond.giftCondId),
-            QdslUtil.FieldDef.like("giftId", pmGiftCond.giftId),
-            QdslUtil.FieldDef.like("targetId", pmGiftCond.targetId),
-            QdslUtil.FieldDef.like("targetTypeCd", pmGiftCond.targetTypeCd)
+            QdslUtil.FieldDef.like("condTypeCd", pmGiftCond.condTypeCd), // 조건유형 — COND_TYPE_CD
+            QdslUtil.FieldDef.like("giftCondId", pmGiftCond.giftCondId), // 사은품조건ID 필터
+            QdslUtil.FieldDef.like("giftId", pmGiftCond.giftId), // 사은품ID 필터 (pm_gift.gift_id)
+            QdslUtil.FieldDef.like("targetId", pmGiftCond.targetId), // 대상ID 필터
+            QdslUtil.FieldDef.like("targetTypeCd", pmGiftCond.targetTypeCd) // 대상유형 필터 (PRODUCT/CATEGORY/MEMBER_GRADE)
         ));
     }
 

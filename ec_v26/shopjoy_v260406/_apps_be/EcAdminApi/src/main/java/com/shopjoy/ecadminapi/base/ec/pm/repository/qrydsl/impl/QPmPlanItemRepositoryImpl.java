@@ -84,11 +84,11 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()));
+        whereList.add(QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId())); // 기획전상품ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -117,11 +117,11 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()));
+        whereList.add(QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId())); // 기획전상품ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlanItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery();
@@ -144,12 +144,13 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "planId,planItemId,planItemMemo,prodId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("planId", pmPlanItem.planId),
-            QdslUtil.FieldDef.like("planItemId", pmPlanItem.planItemId),
-            QdslUtil.FieldDef.like("planItemMemo", pmPlanItem.planItemMemo),
-            QdslUtil.FieldDef.like("prodId", pmPlanItem.prodId)
+            QdslUtil.FieldDef.like("planId", pmPlanItem.planId), // 기획전ID (pm_plan.plan_id)
+            QdslUtil.FieldDef.like("planItemId", pmPlanItem.planItemId), // 기획전상품ID 필터
+            QdslUtil.FieldDef.like("planItemMemo", pmPlanItem.planItemMemo), // 항목 메모 (특가/한정수량 등)
+            QdslUtil.FieldDef.like("prodId", pmPlanItem.prodId) // 상품ID (pd_prod.prod_id)
         ));
     }
 

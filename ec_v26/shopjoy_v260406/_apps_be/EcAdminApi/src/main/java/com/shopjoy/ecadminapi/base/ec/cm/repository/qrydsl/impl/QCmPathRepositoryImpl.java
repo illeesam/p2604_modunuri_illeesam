@@ -75,8 +75,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     public List<CmPathDto.Item> selectList(CmPathDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmPath.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(cmPath.bizCd, search.getBizCd()));
+        whereList.add(QdslUtil.strEq(cmPath.useYn, search.getUseYn())); // 사용여부 Y/N 필터
+        whereList.add(QdslUtil.strEq(cmPath.bizCd, search.getBizCd())); // 업무코드 필터 (참조 테이블명, 예: sy_brand / sy_code_grp / ec_prop)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmPath.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmPath.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -107,8 +107,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmPath.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(cmPath.bizCd, search.getBizCd()));
+        whereList.add(QdslUtil.strEq(cmPath.useYn, search.getUseYn())); // 사용여부 Y/N 필터
+        whereList.add(QdslUtil.strEq(cmPath.bizCd, search.getBizCd())); // 업무코드 필터 (참조 테이블명, 예: sy_brand / sy_code_grp / ec_prop)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmPath.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmPath.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -134,13 +134,13 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /** 검색조건 빌드 */
+    /* searchType 예: "bizCd,pathLabel,pathRemark,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bizCd", cmPath.bizCd),
-            QdslUtil.FieldDef.like("pathLabel", cmPath.pathLabel),
-            QdslUtil.FieldDef.like("pathRemark", cmPath.pathRemark),
-            QdslUtil.FieldDef.like("useYn", cmPath.useYn)
+            QdslUtil.FieldDef.like("bizCd", cmPath.bizCd), // 업무코드 필터 (참조 테이블명, 예: sy_brand / sy_code_grp / ec_prop)
+            QdslUtil.FieldDef.like("pathLabel", cmPath.pathLabel), // 경로 라벨 (한글 표시명)
+            QdslUtil.FieldDef.like("pathRemark", cmPath.pathRemark), // 비고
+            QdslUtil.FieldDef.like("useYn", cmPath.useYn) // 사용여부 Y/N 필터
         ));
     }
 

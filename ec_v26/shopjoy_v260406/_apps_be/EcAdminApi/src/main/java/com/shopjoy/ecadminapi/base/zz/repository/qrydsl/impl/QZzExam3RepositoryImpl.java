@@ -77,10 +77,10 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids()));
-        whereList.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id()));
-        whereList.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id()));
-        whereList.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id()));
+        whereList.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id())); // PK 정확일치
+        whereList.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id())); // PK 정확일치
+        whereList.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id())); // PK 정확일치
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -109,10 +109,10 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids()));
-        whereList.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id()));
-        whereList.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id()));
-        whereList.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id()));
+        whereList.add(QdslUtil.strIn(zzExam3.exam1Id, search.getExam1Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(zzExam3.exam1Id, search.getExam1Id())); // PK 정확일치
+        whereList.add(QdslUtil.strEq(zzExam3.exam2Id, search.getExam2Id())); // PK 정확일치
+        whereList.add(QdslUtil.strEq(zzExam3.exam3Id, search.getExam3Id())); // PK 정확일치
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery();
@@ -136,22 +136,21 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "col31,col32" */
-
-    /* zz_exam3 buildOrder */
+    /* searchType 예: "col31,col32,col33,col34,col35" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("col31", zzExam3.col31),
-            QdslUtil.FieldDef.like("col32", zzExam3.col32),
-            QdslUtil.FieldDef.like("col33", zzExam3.col33),
-            QdslUtil.FieldDef.like("col34", zzExam3.col34),
-            QdslUtil.FieldDef.like("col35", zzExam3.col35),
-            QdslUtil.FieldDef.like("exam1Id", zzExam3.exam1Id),
-            QdslUtil.FieldDef.like("exam2Id", zzExam3.exam2Id),
-            QdslUtil.FieldDef.like("exam3Id", zzExam3.exam3Id)
+            QdslUtil.FieldDef.like("col31", zzExam3.col31), // 예제 범용 컬럼31 검색값
+            QdslUtil.FieldDef.like("col32", zzExam3.col32), // 예제 범용 컬럼32 검색값
+            QdslUtil.FieldDef.like("col33", zzExam3.col33), // 예제 범용 컬럼33 검색값
+            QdslUtil.FieldDef.like("col34", zzExam3.col34), // 예제 범용 컬럼34 검색값
+            QdslUtil.FieldDef.like("col35", zzExam3.col35), // 예제 범용 컬럼35 검색값
+            QdslUtil.FieldDef.like("exam1Id", zzExam3.exam1Id), // PK 정확일치
+            QdslUtil.FieldDef.like("exam2Id", zzExam3.exam2Id), // PK 정확일치
+            QdslUtil.FieldDef.like("exam3Id", zzExam3.exam3Id) // PK 정확일치
         ));
     }
 
+    /* zz_exam3 buildOrder */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
             Map.of("exam1Id", zzExam3.exam1Id,

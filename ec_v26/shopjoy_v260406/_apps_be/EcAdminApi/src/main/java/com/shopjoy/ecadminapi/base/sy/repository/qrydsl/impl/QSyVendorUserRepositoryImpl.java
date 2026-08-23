@@ -39,8 +39,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private static final QSyVendorUser syVendorUser = QSyVendorUser.syVendorUser;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyUser syUser = QSyUser.syUser;
-    private static final QVwSyCode cdP = new QVwSyCode("cd_p");
-    private static final QVwSyCode cdVms = new QVwSyCode("cd_vms");    /*
+    private static final QVwSyCode codePositionCd = new QVwSyCode("cd_p");
+    private static final QVwSyCode codeVendorUserStatusCd = new QVwSyCode("cd_vms");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * POSITION               {CEO: '대표', DIRECTOR: '이사', MANAGER: '팀장', EMPLOYEE: '담당자'}
      * VENDOR_MEMBER_STATUS   (sy_code 미등록 — 실제 코드값 미확인, 업체 담당자 재직상태 구분 코드로만 사용)
@@ -54,6 +54,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                         syVendorUser.userId,                       // 사용자ID (sy_user.user_id, NULL=비로그인)
                         syVendorUser.memberNm,                     // 이름
                         syVendorUser.positionCd,                   // 직위/직책 — POSITION {CEO: '대표', DIRECTOR: '이사', MANAGER: '팀장', EMPLOYEE: '담당자'}
+                        codePositionCd.codeLabel.as("positionCdNm"), // 코드 라벨
                         syVendorUser.vendorUserDeptNm,             // 부서/팀명
                         syVendorUser.vendorUserPhone,              // 사무실 전화
                         syVendorUser.vendorUserMobile,             // 휴대전화
@@ -64,6 +65,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                         syVendorUser.joinDate,                     // 등록(합류) 일자
                         syVendorUser.leaveDate,                    // 퇴직/탈퇴 일자
                         syVendorUser.vendorUserStatusCd,           // 상태 — VENDOR_MEMBER_STATUS (sy_code 미등록)
+                        codeVendorUserStatusCd.codeLabel.as("vendorUserStatusCdNm"), // 코드 라벨
                         syVendorUser.vendorUserRemark,             // 비고
                         syVendorUser.regBy,                        // 등록자
                         syVendorUser.regDate,                      // 등록일시
@@ -77,8 +79,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 .from(syVendorUser)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId)) // 업체
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId)) // 사용자
-                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION_CD").and(cdP.codeValue.eq(syVendorUser.positionCd))) // 직급
-                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS_CD").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd))) // 업체담당자상태
+                .leftJoin(codePositionCd).on(codePositionCd.codeGrp.eq("POSITION_CD").and(codePositionCd.codeValue.eq(syVendorUser.positionCd))) // 직급
+                .leftJoin(codeVendorUserStatusCd).on(codeVendorUserStatusCd.codeGrp.eq("VENDOR_USER_STATUS_CD").and(codeVendorUserStatusCd.codeValue.eq(syVendorUser.vendorUserStatusCd))) // 업체담당자상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorUser.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorUser.regBy)) // 등록자
                 ;
@@ -99,10 +101,10 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     public List<SyVendorUserDto.Item> selectList(SyVendorUserDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()));
-        whereList.add(QdslUtil.strEq(syVendorUser.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId())); // 업체사용자ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUser.userId, search.getUserId())); // 사용자ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId())); // 업체ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus())); // 상태 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -133,10 +135,10 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()));
-        whereList.add(QdslUtil.strEq(syVendorUser.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId())); // 업체사용자ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUser.userId, search.getUserId())); // 사용자ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId())); // 업체ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus())); // 상태 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -162,22 +164,22 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "authYn,isMain,memberNm,positionCd,userId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("authYn", syVendorUser.authYn),
-            QdslUtil.FieldDef.like("isMain", syVendorUser.isMain),
-            QdslUtil.FieldDef.like("memberNm", syVendorUser.memberNm),
-            QdslUtil.FieldDef.like("positionCd", syVendorUser.positionCd),
-            QdslUtil.FieldDef.like("userId", syVendorUser.userId),
-            QdslUtil.FieldDef.like("vendorId", syVendorUser.vendorId),
-            QdslUtil.FieldDef.like("vendorUserDeptNm", syVendorUser.vendorUserDeptNm),
-            QdslUtil.FieldDef.like("vendorUserEmail", syVendorUser.vendorUserEmail),
-            QdslUtil.FieldDef.like("vendorUserId", syVendorUser.vendorUserId),
-            QdslUtil.FieldDef.like("vendorUserMobile", syVendorUser.vendorUserMobile),
-            QdslUtil.FieldDef.like("vendorUserPhone", syVendorUser.vendorUserPhone),
-            QdslUtil.FieldDef.like("vendorUserRemark", syVendorUser.vendorUserRemark),
-            QdslUtil.FieldDef.like("vendorUserStatusCd", syVendorUser.vendorUserStatusCd)
+            QdslUtil.FieldDef.like("authYn", syVendorUser.authYn), // 업체 관리권한 여부 검색값 Y/N
+            QdslUtil.FieldDef.like("isMain", syVendorUser.isMain), // 대표 담당자 여부 (업체당 1명 권장)
+            QdslUtil.FieldDef.like("memberNm", syVendorUser.memberNm), // 이름
+            QdslUtil.FieldDef.like("positionCd", syVendorUser.positionCd), // 직위/직책 — POSITION_CD
+            QdslUtil.FieldDef.like("userId", syVendorUser.userId), // 사용자ID 검색값
+            QdslUtil.FieldDef.like("vendorId", syVendorUser.vendorId), // 업체ID 검색값
+            QdslUtil.FieldDef.like("vendorUserDeptNm", syVendorUser.vendorUserDeptNm), // 부서/팀명
+            QdslUtil.FieldDef.like("vendorUserEmail", syVendorUser.vendorUserEmail), // 이메일
+            QdslUtil.FieldDef.like("vendorUserId", syVendorUser.vendorUserId), // 업체사용자ID 검색값
+            QdslUtil.FieldDef.like("vendorUserMobile", syVendorUser.vendorUserMobile), // 휴대전화
+            QdslUtil.FieldDef.like("vendorUserPhone", syVendorUser.vendorUserPhone), // 사무실 전화
+            QdslUtil.FieldDef.like("vendorUserRemark", syVendorUser.vendorUserRemark), // 비고
+            QdslUtil.FieldDef.like("vendorUserStatusCd", syVendorUser.vendorUserStatusCd) // 상태 — VENDOR_USER_STATUS_CD
         ));
     }
 

@@ -69,10 +69,10 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         odCart.regDate,    // 등록일시
                         odCart.updBy,      // 수정자
                         odCart.updDate,    // 수정일시
-                        mbMember.memberNm.as("memberNm"),
-                        pdProd.prodNm.as("prodNm"),
-                        oi1.prodOptNm.as("prodOptNm1"),
-                        oi2.prodOptNm.as("prodOptNm2"),
+                        mbMember.memberNm.as("memberNm"), // 회원명 LIKE 필터 (직접 입력 시)
+                        pdProd.prodNm.as("prodNm"), // 상품명 (조인 표시용)
+                        oi1.prodOptNm.as("prodOptNm1"), // 옵션1명 (조인 표시용, 예: 색상)
+                        oi2.prodOptNm.as("prodOptNm2"), // 옵션2명 (조인 표시용, 예: 사이즈)
                         odCart.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -106,8 +106,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odCart.cartId, search.getCartId()));
-        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        whereList.add(QdslUtil.strEq(odCart.cartId, search.getCartId())); // 장바구니ID 필터
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm())) // 회원명 LIKE 필터 (직접 입력 시)
                 ? JPAExpressions.selectOne().from(mbMemberEx)
                       .where(mbMemberEx.memberId.eq(odCart.memberId),
                              QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
@@ -116,7 +116,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odCart.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odCart.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -145,8 +145,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odCart.cartId, search.getCartId()));
-        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        whereList.add(QdslUtil.strEq(odCart.cartId, search.getCartId())); // 장바구니ID 필터
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm())) // 회원명 LIKE 필터 (직접 입력 시)
                 ? JPAExpressions.selectOne().from(mbMemberEx)
                       .where(mbMemberEx.memberId.eq(odCart.memberId),
                              QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
@@ -155,7 +155,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odCart.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odCart.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odCart.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdCartDto.Item> query = baseListQuery();
@@ -178,17 +178,17 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "cartId,isChecked,memberId,prodOpt1Id,prodOpt2Id" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("cartId", odCart.cartId),
-            QdslUtil.FieldDef.like("isChecked", odCart.isChecked),
-            QdslUtil.FieldDef.like("memberId", odCart.memberId),
-            QdslUtil.FieldDef.like("prodOpt1Id", odCart.prodOpt1Id),
-            QdslUtil.FieldDef.like("prodOpt2Id", odCart.prodOpt2Id),
-            QdslUtil.FieldDef.like("prodId", odCart.prodId),
-            QdslUtil.FieldDef.like("sessionKey", odCart.sessionKey),
-            QdslUtil.FieldDef.like("prodSkuId", odCart.prodSkuId)
+            QdslUtil.FieldDef.like("cartId", odCart.cartId), // 장바구니ID 필터
+            QdslUtil.FieldDef.like("isChecked", odCart.isChecked), // 주문선택여부 Y/N
+            QdslUtil.FieldDef.like("memberId", odCart.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("prodOpt1Id", odCart.prodOpt1Id), // 옵션1 값ID (pd_prod_opt.opt_id, 예: 색상)
+            QdslUtil.FieldDef.like("prodOpt2Id", odCart.prodOpt2Id), // 옵션2 값ID (pd_prod_opt.opt_id, 예: 사이즈)
+            QdslUtil.FieldDef.like("prodId", odCart.prodId), // 상품ID (pd_prod.prod_id)
+            QdslUtil.FieldDef.like("sessionKey", odCart.sessionKey), // 비회원 세션키
+            QdslUtil.FieldDef.like("prodSkuId", odCart.prodSkuId) // SKU ID (pd_prod_sku.prod_sku_id)
         ));
     }
 

@@ -81,7 +81,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()));
+        whereList.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId())); // 이력ID
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -111,7 +111,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()));
+        whereList.add(QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId())); // 이력ID
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhOrderItemChgHistDto.Item> query = baseSelColumnQuery();
@@ -135,17 +135,18 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "afterVal,beforeVal,chgField,chgReason,chgTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("afterVal", odhOrderItemChgHist.afterVal),
-            QdslUtil.FieldDef.like("beforeVal", odhOrderItemChgHist.beforeVal),
-            QdslUtil.FieldDef.like("chgField", odhOrderItemChgHist.chgField),
-            QdslUtil.FieldDef.like("chgReason", odhOrderItemChgHist.chgReason),
-            QdslUtil.FieldDef.like("chgTypeCd", odhOrderItemChgHist.chgTypeCd),
-            QdslUtil.FieldDef.like("chgUserId", odhOrderItemChgHist.chgUserId),
-            QdslUtil.FieldDef.like("orderId", odhOrderItemChgHist.orderId),
-            QdslUtil.FieldDef.like("orderItemChgHistId", odhOrderItemChgHist.orderItemChgHistId),
-            QdslUtil.FieldDef.like("orderItemId", odhOrderItemChgHist.orderItemId)
+            QdslUtil.FieldDef.like("afterVal", odhOrderItemChgHist.afterVal), // 변경후값
+            QdslUtil.FieldDef.like("beforeVal", odhOrderItemChgHist.beforeVal), // 변경전값
+            QdslUtil.FieldDef.like("chgField", odhOrderItemChgHist.chgField), // 변경 필드명
+            QdslUtil.FieldDef.like("chgReason", odhOrderItemChgHist.chgReason), // 변경사유
+            QdslUtil.FieldDef.like("chgTypeCd", odhOrderItemChgHist.chgTypeCd), // 변경유형코드 (QTY/PRICE/OPT/STATUS/AMOUNT/COUPON)
+            QdslUtil.FieldDef.like("chgUserId", odhOrderItemChgHist.chgUserId), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("orderId", odhOrderItemChgHist.orderId), // 주문ID (od_order.)
+            QdslUtil.FieldDef.like("orderItemChgHistId", odhOrderItemChgHist.orderItemChgHistId), // 이력ID
+            QdslUtil.FieldDef.like("orderItemId", odhOrderItemChgHist.orderItemId) // 주문품목ID (od_order_item.)
         ));
     }
 

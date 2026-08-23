@@ -90,14 +90,14 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()));
-        whereList.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()));
-        whereList.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId())); // 문의ID 필터
+        whereList.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn())); // 답변여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdQna.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdQna.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -126,14 +126,14 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()));
-        whereList.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()));
-        whereList.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId())); // 문의ID 필터
+        whereList.add(QdslUtil.strEq(pdProdQna.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn())); // 답변여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pdProdQna.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdQna.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdQna.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdQna.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery();
@@ -158,23 +158,23 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
     /** 단건/목록/페이지 공용 base query */
     /** 검색조건 빌드 — Mapper XML pdProdQnaCond 와 동일 동작 (DTO Request 필드 한정) */
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "answContent,answUserId,answYn,dispYn,memberId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("answContent", pdProdQna.answContent),
-            QdslUtil.FieldDef.like("answUserId", pdProdQna.answUserId),
-            QdslUtil.FieldDef.like("answYn", pdProdQna.answYn),
-            QdslUtil.FieldDef.like("dispYn", pdProdQna.dispYn),
-            QdslUtil.FieldDef.like("memberId", pdProdQna.memberId),
-            QdslUtil.FieldDef.like("orderId", pdProdQna.orderId),
-            QdslUtil.FieldDef.like("prodId", pdProdQna.prodId),
-            QdslUtil.FieldDef.like("prodQnaContent", pdProdQna.prodQnaContent),
-            QdslUtil.FieldDef.like("prodQnaId", pdProdQna.prodQnaId),
-            QdslUtil.FieldDef.like("prodQnaTitle", pdProdQna.prodQnaTitle),
-            QdslUtil.FieldDef.like("prodQnaTypeCd", pdProdQna.prodQnaTypeCd),
-            QdslUtil.FieldDef.like("scrtYn", pdProdQna.scrtYn),
-            QdslUtil.FieldDef.like("prodSkuId", pdProdQna.prodSkuId),
-            QdslUtil.FieldDef.like("useYn", pdProdQna.useYn)
+            QdslUtil.FieldDef.like("answContent", pdProdQna.answContent), // 답변내용
+            QdslUtil.FieldDef.like("answUserId", pdProdQna.answUserId), // 답변자ID (sy_user.user_id)
+            QdslUtil.FieldDef.like("answYn", pdProdQna.answYn), // 답변여부 필터 Y/N
+            QdslUtil.FieldDef.like("dispYn", pdProdQna.dispYn), // 노출여부 Y/N
+            QdslUtil.FieldDef.like("memberId", pdProdQna.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("orderId", pdProdQna.orderId), // 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("prodId", pdProdQna.prodId), // 상품ID 필터
+            QdslUtil.FieldDef.like("prodQnaContent", pdProdQna.prodQnaContent), // 문의내용
+            QdslUtil.FieldDef.like("prodQnaId", pdProdQna.prodQnaId), // 문의ID 필터
+            QdslUtil.FieldDef.like("prodQnaTitle", pdProdQna.prodQnaTitle), // 문의제목
+            QdslUtil.FieldDef.like("prodQnaTypeCd", pdProdQna.prodQnaTypeCd), // 문의유형코드 — PROD_QNA_TYPE_CD {PROD:상품문의}
+            QdslUtil.FieldDef.like("scrtYn", pdProdQna.scrtYn), // 비밀글여부 Y/N
+            QdslUtil.FieldDef.like("prodSkuId", pdProdQna.prodSkuId), // SKUID (pd_prod_sku.prod_sku_id)
+            QdslUtil.FieldDef.like("useYn", pdProdQna.useYn) // 사용여부 필터 Y/N
         ));
     }
 

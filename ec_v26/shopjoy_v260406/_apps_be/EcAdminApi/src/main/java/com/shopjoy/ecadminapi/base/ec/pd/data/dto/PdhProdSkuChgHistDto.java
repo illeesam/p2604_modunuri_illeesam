@@ -22,6 +22,7 @@ public class PdhProdSkuChgHistDto {
         private String prodSkuId;  // SKU ID (pd_prod_sku.prod_sku_id)
         private String prodId;  // 상품ID (pd_prod.prod_id)
         private String chgTypeCd;  // 변경유형 — SKU_CHG_TYPE {STATUS:상태변경}
+        private String chgTypeCdNm;  // 코드 라벨
         private String beforeVal;  // 변경 전 값
         private String afterVal;  // 변경 후 값
         private String chgReason;  // 변경사유

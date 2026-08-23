@@ -41,8 +41,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private static final QPdDlivTmplt pdDlivTmplt      = QPdDlivTmplt.pdDlivTmplt;
     private static final QSySite      sySite    = QSySite.sySite;
     private static final QSyVendor    syVendor    = QSyVendor.syVendor;
-    private static final QVwSyCode      cdDm   = new QVwSyCode("cd_dm");
-    private static final QVwSyCode      cdDpt  = new QVwSyCode("cd_dpt");    /*
+    private static final QVwSyCode      codeDlivMethodCd   = new QVwSyCode("cd_dm");
+    private static final QVwSyCode      codeDlivPayTypeCd  = new QVwSyCode("cd_dpt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * DLIV_METHOD_CD    {COURIER: '택배', DIRECT: '직접배송', PICKUP: '방문수령'}
      * DLIV_PAY_TYPE_CD  {PREPAY: '선불', COD: '착불'}
@@ -56,7 +56,9 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                         pdDlivTmplt.vendorId,               // 업체ID (sy_vendor.vendor_id)
                         pdDlivTmplt.dlivTmpltNm,             // 템플릿명
                         pdDlivTmplt.dlivMethodCd,             // 배송방법 — {COURIER: '택배', DIRECT: '직접배송', PICKUP: '방문수령'}
+                        codeDlivMethodCd.codeLabel.as("dlivMethodCdNm"), // 코드 라벨
                         pdDlivTmplt.dlivPayTypeCd,            // 배송비결제유형 — {PREPAY: '선불', COD: '착불'}
+                        codeDlivPayTypeCd.codeLabel.as("dlivPayTypeCdNm"), // 코드 라벨
                         pdDlivTmplt.dlivCourierCd,           // 배송 택배사 코드
                         pdDlivTmplt.dlivCost,                // 기본 배송비
                         pdDlivTmplt.freeDlivMinAmt,          // 무료배송 최소 주문금액
@@ -82,8 +84,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 ))
                 .from(pdDlivTmplt)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId)) // 업체
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd))) // 배송방법
-                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE_CD").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd))) // 배송비유형
+                .leftJoin(codeDlivMethodCd).on(codeDlivMethodCd.codeGrp.eq("DLIV_METHOD_CD").and(codeDlivMethodCd.codeValue.eq(pdDlivTmplt.dlivMethodCd))) // 배송방법
+                .leftJoin(codeDlivPayTypeCd).on(codeDlivPayTypeCd.codeGrp.eq("DLIV_PAY_TYPE_CD").and(codeDlivPayTypeCd.codeValue.eq(pdDlivTmplt.dlivPayTypeCd))) // 배송비유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdDlivTmplt.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pdDlivTmplt.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pdDlivTmplt.siteId)) // 사이트
@@ -106,13 +108,13 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()));
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()));
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId())); // 배송템플릿ID 필터
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd())); // 배송방법 필터
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -141,13 +143,13 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()));
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()));
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId())); // 배송템플릿ID 필터
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd())); // 배송방법 필터
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdDlivTmplt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery();
@@ -169,22 +171,22 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         BasePage<PdDlivTmpltDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "baseDlivYn,dlivCourierCd,dlivMethodCd,dlivPayTypeCd,dlivTmpltId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("baseDlivYn", pdDlivTmplt.baseDlivYn),
-            QdslUtil.FieldDef.like("dlivCourierCd", pdDlivTmplt.dlivCourierCd),
-            QdslUtil.FieldDef.like("dlivMethodCd", pdDlivTmplt.dlivMethodCd),
-            QdslUtil.FieldDef.like("dlivPayTypeCd", pdDlivTmplt.dlivPayTypeCd),
-            QdslUtil.FieldDef.like("dlivTmpltId", pdDlivTmplt.dlivTmpltId),
-            QdslUtil.FieldDef.like("dlivTmpltNm", pdDlivTmplt.dlivTmpltNm),
-            QdslUtil.FieldDef.like("returnAddr", pdDlivTmplt.returnAddr),
-            QdslUtil.FieldDef.like("returnAddrDetail", pdDlivTmplt.returnAddrDetail),
-            QdslUtil.FieldDef.like("returnAddrZip", pdDlivTmplt.returnAddrZip),
-            QdslUtil.FieldDef.like("returnCourierCd", pdDlivTmplt.returnCourierCd),
-            QdslUtil.FieldDef.like("returnTelNo", pdDlivTmplt.returnTelNo),
-            QdslUtil.FieldDef.like("useYn", pdDlivTmplt.useYn),
-            QdslUtil.FieldDef.like("vendorId", pdDlivTmplt.vendorId)
+            QdslUtil.FieldDef.like("baseDlivYn", pdDlivTmplt.baseDlivYn), // 기본배송지여부 Y/N
+            QdslUtil.FieldDef.like("dlivCourierCd", pdDlivTmplt.dlivCourierCd), // 배송 택배사 코드
+            QdslUtil.FieldDef.like("dlivMethodCd", pdDlivTmplt.dlivMethodCd), // 배송방법 필터
+            QdslUtil.FieldDef.like("dlivPayTypeCd", pdDlivTmplt.dlivPayTypeCd), // 배송비결제유형 — DLIV_PAY_TYPE_CD {PREPAY:선불, COD:착불}
+            QdslUtil.FieldDef.like("dlivTmpltId", pdDlivTmplt.dlivTmpltId), // 배송템플릿ID 필터
+            QdslUtil.FieldDef.like("dlivTmpltNm", pdDlivTmplt.dlivTmpltNm), // 템플릿명
+            QdslUtil.FieldDef.like("returnAddr", pdDlivTmplt.returnAddr), // 반품지 주소
+            QdslUtil.FieldDef.like("returnAddrDetail", pdDlivTmplt.returnAddrDetail), // 반품지 상세주소
+            QdslUtil.FieldDef.like("returnAddrZip", pdDlivTmplt.returnAddrZip), // 반품지 우편번호
+            QdslUtil.FieldDef.like("returnCourierCd", pdDlivTmplt.returnCourierCd), // 반품 택배사 코드
+            QdslUtil.FieldDef.like("returnTelNo", pdDlivTmplt.returnTelNo), // 반품지 전화번호
+            QdslUtil.FieldDef.like("useYn", pdDlivTmplt.useYn), // 사용여부 필터 Y/N
+            QdslUtil.FieldDef.like("vendorId", pdDlivTmplt.vendorId) // 업체ID (sy_vendor.vendor_id)
         ));
     }
 

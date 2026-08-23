@@ -20,6 +20,7 @@ public class OdPayMethodDto {
         private String payMethodId;  // 결제수단ID (YYMMDDhhmmss+rand4)
         private String memberId;  // 회원ID (mb_member.member_id)
         private String payMethodTypeCd;  // 결제수단유형코드 (코드: PAY_METHOD)
+        private String payMethodTypeCdNm;  // 코드 라벨
         private String payMethodNm;  // 결제수단명 (카드사명, 은행명 등)
         private String payMethodAlias;  // 별칭 (사용자 설정)
         private String payKeyNo;  // 결제 게이트웨이 발급 키/토큰

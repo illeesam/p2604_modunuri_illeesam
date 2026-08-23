@@ -81,10 +81,10 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     public List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()));
-        whereList.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()));
-        whereList.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()));
-        whereList.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()));
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId())); // 메시지ID 필터
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId())); // 채팅방ID 필터 (cm_chatt.chatt_id)
+        whereList.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId())); // 발신자ID 필터
+        whereList.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId())); // 이 메시지ID 이후만 조회(폴링용 커서)
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -112,10 +112,10 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()));
-        whereList.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()));
-        whereList.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()));
-        whereList.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()));
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId())); // 메시지ID 필터
+        whereList.add(QdslUtil.strEq(cmChattMsg.chattId, search.getChattId())); // 채팅방ID 필터 (cm_chatt.chatt_id)
+        whereList.add(QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId())); // 발신자ID 필터
+        whereList.add(QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId())); // 이 메시지ID 이후만 조회(폴링용 커서)
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChattMsg.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -146,13 +146,14 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         return s == null ? null : andSearchValue(s.getSearchValue(), s.getSearchType());
     }
 
+    /* searchType 예: "chattId,senderNm,msgText,refId,refTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chattId", cmChattMsg.chattId),
-            QdslUtil.FieldDef.like("senderNm", cmChattMsg.senderNm),
-            QdslUtil.FieldDef.like("msgText", cmChattMsg.msgText),
-            QdslUtil.FieldDef.like("refId", cmChattMsg.refId),
-            QdslUtil.FieldDef.like("refTypeCd", cmChattMsg.refTypeCd)
+            QdslUtil.FieldDef.like("chattId", cmChattMsg.chattId), // 채팅방ID 필터 (cm_chatt.chatt_id)
+            QdslUtil.FieldDef.like("senderNm", cmChattMsg.senderNm), // 발신자명 (비정규화 캐시)
+            QdslUtil.FieldDef.like("msgText", cmChattMsg.msgText), // 메시지 내용
+            QdslUtil.FieldDef.like("refId", cmChattMsg.refId), // 참조ID
+            QdslUtil.FieldDef.like("refTypeCd", cmChattMsg.refTypeCd) // 참조유형 (ORDER/PRODUCT/CLAIM)
         ));
     }
 

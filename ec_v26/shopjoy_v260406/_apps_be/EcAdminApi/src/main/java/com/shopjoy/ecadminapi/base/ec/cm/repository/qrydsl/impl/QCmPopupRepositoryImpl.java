@@ -42,7 +42,7 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmPopup.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(cmPopup.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add(andPopupPatternEq(search));
         whereList.add(/* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */
             andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -78,6 +78,7 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
         return new OrderSpecifier<?>[] { cmPopup.sortOrd.asc(), cmPopup.popupCode.asc() };
     }
 
+    /* searchType 예: "popupNm,popupCode,entityNm" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("popupNm",   cmPopup.popupNm),

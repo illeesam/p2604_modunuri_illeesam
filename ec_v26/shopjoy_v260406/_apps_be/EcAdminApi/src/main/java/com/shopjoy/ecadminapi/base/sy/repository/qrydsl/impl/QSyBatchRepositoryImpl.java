@@ -93,9 +93,9 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
-        whereList.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
+        whereList.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId())); // 배치ID 필터
+        whereList.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus())); // 활성상태 필터
+        whereList.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd())); // 실행상태 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -126,9 +126,9 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
-        whereList.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
+        whereList.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId())); // 배치ID 필터
+        whereList.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus())); // 활성상태 필터
+        whereList.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd())); // 실행상태 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyBatchDto.Item> query = baseQuery();
@@ -152,8 +152,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -161,18 +159,19 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 : null;
     }
 
+    /* searchType 예: "batchCode,batchCycleCd,batchDesc,batchId,batchMemo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("batchCode", syBatch.batchCode),
-            QdslUtil.FieldDef.like("batchCycleCd", syBatch.batchCycleCd),
-            QdslUtil.FieldDef.like("batchDesc", syBatch.batchDesc),
-            QdslUtil.FieldDef.like("batchId", syBatch.batchId),
-            QdslUtil.FieldDef.like("batchMemo", syBatch.batchMemo),
-            QdslUtil.FieldDef.like("batchNm", syBatch.batchNm),
-            QdslUtil.FieldDef.like("batchRunStatusCd", syBatch.batchRunStatusCd),
-            QdslUtil.FieldDef.like("batchStatusCd", syBatch.batchStatusCd),
-            QdslUtil.FieldDef.like("cronExpr", syBatch.cronExpr),
-            QdslUtil.FieldDef.like("pathId", syBatch.pathId)
+            QdslUtil.FieldDef.like("batchCode", syBatch.batchCode), // 배치코드
+            QdslUtil.FieldDef.like("batchCycleCd", syBatch.batchCycleCd), // 주기유형 — BATCH_CYCLE_CD
+            QdslUtil.FieldDef.like("batchDesc", syBatch.batchDesc), // 배치설명
+            QdslUtil.FieldDef.like("batchId", syBatch.batchId), // 배치ID 필터
+            QdslUtil.FieldDef.like("batchMemo", syBatch.batchMemo), // 메모
+            QdslUtil.FieldDef.like("batchNm", syBatch.batchNm), // 배치명
+            QdslUtil.FieldDef.like("batchRunStatusCd", syBatch.batchRunStatusCd), // 실행상태 필터
+            QdslUtil.FieldDef.like("batchStatusCd", syBatch.batchStatusCd), // 활성상태 — BATCH_STATUS
+            QdslUtil.FieldDef.like("cronExpr", syBatch.cronExpr), // Cron 표현식
+            QdslUtil.FieldDef.like("pathId", syBatch.pathId) // 표시경로ID 필터
         ));
     }
 

@@ -80,7 +80,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId())); // 클레임상품상태이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -110,7 +110,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId())); // 클레임상품상태이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhClaimItemStatusHistDto.Item> query = baseSelColumnQuery();
@@ -134,17 +134,18 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chgUserId,claimId,claimItemId,claimItemStatusCd,claimItemStatusCdBefore" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chgUserId", odhClaimItemStatusHist.chgUserId),
-            QdslUtil.FieldDef.like("claimId", odhClaimItemStatusHist.claimId),
-            QdslUtil.FieldDef.like("claimItemId", odhClaimItemStatusHist.claimItemId),
-            QdslUtil.FieldDef.like("claimItemStatusCd", odhClaimItemStatusHist.claimItemStatusCd),
-            QdslUtil.FieldDef.like("claimItemStatusCdBefore", odhClaimItemStatusHist.claimItemStatusCdBefore),
-            QdslUtil.FieldDef.like("claimItemStatusHistId", odhClaimItemStatusHist.claimItemStatusHistId),
-            QdslUtil.FieldDef.like("memo", odhClaimItemStatusHist.memo),
-            QdslUtil.FieldDef.like("orderItemId", odhClaimItemStatusHist.orderItemId),
-            QdslUtil.FieldDef.like("statusReason", odhClaimItemStatusHist.statusReason)
+            QdslUtil.FieldDef.like("chgUserId", odhClaimItemStatusHist.chgUserId), // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+            QdslUtil.FieldDef.like("claimId", odhClaimItemStatusHist.claimId), // 클레임ID (od_claim.claim_id)
+            QdslUtil.FieldDef.like("claimItemId", odhClaimItemStatusHist.claimItemId), // 클레임상품ID (od_claim_item.claim_item_id)
+            QdslUtil.FieldDef.like("claimItemStatusCd", odhClaimItemStatusHist.claimItemStatusCd), // 변경 후 클레임상품상태 (코드: CLAIM_ITEM_STATUS)
+            QdslUtil.FieldDef.like("claimItemStatusCdBefore", odhClaimItemStatusHist.claimItemStatusCdBefore), // 변경 전 클레임상품상태 (코드: CLAIM_ITEM_STATUS)
+            QdslUtil.FieldDef.like("claimItemStatusHistId", odhClaimItemStatusHist.claimItemStatusHistId), // 클레임상품상태이력ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("memo", odhClaimItemStatusHist.memo), // 메모
+            QdslUtil.FieldDef.like("orderItemId", odhClaimItemStatusHist.orderItemId), // 주문상품ID (od_order_item.order_item_id)
+            QdslUtil.FieldDef.like("statusReason", odhClaimItemStatusHist.statusReason) // 상태 변경 사유
         ));
     }
 

@@ -40,8 +40,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final QStErpVoucher stErpVoucher    = QStErpVoucher.stErpVoucher;
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QSyVendor     syVendor  = QSyVendor.syVendor;
-    private static final QVwSyCode       cdEvt = new QVwSyCode("cd_evt");
-    private static final QVwSyCode       cdEvs = new QVwSyCode("cd_evs");    /*
+    private static final QVwSyCode       codeErpVoucherTypeCd = new QVwSyCode("cd_evt");
+    private static final QVwSyCode       codeErpVoucherStatusCd = new QVwSyCode("cd_evs");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * ERP_VOUCHER_TYPE    {SALE: '매출전표', CANCEL: '취소전표', SETTLE: '정산전표', ADJ: '조정전표'}
      * ERP_VOUCHER_STATUS  {DRAFT: '임시', SENT: '전송완료', FAILED: '전송실패', CONFIRMED: 'ERP확인'}
@@ -69,16 +69,16 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                         stErpVoucher.updBy,                        // 수정자
                         stErpVoucher.updDate,                      // 수정일시
                         syVendor.vendorNm.as("vendorNm"),           // 업체명 (조인)
-                        cdEvt.codeLabel.as("erpVoucherTypeCdNm"),   // 전표유형명 (sy_code 조인)
-                        cdEvs.codeLabel.as("erpVoucherStatusCdNm"), // 전표상태명 (sy_code 조인)
+                        codeErpVoucherTypeCd.codeLabel.as("erpVoucherTypeCdNm"),   // 전표유형명 (sy_code 조인)
+                        codeErpVoucherStatusCd.codeLabel.as("erpVoucherStatusCdNm"), // 전표상태명 (sy_code 조인)
                         stErpVoucher.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stErpVoucher)
-                .innerJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd))) // ERP전표유형
+                .innerJoin(codeErpVoucherTypeCd).on(codeErpVoucherTypeCd.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(codeErpVoucherTypeCd.codeValue.eq(stErpVoucher.erpVoucherTypeCd))) // ERP전표유형
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId)) // 업체
-                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd))) // ERP전표상태
+                .leftJoin(codeErpVoucherStatusCd).on(codeErpVoucherStatusCd.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(codeErpVoucherStatusCd.codeValue.eq(stErpVoucher.erpVoucherStatusCd))) // ERP전표상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stErpVoucher.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stErpVoucher.regBy)) // 등록자
                 ;
@@ -99,9 +99,9 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()));
-        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()));
-        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()));
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId())); // ERP전표ID 필터
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd())); // 전표유형 필터 — ERP_VOUCHER_TYPE_CD (SETTLE/RETURN/ADJ/PAY)
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd())); // 전표상태 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -133,9 +133,9 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()));
-        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()));
-        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()));
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId())); // ERP전표ID 필터
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd())); // 전표유형 필터 — ERP_VOUCHER_TYPE_CD (SETTLE/RETURN/ADJ/PAY)
+        whereList.add(QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd())); // 전표상태 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucher.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -161,18 +161,19 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "erpResMsg,erpVoucherDesc,erpVoucherId,erpVoucherNo,erpVoucherStatusCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("erpResMsg", stErpVoucher.erpResMsg),
-            QdslUtil.FieldDef.like("erpVoucherDesc", stErpVoucher.erpVoucherDesc),
-            QdslUtil.FieldDef.like("erpVoucherId", stErpVoucher.erpVoucherId),
-            QdslUtil.FieldDef.like("erpVoucherNo", stErpVoucher.erpVoucherNo),
-            QdslUtil.FieldDef.like("erpVoucherStatusCd", stErpVoucher.erpVoucherStatusCd),
-            QdslUtil.FieldDef.like("erpVoucherStatusCdBefore", stErpVoucher.erpVoucherStatusCdBefore),
-            QdslUtil.FieldDef.like("erpVoucherTypeCd", stErpVoucher.erpVoucherTypeCd),
-            QdslUtil.FieldDef.like("settleId", stErpVoucher.settleId),
-            QdslUtil.FieldDef.like("settleYm", stErpVoucher.settleYm),
-            QdslUtil.FieldDef.like("vendorId", stErpVoucher.vendorId)
+            QdslUtil.FieldDef.like("erpResMsg", stErpVoucher.erpResMsg), // ERP 처리 응답 메시지
+            QdslUtil.FieldDef.like("erpVoucherDesc", stErpVoucher.erpVoucherDesc), // 전표 적요
+            QdslUtil.FieldDef.like("erpVoucherId", stErpVoucher.erpVoucherId), // ERP전표ID 필터
+            QdslUtil.FieldDef.like("erpVoucherNo", stErpVoucher.erpVoucherNo), // ERP 채번 전표번호 (전송 후 ERP에서 수신)
+            QdslUtil.FieldDef.like("erpVoucherStatusCd", stErpVoucher.erpVoucherStatusCd), // 전표상태 필터
+            QdslUtil.FieldDef.like("erpVoucherStatusCdBefore", stErpVoucher.erpVoucherStatusCdBefore), // 변경 전 전표상태
+            QdslUtil.FieldDef.like("erpVoucherTypeCd", stErpVoucher.erpVoucherTypeCd), // 전표유형 필터 — ERP_VOUCHER_TYPE_CD (SETTLE/RETURN/ADJ/PAY)
+            QdslUtil.FieldDef.like("settleId", stErpVoucher.settleId), // 정산ID (st_settle.settle_id)
+            QdslUtil.FieldDef.like("settleYm", stErpVoucher.settleYm), // 정산년월 (YYYYMM)
+            QdslUtil.FieldDef.like("vendorId", stErpVoucher.vendorId) // 업체ID
         ));
     }
 

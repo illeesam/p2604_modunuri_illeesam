@@ -73,8 +73,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()));
-        whereList.add(QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()));
+        whereList.add(QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id())); // PK 정확일치
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -103,8 +103,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()));
-        whereList.add(QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()));
+        whereList.add(QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id())); // PK 정확일치
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery();
@@ -128,20 +128,19 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "col11,col12" */
-
-    /* zz_exam1 buildOrder */
+    /* searchType 예: "col11,col12,col13,col14,col15" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("col11", zzExam1.col11),
-            QdslUtil.FieldDef.like("col12", zzExam1.col12),
-            QdslUtil.FieldDef.like("col13", zzExam1.col13),
-            QdslUtil.FieldDef.like("col14", zzExam1.col14),
-            QdslUtil.FieldDef.like("col15", zzExam1.col15),
-            QdslUtil.FieldDef.like("exam1Id", zzExam1.exam1Id)
+            QdslUtil.FieldDef.like("col11", zzExam1.col11), // 예제 범용 컬럼11 검색값
+            QdslUtil.FieldDef.like("col12", zzExam1.col12), // 예제 범용 컬럼12 검색값
+            QdslUtil.FieldDef.like("col13", zzExam1.col13), // 예제 범용 컬럼13 검색값
+            QdslUtil.FieldDef.like("col14", zzExam1.col14), // 예제 범용 컬럼14 검색값
+            QdslUtil.FieldDef.like("col15", zzExam1.col15), // 예제 범용 컬럼15 검색값
+            QdslUtil.FieldDef.like("exam1Id", zzExam1.exam1Id) // PK 정확일치
         ));
     }
 
+    /* zz_exam1 buildOrder */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
             Map.of("exam1Id", zzExam1.exam1Id),

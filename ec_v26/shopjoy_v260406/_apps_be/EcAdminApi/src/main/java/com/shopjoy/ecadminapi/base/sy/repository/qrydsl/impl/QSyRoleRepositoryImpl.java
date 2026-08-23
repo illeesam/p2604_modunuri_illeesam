@@ -50,7 +50,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         this.syRoleRepository = syRoleRepository;
         this.em = em;
     }
-    private static final QVwSyCode cdRt = new QVwSyCode("cd_rt");    /*
+    private static final QVwSyCode codeRoleTypeCd = new QVwSyCode("cd_rt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * ROLE_TYPE     {SYSTEM: '시스템', CUSTOM: '커스텀'}
      * USE_YN        {Y: '사용', N: '미사용'}
@@ -64,6 +64,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                         syRole.roleNm,          // 역할명
                         syRole.parentRoleId,    // 상위역할ID
                         syRole.roleTypeCd,      // 역할유형 — ROLE_TYPE {SYSTEM: '시스템', CUSTOM: '커스텀'}
+                        codeRoleTypeCd.codeLabel.as("roleTypeCdNm"), // 코드 라벨
                         syRole.sortOrd,         // 정렬순서
                         syRole.useYn,           // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
                         syRole.restrictPerm,    // 제한권한여부 — RESTRICT_PERM {Y: '제한권한', N: '일반권한'}
@@ -78,7 +79,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syRole)
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE_CD").and(cdRt.codeValue.eq(syRole.roleTypeCd))) // 역할유형
+                .leftJoin(codeRoleTypeCd).on(codeRoleTypeCd.codeGrp.eq("ROLE_TYPE_CD").and(codeRoleTypeCd.codeValue.eq(syRole.roleTypeCd))) // 역할유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syRole.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syRole.regBy)) // 등록자
                 ;
@@ -99,10 +100,10 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     public List<SyRoleDto.Item> selectList(SyRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syRole.roleId, search.getRoleId()));
+        whereList.add(QdslUtil.strEq(syRole.roleId, search.getRoleId())); // 역할ID (YYMMDDhhmmss+rand4)
         whereList.add(andParentRoleIdIn(search));
-        whereList.add(QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()));
-        whereList.add(QdslUtil.strEq(syRole.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd())); // 역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)
+        whereList.add(QdslUtil.strEq(syRole.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -133,10 +134,10 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syRole.roleId, search.getRoleId()));
+        whereList.add(QdslUtil.strEq(syRole.roleId, search.getRoleId())); // 역할ID (YYMMDDhhmmss+rand4)
         whereList.add(andParentRoleIdIn(search));
-        whereList.add(QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()));
-        whereList.add(QdslUtil.strEq(syRole.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd())); // 역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)
+        whereList.add(QdslUtil.strEq(syRole.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -166,10 +167,10 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     @Override
     public long selectCount(SyRoleDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syRole.roleId, search.getRoleId()));
+        whereList.add(QdslUtil.strEq(syRole.roleId, search.getRoleId())); // 역할ID (YYMMDDhhmmss+rand4)
         whereList.add(andParentRoleIdIn(search));
-        whereList.add(QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()));
-        whereList.add(QdslUtil.strEq(syRole.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd())); // 역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)
+        whereList.add(QdslUtil.strEq(syRole.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -179,23 +180,22 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         return CmUtil.nvlLong(total);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
-    /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
+    /* searchType 예: "parentRoleId,pathId,restrictPerm,roleCode,roleId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("parentRoleId", syRole.parentRoleId),
-            QdslUtil.FieldDef.like("pathId", syRole.pathId),
-            QdslUtil.FieldDef.like("restrictPerm", syRole.restrictPerm),
-            QdslUtil.FieldDef.like("roleCode", syRole.roleCode),
-            QdslUtil.FieldDef.like("roleId", syRole.roleId),
-            QdslUtil.FieldDef.like("roleNm", syRole.roleNm),
-            QdslUtil.FieldDef.like("roleRemark", syRole.roleRemark),
-            QdslUtil.FieldDef.like("roleTypeCd", syRole.roleTypeCd),
-            QdslUtil.FieldDef.like("useYn", syRole.useYn)
+            QdslUtil.FieldDef.like("parentRoleId", syRole.parentRoleId), // 상위역할ID
+            QdslUtil.FieldDef.like("pathId", syRole.pathId), // 점(.) 구분 표시경로 (트리 빌드용)
+            QdslUtil.FieldDef.like("restrictPerm", syRole.restrictPerm), // 제한권한여부 Y/N
+            QdslUtil.FieldDef.like("roleCode", syRole.roleCode), // 역할코드
+            QdslUtil.FieldDef.like("roleId", syRole.roleId), // 역할ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("roleNm", syRole.roleNm), // 역할명
+            QdslUtil.FieldDef.like("roleRemark", syRole.roleRemark), // 비고
+            QdslUtil.FieldDef.like("roleTypeCd", syRole.roleTypeCd), // 역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)
+            QdslUtil.FieldDef.like("useYn", syRole.useYn) // 사용여부 Y/N
         ));
     }
 
+    /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
     @SuppressWarnings("unchecked")
     private BooleanExpression andParentRoleIdIn(SyRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getParentRoleId())) return null;

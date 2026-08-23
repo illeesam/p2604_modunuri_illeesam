@@ -43,8 +43,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmPlan pmPlan    = QPmPlan.pmPlan;
     private static final QSySite sySite  = QSySite.sySite;
-    private static final QVwSyCode cdPt = new QVwSyCode("cd_pt");
-    private static final QVwSyCode cdPs = new QVwSyCode("cd_ps");
+    private static final QVwSyCode codePlanTypeCd = new QVwSyCode("cd_pt");
+    private static final QVwSyCode codePlanStatusCd = new QVwSyCode("cd_ps");
     // EXISTS 서브쿼리용 별칭 (대상상품/업체/담당MD 필터 — pm_plan_item → pd_prod → sy_vendor/sy_user)
     private static final QPmPlanItem planItemEx = new QPmPlanItem("plan_item_ex");
     private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
@@ -61,12 +61,14 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                         pmPlan.planNm,               // 기획전명 (내부용)
                         pmPlan.planTitle,            // 기획전 타이틀 (노출용)
                         pmPlan.planTypeCd,           // 유형 — PLAN_TYPE {SEASON: '시즌', BRAND: '브랜드', THEME: '테마', COLLAB: '협업'}
+                        codePlanTypeCd.codeLabel.as("planTypeCdNm"), // 코드 라벨
                         pmPlan.planDesc,             // 기획전 설명
                         pmPlan.thumbnailUrl,         // 썸네일 이미지 URL
                         pmPlan.bannerUrl,            // 배너 이미지 URL
                         pmPlan.startDate,            // 시작일시
                         pmPlan.endDate,              // 종료일시
                         pmPlan.planStatusCd,         // 상태 — PLAN_STATUS {DRAFT: '초안', ACTIVE: '공개', ENDED: '종료'}
+                        codePlanStatusCd.codeLabel.as("planStatusCdNm"), // 코드 라벨
                         pmPlan.planStatusCdBefore,   // 변경 전 상태
                         pmPlan.sortOrd,              // 정렬순서
                         pmPlan.useYn,  // 사용여부 Y/N
@@ -81,8 +83,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                         siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(pmPlan)
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE_CD").and(cdPt.codeValue.eq(pmPlan.planTypeCd))) // 기획전유형
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS_CD").and(cdPs.codeValue.eq(pmPlan.planStatusCd))) // 기획전상태
+                .leftJoin(codePlanTypeCd).on(codePlanTypeCd.codeGrp.eq("PLAN_TYPE_CD").and(codePlanTypeCd.codeValue.eq(pmPlan.planTypeCd))) // 기획전유형
+                .leftJoin(codePlanStatusCd).on(codePlanStatusCd.codeGrp.eq("PLAN_STATUS_CD").and(codePlanStatusCd.codeValue.eq(pmPlan.planStatusCd))) // 기획전상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmPlan.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmPlan.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmPlan.siteId)) // 사이트
@@ -105,14 +107,14 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId()));
-        whereList.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()));
+        whereList.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId())); // 기획전ID 필터
+        whereList.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd())); // 상태 필터 — PLAN_STATUS_CD
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmPlan.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmPlan.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -141,14 +143,14 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId()));
-        whereList.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()));
+        whereList.add(QdslUtil.strEq(pmPlan.planId, search.getPlanId())); // 기획전ID 필터
+        whereList.add(QdslUtil.strEq(pmPlan.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd())); // 상태 필터 — PLAN_STATUS_CD
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmPlan.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andProdVendorMd(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmPlan.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmPlan.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery();
@@ -185,7 +187,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
             .where(planItemEx.planId.eq(pmPlan.planId));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(planItemEx.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(planItemEx.prodId, search.getProdId())); // 대상상품 ID 필터 (EXISTS eq via pm_plan_item)
         whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(planItemEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
@@ -211,19 +213,19 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return sub.exists();
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "bannerUrl,planDesc,planId,planNm,planStatusCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bannerUrl", pmPlan.bannerUrl),
-            QdslUtil.FieldDef.like("planDesc", pmPlan.planDesc),
-            QdslUtil.FieldDef.like("planId", pmPlan.planId),
-            QdslUtil.FieldDef.like("planNm", pmPlan.planNm),
-            QdslUtil.FieldDef.like("planStatusCd", pmPlan.planStatusCd),
-            QdslUtil.FieldDef.like("planStatusCdBefore", pmPlan.planStatusCdBefore),
-            QdslUtil.FieldDef.like("planTitle", pmPlan.planTitle),
-            QdslUtil.FieldDef.like("planTypeCd", pmPlan.planTypeCd),
-            QdslUtil.FieldDef.like("thumbnailUrl", pmPlan.thumbnailUrl),
-            QdslUtil.FieldDef.like("useYn", pmPlan.useYn)
+            QdslUtil.FieldDef.like("bannerUrl", pmPlan.bannerUrl), // 배너 이미지 URL
+            QdslUtil.FieldDef.like("planDesc", pmPlan.planDesc), // 기획전 설명
+            QdslUtil.FieldDef.like("planId", pmPlan.planId), // 기획전ID 필터
+            QdslUtil.FieldDef.like("planNm", pmPlan.planNm), // 기획전명 (내부용)
+            QdslUtil.FieldDef.like("planStatusCd", pmPlan.planStatusCd), // 상태 필터 — PLAN_STATUS_CD
+            QdslUtil.FieldDef.like("planStatusCdBefore", pmPlan.planStatusCdBefore), // 변경 전 상태
+            QdslUtil.FieldDef.like("planTitle", pmPlan.planTitle), // 기획전 타이틀 (노출용)
+            QdslUtil.FieldDef.like("planTypeCd", pmPlan.planTypeCd), // 유형 — PLAN_TYPE_CD
+            QdslUtil.FieldDef.like("thumbnailUrl", pmPlan.thumbnailUrl), // 썸네일 이미지 URL
+            QdslUtil.FieldDef.like("useYn", pmPlan.useYn) // 사용여부 필터 Y/N
         ));
     }
 

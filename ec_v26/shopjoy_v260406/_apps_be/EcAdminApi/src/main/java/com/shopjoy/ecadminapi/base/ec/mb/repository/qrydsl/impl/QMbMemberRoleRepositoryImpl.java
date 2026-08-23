@@ -87,11 +87,11 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId()));
+        whereList.add(QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId())); // 회원역할연결ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberRole.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberRole.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -119,11 +119,11 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId()));
+        whereList.add(QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId())); // 회원역할연결ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberRole.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberRole.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery();
@@ -146,13 +146,14 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "grantUserId,memberId,memberRoleId,memberRoleRemark,roleId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("grantUserId", mbMemberRole.grantUserId),
-            QdslUtil.FieldDef.like("memberId", mbMemberRole.memberId),
-            QdslUtil.FieldDef.like("memberRoleId", mbMemberRole.memberRoleId),
-            QdslUtil.FieldDef.like("memberRoleRemark", mbMemberRole.memberRoleRemark),
-            QdslUtil.FieldDef.like("roleId", mbMemberRole.roleId)
+            QdslUtil.FieldDef.like("grantUserId", mbMemberRole.grantUserId), // 권한 부여 관리자 ID
+            QdslUtil.FieldDef.like("memberId", mbMemberRole.memberId), // 회원 ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("memberRoleId", mbMemberRole.memberRoleId), // 회원역할연결ID 필터
+            QdslUtil.FieldDef.like("memberRoleRemark", mbMemberRole.memberRoleRemark), // 비고
+            QdslUtil.FieldDef.like("roleId", mbMemberRole.roleId) // 역할 ID (sy_role.role_id)
         ));
     }
 

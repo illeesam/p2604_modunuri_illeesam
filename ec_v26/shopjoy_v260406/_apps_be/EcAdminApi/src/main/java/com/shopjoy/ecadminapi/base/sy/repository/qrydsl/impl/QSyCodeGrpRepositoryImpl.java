@@ -84,9 +84,9 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()));
-        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
-        whereList.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId())); // 코드그룹ID 필터
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp())); // 코드그룹코드 필터 (예: MEMBER_GRADE)
+        whereList.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -118,9 +118,9 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()));
-        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
-        whereList.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId())); // 코드그룹ID 필터
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp())); // 코드그룹코드 필터 (예: MEMBER_GRADE)
+        whereList.add(QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCodeGrp.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -146,8 +146,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -155,14 +153,15 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 : null;
     }
 
+    /* searchType 예: "codeGrp,codeGrpDesc,codeGrpId,grpNm,pathId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("codeGrp", syCodeGrp.codeGrp),
-            QdslUtil.FieldDef.like("codeGrpDesc", syCodeGrp.codeGrpDesc),
-            QdslUtil.FieldDef.like("codeGrpId", syCodeGrp.codeGrpId),
-            QdslUtil.FieldDef.like("grpNm", syCodeGrp.grpNm),
-            QdslUtil.FieldDef.like("pathId", syCodeGrp.pathId),
-            QdslUtil.FieldDef.like("useYn", syCodeGrp.useYn)
+            QdslUtil.FieldDef.like("codeGrp", syCodeGrp.codeGrp), // 코드그룹코드 필터 (예: MEMBER_GRADE)
+            QdslUtil.FieldDef.like("codeGrpDesc", syCodeGrp.codeGrpDesc), // 코드그룹설명
+            QdslUtil.FieldDef.like("codeGrpId", syCodeGrp.codeGrpId), // 코드그룹ID 필터
+            QdslUtil.FieldDef.like("grpNm", syCodeGrp.grpNm), // 그룹명
+            QdslUtil.FieldDef.like("pathId", syCodeGrp.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("useYn", syCodeGrp.useYn) // 사용여부 필터 Y/N
         ));
     }
 

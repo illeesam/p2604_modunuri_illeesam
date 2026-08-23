@@ -84,9 +84,9 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     public List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId()));
-        whereList.add(QdslUtil.strEq(syUserRole.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syUserRole.roleId, search.getRoleId()));
+        whereList.add(QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId())); // 사용자역할ID 검색값
+        whereList.add(QdslUtil.strEq(syUserRole.userId, search.getUserId())); // 사용자ID 검색값
+        whereList.add(QdslUtil.strEq(syUserRole.roleId, search.getRoleId())); // 역할ID 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUserRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUserRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -117,9 +117,9 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId()));
-        whereList.add(QdslUtil.strEq(syUserRole.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syUserRole.roleId, search.getRoleId()));
+        whereList.add(QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId())); // 사용자역할ID 검색값
+        whereList.add(QdslUtil.strEq(syUserRole.userId, search.getUserId())); // 사용자ID 검색값
+        whereList.add(QdslUtil.strEq(syUserRole.roleId, search.getRoleId())); // 역할ID 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUserRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUserRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -145,13 +145,14 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "grantUserId,roleId,userId,userRoleId,userRoleRemark" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("grantUserId", syUserRole.grantUserId),
-            QdslUtil.FieldDef.like("roleId", syUserRole.roleId),
-            QdslUtil.FieldDef.like("userId", syUserRole.userId),
-            QdslUtil.FieldDef.like("userRoleId", syUserRole.userRoleId),
-            QdslUtil.FieldDef.like("userRoleRemark", syUserRole.userRoleRemark)
+            QdslUtil.FieldDef.like("grantUserId", syUserRole.grantUserId), // 부여자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("roleId", syUserRole.roleId), // 역할ID 검색값
+            QdslUtil.FieldDef.like("userId", syUserRole.userId), // 사용자ID 검색값
+            QdslUtil.FieldDef.like("userRoleId", syUserRole.userRoleId), // 사용자역할ID 검색값
+            QdslUtil.FieldDef.like("userRoleRemark", syUserRole.userRoleRemark) // 비고
         ));
     }
 

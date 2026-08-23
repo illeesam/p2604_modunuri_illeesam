@@ -558,6 +558,74 @@ private BooleanExpression andSiteId(SyUserDto.Request search) {
 - 단일 조인 — **테이블명 그대로** (`syUser`, `sySite`)
 - **같은 테이블 다회 조인** 시만 역할별 alias path (`syCode_userStatusCd`, `syCode_authMethodCd`)
 
+### 14.6.5 `QVwSyCode` 코드조회 alias 명명 규칙 ⭐ (2026-08-23)
+
+공통코드(`sy_code`) 라벨을 붙이려고 `QVwSyCode` 를 조인할 때, alias 변수명은 **그 alias가 실제로 매칭하는 엔티티 필드명 기준**으로 짓는다. `cdIs`/`cdDc`/`cd_at` 같은 축약형 금지.
+
+```java
+// ✅ 올바른 패턴 — codeValue.eq() 로 매칭하는 필드명을 그대로 붙인다
+private static final QVwSyCode codeOrderItemStatusCd = new QVwSyCode("code_order_item_status_cd"); // 품목상태 코드 라벨(ORDER_ITEM_STATUS_CD)
+private static final QVwSyCode codeDlivCourierCd     = new QVwSyCode("code_dliv_courier_cd");      // 택배사 코드 라벨(COURIER)
+...
+.leftJoin(codeDlivCourierCd).on(codeDlivCourierCd.codeGrp.eq("COURIER").and(codeDlivCourierCd.codeValue.eq(odOrderItem.dlivCourierCd)))
+
+// ❌ 금지 — 필드명과 무관한 2~4자 축약 alias
+private static final QVwSyCode cdDc = new QVwSyCode("cd_dc");
+```
+
+- **명명 규칙**: `code` + 매칭 필드명(PascalCase) — 예) `dlivCourierCd` 필드에 매칭 → `codeDlivCourierCd`
+- **한 파일에 같은 이름이 중복될 경우** 두 번째부터 숫자 접미사 (`codeGradeCd`, `codeGradeCd2`)
+- **여러 쿼리 메서드에서 범용으로 재사용되는 alias**(코드그룹이 메서드마다 다름, 필드 하나로 못 좁혀짐)는 `codeLookup` 처럼 일반화된 이름 사용 — 예) [`PdProdHistQueryRepository`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/ec/pd/repository/qrydsl/PdProdHistQueryRepository.java) 의 `codeLookup`
+- SQL 별칭 문자열(`new QVwSyCode("code_xxx")` 의 인자)도 가급적 변수명과 맞춰 snake_case 로 통일
+
+**`innerJoin` vs `leftJoin` 선택 — 컬럼 nullable 여부와 반드시 일치시킨다** ⭐:
+- `innerJoin(codeXxx)`는 "이 코드 매칭 필드는 항상 값이 있다"는 단언이다. 매칭 대상 필드(예: `odRefundMethod.payMethodCd`)의 **Entity `@Column(nullable = false)`** 가 확인될 때만 `innerJoin` 사용 — nullable 이면 값이 NULL 인 행이 결과에서 통째로 사라지는 조용한 데이터 유실 버그가 된다.
+- 새로 `innerJoin(codeXxx)`를 추가하거나 기존 걸 리뷰할 때는 **반드시 Entity 파일에서 해당 필드의 `nullable` 값을 확인**한다:
+  - `nullable = false` 확인됨 → `innerJoin` 유지, 안전
+  - nullable 이거나 어노테이션이 없음 → `leftJoin` 으로 낮춘다 (또는 정말 항상 값이 있어야 하는 업무 규칙이면 DB/Entity 를 `NOT NULL` 로 바꾸는 쪽을 검토)
+- 코드 라벨을 조인했으면 SELECT 에도 `codeXxx.codeLabel.as("xxxNm")` 을 빠짐없이 추가한다(§14.6.7 한글 주석 규칙과 함께 적용) — 라벨을 조인만 해두고 SELECT 에 없는 경우가 실무에서 잦다.
+
+### 14.6.6 `searchType` 사용 예 주석 ⭐ (2026-08-23)
+
+`andSearchValue(...)` 바로 위에 **한 줄** 블록주석으로 사용 가능한 `searchType` 키를 보여준다. 함수 위에는 이 주석 **하나만** 유지한다(다른 목적의 주석과 섞이지 않도록).
+
+```java
+/* searchType 예: "orderId,orderItemId,prodId,prodNm,brandNm" 등 (콤마 조합, 미지정 시 전체 OR) */
+private BooleanExpression andSearchValue(String searchValue, String searchType) {
+    return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+        QdslUtil.FieldDef.like("orderId", odOrderItem.orderId), // 주문ID
+        ...
+    ));
+}
+```
+
+- **최대 5개**까지만 예시로 나열하고, 실제 키가 5개보다 많으면 끝에 `등` 을 붙인다 (`"a,b,c,d,e" 등`)
+- 5개 이하면 `등` 없이 있는 그대로 나열
+- `<Entity 필드명 콤마구분>`, `"fieldA,fieldB"` 같은 미채움 placeholder 텍스트 금지 — 실제 함수 안의 `FieldDef` key 를 그대로 뽑아서 채운다
+- 함수 사이에 다른 헬퍼(`andXxxIn`, `buildOrder` 등)가 끼어들며 주석이 엉뚱한 함수 위에 남는 경우가 있다 — 주석은 항상 **바로 아래 함수를 설명해야** 하며, 어긋나 있으면 맞는 위치로 옮긴다
+
+### 14.6.7 SELECT 컬럼 / WHERE 필터 / `FieldDef` 한글 설명주석 ⭐ (2026-08-23)
+
+`baseSelColumnQuery()` 의 SELECT 컬럼, `whereList.add(...)` 필터 조건, `andSearchValue` 안의 `FieldDef` 엔트리는 **한 줄이라도 트레일링 `//` 한글 주석**을 단다. 설명 문구는 새로 짓지 말고 **해당 필드의 DTO(`*Dto.Item`/`*Dto.Request`) 주석을 그대로 재사용**한다 — 같은 필드를 두 번 다른 말로 설명하면 나중에 서로 어긋난다.
+
+```java
+// SELECT 컬럼 (baseSelColumnQuery)
+odOrderItem.orderItemId,             // 주문상품ID (YYMMDDhhmmss+rand4)
+ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.itemPrice.sum())
+        .from(stSettleItemEx)
+        .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleSaleAmt"), // 정산 판매금액 합계
+
+// WHERE 필터
+whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds())); // 주문ID 목록 필터
+
+// FieldDef (andSearchValue 안)
+QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv), // 노출환경 필터
+```
+
+- 이미 트레일링 `//` 주석이 있는 줄은 건드리지 않는다(중복 작성 금지)
+- DTO 에 해당 필드 주석이 없으면 새로 작성 — 이 경우 반대로 DTO 쪽에도 같은 문구를 추가해 두 곳이 항상 같은 설명을 갖도록 한다
+- 신규 컬럼/필터를 추가할 때도 처음부터 이 규칙을 지킨다(나중에 몰아서 붙이지 말 것)
+
 ---
 
 ## 14.7 Service `save` / `saveList` 표준 패턴

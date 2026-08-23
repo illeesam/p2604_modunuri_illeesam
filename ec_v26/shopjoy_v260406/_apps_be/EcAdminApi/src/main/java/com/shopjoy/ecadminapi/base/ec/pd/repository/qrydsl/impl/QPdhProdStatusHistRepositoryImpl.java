@@ -38,7 +38,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
     private static final QPdhProdStatusHist pdhProdStatusHist     = QPdhProdStatusHist.pdhProdStatusHist;
     private static final QSySite            sySite   = QSySite.sySite;
     private static final QSyUser            syUser   = QSyUser.syUser;
-    private static final QVwSyCode            cd_beforeStatusCd = new QVwSyCode("cd_beforeStatusCd");    /*
+    private static final QVwSyCode            codeBeforeStatusCd = new QVwSyCode("codeBeforeStatusCd");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * BEFORE_STATUS_CD / AFTER_STATUS_CD (PRODUCT_STATUS)  {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
      */
@@ -49,6 +49,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                         pdhProdStatusHist.prodStatusHistId,   // 이력ID (PK)
                         pdhProdStatusHist.prodId,              // 상품ID
                         pdhProdStatusHist.beforeStatusCd,       // 이전상태 — {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+                        codeBeforeStatusCd.codeLabel.as("beforeStatusCdNm"), // 코드 라벨
                         pdhProdStatusHist.afterStatusCd,        // 변경상태 — 동일 코드그룹
                         pdhProdStatusHist.memo,                // 처리메모
                         pdhProdStatusHist.procUserId,          // 처리자 (sy_user.user_id)
@@ -63,7 +64,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                 ))
                 .from(pdhProdStatusHist)
                 .leftJoin(syUser).on(syUser.userId.eq(pdhProdStatusHist.procUserId)) // 사용자
-                .leftJoin(cd_beforeStatusCd).on(cd_beforeStatusCd.codeGrp.eq("PRODUCT_STATUS").and(cd_beforeStatusCd.codeValue.eq(pdhProdStatusHist.beforeStatusCd))) // 상품상태
+                .leftJoin(codeBeforeStatusCd).on(codeBeforeStatusCd.codeGrp.eq("PRODUCT_STATUS").and(codeBeforeStatusCd.codeValue.eq(pdhProdStatusHist.beforeStatusCd))) // 상품상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdhProdStatusHist.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdStatusHist.regBy)) // 등록자
                 ;
@@ -85,7 +86,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId())); // 이력ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdStatusHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdStatusHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -116,7 +117,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId())); // 이력ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdStatusHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdStatusHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -142,14 +143,15 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "afterStatusCd,beforeStatusCd,memo,procUserId,prodId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("afterStatusCd", pdhProdStatusHist.afterStatusCd),
-            QdslUtil.FieldDef.like("beforeStatusCd", pdhProdStatusHist.beforeStatusCd),
-            QdslUtil.FieldDef.like("memo", pdhProdStatusHist.memo),
-            QdslUtil.FieldDef.like("procUserId", pdhProdStatusHist.procUserId),
-            QdslUtil.FieldDef.like("prodId", pdhProdStatusHist.prodId),
-            QdslUtil.FieldDef.like("prodStatusHistId", pdhProdStatusHist.prodStatusHistId)
+            QdslUtil.FieldDef.like("afterStatusCd", pdhProdStatusHist.afterStatusCd), // 변경상태 — PROD_STATUS_CD
+            QdslUtil.FieldDef.like("beforeStatusCd", pdhProdStatusHist.beforeStatusCd), // 이전상태 — PROD_STATUS_CD
+            QdslUtil.FieldDef.like("memo", pdhProdStatusHist.memo), // 처리메모
+            QdslUtil.FieldDef.like("procUserId", pdhProdStatusHist.procUserId), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("prodId", pdhProdStatusHist.prodId), // 상품ID
+            QdslUtil.FieldDef.like("prodStatusHistId", pdhProdStatusHist.prodStatusHistId) // 이력ID (단건 조회 필터)
         ));
     }
 

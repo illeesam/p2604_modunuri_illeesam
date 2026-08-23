@@ -98,12 +98,12 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpUi.uiId, search.getUiId()));
-        whereList.add(QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()));
+        whereList.add(QdslUtil.strEq(dpUi.uiId, search.getUiId())); // UIID 필터
+        whereList.add(QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd())); // 디바이스유형 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpUi.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpUi.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -133,12 +133,12 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpUi.uiId, search.getUiId()));
-        whereList.add(QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()));
+        whereList.add(QdslUtil.strEq(dpUi.uiId, search.getUiId())); // UIID 필터
+        whereList.add(QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd())); // 디바이스유형 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpUi.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpUi.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpUi.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<DpUiDto.Item> query = baseQuery();
@@ -161,8 +161,6 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -170,15 +168,16 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 : null;
     }
 
+    /* searchType 예: "deviceTypeCd,pathId,uiCd,uiDesc,uiId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("deviceTypeCd", dpUi.deviceTypeCd),
-            QdslUtil.FieldDef.like("pathId", dpUi.pathId),
-            QdslUtil.FieldDef.like("uiCd", dpUi.uiCd),
-            QdslUtil.FieldDef.like("uiDesc", dpUi.uiDesc),
-            QdslUtil.FieldDef.like("uiId", dpUi.uiId),
-            QdslUtil.FieldDef.like("uiNm", dpUi.uiNm),
-            QdslUtil.FieldDef.like("useYn", dpUi.useYn)
+            QdslUtil.FieldDef.like("deviceTypeCd", dpUi.deviceTypeCd), // 디바이스유형 필터
+            QdslUtil.FieldDef.like("pathId", dpUi.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("uiCd", dpUi.uiCd), // UI코드 (예: MOBILE_MAIN, PC_MAIN)
+            QdslUtil.FieldDef.like("uiDesc", dpUi.uiDesc), // UI설명
+            QdslUtil.FieldDef.like("uiId", dpUi.uiId), // UIID 필터
+            QdslUtil.FieldDef.like("uiNm", dpUi.uiNm), // UI명
+            QdslUtil.FieldDef.like("useYn", dpUi.useYn) // 사용여부 Y/N 필터
         ));
     }
 

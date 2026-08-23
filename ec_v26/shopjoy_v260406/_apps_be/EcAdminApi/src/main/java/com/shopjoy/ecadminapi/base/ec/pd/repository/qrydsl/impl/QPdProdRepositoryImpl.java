@@ -50,9 +50,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QSyBrand    syBrandEx  = new QSyBrand("sy_brand_ex");
     private static final QSyVendor   syVendorEx = new QSyVendor("sy_vendor_ex");
     private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");
-    private static final QVwSyCode     cdPs = new QVwSyCode("cd_ps");
-    private static final QVwSyCode     cdPt = new QVwSyCode("cd_pt");
-    private static final QVwSyCode     cdSz = new QVwSyCode("cd_sz");    /*
+    private static final QVwSyCode     codeProdStatusCd = new QVwSyCode("cd_ps");
+    private static final QVwSyCode     codeProdTypeCd = new QVwSyCode("cd_pt");
+    private static final QVwSyCode     codeSizeInfoCd = new QVwSyCode("cd_sz");    /*
      * baseListQuery / selectById — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * PROD_STATUS_CD (PRODUCT_STATUS)  {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
      * PROD_TYPE_CD   (PROD_TYPE)    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'} — Entity 주석 기준 예시(코드그룹 미등록)
@@ -114,8 +114,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         syBrand.brandNm.as("brandNm"),             // 브랜드명 (조인)
                         syVendor.vendorNm.as("vendorNm"),          // 업체명 (조인)
                         syUser.userNm.as("mdUserNm"),               // 담당MD명 (조인)
-                        cdPs.codeLabel.as("prodStatusCdNm"),        // 상품상태 코드라벨 (조인, sy_code.PRODUCT_STATUS)
-                        cdPt.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PROD_TYPE)
+                        codeProdStatusCd.codeLabel.as("prodStatusCdNm"),        // 상품상태 코드라벨 (조인, sy_code.PRODUCT_STATUS)
+                        codeProdTypeCd.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PROD_TYPE)
                         pdProd.thumbnailUrl,                          // 썸네일URL (직접 컬럼값; 없으면 _listFillRelations에서 imgMap으로 보완)
                         pdProd.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
@@ -128,8 +128,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId)) // 브랜드
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId)) // 업체
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
+                .leftJoin(codeProdStatusCd).on(codeProdStatusCd.codeGrp.eq("PRODUCT_STATUS").and(codeProdStatusCd.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
+                .leftJoin(codeProdTypeCd).on(codeProdTypeCd.codeGrp.eq("PROD_TYPE_CD").and(codeProdTypeCd.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProd.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProd.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pdProd.siteId)) // 사이트
@@ -204,9 +204,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         syVendor.vendorNm.as("vendorNm"),                       // 업체명 (조인)
                         syVendor.vendorPhone.as("vendorTel"),                   // 업체 전화번호 (조인)
                         syUser.userNm.as("mdUserNm"),                            // 담당MD명 (조인)
-                        cdPs.codeLabel.as("prodStatusCdNm"),                     // 상품상태 코드라벨 (조인)
-                        cdPt.codeLabel.as("prodTypeCdNm"),                       // 상품유형 코드라벨 (조인)
-                        cdSz.codeLabel.as("sizeInfoCdNm"),                        // 사이즈 코드라벨 (조인)
+                        codeProdStatusCd.codeLabel.as("prodStatusCdNm"),                     // 상품상태 코드라벨 (조인)
+                        codeProdTypeCd.codeLabel.as("prodTypeCdNm"),                       // 상품유형 코드라벨 (조인)
+                        codeSizeInfoCd.codeLabel.as("sizeInfoCdNm"),                        // 사이즈 코드라벨 (조인)
                         pdProd.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -218,9 +218,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId)) // 브랜드
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId)) // 업체
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
-                .leftJoin(cdSz).on(cdSz.codeGrp.eq("SIZE_INFO_CD").and(cdSz.codeValue.eq(pdProd.sizeInfoCd))) // 사이즈
+                .leftJoin(codeProdStatusCd).on(codeProdStatusCd.codeGrp.eq("PRODUCT_STATUS").and(codeProdStatusCd.codeValue.eq(pdProd.prodStatusCd))) // 상품상태
+                .leftJoin(codeProdTypeCd).on(codeProdTypeCd.codeGrp.eq("PROD_TYPE_CD").and(codeProdTypeCd.codeValue.eq(pdProd.prodTypeCd))) // 상품유형
+                .leftJoin(codeSizeInfoCd).on(codeSizeInfoCd.codeGrp.eq("SIZE_INFO_CD").and(codeSizeInfoCd.codeValue.eq(pdProd.sizeInfoCd))) // 사이즈
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pdProd.regSiteId)) // 등록사이트
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pdProd.siteId)) // 사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pdProd.regBy)) // 등록자
@@ -237,8 +237,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         List<BooleanExpression> whereList = new ArrayList<>();
 
-        whereList.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProd.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pdProd.prodId, search.getProdId())); // 상품ID 필터
 
         /* 브랜드 — brandId 가 있으면 ID 로, 없고 brandNm 만 있으면 브랜드명 LIKE 로 EXISTS */
         if (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) {
@@ -267,16 +267,16 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     .exists());
         }
 
-        whereList.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()));
-        whereList.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
-        whereList.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
+        whereList.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd())); // 상품상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds())); // 상품상태 다중 필터 (strIn, BO multiCheck)
+        whereList.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd())); // 상품유형 필터
 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
 
         whereList.add(andCurrentYnProd(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProd.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProd.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -307,8 +307,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         List<BooleanExpression> whereList = new ArrayList<>();
 
-        whereList.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProd.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pdProd.prodId, search.getProdId())); // 상품ID 필터
 
         /* 브랜드 — brandId 가 있으면 ID 로, 없고 brandNm 만 있으면 브랜드명 LIKE 로 EXISTS */
         if (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) {
@@ -337,16 +337,16 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     .exists());
         }
 
-        whereList.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()));
-        whereList.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
-        whereList.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
+        whereList.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd())); // 상품상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds())); // 상품상태 다중 필터 (strIn, BO multiCheck)
+        whereList.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd())); // 상품유형 필터
 
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
 
         whereList.add(andCurrentYnProd(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProd.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProd.siteId, search.getSiteId())); // 사이트ID 필터
 
         /* list/count 가 동일 조건을 공유하도록 배열로 1회 변환 */
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -372,8 +372,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     }
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-
     /**
      * currentYn='Y' 일 때만 "지금 판매중" 조건 — 상태 ACTIVE + 판매기간(sale_start_date~sale_end_date) 이내.
      *
@@ -388,31 +386,32 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .and(QdslUtil.dateBetween(now, pdProd.saleStartDate, pdProd.saleEndDate));
     }
 
+    /* searchType 예: "adltYn,advrtStmt,brandId,categoryId,contentHtml" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("adltYn", pdProd.adltYn),
-            QdslUtil.FieldDef.like("advrtStmt", pdProd.advrtStmt),
-            QdslUtil.FieldDef.like("brandId", pdProd.brandId),
-            QdslUtil.FieldDef.like("categoryId", pdProd.categoryId),
-            QdslUtil.FieldDef.like("contentHtml", pdProd.contentHtml),
-            QdslUtil.FieldDef.like("couponUseYn", pdProd.couponUseYn),
-            QdslUtil.FieldDef.like("discntUseYn", pdProd.discntUseYn),
-            QdslUtil.FieldDef.like("dlivTmpltId", pdProd.dlivTmpltId),
-            QdslUtil.FieldDef.like("isBest", pdProd.isBest),
-            QdslUtil.FieldDef.like("isNew", pdProd.isNew),
-            QdslUtil.FieldDef.like("mdUserId", pdProd.mdUserId),
-            QdslUtil.FieldDef.like("prodCode", pdProd.prodCode),
-            QdslUtil.FieldDef.like("prodId", pdProd.prodId),
-            QdslUtil.FieldDef.like("prodNm", pdProd.prodNm),
-            QdslUtil.FieldDef.like("prodStatusCd", pdProd.prodStatusCd),
-            QdslUtil.FieldDef.like("prodStatusCdBefore", pdProd.prodStatusCdBefore),
-            QdslUtil.FieldDef.like("prodTypeCd", pdProd.prodTypeCd),
-            QdslUtil.FieldDef.like("sameDayDlivYn", pdProd.sameDayDlivYn),
-            QdslUtil.FieldDef.like("saveUseYn", pdProd.saveUseYn),
-            QdslUtil.FieldDef.like("sizeInfoCd", pdProd.sizeInfoCd),
-            QdslUtil.FieldDef.like("soldOutYn", pdProd.soldOutYn),
-            QdslUtil.FieldDef.like("thumbnailUrl", pdProd.thumbnailUrl),
-            QdslUtil.FieldDef.like("vendorId", pdProd.vendorId)
+            QdslUtil.FieldDef.like("adltYn", pdProd.adltYn), // 성인상품 여부 Y/N
+            QdslUtil.FieldDef.like("advrtStmt", pdProd.advrtStmt), // 홍보문구 (500자 이내)
+            QdslUtil.FieldDef.like("brandId", pdProd.brandId), // 브랜드ID 필터
+            QdslUtil.FieldDef.like("categoryId", pdProd.categoryId), // 카테고리ID 필터
+            QdslUtil.FieldDef.like("contentHtml", pdProd.contentHtml), // 상세설명 (HTML)
+            QdslUtil.FieldDef.like("couponUseYn", pdProd.couponUseYn), // 쿠폰 사용 가능 여부 Y/N
+            QdslUtil.FieldDef.like("discntUseYn", pdProd.discntUseYn), // 할인 적용 가능 여부 Y/N
+            QdslUtil.FieldDef.like("dlivTmpltId", pdProd.dlivTmpltId), // 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+            QdslUtil.FieldDef.like("isBest", pdProd.isBest), // 베스트여부 Y/N
+            QdslUtil.FieldDef.like("isNew", pdProd.isNew), // 신상품여부 Y/N
+            QdslUtil.FieldDef.like("mdUserId", pdProd.mdUserId), // 담당MD(sy_user.user_id) 필터
+            QdslUtil.FieldDef.like("prodCode", pdProd.prodCode), // 상품코드(SKU)
+            QdslUtil.FieldDef.like("prodId", pdProd.prodId), // 상품ID 필터
+            QdslUtil.FieldDef.like("prodNm", pdProd.prodNm), // 상품명
+            QdslUtil.FieldDef.like("prodStatusCd", pdProd.prodStatusCd), // 상품상태 단건 필터 (strEq)
+            QdslUtil.FieldDef.like("prodStatusCdBefore", pdProd.prodStatusCdBefore), // 변경 전 상품상태
+            QdslUtil.FieldDef.like("prodTypeCd", pdProd.prodTypeCd), // 상품유형 필터
+            QdslUtil.FieldDef.like("sameDayDlivYn", pdProd.sameDayDlivYn), // 당일배송여부 Y/N
+            QdslUtil.FieldDef.like("saveUseYn", pdProd.saveUseYn), // 적립금 사용 가능 여부 Y/N
+            QdslUtil.FieldDef.like("sizeInfoCd", pdProd.sizeInfoCd), // 사이즈 — SIZE_INFO_CD {FREE:FREE, XS:XS, S:S, M:M, L:L, XL:XL}
+            QdslUtil.FieldDef.like("soldOutYn", pdProd.soldOutYn), // 품절여부 Y/N
+            QdslUtil.FieldDef.like("thumbnailUrl", pdProd.thumbnailUrl), // 썸네일URL
+            QdslUtil.FieldDef.like("vendorId", pdProd.vendorId) // 업체ID 필터
         ));
     }
 

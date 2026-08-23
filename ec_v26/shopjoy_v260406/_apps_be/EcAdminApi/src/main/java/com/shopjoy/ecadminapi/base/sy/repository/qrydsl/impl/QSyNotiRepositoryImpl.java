@@ -86,10 +86,10 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(QdslUtil.strEq(syNoti.notiId, search.getNotiId()));
-        whereList.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd()));
+        whereList.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd())); // MEMBER / USER
         whereList.add(QdslUtil.strEq(syNoti.recvId, search.getRecvId()));
-        whereList.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd()));
-        whereList.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd()));
+        whereList.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd())); // NOTICE/ALARM/SPECIAL
+        whereList.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd())); // mail/sms/kakao/chat/notice
         whereList.add(QdslUtil.strEq(syNoti.readYn, search.getReadYn()));
         whereList.add(QdslUtil.strEq(syNoti.regSiteId, search.getSiteId()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -122,10 +122,10 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(QdslUtil.strEq(syNoti.notiId, search.getNotiId()));
-        whereList.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd()));
+        whereList.add(QdslUtil.strEq(syNoti.recvTypeCd, search.getRecvTypeCd())); // MEMBER / USER
         whereList.add(QdslUtil.strEq(syNoti.recvId, search.getRecvId()));
-        whereList.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd()));
-        whereList.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd()));
+        whereList.add(QdslUtil.strEq(syNoti.notiTypeCd, search.getNotiTypeCd())); // NOTICE/ALARM/SPECIAL
+        whereList.add(QdslUtil.strEq(syNoti.channelCd, search.getChannelCd())); // mail/sms/kakao/chat/notice
         whereList.add(QdslUtil.strEq(syNoti.readYn, search.getReadYn()));
         whereList.add(QdslUtil.strEq(syNoti.regSiteId, search.getSiteId()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -184,14 +184,14 @@ public class QSyNotiRepositoryImpl implements QSyNotiRepository {
         return (int) affected;
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "channelCd,notiContent,notiId,notiTitle,notiTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("channelCd", syNoti.channelCd),
+            QdslUtil.FieldDef.like("channelCd", syNoti.channelCd), // mail/sms/kakao/chat/notice
             QdslUtil.FieldDef.like("notiContent", syNoti.notiContent),
             QdslUtil.FieldDef.like("notiId", syNoti.notiId),
             QdslUtil.FieldDef.like("notiTitle", syNoti.notiTitle),
-            QdslUtil.FieldDef.like("notiTypeCd", syNoti.notiTypeCd),
+            QdslUtil.FieldDef.like("notiTypeCd", syNoti.notiTypeCd), // NOTICE/ALARM/SPECIAL
             QdslUtil.FieldDef.like("recvId", syNoti.recvId),
             QdslUtil.FieldDef.like("recvNm", syNoti.recvNm)
         ));

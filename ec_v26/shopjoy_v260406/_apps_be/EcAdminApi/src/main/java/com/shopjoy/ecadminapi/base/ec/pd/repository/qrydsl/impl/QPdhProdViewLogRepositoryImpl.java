@@ -81,7 +81,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId())); // 로그ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdViewLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdViewLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -112,7 +112,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId())); // 로그ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdViewLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdViewLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -138,19 +138,19 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "device,ip,logId,memberId,prodId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("device", pdhProdViewLog.device),
-            QdslUtil.FieldDef.like("ip", pdhProdViewLog.ip),
-            QdslUtil.FieldDef.like("logId", pdhProdViewLog.logId),
-            QdslUtil.FieldDef.like("memberId", pdhProdViewLog.memberId),
-            QdslUtil.FieldDef.like("prodId", pdhProdViewLog.prodId),
-            QdslUtil.FieldDef.like("refId", pdhProdViewLog.refId),
-            QdslUtil.FieldDef.like("refNm", pdhProdViewLog.refNm),
-            QdslUtil.FieldDef.like("referrer", pdhProdViewLog.referrer),
-            QdslUtil.FieldDef.like("searchKw", pdhProdViewLog.searchKw),
-            QdslUtil.FieldDef.like("sessionKey", pdhProdViewLog.sessionKey)
+            QdslUtil.FieldDef.like("device", pdhProdViewLog.device), // User-Agent
+            QdslUtil.FieldDef.like("ip", pdhProdViewLog.ip), // IP주소
+            QdslUtil.FieldDef.like("logId", pdhProdViewLog.logId), // 로그ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("memberId", pdhProdViewLog.memberId), // 회원ID (비회원 NULL)
+            QdslUtil.FieldDef.like("prodId", pdhProdViewLog.prodId), // 상품ID (pd_prod.prod_id)
+            QdslUtil.FieldDef.like("refId", pdhProdViewLog.refId), // 참조ID (prod_id 등)
+            QdslUtil.FieldDef.like("refNm", pdhProdViewLog.refNm), // 참조명 스냅샷
+            QdslUtil.FieldDef.like("referrer", pdhProdViewLog.referrer), // 유입경로 URL
+            QdslUtil.FieldDef.like("searchKw", pdhProdViewLog.searchKw), // 검색어 (SEARCH 유형)
+            QdslUtil.FieldDef.like("sessionKey", pdhProdViewLog.sessionKey) // 비회원 세션키
         ));
     }
 

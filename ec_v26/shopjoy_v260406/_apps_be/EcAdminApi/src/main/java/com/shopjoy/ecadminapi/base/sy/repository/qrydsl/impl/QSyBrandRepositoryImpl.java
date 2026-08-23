@@ -87,9 +87,9 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syBrand.brandId, search.getBrandId()));
-        whereList.add(QdslUtil.strEq(syBrand.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syBrand.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syBrand.brandId, search.getBrandId())); // 브랜드ID 필터
+        whereList.add(QdslUtil.strEq(syBrand.vendorId, search.getVendorId())); // 업체ID 필터
+        whereList.add(QdslUtil.strEq(syBrand.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syBrand.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syBrand.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -121,9 +121,9 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syBrand.brandId, search.getBrandId()));
-        whereList.add(QdslUtil.strEq(syBrand.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syBrand.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syBrand.brandId, search.getBrandId())); // 브랜드ID 필터
+        whereList.add(QdslUtil.strEq(syBrand.vendorId, search.getVendorId())); // 업체ID 필터
+        whereList.add(QdslUtil.strEq(syBrand.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syBrand.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syBrand.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -149,8 +149,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -158,17 +156,18 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 : null;
     }
 
+    /* searchType 예: "brandCode,brandEnNm,brandId,brandNm,brandRemark" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("brandCode", syBrand.brandCode),
-            QdslUtil.FieldDef.like("brandEnNm", syBrand.brandEnNm),
-            QdslUtil.FieldDef.like("brandId", syBrand.brandId),
-            QdslUtil.FieldDef.like("brandNm", syBrand.brandNm),
-            QdslUtil.FieldDef.like("brandRemark", syBrand.brandRemark),
-            QdslUtil.FieldDef.like("logoUrl", syBrand.logoUrl),
-            QdslUtil.FieldDef.like("pathId", syBrand.pathId),
-            QdslUtil.FieldDef.like("useYn", syBrand.useYn),
-            QdslUtil.FieldDef.like("vendorId", syBrand.vendorId)
+            QdslUtil.FieldDef.like("brandCode", syBrand.brandCode), // 브랜드코드
+            QdslUtil.FieldDef.like("brandEnNm", syBrand.brandEnNm), // 브랜드영문명
+            QdslUtil.FieldDef.like("brandId", syBrand.brandId), // 브랜드ID 필터
+            QdslUtil.FieldDef.like("brandNm", syBrand.brandNm), // 브랜드명 (한글)
+            QdslUtil.FieldDef.like("brandRemark", syBrand.brandRemark), // 비고
+            QdslUtil.FieldDef.like("logoUrl", syBrand.logoUrl), // 로고URL
+            QdslUtil.FieldDef.like("pathId", syBrand.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("useYn", syBrand.useYn), // 사용여부 필터 Y/N
+            QdslUtil.FieldDef.like("vendorId", syBrand.vendorId) // 업체ID 필터
         ));
     }
 

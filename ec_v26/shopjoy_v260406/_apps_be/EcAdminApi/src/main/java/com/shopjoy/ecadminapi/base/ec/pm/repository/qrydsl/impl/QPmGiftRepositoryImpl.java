@@ -49,9 +49,9 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final QSySite  sySite  = QSySite.sySite;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyUser   syUser   = QSyUser.syUser;
-    private static final QVwSyCode  cdGt = new QVwSyCode("cd_gt");
-    private static final QVwSyCode  cdGs = new QVwSyCode("cd_gs");
-    private static final QVwSyCode  cdMg = new QVwSyCode("cd_mg");
+    private static final QVwSyCode  codeGiftTypeCd = new QVwSyCode("cd_gt");
+    private static final QVwSyCode  codeGiftStatusCd = new QVwSyCode("cd_gs");
+    private static final QVwSyCode  codeMemGradeCd = new QVwSyCode("cd_mg");
     // EXISTS 서브쿼리용 별칭 (발급회원 필터 — pm_gift_issue → mb_member)
     private static final QPmGiftIssue giftIssueEx = new QPmGiftIssue("gift_issue_ex");
     private static final QMbMember    mbMemberEx  = new QMbMember("mb_member_ex");    /**
@@ -67,14 +67,17 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                         pmGift.giftId,               // 사은품ID (PK, YYMMDDhhmmss+rand4)
                         pmGift.giftNm,               // 사은품명
                         pmGift.giftTypeCd,           // 사은품유형 — GIFT_TYPE {PRODUCT: '상품', SAMPLE: '샘플', ETC: '기타'}
+                        codeGiftTypeCd.codeLabel.as("giftTypeCdNm"), // 코드 라벨
                         pmGift.prodId,               // 연결 상품ID (pd_prod.prod_id)
                         pmGift.giftStock,            // 사은품 재고
                         pmGift.giftDesc,             // 사은품 설명
                         pmGift.startDate,            // 시작일시
                         pmGift.endDate,              // 종료일시
                         pmGift.giftStatusCd,         // 상태 — GIFT_STATUS {ACTIVE: '활성', INACTIVE: '비활성'}
+                        codeGiftStatusCd.codeLabel.as("giftStatusCdNm"), // 코드 라벨
                         pmGift.giftStatusCdBefore,   // 변경 전 상태
                         pmGift.memGradeCd,           // 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)
+                        codeMemGradeCd.codeLabel.as("memGradeCdNm"), // 코드 라벨
                         pmGift.minOrderAmt,          // 최소주문금액 — 사은품 지급 기준 금액
                         pmGift.minOrderQty,          // 최소주문수량 (NULL=제한없음)
                         pmGift.selfCdivRate,         // 자사(사이트) 분담율 (%) — 기본 100%
@@ -97,9 +100,9 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId)) // 상품
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId)) // 업체
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId)) // 사용자
-                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE_CD").and(cdGt.codeValue.eq(pmGift.giftTypeCd))) // 사은품유형
-                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS_CD").and(cdGs.codeValue.eq(pmGift.giftStatusCd))) // 사은품상태
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd))) // 회원등급
+                .leftJoin(codeGiftTypeCd).on(codeGiftTypeCd.codeGrp.eq("GIFT_TYPE_CD").and(codeGiftTypeCd.codeValue.eq(pmGift.giftTypeCd))) // 사은품유형
+                .leftJoin(codeGiftStatusCd).on(codeGiftStatusCd.codeGrp.eq("GIFT_STATUS_CD").and(codeGiftStatusCd.codeValue.eq(pmGift.giftStatusCd))) // 사은품상태
+                .leftJoin(codeMemGradeCd).on(codeMemGradeCd.codeGrp.eq("MEMBER_GRADE").and(codeMemGradeCd.codeValue.eq(pmGift.memGradeCd))) // 회원등급
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmGift.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmGift.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmGift.siteId)) // 사이트
@@ -122,21 +125,21 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
-        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
-        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
-        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmGift.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
-        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId())); // 사은품ID 필터
+        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd())); // 사은품유형 필터
+        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd())); // 상태 필터 — GIFT_STATUS_CD
+        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmGift.prodId, search.getProdId())); // 연결 상품ID 필터 (pd_prod.prod_id)
+        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId())); // 업체 ID 필터 (base 조인 pd_prod.vendor_id)
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm())); // 업체명 필터 (base 조인 sy_vendor.vendor_nm)
+        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId())); // 담당MD ID 필터 (base 조인 pd_prod.md_user_id)
+        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm())); // 담당MD명 필터 (base 조인 sy_user.user_nm)
         whereList.add(andMember(search));
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andCurrentYnGift(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmGift.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmGift.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -165,23 +168,23 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
-        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
-        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
-        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId())); // 사은품ID 필터
+        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd())); // 사은품유형 필터
+        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd())); // 상태 필터 — GIFT_STATUS_CD
+        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(/* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
                — 페이지 조회 모드에서만 상품 필터가 무시되던 기존 버그. 같이 정정. */
             QdslUtil.strEq(pmGift.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
-        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId())); // 업체 ID 필터 (base 조인 pd_prod.vendor_id)
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm())); // 업체명 필터 (base 조인 sy_vendor.vendor_nm)
+        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId())); // 담당MD ID 필터 (base 조인 pd_prod.md_user_id)
+        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm())); // 담당MD명 필터 (base 조인 sy_user.user_nm)
         whereList.add(andMember(search));
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andCurrentYnGift(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmGift.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmGift.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery();
@@ -218,8 +221,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     }
 
     /** 검색조건 빌드 — Mapper XML pmGiftCond 와 동일 */
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /**
      * currentYn='Y' 일 때만 "지금 지급중" 조건 — 상태 ACTIVE + use_yn='Y' + 지급기간(start_date~end_date) 이내.
      *
@@ -235,17 +236,18 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 .and(QdslUtil.dateBetween(today, pmGift.startDate, pmGift.endDate));
     }
 
+    /* searchType 예: "giftDesc,giftId,giftNm,giftStatusCd,giftStatusCdBefore" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("giftDesc", pmGift.giftDesc),
-            QdslUtil.FieldDef.like("giftId", pmGift.giftId),
-            QdslUtil.FieldDef.like("giftNm", pmGift.giftNm),
-            QdslUtil.FieldDef.like("giftStatusCd", pmGift.giftStatusCd),
-            QdslUtil.FieldDef.like("giftStatusCdBefore", pmGift.giftStatusCdBefore),
-            QdslUtil.FieldDef.like("giftTypeCd", pmGift.giftTypeCd),
-            QdslUtil.FieldDef.like("memGradeCd", pmGift.memGradeCd),
-            QdslUtil.FieldDef.like("prodId", pmGift.prodId),
-            QdslUtil.FieldDef.like("useYn", pmGift.useYn)
+            QdslUtil.FieldDef.like("giftDesc", pmGift.giftDesc), // 사은품 설명
+            QdslUtil.FieldDef.like("giftId", pmGift.giftId), // 사은품ID 필터
+            QdslUtil.FieldDef.like("giftNm", pmGift.giftNm), // 사은품명
+            QdslUtil.FieldDef.like("giftStatusCd", pmGift.giftStatusCd), // 상태 필터 — GIFT_STATUS_CD
+            QdslUtil.FieldDef.like("giftStatusCdBefore", pmGift.giftStatusCdBefore), // 변경 전 상태
+            QdslUtil.FieldDef.like("giftTypeCd", pmGift.giftTypeCd), // 사은품유형 필터
+            QdslUtil.FieldDef.like("memGradeCd", pmGift.memGradeCd), // 적용 회원등급 코드 (NULL=전체)
+            QdslUtil.FieldDef.like("prodId", pmGift.prodId), // 연결 상품ID 필터 (pd_prod.prod_id)
+            QdslUtil.FieldDef.like("useYn", pmGift.useYn) // 사용여부 필터 Y/N
         ));
     }
 

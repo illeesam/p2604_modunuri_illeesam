@@ -48,10 +48,10 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
                         pdProdContent.contentHtml,      // HTML 에디터 컨텐츠
                         pdProdContent.sortOrd,          // 정렬순서
                         pdProdContent.useYn,             // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdProdContent.regBy,
-                        pdProdContent.regDate,
-                        pdProdContent.updBy,
-                        pdProdContent.updDate,
+                        pdProdContent.regBy, // 등록자
+                        pdProdContent.regDate, // 등록일
+                        pdProdContent.updBy, // 수정자
+                        pdProdContent.updDate, // 수정일
                         pdProdContent.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -81,12 +81,12 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdContent.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdContent.prodContentId, search.getProdContentId()));
+        whereList.add(QdslUtil.strEq(pdProdContent.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdContent.prodContentId, search.getProdContentId())); // 상품컨텐츠ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdContent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdContent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdContent.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdContent.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -115,12 +115,12 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdContent.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdContent.prodContentId, search.getProdContentId()));
+        whereList.add(QdslUtil.strEq(pdProdContent.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdContent.prodContentId, search.getProdContentId())); // 상품컨텐츠ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdContent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdContent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdContent.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdContent.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdContentDto.Item> query = baseSelColumnQuery();
@@ -143,13 +143,14 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "contentHtml,contentTypeCd,prodContentId,prodId,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("contentHtml", pdProdContent.contentHtml),
-            QdslUtil.FieldDef.like("contentTypeCd", pdProdContent.contentTypeCd),
-            QdslUtil.FieldDef.like("prodContentId", pdProdContent.prodContentId),
-            QdslUtil.FieldDef.like("prodId", pdProdContent.prodId),
-            QdslUtil.FieldDef.like("useYn", pdProdContent.useYn)
+            QdslUtil.FieldDef.like("contentHtml", pdProdContent.contentHtml), // HTML 에디터 컨텐츠 (file/url 타입은 CDN URL 문자열)
+            QdslUtil.FieldDef.like("contentTypeCd", pdProdContent.contentTypeCd), // 컨텐츠유형 — PROD_CONTENT_TYPE
+            QdslUtil.FieldDef.like("prodContentId", pdProdContent.prodContentId), // 상품컨텐츠ID 필터
+            QdslUtil.FieldDef.like("prodId", pdProdContent.prodId), // 상품ID 필터
+            QdslUtil.FieldDef.like("useYn", pdProdContent.useYn) // 사용여부 필터 Y/N
         ));
     }
 

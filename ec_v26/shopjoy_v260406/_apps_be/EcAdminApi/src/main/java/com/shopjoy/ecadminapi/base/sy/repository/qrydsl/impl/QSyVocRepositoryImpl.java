@@ -77,10 +77,10 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     public List<SyVocDto.Item> selectList(SyVocDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
-        whereList.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
-        whereList.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
-        whereList.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syVoc.vocId, search.getVocId())); // VOC분류ID 검색값
+        whereList.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd())); // VOC마스터코드 검색값
+        whereList.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd())); // VOC세부코드 검색값
+        whereList.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn())); // 사용여부 검색값 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -110,10 +110,10 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
-        whereList.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
-        whereList.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
-        whereList.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syVoc.vocId, search.getVocId())); // VOC분류ID 검색값
+        whereList.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd())); // VOC마스터코드 검색값
+        whereList.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd())); // VOC세부코드 검색값
+        whereList.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn())); // 사용여부 검색값 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery();
@@ -136,15 +136,15 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         BasePage<SyVocDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "useYn,vocContent,vocDetailCd,vocId,vocMasterCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("useYn", syVoc.useYn),
-            QdslUtil.FieldDef.like("vocContent", syVoc.vocContent),
-            QdslUtil.FieldDef.like("vocDetailCd", syVoc.vocDetailCd),
-            QdslUtil.FieldDef.like("vocId", syVoc.vocId),
-            QdslUtil.FieldDef.like("vocMasterCd", syVoc.vocMasterCd),
-            QdslUtil.FieldDef.like("vocNm", syVoc.vocNm)
+            QdslUtil.FieldDef.like("useYn", syVoc.useYn), // 사용여부 검색값 Y/N
+            QdslUtil.FieldDef.like("vocContent", syVoc.vocContent), // VOC항목설명
+            QdslUtil.FieldDef.like("vocDetailCd", syVoc.vocDetailCd), // VOC세부코드 검색값
+            QdslUtil.FieldDef.like("vocId", syVoc.vocId), // VOC분류ID 검색값
+            QdslUtil.FieldDef.like("vocMasterCd", syVoc.vocMasterCd), // VOC마스터코드 검색값
+            QdslUtil.FieldDef.like("vocNm", syVoc.vocNm) // VOC항목명
         ));
     }
 

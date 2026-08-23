@@ -40,7 +40,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyTemplate      syTemplate = QSyTemplate.syTemplate;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QVwSyCode          cd_sr = new QVwSyCode("cd_sr");    /*
+    private static final QVwSyCode          codeResultCd = new QVwSyCode("codeResultCd");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SEND_RESULT  {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
      */
@@ -71,7 +71,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                         syhSendEmailLog.updDate,         // 수정일시
                         syTemplate.templateNm.as("templateNm"),      // 템플릿명 (조인: sy_template)
                         syUser.userNm.as("userNm"),                  // 관리자명 (조인: sy_user)
-                        cd_sr.codeLabel.as("resultCdNm"),              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
+                        codeResultCd.codeLabel.as("resultCdNm"),              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                         syhSendEmailLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
@@ -79,7 +79,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 .from(syhSendEmailLog)
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendEmailLog.templateId)) // 템플릿
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendEmailLog.userId)) // 사용자
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendEmailLog.resultCd))) // 발송결과
+                .leftJoin(codeResultCd).on(codeResultCd.codeGrp.eq("SEND_RESULT").and(codeResultCd.codeValue.eq(syhSendEmailLog.resultCd))) // 발송결과
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhSendEmailLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syhSendEmailLog.regBy)) // 등록자
                 ;
@@ -101,10 +101,10 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()));
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId())); // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId())); // 템플릿ID (sy_template.template_id)
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd())); // 유형코드
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -136,10 +136,10 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()));
-        whereList.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId())); // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId())); // 템플릿ID (sy_template.template_id)
+        whereList.add(QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd())); // 유형코드
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendEmailLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -166,24 +166,25 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "bccAddr,ccAddr,content,failReason,fromAddr" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bccAddr", syhSendEmailLog.bccAddr),
-            QdslUtil.FieldDef.like("ccAddr", syhSendEmailLog.ccAddr),
-            QdslUtil.FieldDef.like("content", syhSendEmailLog.content),
-            QdslUtil.FieldDef.like("failReason", syhSendEmailLog.failReason),
-            QdslUtil.FieldDef.like("fromAddr", syhSendEmailLog.fromAddr),
-            QdslUtil.FieldDef.like("logId", syhSendEmailLog.logId),
-            QdslUtil.FieldDef.like("memberId", syhSendEmailLog.memberId),
-            QdslUtil.FieldDef.like("params", syhSendEmailLog.params),
-            QdslUtil.FieldDef.like("refId", syhSendEmailLog.refId),
-            QdslUtil.FieldDef.like("refTypeCd", syhSendEmailLog.refTypeCd),
-            QdslUtil.FieldDef.like("resultCd", syhSendEmailLog.resultCd),
-            QdslUtil.FieldDef.like("subject", syhSendEmailLog.subject),
-            QdslUtil.FieldDef.like("templateCode", syhSendEmailLog.templateCode),
-            QdslUtil.FieldDef.like("templateId", syhSendEmailLog.templateId),
-            QdslUtil.FieldDef.like("toAddr", syhSendEmailLog.toAddr),
-            QdslUtil.FieldDef.like("userId", syhSendEmailLog.userId)
+            QdslUtil.FieldDef.like("bccAddr", syhSendEmailLog.bccAddr), // 숨은참조 이메일
+            QdslUtil.FieldDef.like("ccAddr", syhSendEmailLog.ccAddr), // 참조 이메일 (복수 시 콤마 구분)
+            QdslUtil.FieldDef.like("content", syhSendEmailLog.content), // 발송 본문 (치환 완료본 HTML)
+            QdslUtil.FieldDef.like("failReason", syhSendEmailLog.failReason), // 실패 사유
+            QdslUtil.FieldDef.like("fromAddr", syhSendEmailLog.fromAddr), // 발신 이메일
+            QdslUtil.FieldDef.like("logId", syhSendEmailLog.logId), // 로그ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("memberId", syhSendEmailLog.memberId), // 대상 회원ID (ec_member.member_id, 비회원 NULL)
+            QdslUtil.FieldDef.like("params", syhSendEmailLog.params), // 치환 파라미터 JSON (예: {"order_no":"...","member_nm":"..."})
+            QdslUtil.FieldDef.like("refId", syhSendEmailLog.refId), // 연관ID
+            QdslUtil.FieldDef.like("refTypeCd", syhSendEmailLog.refTypeCd), // 연관유형코드 (ORDER/CLAIM/JOIN/PWD_RESET 등)
+            QdslUtil.FieldDef.like("resultCd", syhSendEmailLog.resultCd), // 발송결과 (코드: SEND_RESULT)
+            QdslUtil.FieldDef.like("subject", syhSendEmailLog.subject), // 발송 제목 (치환 완료본)
+            QdslUtil.FieldDef.like("templateCode", syhSendEmailLog.templateCode), // 템플릿코드 스냅샷
+            QdslUtil.FieldDef.like("templateId", syhSendEmailLog.templateId), // 템플릿ID (sy_template.template_id)
+            QdslUtil.FieldDef.like("toAddr", syhSendEmailLog.toAddr), // 수신 이메일
+            QdslUtil.FieldDef.like("userId", syhSendEmailLog.userId) // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
         ));
     }
 

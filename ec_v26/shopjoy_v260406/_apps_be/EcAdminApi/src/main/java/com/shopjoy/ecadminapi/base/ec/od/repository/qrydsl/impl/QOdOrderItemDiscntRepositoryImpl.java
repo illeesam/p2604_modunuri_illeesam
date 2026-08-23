@@ -43,7 +43,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     private static final QOdOrder           ord = new QOdOrder("ord");
     private static final QOdOrderItem       ite = new QOdOrderItem("ite");
     private static final QPmCoupon          cpn = new QPmCoupon("cpn");
-    private static final QVwSyCode            cdOidt = new QVwSyCode("cd_oidt");    /*
+    private static final QVwSyCode            codeDiscntTypeCd = new QVwSyCode("cd_oidt");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * ORDER_ITEM_DISCNT_TYPE (sy_code 미등록 — Entity 주석 기준 예시)
      *   ITEM_DISCNT:즉시할인, ITEM_COUPON:상품쿠폰
@@ -55,6 +55,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                         odOrderItemDiscnt.orderId,          // 주문ID (od_order.order_id)
                         odOrderItemDiscnt.orderItemId,      // 주문상품ID (od_order_item.order_item_id)
                         odOrderItemDiscnt.discntTypeCd,     // 할인유형코드 — ORDER_ITEM_DISCNT_TYPE {ITEM_DISCNT:즉시할인, ITEM_COUPON:상품쿠폰}
+                        codeDiscntTypeCd.codeLabel.as("discntTypeCdNm"), // 코드 라벨
                         odOrderItemDiscnt.couponId,         // 쿠폰ID (pm_coupon.coupon_id — ITEM_COUPON인 경우)
                         odOrderItemDiscnt.couponIssueId,    // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ITEM_COUPON인 경우)
                         odOrderItemDiscnt.discntRate,       // 할인율 (% — 비율할인인 경우)
@@ -70,7 +71,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                 .from(odOrderItemDiscnt)
                 .innerJoin(ord).on(ord.orderId.eq(odOrderItemDiscnt.orderId)) // 주문
                 .innerJoin(ite).on(ite.orderItemId.eq(odOrderItemDiscnt.orderItemId)) // 주문상품
-                .innerJoin(cdOidt).on(cdOidt.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(cdOidt.codeValue.eq(odOrderItemDiscnt.discntTypeCd))) // 주문상품할인유형
+                .innerJoin(codeDiscntTypeCd).on(codeDiscntTypeCd.codeGrp.eq("ORDER_ITEM_DISCNT_TYPE").and(codeDiscntTypeCd.codeValue.eq(odOrderItemDiscnt.discntTypeCd))) // 주문상품할인유형
                 .leftJoin(cpn).on(cpn.couponId.eq(odOrderItemDiscnt.couponId)) // 쿠폰
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odOrderItemDiscnt.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(odOrderItemDiscnt.regBy)) // 등록자
@@ -92,7 +93,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId()));
+        whereList.add(QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId())); // 주문상품할인ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItemDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItemDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -124,7 +125,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId()));
+        whereList.add(QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId())); // 주문상품할인ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItemDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItemDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -150,14 +151,15 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "couponId,couponIssueId,discntTypeCd,orderItemDiscntId,orderId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("couponId", odOrderItemDiscnt.couponId),
-            QdslUtil.FieldDef.like("couponIssueId", odOrderItemDiscnt.couponIssueId),
-            QdslUtil.FieldDef.like("discntTypeCd", odOrderItemDiscnt.discntTypeCd),
-            QdslUtil.FieldDef.like("orderItemDiscntId", odOrderItemDiscnt.orderItemDiscntId),
-            QdslUtil.FieldDef.like("orderId", odOrderItemDiscnt.orderId),
-            QdslUtil.FieldDef.like("orderItemId", odOrderItemDiscnt.orderItemId)
+            QdslUtil.FieldDef.like("couponId", odOrderItemDiscnt.couponId), // 쿠폰ID (pm_coupon.coupon_id — ITEM_COUPON인 경우)
+            QdslUtil.FieldDef.like("couponIssueId", odOrderItemDiscnt.couponIssueId), // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ITEM_COUPON인 경우)
+            QdslUtil.FieldDef.like("discntTypeCd", odOrderItemDiscnt.discntTypeCd), // 할인유형코드
+            QdslUtil.FieldDef.like("orderItemDiscntId", odOrderItemDiscnt.orderItemDiscntId), // 주문상품할인ID 필터
+            QdslUtil.FieldDef.like("orderId", odOrderItemDiscnt.orderId), // 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("orderItemId", odOrderItemDiscnt.orderItemId) // 주문상품ID (od_order_item.order_item_id)
         ));
     }
 

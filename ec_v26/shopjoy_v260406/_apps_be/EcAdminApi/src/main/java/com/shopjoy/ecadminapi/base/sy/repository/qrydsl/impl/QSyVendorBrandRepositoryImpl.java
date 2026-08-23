@@ -40,7 +40,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final QSyVendorBrand syVendorBrand = QSyVendorBrand.syVendorBrand;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyBrand syBrand = QSyBrand.syBrand;
-    private static final QVwSyCode cdVbc = new QVwSyCode("cd_vbc");    /*
+    private static final QVwSyCode codeContractCd = new QVwSyCode("cd_vbc");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * VENDOR_BRAND_CONTRACT  (sy_code 미등록 — 실제 코드값 미확인, 계약유형 구분 코드로만 사용)
      */
@@ -53,6 +53,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                         syVendorBrand.brandId,                     // 브랜드ID (sy_brand.brand_id)
                         syVendorBrand.isMain,                      // 대표 브랜드 여부 Y/N
                         syVendorBrand.contractCd,                  // 계약유형 — VENDOR_BRAND_CONTRACT (sy_code 미등록)
+                        codeContractCd.codeLabel.as("contractCdNm"), // 코드 라벨
                         syVendorBrand.startDate,                   // 계약 시작일
                         syVendorBrand.endDate,                     // 계약 종료일
                         syVendorBrand.commissionRate,              // 수수료율 (%)
@@ -72,7 +73,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 .from(syVendorBrand)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId)) // 업체
                 .innerJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId)) // 브랜드
-                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("CONTRACT_CD").and(cdVbc.codeValue.eq(syVendorBrand.contractCd))) // 계약상태
+                .leftJoin(codeContractCd).on(codeContractCd.codeGrp.eq("CONTRACT_CD").and(codeContractCd.codeValue.eq(syVendorBrand.contractCd))) // 계약상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorBrand.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorBrand.regBy)) // 등록자
                 ;
@@ -93,9 +94,9 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     public List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()));
-        whereList.add(QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()));
-        whereList.add(QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId())); // 업체브랜드ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId())); // 브랜드ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId())); // 업체ID 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorBrand.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorBrand.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -126,9 +127,9 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()));
-        whereList.add(QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()));
-        whereList.add(QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()));
+        whereList.add(QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId())); // 업체브랜드ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId())); // 브랜드ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId())); // 업체ID 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorBrand.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorBrand.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -154,15 +155,16 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "brandId,contractCd,isMain,useYn,vendorBrandId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("brandId", syVendorBrand.brandId),
-            QdslUtil.FieldDef.like("contractCd", syVendorBrand.contractCd),
-            QdslUtil.FieldDef.like("isMain", syVendorBrand.isMain),
-            QdslUtil.FieldDef.like("useYn", syVendorBrand.useYn),
-            QdslUtil.FieldDef.like("vendorBrandId", syVendorBrand.vendorBrandId),
-            QdslUtil.FieldDef.like("vendorBrandRemark", syVendorBrand.vendorBrandRemark),
-            QdslUtil.FieldDef.like("vendorId", syVendorBrand.vendorId)
+            QdslUtil.FieldDef.like("brandId", syVendorBrand.brandId), // 브랜드ID 검색값
+            QdslUtil.FieldDef.like("contractCd", syVendorBrand.contractCd), // 계약유형 — CONTRACT_CD {CONSIGN:위탁}
+            QdslUtil.FieldDef.like("isMain", syVendorBrand.isMain), // 대표 브랜드 여부 Y/N
+            QdslUtil.FieldDef.like("useYn", syVendorBrand.useYn), // 사용여부 검색값 Y/N
+            QdslUtil.FieldDef.like("vendorBrandId", syVendorBrand.vendorBrandId), // 업체브랜드ID 검색값
+            QdslUtil.FieldDef.like("vendorBrandRemark", syVendorBrand.vendorBrandRemark), // 비고
+            QdslUtil.FieldDef.like("vendorId", syVendorBrand.vendorId) // 업체ID 검색값
         ));
     }
 

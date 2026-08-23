@@ -93,10 +93,10 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
-        whereList.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
-        whereList.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
-        whereList.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
+        whereList.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId())); // 첨부파일ID 필터
+        whereList.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd())); // MIME 타입 필터
+        whereList.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm())); // 관련 테이블명 필터 (예: sy_notice)
+        whereList.add(QdslUtil.strEq(syAttach.refId, search.getRefId())); // 관련 ID 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -126,10 +126,10 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
-        whereList.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
-        whereList.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
-        whereList.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
+        whereList.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId())); // 첨부파일ID 필터
+        whereList.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd())); // MIME 타입 필터
+        whereList.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm())); // 관련 테이블명 필터 (예: sy_notice)
+        whereList.add(QdslUtil.strEq(syAttach.refId, search.getRefId())); // 관련 ID 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery();
@@ -152,27 +152,27 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         BasePage<SyAttachDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "attachId,attachMemo,attachUrl,cdnHost,cdnImgUrl" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachId", syAttach.attachId),
-            QdslUtil.FieldDef.like("attachMemo", syAttach.attachMemo),
-            QdslUtil.FieldDef.like("attachUrl", syAttach.attachUrl),
-            QdslUtil.FieldDef.like("cdnHost", syAttach.cdnHost),
-            QdslUtil.FieldDef.like("cdnImgUrl", syAttach.cdnImgUrl),
-            QdslUtil.FieldDef.like("cdnThumbUrl", syAttach.cdnThumbUrl),
-            QdslUtil.FieldDef.like("fileExt", syAttach.fileExt),
-            QdslUtil.FieldDef.like("fileNm", syAttach.fileNm),
-            QdslUtil.FieldDef.like("mimeTypeCd", syAttach.mimeTypeCd),
-            QdslUtil.FieldDef.like("physicalPath", syAttach.physicalPath),
-            QdslUtil.FieldDef.like("storagePath", syAttach.storagePath),
+            QdslUtil.FieldDef.like("attachId", syAttach.attachId), // 첨부파일ID 필터
+            QdslUtil.FieldDef.like("attachMemo", syAttach.attachMemo), // 첨부 메모
+            QdslUtil.FieldDef.like("attachUrl", syAttach.attachUrl), // 첨부파일 URL
+            QdslUtil.FieldDef.like("cdnHost", syAttach.cdnHost), // CDN 호스트
+            QdslUtil.FieldDef.like("cdnImgUrl", syAttach.cdnImgUrl), // CDN 이미지 URL
+            QdslUtil.FieldDef.like("cdnThumbUrl", syAttach.cdnThumbUrl), // CDN 썸네일 URL
+            QdslUtil.FieldDef.like("fileExt", syAttach.fileExt), // 파일 확장자
+            QdslUtil.FieldDef.like("fileNm", syAttach.fileNm), // 원본 파일명
+            QdslUtil.FieldDef.like("mimeTypeCd", syAttach.mimeTypeCd), // MIME 타입 필터
+            QdslUtil.FieldDef.like("physicalPath", syAttach.physicalPath), // 실제 물리 저장 전체 경로 (서버 절대경로)
+            QdslUtil.FieldDef.like("storagePath", syAttach.storagePath), // 파일 저장 경로
             QdslUtil.FieldDef.like("storageTypeCd", syAttach.storageTypeCd),
-            QdslUtil.FieldDef.like("storedNm", syAttach.storedNm),
-            QdslUtil.FieldDef.like("thumbCdnUrl", syAttach.thumbCdnUrl),
-            QdslUtil.FieldDef.like("thumbFileNm", syAttach.thumbFileNm),
-            QdslUtil.FieldDef.like("thumbGeneratedYn", syAttach.thumbGeneratedYn),
-            QdslUtil.FieldDef.like("thumbStoredNm", syAttach.thumbStoredNm),
-            QdslUtil.FieldDef.like("thumbUrl", syAttach.thumbUrl)
+            QdslUtil.FieldDef.like("storedNm", syAttach.storedNm), // 저장된 파일명 (YYYYMMDD_hhmmss_seq_random.ext)
+            QdslUtil.FieldDef.like("thumbCdnUrl", syAttach.thumbCdnUrl), // CDN 썸네일 URL
+            QdslUtil.FieldDef.like("thumbFileNm", syAttach.thumbFileNm), // 썸네일 파일명
+            QdslUtil.FieldDef.like("thumbGeneratedYn", syAttach.thumbGeneratedYn), // 썸네일 생성 여부 (동영상은 필수 Y, 이미지는 선택) Y/N
+            QdslUtil.FieldDef.like("thumbStoredNm", syAttach.thumbStoredNm), // 썸네일 저장 파일명
+            QdslUtil.FieldDef.like("thumbUrl", syAttach.thumbUrl) // 썸네일 URL
         ));
     }
 

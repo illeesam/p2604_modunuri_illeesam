@@ -48,7 +48,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         this.syMenuRepository = syMenuRepository;
         this.em = em;
     }
-    private static final QVwSyCode cdMt = new QVwSyCode("cd_mt");    /*
+    private static final QVwSyCode codeMenuTypeCd = new QVwSyCode("cd_mt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * MENU_TYPE {PAGE: '페이지', FOLDER: '폴더', LINK: '링크'}
      * USE_YN    {Y: '사용', N: '미사용'}
@@ -62,6 +62,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         syMenu.parentMenuId,   // 상위메뉴ID
                         syMenu.menuUrl,        // 메뉴URL
                         syMenu.menuTypeCd,     // 메뉴유형 — MENU_TYPE {PAGE: '페이지', FOLDER: '폴더', LINK: '링크'}
+                        codeMenuTypeCd.codeLabel.as("menuTypeCdNm"), // 코드 라벨
                         syMenu.iconClass,      // 아이콘 CSS 클래스
                         syMenu.sortOrd,        // 정렬순서
                         syMenu.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
@@ -75,7 +76,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syMenu)
-                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE_CD").and(cdMt.codeValue.eq(syMenu.menuTypeCd))) // 메뉴유형
+                .leftJoin(codeMenuTypeCd).on(codeMenuTypeCd.codeGrp.eq("MENU_TYPE_CD").and(codeMenuTypeCd.codeValue.eq(syMenu.menuTypeCd))) // 메뉴유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syMenu.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syMenu.regBy)) // 등록자
                 ;
@@ -97,8 +98,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andMenuIdIn(search));
-        whereList.add(QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()));
-        whereList.add(QdslUtil.strEq(syMenu.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd())); // 메뉴유형 (코드: MENU_TYPE — PAGE/FOLDER/LINK)
+        whereList.add(QdslUtil.strEq(syMenu.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syMenu.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syMenu.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -130,8 +131,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andMenuIdIn(search));
-        whereList.add(QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()));
-        whereList.add(QdslUtil.strEq(syMenu.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd())); // 메뉴유형 (코드: MENU_TYPE — PAGE/FOLDER/LINK)
+        whereList.add(QdslUtil.strEq(syMenu.useYn, search.getUseYn())); // 사용여부 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syMenu.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syMenu.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -157,23 +158,22 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
-    /* menuId 트리 — 선택 노드 + 모든 자손 메뉴 포함 (sy_menu 자기참조 재귀 CTE 인라인) */
+    /* searchType 예: "iconClass,menuCode,menuId,menuNm,menuRemark" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("iconClass", syMenu.iconClass),
-            QdslUtil.FieldDef.like("menuCode", syMenu.menuCode),
-            QdslUtil.FieldDef.like("menuId", syMenu.menuId),
-            QdslUtil.FieldDef.like("menuNm", syMenu.menuNm),
-            QdslUtil.FieldDef.like("menuRemark", syMenu.menuRemark),
-            QdslUtil.FieldDef.like("menuTypeCd", syMenu.menuTypeCd),
-            QdslUtil.FieldDef.like("menuUrl", syMenu.menuUrl),
-            QdslUtil.FieldDef.like("parentMenuId", syMenu.parentMenuId),
-            QdslUtil.FieldDef.like("useYn", syMenu.useYn)
+            QdslUtil.FieldDef.like("iconClass", syMenu.iconClass), // 아이콘 CSS 클래스
+            QdslUtil.FieldDef.like("menuCode", syMenu.menuCode), // 메뉴코드
+            QdslUtil.FieldDef.like("menuId", syMenu.menuId), // 메뉴ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("menuNm", syMenu.menuNm), // 메뉴명
+            QdslUtil.FieldDef.like("menuRemark", syMenu.menuRemark), // 비고
+            QdslUtil.FieldDef.like("menuTypeCd", syMenu.menuTypeCd), // 메뉴유형 (코드: MENU_TYPE — PAGE/FOLDER/LINK)
+            QdslUtil.FieldDef.like("menuUrl", syMenu.menuUrl), // 메뉴URL
+            QdslUtil.FieldDef.like("parentMenuId", syMenu.parentMenuId), // 상위메뉴ID
+            QdslUtil.FieldDef.like("useYn", syMenu.useYn) // 사용여부 Y/N
         ));
     }
 
+    /* menuId 트리 — 선택 노드 + 모든 자손 메뉴 포함 (sy_menu 자기참조 재귀 CTE 인라인) */
     @SuppressWarnings("unchecked")
     private BooleanExpression andMenuIdIn(SyMenuDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getMenuId())) return null;

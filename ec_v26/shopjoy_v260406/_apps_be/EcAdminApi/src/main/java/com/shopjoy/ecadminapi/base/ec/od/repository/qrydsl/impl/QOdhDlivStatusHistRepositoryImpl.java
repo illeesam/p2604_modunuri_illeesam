@@ -79,7 +79,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId())); // 배송상태이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -109,7 +109,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId())); // 배송상태이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhDlivStatusHistDto.Item> query = baseSelColumnQuery();
@@ -133,16 +133,17 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chgUserId,dlivId,dlivStatusCd,dlivStatusCdBefore,dlivStatusHistId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chgUserId", odhDlivStatusHist.chgUserId),
-            QdslUtil.FieldDef.like("dlivId", odhDlivStatusHist.dlivId),
-            QdslUtil.FieldDef.like("dlivStatusCd", odhDlivStatusHist.dlivStatusCd),
-            QdslUtil.FieldDef.like("dlivStatusCdBefore", odhDlivStatusHist.dlivStatusCdBefore),
-            QdslUtil.FieldDef.like("dlivStatusHistId", odhDlivStatusHist.dlivStatusHistId),
-            QdslUtil.FieldDef.like("memo", odhDlivStatusHist.memo),
-            QdslUtil.FieldDef.like("orderId", odhDlivStatusHist.orderId),
-            QdslUtil.FieldDef.like("statusReason", odhDlivStatusHist.statusReason)
+            QdslUtil.FieldDef.like("chgUserId", odhDlivStatusHist.chgUserId), // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+            QdslUtil.FieldDef.like("dlivId", odhDlivStatusHist.dlivId), // 배송ID (od_dliv.dliv_id)
+            QdslUtil.FieldDef.like("dlivStatusCd", odhDlivStatusHist.dlivStatusCd), // 변경 후 배송상태 (코드: DLIV_STATUS)
+            QdslUtil.FieldDef.like("dlivStatusCdBefore", odhDlivStatusHist.dlivStatusCdBefore), // 변경 전 배송상태 (코드: DLIV_STATUS)
+            QdslUtil.FieldDef.like("dlivStatusHistId", odhDlivStatusHist.dlivStatusHistId), // 배송상태이력ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("memo", odhDlivStatusHist.memo), // 메모
+            QdslUtil.FieldDef.like("orderId", odhDlivStatusHist.orderId), // 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("statusReason", odhDlivStatusHist.statusReason) // 상태 변경 사유
         ));
     }
 

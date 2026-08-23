@@ -79,7 +79,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhPayStatusHist.payStatusHistId, search.getPayStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhPayStatusHist.payStatusHistId, search.getPayStatusHistId())); // 결제상태이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -109,7 +109,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odhPayStatusHist.payStatusHistId, search.getPayStatusHistId()));
+        whereList.add(QdslUtil.strEq(odhPayStatusHist.payStatusHistId, search.getPayStatusHistId())); // 결제상태이력ID (YYMMDDhhmmss+rand4)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<OdhPayStatusHistDto.Item> query = baseSelColumnQuery();
@@ -133,16 +133,17 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chgUserId,memo,orderId,payId,payStatusCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chgUserId", odhPayStatusHist.chgUserId),
-            QdslUtil.FieldDef.like("memo", odhPayStatusHist.memo),
-            QdslUtil.FieldDef.like("orderId", odhPayStatusHist.orderId),
-            QdslUtil.FieldDef.like("payId", odhPayStatusHist.payId),
-            QdslUtil.FieldDef.like("payStatusCd", odhPayStatusHist.payStatusCd),
-            QdslUtil.FieldDef.like("payStatusCdBefore", odhPayStatusHist.payStatusCdBefore),
-            QdslUtil.FieldDef.like("payStatusHistId", odhPayStatusHist.payStatusHistId),
-            QdslUtil.FieldDef.like("statusReason", odhPayStatusHist.statusReason)
+            QdslUtil.FieldDef.like("chgUserId", odhPayStatusHist.chgUserId), // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+            QdslUtil.FieldDef.like("memo", odhPayStatusHist.memo), // 메모
+            QdslUtil.FieldDef.like("orderId", odhPayStatusHist.orderId), // 주문ID (od_order.)
+            QdslUtil.FieldDef.like("payId", odhPayStatusHist.payId), // 결제ID (od_pay.)
+            QdslUtil.FieldDef.like("payStatusCd", odhPayStatusHist.payStatusCd), // 변경 후 결제상태 (코드: PAY_STATUS)
+            QdslUtil.FieldDef.like("payStatusCdBefore", odhPayStatusHist.payStatusCdBefore), // 변경 전 결제상태 (코드: PAY_STATUS)
+            QdslUtil.FieldDef.like("payStatusHistId", odhPayStatusHist.payStatusHistId), // 결제상태이력ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("statusReason", odhPayStatusHist.statusReason) // 상태 변경 사유
         ));
     }
 

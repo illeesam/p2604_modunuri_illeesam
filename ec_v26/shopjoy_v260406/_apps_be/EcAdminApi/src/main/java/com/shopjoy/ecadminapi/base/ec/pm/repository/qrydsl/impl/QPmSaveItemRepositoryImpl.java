@@ -40,7 +40,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     private static final QPmSaveItem pmSaveItem    = QPmSaveItem.pmSaveItem;
     private static final QPmSave     pmSave  = QPmSave.pmSave;
     private static final QSySite     sySite  = QSySite.sySite;
-    private static final QVwSyCode     cdSit = new QVwSyCode("cd_sit");    /*
+    private static final QVwSyCode     codeTargetTypeCd = new QVwSyCode("cd_sit");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * SAVE_ITEM_TARGET  대상 유형 코드 (sy_code: SAVE_ITEM_TARGET, 상품·카테고리·브랜드 등 — Entity 주석 기준. 실제 등록값은 미확인)
      */
@@ -53,7 +53,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                         pmSaveItem.targetId,       // 대상 ID (상품·카테고리·브랜드 등)
                         pmSaveItem.regBy,  // 등록자
                         pmSaveItem.regDate,  // 등록일시
-                        cdSit.codeLabel.as("targetTypeCdNm"),        // 대상유형 코드라벨 (조인)
+                        codeTargetTypeCd.codeLabel.as("targetTypeCdNm"),        // 대상유형 코드라벨 (조인)
                         pmSaveItem.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -62,7 +62,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                 ))
                 .from(pmSaveItem)
                 .innerJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId)) // 적립금
-                .innerJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd))) // 프로모션대상유형
+                .innerJoin(codeTargetTypeCd).on(codeTargetTypeCd.codeGrp.eq("PROMO_TARGET_TYPE").and(codeTargetTypeCd.codeValue.eq(pmSaveItem.targetTypeCd))) // 프로모션대상유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmSaveItem.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmSaveItem.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmSaveItem.siteId)) // 사이트
@@ -85,14 +85,14 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmSaveItem.saveItemId, search.getSaveItemId()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add(QdslUtil.strEq(pmSaveItem.saveItemId, search.getSaveItemId())); // PK: SAI+yyMMddHHmmss+rand4
+        whereList.add(QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId())); // 적립금정책ID (pm_save_policy.save_policy_id)
+        whereList.add(QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId())); // 대상 ID (상품·카테고리·브랜드 등)
+        whereList.add(QdslUtil.strEq(pmSaveItem.targetTypeCd, search.getTargetTypeCd())); // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -121,14 +121,14 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmSaveItem.saveItemId, search.getSaveItemId()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add(QdslUtil.strEq(pmSaveItem.saveItemId, search.getSaveItemId())); // PK: SAI+yyMMddHHmmss+rand4
+        whereList.add(QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId())); // 적립금정책ID (pm_save_policy.save_policy_id)
+        whereList.add(QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId())); // 대상 ID (상품·카테고리·브랜드 등)
+        whereList.add(QdslUtil.strEq(pmSaveItem.targetTypeCd, search.getTargetTypeCd())); // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery();
@@ -151,12 +151,13 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "saveId,saveItemId,targetId,targetTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("saveId", pmSaveItem.saveId),
-            QdslUtil.FieldDef.like("saveItemId", pmSaveItem.saveItemId),
-            QdslUtil.FieldDef.like("targetId", pmSaveItem.targetId),
-            QdslUtil.FieldDef.like("targetTypeCd", pmSaveItem.targetTypeCd)
+            QdslUtil.FieldDef.like("saveId", pmSaveItem.saveId), // 적립금정책ID (pm_save_policy.save_policy_id)
+            QdslUtil.FieldDef.like("saveItemId", pmSaveItem.saveItemId), // PK: SAI+yyMMddHHmmss+rand4
+            QdslUtil.FieldDef.like("targetId", pmSaveItem.targetId), // 대상 ID (상품·카테고리·브랜드 등)
+            QdslUtil.FieldDef.like("targetTypeCd", pmSaveItem.targetTypeCd) // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
         ));
     }
 

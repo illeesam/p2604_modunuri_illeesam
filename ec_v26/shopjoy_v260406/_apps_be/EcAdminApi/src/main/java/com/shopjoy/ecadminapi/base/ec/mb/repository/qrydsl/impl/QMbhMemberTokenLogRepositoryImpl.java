@@ -39,8 +39,8 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     private static final QMbhMemberTokenLog mbhMemberTokenLog    = QMbhMemberTokenLog.mbhMemberTokenLog;
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
-    private static final QVwSyCode            cdTa = new QVwSyCode("cd_ta");
-    private static final QVwSyCode            cdTt = new QVwSyCode("cd_tt");    /*
+    private static final QVwSyCode            codeActionCd = new QVwSyCode("cd_ta");
+    private static final QVwSyCode            codeTokenTypeCd = new QVwSyCode("cd_tt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * ACTION_CD (코드: ACTION_CD)      {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
      * TOKEN_TYPE_CD (코드: TOKEN_TYPE)    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
@@ -68,16 +68,16 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                         mbhMemberTokenLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbhMemberTokenLog.updDate,           // 수정일
                         mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
-                        cdTa.codeLabel.as("actionCdNm"),            // 토큰 액션 코드라벨 (sy_code TOKEN_ACTION 조인)
-                        cdTt.codeLabel.as("tokenTypeCdNm"),          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
+                        codeActionCd.codeLabel.as("actionCdNm"),            // 토큰 액션 코드라벨 (sy_code TOKEN_ACTION 조인)
+                        codeTokenTypeCd.codeLabel.as("tokenTypeCdNm"),          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
                         mbhMemberTokenLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(mbhMemberTokenLog)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId)) // 회원
-                .innerJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd))) // 액션
-                .innerJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd))) // 토큰유형
+                .innerJoin(codeActionCd).on(codeActionCd.codeGrp.eq("ACTION_CD").and(codeActionCd.codeValue.eq(mbhMemberTokenLog.actionCd))) // 액션
+                .innerJoin(codeTokenTypeCd).on(codeTokenTypeCd.codeGrp.eq("TOKEN_TYPE").and(codeTokenTypeCd.codeValue.eq(mbhMemberTokenLog.tokenTypeCd))) // 토큰유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbhMemberTokenLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(mbhMemberTokenLog.regBy)) // 등록자
                 ;
@@ -96,7 +96,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     public List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId())); // 로그ID 필터
         whereList.add(QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -126,7 +126,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId())); // 로그ID 필터
         whereList.add(QdslUtil.dateBetween(mbhMemberTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -150,23 +150,23 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         BasePage<MbhMemberTokenLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "memberId" (Entity 필드명) */
+    /* searchType 예: "accessToken,actionCd,authId,cmdNm,deviceInfo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("accessToken", mbhMemberTokenLog.accessToken),
-            QdslUtil.FieldDef.like("actionCd", mbhMemberTokenLog.actionCd),
+            QdslUtil.FieldDef.like("accessToken", mbhMemberTokenLog.accessToken), // 토큰값 (SHA-256 해시 저장 권장)
+            QdslUtil.FieldDef.like("actionCd", mbhMemberTokenLog.actionCd), // 토큰 액션 — ACTION_CD
             QdslUtil.FieldDef.like("authId", mbhMemberTokenLog.authId),
-            QdslUtil.FieldDef.like("cmdNm", mbhMemberTokenLog.cmdNm),
-            QdslUtil.FieldDef.like("deviceInfo", mbhMemberTokenLog.deviceInfo),
-            QdslUtil.FieldDef.like("ip", mbhMemberTokenLog.ip),
-            QdslUtil.FieldDef.like("logId", mbhMemberTokenLog.logId),
-            QdslUtil.FieldDef.like("loginLogId", mbhMemberTokenLog.loginLogId),
-            QdslUtil.FieldDef.like("memberId", mbhMemberTokenLog.memberId),
-            QdslUtil.FieldDef.like("prevToken", mbhMemberTokenLog.prevToken),
-            QdslUtil.FieldDef.like("refreshToken", mbhMemberTokenLog.refreshToken),
-            QdslUtil.FieldDef.like("revokeReasonCd", mbhMemberTokenLog.revokeReasonCd),
-            QdslUtil.FieldDef.like("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd),
-            QdslUtil.FieldDef.like("uiNm", mbhMemberTokenLog.uiNm)
+            QdslUtil.FieldDef.like("cmdNm", mbhMemberTokenLog.cmdNm), // 기능명 (X-Cmd-Nm 헤더)
+            QdslUtil.FieldDef.like("deviceInfo", mbhMemberTokenLog.deviceInfo), // User-Agent
+            QdslUtil.FieldDef.like("ip", mbhMemberTokenLog.ip), // IP주소
+            QdslUtil.FieldDef.like("logId", mbhMemberTokenLog.logId), // 로그ID 필터
+            QdslUtil.FieldDef.like("loginLogId", mbhMemberTokenLog.loginLogId), // 최초 로그인 로그ID (mbh_member_login_log)
+            QdslUtil.FieldDef.like("memberId", mbhMemberTokenLog.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("prevToken", mbhMemberTokenLog.prevToken), // 갱신 전 토큰 해시 (REFRESH 액션 시)
+            QdslUtil.FieldDef.like("refreshToken", mbhMemberTokenLog.refreshToken), // 리프레시 토큰
+            QdslUtil.FieldDef.like("revokeReasonCd", mbhMemberTokenLog.revokeReasonCd), // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
+            QdslUtil.FieldDef.like("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd), // 토큰 유형 — TOKEN_TYPE {ACCESS:액세스, REFRESH:리프레시}
+            QdslUtil.FieldDef.like("uiNm", mbhMemberTokenLog.uiNm) // 화면명 (X-UI-Nm 헤더)
         ));
     }
 

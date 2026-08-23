@@ -39,8 +39,8 @@ public class PdProdHistQueryRepository {
     private static final QPdhProdStatusHist   statusHist = QPdhProdStatusHist.pdhProdStatusHist;
     private static final QPdhProdChgHist      chgHist    = QPdhProdChgHist.pdhProdChgHist;
     private static final QSyUser              syUser     = QSyUser.syUser;
-    private static final QVwSyCode            syCode1    = new QVwSyCode("cd1");
-    private static final QVwSyCode            syCode2    = new QVwSyCode("cd2");
+    private static final QVwSyCode            codeLookup    = new QVwSyCode("cd1");
+    private static final QVwSyCode            codeAfterStatusCd    = new QVwSyCode("cd2");
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -48,17 +48,17 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectOrders(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        order.orderId.as("orderId"),
-                        order.memberId.as("memberId"),
-                        order.memberNm.as("memberNm"),
-                        order.orderDate.as("orderDate"),
-                        order.totalAmt.as("totalAmt"),
-                        order.orderStatusCd.as("orderStatusCd"),
-                        syCode1.codeLabel.as("orderStatusCdNm"),
+                        order.orderId.as("orderId"), // 연관 주문ID (od_order.order_id)
+                        order.memberId.as("memberId"), // 주문 회원ID
+                        order.memberNm.as("memberNm"), // 주문 회원명 (조인 표시용)
+                        order.orderDate.as("orderDate"), // 주문일시
+                        order.totalAmt.as("totalAmt"), // 주문 총금액
+                        order.orderStatusCd.as("orderStatusCd"), // 주문상태 — ORDER_STATUS_CD
+                        codeLookup.codeLabel.as("orderStatusCdNm"), // 주문상태 코드라벨 (조인 표시용)
                         orderItem.orderQty.as("orderQty")))
                 .from(orderItem)
                 .join(order).on(order.orderId.eq(orderItem.orderId))
-                .leftJoin(syCode1).on(syCode1.codeGrp.eq("ORDER_STATUS_CD").and(syCode1.codeValue.eq(order.orderStatusCd)))
+                .leftJoin(codeLookup).on(codeLookup.codeGrp.eq("ORDER_STATUS_CD").and(codeLookup.codeValue.eq(order.orderStatusCd)))
                 .where(orderItem.prodId.eq(req.getProdId()),
                        dateBetween(req, "order_date", order.orderDate))
                 .orderBy(order.orderDate.desc());
@@ -70,19 +70,19 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectStockHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        stockHist.histId.as("histId"),
-                        stockHist.prodId.as("prodId"),
-                        stockHist.chgDate.as("histDate"),
-                        stockHist.chgBy.as("regBy"),
-                        syUser.userNm.as("regByNm"),
-                        stockHist.chgReasonCd.as("stockTypeCd"),
-                        syCode1.codeLabel.as("stockTypeCdNm"),
-                        stockHist.chgQty.as("stockQty"),
-                        stockHist.stockAfter.as("stockBalance"),
+                        stockHist.histId.as("histId"), // 이력ID 필터 (하위 이력 테이블 PK 공용)
+                        stockHist.prodId.as("prodId"), // 상품ID 필터 (필수 — 상품별 이력 조회)
+                        stockHist.chgDate.as("histDate"), // 이력 발생일시 (재고/가격/상태/변경 이력 공통 chg_date·proc_date)
+                        stockHist.chgBy.as("regBy"), // 처리자ID (chg_by/proc_user_id)
+                        syUser.userNm.as("regByNm"), // 처리자명 (조인 표시용)
+                        stockHist.chgReasonCd.as("stockTypeCd"), // 재고변동사유
+                        codeLookup.codeLabel.as("stockTypeCdNm"), // 재고변동사유 코드라벨 (조인 표시용)
+                        stockHist.chgQty.as("stockQty"), // 재고 변동 수량
+                        stockHist.stockAfter.as("stockBalance"), // 변동 후 재고 잔량
                         stockHist.chgReason.as("stockMemo")))
                 .from(stockHist)
                 .leftJoin(syUser).on(syUser.userId.eq(stockHist.chgBy))
-                .leftJoin(syCode1).on(syCode1.codeGrp.eq("CHG_REASON_CD").and(syCode1.codeValue.eq(stockHist.chgReasonCd)))
+                .leftJoin(codeLookup).on(codeLookup.codeGrp.eq("CHG_REASON_CD").and(codeLookup.codeValue.eq(stockHist.chgReasonCd)))
                 .where(stockHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "chg_date", stockHist.chgDate))
                 .orderBy(stockHist.chgDate.desc());
@@ -104,12 +104,12 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectPriceHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        priceHist.histId.as("histId"),
-                        priceHist.prodId.as("prodId"),
-                        priceHist.chgDate.as("histDate"),
-                        priceHist.chgBy.as("regBy"),
-                        syUser.userNm.as("regByNm"),
-                        priceHist.chgReason.as("priceField"),
+                        priceHist.histId.as("histId"), // 이력ID 필터 (하위 이력 테이블 PK 공용)
+                        priceHist.prodId.as("prodId"), // 상품ID 필터 (필수 — 상품별 이력 조회)
+                        priceHist.chgDate.as("histDate"), // 이력 발생일시 (재고/가격/상태/변경 이력 공통 chg_date·proc_date)
+                        priceHist.chgBy.as("regBy"), // 처리자ID (chg_by/proc_user_id)
+                        syUser.userNm.as("regByNm"), // 처리자명 (조인 표시용)
+                        priceHist.chgReason.as("priceField"), // 가격 변경 항목명 (chg_reason)
                         priceHist.addPriceBefore.stringValue().as("priceBefore"),
                         priceHist.addPriceAfter.stringValue().as("priceAfter")))
                 .from(priceHist)
@@ -135,19 +135,19 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectStatusHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        statusHist.prodStatusHistId.as("histId"),
-                        statusHist.prodId.as("prodId"),
-                        statusHist.procDate.as("histDate"),
-                        statusHist.procUserId.as("regBy"),
-                        syUser.userNm.as("regByNm"),
-                        statusHist.beforeStatusCd.as("statusCdBefore"),
-                        syCode1.codeLabel.as("statusCdBeforeNm"),
-                        statusHist.afterStatusCd.as("statusCdAfter"),
-                        syCode2.codeLabel.as("statusCdAfterNm")))
+                        statusHist.prodStatusHistId.as("histId"), // 이력ID 필터 (하위 이력 테이블 PK 공용)
+                        statusHist.prodId.as("prodId"), // 상품ID 필터 (필수 — 상품별 이력 조회)
+                        statusHist.procDate.as("histDate"), // 이력 발생일시 (재고/가격/상태/변경 이력 공통 chg_date·proc_date)
+                        statusHist.procUserId.as("regBy"), // 처리자ID (chg_by/proc_user_id)
+                        syUser.userNm.as("regByNm"), // 처리자명 (조인 표시용)
+                        statusHist.beforeStatusCd.as("statusCdBefore"), // 변경 전 상품상태
+                        codeLookup.codeLabel.as("statusCdBeforeNm"), // 변경 전 상품상태 코드라벨 (조인 표시용)
+                        statusHist.afterStatusCd.as("statusCdAfter"), // 변경 후 상품상태
+                        codeAfterStatusCd.codeLabel.as("statusCdAfterNm")))
                 .from(statusHist)
                 .leftJoin(syUser).on(syUser.userId.eq(statusHist.procUserId))
-                .leftJoin(syCode1).on(syCode1.codeGrp.eq("PRODUCT_STATUS").and(syCode1.codeValue.eq(statusHist.beforeStatusCd)))
-                .leftJoin(syCode2).on(syCode2.codeGrp.eq("PRODUCT_STATUS").and(syCode2.codeValue.eq(statusHist.afterStatusCd)))
+                .leftJoin(codeLookup).on(codeLookup.codeGrp.eq("PRODUCT_STATUS").and(codeLookup.codeValue.eq(statusHist.beforeStatusCd)))
+                .leftJoin(codeAfterStatusCd).on(codeAfterStatusCd.codeGrp.eq("PRODUCT_STATUS").and(codeAfterStatusCd.codeValue.eq(statusHist.afterStatusCd)))
                 .where(statusHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "proc_date", statusHist.procDate))
                 .orderBy(statusHist.procDate.desc());
@@ -169,13 +169,13 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectChangeHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        chgHist.prodChgHistId.as("histId"),
-                        chgHist.prodId.as("prodId"),
-                        chgHist.chgDate.as("histDate"),
-                        chgHist.chgUserId.as("regBy"),
-                        syUser.userNm.as("regByNm"),
-                        chgHist.chgTypeCd.as("changeField"),
-                        chgHist.beforeVal.as("changeBefore"),
+                        chgHist.prodChgHistId.as("histId"), // 이력ID 필터 (하위 이력 테이블 PK 공용)
+                        chgHist.prodId.as("prodId"), // 상품ID 필터 (필수 — 상품별 이력 조회)
+                        chgHist.chgDate.as("histDate"), // 이력 발생일시 (재고/가격/상태/변경 이력 공통 chg_date·proc_date)
+                        chgHist.chgUserId.as("regBy"), // 처리자ID (chg_by/proc_user_id)
+                        syUser.userNm.as("regByNm"), // 처리자명 (조인 표시용)
+                        chgHist.chgTypeCd.as("changeField"), // 변경 항목 유형코드 (chg_type_cd — 일반 상품정보 변경 이력)
+                        chgHist.beforeVal.as("changeBefore"), // 변경 전 값
                         chgHist.afterVal.as("changeAfter")))
                 .from(chgHist)
                 .leftJoin(syUser).on(syUser.userId.eq(chgHist.chgUserId))

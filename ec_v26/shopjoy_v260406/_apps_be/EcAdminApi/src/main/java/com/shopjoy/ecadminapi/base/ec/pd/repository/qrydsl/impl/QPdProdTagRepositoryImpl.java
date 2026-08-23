@@ -76,11 +76,11 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()));
+        whereList.add(QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId())); // 상품태그ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdTag.siteId, search.getSiteId())); // 사이트ID (검색 필터)
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -109,11 +109,11 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()));
+        whereList.add(QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId())); // 상품태그ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdTag.siteId, search.getSiteId())); // 사이트ID (검색 필터)
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdTagDto.Item> query = baseSelColumnQuery();
@@ -136,11 +136,12 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "prodId,prodTagId,tagId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("prodId", pdProdTag.prodId),
-            QdslUtil.FieldDef.like("prodTagId", pdProdTag.prodTagId),
-            QdslUtil.FieldDef.like("tagId", pdProdTag.tagId)
+            QdslUtil.FieldDef.like("prodId", pdProdTag.prodId), // 상품ID (pd_prod.prod_id)
+            QdslUtil.FieldDef.like("prodTagId", pdProdTag.prodTagId), // 상품태그ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("tagId", pdProdTag.tagId) // 태그ID (pd_tag.tag_id)
         ));
     }
 

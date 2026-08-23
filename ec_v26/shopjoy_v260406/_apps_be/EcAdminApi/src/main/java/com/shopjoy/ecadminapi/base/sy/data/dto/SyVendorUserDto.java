@@ -29,6 +29,7 @@ public class SyVendorUserDto {
         private String userId;  // 사용자ID (sy_user.user_id, NULL=비로그인)
         private String memberNm;  // 이름
         private String positionCd;  // 직위/직책 — POSITION_CD {CEO:대표, DIRECTOR:이사, MANAGER:팀장, EMPLOYEE:담당자}
+        private String positionCdNm;  // 코드 라벨
         private String vendorUserDeptNm;  // 부서/팀명
         private String vendorUserPhone;  // 사무실 전화
         private String vendorUserMobile;  // 휴대전화
@@ -39,6 +40,7 @@ public class SyVendorUserDto {
         private LocalDate joinDate;  // 등록(합류) 일자
         private LocalDate leaveDate;  // 퇴직/탈퇴 일자
         private String vendorUserStatusCd;  // 상태 — VENDOR_USER_STATUS_CD {ACTIVE:재직, LEFT:퇴직, SUSPENDED:정지}
+        private String vendorUserStatusCdNm;  // 코드 라벨
         private String vendorUserRemark;  // 비고
         private String regBy;  // 등록자
         private LocalDateTime regDate;  // 등록일

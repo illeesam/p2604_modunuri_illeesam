@@ -76,8 +76,8 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
     public List<CmChattDto.Item> selectList(CmChattDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmChatt.chattId, search.getChattId()));
-        whereList.add(QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()));
+        whereList.add(QdslUtil.strEq(cmChatt.chattId, search.getChattId())); // 채팅방ID 필터
+        whereList.add(QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd())); // 채팅방 상태 필터 — CHATT_STATUS {WAITING:대기, ACTIVE:진행중, DONE:완료}
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChatt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChatt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search));
@@ -104,8 +104,8 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmChatt.chattId, search.getChattId()));
-        whereList.add(QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()));
+        whereList.add(QdslUtil.strEq(cmChatt.chattId, search.getChattId())); // 채팅방ID 필터
+        whereList.add(QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd())); // 채팅방 상태 필터 — CHATT_STATUS {WAITING:대기, ACTIVE:진행중, DONE:완료}
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChatt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmChatt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search));
@@ -131,13 +131,14 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chattId,subject,chattMemo,closeReason" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(CmChattDto.Request s) {
         if (s == null) return null;
         return QdslUtil.searchValueFields(s.getSearchValue(), s.getSearchType(), List.of(
-            QdslUtil.FieldDef.like("chattId", cmChatt.chattId),
-            QdslUtil.FieldDef.like("subject", cmChatt.subject),
-            QdslUtil.FieldDef.like("chattMemo", cmChatt.chattMemo),
-            QdslUtil.FieldDef.like("closeReason", cmChatt.closeReason)
+            QdslUtil.FieldDef.like("chattId", cmChatt.chattId), // 채팅방ID 필터
+            QdslUtil.FieldDef.like("subject", cmChatt.subject), // 채팅주제
+            QdslUtil.FieldDef.like("chattMemo", cmChatt.chattMemo), // 관리자 메모
+            QdslUtil.FieldDef.like("closeReason", cmChatt.closeReason) // 종료사유
         ));
     }
 

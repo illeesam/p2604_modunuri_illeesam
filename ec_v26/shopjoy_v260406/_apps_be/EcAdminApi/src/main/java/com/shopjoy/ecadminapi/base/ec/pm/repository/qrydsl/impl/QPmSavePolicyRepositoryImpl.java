@@ -102,13 +102,13 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         whereList.add(QdslUtil.strEq(pmSavePolicy.saveTypeCd, search.getSaveTypeCd()));
         whereList.add(QdslUtil.strEq(pmSavePolicy.saveStatus, search.getSaveStatus()));
         whereList.add(QdslUtil.strEq(pmSavePolicy.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId())); // 업체 ID 필터
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm())); // 업체명 필터
         whereList.add(andProd(search));
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSavePolicy.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -142,13 +142,13 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
         whereList.add(QdslUtil.strEq(pmSavePolicy.saveTypeCd, search.getSaveTypeCd()));
         whereList.add(QdslUtil.strEq(pmSavePolicy.saveStatus, search.getSaveStatus()));
         whereList.add(QdslUtil.strEq(pmSavePolicy.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.vendorId, search.getVendorId())); // 업체 ID 필터
+        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm())); // 업체명 필터
         whereList.add(andProd(search));
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSavePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSavePolicy.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSavePolicy.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSavePolicyDto.Item> query = baseSelColumnQuery()
@@ -185,6 +185,7 @@ public class QPmSavePolicyRepositoryImpl implements QPmSavePolicyRepository {
             .exists();
     }
 
+    /* searchType 예: "saveId,saveNm,remark,saveStatus,saveTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("saveId", pmSavePolicy.saveId),

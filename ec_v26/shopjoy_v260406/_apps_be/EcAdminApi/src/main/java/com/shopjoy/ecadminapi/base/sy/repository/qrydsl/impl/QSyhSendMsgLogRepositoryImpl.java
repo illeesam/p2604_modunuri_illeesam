@@ -40,8 +40,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private static final QSySite        sySite = QSySite.sySite;
     private static final QSyTemplate    syTemplate = QSyTemplate.syTemplate;
     private static final QSyUser        syUser = QSyUser.syUser;
-    private static final QVwSyCode        cd_mc = new QVwSyCode("cd_mc");
-    private static final QVwSyCode        cd_sr = new QVwSyCode("cd_sr");    /*
+    private static final QVwSyCode        codeChannelCd = new QVwSyCode("codeChannelCd");
+    private static final QVwSyCode        codeResultCd = new QVwSyCode("codeResultCd");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * MSG_CHANNEL   {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
      * SEND_RESULT   {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
@@ -75,17 +75,17 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                         syhSendMsgLog.updDate,          // 수정일시
                         syTemplate.templateNm.as("templateNm"),     // 템플릿명 (조인: sy_template)
                         syUser.userNm.as("userNm"),                 // 관리자명 (조인: sy_user)
-                        cd_mc.codeLabel.as("channelCdNm"),           // 발송채널 코드명 (조인: sy_code MSG_CHANNEL)
-                        cd_sr.codeLabel.as("resultCdNm"),             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
+                        codeChannelCd.codeLabel.as("channelCdNm"),           // 발송채널 코드명 (조인: sy_code MSG_CHANNEL)
+                        codeResultCd.codeLabel.as("resultCdNm"),             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                         syhSendMsgLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhSendMsgLog)
-                .innerJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd))) // 메시지채널
+                .innerJoin(codeChannelCd).on(codeChannelCd.codeGrp.eq("MSG_CHANNEL").and(codeChannelCd.codeValue.eq(syhSendMsgLog.channelCd))) // 메시지채널
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId)) // 템플릿
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId)) // 사용자
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendMsgLog.resultCd))) // 발송결과
+                .leftJoin(codeResultCd).on(codeResultCd.codeGrp.eq("SEND_RESULT").and(codeResultCd.codeValue.eq(syhSendMsgLog.resultCd))) // 발송결과
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhSendMsgLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syhSendMsgLog.regBy)) // 등록자
                 ;
@@ -107,10 +107,10 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()));
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId())); // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId())); // 템플릿ID (sy_template.template_id)
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd())); // 유형코드
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendMsgLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendMsgLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendMsgLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -142,10 +142,10 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()));
-        whereList.add(QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId())); // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId())); // 템플릿ID (sy_template.template_id)
+        whereList.add(QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd())); // 유형코드
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendMsgLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendMsgLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhSendMsgLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -172,26 +172,27 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "channelCd,content,deviceToken,failReason,kakaoTplCode" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("channelCd", syhSendMsgLog.channelCd),
-            QdslUtil.FieldDef.like("content", syhSendMsgLog.content),
-            QdslUtil.FieldDef.like("deviceToken", syhSendMsgLog.deviceToken),
-            QdslUtil.FieldDef.like("failReason", syhSendMsgLog.failReason),
-            QdslUtil.FieldDef.like("kakaoTplCode", syhSendMsgLog.kakaoTplCode),
-            QdslUtil.FieldDef.like("logId", syhSendMsgLog.logId),
-            QdslUtil.FieldDef.like("memberId", syhSendMsgLog.memberId),
-            QdslUtil.FieldDef.like("params", syhSendMsgLog.params),
-            QdslUtil.FieldDef.like("recvPhone", syhSendMsgLog.recvPhone),
-            QdslUtil.FieldDef.like("refId", syhSendMsgLog.refId),
-            QdslUtil.FieldDef.like("refTypeCd", syhSendMsgLog.refTypeCd),
-            QdslUtil.FieldDef.like("resultCd", syhSendMsgLog.resultCd),
-            QdslUtil.FieldDef.like("resultMsg", syhSendMsgLog.resultMsg),
-            QdslUtil.FieldDef.like("senderPhone", syhSendMsgLog.senderPhone),
-            QdslUtil.FieldDef.like("templateCode", syhSendMsgLog.templateCode),
-            QdslUtil.FieldDef.like("templateId", syhSendMsgLog.templateId),
-            QdslUtil.FieldDef.like("title", syhSendMsgLog.title),
-            QdslUtil.FieldDef.like("userId", syhSendMsgLog.userId)
+            QdslUtil.FieldDef.like("channelCd", syhSendMsgLog.channelCd), // 발송채널 (코드: MSG_CHANNEL)
+            QdslUtil.FieldDef.like("content", syhSendMsgLog.content), // 발송 내용 (치환 완료본)
+            QdslUtil.FieldDef.like("deviceToken", syhSendMsgLog.deviceToken), // 디바이스 토큰 (앱 푸시)
+            QdslUtil.FieldDef.like("failReason", syhSendMsgLog.failReason), // 실패 사유
+            QdslUtil.FieldDef.like("kakaoTplCode", syhSendMsgLog.kakaoTplCode), // 카카오 알림톡 템플릿 코드 (카카오 채널 시)
+            QdslUtil.FieldDef.like("logId", syhSendMsgLog.logId), // 로그ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("memberId", syhSendMsgLog.memberId), // 대상 회원ID (ec_member.member_id, 비회원 NULL)
+            QdslUtil.FieldDef.like("params", syhSendMsgLog.params), // 치환 파라미터 JSON (예: {"order_no":"...","recv_nm":"..."})
+            QdslUtil.FieldDef.like("recvPhone", syhSendMsgLog.recvPhone), // 수신 전화번호 (SMS/LMS/카카오)
+            QdslUtil.FieldDef.like("refId", syhSendMsgLog.refId), // 연관ID
+            QdslUtil.FieldDef.like("refTypeCd", syhSendMsgLog.refTypeCd), // 연관유형코드 (ORDER/CLAIM/JOIN/AUTH 등)
+            QdslUtil.FieldDef.like("resultCd", syhSendMsgLog.resultCd), // 발송결과 (코드: SEND_RESULT)
+            QdslUtil.FieldDef.like("resultMsg", syhSendMsgLog.resultMsg), // 통신사/카카오 응답 메시지
+            QdslUtil.FieldDef.like("senderPhone", syhSendMsgLog.senderPhone), // 발신 번호 (SMS/LMS)
+            QdslUtil.FieldDef.like("templateCode", syhSendMsgLog.templateCode), // 템플릿코드 스냅샷
+            QdslUtil.FieldDef.like("templateId", syhSendMsgLog.templateId), // 템플릿ID (sy_template.template_id)
+            QdslUtil.FieldDef.like("title", syhSendMsgLog.title), // 제목 (LMS/앱 푸시)
+            QdslUtil.FieldDef.like("userId", syhSendMsgLog.userId) // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
         ));
     }
 

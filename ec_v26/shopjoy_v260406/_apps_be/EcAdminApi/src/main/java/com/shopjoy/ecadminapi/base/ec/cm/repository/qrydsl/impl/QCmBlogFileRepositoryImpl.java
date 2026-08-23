@@ -71,9 +71,9 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()));
-        whereList.add(QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId()));
+        whereList.add(QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId())); // 블로그이미지ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogFile.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogFile.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -104,9 +104,9 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()));
-        whereList.add(QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId()));
+        whereList.add(QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId())); // 블로그이미지ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogFile.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogFile.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -132,13 +132,14 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "blogId,blogFileId,imgAltText,imgUrl,thumbUrl" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("blogId", cmBlogFile.blogId),
-            QdslUtil.FieldDef.like("blogFileId", cmBlogFile.blogFileId),
-            QdslUtil.FieldDef.like("imgAltText", cmBlogFile.imgAltText),
-            QdslUtil.FieldDef.like("imgUrl", cmBlogFile.imgUrl),
-            QdslUtil.FieldDef.like("thumbUrl", cmBlogFile.thumbUrl)
+            QdslUtil.FieldDef.like("blogId", cmBlogFile.blogId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("blogFileId", cmBlogFile.blogFileId), // 블로그이미지ID 필터
+            QdslUtil.FieldDef.like("imgAltText", cmBlogFile.imgAltText), // 이미지 대체텍스트
+            QdslUtil.FieldDef.like("imgUrl", cmBlogFile.imgUrl), // 원본 이미지 URL
+            QdslUtil.FieldDef.like("thumbUrl", cmBlogFile.thumbUrl) // 썸네일 이미지 URL
         ));
     }
 

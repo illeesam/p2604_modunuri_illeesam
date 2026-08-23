@@ -101,16 +101,16 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     public List<DpPanelItemDto.Item> selectList(DpPanelItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId())); // 패널항목ID 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd())); // 위젯유형 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId())); // 위젯라이브러리ID 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId())); // 패널ID 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -138,16 +138,16 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId())); // 패널항목ID 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetTypeCd, search.getWidgetTypeCd())); // 위젯유형 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.widgetLibId, search.getWidgetLibId())); // 위젯라이브러리ID 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId())); // 패널ID 필터
+        whereList.add(QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpPanelItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpPanelItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpPanelItem.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery();
 
@@ -168,23 +168,23 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         BasePage<DpPanelItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "contentTypeCd,dispEnv,dispYn,panelId,panelItemId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("contentTypeCd", dpPanelItem.contentTypeCd),
-            QdslUtil.FieldDef.like("dispEnv", dpPanelItem.dispEnv),
-            QdslUtil.FieldDef.like("dispYn", dpPanelItem.dispYn),
-            QdslUtil.FieldDef.like("panelId", dpPanelItem.panelId),
-            QdslUtil.FieldDef.like("panelItemId", dpPanelItem.panelItemId),
-            QdslUtil.FieldDef.like("titleShowYn", dpPanelItem.titleShowYn),
-            QdslUtil.FieldDef.like("useYn", dpPanelItem.useYn),
-            QdslUtil.FieldDef.like("visibilityTargets", dpPanelItem.visibilityTargets),
-            QdslUtil.FieldDef.like("widgetConfigJson", dpPanelItem.widgetConfigJson),
-            QdslUtil.FieldDef.like("widgetContent", dpPanelItem.widgetContent),
-            QdslUtil.FieldDef.like("widgetLibId", dpPanelItem.widgetLibId),
-            QdslUtil.FieldDef.like("widgetLibRefYn", dpPanelItem.widgetLibRefYn),
-            QdslUtil.FieldDef.like("widgetTitle", dpPanelItem.widgetTitle),
-            QdslUtil.FieldDef.like("widgetTypeCd", dpPanelItem.widgetTypeCd)
+            QdslUtil.FieldDef.like("contentTypeCd", dpPanelItem.contentTypeCd), // 콘텐츠유형 (WIDGET/HTML/TEXT/IMAGE 등)
+            QdslUtil.FieldDef.like("dispEnv", dpPanelItem.dispEnv), // 전시 환경 (^PROD^DEV^TEST^ 형식)
+            QdslUtil.FieldDef.like("dispYn", dpPanelItem.dispYn), // 전시여부 Y/N (배치로 자동 관리)
+            QdslUtil.FieldDef.like("panelId", dpPanelItem.panelId), // 패널ID 필터
+            QdslUtil.FieldDef.like("panelItemId", dpPanelItem.panelItemId), // 패널항목ID 필터
+            QdslUtil.FieldDef.like("titleShowYn", dpPanelItem.titleShowYn), // 타이틀표시여부 Y/N
+            QdslUtil.FieldDef.like("useYn", dpPanelItem.useYn), // 사용여부 Y/N 필터
+            QdslUtil.FieldDef.like("visibilityTargets", dpPanelItem.visibilityTargets), // 공개대상 (^CODE^CODE^ 형식)
+            QdslUtil.FieldDef.like("widgetConfigJson", dpPanelItem.widgetConfigJson), // 위젯설정 (JSON - 위젯별 특정 설정 또는 직접 생성 콘텐츠)
+            QdslUtil.FieldDef.like("widgetContent", dpPanelItem.widgetContent), // 위젯내용 (HTML 에디터)
+            QdslUtil.FieldDef.like("widgetLibId", dpPanelItem.widgetLibId), // 위젯라이브러리ID 필터
+            QdslUtil.FieldDef.like("widgetLibRefYn", dpPanelItem.widgetLibRefYn), // 위젯라이브러리참조여부 Y/N
+            QdslUtil.FieldDef.like("widgetTitle", dpPanelItem.widgetTitle), // 위젯타이틀
+            QdslUtil.FieldDef.like("widgetTypeCd", dpPanelItem.widgetTypeCd) // 위젯유형 필터
         ));
     }
 

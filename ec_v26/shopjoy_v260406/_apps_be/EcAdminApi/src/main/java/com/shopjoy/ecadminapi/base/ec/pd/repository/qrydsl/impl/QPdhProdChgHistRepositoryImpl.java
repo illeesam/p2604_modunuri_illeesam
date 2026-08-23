@@ -81,7 +81,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId())); // 이력ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdChgHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdChgHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -112,7 +112,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId())); // 이력ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdChgHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdhProdChgHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -138,16 +138,16 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /** 검색조건 빌드 — Mapper XML pdhProdChgHistCond 와 동일 동작 */
+    /* searchType 예: "afterVal,beforeVal,chgReason,chgTypeCd,chgUserId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("afterVal", pdhProdChgHist.afterVal),
-            QdslUtil.FieldDef.like("beforeVal", pdhProdChgHist.beforeVal),
-            QdslUtil.FieldDef.like("chgReason", pdhProdChgHist.chgReason),
-            QdslUtil.FieldDef.like("chgTypeCd", pdhProdChgHist.chgTypeCd),
-            QdslUtil.FieldDef.like("chgUserId", pdhProdChgHist.chgUserId),
-            QdslUtil.FieldDef.like("prodChgHistId", pdhProdChgHist.prodChgHistId),
-            QdslUtil.FieldDef.like("prodId", pdhProdChgHist.prodId)
+            QdslUtil.FieldDef.like("afterVal", pdhProdChgHist.afterVal), // 변경후값
+            QdslUtil.FieldDef.like("beforeVal", pdhProdChgHist.beforeVal), // 변경전값
+            QdslUtil.FieldDef.like("chgReason", pdhProdChgHist.chgReason), // 변경사유
+            QdslUtil.FieldDef.like("chgTypeCd", pdhProdChgHist.chgTypeCd), // 변경유형코드 (PRICE/STOCK/STATUS)
+            QdslUtil.FieldDef.like("chgUserId", pdhProdChgHist.chgUserId), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("prodChgHistId", pdhProdChgHist.prodChgHistId), // 이력ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("prodId", pdhProdChgHist.prodId) // 상품ID
         ));
     }
 

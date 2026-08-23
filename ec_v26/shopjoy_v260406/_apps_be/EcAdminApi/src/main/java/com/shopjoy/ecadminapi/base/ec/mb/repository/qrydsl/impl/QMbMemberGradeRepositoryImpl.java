@@ -38,7 +38,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QMbMemberGrade mbMemberGrade    = QMbMemberGrade.mbMemberGrade;
     private static final QSySite        sySite  = QSySite.sySite;
-    private static final QVwSyCode        cdMg = new QVwSyCode("cd_mg");    /*
+    private static final QVwSyCode        codeGradeCd = new QVwSyCode("cd_mg");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GRADE_CD (코드: MEMBER_GRADE)  {BASIC: '일반', NORMAL: '일반', GOLD: '우수', VIP: 'VIP'}
      * USE_YN                        {Y: '사용', N: '미사용'}
@@ -48,6 +48,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                 .select(Projections.bean(MbMemberGradeDto.Item.class,
                         mbMemberGrade.memberGradeId,   // 등급ID (PK)
                         mbMemberGrade.gradeCd,         // 등급코드 — MEMBER_GRADE {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
+                        codeGradeCd.codeLabel.as("gradeCdNm"), // 코드 라벨
                         mbMemberGrade.gradeNm,         // 등급명
                         mbMemberGrade.gradeRank,       // 등급우선순위 (낮을수록 낮은 등급)
                         mbMemberGrade.minPurchaseAmt,  // 등급 유지 최소 누적구매금액
@@ -64,7 +65,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                         siteEx.siteNm.as("siteNm")   // 사이트명 (조인)
                 ))
                 .from(mbMemberGrade)
-                .innerJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd))) // 회원등급
+                .innerJoin(codeGradeCd).on(codeGradeCd.codeGrp.eq("MEMBER_GRADE").and(codeGradeCd.codeValue.eq(mbMemberGrade.gradeCd))) // 회원등급
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbMemberGrade.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(mbMemberGrade.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(mbMemberGrade.siteId)) // 사이트
@@ -85,12 +86,12 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     public List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()));
-        whereList.add(QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId())); // 등급ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -118,12 +119,12 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()));
-        whereList.add(QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId())); // 등급ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGrade.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery();
@@ -145,13 +146,13 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         BasePage<MbMemberGradeDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "gradeNm,gradeCd" (Entity 필드명) */
+    /* searchType 예: "gradeCd,gradeNm,memberGradeId,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("gradeCd", mbMemberGrade.gradeCd),
-            QdslUtil.FieldDef.like("gradeNm", mbMemberGrade.gradeNm),
-            QdslUtil.FieldDef.like("memberGradeId", mbMemberGrade.memberGradeId),
-            QdslUtil.FieldDef.like("useYn", mbMemberGrade.useYn)
+            QdslUtil.FieldDef.like("gradeCd", mbMemberGrade.gradeCd), // 등급코드 — MEMBER_GRADE
+            QdslUtil.FieldDef.like("gradeNm", mbMemberGrade.gradeNm), // 등급명
+            QdslUtil.FieldDef.like("memberGradeId", mbMemberGrade.memberGradeId), // 등급ID 필터
+            QdslUtil.FieldDef.like("useYn", mbMemberGrade.useYn) // 사용여부 필터 Y/N
         ));
     }
 

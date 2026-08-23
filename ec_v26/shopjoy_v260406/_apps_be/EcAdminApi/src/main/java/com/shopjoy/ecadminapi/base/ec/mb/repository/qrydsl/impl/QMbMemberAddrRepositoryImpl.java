@@ -85,13 +85,13 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     public List<MbMemberAddrDto.Item> selectList(MbMemberAddrDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds()));
-        whereList.add(QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()));
-        whereList.add(QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId())); // 배송지ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId())); // 회원ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberAddr.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberAddr.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -119,13 +119,13 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds()));
-        whereList.add(QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()));
-        whereList.add(QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId())); // 배송지ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId())); // 회원ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberAddr.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberAddr.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberAddr.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery();
@@ -147,17 +147,17 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         BasePage<MbMemberAddrDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
+    /* searchType 예: "addr,addrDetail,addrNm,isDefault,memberAddrId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("addr", mbMemberAddr.addr),
-            QdslUtil.FieldDef.like("addrDetail", mbMemberAddr.addrDetail),
-            QdslUtil.FieldDef.like("addrNm", mbMemberAddr.addrNm),
+            QdslUtil.FieldDef.like("addr", mbMemberAddr.addr), // 기본주소
+            QdslUtil.FieldDef.like("addrDetail", mbMemberAddr.addrDetail), // 상세주소
+            QdslUtil.FieldDef.like("addrNm", mbMemberAddr.addrNm), // 배송지명 (예: 집, 회사)
             QdslUtil.FieldDef.like("isDefault", mbMemberAddr.isDefault),
-            QdslUtil.FieldDef.like("memberAddrId", mbMemberAddr.memberAddrId),
-            QdslUtil.FieldDef.like("memberId", mbMemberAddr.memberId),
-            QdslUtil.FieldDef.like("recvNm", mbMemberAddr.recvNm),
-            QdslUtil.FieldDef.like("recvPhone", mbMemberAddr.recvPhone),
+            QdslUtil.FieldDef.like("memberAddrId", mbMemberAddr.memberAddrId), // 배송지ID 필터
+            QdslUtil.FieldDef.like("memberId", mbMemberAddr.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("recvNm", mbMemberAddr.recvNm), // 수령자명
+            QdslUtil.FieldDef.like("recvPhone", mbMemberAddr.recvPhone), // 수령자 연락처
             QdslUtil.FieldDef.like("zipCd", mbMemberAddr.zipCd)
         ));
     }

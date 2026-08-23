@@ -77,12 +77,12 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     public List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()));
-        whereList.add(QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId())); // 그룹ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGroup.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGroup.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -110,12 +110,12 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()));
-        whereList.add(QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId())); // 그룹ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGroup.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberGroup.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery();
@@ -137,13 +137,13 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         BasePage<MbMemberGroupDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
+    /* searchType 예: "groupMemo,groupNm,memberGroupId,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("groupMemo", mbMemberGroup.groupMemo),
-            QdslUtil.FieldDef.like("groupNm", mbMemberGroup.groupNm),
-            QdslUtil.FieldDef.like("memberGroupId", mbMemberGroup.memberGroupId),
-            QdslUtil.FieldDef.like("useYn", mbMemberGroup.useYn)
+            QdslUtil.FieldDef.like("groupMemo", mbMemberGroup.groupMemo), // 메모
+            QdslUtil.FieldDef.like("groupNm", mbMemberGroup.groupNm), // 그룹명
+            QdslUtil.FieldDef.like("memberGroupId", mbMemberGroup.memberGroupId), // 그룹ID 필터
+            QdslUtil.FieldDef.like("useYn", mbMemberGroup.useYn) // 사용여부 필터 Y/N
         ));
     }
 

@@ -92,10 +92,10 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     public List<SyBbmDto.Item> selectList(SyBbmDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syBbm.bbmId, search.getBbmId()));
+        whereList.add(QdslUtil.strEq(syBbm.bbmId, search.getBbmId())); // 게시판ID 필터
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd()));
-        whereList.add(QdslUtil.strEq(syBbm.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd())); // 게시판유형 필터
+        whereList.add(QdslUtil.strEq(syBbm.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -125,10 +125,10 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syBbm.bbmId, search.getBbmId()));
+        whereList.add(QdslUtil.strEq(syBbm.bbmId, search.getBbmId())); // 게시판ID 필터
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd()));
-        whereList.add(QdslUtil.strEq(syBbm.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd())); // 게시판유형 필터
+        whereList.add(QdslUtil.strEq(syBbm.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<SyBbmDto.Item> query = baseQuery();
@@ -152,8 +152,6 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로의 게시판까지 포함 */
     private BooleanExpression andPathIdIn(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -161,20 +159,21 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 : null;
     }
 
+    /* searchType 예: "allowAttach,allowComment,allowLike,bbmCode,bbmId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("allowAttach", syBbm.allowAttach),
-            QdslUtil.FieldDef.like("allowComment", syBbm.allowComment),
-            QdslUtil.FieldDef.like("allowLike", syBbm.allowLike),
-            QdslUtil.FieldDef.like("bbmCode", syBbm.bbmCode),
-            QdslUtil.FieldDef.like("bbmId", syBbm.bbmId),
-            QdslUtil.FieldDef.like("bbmNm", syBbm.bbmNm),
-            QdslUtil.FieldDef.like("bbmRemark", syBbm.bbmRemark),
-            QdslUtil.FieldDef.like("bbmTypeCd", syBbm.bbmTypeCd),
-            QdslUtil.FieldDef.like("contentTypeCd", syBbm.contentTypeCd),
-            QdslUtil.FieldDef.like("pathId", syBbm.pathId),
-            QdslUtil.FieldDef.like("scopeTypeCd", syBbm.scopeTypeCd),
-            QdslUtil.FieldDef.like("useYn", syBbm.useYn)
+            QdslUtil.FieldDef.like("allowAttach", syBbm.allowAttach), // 첨부허용 Y/N
+            QdslUtil.FieldDef.like("allowComment", syBbm.allowComment), // 댓글허용 Y/N
+            QdslUtil.FieldDef.like("allowLike", syBbm.allowLike), // 좋아요허용 Y/N
+            QdslUtil.FieldDef.like("bbmCode", syBbm.bbmCode), // 게시판코드
+            QdslUtil.FieldDef.like("bbmId", syBbm.bbmId), // 게시판ID 필터
+            QdslUtil.FieldDef.like("bbmNm", syBbm.bbmNm), // 게시판명
+            QdslUtil.FieldDef.like("bbmRemark", syBbm.bbmRemark), // 비고
+            QdslUtil.FieldDef.like("bbmTypeCd", syBbm.bbmTypeCd), // 게시판유형 — BBM_TYPE_CD
+            QdslUtil.FieldDef.like("contentTypeCd", syBbm.contentTypeCd), // 내용유형 — BBM_CONTENT_TYPE
+            QdslUtil.FieldDef.like("pathId", syBbm.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("scopeTypeCd", syBbm.scopeTypeCd), // 접근범위 — SCOPE_TYPE_CD
+            QdslUtil.FieldDef.like("useYn", syBbm.useYn) // 사용여부 필터 Y/N
         ));
     }
 

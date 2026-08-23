@@ -31,6 +31,7 @@ public class SyDeptDto {
         private String deptNm;  // 부서명
         private String parentDeptId;  // 상위부서ID
         private String deptTypeCd;  // 부서유형 — DEPT_TYPE_CD {HQ:본사, DEV:개발팀, DEV_BACKEND:백엔드, DEV_FRONTEND:프론트엔드, MKT:마케팅팀, LOGIS:물류팀}
+        private String deptTypeCdNm;  // 코드 라벨
         private String managerId;  // 부서장 (sy_user.user_id)
         private Integer sortOrd;  // 정렬순서
         private String useYn;  // 사용여부 Y/N

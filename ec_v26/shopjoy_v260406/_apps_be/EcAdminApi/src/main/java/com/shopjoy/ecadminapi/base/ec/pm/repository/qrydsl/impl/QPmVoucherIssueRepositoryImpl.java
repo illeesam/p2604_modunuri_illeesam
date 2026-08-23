@@ -43,7 +43,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     private static final QPmVoucher      pmVoucher  = QPmVoucher.pmVoucher;
     private static final QOdOrder        odOrder  = QOdOrder.odOrder;
     private static final QSySite         sySite  = QSySite.sySite;
-    private static final QVwSyCode         cdVis = new QVwSyCode("cd_vis");    /*
+    private static final QVwSyCode         codeVoucherIssueStatusCd = new QVwSyCode("cd_vis");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * VOUCHER_ISSUE_STATUS  {ISSUED: '발급됨', USED: '사용완료', EXPIRED: '만료', CANCELLED: '취소'}
      */
@@ -60,6 +60,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                         pmVoucherIssue.orderId,                      // 사용된 주문ID (od_order.order_id)
                         pmVoucherIssue.useAmt,                       // 실제 사용 할인금액
                         pmVoucherIssue.voucherIssueStatusCd,         // 상태 — VOUCHER_ISSUE_STATUS {ISSUED, USED, EXPIRED, CANCELLED}
+                        codeVoucherIssueStatusCd.codeLabel.as("voucherIssueStatusCdNm"), // 코드 라벨
                         pmVoucherIssue.voucherIssueStatusCdBefore,   // 변경 전 상태
                         pmVoucherIssue.regBy,      // 등록자
                         pmVoucherIssue.regDate,    // 등록일시
@@ -74,7 +75,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .from(pmVoucherIssue)
                 .innerJoin(pmVoucher).on(pmVoucher.voucherId.eq(pmVoucherIssue.voucherId)) // 바우처
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmVoucherIssue.orderId)) // 주문
-                .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS_CD").and(cdVis.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd))) // 바우처발급상태
+                .leftJoin(codeVoucherIssueStatusCd).on(codeVoucherIssueStatusCd.codeGrp.eq("VOUCHER_ISSUE_STATUS_CD").and(codeVoucherIssueStatusCd.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd))) // 바우처발급상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmVoucherIssue.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmVoucherIssue.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(pmVoucherIssue.siteId)) // 사이트
@@ -97,12 +98,12 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()));
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId())); // 상품권발급ID
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -131,12 +132,12 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()));
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId())); // 상품권발급ID
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("issue_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmVoucherIssue.issueDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery();
@@ -159,15 +160,16 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "memberId,orderId,voucherCode,voucherId,voucherIssueId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("memberId", pmVoucherIssue.memberId),
-            QdslUtil.FieldDef.like("orderId", pmVoucherIssue.orderId),
-            QdslUtil.FieldDef.like("voucherCode", pmVoucherIssue.voucherCode),
-            QdslUtil.FieldDef.like("voucherId", pmVoucherIssue.voucherId),
-            QdslUtil.FieldDef.like("voucherIssueId", pmVoucherIssue.voucherIssueId),
-            QdslUtil.FieldDef.like("voucherIssueStatusCd", pmVoucherIssue.voucherIssueStatusCd),
-            QdslUtil.FieldDef.like("voucherIssueStatusCdBefore", pmVoucherIssue.voucherIssueStatusCdBefore)
+            QdslUtil.FieldDef.like("memberId", pmVoucherIssue.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("orderId", pmVoucherIssue.orderId), // 사용된 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("voucherCode", pmVoucherIssue.voucherCode), // 발급 고유코드
+            QdslUtil.FieldDef.like("voucherId", pmVoucherIssue.voucherId), // 상품권ID (pm_voucher.voucher_id)
+            QdslUtil.FieldDef.like("voucherIssueId", pmVoucherIssue.voucherIssueId), // 상품권발급ID
+            QdslUtil.FieldDef.like("voucherIssueStatusCd", pmVoucherIssue.voucherIssueStatusCd), // 상태 (코드: VOUCHER_ISSUE_STATUS)
+            QdslUtil.FieldDef.like("voucherIssueStatusCdBefore", pmVoucherIssue.voucherIssueStatusCdBefore) // 변경 전 상태
         ));
     }
 

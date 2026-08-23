@@ -37,7 +37,7 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStDlivFeePolicy stDlivFeePolicy = QStDlivFeePolicy.stDlivFeePolicy;
-    private static final QVwSyCode        cdDm = new QVwSyCode("cd_dm");    /*
+    private static final QVwSyCode        codeDlivMethodCd = new QVwSyCode("cd_dm");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * DLIV_METHOD_CD  {COURIER:택배, DIRECT:직접배송, PICKUP:방문수령, SAME_DAY:당일배송, QUICK:퀵배송, REMOTE:오지배송, HALF_COURIER:반값택배배송, POST:우체국배송}
      * USE_YN          {Y:사용, N:미사용}
@@ -58,12 +58,12 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
                         stDlivFeePolicy.regSiteId,  // 등록사이트ID
                         stDlivFeePolicy.updBy,  // 수정자
                         stDlivFeePolicy.updDate,  // 수정일시
-                        cdDm.codeLabel.as("dlivMethodCdNm"),   // 배송방법명 (sy_code 조인)
+                        codeDlivMethodCd.codeLabel.as("dlivMethodCdNm"),   // 배송방법명 (sy_code 조인)
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stDlivFeePolicy)
-                .innerJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(stDlivFeePolicy.dlivMethodCd))) // 배송방법
+                .innerJoin(codeDlivMethodCd).on(codeDlivMethodCd.codeGrp.eq("DLIV_METHOD_CD").and(codeDlivMethodCd.codeValue.eq(stDlivFeePolicy.dlivMethodCd))) // 배송방법
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stDlivFeePolicy.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stDlivFeePolicy.regBy)) // 등록자
                 ;
@@ -84,9 +84,9 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stDlivFeePolicy.siteId, search.getSiteId()));
-        whereList.add(QdslUtil.strEq(stDlivFeePolicy.dlivMethodCd, search.getDlivMethodCd()));
-        whereList.add(QdslUtil.strEq(stDlivFeePolicy.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(stDlivFeePolicy.siteId, search.getSiteId())); // 사이트ID 필터
+        whereList.add(QdslUtil.strEq(stDlivFeePolicy.dlivMethodCd, search.getDlivMethodCd())); // 배송방법 필터
+        whereList.add(QdslUtil.strEq(stDlivFeePolicy.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stDlivFeePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stDlivFeePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -118,9 +118,9 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stDlivFeePolicy.siteId, search.getSiteId()));
-        whereList.add(QdslUtil.strEq(stDlivFeePolicy.dlivMethodCd, search.getDlivMethodCd()));
-        whereList.add(QdslUtil.strEq(stDlivFeePolicy.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(stDlivFeePolicy.siteId, search.getSiteId())); // 사이트ID 필터
+        whereList.add(QdslUtil.strEq(stDlivFeePolicy.dlivMethodCd, search.getDlivMethodCd())); // 배송방법 필터
+        whereList.add(QdslUtil.strEq(stDlivFeePolicy.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stDlivFeePolicy.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stDlivFeePolicy.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -146,10 +146,11 @@ public class QStDlivFeePolicyRepositoryImpl implements QStDlivFeePolicyRepositor
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "dlivMethodCd,remark" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("dlivMethodCd", stDlivFeePolicy.dlivMethodCd),
-            QdslUtil.FieldDef.like("remark", stDlivFeePolicy.remark)
+            QdslUtil.FieldDef.like("dlivMethodCd", stDlivFeePolicy.dlivMethodCd), // 배송방법 필터
+            QdslUtil.FieldDef.like("remark", stDlivFeePolicy.remark) // 비고
         ));
     }
 

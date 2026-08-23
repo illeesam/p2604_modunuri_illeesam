@@ -40,7 +40,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     private static final QSyRole   syRole   = QSyRole.syRole;
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
-    private static final QVwSyCode   cd_at    = new QVwSyCode("cd_at");
+    private static final QVwSyCode   codeAppTypeCd    = new QVwSyCode("codeAppTypeCd");
     /*
      * baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드)
      * 코드성 필드 예시 코드값
@@ -78,7 +78,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                         syhAccessErrorLog.loggerNm,                  // 로거 클래스 이름
                         syhAccessErrorLog.logDt,                     // 에러 발생 시각
                         syhAccessErrorLog.regDate,                   // DB 저장 시각
-                        cd_at.codeLabel.as("appTypeCdNm"),            // 앱유형 코드명 (조인: sy_code APP_TYPE)
+                        codeAppTypeCd.codeLabel.as("appTypeCdNm"),            // 앱유형 코드명 (조인: sy_code APP_TYPE)
                         syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
                         syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
                         syDept.deptNm.as("deptNm"),                  // 부서명 (조인: sy_dept)
@@ -89,7 +89,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                 .leftJoin(syRole).on(syRole.roleId.eq(syhAccessErrorLog.roleId)) // 역할
                 .leftJoin(syDept).on(syDept.deptId.eq(syhAccessErrorLog.deptId)) // 부서
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessErrorLog.vendorId)) // 업체
-                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessErrorLog.appTypeCd))) // 앱유형
+                .leftJoin(codeAppTypeCd).on(codeAppTypeCd.codeGrp.eq("APP_TYPE").and(codeAppTypeCd.codeValue.eq(syhAccessErrorLog.appTypeCd))) // 앱유형
                 ;
     }
 
@@ -106,11 +106,11 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessErrorLogDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhAccessErrorLog.reqMethod, search.getMethod()));
+        whereList.add(QdslUtil.strEq(syhAccessErrorLog.reqMethod, search.getMethod())); // HTTP 메서드 검색값
         whereList.add(andPathLike(search));
         whereList.add(andUiNmLike(search));
-        whereList.add(QdslUtil.strEqTrim(syhAccessErrorLog.traceId, search.getTraceId()));
-        whereList.add(QdslUtil.strEq(syhAccessErrorLog.appTypeCd, search.getAppTypeCd()));
+        whereList.add(QdslUtil.strEqTrim(syhAccessErrorLog.traceId, search.getTraceId())); // 요청 추적ID 검색값
+        whereList.add(QdslUtil.strEq(syhAccessErrorLog.appTypeCd, search.getAppTypeCd())); // 호출 앱 유형 검색값
         whereList.add(QdslUtil.dateBetween(syhAccessErrorLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
         return whereList.toArray(BooleanExpression[]::new);
@@ -163,8 +163,6 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* reqPath LIKE (경로 부분 검색) */
     private BooleanExpression andPathLike(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getPath())
@@ -177,34 +175,35 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                 ? syhAccessErrorLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
 
+    /* searchType 예: "appTypeCd,cmdNm,deptId,errorMsg,errorType" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("appTypeCd", syhAccessErrorLog.appTypeCd),
-            QdslUtil.FieldDef.like("cmdNm", syhAccessErrorLog.cmdNm),
-            QdslUtil.FieldDef.like("deptId", syhAccessErrorLog.deptId),
-            QdslUtil.FieldDef.like("errorMsg", syhAccessErrorLog.errorMsg),
-            QdslUtil.FieldDef.like("errorType", syhAccessErrorLog.errorType),
-            QdslUtil.FieldDef.like("fileNm", syhAccessErrorLog.fileNm),
-            QdslUtil.FieldDef.like("funcNm", syhAccessErrorLog.funcNm),
-            QdslUtil.FieldDef.like("lineNo", syhAccessErrorLog.lineNo),
-            QdslUtil.FieldDef.like("localeId", syhAccessErrorLog.localeId),
-            QdslUtil.FieldDef.like("logId", syhAccessErrorLog.logId),
-            QdslUtil.FieldDef.like("loggerNm", syhAccessErrorLog.loggerNm),
-            QdslUtil.FieldDef.like("profile", syhAccessErrorLog.profile),
-            QdslUtil.FieldDef.like("reqHost", syhAccessErrorLog.reqHost),
-            QdslUtil.FieldDef.like("reqIp", syhAccessErrorLog.reqIp),
-            QdslUtil.FieldDef.like("reqMethod", syhAccessErrorLog.reqMethod),
-            QdslUtil.FieldDef.like("reqPath", syhAccessErrorLog.reqPath),
-            QdslUtil.FieldDef.like("reqQuery", syhAccessErrorLog.reqQuery),
-            QdslUtil.FieldDef.like("reqUa", syhAccessErrorLog.reqUa),
-            QdslUtil.FieldDef.like("roleId", syhAccessErrorLog.roleId),
-            QdslUtil.FieldDef.like("serverNm", syhAccessErrorLog.serverNm),
-            QdslUtil.FieldDef.like("stackTrace", syhAccessErrorLog.stackTrace),
-            QdslUtil.FieldDef.like("threadNm", syhAccessErrorLog.threadNm),
-            QdslUtil.FieldDef.like("traceId", syhAccessErrorLog.traceId),
-            QdslUtil.FieldDef.like("uiNm", syhAccessErrorLog.uiNm),
-            QdslUtil.FieldDef.like("userId", syhAccessErrorLog.userId),
-            QdslUtil.FieldDef.like("vendorId", syhAccessErrorLog.vendorId)
+            QdslUtil.FieldDef.like("appTypeCd", syhAccessErrorLog.appTypeCd), // 호출 앱 유형 검색값
+            QdslUtil.FieldDef.like("cmdNm", syhAccessErrorLog.cmdNm), // 호출 명령명 (X-Cmd-Nm)
+            QdslUtil.FieldDef.like("deptId", syhAccessErrorLog.deptId), // 부서 ID (MDC)
+            QdslUtil.FieldDef.like("errorMsg", syhAccessErrorLog.errorMsg), // 예외 메시지
+            QdslUtil.FieldDef.like("errorType", syhAccessErrorLog.errorType), // 예외 클래스 FQCN
+            QdslUtil.FieldDef.like("fileNm", syhAccessErrorLog.fileNm), // 호출 파일명 (X-헤더)
+            QdslUtil.FieldDef.like("funcNm", syhAccessErrorLog.funcNm), // 호출 함수명 (X-헤더)
+            QdslUtil.FieldDef.like("lineNo", syhAccessErrorLog.lineNo), // 호출 라인번호 (X-헤더)
+            QdslUtil.FieldDef.like("localeId", syhAccessErrorLog.localeId), // 지역 ID (MDC)
+            QdslUtil.FieldDef.like("logId", syhAccessErrorLog.logId), // PK: EL+yyMMddHHmmss+rand4
+            QdslUtil.FieldDef.like("loggerNm", syhAccessErrorLog.loggerNm), // 로거 클래스 이름
+            QdslUtil.FieldDef.like("profile", syhAccessErrorLog.profile), // 활성 Spring 프로파일
+            QdslUtil.FieldDef.like("reqHost", syhAccessErrorLog.reqHost), // Host 헤더 값
+            QdslUtil.FieldDef.like("reqIp", syhAccessErrorLog.reqIp), // 클라이언트 실제 IP (X-Forwarded-For 우선)
+            QdslUtil.FieldDef.like("reqMethod", syhAccessErrorLog.reqMethod), // HTTP 메서드
+            QdslUtil.FieldDef.like("reqPath", syhAccessErrorLog.reqPath), // 요청 URI 경로
+            QdslUtil.FieldDef.like("reqQuery", syhAccessErrorLog.reqQuery), // 쿼리 파라미터 문자열
+            QdslUtil.FieldDef.like("reqUa", syhAccessErrorLog.reqUa), // User-Agent
+            QdslUtil.FieldDef.like("roleId", syhAccessErrorLog.roleId), // 역할 ID (MDC)
+            QdslUtil.FieldDef.like("serverNm", syhAccessErrorLog.serverNm), // 서버 호스트명
+            QdslUtil.FieldDef.like("stackTrace", syhAccessErrorLog.stackTrace), // 스택 트레이스 (최대 3000자)
+            QdslUtil.FieldDef.like("threadNm", syhAccessErrorLog.threadNm), // 로그 발생 스레드명
+            QdslUtil.FieldDef.like("traceId", syhAccessErrorLog.traceId), // 요청 추적ID 검색값
+            QdslUtil.FieldDef.like("uiNm", syhAccessErrorLog.uiNm), // 호출 화면명(X-UI-Nm) 검색값
+            QdslUtil.FieldDef.like("userId", syhAccessErrorLog.userId), // 인증 사용자 ID (MDC)
+            QdslUtil.FieldDef.like("vendorId", syhAccessErrorLog.vendorId) // 업체 ID (MDC)
         ));
     }
 

@@ -85,8 +85,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(zzSample0.sample0Id, search.getSample0Id()));
-        whereList.add(QdslUtil.strEq(zzSample0.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(zzSample0.sample0Id, search.getSample0Id())); // 샘플0 ID 검색값
+        whereList.add(QdslUtil.strEq(zzSample0.useYn, search.getUseYn())); // 사용 여부(Y/N) 검색값
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -115,8 +115,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(zzSample0.sample0Id, search.getSample0Id()));
-        whereList.add(QdslUtil.strEq(zzSample0.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(zzSample0.sample0Id, search.getSample0Id())); // 샘플0 ID 검색값
+        whereList.add(QdslUtil.strEq(zzSample0.useYn, search.getUseYn())); // 사용 여부(Y/N) 검색값
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzSample0Dto.Item> query = baseSelColumnQuery();
@@ -140,22 +140,23 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "col01,col02,col03,col04,col05" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("col01", zzSample0.col01),
-            QdslUtil.FieldDef.like("col02", zzSample0.col02),
-            QdslUtil.FieldDef.like("col03", zzSample0.col03),
-            QdslUtil.FieldDef.like("col04", zzSample0.col04),
-            QdslUtil.FieldDef.like("col05", zzSample0.col05),
-            QdslUtil.FieldDef.like("col06", zzSample0.col06),
-            QdslUtil.FieldDef.like("col07", zzSample0.col07),
-            QdslUtil.FieldDef.like("col08", zzSample0.col08),
-            QdslUtil.FieldDef.like("col09", zzSample0.col09),
-            QdslUtil.FieldDef.like("sample0Id", zzSample0.sample0Id),
-            QdslUtil.FieldDef.like("sampleDesc", zzSample0.sampleDesc),
-            QdslUtil.FieldDef.like("sampleName", zzSample0.sampleName),
-            QdslUtil.FieldDef.like("sampleValue", zzSample0.sampleValue),
-            QdslUtil.FieldDef.like("useYn", zzSample0.useYn)
+            QdslUtil.FieldDef.like("col01", zzSample0.col01), // 범용 컬럼01
+            QdslUtil.FieldDef.like("col02", zzSample0.col02), // 범용 컬럼02
+            QdslUtil.FieldDef.like("col03", zzSample0.col03), // 범용 컬럼03
+            QdslUtil.FieldDef.like("col04", zzSample0.col04), // 범용 컬럼04
+            QdslUtil.FieldDef.like("col05", zzSample0.col05), // 범용 컬럼05
+            QdslUtil.FieldDef.like("col06", zzSample0.col06), // 범용 컬럼06
+            QdslUtil.FieldDef.like("col07", zzSample0.col07), // 범용 컬럼07
+            QdslUtil.FieldDef.like("col08", zzSample0.col08), // 범용 컬럼08
+            QdslUtil.FieldDef.like("col09", zzSample0.col09), // 범용 컬럼09
+            QdslUtil.FieldDef.like("sample0Id", zzSample0.sample0Id), // 샘플0 ID 검색값
+            QdslUtil.FieldDef.like("sampleDesc", zzSample0.sampleDesc), // 샘플 설명
+            QdslUtil.FieldDef.like("sampleName", zzSample0.sampleName), // 샘플 이름
+            QdslUtil.FieldDef.like("sampleValue", zzSample0.sampleValue), // 샘플 값
+            QdslUtil.FieldDef.like("useYn", zzSample0.useYn) // 사용 여부(Y/N) 검색값
         ));
     }
 

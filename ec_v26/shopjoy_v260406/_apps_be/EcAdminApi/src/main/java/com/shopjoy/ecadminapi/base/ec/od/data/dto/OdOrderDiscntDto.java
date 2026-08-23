@@ -25,6 +25,7 @@ public class OdOrderDiscntDto {
         private String orderDiscntId;  // 주문할인ID (YYMMDDhhmmss+rand4)
         private String orderId;  // 주문ID (od_order.order_id)
         private String discntTypeCd;  // 할인유형코드 — ORDER_DISCNT_TYPE {SALE_PRICE:판매가할인, PAY_DISCNT:결제할인, COUPON:쿠폰할인, PROMOTION:프로모션할인, SHIP_DISCNT:배송비할인 외}
+        private String discntTypeCdNm;  // 코드 라벨
         private String couponId;  // 쿠폰ID (pm_coupon.coupon_id — ORDER_COUPON인 경우)
         private String couponIssueId;  // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ORDER_COUPON인 경우)
         private BigDecimal discntRate;  // 할인율 (% — 비율할인인 경우)

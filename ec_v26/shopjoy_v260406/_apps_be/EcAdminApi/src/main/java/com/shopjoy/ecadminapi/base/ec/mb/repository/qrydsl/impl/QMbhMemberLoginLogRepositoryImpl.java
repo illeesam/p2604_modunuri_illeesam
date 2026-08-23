@@ -39,7 +39,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     private static final QMbhMemberLoginLog mbhMemberLoginLog    = QMbhMemberLoginLog.mbhMemberLoginLog;
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
-    private static final QVwSyCode            cdLr = new QVwSyCode("cd_lr");    /*
+    private static final QVwSyCode            codeResultCd = new QVwSyCode("cd_lr");    /*
      * baseSelColumnQuery — list/page/byId 공유 (코드명 포함 풀필드)
      * 코드성 필드 예시 코드값
      * RESULT_CD (코드: LOGIN_RESULT)  {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금',
@@ -70,14 +70,14 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                         mbhMemberLoginLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbhMemberLoginLog.updDate,           // 수정일
                         mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
-                        cdLr.codeLabel.as("resultCdNm"),             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
+                        codeResultCd.codeLabel.as("resultCdNm"),             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
                         mbhMemberLoginLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(mbhMemberLoginLog)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberLoginLog.memberId)) // 회원
-                .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd))) // 로그인결과
+                .leftJoin(codeResultCd).on(codeResultCd.codeGrp.eq("LOGIN_RESULT").and(codeResultCd.codeValue.eq(mbhMemberLoginLog.resultCd))) // 로그인결과
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbhMemberLoginLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(mbhMemberLoginLog.regBy)) // 등록자
                 ;
@@ -96,7 +96,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     public List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId())); // 로그ID 필터
         whereList.add(QdslUtil.dateBetween(mbhMemberLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -126,7 +126,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId())); // 로그ID 필터
         whereList.add(QdslUtil.dateBetween(mbhMemberLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -150,23 +150,23 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         BasePage<MbhMemberLoginLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "memberId,loginId" (Entity 필드명) */
+    /* searchType 예: "accessToken,authId,browser,cmdNm,country" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("accessToken", mbhMemberLoginLog.accessToken),
+            QdslUtil.FieldDef.like("accessToken", mbhMemberLoginLog.accessToken), // 액세스 토큰 (SHA-256 해시값, 로그인 실패 시 NULL)
             QdslUtil.FieldDef.like("authId", mbhMemberLoginLog.authId),
-            QdslUtil.FieldDef.like("browser", mbhMemberLoginLog.browser),
-            QdslUtil.FieldDef.like("cmdNm", mbhMemberLoginLog.cmdNm),
-            QdslUtil.FieldDef.like("country", mbhMemberLoginLog.country),
-            QdslUtil.FieldDef.like("device", mbhMemberLoginLog.device),
-            QdslUtil.FieldDef.like("ip", mbhMemberLoginLog.ip),
-            QdslUtil.FieldDef.like("logId", mbhMemberLoginLog.logId),
-            QdslUtil.FieldDef.like("loginId", mbhMemberLoginLog.loginId),
-            QdslUtil.FieldDef.like("memberId", mbhMemberLoginLog.memberId),
-            QdslUtil.FieldDef.like("os", mbhMemberLoginLog.os),
-            QdslUtil.FieldDef.like("refreshToken", mbhMemberLoginLog.refreshToken),
-            QdslUtil.FieldDef.like("resultCd", mbhMemberLoginLog.resultCd),
-            QdslUtil.FieldDef.like("uiNm", mbhMemberLoginLog.uiNm)
+            QdslUtil.FieldDef.like("browser", mbhMemberLoginLog.browser), // 브라우저 정보
+            QdslUtil.FieldDef.like("cmdNm", mbhMemberLoginLog.cmdNm), // 기능명 (X-Cmd-Nm 헤더)
+            QdslUtil.FieldDef.like("country", mbhMemberLoginLog.country), // 국가코드 (GeoIP)
+            QdslUtil.FieldDef.like("device", mbhMemberLoginLog.device), // User-Agent 전문
+            QdslUtil.FieldDef.like("ip", mbhMemberLoginLog.ip), // IP주소
+            QdslUtil.FieldDef.like("logId", mbhMemberLoginLog.logId), // 로그ID 필터
+            QdslUtil.FieldDef.like("loginId", mbhMemberLoginLog.loginId), // 입력한 로그인ID (이메일)
+            QdslUtil.FieldDef.like("memberId", mbhMemberLoginLog.memberId), // 회원ID (로그인 실패 시 NULL)
+            QdslUtil.FieldDef.like("os", mbhMemberLoginLog.os), // OS 정보
+            QdslUtil.FieldDef.like("refreshToken", mbhMemberLoginLog.refreshToken), // 리프레시 토큰 (SHA-256 해시값)
+            QdslUtil.FieldDef.like("resultCd", mbhMemberLoginLog.resultCd), // 결과 — LOGIN_RESULT
+            QdslUtil.FieldDef.like("uiNm", mbhMemberLoginLog.uiNm) // 화면명 (X-UI-Nm 헤더)
         ));
     }
 

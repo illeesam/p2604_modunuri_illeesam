@@ -42,7 +42,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
     private static final QPdProd   pdProd  = QPdProd.pdProd;
-    private static final QVwSyCode   cdLt = new QVwSyCode("cd_ltt");    /*
+    private static final QVwSyCode   codeTargetTypeCd = new QVwSyCode("cd_ltt");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * TARGET_TYPE_CD (코드: LIKE_TARGET_TYPE)  {PRODUCT: '상품', BRAND: '브랜드'}
      */
@@ -52,6 +52,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                         mbLike.likeId,         // 좋아요ID (PK)
                         mbLike.memberId,       // 회원ID (mb_member.member_id)
                         mbLike.targetTypeCd,   // 대상유형 — LIKE_TARGET_TYPE {PRODUCT: '상품', BRAND: '브랜드'}
+                        codeTargetTypeCd.codeLabel.as("targetTypeCdNm"), // 코드 라벨
                         mbLike.targetId,       // 대상ID (targetTypeCd 별 참조 테이블 PK)
                         mbLike.regBy,          // 등록자
                         mbLike.regDate,        // 등록일
@@ -65,7 +66,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 ))
                 .from(mbLike)
                 .innerJoin(mbMember).on(mbMember.memberId.eq(mbLike.memberId)) // 회원
-                .innerJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(mbLike.targetTypeCd))) // 찜대상유형
+                .innerJoin(codeTargetTypeCd).on(codeTargetTypeCd.codeGrp.eq("LIKE_TARGET_TYPE").and(codeTargetTypeCd.codeValue.eq(mbLike.targetTypeCd))) // 찜대상유형
                 .leftJoin(pdProd).on(pdProd.prodId.eq(mbLike.targetId)) // 상품
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(mbLike.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(mbLike.regBy)) // 등록자
@@ -87,14 +88,14 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId()));
-        whereList.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId()));
-        whereList.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId())); // 좋아요ID 필터
+        whereList.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId())); // 대상ID 필터
+        whereList.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd())); // 대상유형 필터 — LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbLike.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbLike.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -122,14 +123,14 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId()));
-        whereList.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId()));
-        whereList.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add(QdslUtil.strEq(mbLike.likeId, search.getLikeId())); // 좋아요ID 필터
+        whereList.add(QdslUtil.strEq(mbLike.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(mbLike.targetId, search.getTargetId())); // 대상ID 필터
+        whereList.add(QdslUtil.strEq(mbLike.targetTypeCd, search.getTargetTypeCd())); // 대상유형 필터 — LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbLike.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbLike.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbLike.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery();
@@ -152,12 +153,13 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "likeId,memberId,targetId,targetTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("likeId", mbLike.likeId),
-            QdslUtil.FieldDef.like("memberId", mbLike.memberId),
-            QdslUtil.FieldDef.like("targetId", mbLike.targetId),
-            QdslUtil.FieldDef.like("targetTypeCd", mbLike.targetTypeCd)
+            QdslUtil.FieldDef.like("likeId", mbLike.likeId), // 좋아요ID 필터
+            QdslUtil.FieldDef.like("memberId", mbLike.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("targetId", mbLike.targetId), // 대상ID 필터
+            QdslUtil.FieldDef.like("targetTypeCd", mbLike.targetTypeCd) // 대상유형 필터 — LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
         ));
     }
 

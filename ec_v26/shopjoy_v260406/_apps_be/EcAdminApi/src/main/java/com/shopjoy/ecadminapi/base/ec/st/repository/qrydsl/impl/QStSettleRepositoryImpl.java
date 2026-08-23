@@ -40,7 +40,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     private static final QStSettle  stSettle   = QStSettle.stSettle;
     private static final QSyVendor  syVendor = QSyVendor.syVendor;
     private static final QSySite    sySite = QSySite.sySite;
-    private static final QVwSyCode    cdSs = new QVwSyCode("cd_ss");    /*
+    private static final QVwSyCode    codeSettleStatusCd = new QVwSyCode("cd_ss");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_STATUS  {OPEN: '진행중', CLOSED: '마감완료', CANCELLED: '마감취소'}
      * (Entity/DDL 주석상 settleStatusCd 흐름: DRAFT/CONFIRMED/CLOSED/PAID — sy_code 실 데이터와 값 표기가 다름)
@@ -71,14 +71,14 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                         stSettle.updBy,                     // 수정자
                         stSettle.updDate,                   // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
-                        cdSs.codeLabel.as("settleStatusCdNm"),           // 상태명 (sy_code 조인)
+                        codeSettleStatusCd.codeLabel.as("settleStatusCdNm"),           // 상태명 (sy_code 조인)
                         stSettle.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettle)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId)) // 업체
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS_CD").and(cdSs.codeValue.eq(stSettle.settleStatusCd))) // 정산상태
+                .leftJoin(codeSettleStatusCd).on(codeSettleStatusCd.codeGrp.eq("SETTLE_STATUS_CD").and(codeSettleStatusCd.codeValue.eq(stSettle.settleStatusCd))) // 정산상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettle.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettle.regBy)) // 등록자
                 ;
@@ -99,7 +99,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettle.settleId, search.getSettleId()));
+        whereList.add(QdslUtil.strEq(stSettle.settleId, search.getSettleId())); // 정산ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettle.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettle.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -131,7 +131,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettle.settleId, search.getSettleId()));
+        whereList.add(QdslUtil.strEq(stSettle.settleId, search.getSettleId())); // 정산ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettle.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettle.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -157,14 +157,15 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "settleId,settleMemo,settleStatusCd,settleStatusCdBefore,settleYm" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("settleId", stSettle.settleId),
-            QdslUtil.FieldDef.like("settleMemo", stSettle.settleMemo),
-            QdslUtil.FieldDef.like("settleStatusCd", stSettle.settleStatusCd),
-            QdslUtil.FieldDef.like("settleStatusCdBefore", stSettle.settleStatusCdBefore),
-            QdslUtil.FieldDef.like("settleYm", stSettle.settleYm),
-            QdslUtil.FieldDef.like("vendorId", stSettle.vendorId)
+            QdslUtil.FieldDef.like("settleId", stSettle.settleId), // 정산ID 필터
+            QdslUtil.FieldDef.like("settleMemo", stSettle.settleMemo), // 정산 메모
+            QdslUtil.FieldDef.like("settleStatusCd", stSettle.settleStatusCd), // 상태 — SETTLE_STATUS_CD (DRAFT/CONFIRMED/CLOSED/PAID)
+            QdslUtil.FieldDef.like("settleStatusCdBefore", stSettle.settleStatusCdBefore), // 변경 전 상태
+            QdslUtil.FieldDef.like("settleYm", stSettle.settleYm), // 정산년월 (YYYYMM)
+            QdslUtil.FieldDef.like("vendorId", stSettle.vendorId) // 업체ID (sy_vendor.vendor_id)
         ));
     }
 

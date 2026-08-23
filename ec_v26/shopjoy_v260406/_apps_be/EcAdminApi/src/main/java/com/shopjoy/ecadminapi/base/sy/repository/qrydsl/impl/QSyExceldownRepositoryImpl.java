@@ -146,12 +146,12 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
 
     private BooleanExpression[] buildWhere(SyExceldownDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()));
-        whereList.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()));
-        whereList.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()));
-        whereList.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()));
-        whereList.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()));
-        whereList.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy()));
+        whereList.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId())); // 사이트ID 필터
+        whereList.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId())); // 엑셀다운로드ID 필터
+        whereList.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd())); // 엑셀 도메인 키 필터 (ExcelDomainHandler.key, 예: memberLoginLog)
+        whereList.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd())); // 실행유형 필터 (SYNC:즉시다운로드 / ASYNC:예약다운로드)
+        whereList.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd())); // 상태 필터 (WAITING/RUNNING/DONE/FAIL/TIMEOUT/CANCELED)
+        whereList.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy())); // 요청자(등록자) 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("start_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.startDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("end_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.endDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -160,15 +160,16 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
         return whereList.toArray(BooleanExpression[]::new);
     }
 
+    /* searchType 예: "exceldownId,domainCd,domainNm,uiNm,apiUrl" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("exceldownId", syExceldown.exceldownId),
-            QdslUtil.FieldDef.like("domainCd", syExceldown.domainCd),
-            QdslUtil.FieldDef.like("domainNm", syExceldown.domainNm),
-            QdslUtil.FieldDef.like("uiNm", syExceldown.uiNm),
-            QdslUtil.FieldDef.like("apiUrl", syExceldown.apiUrl),
-            QdslUtil.FieldDef.like("fileNm", syExceldown.fileNm),
-            QdslUtil.FieldDef.like("regBy", syExceldown.regBy)
+            QdslUtil.FieldDef.like("exceldownId", syExceldown.exceldownId), // 엑셀다운로드ID 필터
+            QdslUtil.FieldDef.like("domainCd", syExceldown.domainCd), // 엑셀 도메인 키 필터 (ExcelDomainHandler.key, 예: memberLoginLog)
+            QdslUtil.FieldDef.like("domainNm", syExceldown.domainNm), // 도메인 한글명 (예: 회원 로그인 로그)
+            QdslUtil.FieldDef.like("uiNm", syExceldown.uiNm), // 요청 화면명 (X-UI-Nm)
+            QdslUtil.FieldDef.like("apiUrl", syExceldown.apiUrl), // 다운로드 실행 backend API 경로
+            QdslUtil.FieldDef.like("fileNm", syExceldown.fileNm), // 대표(첫) 파일명 — 분할 시 1/N 파일
+            QdslUtil.FieldDef.like("regBy", syExceldown.regBy) // 요청자(등록자) 필터
         ));
     }
 

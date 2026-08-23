@@ -83,11 +83,11 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     public List<CmBlogDto.Item> selectList(CmBlogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()));
-        whereList.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()));
-        whereList.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()));
+        whereList.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId())); // 블로그ID 필터
+        whereList.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd())); // 게시글 구분 코드 필터 — BLOG_TYPE {NEWS:뉴스, BLOG:블로그}
+        whereList.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId())); // 블로그카테고리ID 필터
+        whereList.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn())); // 공개여부 Y/N 필터
+        whereList.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice())); // 공지글 여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -118,11 +118,11 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()));
-        whereList.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()));
-        whereList.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()));
+        whereList.add(QdslUtil.strEq(cmBlog.blogId, search.getBlogId())); // 블로그ID 필터
+        whereList.add(QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd())); // 게시글 구분 코드 필터 — BLOG_TYPE {NEWS:뉴스, BLOG:블로그}
+        whereList.add(QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId())); // 블로그카테고리ID 필터
+        whereList.add(QdslUtil.strEq(cmBlog.useYn, search.getUseYn())); // 공개여부 Y/N 필터
+        whereList.add(QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice())); // 공지글 여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -149,18 +149,18 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "blogAuthor,blogCateId,blogContent,blogId,blogSummary" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("blogAuthor", cmBlog.blogAuthor),
-            QdslUtil.FieldDef.like("blogCateId", cmBlog.blogCateId),
-            QdslUtil.FieldDef.like("blogContent", cmBlog.blogContent),
-            QdslUtil.FieldDef.like("blogId", cmBlog.blogId),
-            QdslUtil.FieldDef.like("blogSummary", cmBlog.blogSummary),
-            QdslUtil.FieldDef.like("blogTitle", cmBlog.blogTitle),
-            QdslUtil.FieldDef.like("isNotice", cmBlog.isNotice),
-            QdslUtil.FieldDef.like("prodId", cmBlog.prodId),
-            QdslUtil.FieldDef.like("useYn", cmBlog.useYn)
+            QdslUtil.FieldDef.like("blogAuthor", cmBlog.blogAuthor), // 작성자 이름
+            QdslUtil.FieldDef.like("blogCateId", cmBlog.blogCateId), // 블로그카테고리ID 필터
+            QdslUtil.FieldDef.like("blogContent", cmBlog.blogContent), // 본문 (HTML 에디터)
+            QdslUtil.FieldDef.like("blogId", cmBlog.blogId), // 블로그ID 필터
+            QdslUtil.FieldDef.like("blogSummary", cmBlog.blogSummary), // 요약 (미리보기, 검색결과용)
+            QdslUtil.FieldDef.like("blogTitle", cmBlog.blogTitle), // 제목
+            QdslUtil.FieldDef.like("isNotice", cmBlog.isNotice), // 공지글 여부 Y/N 필터
+            QdslUtil.FieldDef.like("prodId", cmBlog.prodId), // 상품ID (pd_prod.prod_id, 상품 관련 글일 때만)
+            QdslUtil.FieldDef.like("useYn", cmBlog.useYn) // 공개여부 Y/N 필터
         ));
     }
 

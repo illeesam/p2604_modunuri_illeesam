@@ -101,15 +101,15 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()));
-        whereList.add(QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()));
-        whereList.add(QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd()));
-        whereList.add(QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds()));
+        whereList.add(QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(odClaimItem.claimId, search.getClaimId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId())); // 클레임항목ID 필터
+        whereList.add(QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd())); // 항목상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds())); // 항목상태 다중 필터 (strIn, BO multiCheck)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odClaimItem.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -138,15 +138,15 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()));
-        whereList.add(QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()));
-        whereList.add(QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd()));
-        whereList.add(QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds()));
+        whereList.add(QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(odClaimItem.claimId, search.getClaimId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId())); // 클레임항목ID 필터
+        whereList.add(QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd())); // 항목상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds())); // 항목상태 다중 필터 (strIn, BO multiCheck)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaimItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odClaimItem.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdClaimItemDto.Item> query = baseListQuery();
@@ -169,17 +169,17 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "claimId,claimItemId,claimItemStatusCd,claimItemStatusCdBefore,orderItemId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("claimId", odClaimItem.claimId),
-            QdslUtil.FieldDef.like("claimItemId", odClaimItem.claimItemId),
-            QdslUtil.FieldDef.like("claimItemStatusCd", odClaimItem.claimItemStatusCd),
-            QdslUtil.FieldDef.like("claimItemStatusCdBefore", odClaimItem.claimItemStatusCdBefore),
-            QdslUtil.FieldDef.like("orderItemId", odClaimItem.orderItemId),
-            QdslUtil.FieldDef.like("prodId", odClaimItem.prodId),
-            QdslUtil.FieldDef.like("prodNm", odClaimItem.prodNm),
-            QdslUtil.FieldDef.like("prodOption", odClaimItem.prodOption)
+            QdslUtil.FieldDef.like("claimId", odClaimItem.claimId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("claimItemId", odClaimItem.claimItemId), // 클레임항목ID 필터
+            QdslUtil.FieldDef.like("claimItemStatusCd", odClaimItem.claimItemStatusCd), // 항목상태 단건 필터 (strEq)
+            QdslUtil.FieldDef.like("claimItemStatusCdBefore", odClaimItem.claimItemStatusCdBefore), // 변경 전 클레임상태 — CLAIM_ITEM_STATUS_CD
+            QdslUtil.FieldDef.like("orderItemId", odClaimItem.orderItemId), // 주문상품ID (od_order_item.)
+            QdslUtil.FieldDef.like("prodId", odClaimItem.prodId), // 상품ID
+            QdslUtil.FieldDef.like("prodNm", odClaimItem.prodNm), // 상품명 (주문시점 스냅샷)
+            QdslUtil.FieldDef.like("prodOption", odClaimItem.prodOption) // 옵션 (색상/사이즈 스냅샷)
         ));
     }
 

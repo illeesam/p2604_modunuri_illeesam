@@ -46,8 +46,8 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                         pdhProdSkuPriceHist.chgReason,       // 변경사유
                         pdhProdSkuPriceHist.chgBy,           // 처리자 (sy_user.user_id)
                         pdhProdSkuPriceHist.chgDate,         // 처리일시
-                        pdhProdSkuPriceHist.regBy,
-                        pdhProdSkuPriceHist.regDate,
+                        pdhProdSkuPriceHist.regBy, // 등록자
+                        pdhProdSkuPriceHist.regDate, // 등록일
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pdhProdSkuPriceHist)
@@ -72,7 +72,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId())); // 이력ID (단건 조회 필터)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -101,7 +101,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId())); // 이력ID (단건 조회 필터)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<PdhProdSkuPriceHistDto.Item> query = baseSelColumnQuery();
@@ -125,12 +125,13 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chgBy,chgReason,histId,prodId,skuId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chgBy", pdhProdSkuPriceHist.chgBy),
-            QdslUtil.FieldDef.like("chgReason", pdhProdSkuPriceHist.chgReason),
-            QdslUtil.FieldDef.like("histId", pdhProdSkuPriceHist.histId),
-            QdslUtil.FieldDef.like("prodId", pdhProdSkuPriceHist.prodId),
+            QdslUtil.FieldDef.like("chgBy", pdhProdSkuPriceHist.chgBy), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("chgReason", pdhProdSkuPriceHist.chgReason), // 변경사유
+            QdslUtil.FieldDef.like("histId", pdhProdSkuPriceHist.histId), // 이력ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("prodId", pdhProdSkuPriceHist.prodId), // 상품ID (pd_prod.prod_id)
             QdslUtil.FieldDef.like("skuId", pdhProdSkuPriceHist.prodSkuId)
         ));
     }

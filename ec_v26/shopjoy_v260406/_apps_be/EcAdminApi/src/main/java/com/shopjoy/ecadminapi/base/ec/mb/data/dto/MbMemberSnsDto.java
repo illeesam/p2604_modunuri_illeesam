@@ -24,6 +24,7 @@ public class MbMemberSnsDto {
         private String memberSnsId;         // SNS연동ID (YYMMDDhhmmss+rand4)
         private String memberId;             // 회원ID (mb_member.member_id)
         private String snsChannelCd;          // SNS채널코드 — SNS_CHANNEL_CD
+        private String snsChannelCdNm;         // SNS채널 코드 라벨
         private String snsUserId;              // SNS 플랫폼 사용자ID
         private String regBy;                   // 등록자
         private LocalDateTime regDate;          // 등록일시

@@ -48,10 +48,10 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                         pdProdSku.prodSkuCode,    // 자체 SKU 코드
                         pdProdSku.addPrice,       // 옵션 추가금액 (기본가 대비)
                         pdProdSku.useYn,           // 사용여부 — {Y: '사용', N: '미사용'}
-                        pdProdSku.regBy,
-                        pdProdSku.regDate,
-                        pdProdSku.updBy,
-                        pdProdSku.updDate,
+                        pdProdSku.regBy, // 등록자
+                        pdProdSku.regDate, // 등록일
+                        pdProdSku.updBy, // 수정자
+                        pdProdSku.updDate, // 수정일
                         pdProdSku.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -81,13 +81,13 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProdSku.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()));
+        whereList.add(QdslUtil.strIn(pdProdSku.prodId, search.getProdIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pdProdSku.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId())); // SKU ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSku.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSku.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdSku.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdSku.siteId, search.getSiteId())); // 사이트ID (검색 필터)
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -116,13 +116,13 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProdSku.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()));
+        whereList.add(QdslUtil.strIn(pdProdSku.prodId, search.getProdIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pdProdSku.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId())); // SKU ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSku.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSku.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdSku.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdSku.siteId, search.getSiteId())); // 사이트ID (검색 필터)
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdSkuDto.Item> query = baseSelColumnQuery();
@@ -145,14 +145,15 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "prodOpt1Id,prodOpt2Id,prodId,prodSkuCode,prodSkuId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("prodOpt1Id", pdProdSku.prodOpt1Id),
-            QdslUtil.FieldDef.like("prodOpt2Id", pdProdSku.prodOpt2Id),
-            QdslUtil.FieldDef.like("prodId", pdProdSku.prodId),
-            QdslUtil.FieldDef.like("prodSkuCode", pdProdSku.prodSkuCode),
-            QdslUtil.FieldDef.like("prodSkuId", pdProdSku.prodSkuId),
-            QdslUtil.FieldDef.like("useYn", pdProdSku.useYn)
+            QdslUtil.FieldDef.like("prodOpt1Id", pdProdSku.prodOpt1Id), // 옵션1 값ID (pd_prod_opt.prod_opt_id)
+            QdslUtil.FieldDef.like("prodOpt2Id", pdProdSku.prodOpt2Id), // 옵션2 값ID (pd_prod_opt.prod_opt_id)
+            QdslUtil.FieldDef.like("prodId", pdProdSku.prodId), // 상품ID 필터
+            QdslUtil.FieldDef.like("prodSkuCode", pdProdSku.prodSkuCode), // 자체 SKU 코드
+            QdslUtil.FieldDef.like("prodSkuId", pdProdSku.prodSkuId), // SKU ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("useYn", pdProdSku.useYn) // 사용여부 필터 Y/N
         ));
     }
 

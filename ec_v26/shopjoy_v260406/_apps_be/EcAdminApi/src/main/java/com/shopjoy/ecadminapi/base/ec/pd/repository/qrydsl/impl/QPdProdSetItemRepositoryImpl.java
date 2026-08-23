@@ -91,11 +91,11 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId()));
+        whereList.add(QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId())); // 세트구성ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId())); // 사이트ID (검색 필터)
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -124,11 +124,11 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId()));
+        whereList.add(QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId())); // 세트구성ID (단건 조회 필터)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdSetItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId())); // 사이트ID (검색 필터)
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdSetItemDto.Item> query = baseSelColumnQuery();
@@ -150,16 +150,16 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         BasePage<PdProdSetItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "itemDesc,itemNm,itemProdId,itemSkuId,prodSetItemId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("itemDesc", pdProdSetItem.itemDesc),
-            QdslUtil.FieldDef.like("itemNm", pdProdSetItem.itemNm),
-            QdslUtil.FieldDef.like("itemProdId", pdProdSetItem.itemProdId),
-            QdslUtil.FieldDef.like("itemSkuId", pdProdSetItem.itemSkuId),
-            QdslUtil.FieldDef.like("prodSetItemId", pdProdSetItem.prodSetItemId),
-            QdslUtil.FieldDef.like("setProdId", pdProdSetItem.setProdId),
-            QdslUtil.FieldDef.like("useYn", pdProdSetItem.useYn)
+            QdslUtil.FieldDef.like("itemDesc", pdProdSetItem.itemDesc), // 구성품 부가 설명 (소재·용량·색상 등)
+            QdslUtil.FieldDef.like("itemNm", pdProdSetItem.itemNm), // 구성품 표시명 (예: 머그컵, 접시 2p)
+            QdslUtil.FieldDef.like("itemProdId", pdProdSetItem.itemProdId), // 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
+            QdslUtil.FieldDef.like("itemSkuId", pdProdSetItem.itemSkuId), // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
+            QdslUtil.FieldDef.like("prodSetItemId", pdProdSetItem.prodSetItemId), // 세트구성ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("setProdId", pdProdSetItem.setProdId), // 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
+            QdslUtil.FieldDef.like("useYn", pdProdSetItem.useYn) // 사용여부 필터 Y/N
         ));
     }
 

@@ -38,7 +38,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QSyhUserLoginLog syhUserLoginLog   = QSyhUserLoginLog.syhUserLoginLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QVwSyCode          cd_lr = new QVwSyCode("cd_lr");    /*
+    private static final QVwSyCode          codeResultCd = new QVwSyCode("codeResultCd");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * LOGIN_RESULT  {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금', FAIL_DORMANT: '휴면계정', FAIL_WITHDRAWN: '탈퇴계정'}
      */
@@ -67,14 +67,14 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                         syhUserLoginLog.updBy,                 // 수정자
                         syhUserLoginLog.updDate,               // 수정일시
                         syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
-                        cd_lr.codeLabel.as("resultCdNm"),              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
+                        codeResultCd.codeLabel.as("resultCdNm"),              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
                         syhUserLoginLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhUserLoginLog)
                 .leftJoin(syUser).on(syUser.userId.eq(syhUserLoginLog.userId)) // 사용자
-                .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(syhUserLoginLog.resultCd))) // 로그인결과
+                .leftJoin(codeResultCd).on(codeResultCd.codeGrp.eq("LOGIN_RESULT").and(codeResultCd.codeValue.eq(syhUserLoginLog.resultCd))) // 로그인결과
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhUserLoginLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syhUserLoginLog.regBy)) // 등록자
                 ;
@@ -96,9 +96,9 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()));
+        whereList.add(QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId())); // 사용자ID (로그인 실패 시 NULL)
+        whereList.add(QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd())); // 결과 (코드: LOGIN_RESULT)
         whereList.add(QdslUtil.dateBetween(syhUserLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -128,9 +128,9 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()));
+        whereList.add(QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId())); // 사용자ID (로그인 실패 시 NULL)
+        whereList.add(QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd())); // 결과 (코드: LOGIN_RESULT)
         whereList.add(QdslUtil.dateBetween(syhUserLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -155,22 +155,22 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "accessToken,authId,browser,cmdNm,device" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("accessToken", syhUserLoginLog.accessToken),
+            QdslUtil.FieldDef.like("accessToken", syhUserLoginLog.accessToken), // 액세스 토큰 (SHA-256 해시값 저장 권장, 로그인 실패 시 NULL)
             QdslUtil.FieldDef.like("authId", syhUserLoginLog.authId),
-            QdslUtil.FieldDef.like("browser", syhUserLoginLog.browser),
-            QdslUtil.FieldDef.like("cmdNm", syhUserLoginLog.cmdNm),
-            QdslUtil.FieldDef.like("device", syhUserLoginLog.device),
-            QdslUtil.FieldDef.like("ip", syhUserLoginLog.ip),
-            QdslUtil.FieldDef.like("logId", syhUserLoginLog.logId),
-            QdslUtil.FieldDef.like("loginId", syhUserLoginLog.loginId),
-            QdslUtil.FieldDef.like("os", syhUserLoginLog.os),
-            QdslUtil.FieldDef.like("refreshToken", syhUserLoginLog.refreshToken),
-            QdslUtil.FieldDef.like("resultCd", syhUserLoginLog.resultCd),
-            QdslUtil.FieldDef.like("uiNm", syhUserLoginLog.uiNm),
-            QdslUtil.FieldDef.like("userId", syhUserLoginLog.userId)
+            QdslUtil.FieldDef.like("browser", syhUserLoginLog.browser), // 브라우저 정보
+            QdslUtil.FieldDef.like("cmdNm", syhUserLoginLog.cmdNm), // 기능명 (X-Cmd-Nm 헤더)
+            QdslUtil.FieldDef.like("device", syhUserLoginLog.device), // User-Agent 전문
+            QdslUtil.FieldDef.like("ip", syhUserLoginLog.ip), // IP주소
+            QdslUtil.FieldDef.like("logId", syhUserLoginLog.logId), // 로그ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("loginId", syhUserLoginLog.loginId), // 입력한 로그인ID
+            QdslUtil.FieldDef.like("os", syhUserLoginLog.os), // OS 정보
+            QdslUtil.FieldDef.like("refreshToken", syhUserLoginLog.refreshToken), // 리프레시 토큰 (SHA-256 해시값 저장 권장)
+            QdslUtil.FieldDef.like("resultCd", syhUserLoginLog.resultCd), // 결과 (코드: LOGIN_RESULT)
+            QdslUtil.FieldDef.like("uiNm", syhUserLoginLog.uiNm), // 화면명 (X-UI-Nm 헤더)
+            QdslUtil.FieldDef.like("userId", syhUserLoginLog.userId) // 사용자ID (로그인 실패 시 NULL)
         ));
     }
 

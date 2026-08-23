@@ -38,8 +38,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleEtcAdj stSettleEtcAdj     = QStSettleEtcAdj.stSettleEtcAdj;
     private static final QSySite         sySite   = QSySite.sySite;
-    private static final QVwSyCode         cdSeat = new QVwSyCode("cd_seat");
-    private static final QVwSyCode         cdAd   = new QVwSyCode("cd_ad");    /*
+    private static final QVwSyCode         codeEtcAdjTypeCd = new QVwSyCode("cd_seat");
+    private static final QVwSyCode         codeEtcAdjDirCd   = new QVwSyCode("cd_ad");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_ETC_ADJ_TYPE  {위약금, 인센티브, 세금조정, 기타} (코드값 자체가 한글 — Entity 주석상 SHIP/RETURN_SHIP/PENALTY/OTHER 와 값 표기가 다름)
      * ADJ_DIR              {ADD: '가산', SUB: '차감'} (Entity 주석상 ADD/DEDUCT 와 값 표기가 다름)
@@ -58,15 +58,15 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                         stSettleEtcAdj.regDate,               // 등록일시
                         stSettleEtcAdj.updBy,                 // 수정자
                         stSettleEtcAdj.updDate,               // 수정일시
-                        cdSeat.codeLabel.as("etcAdjTypeCdNm"),        // 기타조정유형명 (sy_code 조인)
-                        cdAd.codeLabel.as("etcAdjDirCdNm"),            // 가산/차감명 (sy_code 조인)
+                        codeEtcAdjTypeCd.codeLabel.as("etcAdjTypeCdNm"),        // 기타조정유형명 (sy_code 조인)
+                        codeEtcAdjDirCd.codeLabel.as("etcAdjDirCdNm"),            // 가산/차감명 (sy_code 조인)
                         stSettleEtcAdj.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleEtcAdj)
-                .innerJoin(cdSeat).on(cdSeat.codeGrp.eq("ETC_ADJ_TYPE_CD").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd))) // 기타조정유형
-                .innerJoin(cdAd).on(cdAd.codeGrp.eq("ETC_ADJ_DIR_CD").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd))) // 기타조정방향
+                .innerJoin(codeEtcAdjTypeCd).on(codeEtcAdjTypeCd.codeGrp.eq("ETC_ADJ_TYPE_CD").and(codeEtcAdjTypeCd.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd))) // 기타조정유형
+                .innerJoin(codeEtcAdjDirCd).on(codeEtcAdjDirCd.codeGrp.eq("ETC_ADJ_DIR_CD").and(codeEtcAdjDirCd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd))) // 기타조정방향
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleEtcAdj.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleEtcAdj.regBy)) // 등록자
                 ;
@@ -87,8 +87,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()));
-        whereList.add(QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()));
+        whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId())); // 기타조정ID 필터
+        whereList.add(QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd())); // 기타조정유형 필터 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -120,8 +120,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()));
-        whereList.add(QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()));
+        whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId())); // 기타조정ID 필터
+        whereList.add(QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd())); // 기타조정유형 필터 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -147,14 +147,15 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "etcAdjDirCd,etcAdjReason,etcAdjTypeCd,settleEtcAdjId,settleEtcAdjMemo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("etcAdjDirCd", stSettleEtcAdj.etcAdjDirCd),
-            QdslUtil.FieldDef.like("etcAdjReason", stSettleEtcAdj.etcAdjReason),
-            QdslUtil.FieldDef.like("etcAdjTypeCd", stSettleEtcAdj.etcAdjTypeCd),
-            QdslUtil.FieldDef.like("settleEtcAdjId", stSettleEtcAdj.settleEtcAdjId),
-            QdslUtil.FieldDef.like("settleEtcAdjMemo", stSettleEtcAdj.settleEtcAdjMemo),
-            QdslUtil.FieldDef.like("settleId", stSettleEtcAdj.settleId)
+            QdslUtil.FieldDef.like("etcAdjDirCd", stSettleEtcAdj.etcAdjDirCd), // 가산/차감 — ETC_ADJ_DIR_CD (ADD/DEDUCT)
+            QdslUtil.FieldDef.like("etcAdjReason", stSettleEtcAdj.etcAdjReason), // 사유
+            QdslUtil.FieldDef.like("etcAdjTypeCd", stSettleEtcAdj.etcAdjTypeCd), // 기타조정유형 필터 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
+            QdslUtil.FieldDef.like("settleEtcAdjId", stSettleEtcAdj.settleEtcAdjId), // 기타조정ID 필터
+            QdslUtil.FieldDef.like("settleEtcAdjMemo", stSettleEtcAdj.settleEtcAdjMemo), // 메모
+            QdslUtil.FieldDef.like("settleId", stSettleEtcAdj.settleId) // 정산ID (st_settle.settle_id)
         ));
     }
 

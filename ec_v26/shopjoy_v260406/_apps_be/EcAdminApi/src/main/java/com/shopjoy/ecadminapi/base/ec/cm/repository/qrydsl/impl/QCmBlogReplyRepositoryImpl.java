@@ -78,9 +78,9 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     public List<CmBlogReplyDto.Item> selectList(CmBlogReplyDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()));
-        whereList.add(QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId()));
+        whereList.add(QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId())); // 댓글ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogReply.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogReply.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -111,9 +111,9 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()));
-        whereList.add(QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId()));
+        whereList.add(QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId())); // 댓글ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogReply.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogReply.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -140,17 +140,17 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "blogCommentContent,blogId,blogReplyId,commentStatusCd,commentStatusCdBefore" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("blogCommentContent", cmBlogReply.blogCommentContent),
-            QdslUtil.FieldDef.like("blogId", cmBlogReply.blogId),
-            QdslUtil.FieldDef.like("blogReplyId", cmBlogReply.blogReplyId),
-            QdslUtil.FieldDef.like("commentStatusCd", cmBlogReply.commentStatusCd),
-            QdslUtil.FieldDef.like("commentStatusCdBefore", cmBlogReply.commentStatusCdBefore),
-            QdslUtil.FieldDef.like("parentCommentId", cmBlogReply.parentCommentId),
-            QdslUtil.FieldDef.like("writerId", cmBlogReply.writerId),
-            QdslUtil.FieldDef.like("writerNm", cmBlogReply.writerNm)
+            QdslUtil.FieldDef.like("blogCommentContent", cmBlogReply.blogCommentContent), // 댓글 내용
+            QdslUtil.FieldDef.like("blogId", cmBlogReply.blogId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("blogReplyId", cmBlogReply.blogReplyId), // 댓글ID 필터
+            QdslUtil.FieldDef.like("commentStatusCd", cmBlogReply.commentStatusCd), // 상태 — COMMENT_STATUS_CD {ACTIVE:정상, HIDDEN:숨김, DELETED:삭제}
+            QdslUtil.FieldDef.like("commentStatusCdBefore", cmBlogReply.commentStatusCdBefore), // 변경 전 댓글상태
+            QdslUtil.FieldDef.like("parentCommentId", cmBlogReply.parentCommentId), // 대댓글 부모ID
+            QdslUtil.FieldDef.like("writerId", cmBlogReply.writerId), // 작성자ID
+            QdslUtil.FieldDef.like("writerNm", cmBlogReply.writerNm) // 작성자명
         ));
     }
 

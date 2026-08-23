@@ -39,7 +39,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QOdPayMethod odPayMethod   = QOdPayMethod.odPayMethod;
     private static final QMbMember    mem = new QMbMember("mem");
-    private static final QVwSyCode      cdPm = new QVwSyCode("cd_pm");    /*
+    private static final QVwSyCode      codePayMethodTypeCd = new QVwSyCode("cd_pm");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (DTO Item에 별칭 컬럼 없음 - 기본 필드만 매핑)
      * PAY_METHOD  {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
      */
@@ -49,6 +49,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                         odPayMethod.payMethodId,      // 결제수단ID (YYMMDDhhmmss+rand4)
                         odPayMethod.memberId,         // 회원ID (mb_member.member_id)
                         odPayMethod.payMethodTypeCd,  // 결제수단유형코드 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        codePayMethodTypeCd.codeLabel.as("payMethodTypeCdNm"), // 코드 라벨
                         odPayMethod.payMethodNm,      // 결제수단명 (카드사명, 은행명 등)
                         odPayMethod.payMethodAlias,   // 별칭 (사용자 설정)
                         odPayMethod.payKeyNo,         // 결제 게이트웨이 발급 키/토큰
@@ -63,7 +64,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 ))
                 .from(odPayMethod)
                 .innerJoin(mem).on(mem.memberId.eq(odPayMethod.memberId)) // 회원
-                .innerJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd))) // 결제수단
+                .innerJoin(codePayMethodTypeCd).on(codePayMethodTypeCd.codeGrp.eq("PAY_METHOD").and(codePayMethodTypeCd.codeValue.eq(odPayMethod.payMethodTypeCd))) // 결제수단
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odPayMethod.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(odPayMethod.regBy)) // 등록자
                 ;
@@ -84,7 +85,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId()));
+        whereList.add(QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId())); // 결제수단ID (YYMMDDhhmmss+rand4)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPayMethod.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPayMethod.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -116,7 +117,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId()));
+        whereList.add(QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId())); // 결제수단ID (YYMMDDhhmmss+rand4)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPayMethod.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odPayMethod.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -142,16 +143,16 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "mainMethodYn,memberId,payKeyNo,payMethodAlias,payMethodId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("mainMethodYn", odPayMethod.mainMethodYn),
-            QdslUtil.FieldDef.like("memberId", odPayMethod.memberId),
-            QdslUtil.FieldDef.like("payKeyNo", odPayMethod.payKeyNo),
-            QdslUtil.FieldDef.like("payMethodAlias", odPayMethod.payMethodAlias),
-            QdslUtil.FieldDef.like("payMethodId", odPayMethod.payMethodId),
-            QdslUtil.FieldDef.like("payMethodNm", odPayMethod.payMethodNm),
-            QdslUtil.FieldDef.like("payMethodTypeCd", odPayMethod.payMethodTypeCd)
+            QdslUtil.FieldDef.like("mainMethodYn", odPayMethod.mainMethodYn), // 기본결제수단여부 Y/N
+            QdslUtil.FieldDef.like("memberId", odPayMethod.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("payKeyNo", odPayMethod.payKeyNo), // 결제 게이트웨이 발급 키/토큰
+            QdslUtil.FieldDef.like("payMethodAlias", odPayMethod.payMethodAlias), // 별칭 (사용자 설정)
+            QdslUtil.FieldDef.like("payMethodId", odPayMethod.payMethodId), // 결제수단ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("payMethodNm", odPayMethod.payMethodNm), // 결제수단명 (카드사명, 은행명 등)
+            QdslUtil.FieldDef.like("payMethodTypeCd", odPayMethod.payMethodTypeCd) // 결제수단유형코드 (코드: PAY_METHOD)
         ));
     }
 

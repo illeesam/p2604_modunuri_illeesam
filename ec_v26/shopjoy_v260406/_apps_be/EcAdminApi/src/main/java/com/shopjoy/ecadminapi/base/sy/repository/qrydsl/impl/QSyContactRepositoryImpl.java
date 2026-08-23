@@ -84,10 +84,10 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syContact.contactId, search.getContactId()));
-        whereList.add(QdslUtil.strEq(syContact.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()));
-        whereList.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syContact.contactId, search.getContactId())); // 문의ID 필터
+        whereList.add(QdslUtil.strEq(syContact.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd())); // 문의유형 필터
+        whereList.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus())); // 처리상태 필터
         whereList.add(andDateRangeBetween(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -118,10 +118,10 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syContact.contactId, search.getContactId()));
-        whereList.add(QdslUtil.strEq(syContact.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()));
-        whereList.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syContact.contactId, search.getContactId())); // 문의ID 필터
+        whereList.add(QdslUtil.strEq(syContact.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd())); // 문의유형 필터
+        whereList.add(QdslUtil.strEq(syContact.contactStatusCd, search.getStatus())); // 처리상태 필터
         whereList.add(andDateRangeBetween(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -145,8 +145,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         BasePage<SyContactDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 등록일(regDate) 기간 검색 — dateRangeStart/dateRangeEnd (yyyy-MM-dd) 포함 범위 */
     private BooleanExpression andDateRangeBetween(SyContactDto.Request search) {
         if (search == null) return null;
@@ -165,17 +163,18 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return expr;
     }
 
+    /* searchType 예: "answerUserId,categoryCd,contactAnswer,contactContent,contactId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("answerUserId", syContact.answerUserId),
-            QdslUtil.FieldDef.like("categoryCd", syContact.categoryCd),
-            QdslUtil.FieldDef.like("contactAnswer", syContact.contactAnswer),
-            QdslUtil.FieldDef.like("contactContent", syContact.contactContent),
-            QdslUtil.FieldDef.like("contactId", syContact.contactId),
-            QdslUtil.FieldDef.like("contactStatusCd", syContact.contactStatusCd),
-            QdslUtil.FieldDef.like("contactTitle", syContact.contactTitle),
-            QdslUtil.FieldDef.like("memberId", syContact.memberId),
-            QdslUtil.FieldDef.like("memberNm", syContact.memberNm)
+            QdslUtil.FieldDef.like("answerUserId", syContact.answerUserId), // 답변자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("categoryCd", syContact.categoryCd), // 문의유형 필터
+            QdslUtil.FieldDef.like("contactAnswer", syContact.contactAnswer), // 답변내용
+            QdslUtil.FieldDef.like("contactContent", syContact.contactContent), // 문의내용
+            QdslUtil.FieldDef.like("contactId", syContact.contactId), // 문의ID 필터
+            QdslUtil.FieldDef.like("contactStatusCd", syContact.contactStatusCd), // 처리상태 — CONTACT_STATUS_CD
+            QdslUtil.FieldDef.like("contactTitle", syContact.contactTitle), // 제목
+            QdslUtil.FieldDef.like("memberId", syContact.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("memberNm", syContact.memberNm) // 문의자명
         ));
     }
 

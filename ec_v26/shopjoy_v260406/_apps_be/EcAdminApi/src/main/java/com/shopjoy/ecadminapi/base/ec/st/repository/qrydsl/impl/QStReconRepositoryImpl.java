@@ -42,8 +42,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QSyVendor    syVendor  = QSyVendor.syVendor;
     private static final QStSettleRaw stSettleRaw  = QStSettleRaw.stSettleRaw;
-    private static final QVwSyCode      cdRt = new QVwSyCode("cd_rt");
-    private static final QVwSyCode      cdRs = new QVwSyCode("cd_rs");    /*
+    private static final QVwSyCode      codeReconTypeCd = new QVwSyCode("cd_rt");
+    private static final QVwSyCode      codeReconStatusCd = new QVwSyCode("cd_rs");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * RECON_TYPE    {ORDER: '주문대사', SETTLE: '정산대사'}
      * RECON_STATUS  {MATCHED: '일치', DIFF: '차이', MANUAL: '수동처리'}
@@ -74,17 +74,17 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                         stRecon.updDate,                    // 수정일시
                         syVendor.vendorNm.as("vendorNm"),             // 업체명 (조인)
                         stSettleRaw.prodNm.as("settleRawNm"),         // 수집원장 상품명 스냅샷 (조인)
-                        cdRt.codeLabel.as("reconTypeCdNm"),           // 대사유형명 (sy_code 조인)
-                        cdRs.codeLabel.as("reconStatusCdNm"),         // 대사상태명 (sy_code 조인)
+                        codeReconTypeCd.codeLabel.as("reconTypeCdNm"),           // 대사유형명 (sy_code 조인)
+                        codeReconStatusCd.codeLabel.as("reconStatusCdNm"),         // 대사상태명 (sy_code 조인)
                         stRecon.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stRecon)
-                .innerJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE_CD").and(cdRt.codeValue.eq(stRecon.reconTypeCd))) // 대사유형
+                .innerJoin(codeReconTypeCd).on(codeReconTypeCd.codeGrp.eq("RECON_TYPE_CD").and(codeReconTypeCd.codeValue.eq(stRecon.reconTypeCd))) // 대사유형
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId)) // 업체
                 .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId)) // 정산원장
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS_CD").and(cdRs.codeValue.eq(stRecon.reconStatusCd))) // 대사상태
+                .leftJoin(codeReconStatusCd).on(codeReconStatusCd.codeGrp.eq("RECON_STATUS_CD").and(codeReconStatusCd.codeValue.eq(stRecon.reconStatusCd))) // 대사상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stRecon.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stRecon.regBy)) // 등록자
                 ;
@@ -105,9 +105,9 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stRecon.reconId, search.getReconId()));
-        whereList.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()));
-        whereList.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()));
+        whereList.add(QdslUtil.strEq(stRecon.reconId, search.getReconId())); // 대사ID 필터
+        whereList.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd())); // 대사유형 필터 — RECON_TYPE_CD (ORDER/PAY/CLAIM/VENDOR)
+        whereList.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd())); // 대사상태 필터 — RECON_STATUS_CD (MATCHED/MISMATCH/RESOLVED)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -139,9 +139,9 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stRecon.reconId, search.getReconId()));
-        whereList.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()));
-        whereList.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()));
+        whereList.add(QdslUtil.strEq(stRecon.reconId, search.getReconId())); // 대사ID 필터
+        whereList.add(QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd())); // 대사유형 필터 — RECON_TYPE_CD (ORDER/PAY/CLAIM/VENDOR)
+        whereList.add(QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd())); // 대사상태 필터 — RECON_STATUS_CD (MATCHED/MISMATCH/RESOLVED)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stRecon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -167,20 +167,21 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "reconId,reconNote,reconStatusCd,reconStatusCdBefore,reconTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("reconId", stRecon.reconId),
-            QdslUtil.FieldDef.like("reconNote", stRecon.reconNote),
-            QdslUtil.FieldDef.like("reconStatusCd", stRecon.reconStatusCd),
-            QdslUtil.FieldDef.like("reconStatusCdBefore", stRecon.reconStatusCdBefore),
-            QdslUtil.FieldDef.like("reconTypeCd", stRecon.reconTypeCd),
-            QdslUtil.FieldDef.like("refId", stRecon.refId),
-            QdslUtil.FieldDef.like("refNo", stRecon.refNo),
-            QdslUtil.FieldDef.like("resolvedBy", stRecon.resolvedBy),
-            QdslUtil.FieldDef.like("settleId", stRecon.settleId),
-            QdslUtil.FieldDef.like("settlePeriod", stRecon.settlePeriod),
-            QdslUtil.FieldDef.like("settleRawId", stRecon.settleRawId),
-            QdslUtil.FieldDef.like("vendorId", stRecon.vendorId)
+            QdslUtil.FieldDef.like("reconId", stRecon.reconId), // 대사ID 필터
+            QdslUtil.FieldDef.like("reconNote", stRecon.reconNote), // 대사 메모
+            QdslUtil.FieldDef.like("reconStatusCd", stRecon.reconStatusCd), // 대사상태 필터 — RECON_STATUS_CD (MATCHED/MISMATCH/RESOLVED)
+            QdslUtil.FieldDef.like("reconStatusCdBefore", stRecon.reconStatusCdBefore), // 변경 전 대사상태
+            QdslUtil.FieldDef.like("reconTypeCd", stRecon.reconTypeCd), // 대사유형 필터 — RECON_TYPE_CD (ORDER/PAY/CLAIM/VENDOR)
+            QdslUtil.FieldDef.like("refId", stRecon.refId), // 참조ID (order_id / pay_id / claim_id 등)
+            QdslUtil.FieldDef.like("refNo", stRecon.refNo), // 참조번호 스냅샷
+            QdslUtil.FieldDef.like("resolvedBy", stRecon.resolvedBy), // 해소 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("settleId", stRecon.settleId), // 정산ID (st_settle.settle_id)
+            QdslUtil.FieldDef.like("settlePeriod", stRecon.settlePeriod), // 정산기간 (YYYY-MM)
+            QdslUtil.FieldDef.like("settleRawId", stRecon.settleRawId), // 수집원장ID (st_settle_raw.settle_raw_id)
+            QdslUtil.FieldDef.like("vendorId", stRecon.vendorId) // 업체ID
         ));
     }
 

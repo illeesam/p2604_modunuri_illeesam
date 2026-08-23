@@ -46,16 +46,16 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
     private static final QOdClaimItem odClaimItemCnt = new QOdClaimItem("oci_cnt");   // 클레임항목 수 집계 전용
-    private static final QVwSyCode   cdCt = new QVwSyCode("cd_ct");
-    private static final QVwSyCode   cdCs = new QVwSyCode("cd_cs");
-    private static final QVwSyCode   cdRm = new QVwSyCode("cd_rm");
-    private static final QVwSyCode   cdRb = new QVwSyCode("cd_rb");
-    private static final QVwSyCode   cdRc = new QVwSyCode("cd_rc");
-    private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
-    private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");
-    private static final QVwSyCode   cdEc = new QVwSyCode("cd_ec");
-    private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
-    private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");    /*
+    private static final QVwSyCode   codeClaimTypeCd = new QVwSyCode("cd_ct");
+    private static final QVwSyCode   codeClaimStatusCd = new QVwSyCode("cd_cs");
+    private static final QVwSyCode   codeRefundMethodCd = new QVwSyCode("cd_rm");
+    private static final QVwSyCode   codeRefundBankCd = new QVwSyCode("cd_rb");
+    private static final QVwSyCode   codeReturnCourierCd = new QVwSyCode("cd_rc");
+    private static final QVwSyCode   codeReturnStatusCd = new QVwSyCode("cd_rs");
+    private static final QVwSyCode   codeInboundCourierCd = new QVwSyCode("cd_ic");
+    private static final QVwSyCode   codeExchangeCourierCd = new QVwSyCode("cd_ec");
+    private static final QVwSyCode   codeApprStatusCd = new QVwSyCode("cd_ap");
+    private static final QVwSyCode   codeApprTargetCd = new QVwSyCode("cd_at");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * CLAIM_TYPE    {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
      * CLAIM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
@@ -143,11 +143,11 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odOrder.orderDate.as("orderDate"),                   // 원 주문 주문일시
                         odOrder.orderStatusCd.as("orderStatusCd"),           // 원 주문 상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:주문취소, AUTO_CANCELLED:자동취소}
                         mbMember.loginId.as("memberEmail"),                  // 회원 로그인ID(이메일)
-                        cdCt.codeLabel.as("claimTypeCdNm"),                  // 클레임유형 라벨 — CLAIM_TYPE
-                        cdCs.codeLabel.as("claimStatusCdNm"),                // 클레임상태 라벨 — CLAIM_STATUS
-                        cdRm.codeLabel.as("refundMethodCdNm"),               // 환불수단 라벨 — REFUND_METHOD
-                        cdRc.codeLabel.as("returnCourierCdNm"),              // 수거 택배사 라벨 — COURIER
-                        cdEc.codeLabel.as("exchangeCourierCdNm"),            // 교환상품 발송 택배사 라벨 — COURIER
+                        codeClaimTypeCd.codeLabel.as("claimTypeCdNm"),                  // 클레임유형 라벨 — CLAIM_TYPE
+                        codeClaimStatusCd.codeLabel.as("claimStatusCdNm"),                // 클레임상태 라벨 — CLAIM_STATUS
+                        codeRefundMethodCd.codeLabel.as("refundMethodCdNm"),               // 환불수단 라벨 — REFUND_METHOD
+                        codeReturnCourierCd.codeLabel.as("returnCourierCdNm"),              // 수거 택배사 라벨 — COURIER
+                        codeExchangeCourierCd.codeLabel.as("exchangeCourierCdNm"),            // 교환상품 발송 택배사 라벨 — COURIER
                         /* 클레임항목 수 — 목록은 claimItems 를 채우지 않으므로(N+1 방지) 건수만 상관 서브쿼리로 집계.
                            항목이 없으면 null 대신 0 이 내려가도록 COALESCE 로 감싼다. */
                         ExpressionUtils.as(
@@ -164,12 +164,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 ))
                 .from(odClaim)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
-                .innerJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
+                .innerJoin(codeClaimTypeCd).on(codeClaimTypeCd.codeGrp.eq("CLAIM_TYPE_CD").and(codeClaimTypeCd.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId)) // 회원
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
-                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
-                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd))) // 택배사
-                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
+                .leftJoin(codeClaimStatusCd).on(codeClaimStatusCd.codeGrp.eq("CLAIM_STATUS_CD").and(codeClaimStatusCd.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
+                .leftJoin(codeRefundMethodCd).on(codeRefundMethodCd.codeGrp.eq("REFUND_METHOD_CD").and(codeRefundMethodCd.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
+                .leftJoin(codeReturnCourierCd).on(codeReturnCourierCd.codeGrp.eq("COURIER").and(codeReturnCourierCd.codeValue.eq(odClaim.returnCourierCd))) // 택배사
+                .leftJoin(codeExchangeCourierCd).on(codeExchangeCourierCd.codeGrp.eq("COURIER").and(codeExchangeCourierCd.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odClaim.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(odClaim.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(odClaim.siteId)) // 사이트
@@ -270,16 +270,16 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odOrder.recvAddr.as("recvAddr"),                       // 원 주문 배송지 주소
                         mbMember.loginId.as("memberEmail"),                    // 회원 로그인ID(이메일) — 알림 발송용
                         mbMember.memberPhone.as("memberPhoneOrigin"),          // 회원 원본 연락처 (클레임 접수 당시 값과 대조용)
-                        cdCt.codeLabel.as("claimTypeCdNm"),                    // 클레임유형 라벨 — CLAIM_TYPE
-                        cdCs.codeLabel.as("claimStatusCdNm"),                  // 클레임상태 라벨 — CLAIM_STATUS
-                        cdRm.codeLabel.as("refundMethodCdNm"),                 // 환불수단 라벨 — REFUND_METHOD
-                        cdRb.codeLabel.as("refundBankCdNm"),                   // 환불 은행 라벨 — BANK_CODE (계좌이체 환불 시)
-                        cdRc.codeLabel.as("returnCourierCdNm"),                // 수거 택배사 라벨 — COURIER
-                        cdRs.codeLabel.as("returnStatusCdNm"),                 // 수거 상태 라벨 — DLIV_STATUS
-                        cdIc.codeLabel.as("inboundCourierCdNm"),               // 반입 택배사 라벨 — COURIER
-                        cdEc.codeLabel.as("exchangeCourierCdNm"),              // 교환상품 발송 택배사 라벨 — COURIER
-                        cdAp.codeLabel.as("apprStatusCdNm"),                   // 결재상태 라벨 — APPR_STATUS
-                        cdAt.codeLabel.as("apprTargetCdNm"),                    // 결재대상 라벨 — APPR_TARGET
+                        codeClaimTypeCd.codeLabel.as("claimTypeCdNm"),                    // 클레임유형 라벨 — CLAIM_TYPE
+                        codeClaimStatusCd.codeLabel.as("claimStatusCdNm"),                  // 클레임상태 라벨 — CLAIM_STATUS
+                        codeRefundMethodCd.codeLabel.as("refundMethodCdNm"),                 // 환불수단 라벨 — REFUND_METHOD
+                        codeRefundBankCd.codeLabel.as("refundBankCdNm"),                   // 환불 은행 라벨 — BANK_CODE (계좌이체 환불 시)
+                        codeReturnCourierCd.codeLabel.as("returnCourierCdNm"),                // 수거 택배사 라벨 — COURIER
+                        codeReturnStatusCd.codeLabel.as("returnStatusCdNm"),                 // 수거 상태 라벨 — DLIV_STATUS
+                        codeInboundCourierCd.codeLabel.as("inboundCourierCdNm"),               // 반입 택배사 라벨 — COURIER
+                        codeExchangeCourierCd.codeLabel.as("exchangeCourierCdNm"),              // 교환상품 발송 택배사 라벨 — COURIER
+                        codeApprStatusCd.codeLabel.as("apprStatusCdNm"),                   // 결재상태 라벨 — APPR_STATUS
+                        codeApprTargetCd.codeLabel.as("apprTargetCdNm"),                    // 결재대상 라벨 — APPR_TARGET
                         odClaim.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -289,17 +289,17 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .from(odClaim)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId)) // 주문
-                .innerJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE_CD").and(cdCt.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
+                .innerJoin(codeClaimTypeCd).on(codeClaimTypeCd.codeGrp.eq("CLAIM_TYPE_CD").and(codeClaimTypeCd.codeValue.eq(odClaim.claimTypeCd))) // 클레임유형
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId)) // 회원
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS_CD").and(cdCs.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
-                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD_CD").and(cdRm.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
-                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odClaim.refundBankCd))) // 은행
-                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd))) // 택배사
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("DLIV_STATUS").and(cdRs.codeValue.eq(odClaim.returnStatusCd))) // 배송상태
-                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odClaim.inboundCourierCd))) // 택배사
-                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odClaim.apprStatusCd))) // 결재상태
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odClaim.apprTargetCd))) // 결재대상
+                .leftJoin(codeClaimStatusCd).on(codeClaimStatusCd.codeGrp.eq("CLAIM_STATUS_CD").and(codeClaimStatusCd.codeValue.eq(odClaim.claimStatusCd))) // 클레임상태
+                .leftJoin(codeRefundMethodCd).on(codeRefundMethodCd.codeGrp.eq("REFUND_METHOD_CD").and(codeRefundMethodCd.codeValue.eq(odClaim.refundMethodCd))) // 환불수단
+                .leftJoin(codeRefundBankCd).on(codeRefundBankCd.codeGrp.eq("BANK_CODE").and(codeRefundBankCd.codeValue.eq(odClaim.refundBankCd))) // 은행
+                .leftJoin(codeReturnCourierCd).on(codeReturnCourierCd.codeGrp.eq("COURIER").and(codeReturnCourierCd.codeValue.eq(odClaim.returnCourierCd))) // 택배사
+                .leftJoin(codeReturnStatusCd).on(codeReturnStatusCd.codeGrp.eq("DLIV_STATUS").and(codeReturnStatusCd.codeValue.eq(odClaim.returnStatusCd))) // 배송상태
+                .leftJoin(codeInboundCourierCd).on(codeInboundCourierCd.codeGrp.eq("COURIER").and(codeInboundCourierCd.codeValue.eq(odClaim.inboundCourierCd))) // 택배사
+                .leftJoin(codeExchangeCourierCd).on(codeExchangeCourierCd.codeGrp.eq("COURIER").and(codeExchangeCourierCd.codeValue.eq(odClaim.exchangeCourierCd))) // 택배사
+                .leftJoin(codeApprStatusCd).on(codeApprStatusCd.codeGrp.eq("APPR_STATUS_CD").and(codeApprStatusCd.codeValue.eq(odClaim.apprStatusCd))) // 결재상태
+                .leftJoin(codeApprTargetCd).on(codeApprTargetCd.codeGrp.eq("APPR_TARGET_CD").and(codeApprTargetCd.codeValue.eq(odClaim.apprTargetCd))) // 결재대상
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odClaim.regSiteId)) // 등록사이트
                 .leftJoin(siteEx).on(siteEx.siteId.eq(odClaim.siteId)) // 사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(odClaim.regBy)) // 등록자
@@ -315,12 +315,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
-        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
-        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
+        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId())); // 클레임ID 필터
+        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId())); // 주문ID 필터
+        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd())); // 클레임상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds())); // 클레임상태 다중 필터 (strIn, BO multiCheck)
+        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd())); // 클레임유형 필터 — CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
         whereList.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -328,7 +328,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odClaim.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odClaim.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -357,12 +357,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
-        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
-        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
+        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId())); // 클레임ID 필터
+        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId())); // 주문ID 필터
+        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId())); // 회원ID 필터
+        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd())); // 클레임상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds())); // 클레임상태 다중 필터 (strIn, BO multiCheck)
+        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd())); // 클레임유형 필터 — CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
         whereList.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -370,7 +370,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odClaim.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odClaim.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery();
@@ -393,62 +393,62 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+    /* searchType 예: "addShippingFeeChargeCd,addShippingFeeReason,apprAprvUserId,apprReason,apprReqUserId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("addShippingFeeChargeCd", odClaim.addShippingFeeChargeCd),
-            QdslUtil.FieldDef.like("addShippingFeeReason", odClaim.addShippingFeeReason),
-            QdslUtil.FieldDef.like("apprAprvUserId", odClaim.apprAprvUserId),
-            QdslUtil.FieldDef.like("apprReason", odClaim.apprReason),
-            QdslUtil.FieldDef.like("apprReqUserId", odClaim.apprReqUserId),
-            QdslUtil.FieldDef.like("apprStatusCd", odClaim.apprStatusCd),
-            QdslUtil.FieldDef.like("apprStatusCdBefore", odClaim.apprStatusCdBefore),
-            QdslUtil.FieldDef.like("apprTargetCd", odClaim.apprTargetCd),
-            QdslUtil.FieldDef.like("apprTargetNm", odClaim.apprTargetNm),
-            QdslUtil.FieldDef.like("claimCancelReasonCd", odClaim.claimCancelReasonCd),
-            QdslUtil.FieldDef.like("claimCancelReasonDetail", odClaim.claimCancelReasonDetail),
-            QdslUtil.FieldDef.like("claimCancelYn", odClaim.claimCancelYn),
-            QdslUtil.FieldDef.like("claimId", odClaim.claimId),
-            QdslUtil.FieldDef.like("claimStatusCd", odClaim.claimStatusCd),
-            QdslUtil.FieldDef.like("claimStatusCdBefore", odClaim.claimStatusCdBefore),
-            QdslUtil.FieldDef.like("claimTypeCd", odClaim.claimTypeCd),
-            QdslUtil.FieldDef.like("collectAddr", odClaim.collectAddr),
-            QdslUtil.FieldDef.like("collectAddrDetail", odClaim.collectAddrDetail),
-            QdslUtil.FieldDef.like("collectNm", odClaim.collectNm),
-            QdslUtil.FieldDef.like("collectPhone", odClaim.collectPhone),
-            QdslUtil.FieldDef.like("collectReqMemo", odClaim.collectReqMemo),
-            QdslUtil.FieldDef.like("collectZip", odClaim.collectZip),
-            QdslUtil.FieldDef.like("customerFaultYn", odClaim.customerFaultYn),
-            QdslUtil.FieldDef.like("exchRecvAddr", odClaim.exchRecvAddr),
-            QdslUtil.FieldDef.like("exchRecvAddrDetail", odClaim.exchRecvAddrDetail),
-            QdslUtil.FieldDef.like("exchRecvNm", odClaim.exchRecvNm),
-            QdslUtil.FieldDef.like("exchRecvPhone", odClaim.exchRecvPhone),
-            QdslUtil.FieldDef.like("exchRecvReqMemo", odClaim.exchRecvReqMemo),
-            QdslUtil.FieldDef.like("exchRecvZip", odClaim.exchRecvZip),
-            QdslUtil.FieldDef.like("exchangeCourierCd", odClaim.exchangeCourierCd),
-            QdslUtil.FieldDef.like("exchangeTrackingNo", odClaim.exchangeTrackingNo),
-            QdslUtil.FieldDef.like("inboundCourierCd", odClaim.inboundCourierCd),
-            QdslUtil.FieldDef.like("inboundDlivId", odClaim.inboundDlivId),
-            QdslUtil.FieldDef.like("inboundTrackingNo", odClaim.inboundTrackingNo),
-            QdslUtil.FieldDef.like("memberId", odClaim.memberId),
-            QdslUtil.FieldDef.like("memberNm", odClaim.memberNm),
-            QdslUtil.FieldDef.like("memo", odClaim.memo),
-            QdslUtil.FieldDef.like("orderId", odClaim.orderId),
-            QdslUtil.FieldDef.like("outboundDlivId", odClaim.outboundDlivId),
-            QdslUtil.FieldDef.like("procUserId", odClaim.procUserId),
-            QdslUtil.FieldDef.like("prodNm", odClaim.prodNm),
-            QdslUtil.FieldDef.like("reasonCd", odClaim.reasonCd),
-            QdslUtil.FieldDef.like("reasonDetail", odClaim.reasonDetail),
-            QdslUtil.FieldDef.like("refundAccountNm", odClaim.refundAccountNm),
-            QdslUtil.FieldDef.like("refundAccountNo", odClaim.refundAccountNo),
-            QdslUtil.FieldDef.like("refundBankCd", odClaim.refundBankCd),
-            QdslUtil.FieldDef.like("refundMethodCd", odClaim.refundMethodCd),
-            QdslUtil.FieldDef.like("returnCourierCd", odClaim.returnCourierCd),
-            QdslUtil.FieldDef.like("returnStatusCd", odClaim.returnStatusCd),
-            QdslUtil.FieldDef.like("returnStatusCdBefore", odClaim.returnStatusCdBefore),
-            QdslUtil.FieldDef.like("returnTrackingNo", odClaim.returnTrackingNo),
-            QdslUtil.FieldDef.like("shippingFeeMemo", odClaim.shippingFeeMemo),
-            QdslUtil.FieldDef.like("shippingFeePaidYn", odClaim.shippingFeePaidYn)
+            QdslUtil.FieldDef.like("addShippingFeeChargeCd", odClaim.addShippingFeeChargeCd), // 추가배송비 청구방법코드
+            QdslUtil.FieldDef.like("addShippingFeeReason", odClaim.addShippingFeeReason), // 추가배송비 면제사유
+            QdslUtil.FieldDef.like("apprAprvUserId", odClaim.apprAprvUserId), // 결재자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("apprReason", odClaim.apprReason), // 사유/메모
+            QdslUtil.FieldDef.like("apprReqUserId", odClaim.apprReqUserId), // 결재 요청자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("apprStatusCd", odClaim.apprStatusCd), // 결재상태 — APPR_STATUS_CD
+            QdslUtil.FieldDef.like("apprStatusCdBefore", odClaim.apprStatusCdBefore), // 변경 전 결재상태 — APPR_STATUS_CD
+            QdslUtil.FieldDef.like("apprTargetCd", odClaim.apprTargetCd), // 결재대상 구분
+            QdslUtil.FieldDef.like("apprTargetNm", odClaim.apprTargetNm), // 결재 대상명
+            QdslUtil.FieldDef.like("claimCancelReasonCd", odClaim.claimCancelReasonCd), // 클레임 철회사유코드
+            QdslUtil.FieldDef.like("claimCancelReasonDetail", odClaim.claimCancelReasonDetail), // 클레임 철회사유상세
+            QdslUtil.FieldDef.like("claimCancelYn", odClaim.claimCancelYn), // 클레임 철회여부 Y/N (신청 자체를 취소한 경우)
+            QdslUtil.FieldDef.like("claimId", odClaim.claimId), // 클레임ID 필터
+            QdslUtil.FieldDef.like("claimStatusCd", odClaim.claimStatusCd), // 클레임상태 단건 필터 (strEq)
+            QdslUtil.FieldDef.like("claimStatusCdBefore", odClaim.claimStatusCdBefore), // 변경 전 클레임상태 — CLAIM_STATUS_CD
+            QdslUtil.FieldDef.like("claimTypeCd", odClaim.claimTypeCd), // 클레임유형 필터 — CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
+            QdslUtil.FieldDef.like("collectAddr", odClaim.collectAddr), // 수거지 기본주소
+            QdslUtil.FieldDef.like("collectAddrDetail", odClaim.collectAddrDetail), // 수거지 상세주소
+            QdslUtil.FieldDef.like("collectNm", odClaim.collectNm), // 수거지 성명 (반품·교환 수거 주소)
+            QdslUtil.FieldDef.like("collectPhone", odClaim.collectPhone), // 수거지 연락처
+            QdslUtil.FieldDef.like("collectReqMemo", odClaim.collectReqMemo), // 수거 요청사항
+            QdslUtil.FieldDef.like("collectZip", odClaim.collectZip), // 수거지 우편번호
+            QdslUtil.FieldDef.like("customerFaultYn", odClaim.customerFaultYn), // 고객귀책여부 (Y=고객귀책, N=판매자귀책)
+            QdslUtil.FieldDef.like("exchRecvAddr", odClaim.exchRecvAddr), // 교환 수령지 기본주소
+            QdslUtil.FieldDef.like("exchRecvAddrDetail", odClaim.exchRecvAddrDetail), // 교환 수령지 상세주소
+            QdslUtil.FieldDef.like("exchRecvNm", odClaim.exchRecvNm), // 교환 수령자명 (원 주문 배송지와 다를 경우)
+            QdslUtil.FieldDef.like("exchRecvPhone", odClaim.exchRecvPhone), // 교환 수령자 연락처
+            QdslUtil.FieldDef.like("exchRecvReqMemo", odClaim.exchRecvReqMemo), // 교환 배송 요청사항
+            QdslUtil.FieldDef.like("exchRecvZip", odClaim.exchRecvZip), // 교환 수령지 우편번호
+            QdslUtil.FieldDef.like("exchangeCourierCd", odClaim.exchangeCourierCd), // 교환상품 발송 택배사 — COURIER
+            QdslUtil.FieldDef.like("exchangeTrackingNo", odClaim.exchangeTrackingNo), // 교환상품 발송 송장번호
+            QdslUtil.FieldDef.like("inboundCourierCd", odClaim.inboundCourierCd), // 반입 택배사 — COURIER
+            QdslUtil.FieldDef.like("inboundDlivId", odClaim.inboundDlivId), // 반입 배송ID (od_dliv.)
+            QdslUtil.FieldDef.like("inboundTrackingNo", odClaim.inboundTrackingNo), // 반입 송장번호
+            QdslUtil.FieldDef.like("memberId", odClaim.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("memberNm", odClaim.memberNm), // 회원명
+            QdslUtil.FieldDef.like("memo", odClaim.memo), // 관리메모
+            QdslUtil.FieldDef.like("orderId", odClaim.orderId), // 주문ID 필터
+            QdslUtil.FieldDef.like("outboundDlivId", odClaim.outboundDlivId), // 교환상품 발송 배송ID (od_dliv.)
+            QdslUtil.FieldDef.like("procUserId", odClaim.procUserId), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("prodNm", odClaim.prodNm), // 대표 상품명
+            QdslUtil.FieldDef.like("reasonCd", odClaim.reasonCd), // 사유코드 — REASON_CD
+            QdslUtil.FieldDef.like("reasonDetail", odClaim.reasonDetail), // 사유 상세
+            QdslUtil.FieldDef.like("refundAccountNm", odClaim.refundAccountNm), // 환불 예금주명
+            QdslUtil.FieldDef.like("refundAccountNo", odClaim.refundAccountNo), // 환불 계좌번호
+            QdslUtil.FieldDef.like("refundBankCd", odClaim.refundBankCd), // 환불 은행코드 — BANK_CODE (계좌이체 환불 시)
+            QdslUtil.FieldDef.like("refundMethodCd", odClaim.refundMethodCd), // 환불수단 — PAY_METHOD
+            QdslUtil.FieldDef.like("returnCourierCd", odClaim.returnCourierCd), // 수거 택배사 — COURIER {CJ:CJ대한통운, LOTTE:롯데택배, HANJIN:한진택배 외}
+            QdslUtil.FieldDef.like("returnStatusCd", odClaim.returnStatusCd), // 수거 상태 — DLIV_STATUS
+            QdslUtil.FieldDef.like("returnStatusCdBefore", odClaim.returnStatusCdBefore), // 변경 전 수거상태 — DLIV_STATUS
+            QdslUtil.FieldDef.like("returnTrackingNo", odClaim.returnTrackingNo), // 수거 송장번호
+            QdslUtil.FieldDef.like("shippingFeeMemo", odClaim.shippingFeeMemo), // 배송료 비고
+            QdslUtil.FieldDef.like("shippingFeePaidYn", odClaim.shippingFeePaidYn) // 배송료 정산 완료 여부 Y/N
         ));
     }
 

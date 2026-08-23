@@ -90,13 +90,13 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId()));
-        whereList.add(QdslUtil.strEq(pmSaveUsage.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(pmSaveUsage.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId())); // 적립사용ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(pmSaveUsage.orderId, search.getOrderId())); // 주문ID (od_order.order_id)
+        whereList.add(QdslUtil.strEq(pmSaveUsage.orderItemId, search.getOrderItemId())); // 주문상품ID (od_order_item.order_item_id, 상품별 사용 시)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -125,13 +125,13 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId()));
-        whereList.add(QdslUtil.strEq(pmSaveUsage.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(pmSaveUsage.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId())); // 적립사용ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(pmSaveUsage.orderId, search.getOrderId())); // 주문ID (od_order.order_id)
+        whereList.add(QdslUtil.strEq(pmSaveUsage.orderItemId, search.getOrderItemId())); // 주문상품ID (od_order_item.order_item_id, 상품별 사용 시)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSaveUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery();
@@ -154,13 +154,14 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "memberId,orderId,orderItemId,prodId,saveUsageId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("memberId", pmSaveUsage.memberId),
-            QdslUtil.FieldDef.like("orderId", pmSaveUsage.orderId),
-            QdslUtil.FieldDef.like("orderItemId", pmSaveUsage.orderItemId),
-            QdslUtil.FieldDef.like("prodId", pmSaveUsage.prodId),
-            QdslUtil.FieldDef.like("saveUsageId", pmSaveUsage.saveUsageId)
+            QdslUtil.FieldDef.like("memberId", pmSaveUsage.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("orderId", pmSaveUsage.orderId), // 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("orderItemId", pmSaveUsage.orderItemId), // 주문상품ID (od_order_item.order_item_id, 상품별 사용 시)
+            QdslUtil.FieldDef.like("prodId", pmSaveUsage.prodId), // 상품ID (pd_prod.prod_id, 사용 상품)
+            QdslUtil.FieldDef.like("saveUsageId", pmSaveUsage.saveUsageId) // 적립사용ID (YYMMDDhhmmss+rand4)
         ));
     }
 

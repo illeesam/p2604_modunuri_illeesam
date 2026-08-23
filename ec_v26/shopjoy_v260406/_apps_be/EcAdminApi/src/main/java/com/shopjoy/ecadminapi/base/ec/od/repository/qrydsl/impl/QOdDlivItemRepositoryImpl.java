@@ -86,13 +86,13 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()));
-        whereList.add(QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()));
-        whereList.add(QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()));
+        whereList.add(QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId())); // 배송항목ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odDlivItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odDlivItem.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -121,13 +121,13 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()));
-        whereList.add(QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()));
-        whereList.add(QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()));
+        whereList.add(QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId())); // 배송항목ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDlivItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odDlivItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odDlivItem.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery();
@@ -150,17 +150,18 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "dlivId,dlivItemId,dlivItemStatusCd,dlivItemStatusCdBefore,dlivTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("dlivId", odDlivItem.dlivId),
-            QdslUtil.FieldDef.like("dlivItemId", odDlivItem.dlivItemId),
-            QdslUtil.FieldDef.like("dlivItemStatusCd", odDlivItem.dlivItemStatusCd),
-            QdslUtil.FieldDef.like("dlivItemStatusCdBefore", odDlivItem.dlivItemStatusCdBefore),
-            QdslUtil.FieldDef.like("dlivTypeCd", odDlivItem.dlivTypeCd),
-            QdslUtil.FieldDef.like("prodOpt1Id", odDlivItem.prodOpt1Id),
-            QdslUtil.FieldDef.like("prodOpt2Id", odDlivItem.prodOpt2Id),
-            QdslUtil.FieldDef.like("orderItemId", odDlivItem.orderItemId),
-            QdslUtil.FieldDef.like("prodId", odDlivItem.prodId)
+            QdslUtil.FieldDef.like("dlivId", odDlivItem.dlivId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("dlivItemId", odDlivItem.dlivItemId), // 배송항목ID 필터
+            QdslUtil.FieldDef.like("dlivItemStatusCd", odDlivItem.dlivItemStatusCd), // 항목 배송상태
+            QdslUtil.FieldDef.like("dlivItemStatusCdBefore", odDlivItem.dlivItemStatusCdBefore), // 변경 전 배송상태 — DLIV_STATUS
+            QdslUtil.FieldDef.like("dlivTypeCd", odDlivItem.dlivTypeCd), // 입출고구분 (OUT:출고 / IN:입고반품)
+            QdslUtil.FieldDef.like("prodOpt1Id", odDlivItem.prodOpt1Id), // 옵션1 값ID (pd_prod_opt.opt_id)
+            QdslUtil.FieldDef.like("prodOpt2Id", odDlivItem.prodOpt2Id), // 옵션2 값ID (pd_prod_opt.opt_id)
+            QdslUtil.FieldDef.like("orderItemId", odDlivItem.orderItemId), // 주문상품ID (od_order_item.)
+            QdslUtil.FieldDef.like("prodId", odDlivItem.prodId) // 상품ID
         ));
     }
 

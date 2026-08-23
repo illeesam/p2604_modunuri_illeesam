@@ -24,6 +24,7 @@ public class PmGiftIssueDto {
         private String orderId;              // 기준주문ID (od_order.order_id)
         private LocalDateTime issueDate;     // 발급일시
         private String giftIssueStatusCd;    // 상태 — GIFT_ISSUE_STATUS_CD {ISSUED:발급됨, DELIVERED:배송완료, CANCELLED:취소, SHIPPED:발송, RECEIVED:수령}
+        private String giftIssueStatusCdNm;  // 코드 라벨
         private String giftIssueStatusCdBefore; // 변경 전 상태
         private String giftIssueMemo;        // 메모
         private String regBy;                // 등록자

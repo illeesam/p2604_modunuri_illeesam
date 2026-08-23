@@ -38,7 +38,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      sySite = QSySite.sySite;
-    private static final QVwSyCode      cd_bs  = new QVwSyCode("cd_bs");    /*
+    private static final QVwSyCode      codeRunStatusCd  = new QVwSyCode("codeRunStatusCd");    /*
      * baseSelColumnQuery — list/page/byId 공유 (코드명 조인 포함 풀필드)
      * 코드성 필드 예시 코드값
      * BATCH_STATUS  {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
@@ -62,13 +62,13 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         syhBatchLog.regDate,      // 등록일시
                         syhBatchLog.updBy,        // 수정자
                         syhBatchLog.updDate,      // 수정일시
-                        cd_bs.codeLabel.as("runStatusCdNm"),  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
+                        codeRunStatusCd.codeLabel.as("runStatusCdNm"),  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
                         syhBatchLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhBatchLog)
-                .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatusCd))) // 배치상태
+                .leftJoin(codeRunStatusCd).on(codeRunStatusCd.codeGrp.eq("BATCH_STATUS").and(codeRunStatusCd.codeValue.eq(syhBatchLog.runStatusCd))) // 배치상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhBatchLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syhBatchLog.regBy)) // 등록자
                 ;
@@ -90,7 +90,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()));
+        whereList.add(QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId())); // 로그ID (YYMMDDhhmmss+rand4)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -121,7 +121,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()));
+        whereList.add(QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId())); // 로그ID (YYMMDDhhmmss+rand4)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -147,16 +147,16 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "batchCode,batchId,batchLogId,batchNm,detail" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("batchCode", syhBatchLog.batchCode),
-            QdslUtil.FieldDef.like("batchId", syhBatchLog.batchId),
-            QdslUtil.FieldDef.like("batchLogId", syhBatchLog.batchLogId),
-            QdslUtil.FieldDef.like("batchNm", syhBatchLog.batchNm),
-            QdslUtil.FieldDef.like("detail", syhBatchLog.detail),
-            QdslUtil.FieldDef.like("message", syhBatchLog.message),
-            QdslUtil.FieldDef.like("runStatusCd", syhBatchLog.runStatusCd)
+            QdslUtil.FieldDef.like("batchCode", syhBatchLog.batchCode), // 배치코드
+            QdslUtil.FieldDef.like("batchId", syhBatchLog.batchId), // 배치ID
+            QdslUtil.FieldDef.like("batchLogId", syhBatchLog.batchLogId), // 로그ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("batchNm", syhBatchLog.batchNm), // 배치명
+            QdslUtil.FieldDef.like("detail", syhBatchLog.detail), // 상세로그 (JSON)
+            QdslUtil.FieldDef.like("message", syhBatchLog.message), // 결과메시지
+            QdslUtil.FieldDef.like("runStatusCd", syhBatchLog.runStatusCd) // 실행결과 (코드: BATCH_STATUS — SUCCESS/FAILED/TIMEOUT)
         ));
     }
 

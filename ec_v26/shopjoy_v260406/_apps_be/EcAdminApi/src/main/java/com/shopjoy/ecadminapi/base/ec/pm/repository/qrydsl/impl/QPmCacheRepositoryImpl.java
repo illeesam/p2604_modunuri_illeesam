@@ -38,7 +38,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPmCache pmCache    = QPmCache.pmCache;
     private static final QSySite  sySite  = QSySite.sySite;
-    private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");    /*
+    private static final QVwSyCode  codeCacheTypeCd = new QVwSyCode("cd_ct");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * CACHE_TYPE  {EARN_BUY: '구매 적립', EARN_ADMIN: '관리자 지급', EARN_EVENT: '이벤트 지급', USE_ORDER: '주문 사용', REFUND: '환불 복원', EXPIRE: '소멸'}
      * (참고: sy_code 샘플 데이터 기준. 운영 DB의 실제 등록값과 다를 수 있음 — Entity/DDL 주석에는 코드값이 명시되어 있지 않음)
@@ -50,6 +50,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                         pmCache.memberId,      // 회원ID (mb_member.member_id)
                         pmCache.memberNm,      // 회원명 (스냅샷)
                         pmCache.cacheTypeCd,   // 유형 — CACHE_TYPE {EARN_BUY, EARN_ADMIN, EARN_EVENT, USE_ORDER, REFUND, EXPIRE}
+                        codeCacheTypeCd.codeLabel.as("cacheTypeCdNm"), // 코드 라벨
                         pmCache.cacheAmt,      // 변동 금액 (양수:적립 / 음수:차감)
                         pmCache.balanceAmt,    // 처리 후 잔액
                         pmCache.refId,         // 참조ID (주문ID 등)
@@ -66,7 +67,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pmCache)
-                .innerJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE_CD").and(cdCt.codeValue.eq(pmCache.cacheTypeCd))) // 캐쉬유형
+                .innerJoin(codeCacheTypeCd).on(codeCacheTypeCd.codeGrp.eq("CACHE_TYPE_CD").and(codeCacheTypeCd.codeValue.eq(pmCache.cacheTypeCd))) // 캐쉬유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(pmCache.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pmCache.regBy)) // 등록자
                 ;
@@ -87,9 +88,9 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmCache.cacheId, search.getCacheId()));
-        whereList.add(QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()));
-        whereList.add(QdslUtil.strEq(pmCache.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(pmCache.cacheId, search.getCacheId())); // 적립금ID 필터
+        whereList.add(QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd())); // 유형 — CACHE_TYPE_CD
+        whereList.add(QdslUtil.strEq(pmCache.memberId, search.getMemberId())); // 회원ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCache.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCache.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -121,9 +122,9 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmCache.cacheId, search.getCacheId()));
-        whereList.add(QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()));
-        whereList.add(QdslUtil.strEq(pmCache.memberId, search.getMemberId()));
+        whereList.add(QdslUtil.strEq(pmCache.cacheId, search.getCacheId())); // 적립금ID 필터
+        whereList.add(QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd())); // 유형 — CACHE_TYPE_CD
+        whereList.add(QdslUtil.strEq(pmCache.memberId, search.getMemberId())); // 회원ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCache.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCache.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -148,16 +149,16 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         BasePage<PmCacheDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "cacheDesc,cacheId,cacheTypeCd,memberId,memberNm" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("cacheDesc", pmCache.cacheDesc),
-            QdslUtil.FieldDef.like("cacheId", pmCache.cacheId),
-            QdslUtil.FieldDef.like("cacheTypeCd", pmCache.cacheTypeCd),
-            QdslUtil.FieldDef.like("memberId", pmCache.memberId),
-            QdslUtil.FieldDef.like("memberNm", pmCache.memberNm),
-            QdslUtil.FieldDef.like("procUserId", pmCache.procUserId),
-            QdslUtil.FieldDef.like("refId", pmCache.refId)
+            QdslUtil.FieldDef.like("cacheDesc", pmCache.cacheDesc), // 내역 설명
+            QdslUtil.FieldDef.like("cacheId", pmCache.cacheId), // 적립금ID 필터
+            QdslUtil.FieldDef.like("cacheTypeCd", pmCache.cacheTypeCd), // 유형 — CACHE_TYPE_CD
+            QdslUtil.FieldDef.like("memberId", pmCache.memberId), // 회원ID 필터
+            QdslUtil.FieldDef.like("memberNm", pmCache.memberNm), // 회원명
+            QdslUtil.FieldDef.like("procUserId", pmCache.procUserId), // 처리자 (관리자 직접 부여시)
+            QdslUtil.FieldDef.like("refId", pmCache.refId) // 참조ID (주문ID 등)
         ));
     }
 

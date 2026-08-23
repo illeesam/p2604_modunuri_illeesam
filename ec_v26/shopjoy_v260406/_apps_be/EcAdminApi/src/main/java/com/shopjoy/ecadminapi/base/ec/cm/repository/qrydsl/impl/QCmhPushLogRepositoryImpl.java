@@ -84,7 +84,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId())); // 로그ID 필터
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -116,7 +116,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId()));
+        whereList.add(QdslUtil.strEq(cmhPushLog.logId, search.getLogId())); // 로그ID 필터
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmhPushLog.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -144,20 +144,20 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "channelCd,failReason,logId,memberId,pushLogContent" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("channelCd", cmhPushLog.channelCd),
-            QdslUtil.FieldDef.like("failReason", cmhPushLog.failReason),
-            QdslUtil.FieldDef.like("logId", cmhPushLog.logId),
-            QdslUtil.FieldDef.like("memberId", cmhPushLog.memberId),
-            QdslUtil.FieldDef.like("pushLogContent", cmhPushLog.pushLogContent),
-            QdslUtil.FieldDef.like("pushLogTitle", cmhPushLog.pushLogTitle),
-            QdslUtil.FieldDef.like("recvAddr", cmhPushLog.recvAddr),
-            QdslUtil.FieldDef.like("refId", cmhPushLog.refId),
-            QdslUtil.FieldDef.like("refTypeCd", cmhPushLog.refTypeCd),
-            QdslUtil.FieldDef.like("resultCd", cmhPushLog.resultCd),
-            QdslUtil.FieldDef.like("templateId", cmhPushLog.templateId)
+            QdslUtil.FieldDef.like("channelCd", cmhPushLog.channelCd), // 발송채널 — MSG_CHANNEL {EMAIL:이메일, SMS:SMS, KAKAO:알림톡, PUSH:푸시}
+            QdslUtil.FieldDef.like("failReason", cmhPushLog.failReason), // 실패 사유
+            QdslUtil.FieldDef.like("logId", cmhPushLog.logId), // 로그ID 필터
+            QdslUtil.FieldDef.like("memberId", cmhPushLog.memberId), // 대상 회원ID
+            QdslUtil.FieldDef.like("pushLogContent", cmhPushLog.pushLogContent), // 발송 내용
+            QdslUtil.FieldDef.like("pushLogTitle", cmhPushLog.pushLogTitle), // 발송 제목
+            QdslUtil.FieldDef.like("recvAddr", cmhPushLog.recvAddr), // 수신처 (이메일/전화번호/디바이스토큰)
+            QdslUtil.FieldDef.like("refId", cmhPushLog.refId), // 연관ID
+            QdslUtil.FieldDef.like("refTypeCd", cmhPushLog.refTypeCd), // 연관유형코드 (ORDER/CLAIM/EVENT 등)
+            QdslUtil.FieldDef.like("resultCd", cmhPushLog.resultCd), // 발송결과 — SEND_RESULT
+            QdslUtil.FieldDef.like("templateId", cmhPushLog.templateId) // 템플릿ID (sy_template.template_id)
         ));
     }
 

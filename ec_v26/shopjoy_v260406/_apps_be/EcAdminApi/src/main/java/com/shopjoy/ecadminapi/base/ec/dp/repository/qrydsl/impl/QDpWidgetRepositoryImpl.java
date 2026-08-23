@@ -98,10 +98,10 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     public List<DpWidgetDto.Item> selectList(DpWidgetDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()));
-        whereList.add(QdslUtil.strEq(dpWidget.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd())); // 위젯유형 필터
+        whereList.add(QdslUtil.strEq(dpWidget.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpWidget.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpWidget.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -129,10 +129,10 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()));
-        whereList.add(QdslUtil.strEq(dpWidget.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd())); // 위젯유형 필터
+        whereList.add(QdslUtil.strEq(dpWidget.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpWidget.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpWidget.siteId, search.getSiteId())); // 사이트ID 필터
         JPAQuery<DpWidgetDto.Item> query = baseQuery();
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -152,22 +152,22 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "dispEnv,thumbnailUrl,titleShowYn,useYn,widgetConfigJson" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv),
-            QdslUtil.FieldDef.like("thumbnailUrl", dpWidget.thumbnailUrl),
-            QdslUtil.FieldDef.like("titleShowYn", dpWidget.titleShowYn),
-            QdslUtil.FieldDef.like("useYn", dpWidget.useYn),
-            QdslUtil.FieldDef.like("widgetConfigJson", dpWidget.widgetConfigJson),
-            QdslUtil.FieldDef.like("widgetContent", dpWidget.widgetContent),
-            QdslUtil.FieldDef.like("widgetDesc", dpWidget.widgetDesc),
-            QdslUtil.FieldDef.like("widgetId", dpWidget.widgetId),
-            QdslUtil.FieldDef.like("widgetLibId", dpWidget.widgetLibId),
-            QdslUtil.FieldDef.like("widgetLibRefYn", dpWidget.widgetLibRefYn),
-            QdslUtil.FieldDef.like("widgetNm", dpWidget.widgetNm),
-            QdslUtil.FieldDef.like("widgetTitle", dpWidget.widgetTitle),
-            QdslUtil.FieldDef.like("widgetTypeCd", dpWidget.widgetTypeCd)
+            QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv), // 전시 환경 (^PROD^DEV^TEST^ 형식)
+            QdslUtil.FieldDef.like("thumbnailUrl", dpWidget.thumbnailUrl), // 미리보기 썸네일URL
+            QdslUtil.FieldDef.like("titleShowYn", dpWidget.titleShowYn), // 타이틀표시여부 Y/N
+            QdslUtil.FieldDef.like("useYn", dpWidget.useYn), // 사용여부 Y/N 필터
+            QdslUtil.FieldDef.like("widgetConfigJson", dpWidget.widgetConfigJson), // 위젯추가설정 (JSON)
+            QdslUtil.FieldDef.like("widgetContent", dpWidget.widgetContent), // 위젯내용 (HTML 에디터)
+            QdslUtil.FieldDef.like("widgetDesc", dpWidget.widgetDesc), // 위젯설명
+            QdslUtil.FieldDef.like("widgetId", dpWidget.widgetId), // 위젯ID 필터
+            QdslUtil.FieldDef.like("widgetLibId", dpWidget.widgetLibId), // 위젯라이브러리ID 필터
+            QdslUtil.FieldDef.like("widgetLibRefYn", dpWidget.widgetLibRefYn), // 위젯라이브러리참조여부 Y/N
+            QdslUtil.FieldDef.like("widgetNm", dpWidget.widgetNm), // 위젯명
+            QdslUtil.FieldDef.like("widgetTitle", dpWidget.widgetTitle), // 위젯타이틀
+            QdslUtil.FieldDef.like("widgetTypeCd", dpWidget.widgetTypeCd) // 위젯유형 필터
         ));
     }
 

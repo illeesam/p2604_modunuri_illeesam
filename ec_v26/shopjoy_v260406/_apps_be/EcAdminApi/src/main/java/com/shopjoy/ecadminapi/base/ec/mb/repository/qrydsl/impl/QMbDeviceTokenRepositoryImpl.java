@@ -82,11 +82,11 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     public List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()));
+        whereList.add(QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId())); // 디바이스토큰ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -114,11 +114,11 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()));
+        whereList.add(QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId())); // 디바이스토큰ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbDeviceToken.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery();
@@ -141,13 +141,14 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "benefitNotiYn,deviceToken,deviceTokenId,memberId,osTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("benefitNotiYn", mbDeviceToken.benefitNotiYn),
-            QdslUtil.FieldDef.like("deviceToken", mbDeviceToken.deviceToken),
-            QdslUtil.FieldDef.like("deviceTokenId", mbDeviceToken.deviceTokenId),
-            QdslUtil.FieldDef.like("memberId", mbDeviceToken.memberId),
-            QdslUtil.FieldDef.like("osTypeCd", mbDeviceToken.osTypeCd)
+            QdslUtil.FieldDef.like("benefitNotiYn", mbDeviceToken.benefitNotiYn), // 혜택알림수신여부 Y/N
+            QdslUtil.FieldDef.like("deviceToken", mbDeviceToken.deviceToken), // 디바이스 토큰 키
+            QdslUtil.FieldDef.like("deviceTokenId", mbDeviceToken.deviceTokenId), // 디바이스토큰ID 필터
+            QdslUtil.FieldDef.like("memberId", mbDeviceToken.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("osTypeCd", mbDeviceToken.osTypeCd) // OS유형 ANDROID/IOS
         ));
     }
 

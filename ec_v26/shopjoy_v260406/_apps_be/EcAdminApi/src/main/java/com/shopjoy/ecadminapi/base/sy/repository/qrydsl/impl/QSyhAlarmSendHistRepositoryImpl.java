@@ -80,8 +80,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()));
-        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId())); // 발송이력ID
+        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus())); // 상태
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhAlarmSendHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhAlarmSendHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhAlarmSendHist.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -113,8 +113,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()));
-        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId())); // 발송이력ID
+        whereList.add(QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus())); // 상태
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhAlarmSendHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhAlarmSendHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("send_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhAlarmSendHist.sendDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -141,16 +141,17 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "alarmId,channel,errorMsg,memberId,userId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("alarmId", syhAlarmSendHist.alarmId),
-            QdslUtil.FieldDef.like("channel", syhAlarmSendHist.channel),
-            QdslUtil.FieldDef.like("errorMsg", syhAlarmSendHist.errorMsg),
-            QdslUtil.FieldDef.like("memberId", syhAlarmSendHist.memberId),
-            QdslUtil.FieldDef.like("userId", syhAlarmSendHist.userId),
-            QdslUtil.FieldDef.like("sendHistId", syhAlarmSendHist.sendHistId),
-            QdslUtil.FieldDef.like("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd),
-            QdslUtil.FieldDef.like("sendTo", syhAlarmSendHist.sendTo)
+            QdslUtil.FieldDef.like("alarmId", syhAlarmSendHist.alarmId), // 알림ID
+            QdslUtil.FieldDef.like("channel", syhAlarmSendHist.channel), // 발송채널
+            QdslUtil.FieldDef.like("errorMsg", syhAlarmSendHist.errorMsg), // 오류메시지
+            QdslUtil.FieldDef.like("memberId", syhAlarmSendHist.memberId), // 수신자 회원ID
+            QdslUtil.FieldDef.like("userId", syhAlarmSendHist.userId), // 수신자 사용자ID (sy_user.user_id)
+            QdslUtil.FieldDef.like("sendHistId", syhAlarmSendHist.sendHistId), // 발송이력ID
+            QdslUtil.FieldDef.like("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd), // 발송결과 (SENT/FAILED)
+            QdslUtil.FieldDef.like("sendTo", syhAlarmSendHist.sendTo) // 수신처 (이메일/전화/토큰)
         ));
     }
 

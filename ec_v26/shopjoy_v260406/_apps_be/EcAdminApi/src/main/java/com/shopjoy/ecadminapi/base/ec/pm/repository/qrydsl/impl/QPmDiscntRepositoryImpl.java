@@ -78,7 +78,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                         pmDiscnt.dvcPcYn,                 // PC 채널 적용여부 Y/N
                         pmDiscnt.dvcMwebYn,               // 모바일WEB 적용여부 Y/N
                         pmDiscnt.dvcMappYn,               // 모바일APP 적용여부 Y/N
-                        pmDiscnt.useYn,
+                        pmDiscnt.useYn, // 사용여부 필터 Y/N
                         pmDiscnt.vendorId,             // 판매업체
                         pmDiscnt.chargeStaff,          // 판매담당자명
                         pmDiscnt.visibilityTargets,    // 공개대상
@@ -116,18 +116,18 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()));
+        whereList.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId())); // 할인ID 필터
+        whereList.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd())); // 할인유형 필터
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd())); // 상태 필터 — DISCNT_STATUS_CD
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andMember(search));
         whereList.add(andProdVendorMd(search));
         whereList.add(andCurrentYnDiscnt(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -156,18 +156,18 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()));
+        whereList.add(QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId())); // 할인ID 필터
+        whereList.add(QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd())); // 할인유형 필터
+        whereList.add(QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd())); // 상태 필터 — DISCNT_STATUS_CD
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscnt.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andMember(search));
         whereList.add(andProdVendorMd(search));
         whereList.add(andCurrentYnDiscnt(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery();
@@ -215,7 +215,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
             .where(discntProdEx.discntId.eq(pmDiscnt.discntId));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(discntProdEx.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(discntProdEx.prodId, search.getProdId())); // 대상상품 ID 필터 (EXISTS eq via pm_discnt_prod)
         whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(discntProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
@@ -241,8 +241,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         return sub.exists();
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /**
      * currentYn='Y' 일 때만 "지금 적용중" 조건 — 상태 ACTIVE + use_yn='Y' + 적용기간(start_date~end_date) 이내.
      *
@@ -258,20 +256,21 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 .and(QdslUtil.dateBetween(today, pmDiscnt.startDate, pmDiscnt.endDate));
     }
 
+    /* searchType 예: "discntDesc,discntId,discntNm,discntStatusCd,discntStatusCdBefore" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("discntDesc", pmDiscnt.discntDesc),
-            QdslUtil.FieldDef.like("discntId", pmDiscnt.discntId),
-            QdslUtil.FieldDef.like("discntNm", pmDiscnt.discntNm),
-            QdslUtil.FieldDef.like("discntStatusCd", pmDiscnt.discntStatusCd),
-            QdslUtil.FieldDef.like("discntStatusCdBefore", pmDiscnt.discntStatusCdBefore),
-            QdslUtil.FieldDef.like("discntTargetCd", pmDiscnt.discntTargetCd),
-            QdslUtil.FieldDef.like("discntTypeCd", pmDiscnt.discntTypeCd),
-            QdslUtil.FieldDef.like("dvcMappYn", pmDiscnt.dvcMappYn),
-            QdslUtil.FieldDef.like("dvcMwebYn", pmDiscnt.dvcMwebYn),
-            QdslUtil.FieldDef.like("dvcPcYn", pmDiscnt.dvcPcYn),
-            QdslUtil.FieldDef.like("memGradeCd", pmDiscnt.memGradeCd),
-            QdslUtil.FieldDef.like("useYn", pmDiscnt.useYn)
+            QdslUtil.FieldDef.like("discntDesc", pmDiscnt.discntDesc), // 할인 설명
+            QdslUtil.FieldDef.like("discntId", pmDiscnt.discntId), // 할인ID 필터
+            QdslUtil.FieldDef.like("discntNm", pmDiscnt.discntNm), // 할인명
+            QdslUtil.FieldDef.like("discntStatusCd", pmDiscnt.discntStatusCd), // 상태 필터 — DISCNT_STATUS_CD
+            QdslUtil.FieldDef.like("discntStatusCdBefore", pmDiscnt.discntStatusCdBefore), // 변경 전 상태
+            QdslUtil.FieldDef.like("discntTargetCd", pmDiscnt.discntTargetCd), // 할인대상 — DISCNT_TARGET_CD
+            QdslUtil.FieldDef.like("discntTypeCd", pmDiscnt.discntTypeCd), // 할인유형 필터
+            QdslUtil.FieldDef.like("dvcMappYn", pmDiscnt.dvcMappYn), // 모바일APP 적용여부 Y/N
+            QdslUtil.FieldDef.like("dvcMwebYn", pmDiscnt.dvcMwebYn), // 모바일WEB 적용여부 Y/N
+            QdslUtil.FieldDef.like("dvcPcYn", pmDiscnt.dvcPcYn), // PC 채널 적용여부 Y/N
+            QdslUtil.FieldDef.like("memGradeCd", pmDiscnt.memGradeCd), // 적용 회원등급 코드 (NULL=전체)
+            QdslUtil.FieldDef.like("useYn", pmDiscnt.useYn) // 사용여부 필터 Y/N
         ));
     }
 

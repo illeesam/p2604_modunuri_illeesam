@@ -32,6 +32,7 @@ public class PmSaveDto {
         private String saveId;
         private String memberId;
         private String saveTypeCd;
+        private String saveTypeCdNm;  // 코드 라벨
         private Long saveAmt;
         private Long balanceAmt;
         private String refTypeCd;

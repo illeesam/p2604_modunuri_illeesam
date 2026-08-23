@@ -87,9 +87,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
-        whereList.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
-        whereList.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId())); // 게시물ID 필터
+        whereList.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId())); // 게시판ID 필터
+        whereList.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus())); // 상태 필터 — BBS_STATUS {ACTIVE:활성, HIDDEN:숨김, DELETED:삭제}
         whereList.add(andDateRangeBetween(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -120,9 +120,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
-        whereList.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
-        whereList.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
+        whereList.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId())); // 게시물ID 필터
+        whereList.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId())); // 게시판ID 필터
+        whereList.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus())); // 상태 필터 — BBS_STATUS {ACTIVE:활성, HIDDEN:숨김, DELETED:삭제}
         whereList.add(andDateRangeBetween(search));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -146,8 +146,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         BasePage<SyBbsDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* 등록일(regDate) 기간 검색 — dateRangeStart/dateRangeEnd (yyyy-MM-dd) 포함 범위 */
     private BooleanExpression andDateRangeBetween(SyBbsDto.Request search) {
         if (search == null) return null;
@@ -166,18 +164,19 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         return expr;
     }
 
+    /* searchType 예: "authorNm,bbmId,bbsId,bbsStatusCd,bbsTitle" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("authorNm", syBbs.authorNm),
-            QdslUtil.FieldDef.like("bbmId", syBbs.bbmId),
-            QdslUtil.FieldDef.like("bbsId", syBbs.bbsId),
-            QdslUtil.FieldDef.like("bbsStatusCd", syBbs.bbsStatusCd),
-            QdslUtil.FieldDef.like("bbsTitle", syBbs.bbsTitle),
-            QdslUtil.FieldDef.like("contentHtml", syBbs.contentHtml),
-            QdslUtil.FieldDef.like("isFixed", syBbs.isFixed),
-            QdslUtil.FieldDef.like("memberId", syBbs.memberId),
-            QdslUtil.FieldDef.like("parentBbsId", syBbs.parentBbsId),
-            QdslUtil.FieldDef.like("pathId", syBbs.pathId)
+            QdslUtil.FieldDef.like("authorNm", syBbs.authorNm), // 작성자명
+            QdslUtil.FieldDef.like("bbmId", syBbs.bbmId), // 게시판ID 필터
+            QdslUtil.FieldDef.like("bbsId", syBbs.bbsId), // 게시물ID 필터
+            QdslUtil.FieldDef.like("bbsStatusCd", syBbs.bbsStatusCd), // 상태 — BBS_STATUS {ACTIVE:활성, HIDDEN:숨김, DELETED:삭제}
+            QdslUtil.FieldDef.like("bbsTitle", syBbs.bbsTitle), // 제목
+            QdslUtil.FieldDef.like("contentHtml", syBbs.contentHtml), // 내용 (HTML)
+            QdslUtil.FieldDef.like("isFixed", syBbs.isFixed), // 상단고정 Y/N
+            QdslUtil.FieldDef.like("memberId", syBbs.memberId), // 작성자 회원ID
+            QdslUtil.FieldDef.like("parentBbsId", syBbs.parentBbsId), // 부모게시물ID (답글)
+            QdslUtil.FieldDef.like("pathId", syBbs.pathId) // 표시경로ID 필터
         ));
     }
 

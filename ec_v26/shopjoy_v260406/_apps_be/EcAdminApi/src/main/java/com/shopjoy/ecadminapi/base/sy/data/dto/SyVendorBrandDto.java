@@ -29,6 +29,7 @@ public class SyVendorBrandDto {
         private String brandId;  // 브랜드ID (sy_brand.brand_id)
         private String isMain;  // 대표 브랜드 여부 Y/N
         private String contractCd;  // 계약유형 — CONTRACT_CD {CONSIGN:위탁}
+        private String contractCdNm;  // 코드 라벨
         private LocalDate startDate;  // 계약 시작일
         private LocalDate endDate;  // 계약 종료일
         private BigDecimal commissionRate;  // 수수료율 (%)

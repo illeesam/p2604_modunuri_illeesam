@@ -77,9 +77,9 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
     public List<CmChattMemberDto.Item> selectList(CmChattMemberDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId()));
-        whereList.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()));
-        whereList.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId()));
+        whereList.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId())); // 채팅방ID 필터 (cm_chatt.chatt_id)
+        whereList.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd())); // 참여자유형 필터 (MEMBER/ADMIN)
+        whereList.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId())); // 참조ID 필터 (mb_member.member_id 또는 sy_user.user_id)
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -103,9 +103,9 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId()));
-        whereList.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()));
-        whereList.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId()));
+        whereList.add(QdslUtil.strEq(cmChattMember.chattId, search.getChattId())); // 채팅방ID 필터 (cm_chatt.chatt_id)
+        whereList.add(QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd())); // 참여자유형 필터 (MEMBER/ADMIN)
+        whereList.add(QdslUtil.strEq(cmChattMember.refId, search.getRefId())); // 참조ID 필터 (mb_member.member_id 또는 sy_user.user_id)
 
         JPAQuery<CmChattMemberDto.Item> base = baseSelColumnQuery();
 

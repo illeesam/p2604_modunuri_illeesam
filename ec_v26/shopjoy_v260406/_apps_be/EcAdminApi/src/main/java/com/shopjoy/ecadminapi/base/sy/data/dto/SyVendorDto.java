@@ -35,6 +35,7 @@ public class SyVendorDto {
         private String vendorTypeCd;  // 업태
         private String vendorItem;  // 종목
         private String vendorClassCd;  // 판매/배송업체구분 — VENDOR_CLASS_CD {INDIVIDUAL:개인사업자, CORPORATION:법인사업자, TAX_EXEMPT:면세사업자, SIMPLIFIED:간이과세자}
+        private String vendorClassCdNm;  // 코드 라벨
         private String vendorZipCode;  // 우편번호
         @Sensitive("address") private String vendorAddr;  // 주소
         @Sensitive("address") private String vendorAddrDetail;  // 상세주소
@@ -49,6 +50,7 @@ public class SyVendorDto {
         private LocalDate openDate;  // 개업일자
         private LocalDate contractDate;  // 계약일자
         private String vendorStatusCd;  // 상태 — VENDOR_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+        private String vendorStatusCdNm;  // 코드 라벨
         private String pathId;  // 점(.) 구분 표시경로
         private String vendorRemark;  // 비고 (HTML 에디터)
         private String regBy;  // 등록자

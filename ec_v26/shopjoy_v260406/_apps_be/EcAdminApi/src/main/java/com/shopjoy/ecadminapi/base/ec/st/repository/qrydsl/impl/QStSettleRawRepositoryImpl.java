@@ -65,11 +65,11 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QPmDiscnt    pmDiscnt  = QPmDiscnt.pmDiscnt;
     private static final QPmVoucher   pmVoucher  = QPmVoucher.pmVoucher;
     private static final QPmGift      pmGift  = QPmGift.pmGift;
-    private static final QVwSyCode      cdRt  = new QVwSyCode("cd_rt");
-    private static final QVwSyCode      cdRs  = new QVwSyCode("cd_rs");
-    private static final QVwSyCode      cdOis = new QVwSyCode("cd_ois");
-    private static final QVwSyCode      cdVt  = new QVwSyCode("cd_vt");
-    private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");    /*
+    private static final QVwSyCode      codeRawTypeCd  = new QVwSyCode("cd_rt");
+    private static final QVwSyCode      codeRawStatusCd  = new QVwSyCode("cd_rs");
+    private static final QVwSyCode      codeOrderItemStatusCd = new QVwSyCode("cd_ois");
+    private static final QVwSyCode      codeVendorTypeCd  = new QVwSyCode("cd_vt");
+    private static final QVwSyCode      codePayMethodCd = new QVwSyCode("cd_pmc");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * RAW_TYPE            {ORDER: '주문', CLAIM: '클레임', ADJ: '조정'}
      * RAW_STATUS          {COLLECTED: '수집완료', EXCLUDED: '제외', SETTLED: '정산반영'}
@@ -162,11 +162,11 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         pmDiscnt.discntNm.as("discntNm"),                       // 할인명 (조인)
                         pmVoucher.voucherNm.as("voucherNm"),                    // 상품권명 (조인)
                         pmGift.giftNm.as("giftNm"),                             // 사은품명 (조인)
-                        cdRt.codeLabel.as("rawTypeCdNm"),                       // 수집유형명 (sy_code 조인)
-                        cdRs.codeLabel.as("rawStatusCdNm"),                     // 수집상태명 (sy_code 조인)
-                        cdOis.codeLabel.as("orderItemStatusCdNm"),              // 주문상태명 (sy_code 조인)
-                        cdVt.codeLabel.as("vendorTypeCdNm"),                    // 업체구분명 (sy_code 조인)
-                        cdPmc.codeLabel.as("payMethodCdNm"),                     // 결제수단명 (sy_code 조인)
+                        codeRawTypeCd.codeLabel.as("rawTypeCdNm"),                       // 수집유형명 (sy_code 조인)
+                        codeRawStatusCd.codeLabel.as("rawStatusCdNm"),                     // 수집상태명 (sy_code 조인)
+                        codeOrderItemStatusCd.codeLabel.as("orderItemStatusCdNm"),              // 주문상태명 (sy_code 조인)
+                        codeVendorTypeCd.codeLabel.as("vendorTypeCdNm"),                    // 업체구분명 (sy_code 조인)
+                        codePayMethodCd.codeLabel.as("payMethodCdNm"),                     // 결제수단명 (sy_code 조인)
                         stSettleRaw.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
@@ -174,7 +174,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .from(stSettleRaw)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId)) // 주문
                 .innerJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleRaw.orderItemId)) // 주문상품
-                .innerJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE_CD").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd))) // 원장유형
+                .innerJoin(codeRawTypeCd).on(codeRawTypeCd.codeGrp.eq("RAW_TYPE_CD").and(codeRawTypeCd.codeValue.eq(stSettleRaw.rawTypeCd))) // 원장유형
                 .leftJoin(mbMember).on(mbMember.memberId.eq(stSettleRaw.memberId)) // 회원
                 .leftJoin(odClaim).on(odClaim.claimId.eq(stSettleRaw.claimId)) // 클레임
                 .leftJoin(odClaimItem).on(odClaimItem.claimItemId.eq(stSettleRaw.claimItemId)) // 클레임상품
@@ -187,10 +187,10 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(pmDiscnt).on(pmDiscnt.discntId.eq(stSettleRaw.discntId)) // 할인
                 .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(stSettleRaw.voucherId)) // 바우처
                 .leftJoin(pmGift).on(pmGift.giftId.eq(stSettleRaw.giftId)) // 사은품
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS_CD").and(cdRs.codeValue.eq(stSettleRaw.rawStatusCd))) // 원장상태
-                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd))) // 주문상품상태
-                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE_CD").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd))) // 업체유형
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettleRaw.payMethodCd))) // 결제수단
+                .leftJoin(codeRawStatusCd).on(codeRawStatusCd.codeGrp.eq("RAW_STATUS_CD").and(codeRawStatusCd.codeValue.eq(stSettleRaw.rawStatusCd))) // 원장상태
+                .leftJoin(codeOrderItemStatusCd).on(codeOrderItemStatusCd.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(codeOrderItemStatusCd.codeValue.eq(stSettleRaw.orderItemStatusCd))) // 주문상품상태
+                .leftJoin(codeVendorTypeCd).on(codeVendorTypeCd.codeGrp.eq("VENDOR_TYPE_CD").and(codeVendorTypeCd.codeValue.eq(stSettleRaw.vendorTypeCd))) // 업체유형
+                .leftJoin(codePayMethodCd).on(codePayMethodCd.codeGrp.eq("PAY_METHOD").and(codePayMethodCd.codeValue.eq(stSettleRaw.payMethodCd))) // 결제수단
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleRaw.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleRaw.regBy)) // 등록자
                 ;
@@ -211,22 +211,22 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()));
-        whereList.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()));
-        whereList.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId())); // 수집원장ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId())); // 주문ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId())); // 주문항목ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId())); // 클레임ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId())); // 클레임항목ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd())); // 수집유형 필터 — RAW_TYPE_CD (ORDER/CLAIM)
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd())); // 수집상태 필터 — RAW_STATUS_CD
+        whereList.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd())); // 업체구분 필터 — VENDOR_TYPE_CD (SALE/DLIV/EXTERNAL)
+        whereList.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd())); // 결제수단 필터 — PAY_METHOD
+        whereList.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn())); // 구매확정여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn())); // 정산마감 완료여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn())); // ERP 전송여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod())); // 정산기간 필터 (YYYY-MM)
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd())); // 수집 시점 주문상태 필터 — ORDER_ITEM_STATUS_CD
+        whereList.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom())); // 정산금액 범위 필터 — 시작
+        whereList.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo())); // 정산금액 범위 필터 — 끝
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -259,22 +259,22 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod()));
-        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()));
-        whereList.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()));
-        whereList.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()));
+        whereList.add(QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId())); // 수집원장ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId())); // 주문ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId())); // 주문항목ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimId, search.getClaimId())); // 클레임ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.claimItemId, search.getClaimItemId())); // 클레임항목ID 필터
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawTypeCd, search.getRawTypeCd())); // 수집유형 필터 — RAW_TYPE_CD (ORDER/CLAIM)
+        whereList.add(QdslUtil.strEq(stSettleRaw.rawStatusCd, search.getRawStatusCd())); // 수집상태 필터 — RAW_STATUS_CD
+        whereList.add(QdslUtil.strEq(stSettleRaw.vendorTypeCd, search.getVendorTypeCd())); // 업체구분 필터 — VENDOR_TYPE_CD (SALE/DLIV/EXTERNAL)
+        whereList.add(QdslUtil.strEq(stSettleRaw.payMethodCd, search.getPayMethodCd())); // 결제수단 필터 — PAY_METHOD
+        whereList.add(QdslUtil.strEq(stSettleRaw.buyConfirmYn, search.getBuyConfirmYn())); // 구매확정여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(stSettleRaw.closeYn, search.getCloseYn())); // 정산마감 완료여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(stSettleRaw.erpSendYn, search.getErpSendYn())); // ERP 전송여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(stSettleRaw.settlePeriod, search.getSettlePeriod())); // 정산기간 필터 (YYYY-MM)
+        whereList.add(QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd())); // 수집 시점 주문상태 필터 — ORDER_ITEM_STATUS_CD
+        whereList.add(QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom())); // 정산금액 범위 필터 — 시작
+        whereList.add(QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo())); // 정산금액 범위 필터 — 끝
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleRaw.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -301,50 +301,50 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "brandId,brandNm,buyConfirmYn,categoryId1,categoryId2" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("brandId", stSettleRaw.brandId),
-            QdslUtil.FieldDef.like("brandNm", stSettleRaw.brandNm),
-            QdslUtil.FieldDef.like("buyConfirmYn", stSettleRaw.buyConfirmYn),
-            QdslUtil.FieldDef.like("categoryId1", stSettleRaw.categoryId1),
-            QdslUtil.FieldDef.like("categoryId2", stSettleRaw.categoryId2),
-            QdslUtil.FieldDef.like("categoryId3", stSettleRaw.categoryId3),
-            QdslUtil.FieldDef.like("categoryId4", stSettleRaw.categoryId4),
-            QdslUtil.FieldDef.like("categoryId5", stSettleRaw.categoryId5),
-            QdslUtil.FieldDef.like("claimId", stSettleRaw.claimId),
-            QdslUtil.FieldDef.like("claimItemId", stSettleRaw.claimItemId),
-            QdslUtil.FieldDef.like("closeYn", stSettleRaw.closeYn),
-            QdslUtil.FieldDef.like("couponId", stSettleRaw.couponId),
-            QdslUtil.FieldDef.like("couponIssueId", stSettleRaw.couponIssueId),
-            QdslUtil.FieldDef.like("discntId", stSettleRaw.discntId),
-            QdslUtil.FieldDef.like("erpSendYn", stSettleRaw.erpSendYn),
-            QdslUtil.FieldDef.like("erpVoucherId", stSettleRaw.erpVoucherId),
-            QdslUtil.FieldDef.like("giftId", stSettleRaw.giftId),
-            QdslUtil.FieldDef.like("mdUserId", stSettleRaw.mdUserId),
-            QdslUtil.FieldDef.like("memberId", stSettleRaw.memberId),
-            QdslUtil.FieldDef.like("prodOpt1Id", stSettleRaw.prodOpt1Id),
-            QdslUtil.FieldDef.like("prodOpt2Id", stSettleRaw.prodOpt2Id),
-            QdslUtil.FieldDef.like("orderId", stSettleRaw.orderId),
-            QdslUtil.FieldDef.like("orderItemId", stSettleRaw.orderItemId),
-            QdslUtil.FieldDef.like("orderItemStatusCd", stSettleRaw.orderItemStatusCd),
-            QdslUtil.FieldDef.like("orderNo", stSettleRaw.orderNo),
-            QdslUtil.FieldDef.like("payMethodCd", stSettleRaw.payMethodCd),
-            QdslUtil.FieldDef.like("prodId", stSettleRaw.prodId),
-            QdslUtil.FieldDef.like("prodNm", stSettleRaw.prodNm),
-            QdslUtil.FieldDef.like("promoId", stSettleRaw.promoId),
-            QdslUtil.FieldDef.like("rawStatusCd", stSettleRaw.rawStatusCd),
-            QdslUtil.FieldDef.like("rawStatusCdBefore", stSettleRaw.rawStatusCdBefore),
-            QdslUtil.FieldDef.like("rawTypeCd", stSettleRaw.rawTypeCd),
-            QdslUtil.FieldDef.like("settleCloseId", stSettleRaw.settleCloseId),
-            QdslUtil.FieldDef.like("settleId", stSettleRaw.settleId),
-            QdslUtil.FieldDef.like("settlePeriod", stSettleRaw.settlePeriod),
-            QdslUtil.FieldDef.like("settleRawId", stSettleRaw.settleRawId),
-            QdslUtil.FieldDef.like("prodSkuId", stSettleRaw.prodSkuId),
-            QdslUtil.FieldDef.like("vendorId", stSettleRaw.vendorId),
-            QdslUtil.FieldDef.like("vendorTypeCd", stSettleRaw.vendorTypeCd),
-            QdslUtil.FieldDef.like("voucherId", stSettleRaw.voucherId),
-            QdslUtil.FieldDef.like("voucherIssueId", stSettleRaw.voucherIssueId)
+            QdslUtil.FieldDef.like("brandId", stSettleRaw.brandId), // 브랜드ID 스냅샷 (sy_brand.brand_id)
+            QdslUtil.FieldDef.like("brandNm", stSettleRaw.brandNm), // 브랜드명 스냅샷
+            QdslUtil.FieldDef.like("buyConfirmYn", stSettleRaw.buyConfirmYn), // 구매확정여부 필터 Y/N
+            QdslUtil.FieldDef.like("categoryId1", stSettleRaw.categoryId1), // 카테고리 1단계(대분류) ID 스냅샷
+            QdslUtil.FieldDef.like("categoryId2", stSettleRaw.categoryId2), // 카테고리 2단계(중분류) ID 스냅샷
+            QdslUtil.FieldDef.like("categoryId3", stSettleRaw.categoryId3), // 카테고리 3단계(소분류) ID 스냅샷
+            QdslUtil.FieldDef.like("categoryId4", stSettleRaw.categoryId4), // 카테고리 4단계 ID 스냅샷
+            QdslUtil.FieldDef.like("categoryId5", stSettleRaw.categoryId5), // 카테고리 5단계 ID 스냅샷
+            QdslUtil.FieldDef.like("claimId", stSettleRaw.claimId), // 클레임ID 필터
+            QdslUtil.FieldDef.like("claimItemId", stSettleRaw.claimItemId), // 클레임항목ID 필터
+            QdslUtil.FieldDef.like("closeYn", stSettleRaw.closeYn), // 정산마감 완료여부 필터 Y/N
+            QdslUtil.FieldDef.like("couponId", stSettleRaw.couponId), // 쿠폰ID (pm_coupon.coupon_id)
+            QdslUtil.FieldDef.like("couponIssueId", stSettleRaw.couponIssueId), // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id)
+            QdslUtil.FieldDef.like("discntId", stSettleRaw.discntId), // 할인ID (pm_discnt.discnt_id)
+            QdslUtil.FieldDef.like("erpSendYn", stSettleRaw.erpSendYn), // ERP 전송여부 필터 Y/N
+            QdslUtil.FieldDef.like("erpVoucherId", stSettleRaw.erpVoucherId), // ERP 전표ID (st_erp_voucher.erp_voucher_id)
+            QdslUtil.FieldDef.like("giftId", stSettleRaw.giftId), // 사은품ID (pm_gift.gift_id)
+            QdslUtil.FieldDef.like("mdUserId", stSettleRaw.mdUserId), // 담당MD (sy_user.user_id)
+            QdslUtil.FieldDef.like("memberId", stSettleRaw.memberId), // 주문 회원ID 스냅샷 (mb_member.member_id)
+            QdslUtil.FieldDef.like("prodOpt1Id", stSettleRaw.prodOpt1Id), // 옵션1 값ID 스냅샷 (pd_prod_opt.opt_id)
+            QdslUtil.FieldDef.like("prodOpt2Id", stSettleRaw.prodOpt2Id), // 옵션2 값ID 스냅샷 (pd_prod_opt.opt_id)
+            QdslUtil.FieldDef.like("orderId", stSettleRaw.orderId), // 주문ID 필터
+            QdslUtil.FieldDef.like("orderItemId", stSettleRaw.orderItemId), // 주문항목ID 필터
+            QdslUtil.FieldDef.like("orderItemStatusCd", stSettleRaw.orderItemStatusCd), // 수집 시점 주문상태 필터 — ORDER_ITEM_STATUS_CD
+            QdslUtil.FieldDef.like("orderNo", stSettleRaw.orderNo), // 주문번호 스냅샷
+            QdslUtil.FieldDef.like("payMethodCd", stSettleRaw.payMethodCd), // 결제수단 필터 — PAY_METHOD
+            QdslUtil.FieldDef.like("prodId", stSettleRaw.prodId), // 상품ID
+            QdslUtil.FieldDef.like("prodNm", stSettleRaw.prodNm), // 상품명 스냅샷
+            QdslUtil.FieldDef.like("promoId", stSettleRaw.promoId), // 프로모션ID (pm_event.event_id)
+            QdslUtil.FieldDef.like("rawStatusCd", stSettleRaw.rawStatusCd), // 수집상태 필터 — RAW_STATUS_CD
+            QdslUtil.FieldDef.like("rawStatusCdBefore", stSettleRaw.rawStatusCdBefore), // 변경 전 수집상태
+            QdslUtil.FieldDef.like("rawTypeCd", stSettleRaw.rawTypeCd), // 수집유형 필터 — RAW_TYPE_CD (ORDER/CLAIM)
+            QdslUtil.FieldDef.like("settleCloseId", stSettleRaw.settleCloseId), // 정산마감ID (st_settle_close.settle_close_id)
+            QdslUtil.FieldDef.like("settleId", stSettleRaw.settleId), // 정산집계ID (st_settle.settle_id, 집계 후 연결)
+            QdslUtil.FieldDef.like("settlePeriod", stSettleRaw.settlePeriod), // 정산기간 필터 (YYYY-MM)
+            QdslUtil.FieldDef.like("settleRawId", stSettleRaw.settleRawId), // 수집원장ID 필터
+            QdslUtil.FieldDef.like("prodSkuId", stSettleRaw.prodSkuId), // SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)
+            QdslUtil.FieldDef.like("vendorId", stSettleRaw.vendorId), // 업체ID
+            QdslUtil.FieldDef.like("vendorTypeCd", stSettleRaw.vendorTypeCd), // 업체구분 필터 — VENDOR_TYPE_CD (SALE/DLIV/EXTERNAL)
+            QdslUtil.FieldDef.like("voucherId", stSettleRaw.voucherId), // 상품권ID (pm_voucher.voucher_id)
+            QdslUtil.FieldDef.like("voucherIssueId", stSettleRaw.voucherIssueId) // 상품권발급ID (pm_voucher_issue.voucher_issue_id)
         ));
     }
 

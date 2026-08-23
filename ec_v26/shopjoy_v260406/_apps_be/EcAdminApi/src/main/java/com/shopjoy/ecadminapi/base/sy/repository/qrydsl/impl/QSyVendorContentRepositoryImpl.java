@@ -37,8 +37,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyVendorContent syVendorContent = QSyVendorContent.syVendorContent;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
-    private static final QVwSyCode cdVct = new QVwSyCode("cd_vct");
-    private static final QVwSyCode cdVcs = new QVwSyCode("cd_vcs");    /*
+    private static final QVwSyCode codeContentTypeCd = new QVwSyCode("cd_vct");
+    private static final QVwSyCode codeVendorContentStatusCd = new QVwSyCode("cd_vcs");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * VENDOR_CONTENT_TYPE    {INTRO: '업체소개', POLICY: '정책/규정', NOTICE: '공지사항'}
      * VENDOR_CONTENT_STATUS  {DRAFT: '임시저장', ACTIVE: '게시중', INACTIVE: '비게시'}
@@ -50,6 +50,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                         syVendorContent.vendorContentId,             // 업체콘텐츠ID (PK)
                         syVendorContent.vendorId,                    // 업체ID (sy_vendor.vendor_id)
                         syVendorContent.contentTypeCd,                // 콘텐츠유형 — VENDOR_CONTENT_TYPE {INTRO: '업체소개', POLICY: '정책/규정', NOTICE: '공지사항'}
+                        codeContentTypeCd.codeLabel.as("contentTypeCdNm"), // 코드 라벨
                         syVendorContent.vendorContentTitle,           // 제목
                         syVendorContent.vendorContentSubtitle,        // 부제
                         syVendorContent.contentHtml,                  // 본문 (HTML)
@@ -61,6 +62,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                         syVendorContent.endDate,                      // 노출 종료일시
                         syVendorContent.sortOrd,                      // 정렬순서
                         syVendorContent.vendorContentStatusCd,        // 상태 — VENDOR_CONTENT_STATUS {DRAFT: '임시저장', ACTIVE: '게시중', INACTIVE: '비게시'}
+                        codeVendorContentStatusCd.codeLabel.as("vendorContentStatusCdNm"), // 코드 라벨
                         syVendorContent.useYn,                        // 사용여부 Y/N
                         syVendorContent.viewCount,                    // 조회수
                         syVendorContent.vendorContentRemark,          // 비고
@@ -76,8 +78,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                 .from(syVendorContent)
                 .innerJoin(syVendor).on(syVendor.vendorId.eq(syVendorContent.vendorId)) // 업체
                 // sySite·syAttachGrp 은 SELECT 대상 없는 dead JOIN → 제거됨
-                .leftJoin(cdVct).on(cdVct.codeGrp.eq("VENDOR_CONTENT_TYPE").and(cdVct.codeValue.eq(syVendorContent.contentTypeCd))) // 업체컨텐츠유형
-                .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS_CD").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd))) // 업체컨텐츠상태
+                .leftJoin(codeContentTypeCd).on(codeContentTypeCd.codeGrp.eq("VENDOR_CONTENT_TYPE").and(codeContentTypeCd.codeValue.eq(syVendorContent.contentTypeCd))) // 업체컨텐츠유형
+                .leftJoin(codeVendorContentStatusCd).on(codeVendorContentStatusCd.codeGrp.eq("VENDOR_CONTENT_STATUS_CD").and(codeVendorContentStatusCd.codeValue.eq(syVendorContent.vendorContentStatusCd))) // 업체컨텐츠상태
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syVendorContent.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syVendorContent.regBy)) // 등록자
                 ;
@@ -98,10 +100,10 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     public List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId()));
-        whereList.add(QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syVendorContent.contentTypeCd, search.getContentTypeCd()));
+        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId())); // 업체콘텐츠ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId())); // 업체ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus())); // 상태 검색값
+        whereList.add(QdslUtil.strEq(syVendorContent.contentTypeCd, search.getContentTypeCd())); // 콘텐츠유형 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorContent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorContent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -132,10 +134,10 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId()));
-        whereList.add(QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syVendorContent.contentTypeCd, search.getContentTypeCd()));
+        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId())); // 업체콘텐츠ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId())); // 업체ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus())); // 상태 검색값
+        whereList.add(QdslUtil.strEq(syVendorContent.contentTypeCd, search.getContentTypeCd())); // 콘텐츠유형 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorContent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorContent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -161,22 +163,22 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "contentHtml,contentTypeCd,imageUrl,langCd,linkUrl" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("contentHtml", syVendorContent.contentHtml),
-            QdslUtil.FieldDef.like("contentTypeCd", syVendorContent.contentTypeCd),
-            QdslUtil.FieldDef.like("imageUrl", syVendorContent.imageUrl),
-            QdslUtil.FieldDef.like("langCd", syVendorContent.langCd),
-            QdslUtil.FieldDef.like("linkUrl", syVendorContent.linkUrl),
-            QdslUtil.FieldDef.like("thumbUrl", syVendorContent.thumbUrl),
-            QdslUtil.FieldDef.like("useYn", syVendorContent.useYn),
-            QdslUtil.FieldDef.like("vendorContentId", syVendorContent.vendorContentId),
-            QdslUtil.FieldDef.like("vendorContentRemark", syVendorContent.vendorContentRemark),
-            QdslUtil.FieldDef.like("vendorContentStatusCd", syVendorContent.vendorContentStatusCd),
-            QdslUtil.FieldDef.like("vendorContentSubtitle", syVendorContent.vendorContentSubtitle),
-            QdslUtil.FieldDef.like("vendorContentTitle", syVendorContent.vendorContentTitle),
-            QdslUtil.FieldDef.like("vendorId", syVendorContent.vendorId)
+            QdslUtil.FieldDef.like("contentHtml", syVendorContent.contentHtml), // 본문 (HTML)
+            QdslUtil.FieldDef.like("contentTypeCd", syVendorContent.contentTypeCd), // 콘텐츠유형 검색값
+            QdslUtil.FieldDef.like("imageUrl", syVendorContent.imageUrl), // 대표 이미지 URL
+            QdslUtil.FieldDef.like("langCd", syVendorContent.langCd), // 언어코드 (ko/en/ja)
+            QdslUtil.FieldDef.like("linkUrl", syVendorContent.linkUrl), // 링크 URL
+            QdslUtil.FieldDef.like("thumbUrl", syVendorContent.thumbUrl), // 썸네일 URL
+            QdslUtil.FieldDef.like("useYn", syVendorContent.useYn), // 사용여부 검색값 Y/N
+            QdslUtil.FieldDef.like("vendorContentId", syVendorContent.vendorContentId), // 업체콘텐츠ID 검색값
+            QdslUtil.FieldDef.like("vendorContentRemark", syVendorContent.vendorContentRemark), // 비고
+            QdslUtil.FieldDef.like("vendorContentStatusCd", syVendorContent.vendorContentStatusCd), // 상태 — VENDOR_CONTENT_STATUS_CD
+            QdslUtil.FieldDef.like("vendorContentSubtitle", syVendorContent.vendorContentSubtitle), // 부제
+            QdslUtil.FieldDef.like("vendorContentTitle", syVendorContent.vendorContentTitle), // 제목
+            QdslUtil.FieldDef.like("vendorId", syVendorContent.vendorId) // 업체ID 검색값
         ));
     }
 

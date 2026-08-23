@@ -38,8 +38,8 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     private static final QSyhUserTokenLog syhUserTokenLog   = QSyhUserTokenLog.syhUserTokenLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QVwSyCode          cd_ta = new QVwSyCode("cd_ta");
-    private static final QVwSyCode          cd_tt = new QVwSyCode("cd_tt");    /*
+    private static final QVwSyCode          codeActionCd = new QVwSyCode("codeActionCd");
+    private static final QVwSyCode          codeTokenTypeCd = new QVwSyCode("codeTokenTypeCd");    /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * TOKEN_ACTION  {ISSUE: '발급', REFRESH: '갱신', EXPIRE: '만료', REVOKE: '강제폐기'}
      * TOKEN_TYPE    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
@@ -67,16 +67,16 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                         syhUserTokenLog.updBy,                // 수정자
                         syhUserTokenLog.updDate,              // 수정일시
                         syUser.userNm.as("userNm"),                    // 사용자명 (조인: sy_user)
-                        cd_ta.codeLabel.as("actionCdNm"),               // 토큰액션 코드명 (조인: sy_code TOKEN_ACTION)
-                        cd_tt.codeLabel.as("tokenTypeCdNm"),             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
+                        codeActionCd.codeLabel.as("actionCdNm"),               // 토큰액션 코드명 (조인: sy_code TOKEN_ACTION)
+                        codeTokenTypeCd.codeLabel.as("tokenTypeCdNm"),             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
                         syhUserTokenLog.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(syhUserTokenLog)
                 .innerJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId)) // 사용자
-                .innerJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd))) // 액션
-                .innerJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd))) // 토큰유형
+                .innerJoin(codeActionCd).on(codeActionCd.codeGrp.eq("ACTION_CD").and(codeActionCd.codeValue.eq(syhUserTokenLog.actionCd))) // 액션
+                .innerJoin(codeTokenTypeCd).on(codeTokenTypeCd.codeGrp.eq("TOKEN_TYPE").and(codeTokenTypeCd.codeValue.eq(syhUserTokenLog.tokenTypeCd))) // 토큰유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(syhUserTokenLog.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(syhUserTokenLog.regBy)) // 등록자
                 ;
@@ -98,10 +98,10 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId())); // 사용자ID (sy_user.user_id)
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd())); // 토큰 액션 (코드: TOKEN_ACTION — ISSUE/REFRESH/REVOKE/EXPIRE)
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd())); // 토큰 유형 (코드: APP_TYPE — ACCESS/REFRESH)
         whereList.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -131,10 +131,10 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
-        whereList.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId())); // 사용자ID (sy_user.user_id)
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd())); // 토큰 액션 (코드: TOKEN_ACTION — ISSUE/REFRESH/REVOKE/EXPIRE)
+        whereList.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd())); // 토큰 유형 (코드: APP_TYPE — ACCESS/REFRESH)
         whereList.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
@@ -159,23 +159,23 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "accessToken,actionCd,authId,cmdNm,deviceInfo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("accessToken", syhUserTokenLog.accessToken),
-            QdslUtil.FieldDef.like("actionCd", syhUserTokenLog.actionCd),
+            QdslUtil.FieldDef.like("accessToken", syhUserTokenLog.accessToken), // 토큰값 (SHA-256 해시 저장 권장)
+            QdslUtil.FieldDef.like("actionCd", syhUserTokenLog.actionCd), // 토큰 액션 (코드: TOKEN_ACTION — ISSUE/REFRESH/REVOKE/EXPIRE)
             QdslUtil.FieldDef.like("authId", syhUserTokenLog.authId),
-            QdslUtil.FieldDef.like("cmdNm", syhUserTokenLog.cmdNm),
-            QdslUtil.FieldDef.like("deviceInfo", syhUserTokenLog.deviceInfo),
-            QdslUtil.FieldDef.like("ip", syhUserTokenLog.ip),
-            QdslUtil.FieldDef.like("logId", syhUserTokenLog.logId),
-            QdslUtil.FieldDef.like("loginLogId", syhUserTokenLog.loginLogId),
-            QdslUtil.FieldDef.like("prevToken", syhUserTokenLog.prevToken),
-            QdslUtil.FieldDef.like("refreshToken", syhUserTokenLog.refreshToken),
-            QdslUtil.FieldDef.like("revokeReasonCd", syhUserTokenLog.revokeReasonCd),
-            QdslUtil.FieldDef.like("tokenTypeCd", syhUserTokenLog.tokenTypeCd),
-            QdslUtil.FieldDef.like("uiNm", syhUserTokenLog.uiNm),
-            QdslUtil.FieldDef.like("userId", syhUserTokenLog.userId)
+            QdslUtil.FieldDef.like("cmdNm", syhUserTokenLog.cmdNm), // 기능명 (X-Cmd-Nm 헤더)
+            QdslUtil.FieldDef.like("deviceInfo", syhUserTokenLog.deviceInfo), // User-Agent
+            QdslUtil.FieldDef.like("ip", syhUserTokenLog.ip), // IP주소
+            QdslUtil.FieldDef.like("logId", syhUserTokenLog.logId), // 로그ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("loginLogId", syhUserTokenLog.loginLogId), // 최초 로그인 로그ID (sy_user_login_log.log_id)
+            QdslUtil.FieldDef.like("prevToken", syhUserTokenLog.prevToken), // 갱신 전 토큰 해시 (REFRESH 액션 시)
+            QdslUtil.FieldDef.like("refreshToken", syhUserTokenLog.refreshToken), // 리푸레쉬 토큰
+            QdslUtil.FieldDef.like("revokeReasonCd", syhUserTokenLog.revokeReasonCd), // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
+            QdslUtil.FieldDef.like("tokenTypeCd", syhUserTokenLog.tokenTypeCd), // 토큰 유형 (코드: APP_TYPE — ACCESS/REFRESH)
+            QdslUtil.FieldDef.like("uiNm", syhUserTokenLog.uiNm), // 화면명 (X-UI-Nm 헤더)
+            QdslUtil.FieldDef.like("userId", syhUserTokenLog.userId) // 사용자ID (sy_user.user_id)
         ));
     }
 

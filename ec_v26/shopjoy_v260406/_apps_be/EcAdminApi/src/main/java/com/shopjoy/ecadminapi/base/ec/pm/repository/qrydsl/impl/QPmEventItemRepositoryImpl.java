@@ -76,13 +76,13 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmEventItem.eventId, search.getEventIds()));
-        whereList.add(QdslUtil.strEq(pmEventItem.eventId, search.getEventId()));
-        whereList.add(QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId()));
+        whereList.add(QdslUtil.strIn(pmEventItem.eventId, search.getEventIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(pmEventItem.eventId, search.getEventId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId())); // 이벤트항목ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmEventItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmEventItem.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -111,13 +111,13 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmEventItem.eventId, search.getEventIds()));
-        whereList.add(QdslUtil.strEq(pmEventItem.eventId, search.getEventId()));
-        whereList.add(QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId()));
+        whereList.add(QdslUtil.strIn(pmEventItem.eventId, search.getEventIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(pmEventItem.eventId, search.getEventId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId())); // 이벤트항목ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmEventItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmEventItem.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery();
@@ -140,12 +140,13 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "eventId,eventItemId,targetId,targetTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("eventId", pmEventItem.eventId),
-            QdslUtil.FieldDef.like("eventItemId", pmEventItem.eventItemId),
-            QdslUtil.FieldDef.like("targetId", pmEventItem.targetId),
-            QdslUtil.FieldDef.like("targetTypeCd", pmEventItem.targetTypeCd)
+            QdslUtil.FieldDef.like("eventId", pmEventItem.eventId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("eventItemId", pmEventItem.eventItemId), // 이벤트항목ID 필터
+            QdslUtil.FieldDef.like("targetId", pmEventItem.targetId), // 대상ID (prod_id/category_id/vendor_id/brand_id)
+            QdslUtil.FieldDef.like("targetTypeCd", pmEventItem.targetTypeCd) // 대상유형 — PROMO_TARGET_TYPE
         ));
     }
 

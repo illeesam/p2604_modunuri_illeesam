@@ -60,8 +60,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QPdProdSku     pdProdSku   = QPdProdSku.pdProdSku;
     private static final QPdProdOpt oi1  = new QPdProdOpt("oi1");
     private static final QPdProdOpt oi2  = new QPdProdOpt("oi2");
-    private static final QVwSyCode        cdIs      = new QVwSyCode("cd_is");
-    private static final QVwSyCode        cdDc      = new QVwSyCode("cd_dc");
+    private static final QVwSyCode        codeOrderItemStatusCd = new QVwSyCode("code_order_item_status_cd"); // 품목상태 코드 라벨(ORDER_ITEM_STATUS_CD)
+    private static final QVwSyCode        codeDlivCourierCd     = new QVwSyCode("code_dliv_courier_cd");      // 택배사 코드 라벨(COURIER)
     // 목록/엑셀 표시용 조인(1:1 — fan-out 없음). WHERE 절 EXISTS 서브쿼리용 "_ex" 별칭과는 별개 인스턴스.
     private static final QOdOrder         odOrderJoin  = new QOdOrder("od_order_join");
     private static final QSyVendor        syVendorJoin = new QSyVendor("sy_vendor_join");
@@ -142,14 +142,14 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         odOrderItem.regDate,    // 등록일시
                         odOrderItem.updBy,      // 수정자
                         odOrderItem.updDate,    // 수정일시
-                        pdProd.thumbnailUrl.as("thumbnailUrl"),
-                        pdProd.salePrice.as("salePriceCurrent"),
-                        pdProd.prodNm.as("prodNmCurrent"),
-                        pdProdSku.prodSkuCode.as("prodSkuCode"),
-                        oi1.prodOptNm.as("prodOptNm1"),
-                        oi2.prodOptNm.as("prodOptNm2"),
-                        cdIs.codeLabel.as("orderItemStatusCdNm"),
-                        cdDc.codeLabel.as("dlivCourierCdNm"),
+                        pdProd.thumbnailUrl.as("thumbnailUrl"),       // 상품 썸네일 URL (pd_prod 현재값)
+                        pdProd.salePrice.as("salePriceCurrent"),      // 상품 현재 판매가 (pd_prod 현재값)
+                        pdProd.prodNm.as("prodNmCurrent"),            // 상품 현재 상품명 (pd_prod 현재값)
+                        pdProdSku.prodSkuCode.as("prodSkuCode"),      // SKU 코드 (pd_prod_sku 조인)
+                        oi1.prodOptNm.as("prodOptNm1"),               // 옵션1명 (조인 표시용)
+                        oi2.prodOptNm.as("prodOptNm2"),               // 옵션2명 (조인 표시용)
+                        codeOrderItemStatusCd.codeLabel.as("orderItemStatusCdNm"), // 품목상태 코드 라벨
+                        codeDlivCourierCd.codeLabel.as("dlivCourierCdNm"),         // 배송택배사 코드 라벨
                         odOrderJoin.memberNm.as("memberNm"),         // 주문자명 (od_order 스냅샷)
                         syVendorJoin.vendorNm.as("vendorNm"),        // 판매업체명 (pd_prod → sy_vendor)
                         syUserJoin.userNm.as("mdUserNm"),            // 담당MD명 (pd_prod → sy_user)
@@ -157,58 +157,58 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         // 정산 금액 (st_settle_item, order_item_id 기준 전 항목 합산 — SALE/CANCEL/RETURN 순 합계)
                         ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.itemPrice.sum())
                                 .from(stSettleItemEx)
-                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleSaleAmt"),
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleSaleAmt"),         // 정산 판매금액 합계
                         ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.commissionAmt.sum())
                                 .from(stSettleItemEx)
-                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleCommissionAmt"),
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleCommissionAmt"),  // 정산 수수료금액 합계
                         ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.settleItemAmt.sum())
                                 .from(stSettleItemEx)
-                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleVendorAmt"),
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleVendorAmt"),      // 정산 업체지급금액 합계
                         // 프로모션 적용 내역 (order_item_id 상관 서브쿼리 — 이름은 금액 큰 순 1건 대표 표시, 상세는 별도 API)
                         ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.count())
                                 .from(pmDiscntUsageEx)
-                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "discntUsageCount"),
+                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "discntUsageCount"),    // 프로모션 할인 적용 건수
                         ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.discntNm)
                                 .from(pmDiscntUsageEx)
                                 .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(pmDiscntUsageEx.discntAmt.desc()).limit(1), "discntUsageNm"),
+                                .orderBy(pmDiscntUsageEx.discntAmt.desc()).limit(1), "discntUsageNm"),     // 적용된 프로모션 할인명 (대표 1건)
                         ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.discntId)
                                 .from(pmDiscntUsageEx)
                                 .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(pmDiscntUsageEx.discntAmt.desc()).limit(1), "discntUsageTopId"),
+                                .orderBy(pmDiscntUsageEx.discntAmt.desc()).limit(1), "discntUsageTopId"),  // 적용된 프로모션 할인ID (대표 1건)
                         ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.discntAmt.sum())
                                 .from(pmDiscntUsageEx)
-                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "discntUsageAmt"),
+                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "discntUsageAmt"),      // 프로모션 할인 적용금액 합계
                         ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.count())
                                 .from(pmCouponUsageEx)
-                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "couponUsageCount"),
+                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "couponUsageCount"),    // 쿠폰 적용 건수
                         ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.couponNm)
                                 .from(pmCouponUsageEx)
                                 .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(pmCouponUsageEx.discountAmt.desc()).limit(1), "couponUsageNm"),
+                                .orderBy(pmCouponUsageEx.discountAmt.desc()).limit(1), "couponUsageNm"),   // 적용된 쿠폰명 (대표 1건)
                         ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.couponId)
                                 .from(pmCouponUsageEx)
                                 .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(pmCouponUsageEx.discountAmt.desc()).limit(1), "couponUsageTopId"),
+                                .orderBy(pmCouponUsageEx.discountAmt.desc()).limit(1), "couponUsageTopId"),// 적용된 쿠폰ID (대표 1건)
                         ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.discountAmt.sum())
                                 .from(pmCouponUsageEx)
-                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "couponUsageAmt"),
+                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "couponUsageAmt"),      // 쿠폰 할인 적용금액 합계
                         ExpressionUtils.as(JPAExpressions.select(pmSaveUsageEx.count())
                                 .from(pmSaveUsageEx)
-                                .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageCount"),
+                                .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageCount"),        // 적립금 사용 건수
                         ExpressionUtils.as(JPAExpressions.select(pmSaveUsageEx.useAmt.sum())
                                 .from(pmSaveUsageEx)
-                                .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageAmt"),
-                        pmGiftEx.giftNm.as("giftNm"),
+                                .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageAmt"),          // 적립금 사용금액 합계
+                        pmGiftEx.giftNm.as("giftNm"),  // 발급 사은품명 (pm_gift 조인)
                         // 클레임유형/상태 — 해당 항목의 최신 클레임 1건 대표 표시(od_claim_item→od_claim, regDate desc)
                         ExpressionUtils.as(JPAExpressions.select(claimDsp.claimTypeCd)
                                 .from(claimItemDsp).join(claimDsp).on(claimDsp.claimId.eq(claimItemDsp.claimId))
                                 .where(claimItemDsp.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimTypeCd"),
+                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimTypeCd"),    // 클레임유형 (CANCEL/RETURN/EXCHANGE)
                         ExpressionUtils.as(JPAExpressions.select(claimItemDsp.claimItemStatusCd)
                                 .from(claimItemDsp)
                                 .where(claimItemDsp.orderItemId.eq(odOrderItem.orderItemId))
-                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd"),
+                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd"),  // 클레임상세상태
                         odOrderItem.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -221,8 +221,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId)) // SKU
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOpt1Id)) // 옵션1
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id)) // 옵션2
-                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd))) // 주문상품상태
-                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd))) // 택배사
+                .leftJoin(codeOrderItemStatusCd).on(codeOrderItemStatusCd.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(codeOrderItemStatusCd.codeValue.eq(odOrderItem.orderItemStatusCd))) // 주문상품상태
+                .leftJoin(codeDlivCourierCd).on(codeDlivCourierCd.codeGrp.eq("COURIER").and(codeDlivCourierCd.codeValue.eq(odOrderItem.dlivCourierCd))) // 택배사
                 .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId)) // 사은품
                 .leftJoin(syVendorJoin).on(syVendorJoin.vendorId.eq(pdProd.vendorId)) // 업체
                 .leftJoin(syUserJoin).on(syUserJoin.userId.eq(pdProd.mdUserId)) // 사용자
@@ -249,17 +249,17 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
-        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
-        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
-        whereList.add(claimFilter(search.getClaimCombos()));
-        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
+        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId())); // 주문상품ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd())); // 품목상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds())); // 품목상태 다중 필터 (strIn, BO multiCheck)
+        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn())); // 클레임여부 필터 Y/N
+        whereList.add(claimFilter(search.getClaimCombos())); // 클레임상세 매트릭스 필터
+        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd())); // 배송 택배사 필터 (strEq, 항목 자체 컬럼)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm())) // 회원명 필터 (EXISTS LIKE via mb_member)
                 ? JPAExpressions.selectOne()
                       .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                       .where(odOrderEx.orderId.eq(odOrderItem.orderId),
@@ -267,7 +267,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm())) // 판매업체명 필터 (EXISTS LIKE via sy_vendor)
                 ? JPAExpressions.selectOne()
                       .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                       .where(pVendorEx.prodId.eq(odOrderItem.prodId),
@@ -275,7 +275,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm())) // 담당MD명 필터 (EXISTS LIKE via sy_user)
                 ? JPAExpressions.selectOne()
                       .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                       .where(pMdEx.prodId.eq(odOrderItem.prodId),
@@ -283,7 +283,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) // 브랜드명 필터 (EXISTS LIKE via sy_brand)
                 ? JPAExpressions.selectOne()
                       .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                       .where(pBrandEx.prodId.eq(odOrderItem.prodId),
@@ -292,7 +292,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                       .exists()
                 : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odOrderItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odOrderItem.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -321,17 +321,17 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
-        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
-        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
-        whereList.add(claimFilter(search.getClaimCombos()));
-        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
+        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId())); // 주문상품ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd())); // 품목상태 단건 필터 (strEq)
+        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds())); // 품목상태 다중 필터 (strIn, BO multiCheck)
+        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn())); // 클레임여부 필터 Y/N
+        whereList.add(claimFilter(search.getClaimCombos())); // 클레임상세 매트릭스 필터
+        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd())); // 배송 택배사 필터 (strEq, 항목 자체 컬럼)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
-        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm())) // 회원명 필터 (EXISTS LIKE via mb_member)
                 ? JPAExpressions.selectOne()
                       .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                       .where(odOrderEx.orderId.eq(odOrderItem.orderId),
@@ -339,7 +339,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm())) // 판매업체명 필터 (EXISTS LIKE via sy_vendor)
                 ? JPAExpressions.selectOne()
                       .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                       .where(pVendorEx.prodId.eq(odOrderItem.prodId),
@@ -347,7 +347,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm())) // 담당MD명 필터 (EXISTS LIKE via sy_user)
                 ? JPAExpressions.selectOne()
                       .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                       .where(pMdEx.prodId.eq(odOrderItem.prodId),
@@ -355,7 +355,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) // 브랜드명 필터 (EXISTS LIKE via sy_brand)
                 ? JPAExpressions.selectOne()
                       .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                       .where(pBrandEx.prodId.eq(odOrderItem.prodId),
@@ -364,7 +364,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                       .exists()
                 : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odOrderItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odOrderItem.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery();
@@ -386,9 +386,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         BasePage<OdOrderItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-
-    /** *Nm 필드는 원장 테이블 EXISTS, 나머지는 스냅샷 LIKE. 필드별 모드는 FieldDef 로 개별 지정. */
     /** 클레임상세 매트릭스 필터 — "CLAIM_ITEM_STATUS_CD:CLAIM_TYPE_CD" 조합 목록을 OR 로 묶어 EXISTS(od_claim_item → od_claim).
      *  프론트 BoComboMatrixSelect 가 보내는 토큰. "__NONE__" 1건뿐이면(전체선택 해제) 항상 거짓 조건으로 0건 강제. */
     private BooleanExpression claimFilter(List<String> claimCombos) {
@@ -413,38 +410,39 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return combined;
     }
 
+    /* searchType 예: "bundleGroupId,buyConfirmYn,claimYn,dlivCourierCd,dlivTmpltId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bundleGroupId",           odOrderItem.bundleGroupId),
-            QdslUtil.FieldDef.like("buyConfirmYn",            odOrderItem.buyConfirmYn),
-            QdslUtil.FieldDef.like("claimYn",                 odOrderItem.claimYn),
-            QdslUtil.FieldDef.like("dlivCourierCd",           odOrderItem.dlivCourierCd),
-            QdslUtil.FieldDef.like("dlivTmpltId",             odOrderItem.dlivTmpltId),
-            QdslUtil.FieldDef.like("dlivTrackingNo",          odOrderItem.dlivTrackingNo),
-            QdslUtil.FieldDef.like("giftId",                  odOrderItem.giftId),
-            QdslUtil.FieldDef.like("prodOpt1Id",              odOrderItem.prodOpt1Id),
-            QdslUtil.FieldDef.like("prodOpt2Id",              odOrderItem.prodOpt2Id),
-            QdslUtil.FieldDef.like("orderId",                 odOrderItem.orderId),
-            QdslUtil.FieldDef.like("orderItemId",             odOrderItem.orderItemId),
-            QdslUtil.FieldDef.like("orderItemStatusCd",       odOrderItem.orderItemStatusCd),
-            QdslUtil.FieldDef.like("orderItemStatusCdBefore", odOrderItem.orderItemStatusCdBefore),
-            QdslUtil.FieldDef.like("prodId",                  odOrderItem.prodId),
-            QdslUtil.FieldDef.like("reserveSaleYn",           odOrderItem.reserveSaleYn),
-            QdslUtil.FieldDef.like("settleYn",                odOrderItem.settleYn),
-            QdslUtil.FieldDef.like("prodSkuId",               odOrderItem.prodSkuId),
+            QdslUtil.FieldDef.like("bundleGroupId",           odOrderItem.bundleGroupId), // 묶음 그룹키 (동일 묶음 구성품 식별, UUID, 일반상품=NULL)
+            QdslUtil.FieldDef.like("buyConfirmYn",            odOrderItem.buyConfirmYn), // 구매확정여부 Y/N
+            QdslUtil.FieldDef.like("claimYn",                 odOrderItem.claimYn), // 클레임여부 필터 Y/N
+            QdslUtil.FieldDef.like("dlivCourierCd",           odOrderItem.dlivCourierCd), // 배송 택배사 필터 (strEq, 항목 자체 컬럼)
+            QdslUtil.FieldDef.like("dlivTmpltId",             odOrderItem.dlivTmpltId), // 배송비 템플릿ID 스냅샷
+            QdslUtil.FieldDef.like("dlivTrackingNo",          odOrderItem.dlivTrackingNo), // 해당 항목의 배송 송장번호
+            QdslUtil.FieldDef.like("giftId",                  odOrderItem.giftId), // 발급 사은품ID (pm_gift.gift_id)
+            QdslUtil.FieldDef.like("prodOpt1Id",              odOrderItem.prodOpt1Id), // 옵션1 값ID (pd_prod_opt.opt_id)
+            QdslUtil.FieldDef.like("prodOpt2Id",              odOrderItem.prodOpt2Id), // 옵션2 값ID (pd_prod_opt.opt_id)
+            QdslUtil.FieldDef.like("orderId",                 odOrderItem.orderId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("orderItemId",             odOrderItem.orderItemId), // 주문상품ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("orderItemStatusCd",       odOrderItem.orderItemStatusCd), // 품목상태 단건 필터 (strEq)
+            QdslUtil.FieldDef.like("orderItemStatusCdBefore", odOrderItem.orderItemStatusCdBefore), // 변경 전 품목상태 — ORDER_ITEM_STATUS_CD
+            QdslUtil.FieldDef.like("prodId",                  odOrderItem.prodId), // 상품ID (pd_prod.)
+            QdslUtil.FieldDef.like("reserveSaleYn",           odOrderItem.reserveSaleYn), // 예약판매여부 Y/N
+            QdslUtil.FieldDef.like("settleYn",                odOrderItem.settleYn), // 정산처리여부 Y/N
+            QdslUtil.FieldDef.like("prodSkuId",               odOrderItem.prodSkuId), // SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)
             // prodNm: pd_prod 실 상품명 EXISTS
             QdslUtil.FieldDef.exists("prodNm", sv -> JPAExpressions.selectOne()
                     .from(pNmEx)
                     .where(pNmEx.prodId.eq(odOrderItem.prodId),
                            QdslUtil.strLike(pNmEx.prodNm, sv))
-                    .exists()),
+                    .exists()), // 상품명 (주문 시점 스냅샷)
             // brandNm: pd_prod → sy_brand 원장 브랜드명 EXISTS
             QdslUtil.FieldDef.exists("brandNm", sv -> JPAExpressions.selectOne()
                     .from(pBrandEx)
                     .join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId)) // 브랜드
                     .where(pBrandEx.prodId.eq(odOrderItem.prodId),
                            QdslUtil.strLike(sBrandEx.brandNm, sv))
-                    .exists())
+                    .exists()) // 브랜드명 필터 (EXISTS LIKE via sy_brand)
         ));
     }
 

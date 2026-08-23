@@ -75,14 +75,14 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmDiscntItem.discntItemId, search.getDiscntItemId()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.discntId, search.getDiscntId()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.targetId, search.getTargetId()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add(QdslUtil.strEq(pmDiscntItem.discntItemId, search.getDiscntItemId())); // 할인항목ID 필터
+        whereList.add(QdslUtil.strEq(pmDiscntItem.discntId, search.getDiscntId())); // 할인ID 필터 (pm_discnt.discnt_id)
+        whereList.add(QdslUtil.strEq(pmDiscntItem.targetId, search.getTargetId())); // 대상ID 필터 (category_id/prod_id/grade_cd)
+        whereList.add(QdslUtil.strEq(pmDiscntItem.targetTypeCd, search.getTargetTypeCd())); // 대상유형 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -111,14 +111,14 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmDiscntItem.discntItemId, search.getDiscntItemId()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.discntId, search.getDiscntId()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.targetId, search.getTargetId()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.targetTypeCd, search.getTargetTypeCd()));
+        whereList.add(QdslUtil.strEq(pmDiscntItem.discntItemId, search.getDiscntItemId())); // 할인항목ID 필터
+        whereList.add(QdslUtil.strEq(pmDiscntItem.discntId, search.getDiscntId())); // 할인ID 필터 (pm_discnt.discnt_id)
+        whereList.add(QdslUtil.strEq(pmDiscntItem.targetId, search.getTargetId())); // 대상ID 필터 (category_id/prod_id/grade_cd)
+        whereList.add(QdslUtil.strEq(pmDiscntItem.targetTypeCd, search.getTargetTypeCd())); // 대상유형 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmDiscntItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmDiscntItemDto.Item> query = baseSelColumnQuery();
@@ -141,12 +141,13 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "discntId,discntItemId,targetId,targetTypeCd" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("discntId", pmDiscntItem.discntId),
-            QdslUtil.FieldDef.like("discntItemId", pmDiscntItem.discntItemId),
-            QdslUtil.FieldDef.like("targetId", pmDiscntItem.targetId),
-            QdslUtil.FieldDef.like("targetTypeCd", pmDiscntItem.targetTypeCd)
+            QdslUtil.FieldDef.like("discntId", pmDiscntItem.discntId), // 할인ID 필터 (pm_discnt.discnt_id)
+            QdslUtil.FieldDef.like("discntItemId", pmDiscntItem.discntItemId), // 할인항목ID 필터
+            QdslUtil.FieldDef.like("targetId", pmDiscntItem.targetId), // 대상ID 필터 (category_id/prod_id/grade_cd)
+            QdslUtil.FieldDef.like("targetTypeCd", pmDiscntItem.targetTypeCd) // 대상유형 필터
         ));
     }
 

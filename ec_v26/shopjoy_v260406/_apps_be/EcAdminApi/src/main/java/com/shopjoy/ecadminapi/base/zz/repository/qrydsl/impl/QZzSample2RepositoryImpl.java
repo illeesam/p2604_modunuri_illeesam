@@ -102,11 +102,11 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()));
-        whereList.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()));
-        whereList.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()));
-        whereList.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()));
-        whereList.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id())); // 샘플2 ID 검색값
+        whereList.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn())); // 사용 여부(Y/N) 검색값
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -135,11 +135,11 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()));
-        whereList.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()));
-        whereList.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()));
-        whereList.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()));
-        whereList.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id())); // 샘플2 ID 검색값
+        whereList.add(QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(zzSample2.useYn, search.getUseYn())); // 사용 여부(Y/N) 검색값
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<ZzSample2Dto.Item> query = baseSelColumnQuery();
@@ -163,35 +163,36 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "attrNm1,attrNm2,attrNm3,attrNm4,cateCds" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attrNm1", zzSample2.attrNm1),
-            QdslUtil.FieldDef.like("attrNm2", zzSample2.attrNm2),
-            QdslUtil.FieldDef.like("attrNm3", zzSample2.attrNm3),
-            QdslUtil.FieldDef.like("attrNm4", zzSample2.attrNm4),
-            QdslUtil.FieldDef.like("cateCds", zzSample2.cateCds),
-            QdslUtil.FieldDef.like("cdGrp", zzSample2.cdGrp),
-            QdslUtil.FieldDef.like("cdInfwSeCd", zzSample2.cdInfwSeCd),
-            QdslUtil.FieldDef.like("cdNm", zzSample2.cdNm),
-            QdslUtil.FieldDef.like("cdVl", zzSample2.cdVl),
-            QdslUtil.FieldDef.like("col01", zzSample2.col01),
-            QdslUtil.FieldDef.like("col02", zzSample2.col02),
-            QdslUtil.FieldDef.like("col03", zzSample2.col03),
-            QdslUtil.FieldDef.like("col04", zzSample2.col04),
-            QdslUtil.FieldDef.like("col05", zzSample2.col05),
-            QdslUtil.FieldDef.like("col06", zzSample2.col06),
-            QdslUtil.FieldDef.like("col07", zzSample2.col07),
-            QdslUtil.FieldDef.like("col08", zzSample2.col08),
-            QdslUtil.FieldDef.like("col09", zzSample2.col09),
-            QdslUtil.FieldDef.like("divCd", zzSample2.divCd),
-            QdslUtil.FieldDef.like("explnCn", zzSample2.explnCn),
-            QdslUtil.FieldDef.like("groupCd", zzSample2.groupCd),
-            QdslUtil.FieldDef.like("kindCd", zzSample2.kindCd),
-            QdslUtil.FieldDef.like("sample1Id", zzSample2.sample1Id),
-            QdslUtil.FieldDef.like("sample2Id", zzSample2.sample2Id),
-            QdslUtil.FieldDef.like("statusCd", zzSample2.statusCd),
-            QdslUtil.FieldDef.like("typeCd", zzSample2.typeCd),
-            QdslUtil.FieldDef.like("useYn", zzSample2.useYn)
+            QdslUtil.FieldDef.like("attrNm1", zzSample2.attrNm1), // 속성명1
+            QdslUtil.FieldDef.like("attrNm2", zzSample2.attrNm2), // 속성명2
+            QdslUtil.FieldDef.like("attrNm3", zzSample2.attrNm3), // 속성명3
+            QdslUtil.FieldDef.like("attrNm4", zzSample2.attrNm4), // 속성명4
+            QdslUtil.FieldDef.like("cateCds", zzSample2.cateCds), // 카테고리 코드 목록
+            QdslUtil.FieldDef.like("cdGrp", zzSample2.cdGrp), // 도메인 구분 키
+            QdslUtil.FieldDef.like("cdInfwSeCd", zzSample2.cdInfwSeCd), // 코드 유입 구분 코드
+            QdslUtil.FieldDef.like("cdNm", zzSample2.cdNm), // 코드명 / 대표 텍스트
+            QdslUtil.FieldDef.like("cdVl", zzSample2.cdVl), // 코드 값
+            QdslUtil.FieldDef.like("col01", zzSample2.col01), // 범용 컬럼01
+            QdslUtil.FieldDef.like("col02", zzSample2.col02), // 범용 컬럼02
+            QdslUtil.FieldDef.like("col03", zzSample2.col03), // 범용 컬럼03
+            QdslUtil.FieldDef.like("col04", zzSample2.col04), // 범용 컬럼04
+            QdslUtil.FieldDef.like("col05", zzSample2.col05), // 범용 컬럼05
+            QdslUtil.FieldDef.like("col06", zzSample2.col06), // 범용 컬럼06
+            QdslUtil.FieldDef.like("col07", zzSample2.col07), // 범용 컬럼07
+            QdslUtil.FieldDef.like("col08", zzSample2.col08), // 범용 컬럼08
+            QdslUtil.FieldDef.like("col09", zzSample2.col09), // 범용 컬럼09
+            QdslUtil.FieldDef.like("divCd", zzSample2.divCd), // 구분 코드
+            QdslUtil.FieldDef.like("explnCn", zzSample2.explnCn), // 설명 내용
+            QdslUtil.FieldDef.like("groupCd", zzSample2.groupCd), // 그룹 코드
+            QdslUtil.FieldDef.like("kindCd", zzSample2.kindCd), // 종류 코드
+            QdslUtil.FieldDef.like("sample1Id", zzSample2.sample1Id), // 상위 FK 필터
+            QdslUtil.FieldDef.like("sample2Id", zzSample2.sample2Id), // 샘플2 ID 검색값
+            QdslUtil.FieldDef.like("statusCd", zzSample2.statusCd), // 상태 코드
+            QdslUtil.FieldDef.like("typeCd", zzSample2.typeCd), // 유형 코드
+            QdslUtil.FieldDef.like("useYn", zzSample2.useYn) // 사용 여부(Y/N) 검색값
         ));
     }
 

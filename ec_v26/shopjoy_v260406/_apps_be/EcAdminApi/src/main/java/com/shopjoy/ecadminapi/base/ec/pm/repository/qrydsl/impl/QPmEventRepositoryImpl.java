@@ -105,16 +105,16 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds()));
-        whereList.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId()));
-        whereList.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()));
+        whereList.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId())); // 이벤트ID 필터
+        whereList.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd())); // 상태 필터 — EVENT_STATUS_CD
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andVendorMd(search));
         whereList.add(andCurrentYnEvent(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmEvent.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmEvent.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -143,16 +143,16 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds()));
-        whereList.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId()));
-        whereList.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()));
+        whereList.add(QdslUtil.strIn(pmEvent.eventId, search.getEventIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pmEvent.eventId, search.getEventId())); // 이벤트ID 필터
+        whereList.add(QdslUtil.strEq(pmEvent.useYn, search.getUseYn())); // 사용여부 필터 Y/N
+        whereList.add(QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd())); // 상태 필터 — EVENT_STATUS_CD
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEvent.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andVendorMd(search));
         whereList.add(andCurrentYnEvent(search.getCurrentYn()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmEvent.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmEvent.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery();
@@ -189,7 +189,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
             .where(eventProdEx.eventId.eq(pmEvent.eventId));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(eventProdEx.prodId, search.getProdId()));
+        whereList.add(QdslUtil.strEq(eventProdEx.prodId, search.getProdId())); // 상품 기준 필터 (EXISTS eq via pm_event_prod)
         whereList.add(StringUtils.hasText(search.getProdId()) ? null
                 : JPAExpressions.selectOne().from(pProdEx)
                       .where(pProdEx.prodId.eq(eventProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
@@ -215,8 +215,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         return sub.exists();
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /**
      * currentYn='Y' 일 때만 "지금 진행중" 조건 — 상태 ACTIVE + use_yn='Y' + 진행기간(start_date~end_date) 이내.
      *
@@ -232,19 +230,20 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 .and(QdslUtil.dateBetween(today, pmEvent.startDate, pmEvent.endDate));
     }
 
+    /* searchType 예: "eventContent,eventDesc,eventId,eventNm,eventStatusCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("eventContent", pmEvent.eventContent),
-            QdslUtil.FieldDef.like("eventDesc", pmEvent.eventDesc),
-            QdslUtil.FieldDef.like("eventId", pmEvent.eventId),
-            QdslUtil.FieldDef.like("eventNm", pmEvent.eventNm),
-            QdslUtil.FieldDef.like("eventStatusCd", pmEvent.eventStatusCd),
-            QdslUtil.FieldDef.like("eventStatusCdBefore", pmEvent.eventStatusCdBefore),
-            QdslUtil.FieldDef.like("eventTitle", pmEvent.eventTitle),
-            QdslUtil.FieldDef.like("eventTypeCd", pmEvent.eventTypeCd),
-            QdslUtil.FieldDef.like("imgUrl", pmEvent.imgUrl),
-            QdslUtil.FieldDef.like("targetTypeCd", pmEvent.targetTypeCd),
-            QdslUtil.FieldDef.like("useYn", pmEvent.useYn)
+            QdslUtil.FieldDef.like("eventContent", pmEvent.eventContent), // 이벤트 상세내용
+            QdslUtil.FieldDef.like("eventDesc", pmEvent.eventDesc), // 이벤트설명
+            QdslUtil.FieldDef.like("eventId", pmEvent.eventId), // 이벤트ID 필터
+            QdslUtil.FieldDef.like("eventNm", pmEvent.eventNm), // 이벤트명
+            QdslUtil.FieldDef.like("eventStatusCd", pmEvent.eventStatusCd), // 상태 필터 — EVENT_STATUS_CD
+            QdslUtil.FieldDef.like("eventStatusCdBefore", pmEvent.eventStatusCdBefore), // 변경 전 이벤트상태
+            QdslUtil.FieldDef.like("eventTitle", pmEvent.eventTitle), // 이벤트 제목
+            QdslUtil.FieldDef.like("eventTypeCd", pmEvent.eventTypeCd), // 이벤트유형 — EVENT_TYPE_CD
+            QdslUtil.FieldDef.like("imgUrl", pmEvent.imgUrl), // 배너이미지URL
+            QdslUtil.FieldDef.like("targetTypeCd", pmEvent.targetTypeCd), // 대상유형 — EVENT_TARGET {ALL:전체, NEW_MEMBER:신규회원, VIP:VIP회원}
+            QdslUtil.FieldDef.like("useYn", pmEvent.useYn) // 사용여부 필터 Y/N
         ));
     }
 

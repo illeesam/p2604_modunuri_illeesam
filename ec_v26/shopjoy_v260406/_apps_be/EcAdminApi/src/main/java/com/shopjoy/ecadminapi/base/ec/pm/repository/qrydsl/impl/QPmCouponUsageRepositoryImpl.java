@@ -86,13 +86,13 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()));
-        whereList.add(QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId())); // 사용이력ID 필터
+        whereList.add(QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId())); // 주문ID 필터 (od_order.order_id)
+        whereList.add(QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId())); // 주문상품ID 필터 (od_order_item.order_item_id)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmCouponUsage.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmCouponUsage.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -121,13 +121,13 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()));
-        whereList.add(QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId()));
+        whereList.add(QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId())); // 사용이력ID 필터
+        whereList.add(QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId())); // 주문ID 필터 (od_order.order_id)
+        whereList.add(QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId())); // 주문상품ID 필터 (od_order_item.order_item_id)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponUsage.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCouponUsage.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmCouponUsage.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmCouponUsage.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery();
@@ -149,18 +149,18 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         BasePage<PmCouponUsageDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "couponCode,couponId,couponNm,discountTypeCd,memberId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("couponCode", pmCouponUsage.couponCode),
-            QdslUtil.FieldDef.like("couponId", pmCouponUsage.couponId),
-            QdslUtil.FieldDef.like("couponNm", pmCouponUsage.couponNm),
-            QdslUtil.FieldDef.like("discountTypeCd", pmCouponUsage.discountTypeCd),
-            QdslUtil.FieldDef.like("memberId", pmCouponUsage.memberId),
-            QdslUtil.FieldDef.like("orderId", pmCouponUsage.orderId),
-            QdslUtil.FieldDef.like("orderItemId", pmCouponUsage.orderItemId),
-            QdslUtil.FieldDef.like("prodId", pmCouponUsage.prodId),
-            QdslUtil.FieldDef.like("couponUsageId", pmCouponUsage.couponUsageId)
+            QdslUtil.FieldDef.like("couponCode", pmCouponUsage.couponCode), // 쿠폰코드 스냅샷
+            QdslUtil.FieldDef.like("couponId", pmCouponUsage.couponId), // 쿠폰ID (pm_coupon.coupon_id)
+            QdslUtil.FieldDef.like("couponNm", pmCouponUsage.couponNm), // 쿠폰명 스냅샷
+            QdslUtil.FieldDef.like("discountTypeCd", pmCouponUsage.discountTypeCd), // 할인유형 (RATE=정률 / FIXED=정액)
+            QdslUtil.FieldDef.like("memberId", pmCouponUsage.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("orderId", pmCouponUsage.orderId), // 주문ID 필터 (od_order.order_id)
+            QdslUtil.FieldDef.like("orderItemId", pmCouponUsage.orderItemId), // 주문상품ID 필터 (od_order_item.order_item_id)
+            QdslUtil.FieldDef.like("prodId", pmCouponUsage.prodId), // 상품ID (pd_prod.prod_id, 쿠폰 적용 상품)
+            QdslUtil.FieldDef.like("couponUsageId", pmCouponUsage.couponUsageId) // 사용이력ID 필터
         ));
     }
 

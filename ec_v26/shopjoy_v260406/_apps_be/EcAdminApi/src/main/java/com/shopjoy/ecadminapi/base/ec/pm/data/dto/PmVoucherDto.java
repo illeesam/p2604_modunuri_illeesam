@@ -26,11 +26,13 @@ public class PmVoucherDto {
         private String voucherId;
         private String voucherNm;
         private String voucherTypeCd;
+        private String voucherTypeCdNm;  // 코드 라벨
         private BigDecimal voucherValue;
         private Long minOrderAmt;
         private Long maxDiscntAmt;
         private Integer expireMonth;
         private String voucherStatusCd;
+        private String voucherStatusCdNm;  // 코드 라벨
         private String voucherStatusCdBefore;
         private String voucherDesc;
         private String useYn;

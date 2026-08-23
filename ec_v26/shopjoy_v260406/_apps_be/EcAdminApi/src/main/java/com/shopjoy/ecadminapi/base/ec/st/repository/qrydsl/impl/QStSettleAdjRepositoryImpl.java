@@ -38,7 +38,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QStSettleAdj stSettleAdj    = QStSettleAdj.stSettleAdj;
     private static final QSySite     sySite  = QSySite.sySite;
-    private static final QVwSyCode     cdSat = new QVwSyCode("cd_sat");    /*
+    private static final QVwSyCode     codeAdjTypeCd = new QVwSyCode("cd_sat");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_ADJ_TYPE    {PENALTY: '패널티', BONUS: '보너스', ERROR_FIX: '오류수정', OTHER: '기타'}
      * SETTLE_ADJ_STATUS  {대기: '대기', 승인: '승인', 반려: '반려'} — aprvStatusCd (sy_code 조인 미사용, 코드값 자체가 한글)
@@ -57,13 +57,13 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                         stSettleAdj.regDate,                // 등록일시
                         stSettleAdj.updBy,                  // 수정자
                         stSettleAdj.updDate,                // 수정일시
-                        cdSat.codeLabel.as("adjTypeCdNm"),           // 조정유형명 (sy_code 조인)
+                        codeAdjTypeCd.codeLabel.as("adjTypeCdNm"),           // 조정유형명 (sy_code 조인)
                         stSettleAdj.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(stSettleAdj)
-                .innerJoin(cdSat).on(cdSat.codeGrp.eq("ADJ_TYPE_CD").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd))) // 조정유형
+                .innerJoin(codeAdjTypeCd).on(codeAdjTypeCd.codeGrp.eq("ADJ_TYPE_CD").and(codeAdjTypeCd.codeValue.eq(stSettleAdj.adjTypeCd))) // 조정유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleAdj.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleAdj.regBy)) // 등록자
                 ;
@@ -84,9 +84,9 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleAdj.settleAdjId, search.getSettleAdjId()));
-        whereList.add(QdslUtil.strEq(stSettleAdj.adjTypeCd, search.getAdjTypeCd()));
-        whereList.add(QdslUtil.strEq(stSettleAdj.aprvStatusCd, search.getAprvStatusCd()));
+        whereList.add(QdslUtil.strEq(stSettleAdj.settleAdjId, search.getSettleAdjId())); // 정산조정ID 필터
+        whereList.add(QdslUtil.strEq(stSettleAdj.adjTypeCd, search.getAdjTypeCd())); // 조정유형 필터 — ADJ_TYPE_CD (ADD/DEDUCT)
+        whereList.add(QdslUtil.strEq(stSettleAdj.aprvStatusCd, search.getAprvStatusCd())); // 승인상태 필터 — APRV_STATUS_CD (대기/승인/반려)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleAdj.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleAdj.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -118,9 +118,9 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleAdj.settleAdjId, search.getSettleAdjId()));
-        whereList.add(QdslUtil.strEq(stSettleAdj.adjTypeCd, search.getAdjTypeCd()));
-        whereList.add(QdslUtil.strEq(stSettleAdj.aprvStatusCd, search.getAprvStatusCd()));
+        whereList.add(QdslUtil.strEq(stSettleAdj.settleAdjId, search.getSettleAdjId())); // 정산조정ID 필터
+        whereList.add(QdslUtil.strEq(stSettleAdj.adjTypeCd, search.getAdjTypeCd())); // 조정유형 필터 — ADJ_TYPE_CD (ADD/DEDUCT)
+        whereList.add(QdslUtil.strEq(stSettleAdj.aprvStatusCd, search.getAprvStatusCd())); // 승인상태 필터 — APRV_STATUS_CD (대기/승인/반려)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleAdj.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleAdj.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -146,14 +146,15 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "adjReason,adjTypeCd,aprvStatusCd,settleAdjId,settleAdjMemo" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("adjReason", stSettleAdj.adjReason),
-            QdslUtil.FieldDef.like("adjTypeCd", stSettleAdj.adjTypeCd),
-            QdslUtil.FieldDef.like("aprvStatusCd", stSettleAdj.aprvStatusCd),
-            QdslUtil.FieldDef.like("settleAdjId", stSettleAdj.settleAdjId),
-            QdslUtil.FieldDef.like("settleAdjMemo", stSettleAdj.settleAdjMemo),
-            QdslUtil.FieldDef.like("settleId", stSettleAdj.settleId),
+            QdslUtil.FieldDef.like("adjReason", stSettleAdj.adjReason), // 조정 사유
+            QdslUtil.FieldDef.like("adjTypeCd", stSettleAdj.adjTypeCd), // 조정유형 필터 — ADJ_TYPE_CD (ADD/DEDUCT)
+            QdslUtil.FieldDef.like("aprvStatusCd", stSettleAdj.aprvStatusCd), // 승인상태 필터 — APRV_STATUS_CD (대기/승인/반려)
+            QdslUtil.FieldDef.like("settleAdjId", stSettleAdj.settleAdjId), // 정산조정ID 필터
+            QdslUtil.FieldDef.like("settleAdjMemo", stSettleAdj.settleAdjMemo), // 메모
+            QdslUtil.FieldDef.like("settleId", stSettleAdj.settleId), // 정산ID (st_settle.settle_id)
             QdslUtil.FieldDef.like("siteNm", sySite.siteNm)
         ));
     }

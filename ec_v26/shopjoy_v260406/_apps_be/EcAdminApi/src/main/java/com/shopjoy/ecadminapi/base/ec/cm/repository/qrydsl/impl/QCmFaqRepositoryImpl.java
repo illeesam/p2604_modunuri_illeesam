@@ -94,9 +94,9 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     public List<CmFaqDto.Item> selectList(CmFaqDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
+        whereList.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId())); // FAQ ID 필터
         whereList.add(andPathTreeIn(search));
-        whereList.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn())); // 노출여부 Y/N 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -124,9 +124,9 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
+        whereList.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId())); // FAQ ID 필터
         whereList.add(andPathTreeIn(search));
-        whereList.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn())); // 노출여부 Y/N 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery();
@@ -157,13 +157,14 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
     }
 
+    /* searchType 예: "faqId,faqQuestion,faqAnswer,pathId,useYn" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("faqId", cmFaq.faqId),
-            QdslUtil.FieldDef.like("faqQuestion", cmFaq.faqQuestion),
-            QdslUtil.FieldDef.like("faqAnswer", cmFaq.faqAnswer),
-            QdslUtil.FieldDef.like("pathId", cmFaq.pathId),
-            QdslUtil.FieldDef.like("useYn", cmFaq.useYn)
+            QdslUtil.FieldDef.like("faqId", cmFaq.faqId), // FAQ ID 필터
+            QdslUtil.FieldDef.like("faqQuestion", cmFaq.faqQuestion), // 질문
+            QdslUtil.FieldDef.like("faqAnswer", cmFaq.faqAnswer), // 답변(HTML)
+            QdslUtil.FieldDef.like("pathId", cmFaq.pathId), // 선택 노드 (하위 트리 포함 조회)
+            QdslUtil.FieldDef.like("useYn", cmFaq.useYn) // 노출여부 Y/N 필터
         ));
     }
 

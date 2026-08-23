@@ -97,13 +97,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId())); // 위젯라이브러리ID 필터
+        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd())); // 위젯유형 필터
+        whereList.add(QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -132,13 +132,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId())); // 위젯라이브러리ID 필터
+        whereList.add(QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd())); // 위젯유형 필터
+        whereList.add(QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn())); // 사용여부 Y/N 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(dpWidgetLib.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery();
 
@@ -158,8 +158,6 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -167,19 +165,20 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 : null;
     }
 
+    /* searchType 예: "isSystem,pathId,thumbnailUrl,useYn,widgetCode" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("isSystem", dpWidgetLib.isSystem),
-            QdslUtil.FieldDef.like("pathId", dpWidgetLib.pathId),
-            QdslUtil.FieldDef.like("thumbnailUrl", dpWidgetLib.thumbnailUrl),
-            QdslUtil.FieldDef.like("useYn", dpWidgetLib.useYn),
-            QdslUtil.FieldDef.like("widgetCode", dpWidgetLib.widgetCode),
-            QdslUtil.FieldDef.like("widgetConfigJson", dpWidgetLib.widgetConfigJson),
-            QdslUtil.FieldDef.like("widgetContent", dpWidgetLib.widgetContent),
-            QdslUtil.FieldDef.like("widgetLibDesc", dpWidgetLib.widgetLibDesc),
-            QdslUtil.FieldDef.like("widgetLibId", dpWidgetLib.widgetLibId),
-            QdslUtil.FieldDef.like("widgetNm", dpWidgetLib.widgetNm),
-            QdslUtil.FieldDef.like("widgetTypeCd", dpWidgetLib.widgetTypeCd)
+            QdslUtil.FieldDef.like("isSystem", dpWidgetLib.isSystem), // 시스템기본위젯 Y/N
+            QdslUtil.FieldDef.like("pathId", dpWidgetLib.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("thumbnailUrl", dpWidgetLib.thumbnailUrl), // 미리보기 썸네일URL
+            QdslUtil.FieldDef.like("useYn", dpWidgetLib.useYn), // 사용여부 Y/N 필터
+            QdslUtil.FieldDef.like("widgetCode", dpWidgetLib.widgetCode), // 위젯코드
+            QdslUtil.FieldDef.like("widgetConfigJson", dpWidgetLib.widgetConfigJson), // 위젯설정 (JSON, 3개 테이블 통일)
+            QdslUtil.FieldDef.like("widgetContent", dpWidgetLib.widgetContent), // 위젯내용 (HTML 에디터, 3개 테이블 통일)
+            QdslUtil.FieldDef.like("widgetLibDesc", dpWidgetLib.widgetLibDesc), // 위젯라이브러리설명
+            QdslUtil.FieldDef.like("widgetLibId", dpWidgetLib.widgetLibId), // 위젯라이브러리ID 필터
+            QdslUtil.FieldDef.like("widgetNm", dpWidgetLib.widgetNm), // 위젯명
+            QdslUtil.FieldDef.like("widgetTypeCd", dpWidgetLib.widgetTypeCd) // 위젯유형 필터
         ));
     }
 

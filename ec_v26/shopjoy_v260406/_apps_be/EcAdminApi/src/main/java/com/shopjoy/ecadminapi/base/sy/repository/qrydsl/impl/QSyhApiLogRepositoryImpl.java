@@ -89,8 +89,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhApiLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syhApiLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd())); // 유형코드
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhApiLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhApiLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -121,8 +121,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhApiLog.logId, search.getLogId()));
-        whereList.add(QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()));
+        whereList.add(QdslUtil.strEq(syhApiLog.logId, search.getLogId())); // 로그ID (YYMMDDhhmmss+rand4)
+        whereList.add(QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd())); // 유형코드
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhApiLog.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhApiLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -148,22 +148,22 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "apiNm,apiTypeCd,cmdNm,endpoint,errorMsg" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("apiNm", syhApiLog.apiNm),
-            QdslUtil.FieldDef.like("apiTypeCd", syhApiLog.apiTypeCd),
-            QdslUtil.FieldDef.like("cmdNm", syhApiLog.cmdNm),
-            QdslUtil.FieldDef.like("endpoint", syhApiLog.endpoint),
-            QdslUtil.FieldDef.like("errorMsg", syhApiLog.errorMsg),
-            QdslUtil.FieldDef.like("logId", syhApiLog.logId),
-            QdslUtil.FieldDef.like("methodCd", syhApiLog.methodCd),
-            QdslUtil.FieldDef.like("refId", syhApiLog.refId),
-            QdslUtil.FieldDef.like("refTypeCd", syhApiLog.refTypeCd),
-            QdslUtil.FieldDef.like("reqBody", syhApiLog.reqBody),
-            QdslUtil.FieldDef.like("resBody", syhApiLog.resBody),
-            QdslUtil.FieldDef.like("resultCd", syhApiLog.resultCd),
-            QdslUtil.FieldDef.like("uiNm", syhApiLog.uiNm)
+            QdslUtil.FieldDef.like("apiNm", syhApiLog.apiNm), // API명 (예: 결제승인)
+            QdslUtil.FieldDef.like("apiTypeCd", syhApiLog.apiTypeCd), // 연동유형코드 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)
+            QdslUtil.FieldDef.like("cmdNm", syhApiLog.cmdNm), // 작업명 (X-Cmd-Nm 헤더)
+            QdslUtil.FieldDef.like("endpoint", syhApiLog.endpoint), // 호출 URL
+            QdslUtil.FieldDef.like("errorMsg", syhApiLog.errorMsg), // 오류 메시지
+            QdslUtil.FieldDef.like("logId", syhApiLog.logId), // 로그ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("methodCd", syhApiLog.methodCd), // HTTP 메서드
+            QdslUtil.FieldDef.like("refId", syhApiLog.refId), // 연관ID
+            QdslUtil.FieldDef.like("refTypeCd", syhApiLog.refTypeCd), // 연관유형코드 (ORDER/DLIV/PUSH 등)
+            QdslUtil.FieldDef.like("reqBody", syhApiLog.reqBody), // 요청 파라미터 (민감정보 마스킹 처리)
+            QdslUtil.FieldDef.like("resBody", syhApiLog.resBody), // 응답 본문
+            QdslUtil.FieldDef.like("resultCd", syhApiLog.resultCd), // 처리결과 (SUCCESS/FAIL)
+            QdslUtil.FieldDef.like("uiNm", syhApiLog.uiNm) // 화면명 (X-UI-Nm 헤더)
         ));
     }
 

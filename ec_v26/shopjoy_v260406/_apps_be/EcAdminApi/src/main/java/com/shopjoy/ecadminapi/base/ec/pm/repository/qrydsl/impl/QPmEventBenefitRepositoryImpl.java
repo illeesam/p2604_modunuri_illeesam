@@ -82,13 +82,13 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()));
-        whereList.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()));
-        whereList.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()));
+        whereList.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId())); // 혜택ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -117,13 +117,13 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()));
-        whereList.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()));
-        whereList.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()));
+        whereList.add(QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId())); // 혜택ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmEventBenefit.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery();
@@ -145,16 +145,16 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         BasePage<PmEventBenefitDto.Item> res = new BasePage<>();
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "eventBenefitId,benefitNm,benefitTypeCd,benefitValue,conditionDesc" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("eventBenefitId", pmEventBenefit.eventBenefitId),
-            QdslUtil.FieldDef.like("benefitNm", pmEventBenefit.benefitNm),
-            QdslUtil.FieldDef.like("benefitTypeCd", pmEventBenefit.benefitTypeCd),
-            QdslUtil.FieldDef.like("benefitValue", pmEventBenefit.benefitValue),
-            QdslUtil.FieldDef.like("conditionDesc", pmEventBenefit.conditionDesc),
-            QdslUtil.FieldDef.like("couponId", pmEventBenefit.couponId),
-            QdslUtil.FieldDef.like("eventId", pmEventBenefit.eventId)
+            QdslUtil.FieldDef.like("eventBenefitId", pmEventBenefit.eventBenefitId), // 혜택ID 필터
+            QdslUtil.FieldDef.like("benefitNm", pmEventBenefit.benefitNm), // 혜택명
+            QdslUtil.FieldDef.like("benefitTypeCd", pmEventBenefit.benefitTypeCd), // 혜택유형 — BENEFIT_TYPE_CD
+            QdslUtil.FieldDef.like("benefitValue", pmEventBenefit.benefitValue), // 혜택 값
+            QdslUtil.FieldDef.like("conditionDesc", pmEventBenefit.conditionDesc), // 조건 설명
+            QdslUtil.FieldDef.like("couponId", pmEventBenefit.couponId), // 연결 쿠폰ID
+            QdslUtil.FieldDef.like("eventId", pmEventBenefit.eventId) // 상위 FK 필터
         ));
     }
 

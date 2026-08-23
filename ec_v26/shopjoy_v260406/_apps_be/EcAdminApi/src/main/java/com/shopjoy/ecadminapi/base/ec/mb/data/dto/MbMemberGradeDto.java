@@ -22,6 +22,7 @@ public class MbMemberGradeDto {
     public static class Item {
         private String memberGradeId;               // 등급ID (YYMMDDhhmmss+rand4)
         private String gradeCd;                       // 등급코드 — MEMBER_GRADE
+        private String gradeCdNm;  // 코드 라벨
         private String gradeNm;                        // 등급명
         private Integer gradeRank;                     // 등급우선순위 (낮을수록 낮은 등급)
         private Long minPurchaseAmt;                    // 등급 유지 최소 누적구매금액

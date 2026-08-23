@@ -202,6 +202,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return hasProfile.or(isAll);
     }
 
+    /* searchType 예: "pathId,propId,propKey,propLabel,propRemark" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("pathId", syProp.pathId),

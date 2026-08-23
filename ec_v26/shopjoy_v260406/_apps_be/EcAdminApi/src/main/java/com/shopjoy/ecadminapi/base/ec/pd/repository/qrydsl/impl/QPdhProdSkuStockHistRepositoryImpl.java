@@ -35,7 +35,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     private static final QPdhProdSkuStockHist pdhProdSkuStockHist      = QPdhProdSkuStockHist.pdhProdSkuStockHist;
     private static final QSySite              sySite    = QSySite.sySite;
     private static final QPdProd              pdProd    = QPdProd.pdProd;
-    private static final QVwSyCode              cd_ssc = new QVwSyCode("cd_ssc");
+    private static final QVwSyCode              codeChgReasonCd = new QVwSyCode("codeChgReasonCd");
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — SKU_STOCK_CHG)
@@ -52,17 +52,18 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                         pdhProdSkuStockHist.stockAfter,      // 변경 후 재고수량
                         pdhProdSkuStockHist.chgQty,          // 변동수량 (양수=입고, 음수=출고/판매)
                         pdhProdSkuStockHist.chgReasonCd,       // 변동사유 — {SALE: '판매', PURCHASE: '매입/입고', RETURN: '반품', EXCHANGE: '교환', ADJUST: '재고조정', CLAIM: '클레임', ADMIN: '관리자수동'}
+                        codeChgReasonCd.codeLabel.as("chgReasonCdNm"), // 코드 라벨
                         pdhProdSkuStockHist.chgReason,       // 변동사유 상세
                         pdhProdSkuStockHist.orderItemId,     // 연관 주문상품ID (od_order_item.order_item_id)
                         pdhProdSkuStockHist.chgBy,           // 처리자 (sy_user.user_id)
                         pdhProdSkuStockHist.chgDate,         // 처리일시
-                        pdhProdSkuStockHist.regBy,
-                        pdhProdSkuStockHist.regDate,
+                        pdhProdSkuStockHist.regBy, // 등록자
+                        pdhProdSkuStockHist.regDate, // 등록일
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
                 ))
                 .from(pdhProdSkuStockHist)
                 .innerJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuStockHist.prodId)) // 상품
-                .innerJoin(cd_ssc).on(cd_ssc.codeGrp.eq("CHG_REASON_CD").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd))) // 변경사유
+                .innerJoin(codeChgReasonCd).on(codeChgReasonCd.codeGrp.eq("CHG_REASON_CD").and(codeChgReasonCd.codeValue.eq(pdhProdSkuStockHist.chgReasonCd))) // 변경사유
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(pdhProdSkuStockHist.regBy)) // 등록자
                 ;
     }
@@ -83,7 +84,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdSkuStockHist.histId, search.getHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdSkuStockHist.histId, search.getHistId())); // 이력ID (단건 조회 필터)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -112,7 +113,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdhProdSkuStockHist.histId, search.getHistId()));
+        whereList.add(QdslUtil.strEq(pdhProdSkuStockHist.histId, search.getHistId())); // 이력ID (단건 조회 필터)
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<PdhProdSkuStockHistDto.Item> query = baseSelColumnQuery();
@@ -136,14 +137,15 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "chgBy,chgReason,chgReasonCd,histId,orderItemId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("chgBy", pdhProdSkuStockHist.chgBy),
-            QdslUtil.FieldDef.like("chgReason", pdhProdSkuStockHist.chgReason),
-            QdslUtil.FieldDef.like("chgReasonCd", pdhProdSkuStockHist.chgReasonCd),
-            QdslUtil.FieldDef.like("histId", pdhProdSkuStockHist.histId),
-            QdslUtil.FieldDef.like("orderItemId", pdhProdSkuStockHist.orderItemId),
-            QdslUtil.FieldDef.like("prodId", pdhProdSkuStockHist.prodId),
+            QdslUtil.FieldDef.like("chgBy", pdhProdSkuStockHist.chgBy), // 처리자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("chgReason", pdhProdSkuStockHist.chgReason), // 변동사유 상세
+            QdslUtil.FieldDef.like("chgReasonCd", pdhProdSkuStockHist.chgReasonCd), // 변동사유 — CHG_REASON_CD
+            QdslUtil.FieldDef.like("histId", pdhProdSkuStockHist.histId), // 이력ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("orderItemId", pdhProdSkuStockHist.orderItemId), // 연관 주문상품ID
+            QdslUtil.FieldDef.like("prodId", pdhProdSkuStockHist.prodId), // 상품ID (pd_prod.prod_id)
             QdslUtil.FieldDef.like("skuId", pdhProdSkuStockHist.prodSkuId)
         ));
     }

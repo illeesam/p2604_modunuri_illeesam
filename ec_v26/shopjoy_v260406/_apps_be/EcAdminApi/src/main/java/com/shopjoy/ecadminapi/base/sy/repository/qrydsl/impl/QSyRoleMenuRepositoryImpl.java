@@ -74,9 +74,9 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     public List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()));
-        whereList.add(QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()));
-        whereList.add(QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()));
+        whereList.add(QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId())); // 역할메뉴ID
+        whereList.add(QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId())); // 역할ID
+        whereList.add(QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId())); // 메뉴ID
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(vwRoleMenu.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(vwRoleMenu.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -107,9 +107,9 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()));
-        whereList.add(QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()));
-        whereList.add(QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()));
+        whereList.add(QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId())); // 역할메뉴ID
+        whereList.add(QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId())); // 역할ID
+        whereList.add(QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId())); // 메뉴ID
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(vwRoleMenu.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(vwRoleMenu.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -136,11 +136,12 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "menuId,roleId,roleMenuId" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("menuId", vwRoleMenu.menuId),
-            QdslUtil.FieldDef.like("roleId", vwRoleMenu.roleId),
-            QdslUtil.FieldDef.like("roleMenuId", vwRoleMenu.roleMenuId)
+            QdslUtil.FieldDef.like("menuId", vwRoleMenu.menuId), // 메뉴ID
+            QdslUtil.FieldDef.like("roleId", vwRoleMenu.roleId), // 역할ID
+            QdslUtil.FieldDef.like("roleMenuId", vwRoleMenu.roleMenuId) // 역할메뉴ID
         ));
     }
 

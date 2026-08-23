@@ -90,9 +90,9 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     public List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId()));
-        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()));
+        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId())); // 업체사용자역할ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId())); // 업체ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUserRole.userId, search.getUserId())); // 사용자ID 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUserRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUserRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -123,9 +123,9 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId()));
-        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()));
+        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId())); // 업체사용자역할ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId())); // 업체ID 검색값
+        whereList.add(QdslUtil.strEq(syVendorUserRole.userId, search.getUserId())); // 사용자ID 검색값
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUserRole.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendorUserRole.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -151,14 +151,15 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "grantUserId,roleId,userId,vendorId,vendorUserRoleId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("grantUserId", syVendorUserRole.grantUserId),
-            QdslUtil.FieldDef.like("roleId", syVendorUserRole.roleId),
-            QdslUtil.FieldDef.like("userId", syVendorUserRole.userId),
-            QdslUtil.FieldDef.like("vendorId", syVendorUserRole.vendorId),
-            QdslUtil.FieldDef.like("vendorUserRoleId", syVendorUserRole.vendorUserRoleId),
-            QdslUtil.FieldDef.like("vendorUserRoleRemark", syVendorUserRole.vendorUserRoleRemark)
+            QdslUtil.FieldDef.like("grantUserId", syVendorUserRole.grantUserId), // 역할 부여자 (sy_user.user_id)
+            QdslUtil.FieldDef.like("roleId", syVendorUserRole.roleId), // 역할ID 검색값
+            QdslUtil.FieldDef.like("userId", syVendorUserRole.userId), // 사용자ID 검색값
+            QdslUtil.FieldDef.like("vendorId", syVendorUserRole.vendorId), // 업체ID 검색값
+            QdslUtil.FieldDef.like("vendorUserRoleId", syVendorUserRole.vendorUserRoleId), // 업체사용자역할ID 검색값
+            QdslUtil.FieldDef.like("vendorUserRoleRemark", syVendorUserRole.vendorUserRoleRemark) // 비고
         ));
     }
 

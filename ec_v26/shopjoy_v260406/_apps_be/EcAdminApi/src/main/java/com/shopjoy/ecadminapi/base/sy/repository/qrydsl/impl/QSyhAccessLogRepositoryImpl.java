@@ -40,7 +40,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QSyRole   syRole   = QSyRole.syRole;
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
-    private static final QVwSyCode   cd_at    = new QVwSyCode("cd_at");
+    private static final QVwSyCode   codeAppTypeCd    = new QVwSyCode("codeAppTypeCd");
     /*
      * baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드)
      * 코드성 필드 예시 코드값
@@ -77,7 +77,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                         syhAccessLog.traceId,                    // 트레이스ID (X-헤더)
                         syhAccessLog.reqDt,                      // 요청 수신 시각
                         syhAccessLog.regDate,                    // DB 저장 시각
-                        cd_at.codeLabel.as("appTypeCdNm"),        // 앱유형 코드명 (조인: sy_code APP_TYPE)
+                        codeAppTypeCd.codeLabel.as("appTypeCdNm"),        // 앱유형 코드명 (조인: sy_code APP_TYPE)
                         syUser.userNm.as("userNm"),              // 사용자명 (조인: sy_user)
                         syRole.roleNm.as("roleNm"),              // 역할명 (조인: sy_role)
                         syDept.deptNm.as("deptNm"),              // 부서명 (조인: sy_dept)
@@ -88,7 +88,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 .leftJoin(syRole).on(syRole.roleId.eq(syhAccessLog.roleId)) // 역할
                 .leftJoin(syDept).on(syDept.deptId.eq(syhAccessLog.deptId)) // 부서
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessLog.vendorId)) // 업체
-                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessLog.appTypeCd))) // 앱유형
+                .leftJoin(codeAppTypeCd).on(codeAppTypeCd.codeGrp.eq("APP_TYPE").and(codeAppTypeCd.codeValue.eq(syhAccessLog.appTypeCd))) // 앱유형
                 ;
     }
 
@@ -105,12 +105,12 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessLogDto.Request search) {
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()));
+        whereList.add(QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod())); // HTTP 메서드 검색값
         whereList.add(andStatusEq(search));
         whereList.add(andPathLike(search));
         whereList.add(andUiNmLike(search));
-        whereList.add(QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()));
-        whereList.add(QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()));
+        whereList.add(QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId())); // 요청 추적ID 검색값
+        whereList.add(QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd())); // 호출 앱 유형 검색값
         whereList.add(QdslUtil.dateBetween(syhAccessLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
         return whereList.toArray(BooleanExpression[]::new);
@@ -163,8 +163,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     /* respStatus 정확 일치 (숫자만 파싱, 비숫자면 무시) */
     private BooleanExpression andStatusEq(SyhAccessLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getStatus())) return null;
@@ -187,32 +185,33 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
 
+    /* searchType 예: "appTypeCd,cmdNm,deptId,fileNm,funcNm" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("appTypeCd", syhAccessLog.appTypeCd),
-            QdslUtil.FieldDef.like("cmdNm", syhAccessLog.cmdNm),
-            QdslUtil.FieldDef.like("deptId", syhAccessLog.deptId),
-            QdslUtil.FieldDef.like("fileNm", syhAccessLog.fileNm),
-            QdslUtil.FieldDef.like("funcNm", syhAccessLog.funcNm),
-            QdslUtil.FieldDef.like("lineNo", syhAccessLog.lineNo),
-            QdslUtil.FieldDef.like("localeId", syhAccessLog.localeId),
-            QdslUtil.FieldDef.like("logId", syhAccessLog.logId),
-            QdslUtil.FieldDef.like("profile", syhAccessLog.profile),
-            QdslUtil.FieldDef.like("reqBody", syhAccessLog.reqBody),
-            QdslUtil.FieldDef.like("reqHost", syhAccessLog.reqHost),
-            QdslUtil.FieldDef.like("reqIp", syhAccessLog.reqIp),
-            QdslUtil.FieldDef.like("reqMethod", syhAccessLog.reqMethod),
-            QdslUtil.FieldDef.like("reqPath", syhAccessLog.reqPath),
-            QdslUtil.FieldDef.like("reqQuery", syhAccessLog.reqQuery),
-            QdslUtil.FieldDef.like("reqUa", syhAccessLog.reqUa),
-            QdslUtil.FieldDef.like("respBody", syhAccessLog.respBody),
-            QdslUtil.FieldDef.like("roleId", syhAccessLog.roleId),
-            QdslUtil.FieldDef.like("serverNm", syhAccessLog.serverNm),
-            QdslUtil.FieldDef.like("threadNm", syhAccessLog.threadNm),
-            QdslUtil.FieldDef.like("traceId", syhAccessLog.traceId),
-            QdslUtil.FieldDef.like("uiNm", syhAccessLog.uiNm),
-            QdslUtil.FieldDef.like("userId", syhAccessLog.userId),
-            QdslUtil.FieldDef.like("vendorId", syhAccessLog.vendorId)
+            QdslUtil.FieldDef.like("appTypeCd", syhAccessLog.appTypeCd), // 호출 앱 유형 검색값
+            QdslUtil.FieldDef.like("cmdNm", syhAccessLog.cmdNm), // 호출 명령명 (X-Cmd-Nm)
+            QdslUtil.FieldDef.like("deptId", syhAccessLog.deptId), // 부서 ID (MDC)
+            QdslUtil.FieldDef.like("fileNm", syhAccessLog.fileNm), // 호출 파일명 (X-헤더)
+            QdslUtil.FieldDef.like("funcNm", syhAccessLog.funcNm), // 호출 함수명 (X-헤더)
+            QdslUtil.FieldDef.like("lineNo", syhAccessLog.lineNo), // 호출 라인번호 (X-헤더)
+            QdslUtil.FieldDef.like("localeId", syhAccessLog.localeId), // 지역 ID (MDC)
+            QdslUtil.FieldDef.like("logId", syhAccessLog.logId), // PK: AL+yyMMddHHmmss+rand4
+            QdslUtil.FieldDef.like("profile", syhAccessLog.profile), // 활성 Spring 프로파일
+            QdslUtil.FieldDef.like("reqBody", syhAccessLog.reqBody), // 요청 바디 (설정된 최대 크기까지)
+            QdslUtil.FieldDef.like("reqHost", syhAccessLog.reqHost), // Host 헤더 값
+            QdslUtil.FieldDef.like("reqIp", syhAccessLog.reqIp), // 클라이언트 실제 IP
+            QdslUtil.FieldDef.like("reqMethod", syhAccessLog.reqMethod), // HTTP 메서드
+            QdslUtil.FieldDef.like("reqPath", syhAccessLog.reqPath), // 요청 URI 경로
+            QdslUtil.FieldDef.like("reqQuery", syhAccessLog.reqQuery), // 쿼리 파라미터 문자열
+            QdslUtil.FieldDef.like("reqUa", syhAccessLog.reqUa), // User-Agent
+            QdslUtil.FieldDef.like("respBody", syhAccessLog.respBody), // 응답 바디 (설정된 최대 크기까지)
+            QdslUtil.FieldDef.like("roleId", syhAccessLog.roleId), // 역할 ID
+            QdslUtil.FieldDef.like("serverNm", syhAccessLog.serverNm), // 서버 호스트명
+            QdslUtil.FieldDef.like("threadNm", syhAccessLog.threadNm), // 처리 스레드명
+            QdslUtil.FieldDef.like("traceId", syhAccessLog.traceId), // 요청 추적ID 검색값
+            QdslUtil.FieldDef.like("uiNm", syhAccessLog.uiNm), // 호출 화면명(X-UI-Nm) 검색값
+            QdslUtil.FieldDef.like("userId", syhAccessLog.userId), // 인증 사용자 ID
+            QdslUtil.FieldDef.like("vendorId", syhAccessLog.vendorId) // 업체 ID (MDC)
         ));
     }
 

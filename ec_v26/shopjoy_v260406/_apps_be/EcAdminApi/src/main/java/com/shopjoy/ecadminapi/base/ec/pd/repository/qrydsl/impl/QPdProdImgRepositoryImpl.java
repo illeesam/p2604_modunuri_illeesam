@@ -52,10 +52,10 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                         pdProdImg.imgAltText,      // 이미지 대체텍스트 (alt 속성, SEO/접근성)
                         pdProdImg.sortOrd,        // 정렬순서
                         pdProdImg.isThumb,          // 대표이미지여부 — {Y: '대표이미지', N: '일반이미지'}
-                        pdProdImg.regBy,
-                        pdProdImg.regDate,
-                        pdProdImg.updBy,
-                        pdProdImg.updDate,
+                        pdProdImg.regBy, // 등록자
+                        pdProdImg.regDate, // 등록일
+                        pdProdImg.updBy, // 수정자
+                        pdProdImg.updDate, // 수정일
                         pdProdImg.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm"),   // 등록자명 (조인)
@@ -85,13 +85,13 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProdImg.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()));
+        whereList.add(QdslUtil.strIn(pdProdImg.prodId, search.getProdIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pdProdImg.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId())); // 상품이미지ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdImg.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdImg.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -120,13 +120,13 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProdImg.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()));
+        whereList.add(QdslUtil.strIn(pdProdImg.prodId, search.getProdIds())); // PK 다건 IN
+        whereList.add(QdslUtil.strEq(pdProdImg.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId())); // 상품이미지ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProdImg.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdProdImg.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdProdImg.siteId, search.getSiteId())); // 사이트ID 필터
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery();
@@ -149,18 +149,19 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "attachId,cdnHost,cdnImgUrl,cdnThumbUrl,imgAltText" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachId", pdProdImg.attachId),
-            QdslUtil.FieldDef.like("cdnHost", pdProdImg.cdnHost),
-            QdslUtil.FieldDef.like("cdnImgUrl", pdProdImg.cdnImgUrl),
-            QdslUtil.FieldDef.like("cdnThumbUrl", pdProdImg.cdnThumbUrl),
-            QdslUtil.FieldDef.like("imgAltText", pdProdImg.imgAltText),
-            QdslUtil.FieldDef.like("isThumb", pdProdImg.isThumb),
-            QdslUtil.FieldDef.like("prodOpt1Id", pdProdImg.prodOpt1Id),
-            QdslUtil.FieldDef.like("prodOpt2Id", pdProdImg.prodOpt2Id),
-            QdslUtil.FieldDef.like("prodId", pdProdImg.prodId),
-            QdslUtil.FieldDef.like("prodImgId", pdProdImg.prodImgId)
+            QdslUtil.FieldDef.like("attachId", pdProdImg.attachId), // 첨부파일ID (sy_attach.attach_id, 원본 파일 보관용)
+            QdslUtil.FieldDef.like("cdnHost", pdProdImg.cdnHost), // CDN 호스트명 (예: cdn.example.com, 원본 시점의 CDN)
+            QdslUtil.FieldDef.like("cdnImgUrl", pdProdImg.cdnImgUrl), // CDN 원본 이미지 URL (상세 페이지용, sy_attach 기준)
+            QdslUtil.FieldDef.like("cdnThumbUrl", pdProdImg.cdnThumbUrl), // CDN 썸네일 URL (목록/검색/카테고리용, sy_attach 기준)
+            QdslUtil.FieldDef.like("imgAltText", pdProdImg.imgAltText), // 이미지 대체텍스트 (alt 속성, SEO/접근성)
+            QdslUtil.FieldDef.like("isThumb", pdProdImg.isThumb), // 대표이미지여부 Y/N
+            QdslUtil.FieldDef.like("prodOpt1Id", pdProdImg.prodOpt1Id), // 옵션1 값ID (pd_prod_opt.prod_opt_id, 색상 등, NULL이면 공통 이미지)
+            QdslUtil.FieldDef.like("prodOpt2Id", pdProdImg.prodOpt2Id), // 옵션2 값ID (pd_prod_opt.prod_opt_id, 사이즈 등, NULL이면 색상 공통)
+            QdslUtil.FieldDef.like("prodId", pdProdImg.prodId), // 상품ID 필터
+            QdslUtil.FieldDef.like("prodImgId", pdProdImg.prodImgId) // 상품이미지ID 필터
         ));
     }
 

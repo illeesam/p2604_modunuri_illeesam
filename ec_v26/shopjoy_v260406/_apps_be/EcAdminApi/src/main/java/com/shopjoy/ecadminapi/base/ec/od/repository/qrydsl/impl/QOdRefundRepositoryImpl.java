@@ -43,9 +43,9 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     private static final QSySite   ste = new QSySite("ste");
     private static final QOdOrder  ord = new QOdOrder("ord");
     private static final QOdClaim  cla = new QOdClaim("cla");
-    private static final QVwSyCode   cdRt = new QVwSyCode("cd_rt");
-    private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
-    private static final QVwSyCode   cdCf = new QVwSyCode("cd_cf");    /*
+    private static final QVwSyCode   codeRefundTypeCd = new QVwSyCode("cd_rt");
+    private static final QVwSyCode   codeRefundStatusCd = new QVwSyCode("cd_rs");
+    private static final QVwSyCode   codeFaultTypeCd = new QVwSyCode("cd_cf");    /*
      * baseListQuery — 코드성 필드 예시 코드값
      * REFUND_TYPE   {CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제환불}
      * REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
@@ -59,6 +59,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                         odRefund.orderId,             // 주문ID (od_order.order_id)
                         odRefund.claimId,             // 클레임ID (od_claim.claim_id)
                         odRefund.refundTypeCd,        // 환불유형코드 — REFUND_TYPE {CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제환불}
+                        codeRefundTypeCd.codeLabel.as("refundTypeCdNm"), // 코드 라벨
                         odRefund.refundProdAmt,       // 환불 상품금액 (주문쿠폰 안분 차감 후 실환불 대상액)
                         odRefund.refundCouponAmt,     // 주문쿠폰 안분 차감액 (환불 불가 — 쿠폰 재발급 또는 소멸)
                         odRefund.refundShipAmt,       // 환불 배송비 (음수이면 추가청구)
@@ -66,10 +67,12 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                         odRefund.refundCacheAmt,      // 캐쉬 복원금액 (od_order_discnt.CACHE_USE 기준)
                         odRefund.totalRefundAmt,      // 총 환불금액 (실결제 수단으로 돌려주는 합계)
                         odRefund.refundStatusCd,      // 환불상태 — REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+                        codeRefundStatusCd.codeLabel.as("refundStatusCdNm"), // 코드 라벨
                         odRefund.refundStatusCdBefore,// 변경 전 환불상태 — REFUND_STATUS (동일 코드그룹)
                         odRefund.refundReqDate,       // 환불 요청일시
                         odRefund.refundCompltDate,    // 환불 완료일시
                         odRefund.faultTypeCd,         // 귀책유형코드 — FAULT_TYPE {CUST:구매자 귀책, VENDOR:판매자 귀책, PLATFORM:플랫폼 귀책}
+                        codeFaultTypeCd.codeLabel.as("faultTypeCdNm"), // 코드 라벨
                         odRefund.refundReason,        // 환불 사유
                         odRefund.memo,                // 관리 메모
                         odRefund.regBy,      // 등록자
@@ -84,10 +87,10 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                 ))
                 .from(odRefund)
                 .innerJoin(ord).on(ord.orderId.eq(odRefund.orderId)) // 주문
-                .innerJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE_CD").and(cdRt.codeValue.eq(odRefund.refundTypeCd))) // 환불유형
+                .innerJoin(codeRefundTypeCd).on(codeRefundTypeCd.codeGrp.eq("REFUND_TYPE_CD").and(codeRefundTypeCd.codeValue.eq(odRefund.refundTypeCd))) // 환불유형
                 .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId)) // 클레임
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefund.refundStatusCd))) // 환불상태
-                .leftJoin(cdCf).on(cdCf.codeGrp.eq("FAULT_TYPE_CD").and(cdCf.codeValue.eq(odRefund.faultTypeCd))) // 귀책유형
+                .leftJoin(codeRefundStatusCd).on(codeRefundStatusCd.codeGrp.eq("REFUND_STATUS_CD").and(codeRefundStatusCd.codeValue.eq(odRefund.refundStatusCd))) // 환불상태
+                .leftJoin(codeFaultTypeCd).on(codeFaultTypeCd.codeGrp.eq("FAULT_TYPE_CD").and(codeFaultTypeCd.codeValue.eq(odRefund.faultTypeCd))) // 귀책유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(odRefund.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(odRefund.regBy)) // 등록자
                 .leftJoin(siteEx).on(siteEx.siteId.eq(odRefund.siteId)) // 사이트
@@ -110,11 +113,11 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odRefund.refundId, search.getRefundId()));
+        whereList.add(QdslUtil.strEq(odRefund.refundId, search.getRefundId())); // 환불ID (YYMMDDhhmmss+rand4)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odRefund.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odRefund.siteId, search.getSiteId())); // 사이트ID
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -143,11 +146,11 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odRefund.refundId, search.getRefundId()));
+        whereList.add(QdslUtil.strEq(odRefund.refundId, search.getRefundId())); // 환불ID (YYMMDDhhmmss+rand4)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odRefund.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(odRefund.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(odRefund.siteId, search.getSiteId())); // 사이트ID
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<OdRefundDto.Item> query = baseListQuery();
@@ -170,17 +173,18 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "claimId,faultTypeCd,memo,orderId,refundId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("claimId", odRefund.claimId),
-            QdslUtil.FieldDef.like("faultTypeCd", odRefund.faultTypeCd),
-            QdslUtil.FieldDef.like("memo", odRefund.memo),
-            QdslUtil.FieldDef.like("orderId", odRefund.orderId),
-            QdslUtil.FieldDef.like("refundId", odRefund.refundId),
-            QdslUtil.FieldDef.like("refundReason", odRefund.refundReason),
-            QdslUtil.FieldDef.like("refundStatusCd", odRefund.refundStatusCd),
-            QdslUtil.FieldDef.like("refundStatusCdBefore", odRefund.refundStatusCdBefore),
-            QdslUtil.FieldDef.like("refundTypeCd", odRefund.refundTypeCd)
+            QdslUtil.FieldDef.like("claimId", odRefund.claimId), // 클레임ID (od_claim.claim_id)
+            QdslUtil.FieldDef.like("faultTypeCd", odRefund.faultTypeCd), // 귀책유형코드 (코드: FAULT_TYPE — CUST/VENDOR/PLATFORM)
+            QdslUtil.FieldDef.like("memo", odRefund.memo), // 관리 메모
+            QdslUtil.FieldDef.like("orderId", odRefund.orderId), // 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("refundId", odRefund.refundId), // 환불ID (YYMMDDhhmmss+rand4)
+            QdslUtil.FieldDef.like("refundReason", odRefund.refundReason), // 환불 사유
+            QdslUtil.FieldDef.like("refundStatusCd", odRefund.refundStatusCd), // 환불상태 (코드: REFUND_STATUS — PENDING/COMPLT/FAILED/PARTIAL)
+            QdslUtil.FieldDef.like("refundStatusCdBefore", odRefund.refundStatusCdBefore), // 변경 전 환불상태 (코드: REFUND_STATUS)
+            QdslUtil.FieldDef.like("refundTypeCd", odRefund.refundTypeCd) // 환불유형코드 (코드: REFUND_TYPE — CANCEL/RETURN/PARTIAL/EXTRA)
         ));
     }
 

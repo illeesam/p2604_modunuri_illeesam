@@ -79,7 +79,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()));
+        whereList.add(QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId())); // 전표라인ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucherLine.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucherLine.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -111,7 +111,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()));
+        whereList.add(QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId())); // 전표라인ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucherLine.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stErpVoucherLine.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -137,18 +137,18 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "accountCd,accountNm,costCenterCd,erpVoucherId,erpVoucherLineId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("accountCd", stErpVoucherLine.accountCd),
-            QdslUtil.FieldDef.like("accountNm", stErpVoucherLine.accountNm),
-            QdslUtil.FieldDef.like("costCenterCd", stErpVoucherLine.costCenterCd),
-            QdslUtil.FieldDef.like("erpVoucherId", stErpVoucherLine.erpVoucherId),
-            QdslUtil.FieldDef.like("erpVoucherLineId", stErpVoucherLine.erpVoucherLineId),
-            QdslUtil.FieldDef.like("lineMemo", stErpVoucherLine.lineMemo),
-            QdslUtil.FieldDef.like("profitCenterCd", stErpVoucherLine.profitCenterCd),
-            QdslUtil.FieldDef.like("refId", stErpVoucherLine.refId),
-            QdslUtil.FieldDef.like("refTypeCd", stErpVoucherLine.refTypeCd)
+            QdslUtil.FieldDef.like("accountCd", stErpVoucherLine.accountCd), // 계정코드 (ERP 계정과목 코드)
+            QdslUtil.FieldDef.like("accountNm", stErpVoucherLine.accountNm), // 계정명 스냅샷
+            QdslUtil.FieldDef.like("costCenterCd", stErpVoucherLine.costCenterCd), // 코스트센터 코드
+            QdslUtil.FieldDef.like("erpVoucherId", stErpVoucherLine.erpVoucherId), // ERP전표ID (st_erp_voucher.erp_voucher_id)
+            QdslUtil.FieldDef.like("erpVoucherLineId", stErpVoucherLine.erpVoucherLineId), // 전표라인ID 필터
+            QdslUtil.FieldDef.like("lineMemo", stErpVoucherLine.lineMemo), // 라인 적요
+            QdslUtil.FieldDef.like("profitCenterCd", stErpVoucherLine.profitCenterCd), // 수익센터 코드
+            QdslUtil.FieldDef.like("refId", stErpVoucherLine.refId), // 참조ID (settle_id / order_id / claim_id 등)
+            QdslUtil.FieldDef.like("refTypeCd", stErpVoucherLine.refTypeCd) // 참조유형 (SETTLE/ORDER/CLAIM/PAY/ADJ)
         ));
     }
 

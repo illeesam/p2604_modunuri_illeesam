@@ -26,6 +26,7 @@ public class SyVendorContentDto {
         private String vendorContentId;  // 업체콘텐츠ID (PK)
         private String vendorId;  // 업체ID (sy_vendor.vendor_id)
         private String contentTypeCd;  // 콘텐츠유형 — VENDOR_CONTENT_TYPE {INTRO:업체소개, POLICY:정책/규정, NOTICE:공지사항, TERMS:이용약관}
+        private String contentTypeCdNm;  // 코드 라벨
         private String vendorContentTitle;  // 제목
         private String vendorContentSubtitle;  // 부제
         private String contentHtml;  // 본문 (HTML)
@@ -37,6 +38,7 @@ public class SyVendorContentDto {
         private LocalDateTime endDate;  // 노출 종료일시
         private Integer sortOrd;  // 정렬순서
         private String vendorContentStatusCd;  // 상태 — VENDOR_CONTENT_STATUS_CD {DRAFT:임시저장, ACTIVE:게시중, INACTIVE:비게시}
+        private String vendorContentStatusCdNm;  // 코드 라벨
         private String useYn;  // 사용여부 Y/N
         private Integer viewCount;  // 조회수
         private String vendorContentRemark;  // 비고

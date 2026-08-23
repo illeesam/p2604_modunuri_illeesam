@@ -87,12 +87,12 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     public List<SyCodeDto.Item> selectList(SyCodeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syCode.codeId, search.getCodeId()));
-        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
+        whereList.add(QdslUtil.strEq(syCode.codeId, search.getCodeId())); // 코드ID 필터
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp())); // 코드그룹코드 필터 (예: MEMBER_GRADE) — sy_code_grp.code_grp
         whereList.add(andCodeGrpIn(search));
-        whereList.add(QdslUtil.strEq(syCode.codeValue, search.getCodeValue()));
-        whereList.add(QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()));
-        whereList.add(QdslUtil.strEq(syCode.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syCode.codeValue, search.getCodeValue())); // 코드값 필터 (sy_code.code_value)
+        whereList.add(QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue())); // 부모 코드값 필터
+        whereList.add(QdslUtil.strEq(syCode.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCode.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCode.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -123,12 +123,12 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syCode.codeId, search.getCodeId()));
-        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()));
+        whereList.add(QdslUtil.strEq(syCode.codeId, search.getCodeId())); // 코드ID 필터
+        whereList.add(QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp())); // 코드그룹코드 필터 (예: MEMBER_GRADE) — sy_code_grp.code_grp
         whereList.add(andCodeGrpIn(search));
-        whereList.add(QdslUtil.strEq(syCode.codeValue, search.getCodeValue()));
-        whereList.add(QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()));
-        whereList.add(QdslUtil.strEq(syCode.useYn, search.getUseYn()));
+        whereList.add(QdslUtil.strEq(syCode.codeValue, search.getCodeValue())); // 코드값 필터 (sy_code.code_value)
+        whereList.add(QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue())); // 부모 코드값 필터
+        whereList.add(QdslUtil.strEq(syCode.useYn, search.getUseYn())); // 사용여부 필터 Y/N
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCode.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syCode.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -154,17 +154,17 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "fieldA,fieldB" */
+    /* searchType 예: "childCodeValues,codeId,codeLabel,codeOpt1,codeRemark" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("childCodeValues", syCode.childCodeValues),
-            QdslUtil.FieldDef.like("codeId", syCode.codeId),
-            QdslUtil.FieldDef.like("codeLabel", syCode.codeLabel),
-            QdslUtil.FieldDef.like("codeOpt1", syCode.codeOpt1),
-            QdslUtil.FieldDef.like("codeRemark", syCode.codeRemark),
-            QdslUtil.FieldDef.like("codeValue", syCode.codeValue),
-            QdslUtil.FieldDef.like("parentCodeValue", syCode.parentCodeValue),
-            QdslUtil.FieldDef.like("useYn", syCode.useYn)
+            QdslUtil.FieldDef.like("childCodeValues", syCode.childCodeValues), // 허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식 — 상태 전이 제약이나 하위 코드 목록)
+            QdslUtil.FieldDef.like("codeId", syCode.codeId), // 코드ID 필터
+            QdslUtil.FieldDef.like("codeLabel", syCode.codeLabel), // 코드라벨 (화면 표시명, sy_code.code_label)
+            QdslUtil.FieldDef.like("codeOpt1", syCode.codeOpt1), // 코드별 부가 옵션 1 (스타일 색상 hex, 아이콘 클래스 등 자유 문자열)
+            QdslUtil.FieldDef.like("codeRemark", syCode.codeRemark), // 비고
+            QdslUtil.FieldDef.like("codeValue", syCode.codeValue), // 코드값 필터 (sy_code.code_value)
+            QdslUtil.FieldDef.like("parentCodeValue", syCode.parentCodeValue), // 부모 코드값 필터
+            QdslUtil.FieldDef.like("useYn", syCode.useYn) // 사용여부 필터 Y/N
         ));
     }
 

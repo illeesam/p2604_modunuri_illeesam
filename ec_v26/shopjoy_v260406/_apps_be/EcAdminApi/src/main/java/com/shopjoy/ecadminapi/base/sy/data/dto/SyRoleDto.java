@@ -30,6 +30,7 @@ public class SyRoleDto {
         private String roleNm;  // 역할명
         private String parentRoleId;  // 상위역할ID
         private String roleTypeCd;  // 역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)
+        private String roleTypeCdNm;  // 코드 라벨
         private Integer sortOrd;  // 정렬순서
         private String useYn;  // 사용여부 Y/N
         private String restrictPerm;  // 제한권한여부 Y/N

@@ -88,14 +88,14 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     public List<DpAreaDto.Item> selectList(DpAreaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
+        whereList.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds())); // 상위 FK 다건 IN
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
-        whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
-        whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
+        whereList.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn())); // 사용여부 Y/N 필터
+        whereList.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId())); // 영역ID 필터
+        whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId())); // UIID 필터 (dp_ui.ui_id)
+        whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd())); // 영역유형 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpArea.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpArea.siteId, search.getSiteId())); // 사이트ID 필터
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -122,14 +122,14 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
+        whereList.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds())); // 상위 FK 다건 IN
         whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
-        whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
-        whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
+        whereList.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn())); // 사용여부 Y/N 필터
+        whereList.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId())); // 영역ID 필터
+        whereList.add(QdslUtil.strEq(dpArea.uiId, search.getUiId())); // UIID 필터 (dp_ui.ui_id)
+        whereList.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd())); // 영역유형 필터
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(dpArea.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(dpArea.siteId, search.getSiteId())); // 사이트ID 필터
         JPAQuery<DpAreaDto.Item> query = baseQuery();
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
@@ -149,8 +149,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
@@ -158,16 +156,17 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 : null;
     }
 
+    /* searchType 예: "areaCd,areaDesc,areaId,areaNm,areaTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("areaCd", dpArea.areaCd),
-            QdslUtil.FieldDef.like("areaDesc", dpArea.areaDesc),
-            QdslUtil.FieldDef.like("areaId", dpArea.areaId),
-            QdslUtil.FieldDef.like("areaNm", dpArea.areaNm),
-            QdslUtil.FieldDef.like("areaTypeCd", dpArea.areaTypeCd),
-            QdslUtil.FieldDef.like("pathId", dpArea.pathId),
-            QdslUtil.FieldDef.like("uiId", dpArea.uiId),
-            QdslUtil.FieldDef.like("useYn", dpArea.useYn)
+            QdslUtil.FieldDef.like("areaCd", dpArea.areaCd), // 영역코드 (예: MAIN_TOP, SIDEBAR_MID)
+            QdslUtil.FieldDef.like("areaDesc", dpArea.areaDesc), // 영역설명
+            QdslUtil.FieldDef.like("areaId", dpArea.areaId), // 영역ID 필터
+            QdslUtil.FieldDef.like("areaNm", dpArea.areaNm), // 영역명
+            QdslUtil.FieldDef.like("areaTypeCd", dpArea.areaTypeCd), // 영역유형 필터
+            QdslUtil.FieldDef.like("pathId", dpArea.pathId), // 표시경로ID 필터
+            QdslUtil.FieldDef.like("uiId", dpArea.uiId), // UIID 필터 (dp_ui.ui_id)
+            QdslUtil.FieldDef.like("useYn", dpArea.useYn) // 사용여부 Y/N 필터
         ));
     }
 

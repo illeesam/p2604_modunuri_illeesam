@@ -42,7 +42,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     private static final QSySite        sySite  = QSySite.sySite;
     private static final QSyVendor      syVendor  = QSyVendor.syVendor;
     private static final QPdCategory    pdCategory  = QPdCategory.pdCategory;
-    private static final QVwSyCode        cdSc = new QVwSyCode("cd_sc");    /*
+    private static final QVwSyCode        codeSettleCycleCd = new QVwSyCode("cd_sc");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_CYCLE  {DAILY: '일정산', WEEKLY: '주정산'(또는 '주간'), BIWEEKLY: '격주', MONTHLY: '월정산'(또는 '월간')}
      * USE_YN        {Y: '사용', N: '미사용'}
@@ -65,7 +65,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                         stSettleConfig.updDate,                // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
                         pdCategory.categoryNm.as("categoryNm"),         // 카테고리명 (조인)
-                        cdSc.codeLabel.as("settleCycleCdNm"),            // 정산주기명 (sy_code 조인)
+                        codeSettleCycleCd.codeLabel.as("settleCycleCdNm"),            // 정산주기명 (sy_code 조인)
                         stSettleConfig.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
@@ -73,7 +73,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                 .from(stSettleConfig)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleConfig.vendorId)) // 업체
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(stSettleConfig.categoryId)) // 카테고리
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE_CD").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd))) // 정산주기
+                .leftJoin(codeSettleCycleCd).on(codeSettleCycleCd.codeGrp.eq("SETTLE_CYCLE_CD").and(codeSettleCycleCd.codeValue.eq(stSettleConfig.settleCycleCd))) // 정산주기
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleConfig.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleConfig.regBy)) // 등록자
                 ;
@@ -94,7 +94,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()));
+        whereList.add(QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId())); // 정산기준ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleConfig.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleConfig.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -126,7 +126,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()));
+        whereList.add(QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId())); // 정산기준ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleConfig.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleConfig.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -152,14 +152,15 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "categoryId,settleConfigId,settleConfigRemark,settleCycleCd,useYn" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("categoryId", stSettleConfig.categoryId),
-            QdslUtil.FieldDef.like("settleConfigId", stSettleConfig.settleConfigId),
-            QdslUtil.FieldDef.like("settleConfigRemark", stSettleConfig.settleConfigRemark),
-            QdslUtil.FieldDef.like("settleCycleCd", stSettleConfig.settleCycleCd),
-            QdslUtil.FieldDef.like("useYn", stSettleConfig.useYn),
-            QdslUtil.FieldDef.like("vendorId", stSettleConfig.vendorId)
+            QdslUtil.FieldDef.like("categoryId", stSettleConfig.categoryId), // 카테고리ID (NULL=전체 기준)
+            QdslUtil.FieldDef.like("settleConfigId", stSettleConfig.settleConfigId), // 정산기준ID 필터
+            QdslUtil.FieldDef.like("settleConfigRemark", stSettleConfig.settleConfigRemark), // 비고
+            QdslUtil.FieldDef.like("settleCycleCd", stSettleConfig.settleCycleCd), // 정산주기 — SETTLE_CYCLE_CD (DAILY/WEEKLY/MONTHLY)
+            QdslUtil.FieldDef.like("useYn", stSettleConfig.useYn), // 사용여부 필터 Y/N
+            QdslUtil.FieldDef.like("vendorId", stSettleConfig.vendorId) // 업체ID (NULL=전체 기준)
         ));
     }
 

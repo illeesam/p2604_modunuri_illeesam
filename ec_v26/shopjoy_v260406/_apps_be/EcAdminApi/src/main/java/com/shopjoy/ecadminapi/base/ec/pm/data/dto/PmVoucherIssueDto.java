@@ -28,6 +28,7 @@ public class PmVoucherIssueDto {
         private String orderId;  // 사용된 주문ID (od_order.order_id)
         private Long useAmt;  // 실제 사용 할인금액
         private String voucherIssueStatusCd;  // 상태 (코드: VOUCHER_ISSUE_STATUS)
+        private String voucherIssueStatusCdNm;  // 코드 라벨
         private String voucherIssueStatusCdBefore;  // 변경 전 상태
         private String regBy;  // 등록자
         private LocalDateTime regDate;  // 등록일

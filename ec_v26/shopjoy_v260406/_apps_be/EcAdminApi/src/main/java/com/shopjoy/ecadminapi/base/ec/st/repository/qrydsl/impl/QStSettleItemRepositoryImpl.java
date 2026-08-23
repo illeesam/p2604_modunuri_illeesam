@@ -42,7 +42,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     private static final QOdOrder      odOrder  = QOdOrder.odOrder;
     private static final QOdOrderItem  odOrderItem  = QOdOrderItem.odOrderItem;
     private static final QSySite       sySite  = QSySite.sySite;
-    private static final QVwSyCode       cdSit = new QVwSyCode("cd_sit");    /*
+    private static final QVwSyCode       codeSettleItemTypeCd = new QVwSyCode("cd_sit");    /*
      * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
      * SETTLE_ITEM_TYPE  {SALE: '판매', CANCEL: '취소/반품', DISCNT: '할인분담', GIFT: '사은품분담', SHIP: '배송비', ADJ: '조정'}
      * (Entity 주석상 SALE/CANCEL/RETURN — sy_code 실 데이터에는 CANCEL 하나로 취소/반품 통합 + DISCNT/GIFT/SHIP/ADJ 추가 존재)
@@ -69,7 +69,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                         stSettleItem.regDate,               // 등록일시
                         odOrder.memberNm.as("orderNm"),                     // 주문 회원명 (조인)
                         odOrderItem.prodNm.as("orderItemNm"),               // 주문항목 상품명 (조인)
-                        cdSit.codeLabel.as("settleItemTypeCdNm"),            // 항목유형명 (sy_code 조인)
+                        codeSettleItemTypeCd.codeLabel.as("settleItemTypeCdNm"),            // 항목유형명 (sy_code 조인)
                         stSettleItem.regSiteId,  // 등록사이트ID
                         regSiteEx.siteNm.as("regSiteNm"),  // 등록사이트명 (조인)
                         regUserEx.userNm.as("regUserNm")   // 등록자명 (조인)
@@ -77,7 +77,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 .from(stSettleItem)
                 .innerJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId)) // 주문
                 .innerJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId)) // 주문상품
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd))) // 정산항목유형
+                .leftJoin(codeSettleItemTypeCd).on(codeSettleItemTypeCd.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(codeSettleItemTypeCd.codeValue.eq(stSettleItem.settleItemTypeCd))) // 정산항목유형
                 .leftJoin(regSiteEx).on(regSiteEx.siteId.eq(stSettleItem.regSiteId)) // 등록사이트
                 .leftJoin(regUserEx).on(regUserEx.userId.eq(stSettleItem.regBy)) // 등록자
                 ;
@@ -98,7 +98,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()));
+        whereList.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId())); // 정산항목ID 필터
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -131,7 +131,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()));
+        whereList.add(QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId())); // 정산항목ID 필터
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("order_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleItem.orderDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -158,15 +158,16 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
+    /* searchType 예: "orderId,orderItemId,prodId,settleId,settleItemId" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("orderId", stSettleItem.orderId),
-            QdslUtil.FieldDef.like("orderItemId", stSettleItem.orderItemId),
-            QdslUtil.FieldDef.like("prodId", stSettleItem.prodId),
-            QdslUtil.FieldDef.like("settleId", stSettleItem.settleId),
-            QdslUtil.FieldDef.like("settleItemId", stSettleItem.settleItemId),
-            QdslUtil.FieldDef.like("settleItemTypeCd", stSettleItem.settleItemTypeCd),
-            QdslUtil.FieldDef.like("vendorId", stSettleItem.vendorId)
+            QdslUtil.FieldDef.like("orderId", stSettleItem.orderId), // 주문ID (od_order.order_id)
+            QdslUtil.FieldDef.like("orderItemId", stSettleItem.orderItemId), // 주문항목ID (od_order_item.order_item_id)
+            QdslUtil.FieldDef.like("prodId", stSettleItem.prodId), // 상품ID
+            QdslUtil.FieldDef.like("settleId", stSettleItem.settleId), // 정산ID (st_settle.settle_id)
+            QdslUtil.FieldDef.like("settleItemId", stSettleItem.settleItemId), // 정산항목ID 필터
+            QdslUtil.FieldDef.like("settleItemTypeCd", stSettleItem.settleItemTypeCd), // 항목유형 — SETTLE_ITEM_TYPE_CD (SALE/CANCEL/RETURN)
+            QdslUtil.FieldDef.like("vendorId", stSettleItem.vendorId) // 업체ID
         ));
     }
 

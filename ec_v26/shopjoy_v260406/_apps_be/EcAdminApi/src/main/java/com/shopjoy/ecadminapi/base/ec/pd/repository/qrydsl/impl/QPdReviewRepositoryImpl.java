@@ -88,14 +88,14 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdReview.reviewId, search.getReviewId()));
-        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()));
+        whereList.add(QdslUtil.strEq(pdReview.reviewId, search.getReviewId())); // 리뷰ID (단건 조회 필터)
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd())); // 리뷰상태 필터
         whereList.add(andRatingGoe(search));
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdReview.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdReview.siteId, search.getSiteId())); // 사이트ID (검색 필터)
 
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
         OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
@@ -124,14 +124,14 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pdReview.reviewId, search.getReviewId()));
-        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()));
+        whereList.add(QdslUtil.strEq(pdReview.reviewId, search.getReviewId())); // 리뷰ID (단건 조회 필터)
+        whereList.add(QdslUtil.strEq(pdReview.prodId, search.getProdId())); // 상품ID 필터
+        whereList.add(QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd())); // 리뷰상태 필터
         whereList.add(andRatingGoe(search));
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdReview.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        whereList.add(QdslUtil.strEq(pdReview.siteId, search.getSiteId()));
+        whereList.add(QdslUtil.strEq(pdReview.siteId, search.getSiteId())); // 사이트ID (검색 필터)
         BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
 
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery();
@@ -156,8 +156,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     /** 단건/목록/페이지 공용 base query (DTO Item 필드만 매핑) */
     /** 검색조건 빌드 — Mapper XML pdReviewCond 와 동일 동작 */
-    /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-
     /* rating — 점수대(floor) 범위 (예: "4" => 4.0 이상 5.0 미만) */
     private BooleanExpression andRatingGoe(PdReviewDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getRating())) return null;
@@ -172,15 +170,16 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         return pdReview.rating.goe(lo).and(pdReview.rating.lt(hi));
     }
 
+    /* searchType 예: "memberId,prodId,reviewContent,reviewId,reviewStatusCd" 등 (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("memberId", pdReview.memberId),
-            QdslUtil.FieldDef.like("prodId", pdReview.prodId),
-            QdslUtil.FieldDef.like("reviewContent", pdReview.reviewContent),
-            QdslUtil.FieldDef.like("reviewId", pdReview.reviewId),
-            QdslUtil.FieldDef.like("reviewStatusCd", pdReview.reviewStatusCd),
-            QdslUtil.FieldDef.like("reviewStatusCdBefore", pdReview.reviewStatusCdBefore),
-            QdslUtil.FieldDef.like("reviewTitle", pdReview.reviewTitle)
+            QdslUtil.FieldDef.like("memberId", pdReview.memberId), // 회원ID (mb_member.member_id)
+            QdslUtil.FieldDef.like("prodId", pdReview.prodId), // 상품ID 필터
+            QdslUtil.FieldDef.like("reviewContent", pdReview.reviewContent), // 리뷰 내용
+            QdslUtil.FieldDef.like("reviewId", pdReview.reviewId), // 리뷰ID (단건 조회 필터)
+            QdslUtil.FieldDef.like("reviewStatusCd", pdReview.reviewStatusCd), // 리뷰상태 필터
+            QdslUtil.FieldDef.like("reviewStatusCdBefore", pdReview.reviewStatusCdBefore), // 변경 전 리뷰상태 — REVIEW_STATUS_CD
+            QdslUtil.FieldDef.like("reviewTitle", pdReview.reviewTitle) // 리뷰 제목
         ));
     }
 

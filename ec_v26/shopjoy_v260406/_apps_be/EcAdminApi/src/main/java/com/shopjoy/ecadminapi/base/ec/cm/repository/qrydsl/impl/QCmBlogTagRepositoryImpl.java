@@ -73,9 +73,9 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     public List<CmBlogTagDto.Item> selectList(CmBlogTagDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()));
-        whereList.add(QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId()));
+        whereList.add(QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId())); // 태그ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -106,9 +106,9 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()));
-        whereList.add(QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()));
-        whereList.add(QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId()));
+        whereList.add(QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds())); // 상위 FK 다건 IN
+        whereList.add(QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId())); // 상위 FK 필터
+        whereList.add(QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId())); // 태그ID 필터
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogTag.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(cmBlogTag.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -135,12 +135,12 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     }
 
     /** 검색조건 빌드 */
-    /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+    /* searchType 예: "blogId,blogTagId,tagNm" (콤마 조합, 미지정 시 전체 OR) */
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("blogId", cmBlogTag.blogId),
-            QdslUtil.FieldDef.like("blogTagId", cmBlogTag.blogTagId),
-            QdslUtil.FieldDef.like("tagNm", cmBlogTag.tagNm)
+            QdslUtil.FieldDef.like("blogId", cmBlogTag.blogId), // 상위 FK 필터
+            QdslUtil.FieldDef.like("blogTagId", cmBlogTag.blogTagId), // 태그ID 필터
+            QdslUtil.FieldDef.like("tagNm", cmBlogTag.tagNm) // 태그명
         ));
     }
 
