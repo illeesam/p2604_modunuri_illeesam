@@ -60,7 +60,7 @@ window.MdCbPatternMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...coUtil.cofOmitEmpty(searchParam) };
-        if (params.searchValue) params.searchType = 'patternNm,patternDesc';
+        if (params.searchValue) params.searchType = 'patternNm,patternDesc,memberNm';
         const res = await mdCbApiSvc.pattern.getPage(params, '코바늘도안관리', '목록조회');
         const data = res.data?.data || {};
         patterns.splice(0, patterns.length, ...(data.pageList || []));
@@ -107,7 +107,7 @@ window.MdCbPatternMng = {
 
     const columns = {};
     columns.baseSearch = [
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '도안명/설명 검색' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '도안명/설명/작성회원 검색' },
       { key: 'patternStatusCd', type: 'select', label: '상태', options: () => codes.pattern_status, nullLabel: '상태 전체' },
     ];
 
