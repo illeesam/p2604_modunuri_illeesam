@@ -45,6 +45,11 @@ window.foAppSidebar = {
       { menuId: 'dispUi05', menuNm: '전시ui05' },
       { menuId: 'dispUi06', menuNm: '전시ui06' },
     ];
+    /* MODULE_ITEMS — index.html 라우팅 밖의 독립 FO 모듈(자체 HTML 진입점) 바로가기.
+       navTo() 의 SPA pageId 이동이 아니라 href 로 실제 페이지 전체 이동한다. */
+    const MODULE_ITEMS = [
+      { menuId: 'cobanul', menuNm: '코바늘 도안', href: 'mdCbCobanul.html' },
+    ];
     const DEV_TOOLS_ITEMS = [
       { menuId: 'xsStore', menuNm: 'Store 정보관리' },
       { menuId: 'xsLocalStorage', menuNm: 'localStorage 정보관리' },
@@ -98,6 +103,10 @@ window.foAppSidebar = {
         if (param.menuId) { return navTo(param.menuId); }
         if (param.siteNo) { return navToSite(param.siteNo); }
         return;
+      // 독립 모듈 바로가기 (href 로 전체 페이지 이동)
+      } else if (cmd === 'nav-select-module') {
+        location.href = param.href;
+        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -145,7 +154,7 @@ window.foAppSidebar = {
       uiState, codes,                                                       // 상태
       handleBtnAction, handleSelectAction,                                  // dispatch
       isMenuActive, showSamples, foSiteNo, cfSidebarMenu,                   // 헬퍼/computed
-      SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS,  // 메뉴 정의
+      SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, MODULE_ITEMS,  // 메뉴 정의
     };
   },
   template: /* html */ `
@@ -178,6 +187,18 @@ window.foAppSidebar = {
     </template>
 
     <!-- ===== □.□. 기존 sidebarMenu 섹션 (샘플 전시 제외) ========================== -->
+    <!-- ===== ■.■. 모듈 섹션 (독립 FO 모듈 바로가기) =============================== -->
+    <div v-if="appSidebarOpen" style="padding:12px 8px 4px;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
+      모듈
+    </div>
+    <button v-for="item in MODULE_ITEMS" :key="item.menuId" type="button"
+      @click.stop="handleSelectAction('nav-select-module', item)"
+      class="sidebar-link" :data-tip="item.menuNm" :aria-label="item.menuNm">
+      <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">🧶</span>
+      <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.menuNm }}</span>
+    </button>
+
+    <!-- ===== □.□. 모듈 섹션 (독립 FO 모듈 바로가기) =============================== -->
     <!-- ===== ■.■. 개발도구 섹션 =============================================== -->
     <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="handleBtnAction('nav-toggle-devTools')"

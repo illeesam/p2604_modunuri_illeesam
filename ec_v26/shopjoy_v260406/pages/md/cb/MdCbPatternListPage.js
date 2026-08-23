@@ -81,8 +81,9 @@ window.MdCbPatternListPage = {
   <!-- 카드형식 -->
   <div v-if="viewMode==='card'" class="cb-card-grid">
     <div v-for="p in rows" :key="p.patternId" class="cb-pattern-card" @click="onOpen(p)">
-      <div class="cb-pattern-thumb" :style="fnThumbStyle(p.patternId)">
-        <span class="cb-pattern-thumb-icon">🧶</span>
+      <div class="cb-pattern-thumb" :style="p.thumbnailUrl ? '' : fnThumbStyle(p.patternId)">
+        <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" class="cb-pattern-thumb-img" />
+        <span v-else class="cb-pattern-thumb-icon">🧶</span>
       </div>
       <div class="cb-pattern-card-body">
         <div class="cb-pattern-badges">
@@ -106,6 +107,7 @@ window.MdCbPatternListPage = {
       <thead>
         <tr>
           <th style="width:60px;text-align:center;">번호</th>
+          <th style="width:44px;"></th>
           <th>도안명</th>
           <th style="width:110px;">규격</th>
           <th style="width:120px;">작성자</th>
@@ -116,13 +118,19 @@ window.MdCbPatternListPage = {
       <tbody>
         <tr v-for="(p, idx) in rows" :key="p.patternId" @click="onOpen(p)">
           <td style="text-align:center;color:var(--text-muted,#999);">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</td>
+          <td>
+            <div class="cb-list-thumb" :style="p.thumbnailUrl ? '' : fnThumbStyle(p.patternId)">
+              <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" class="cb-list-thumb-img" />
+              <span v-else class="cb-list-thumb-icon">🧶</span>
+            </div>
+          </td>
           <td class="cb-list-table-nm">{{ p.patternNm }}</td>
           <td>{{ p.rowCount }}단 × {{ p.maxStitchCount }}코</td>
           <td>{{ p.regUserNm || p.memberNm || '알 수 없음' }}</td>
           <td>{{ fnFmtDate(p.regDate) }}</td>
           <td class="cb-list-table-arrow">›</td>
         </tr>
-        <tr v-if="!loading && !rows.length"><td colspan="6" class="cb-empty-hint">검색 결과가 없습니다.</td></tr>
+        <tr v-if="!loading && !rows.length"><td colspan="7" class="cb-empty-hint">검색 결과가 없습니다.</td></tr>
       </tbody>
     </table>
   </div>

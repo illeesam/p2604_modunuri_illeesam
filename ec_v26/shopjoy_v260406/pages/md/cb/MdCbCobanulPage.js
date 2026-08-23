@@ -30,7 +30,7 @@ function fnGenDescText(rowCount, colCount, cellMap, symbolMap) {
 /* 배색 빠른 팔레트 — 4열 x 5행 고정 스와치(직접 배색 입력으로 언제든 덮어쓸 수 있다).
    실 색상은 너무 진하고 쨍한 원색보다 부드러운 톤이 보기 편해서 파스텔 계열로 구성(흑/백만 원색 유지). */
 const PRESET_COLORS = [
-  '#000000', '#ffffff', '#a8a8a8', '#e2a79c',
+  '#333333', '#ffffff', '#a8a8a8', '#e2a79c',
   '#f2c199', '#f5e08a', '#a8d8b9', '#8fd9c4',
   '#a8d0e6', '#9fb3c8', '#cbb2d9', '#f4b8d0',
   '#f0b98a', '#c3cbcc', '#e8e9ec', '#e3cfa3',
@@ -51,19 +51,20 @@ window.MdCbCobanulPage = {
     showToast: { type: Function, default: () => {} }, // 토스트 알림
   },
   setup(props) {
-    const { reactive, computed, onMounted, onUnmounted } = Vue;
+    const { reactive, ref, computed, onMounted, onUnmounted } = Vue;
 
     const symbols = reactive([]);
     const yarns = reactive([]);
     const patternYarns = reactive([]); // [{ yarnId, usageDesc }] — 이 도안에 사용된 실(재료) 목록
     const uiState = reactive({
-      loading: false, activeSymbolId: null, activeColor: '#000000', activeYarnId: null,
-      isPainting: false, dragMode: 'paint',
+      loading: false, activeSymbolId: null, activeColor: '#333333', activeYarnId: null,
+      isPainting: false, dragMode: 'paint', thumbUploading: false,
       dtlMode: 'edit', // 'view' | 'edit' — 목록에서 행 클릭=보기, [수정] 클릭=수정모드 (신규 작성은 항상 edit)
     });
     const cfReadonly = computed(() => uiState.dtlMode === 'view');
+    const thumbInputRef = ref(null);
 
-    const form = reactive({ patternId: null, patternNm: '', rowCount: 10, maxStitchCount: 12, descText: '' });
+    const form = reactive({ patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', thumbnailUrl: '' });
     /* cells: { "row_col": { symbolId, colorHex } } */
     const cellMap = reactive({});
 
@@ -95,7 +96,7 @@ window.MdCbCobanulPage = {
 
     /* onNewPattern — 신규 도안으로 초기화(같은 화면 안에서, URL도 patternId 없이 되돌림) */
     const onNewPattern = () => {
-      Object.assign(form, { patternId: null, patternNm: '', rowCount: 10, maxStitchCount: 12, descText: '' });
+      Object.assign(form, { patternId: null, patternNm: '', rowCount: 15, maxStitchCount: 20, descText: '', thumbnailUrl: '' });
       Object.keys(cellMap).forEach(k => delete cellMap[k]);
       patternYarns.splice(0, patternYarns.length);
       uiState.dtlMode = 'edit';
@@ -117,8 +118,8 @@ window.MdCbCobanulPage = {
       const res = await mdCbApiSvc.pattern.getById(patternId, '코바늘도안', '상세조회');
       const p = res.data?.data;
       if (!p) { props.showToast('존재하지 않는 도안입니다.', 'error'); return; }
-      Object.assign(form, { patternId: p.patternId, patternNm: p.patternNm, rowCount: p.rowCount || 10,
-        maxStitchCount: p.maxStitchCount || 12, descText: p.descText || '' });
+      Object.assign(form, { patternId: p.patternId, patternNm: p.patternNm, rowCount: p.rowCount || 15,
+        maxStitchCount: p.maxStitchCount || 20, descText: p.descText || '', thumbnailUrl: p.thumbnailUrl || '' });
       Object.keys(cellMap).forEach(k => delete cellMap[k]);
       const cellRes = await mdCbApiSvc.patternCell.getList(p.patternId, '코바늘도안', '격자조회');
       (cellRes.data?.data || []).forEach(c => {
@@ -198,9 +199,69 @@ window.MdCbCobanulPage = {
     const onAddColLeft = () => { fnShiftCols(1); form.maxStitchCount++; };
     const onAddColRight = () => { form.maxStitchCount++; };
 
+    /* onRemoveRow/Col* — 모서리에서 한 단/코 줄이기(그 줄에 있던 셀은 함께 삭제) */
+    const onRemoveRowTop = () => {
+      if (form.rowCount <= 1) return;
+      Object.keys(cellMap).forEach(k => { if (k.split('_')[0] === '1') delete cellMap[k]; });
+      fnShiftRows(-1);
+      form.rowCount--;
+    };
+    const onRemoveRowBottom = () => {
+      if (form.rowCount <= 1) return;
+      const lastRow = form.rowCount;
+      Object.keys(cellMap).forEach(k => { if (Number(k.split('_')[0]) === lastRow) delete cellMap[k]; });
+      form.rowCount--;
+    };
+    const onRemoveColLeft = () => {
+      if (form.maxStitchCount <= 1) return;
+      Object.keys(cellMap).forEach(k => { if (k.split('_')[1] === '1') delete cellMap[k]; });
+      fnShiftCols(-1);
+      form.maxStitchCount--;
+    };
+    const onRemoveColRight = () => {
+      if (form.maxStitchCount <= 1) return;
+      const lastCol = form.maxStitchCount;
+      Object.keys(cellMap).forEach(k => { if (Number(k.split('_')[1]) === lastCol) delete cellMap[k]; });
+      form.maxStitchCount--;
+    };
+
     /* onGenDesc — 한글 도안 설명 생성(클라이언트 계산, 저장 전 미리보기/수정 가능) */
     const onGenDesc = () => {
       form.descText = fnGenDescText(form.rowCount, form.maxStitchCount, cellMap, symbolMap.value);
+    };
+
+    /* ── 대표이미지(썸네일) — 목록 화면 카드에 표시될 이미지. 공통 업로드 API로 CDN URL만 저장 ── */
+    const onOpenThumbPicker = () => { if (cfReadonly.value || uiState.thumbUploading) return; thumbInputRef.value?.click(); };
+    const onThumbFileChange = async (e) => {
+      const f = e.target.files?.[0]; e.target.value = '';
+      if (!f) return;
+      const ext = (f.name.split('.').pop() || '').toLowerCase();
+      if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) { props.showToast('이미지 파일만 업로드할 수 있습니다.', 'error'); return; }
+      if (f.size > 5 * 1024 * 1024) { props.showToast('5MB 이하 이미지만 업로드할 수 있습니다.', 'error'); return; }
+      uiState.thumbUploading = true;
+      try {
+        const fd = new FormData();
+        fd.append('files', f);
+        fd.append('businessCode', 'md_cb_pattern');
+        const res = await coApiSvc.cmUpload.uploadMulti(fd, '코바늘도안', '대표이미지업로드');
+        const uploaded = (res.data?.data?.files || [])[0];
+        if (uploaded) {
+          form.thumbnailUrl = uploaded.cdnImgUrl || '';
+          props.showToast('대표이미지가 등록되었습니다.', 'success');
+        }
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '이미지 업로드 중 오류가 발생했습니다.', 'error', 0);
+      } finally {
+        uiState.thumbUploading = false;
+      }
+    };
+    const onRemoveThumb = () => { form.thumbnailUrl = ''; };
+
+    /* onResetForm — 신규 작성 중 입력한 내용을 전부 지우고 처음 상태로("취소"는 기존 레코드 전용이라
+       빈 신규 작성에는 대신 이 버튼을 쓴다) */
+    const onResetForm = () => {
+      if (!confirm('입력한 내용을 모두 초기화하시겠습니까?')) return;
+      onNewPattern();
     };
 
     /* onSave — 도안 저장(메타+격자+재료 일괄) */
@@ -208,7 +269,8 @@ window.MdCbCobanulPage = {
       if (!form.patternNm) { props.showToast('도안명을 입력해주세요.', 'error'); return; }
       uiState.loading = true;
       try {
-        const body = { patternNm: form.patternNm, rowCount: form.rowCount, maxStitchCount: form.maxStitchCount, descText: form.descText };
+        const body = { patternNm: form.patternNm, rowCount: form.rowCount, maxStitchCount: form.maxStitchCount,
+          descText: form.descText, thumbnailUrl: form.thumbnailUrl };
         let patternId = form.patternId;
         if (!patternId) {
           const res = await mdCbApiSvc.pattern.create(body, '코바늘도안', '등록');
@@ -258,11 +320,12 @@ window.MdCbCobanulPage = {
 
     return {
       symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfPaletteSymbols, cfRows, cfCols, cfReadonly,
-      PRESET_COLORS, GRID_PRESETS,
+      PRESET_COLORS, GRID_PRESETS, thumbInputRef,
       onNewPattern, onBackToList, onCellMouseDown, onCellMouseEnter, onGenDesc, onSave, onDeletePattern,
-      onSwitchToEdit, onCancelEdit,
+      onSwitchToEdit, onCancelEdit, onOpenThumbPicker, onThumbFileChange, onRemoveThumb, onResetForm,
       onPickPresetColor, onPickYarnColor, onAddPatternYarn, onRemovePatternYarn,
       onApplyGridPreset, onAddRowTop, onAddRowBottom, onAddColLeft, onAddColRight,
+      onRemoveRowTop, onRemoveRowBottom, onRemoveColLeft, onRemoveColRight,
     };
   },
   template: /* html */`
@@ -288,23 +351,44 @@ window.MdCbCobanulPage = {
     <!-- 좌측: 격자 편집기 -->
     <div class="cb-panel cb-panel-editor">
       <div class="cb-editor-toolbar">
-        <div class="cb-name-field">
-          <span class="cb-field-label">도안명</span>
-          <input v-model="form.patternNm" :readonly="cfReadonly" placeholder="도안명을 입력하세요" class="form-control cb-name-input" />
+        <div class="cb-toolbar-fields">
+          <div class="cb-name-field">
+            <span class="cb-field-label">도안명</span>
+            <input v-model="form.patternNm" :readonly="cfReadonly" placeholder="도안명을 입력하세요" class="form-control cb-name-input" />
+          </div>
+          <div class="cb-thumb-field">
+            <span class="cb-field-label">대표이미지</span>
+            <div class="cb-thumb-box" :class="{ 'cb-locked': cfReadonly }" @click="onOpenThumbPicker" title="목록에 표시될 이미지">
+              <img v-if="form.thumbnailUrl" :src="form.thumbnailUrl" class="cb-thumb-img" />
+              <span v-else class="cb-thumb-placeholder">{{ uiState.thumbUploading ? '⏳' : '＋' }}</span>
+              <span v-if="form.thumbnailUrl && !cfReadonly" class="cb-thumb-remove" @click.stop="onRemoveThumb" title="제거">✕</span>
+            </div>
+            <input ref="thumbInputRef" type="file" accept="image/*" style="display:none" @change="onThumbFileChange" />
+          </div>
+          <div class="cb-size-field">
+            <span class="cb-field-label">단수</span>
+            <input type="number" v-model.number="form.rowCount" :readonly="cfReadonly" min="1" max="80" class="cb-size-input" />
+          </div>
+          <div class="cb-size-field">
+            <span class="cb-field-label">코수</span>
+            <input type="number" v-model.number="form.maxStitchCount" :readonly="cfReadonly" min="1" max="60" class="cb-size-input" />
+          </div>
+          <div v-if="!cfReadonly" class="cb-preset-field">
+            <span class="cb-field-label">빠른 크기</span>
+            <div class="cb-grid-presets">
+              <button v-for="gp in GRID_PRESETS" :key="gp.label" class="cb-preset-btn"
+                :class="{ active: form.rowCount===gp.row && form.maxStitchCount===gp.col }"
+                @click="onApplyGridPreset(gp)">{{ gp.label }}</button>
+            </div>
+          </div>
         </div>
-        <div v-if="!cfReadonly" class="cb-grid-presets">
-          <button v-for="gp in GRID_PRESETS" :key="gp.label" class="cb-preset-btn"
-            :class="{ active: form.rowCount===gp.row && form.maxStitchCount===gp.col }"
-            @click="onApplyGridPreset(gp)">{{ gp.label }}</button>
-        </div>
-        <label class="cb-size-label">단수 <input type="number" v-model.number="form.rowCount" :readonly="cfReadonly" min="1" max="80" class="cb-size-input" /></label>
-        <label class="cb-size-label">코수 <input type="number" v-model.number="form.maxStitchCount" :readonly="cfReadonly" min="1" max="60" class="cb-size-input" /></label>
         <div class="cb-toolbar-actions">
           <template v-if="cfReadonly">
             <button v-if="form.patternId" class="btn btn_delete cb-del-btn" @click="onDeletePattern">삭제</button>
             <button class="btn btn_edit cb-save-btn" @click="onSwitchToEdit">수정</button>
           </template>
           <template v-else>
+            <button v-if="!form.patternId" class="btn btn_reset cb-del-btn" @click="onResetForm">초기화</button>
             <button v-if="form.patternId" class="btn btn_cancel cb-del-btn" @click="onCancelEdit">취소</button>
             <button v-if="form.patternId" class="btn btn_delete cb-del-btn" @click="onDeletePattern">삭제</button>
             <button class="btn btn_save cb-save-btn" @click="onSave" :disabled="uiState.loading">저장</button>
@@ -313,10 +397,22 @@ window.MdCbCobanulPage = {
       </div>
 
       <div class="cb-grid-wrap" :class="{ 'cb-locked': cfReadonly }">
-        <button class="cb-edge-btn cb-edge-top" title="윗단 늘리기" @click="onAddRowTop">＋</button>
-        <button class="cb-edge-btn cb-edge-bottom" title="아랫단 늘리기" @click="onAddRowBottom">＋</button>
-        <button class="cb-edge-btn cb-edge-left" title="왼쪽 코 늘리기" @click="onAddColLeft">＋</button>
-        <button class="cb-edge-btn cb-edge-right" title="오른쪽 코 늘리기" @click="onAddColRight">＋</button>
+        <div class="cb-edge-group cb-edge-top">
+          <button class="cb-edge-btn" title="윗단 줄이기" @click="onRemoveRowTop">－</button>
+          <button class="cb-edge-btn" title="윗단 늘리기" @click="onAddRowTop">＋</button>
+        </div>
+        <div class="cb-edge-group cb-edge-bottom">
+          <button class="cb-edge-btn" title="아랫단 줄이기" @click="onRemoveRowBottom">－</button>
+          <button class="cb-edge-btn" title="아랫단 늘리기" @click="onAddRowBottom">＋</button>
+        </div>
+        <div class="cb-edge-group cb-edge-left">
+          <button class="cb-edge-btn" title="왼쪽 코 줄이기" @click="onRemoveColLeft">－</button>
+          <button class="cb-edge-btn" title="왼쪽 코 늘리기" @click="onAddColLeft">＋</button>
+        </div>
+        <div class="cb-edge-group cb-edge-right">
+          <button class="cb-edge-btn" title="오른쪽 코 줄이기" @click="onRemoveColRight">－</button>
+          <button class="cb-edge-btn" title="오른쪽 코 늘리기" @click="onAddColRight">＋</button>
+        </div>
 
         <div class="cb-grid-scroll" @mouseleave="uiState.isPainting=false">
           <div v-for="r in cfRows" :key="r" class="cb-grid-row">
