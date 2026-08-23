@@ -35,7 +35,8 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null,
+      promoMemberPickerOpen: false, applicableMemberId: '', applicableMemberNm: '' });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ PROD_STATUS_CD: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [], DLIV_METHOD: [] });
@@ -95,15 +96,32 @@ window.PdProdDtl = {
         return;
       } else if (cmd === 'promo-applicable-coupon-reload') {
         if (!cfCurProdId.value) return;
-        boApiSvc.pmCoupon.getList({ prodId: cfCurProdId.value }, '상품관리', '적용가능쿠폰재조회')
+        boApiSvc.pmCoupon.getList({ prodId: cfCurProdId.value, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능쿠폰재조회')
           .then(r => tabData.promoApplicableCoupons.splice(0, tabData.promoApplicableCoupons.length, ...(r.data?.data || [])))
           .catch(() => {});
         return;
       } else if (cmd === 'promo-applicable-save-reload') {
         if (!cfCurProdId.value) return;
-        boApiSvc.pmSave.getList({ prodId: cfCurProdId.value }, '상품관리', '적용가능적립금재조회')
+        boApiSvc.pmSave.getList({ prodId: cfCurProdId.value, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능적립금재조회')
           .then(r => tabData.promoApplicableSaves.splice(0, tabData.promoApplicableSaves.length, ...(r.data?.data || [])))
           .catch(() => {});
+        return;
+      // 회원 적용가능 프로모션 — 회원검색
+      } else if (cmd === 'promo-member-search-open') {
+        uiState.promoMemberPickerOpen = true;
+        return;
+      } else if (cmd === 'promo-member-clear') {
+        uiState.applicableMemberId = ''; uiState.applicableMemberNm = '';
+        handleBtnAction('promo-applicable-coupon-reload');
+        handleBtnAction('promo-applicable-save-reload');
+        return;
+      } else if (cmd === 'promo-member-pick') {
+        uiState.promoMemberPickerOpen = false;
+        if (!param) return;
+        uiState.applicableMemberId = param.selId || param.memberId || '';
+        uiState.applicableMemberNm = param.selName || param.memberNm || '';
+        handleBtnAction('promo-applicable-coupon-reload');
+        handleBtnAction('promo-applicable-save-reload');
         return;
       } else if (cmd === 'promo-coupon-delete') {
         if (!param) return;
@@ -516,8 +534,8 @@ window.PdProdDtl = {
               boApiSvc.pmSaveItem.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '적립금조회'),
               boApiSvc.pmDiscntItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '할인조회'),
               boApiSvc.pmGiftCond.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '사은품조회'),
-              boApiSvc.pmCoupon.getList(    { prodId: props.dtlId }, '상품관리', '적용가능쿠폰조회'),
-              boApiSvc.pmSave.getList(      { prodId: props.dtlId }, '상품관리', '적용가능적립금조회'),
+              boApiSvc.pmCoupon.getList(    { prodId: props.dtlId, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능쿠폰조회'),
+              boApiSvc.pmSave.getList(      { prodId: props.dtlId, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능적립금조회'),
             ]);
             tabData.promoCoupons.splice(0, tabData.promoCoupons.length, ...(cr.data?.data || []));
             tabData.promoSaves.splice(0,   tabData.promoSaves.length,   ...(sr2.data?.data || []));
@@ -1493,11 +1511,11 @@ window.PdProdDtl = {
     /* info 외 탭의 [저장] 버튼은 prodId 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => topTab.value !== 'info' && !cfHasProdId.value);
 
-    /* 내 적용가능 쿠폰 목록 — 한 번 조회한 tabData.promoApplicableCoupons 를 couponTypeCd 로 3분류
+    /* 회원 적용가능 쿠폰 목록 — 한 번 조회한 tabData.promoApplicableCoupons 를 apply_scope_cd(신설 컬럼)로 3분류
        (클라이언트 필터. 이미 로드된 소량 목록의 단순 분류이므로 watch/재조회 없이 computed 로 처리) */
-    const cfApplicableOrderCoupons = computed(() => tabData.promoApplicableCoupons.filter(c => c.couponTypeCd === 'ORDER_DISCNT'));
-    const cfApplicableProdCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.couponTypeCd === 'PROD_DISCNT'));
-    const cfApplicableDlivCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.couponTypeCd === 'DLIV_DISCNT'));
+    const cfApplicableOrderCoupons = computed(() => tabData.promoApplicableCoupons.filter(c => c.applyScopeCd === 'ORDER'));
+    const cfApplicableProdCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.applyScopeCd === 'PRODUCT'));
+    const cfApplicableDlivCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.applyScopeCd === 'DELIVERY'));
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
@@ -2043,7 +2061,7 @@ window.PdProdDtl = {
       { key: 'applyEndDate',   label: '적용종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
       { key: '_remainTime',    label: '남은기간', align: 'center', fmt: (v, r) => fnRemainingTime(r.applyEndDate) },
     ];
-    // 프로모션 탭 — 내 적용가능 쿠폰 목록 (읽기전용 미리보기). "상품 쿠폰 목록"(pm_coupon_item, 이 상품에
+    // 프로모션 탭 — 회원 적용가능 쿠폰 목록 (읽기전용 미리보기). "상품 쿠폰 목록"(pm_coupon_item, 이 상품에
     // 직접 연결한 것만)과 달리 pm_coupon_prod(전개 테이블)를 통해 ALL/CATEGORY/VENDOR/BRAND 등
     // 다른 방식으로 지정된 쿠폰까지 포함해 "고객이 실제로 이 상품에 쓸 수 있는" 전체 쿠폰을 보여준다.
     columns.promoApplicableCouponGrid = [
@@ -2059,7 +2077,7 @@ window.PdProdDtl = {
         badge: (r) => r.couponStatusCd === 'ACTIVE' ? 'badge-green' : (r.couponStatusCd === 'EXPIRED' ? 'badge-gray' : 'badge-red'),
         fmt: (v, r) => r.couponStatusCdNm || v || '-' },
     ];
-    // 프로모션 탭 — 내 적용가능 적립금 목록 (읽기전용 미리보기, pm_save_prod 전개 기준)
+    // 프로모션 탭 — 회원 적용가능 적립금 목록 (읽기전용 미리보기, pm_save_prod 전개 기준)
     // ⚠ pm_save 는 회원별 적립/사용 원장 구조라 coupon 처럼 이름·유효기간을 갖는 정책 레코드가 아닐 수
     //   있음(pd.08/§적립금 아키텍처 갭 — 기존에 알려진 이슈, 이 그리드가 새로 만든 문제는 아님)
     columns.promoApplicableSaveGrid = [
@@ -2723,8 +2741,7 @@ window.PdProdDtl = {
         </label>
       </div>
       <!-- ===== ■.■.■. 상품 프로모션 정보 (할인/쿠폰/적립금/사은품, 2열 그리드) =========================================== -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 16px;" />
-      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;">상품 프로모션 정보</div>
+      <div class="section-title" style="margin-top:0;">상품 프로모션 정보</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <!-- 상품 할인 목록 (혜택 큰 순 1위 — 정가 자체를 낮추는 직접할인) -->
       <div>
@@ -2820,7 +2837,8 @@ window.PdProdDtl = {
       </pm-discnt-pick-modal>
       <bo-cm-popup-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
       </pm-gift-pick-modal>
-      <!-- 상품 프로모션 정보 그룹의 저장/취소/닫기 — 내 적용가능 프로모션정보(읽기전용) 보다 위, 편집 그룹 바로 아래 배치 -->
+      <bo-cm-popup-modal v-if="uiState.promoMemberPickerOpen" popup-code="member" @select="r => handleBtnAction('promo-member-pick', r)" @close="uiState.promoMemberPickerOpen = false" />
+      <!-- 상품 프로모션 정보 그룹의 저장/취소/닫기 — 회원 적용가능 프로모션정보(읽기전용) 보다 위, 편집 그룹 바로 아래 배치 -->
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -2832,15 +2850,21 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <!-- ===== ■.■.■. 내 적용가능 프로모션정보 (읽기전용 — pm_coupon_prod/pm_save_prod 전개 기준, ALL/CATEGORY/VENDOR/BRAND 포함, 2x2) ===== -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
-      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;">내 적용가능 프로모션정보</div>
+      <!-- ===== ■.■.■. 회원 적용가능 프로모션정보 (읽기전용 — pm_coupon_prod/pm_save_prod 전개 + 회원 발급여부, 2x2) ===== -->
+      <div class="section-title">회원 적용가능 프로모션정보</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
+        <span style="font-size:13px;font-weight:700;">회원검색</span>
+        <span style="font-size:12px;color:#333;">{{ uiState.applicableMemberNm ? (uiState.applicableMemberNm + ' (' + uiState.applicableMemberId + ')') : '전체 상품 적용가능 프로모션 표시 중' }}</span>
+        <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-member-search-open')">🔍 회원선택</button>
+        <button v-if="uiState.applicableMemberId" class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-member-clear')">✕ 선택해제</button>
+        <span style="font-size:11px;color:#aaa;">(선택)</span>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-      <!-- 내 적용가능 주문 쿠폰 목록 -->
+      <!-- 회원 적용가능 주문 쿠폰 목록 -->
       <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          내 적용가능 주문 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
+          회원 적용가능 주문 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
           <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableOrderCoupons.length }}건</span>
         </div>
         <div style="display:flex;gap:6px;">
@@ -2855,11 +2879,11 @@ window.PdProdDtl = {
         </bo-grid>
       </div>
       </div>
-      <!-- 내 적용가능 상품 쿠폰 목록 -->
+      <!-- 회원 적용가능 상품 쿠폰 목록 -->
       <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          내 적용가능 상품 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(상품당 1개)</span>
+          회원 적용가능 상품 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(상품당 1개)</span>
           <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableProdCoupons.length }}건</span>
         </div>
         <div style="display:flex;gap:6px;">
@@ -2873,11 +2897,11 @@ window.PdProdDtl = {
         </bo-grid>
       </div>
       </div>
-      <!-- 내 적용가능 배송비 쿠폰 목록 -->
+      <!-- 회원 적용가능 배송비 쿠폰 목록 -->
       <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          내 적용가능 배송비 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
+          회원 적용가능 배송비 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
           <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableDlivCoupons.length }}건</span>
         </div>
         <div style="display:flex;gap:6px;">
@@ -2891,11 +2915,11 @@ window.PdProdDtl = {
         </bo-grid>
       </div>
       </div>
-      <!-- 내 적용가능 적립금 목록 -->
+      <!-- 회원 적용가능 적립금 목록 -->
       <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">
-          내 적용가능 적립금 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
+          회원 적용가능 적립금 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
           <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoApplicableSaves.length }}건</span>
         </div>
         <div style="display:flex;gap:6px;">
