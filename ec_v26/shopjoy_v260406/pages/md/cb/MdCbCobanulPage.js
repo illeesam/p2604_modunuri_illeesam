@@ -488,22 +488,33 @@ window.MdCbCobanulPage = {
       dtlMode: 'edit', // 'view' | 'edit' — 목록에서 행 클릭=보기, [수정] 클릭=수정모드 (신규 작성은 항상 edit)
       chartMode: 'symbol', // 'symbol'(기호 도안, 편집 가능) | 'color'(배색 도안 — 색상 칸+구간 개수, 읽기전용 미리보기)
       descExampleTab: DESC_EXAMPLES[0].id,
-      roundExampleTab: ROUND_EXAMPLES[0].id,
+      roundExampleGroup: SYMBOL_GROUPS[0].label, // 원형 예제 1단 탭(카테고리) 현재 선택
+      roundExampleTab: ROUND_EXAMPLES[0].id,      // 원형 예제 2단 탭(그 카테고리 안의 개별 예제) 현재 선택
     });
     const descExampleTabs = reactive(DESC_EXAMPLES.map(e => ({ id: e.id, label: e.label })));
     const cfCurrentDescExample = computed(() => DESC_EXAMPLES.find(e => e.id === uiState.descExampleTab) || DESC_EXAMPLES[0]);
     const onUseDescExample = () => {
       form.descText = cfCurrentDescExample.value.text;
     };
-    /* cfGroupedRoundExamples — 원형 예제 탭을 SYMBOL_GROUPS 와 동일한 분류(PDF 1~6장)로 묶는다.
-       팔레트(cfGroupedSymbols)와 같은 라벨을 재사용해, 팔레트에서 본 분류 그대로 예제도 찾을 수 있게 한다. */
+    /* cfGroupedRoundExamples — 원형 예제를 SYMBOL_GROUPS 와 동일한 분류(PDF 1~6장)로 묶는다.
+       팔레트(cfGroupedSymbols)와 같은 라벨을 재사용해, 팔레트에서 본 분류 그대로 예제도 찾을 수 있게 한다.
+       2단 탭 구조: 1단=카테고리(roundExampleGroup), 2단=그 카테고리 안의 개별 예제(roundExampleTab). */
     const cfGroupedRoundExamples = computed(() => {
       const order = SYMBOL_GROUPS.map(g => g.label);
       return order
         .map(label => ({ label, tabs: ROUND_EXAMPLES.filter(e => e.group === label).map(e => ({ id: e.id, label: e.label })) }))
         .filter(g => g.tabs.length);
     });
+    const cfRoundExampleGroupTabs = computed(() => cfGroupedRoundExamples.value.map(g => ({ id: g.label, label: g.label })));
+    const cfCurrentRoundGroupTabs = computed(() => (cfGroupedRoundExamples.value.find(g => g.label === uiState.roundExampleGroup) || {}).tabs || []);
     const cfCurrentRoundExample = computed(() => ROUND_EXAMPLES.find(e => e.id === uiState.roundExampleTab) || ROUND_EXAMPLES[0]);
+    /* onSelectRoundGroup — 1단(카테고리) 탭 전환 시 그 카테고리의 첫 예제를 자동 선택(2단 탭에 아무것도
+       선택 안 된 상태로 보이는 것 방지) */
+    const onSelectRoundGroup = (label) => {
+      uiState.roundExampleGroup = label;
+      const grp = cfGroupedRoundExamples.value.find(g => g.label === label);
+      if (grp && grp.tabs.length) uiState.roundExampleTab = grp.tabs[0].id;
+    };
     const onUseRoundExample = () => {
       form.roundDescText = cfCurrentRoundExample.value.text;
     };
@@ -892,7 +903,8 @@ window.MdCbCobanulPage = {
       symbols, yarns, patternYarns, uiState, form, cellMap, symbolMap, yarnMap, cfGroupedSymbols, cfRows, cfCols, cfReadonly, cfPatternType, cfRoundChart,
       PRESET_COLORS, GRID_PRESETS, thumbInputRef, fnSymIcon, fnCellDisplay, fnColorRunStart,
       descExampleTabs, cfCurrentDescExample, onUseDescExample,
-      cfGroupedRoundExamples, cfCurrentRoundExample, onUseRoundExample, fnMagicRingIcon,
+      cfGroupedRoundExamples, cfRoundExampleGroupTabs, cfCurrentRoundGroupTabs, onSelectRoundGroup,
+      cfCurrentRoundExample, onUseRoundExample, fnMagicRingIcon,
       onNewPattern, onBackToList, onCellMouseDown, onCellMouseEnter, onGenDesc, onParseDesc, onSave, onDeletePattern,
       onSwitchToEdit, onCancelEdit, onOpenThumbPicker, onThumbFileChange, onRemoveThumb, onResetForm,
       onPickPresetColor, onPickYarnColor, onAddPatternYarn, onRemovePatternYarn,
@@ -1047,11 +1059,12 @@ window.MdCbCobanulPage = {
           <div class="cb-round-hint">시작 줄은 "매직링 원형 시작 N" 또는 "사슬 원형 시작 N" 두 가지를 지원합니다(매직링은 🌀 나선 아이콘으로 표시). 각 단은 "기호명 N코" 를 콤마로 나열하거나 "(기호명, 기호명)*K" 형식으로 반복 구간을 표기할 수 있습니다. 등록된 기호명과 정확히 일치해야 아이콘으로 표시됩니다.</div>
 
           <div v-if="!cfReadonly" class="cb-desc-examples">
-            <template v-for="grp in cfGroupedRoundExamples" :key="grp.label">
-              <div class="cb-symbol-group-title">{{ grp.label }}</div>
-              <fo-tab-bar :tabs="grp.tabs" :tab="uiState.roundExampleTab" dense
-                @tab-select="id => uiState.roundExampleTab = id" />
-            </template>
+            <div class="cb-symbol-group-title" style="margin-top:0;">기호 분류</div>
+            <fo-tab-bar :tabs="cfRoundExampleGroupTabs" :tab="uiState.roundExampleGroup" dense
+              @tab-select="onSelectRoundGroup" />
+            <div class="cb-symbol-group-title">예제</div>
+            <fo-tab-bar :tabs="cfCurrentRoundGroupTabs" :tab="uiState.roundExampleTab" dense
+              @tab-select="id => uiState.roundExampleTab = id" />
             <div class="cb-desc-example-body">
               <pre class="cb-desc-example-pre">{{ cfCurrentRoundExample.text }}</pre>
               <button class="btn btn-sm btn-secondary" @click="onUseRoundExample">이 예제 넣기</button>
