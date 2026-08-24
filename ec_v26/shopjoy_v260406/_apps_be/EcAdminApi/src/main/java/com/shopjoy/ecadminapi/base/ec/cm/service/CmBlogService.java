@@ -149,6 +149,7 @@ public class CmBlogService {
         entity.setUpdDate(LocalDateTime.now());
         int affected = cmBlogRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
         em.clear();
         return findById(entity.getBlogId());  // em.clear() 후 detached entity 반환 금지 — 새로 attach (saveOneBase 패턴과 동일)
     }
@@ -197,6 +198,7 @@ public class CmBlogService {
             int affected = cmBlogRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 CmBlog입니다: " + entity.getBlogId() + "::" + CmUtil.svcCallerInfo(this));
+            em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
             em.clear();
             return findById(entity.getBlogId());
         }

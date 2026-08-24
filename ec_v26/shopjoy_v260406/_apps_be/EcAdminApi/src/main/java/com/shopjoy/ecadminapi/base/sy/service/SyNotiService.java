@@ -135,6 +135,7 @@ public class SyNotiService {
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         int affected = syNotiRepository.updateSelective(body);
         if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
         em.clear();
         return findById(id);
     }

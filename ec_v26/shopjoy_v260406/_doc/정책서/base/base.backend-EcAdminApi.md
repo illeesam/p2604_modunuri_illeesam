@@ -1602,6 +1602,86 @@ return res.setPageInfo(content, total, pageNo, pageSize, search);
 
 ---
 
+## 20. `em.clear()` 앞에는 반드시 `em.flush()` (2026-08-24) ⭐
+
+### 무슨 일이 있었나
+
+BO 상품관리에서 **파일 첨부 이미지가 저장되지 않는** 버그가 있었다. 응답은 `200 "저장되었습니다"`
+인데 `pd_prod_img` 는 0건, 그런데 `sy_attach.ref_id` 연계는 정상적으로 걸려 있는 모순 상태였다.
+
+원인은 `SyAttachService.updateSelective()` 마지막 줄의 `em.clear()` 였다.
+
+```java
+int affected = syAttachRepository.updateSelective(entity);  // QueryDSL 벌크 UPDATE → DB 직행
+if (affected == 0) throw ...;
+em.clear();          // 💥 영속성 컨텍스트를 통째로 비움
+```
+
+호출부(`BoPdProdTabController.updateImages`)가 한 루프에서 이렇게 돌고 있었다.
+
+```java
+for (Row r : rows) {
+    pdProdImgRepository.save(img);        // flush 전 — 컨텍스트에 큐잉만 된 상태
+    syAttachService.updateSelective(...); // 내부 em.clear() → 위 INSERT 가 통째로 폐기
+}
+```
+
+- 벌크 UPDATE 는 DB 로 직행하므로 **첨부 연계는 살아남고**
+- 큐잉 상태이던 INSERT 는 **흔적 없이 사라진다**
+- 예외도 안 나고 200 을 돌려주므로 **조용히 실패**한다
+
+`attachId` 가 없는 경로(URL 직접입력)는 `updateSelective` 를 타지 않아 정상 저장되었기 때문에
+"파일 업로드만 안 된다"는 형태로 나타났다.
+
+### 규칙
+
+**`em.clear()` 를 호출하기 직전에는 반드시 `em.flush()` 를 먼저 호출한다.**
+
+```java
+em.flush();   // 보류 중인 INSERT/UPDATE 를 DB 로 내려보낸 뒤
+em.clear();   // 컨텍스트를 비운다
+```
+
+- 보류 중인 작업이 없으면 `flush()` 는 no-op 이라 손해가 없다
+- 보류 중인 작업이 있으면 **폐기 대신 정상 반영**된다
+- 특히 `updateSelective()` 처럼 **공용 서비스가 내부에서 clear 하는 경우**, 호출자는 자기 작업이
+  날아가는 것을 알 수 없다. 그래서 clear 하는 쪽에서 방어해야 한다
+
+### 예외 — 읽기 전용 청크 순회
+
+`SyRoleService.fetchChunked` / `SyUserService.fetchChunked` 는 **단독 `em.clear()` 를 유지**한다.
+readOnly 트랜잭션에서 청크마다 로드된 엔티티를 비워 메모리 누적을 막는 용도이고,
+read-only 커넥션에서 `flush()` 를 시도하면 오히려 실패할 수 있다.
+
+### 호출 순서도 중요하다
+
+flush 를 넣더라도 **"쓰기 전부 → flush → 그다음 연계"** 순서로 단계를 나누는 편이 안전하다.
+`updateImages()` 는 이렇게 2단계로 분리했다.
+
+```java
+for (Row r : rows) {
+    pdProdImgRepository.save(img);
+    attachLinks.add(new String[]{ r.getAttachId(), prodImgId });  // 연계는 뒤로 미룸
+}
+pdProdImgRepository.flush();          // em.clear() 에 폐기되지 않도록 먼저 내려보냄
+for (String[] link : attachLinks) {   // 그다음 연계
+    syAttachService.updateSelective(...);
+}
+```
+
+### 점검
+
+```bash
+# flush 없이 단독으로 clear 하는 곳 찾기 (위 예외 2곳 외에는 0 이어야 정상)
+cd _apps_be/EcAdminApi/src/main/java
+grep -rn -B1 "em\.clear();" --include=*.java . | grep -A1 -v "em\.flush()"
+```
+
+**2026-08-24 일괄 정비**: 전체 `em.clear()` 423곳 중 flush 선행이 없던 **271곳(137파일)** 에
+`em.flush()` 를 삽입했다. 최종 상태 = flush 선행 421 / 의도적 단독 2.
+
+---
+
 ## 관련 정책
 
 - `base.인증-bo.md` — 관리자 인증 흐름 (프론트엔드 관점)

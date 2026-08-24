@@ -159,6 +159,7 @@ public class DpPanelService {
         entity.setUpdDate(LocalDateTime.now());
         int affected = dpPanelRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
         em.clear();
         return entity;
     }
@@ -207,6 +208,7 @@ public class DpPanelService {
             int affected = dpPanelRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
+            em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
             em.clear();
             return findById(entity.getPanelId());
         }

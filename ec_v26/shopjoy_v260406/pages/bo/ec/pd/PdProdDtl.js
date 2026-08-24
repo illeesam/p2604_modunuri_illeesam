@@ -608,7 +608,9 @@ window.PdProdDtl = {
         get visible() { return form.prodTypeCd === 'GROUP'; } },
       { id: 'setitems', label: '세트구성',        icon: '🎁',
         get visible() { return form.prodTypeCd === 'SET'; } },
-      { id: 'image',    label: '이미지',          icon: '🖼', get count() { return tabData.images.length; } },
+      /* 뱃지는 화면에 실제로 보이는 목록(images) 기준 — tabData(서버본)만 세면 업로드 직후에도 0 으로 남아
+         "2개 보이는데 뱃지는 0" 인 상태가 된다 */
+      { id: 'image',    label: '이미지',          icon: '🖼', get count() { return images.length; } },
       { id: 'related',  label: '연관상품',        icon: '🔗', get count() { return tabData.rels.length; } },
     ]);
 
@@ -1001,14 +1003,20 @@ window.PdProdDtl = {
        handleLoadData() 는 tabData만 갱신하고 images 는 건드리지 않으므로, 서버 반영 결과를
        화면에 실제로 비추려면(저장 직후 재조회, 부모 reloadTrigger 재조회) 반드시 별도 호출해야 한다. */
     const syncImagesFromTabData = () => {
+      /* ⚠️ 업로드했지만 아직 [저장]하지 않은 항목(_persisted === false)은 절대 버리면 안 된다.
+         부모 Mng 의 reloadTrigger 나 저장 직후 재조회가 이 함수를 부르는데, 그때 미저장 업로드분을
+         날려버리면 사용자는 이미지가 사라진 채로 [저장]하게 되고 → 서버의 기존 이미지까지
+         전체 삭제된다(PUT /images 는 전체 교체 방식). 실제로 이 경로로 이미지가 유실됐다. */
+      const pending = images.filter(i => i && i._persisted === false);
       if (tabData.images.length) {
-        images.splice(0, images.length, ...tabData.images);
-        if (!images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
+        images.splice(0, images.length, ...tabData.images, ...pending);
       } else {
         const p = products[0] || null;
-        if (p?.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOpt1Id: '', prodOpt2Id: '', _persisted: true }); }
+        if (pending.length) { images.splice(0, images.length, ...pending); }
+        else if (p?.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOpt1Id: '', prodOpt2Id: '', _persisted: true }); }
         else { images.splice(0, images.length); }
       }
+      if (images.length && !images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
     };
 
     /* setMain — 설정 */
@@ -1654,7 +1662,18 @@ window.PdProdDtl = {
         case 'price':    payload = { skus: skus.map(s => ({ ...s, stockQty: s.stock ?? 0, prodSkuCode: s.skuCode || s.prodSkuCode || '' })) }; break;
         case 'bundle':   payload = { items: tabData.bundleItems.map(b => ({ prodId: b.itemProdId || b.prodId || null, qty: b.itemQty || 1, priceRate: b.priceRate || 0, sortOrd: b.sortOrd || 0 })) }; break;
         case 'setitems': payload = { items: tabData.setItems.map(s => ({ prodId: s.itemProdId || s.prodId || null, qty: s.itemQty || 1, itemDesc: s.itemDesc || '', sortOrd: s.sortOrd || 0 })) }; break;
-        case 'image':    payload = { images: images.map(({ id, ...rest }) => rest) }; break;
+        case 'image': {
+          const imgRows = images.map(({ id, ...rest }) => rest);
+          /* PUT /images 는 전체 교체다. 화면이 비었는데 서버엔 이미지가 있으면 전삭제가 되므로
+             사고 방지를 위해 한 번 더 확인받는다(위 pending 보존과 함께 이미지 유실을 막는 2중 안전장치). */
+          if (!imgRows.length && tabData.images.length) {
+            const okDelAll = await showConfirm('이미지 전체 삭제',
+              `등록된 이미지 ${tabData.images.length}건이 모두 삭제됩니다. 계속하시겠습니까?`);
+            if (!okDelAll) { return; }
+          }
+          payload = { images: imgRows };
+          break;
+        }
         case 'related':  payload = { relProds, codeProds }; break;
         default:         payload = {}; break;
       }
@@ -1678,7 +1697,12 @@ window.PdProdDtl = {
         }
         /* UX-bo §18: 저장한 탭의 데이터를 다시 가져와 화면 동기화 */
         await handleLoadData();
-        if (tabId === 'image') { syncImagesFromTabData(); }
+        if (tabId === 'image') {
+          /* 저장이 끝났으면 화면의 항목은 모두 서버에 반영된 상태다. _persisted 를 켜 두지 않으면
+             바로 아래 sync 에서 "미저장 업로드분"으로 오인해 서버본 뒤에 한 번 더 붙어 중복된다. */
+          images.forEach(i => { if (i) { i._persisted = true; } });
+          syncImagesFromTabData();
+        }
         _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
       } catch (err) { _afterApiErr(err); }
     };

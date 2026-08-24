@@ -102,6 +102,9 @@ public class SyRoleService {
             totalProcessed += chunk.size();
             if (chunk.size() < chunkSize) break;
             pageNo++;
+            /* 읽기 전용 청크 순회 — 청크마다 로드된 엔티티를 비워 메모리 누적을 막는다.
+               여기서는 flush 하지 않는다: readOnly 트랜잭션이라 보류 중인 쓰기가 없고,
+               read-only 커넥션에서 flush 를 시도하면 오히려 실패할 수 있다. */
             em.clear();
         }
         return totalProcessed;
@@ -147,6 +150,7 @@ public class SyRoleService {
         entity.setUpdDate(LocalDateTime.now());
         int affected = syRoleRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
         em.clear();
         return entity;
     }
@@ -195,6 +199,7 @@ public class SyRoleService {
             int affected = syRoleRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyRole입니다: " + entity.getRoleId() + "::" + CmUtil.svcCallerInfo(this));
+            em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
             em.clear();
             return findById(entity.getRoleId());
         }

@@ -223,8 +223,16 @@ public class BoPdProdTabController {
         // 1) 기존 데이터 전체 삭제
         pdProdImgRepository.deleteByProdId(prodId);
 
-        // 2) 신규 INSERT + attach 연계
+        /* 2) 신규 INSERT — 첨부 연계보다 먼저 전부 flush 한다.
+         *
+         * ⚠️ 순서가 중요하다. SyAttachService.updateSelective() 는 QueryDSL 벌크 UPDATE 를 실행한 뒤
+         *    마지막에 em.clear() 로 영속성 컨텍스트를 통째로 비운다. 예전처럼 save() 와
+         *    updateSelective() 를 한 루프 안에서 번갈아 호출하면, 아직 flush 되지 않은
+         *    pd_prod_img INSERT 가 em.clear() 에 휩쓸려 전부 폐기된다.
+         *    → 첨부(sy_attach.ref_id)만 연결되고 정작 이미지 행은 0건이 되는 증상이 났었다(2026-08-24).
+         *    그래서 "INSERT 전부 → flush → 그다음 연계" 2단계로 분리한다. */
         java.util.Set<String> keptAttachIds = new java.util.HashSet<>();
+        java.util.List<String[]> attachLinks = new java.util.ArrayList<>();  // [attachId, prodImgId]
         int idx = 0;
         for (PdProdImgUpdateDto.Row r : rows) {
             String prodImgId = "PI" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
@@ -249,10 +257,17 @@ public class BoPdProdTabController {
 
             if (r.getAttachId() != null && !r.getAttachId().isBlank()) {
                 keptAttachIds.add(r.getAttachId());
-                syAttachService.updateSelective(SyAttach.builder()
-                    .attachId(r.getAttachId()).refTableNm(SyAttachRefTableConst.PD_PROD_IMG).refId(prodImgId).build());
+                attachLinks.add(new String[]{ r.getAttachId(), prodImgId });
             }
             idx++;
+        }
+        /* em.clear() 에 폐기되지 않도록 INSERT 를 DB 로 내려보낸 뒤 연계를 진행한다 */
+        pdProdImgRepository.flush();
+
+        // 2-1) 첨부 연계 (sy_attach.ref_table_nm / ref_id → 방금 만든 pd_prod_img 행)
+        for (String[] link : attachLinks) {
+            syAttachService.updateSelective(SyAttach.builder()
+                .attachId(link[0]).refTableNm(SyAttachRefTableConst.PD_PROD_IMG).refId(link[1]).build());
         }
 
         // 3) 더 이상 참조되지 않는 기존 첨부 정리

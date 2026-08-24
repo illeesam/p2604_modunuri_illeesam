@@ -120,6 +120,9 @@ public class SyUserService {
             totalProcessed += chunk.size();
             if (chunk.size() < chunkSize) break;
             pageNo++;
+            /* 읽기 전용 청크 순회 — 청크마다 로드된 엔티티를 비워 메모리 누적을 막는다.
+               여기서는 flush 하지 않는다: readOnly 트랜잭션이라 보류 중인 쓰기가 없고,
+               read-only 커넥션에서 flush 를 시도하면 오히려 실패할 수 있다. */
             em.clear();
         }
         return totalProcessed;
@@ -167,6 +170,7 @@ public class SyUserService {
         int affected = syUserRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         // QueryDSL 벌크연산 후 영속성 컨텍스트 동기화
+        em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
         em.clear();
         return entity;
     }
@@ -223,6 +227,7 @@ public class SyUserService {
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
             /* 벌크 UPDATE 후 직후 findById 가 stale 1차 캐시를 보지 않도록 clear 필수 */
+            em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
             em.clear();
             return findById(entity.getUserId());
         }
