@@ -35,8 +35,16 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null,
-      promoMemberPickerOpen: false, applicableMemberId: '', applicableMemberNm: '' });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null,
+      /* 이미지 업로드 대상 옵션 — 옵션상품은 "옵션1 먼저 고르고 → 여러 장 한 번에" 가 자연스럽다.
+         여기서 고른 값이 [파일 선택]/[URL 입력] 으로 새로 추가되는 행의 opt_id_1/2 초기값이 된다.
+         (''=공통). 기존 행은 각 행의 select 로 계속 개별 변경할 수 있다. */
+      uploadOpt1: '',      // [+ 파일 선택] 이 열릴 때 심어두는 대상 옵션1 그룹 key (onFileChange 가 읽는다)
+      skuView: 'list',        // SKU 편집 뷰 — 'list'(144행 목록) | 'matrix'(N×M 격자)
+      skuMxField: 'addPrice', // 매트릭스가 편집 중인 필드 key
+      skuMxBulk: '',          // 행/열/전체 일괄 채우기에 쓸 값
+      dropOpt1: null,      // OS 파일을 끌고 있는 그룹 key (테두리 하이라이트용)
+      dragImgId: null });  // 순서변경 드래그 중인 이미지 id — 그룹 간 이동 시 옵션1 재지정에 사용
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ PROD_STATUS_CD: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [], DLIV_METHOD: [] });
@@ -93,35 +101,6 @@ window.PdProdDtl = {
         boApiSvc.pmDiscntItem.getList({ targetId: cfCurProdId.value, targetTypeCd: 'PRODUCT' }, '상품관리', '할인재조회')
           .then(r => tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(r.data?.data || [])))
           .catch(() => {});
-        return;
-      } else if (cmd === 'promo-applicable-coupon-reload') {
-        if (!cfCurProdId.value) return;
-        boApiSvc.pmCoupon.getList({ prodId: cfCurProdId.value, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능쿠폰재조회')
-          .then(r => tabData.promoApplicableCoupons.splice(0, tabData.promoApplicableCoupons.length, ...(r.data?.data || [])))
-          .catch(() => {});
-        return;
-      } else if (cmd === 'promo-applicable-save-reload') {
-        if (!cfCurProdId.value) return;
-        boApiSvc.pmSave.getList({ prodId: cfCurProdId.value, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능적립금재조회')
-          .then(r => tabData.promoApplicableSaves.splice(0, tabData.promoApplicableSaves.length, ...(r.data?.data || [])))
-          .catch(() => {});
-        return;
-      // 회원 적용가능 프로모션 — 회원검색
-      } else if (cmd === 'promo-member-search-open') {
-        uiState.promoMemberPickerOpen = true;
-        return;
-      } else if (cmd === 'promo-member-clear') {
-        uiState.applicableMemberId = ''; uiState.applicableMemberNm = '';
-        handleBtnAction('promo-applicable-coupon-reload');
-        handleBtnAction('promo-applicable-save-reload');
-        return;
-      } else if (cmd === 'promo-member-pick') {
-        uiState.promoMemberPickerOpen = false;
-        if (!param) return;
-        uiState.applicableMemberId = param.selId || param.memberId || '';
-        uiState.applicableMemberNm = param.selName || param.memberNm || '';
-        handleBtnAction('promo-applicable-coupon-reload');
-        handleBtnAction('promo-applicable-save-reload');
         return;
       } else if (cmd === 'promo-coupon-delete') {
         if (!param) return;
@@ -233,9 +212,6 @@ window.PdProdDtl = {
       // 코드그룹 모달 열기
       } else if (cmd === 'codeGrpModal-open') {
         return openCodeGrpModal(param.codeGrp, param.title);
-      // 옵션 그룹 추가
-      } else if (cmd === 'optGroup-add') {
-        return addOptGroup();
       // 옵션 그룹 삭제
       } else if (cmd === 'optGroup-remove') {
         return removeOptGroup(param);
@@ -268,13 +244,16 @@ window.PdProdDtl = {
         return addPlanRow();
       // 이미지 파일 선택 (파일 input 트리거)
       } else if (cmd === 'img-triggerFile') {
-        return triggerFileInput();
-      // 이미지 URL 입력 추가
+        return triggerFileInput(param);
+      // 이미지 URL 입력 추가 (param = 대상 옵션1 그룹 key)
       } else if (cmd === 'img-addByUrl') {
-        return addImageByUrl();
+        return addImageByUrl(param);
       // 이미지 대표 설정
       } else if (cmd === 'img-setMain') {
         return setMain(param);
+      // 이미지 파일 교체 (해당 행만 파일 바꾸기)
+      } else if (cmd === 'img-replaceFile') {
+        return triggerReplaceFile(param);
       // 이미지 삭제
       } else if (cmd === 'img-remove') {
         return removeImage(param);
@@ -354,7 +333,10 @@ window.PdProdDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['PROD_STATUS_CD', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER', 'DLIV_METHOD_CD'], {compNm: 'PdProdDtl'});
+        /* PROD_OPT_CATEGORY 는 3단 계층(카테고리 9 → 옵션유형 18 → 프리셋값 99) 전체를 통째로 쓴다.
+           cfOptTypeLevel1Codes / getOptTypeCodes / getOptValCodes 가 codeLevel 로 갈라 쓰므로
+           그룹 하나만 실으면 세 단계가 모두 채워진다. 빠지면 [옵션 카테고리] select 가 빈 채로 뜬다. */
+        await codeStore.saLoadCodes(['PROD_STATUS_CD', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER', 'DLIV_METHOD_CD', 'PROD_OPT_CATEGORY'], {compNm: 'PdProdDtl'});
         if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);
@@ -380,7 +362,7 @@ window.PdProdDtl = {
       rels:    { pageNo: 1, pageSize: 10, totalCount: 0 },
     });
     // 탭별 전체 데이터 (페이징은 프론트 슬라이스)
-    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [], promoGifts: [], promoApplicableCoupons: [], promoApplicableSaves: [] });
+    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [], promoGifts: [] });
 
 
     /* 상품 onTabPageChange */
@@ -534,18 +516,13 @@ window.PdProdDtl = {
               boApiSvc.pmSaveItem.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '적립금조회'),
               boApiSvc.pmDiscntItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '할인조회'),
               boApiSvc.pmGiftCond.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '사은품조회'),
-              boApiSvc.pmCoupon.getList(    { prodId: props.dtlId, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능쿠폰조회'),
-              boApiSvc.pmSave.getList(      { prodId: props.dtlId, memberId: uiState.applicableMemberId || undefined }, '상품관리', '적용가능적립금조회'),
             ]);
             tabData.promoCoupons.splice(0, tabData.promoCoupons.length, ...(cr.data?.data || []));
             tabData.promoSaves.splice(0,   tabData.promoSaves.length,   ...(sr2.data?.data || []));
             tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(dr.data?.data || []));
             tabData.promoGifts.splice(0,   tabData.promoGifts.length,   ...(gr.data?.data || []));
-            tabData.promoApplicableCoupons.splice(0, tabData.promoApplicableCoupons.length, ...(acr.data?.data || []));
-            tabData.promoApplicableSaves.splice(0, tabData.promoApplicableSaves.length, ...(asr.data?.data || []));
           } catch (_) {
             tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
-            tabData.promoApplicableCoupons.splice(0); tabData.promoApplicableSaves.splice(0);
           }
           // 판매계획 로드
           try {
@@ -584,7 +561,6 @@ window.PdProdDtl = {
       tabData.opts.groups.splice(0); tabData.opts.items.splice(0);
       tabData.bundleItems.splice(0); tabData.setItems.splice(0);
       tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
-      tabData.promoApplicableCoupons.splice(0); tabData.promoApplicableSaves.splice(0);
     });
 
     watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
@@ -860,6 +836,41 @@ window.PdProdDtl = {
       generateSkus();
     };
 
+    /* ── 기본정보 [옵션상품] 그룹의 옵션1/옵션2 유형 select 전용 헬퍼 ─────────────
+       optGroups 는 "있으면 1단, 하나 더 있으면 2단" 인 가변 배열이라 폼의 고정 2필드와 모양이 다르다.
+       그 간극을 여기서 흡수한다 — 폼은 항상 옵션1/옵션2 두 칸을 보여주고, 배열은 필요할 때 늘고 준다. */
+
+    /* fnOptGrpType — 해당 단의 현재 유형 코드 (그룹이 아직 없으면 빈 값) */
+    const fnOptGrpType = (level) => (optGroups[level - 1] ? (optGroups[level - 1].level2Cd || '') : '');
+
+    /* fnOptGrpTypeLabel — 보기모드 표시용 라벨 */
+    const fnOptGrpTypeLabel = (level) => {
+      const cv = fnOptGrpType(level);
+      if (!cv) { return '-'; }
+      const found = cfOptTypeCodes.value.find(c => c.codeValue === cv);
+      return found ? (found.codeLabel || cv) : cv;
+    };
+
+    /* onOptGrpTypeChange — 옵션1/옵션2 유형 변경.
+       - 그룹이 아직 없으면 만들어서(addOptGroup) 채운다 — 카테고리에 유형이 1개뿐이면 2단이 없다
+       - 빈 값을 고르면 2단은 제거(= 1차원 옵션상품). 1단은 옵션상품의 최소 구성이라 남긴다 */
+    const onOptGrpTypeChange = (level, codeValue) => {
+      if (!codeValue) {
+        if (level === 2 ? !!optGroups[1] : false) { removeOptGroup(1); }
+        return;
+      }
+      if (!uiState.prodOptCategoryTypeCd) { showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
+      while (optGroups.length < level) { addOptGroup(); }
+      const grp = optGroups[level - 1];
+      if (!grp) { return; }
+      const found = (getOptTypeCodes(uiState.prodOptCategoryTypeCd) || []).find(t => t.codeValue === codeValue);
+      grp.level2Cd = codeValue;
+      grp.grpNm    = found ? (found.codeLabel || codeValue) : codeValue;
+      const items  = level === 1 ? fnBuildLevel1Items(codeValue) : fnBuildLevel2Items(codeValue);
+      grp.items.splice(0, grp.items.length, ...items);
+      generateSkus();
+    };
+
     /* removeOptGroup — 제거 */
     const removeOptGroup = (idx) => {
       optGroups.splice(idx, 1);
@@ -938,6 +949,84 @@ window.PdProdDtl = {
     };
     const cfTotalStock = computed(() => safeFilter(skus, s => s.useYn === 'Y').reduce((a, s) => a + (Number(s.stock) || 0), 0));
 
+    /* ── SKU 매트릭스 편집 (N×M) ─────────────────────────────────────────────
+       144행 목록에서는 "XL 이상만 +2000" 같은 패턴도, 값이 비어 있는 조합도 보이지 않는다.
+       조합 설정(useYn 토글)과 같은 격자에 값 필드 하나를 얹어 한 화면에서 채우게 한다.
+       목록과 **같은 skus 배열을 직접 편집**하므로 두 뷰 사이에 동기화 로직이 없다.
+       SKU코드·재고코드는 자유 텍스트(+피커)라 격자 셀에 담을 수 없어 목록 전용으로 남긴다. */
+    const SKU_MX_FIELDS = [
+      { key: 'addPrice', label: '추가금액', type: 'number', unit: '원' },
+      { key: 'stock',    label: '재고수량', type: 'number', unit: '개' },
+      { key: 'statusCd', label: '판매상태', type: 'select' },
+    ];
+    /* fnMxField — 현재 편집 중인 필드 정의 */
+    const fnMxField = () => SKU_MX_FIELDS.find(f => f.key === uiState.skuMxField) || SKU_MX_FIELDS[0];
+    /* fnMxItems — 격자의 행(1단)·열(2단) 항목. 목록/조합설정과 동일한 "사용 + 이름 있음" 기준 */
+    const fnMxItems = (level) => safeFilter(optGroups[level - 1]?.items || [], i => i ? (i.useYn === 'Y' ? !!String(i.nm || '').trim() : false) : false);
+    /* fnMxSku — (1단, 2단) 교차점의 SKU 행 */
+    const fnMxSku = (id1, id2) => skus.find(s => s ? s._optKey === (id1 + '_' + id2) : false) || null;
+    /* fnMxOn — 그 조합이 활성(useYn=Y)인가. 비활성 셀은 흐리게 + 일괄 채우기 대상에서 제외 */
+    const fnMxOn = (id1, id2) => { const s = fnMxSku(id1, id2); return s ? s.useYn === 'Y' : false; };
+
+    /* fnMxCellStyle — 값 자체로 상태가 읽히게 한다.
+       "0 원 / 재고 0" 을 눈에 띄게 해야 채우다 만 조합이 한눈에 드러난다. */
+    const fnMxCellStyle = (id1, id2) => {
+      const sku = fnMxSku(id1, id2);
+      if (!sku) { return 'background:#fafafa;'; }
+      if (sku.useYn !== 'Y') { return 'background:#f5f5f5;opacity:0.45;'; }
+      const f = fnMxField();
+      if (f.key === 'stock')    { return (Number(sku.stock) || 0) === 0 ? 'background:#fff1f0;' : ''; }
+      if (f.key === 'addPrice') { return (Number(sku.addPrice) || 0) === 0 ? '' : 'background:#f6ffed;'; }
+      if (f.key === 'statusCd') {
+        return sku.statusCd === 'SOLD_OUT' ? 'background:#fffbe6;' : (sku.statusCd === 'SUSPENDED' ? 'background:#fff1f0;' : '');
+      }
+      return '';
+    };
+
+    /* fnMxApply — 대상 SKU 들에 현재 일괄값을 적용. 반환값은 실제로 바뀐 셀 수 */
+    const fnMxApply = (targets) => {
+      const f   = fnMxField();
+      const raw = uiState.skuMxBulk;
+      const val = f.type === 'number' ? (Number(raw) || 0) : raw;
+      let n = 0;
+      targets.forEach(sku => { if (sku ? sku.useYn === 'Y' : false) { sku[f.key] = val; n++; } });
+      return n;
+    };
+    /* fnMxBulkGuard — 일괄값이 비었으면 막는다 (빈 값으로 전체를 밀어버리는 사고 방지) */
+    const fnMxBulkGuard = () => {
+      if (String(uiState.skuMxBulk || '').trim() === '') {
+        showToast('먼저 [일괄값] 을 입력한 뒤 행/열 헤더를 클릭하세요.', 'error');
+        return false;
+      }
+      return true;
+    };
+    /* onMxFillRow / onMxFillCol — 행·열 헤더 클릭 시 그 줄 전체를 일괄값으로 채운다
+       (조합 설정의 행/열 토글과 같은 조작감. 비활성 조합은 건너뛴다) */
+    const onMxFillRow = (i1) => {
+      if (cfDtlMode.value || !fnMxBulkGuard()) { return; }
+      const n = fnMxApply(fnMxItems(2).map(i2 => fnMxSku(i1._id, i2._id)));
+      showToast(`${i1.nm} 행 ${n}개 조합에 적용했습니다.`, 'success');
+    };
+    const onMxFillCol = (i2) => {
+      if (cfDtlMode.value || !fnMxBulkGuard()) { return; }
+      const n = fnMxApply(fnMxItems(1).map(i1 => fnMxSku(i1._id, i2._id)));
+      showToast(`${i2.nm} 열 ${n}개 조합에 적용했습니다.`, 'success');
+    };
+    /* onMxFillAll — 전체 적용만 confirm 을 받는다. 한 번에 100+ 셀을 덮어쓰는 건
+       행/열 채우기(십여 셀, 눈으로 확인 가능)와 성격이 다르다. */
+    const onMxFillAll = async () => {
+      if (cfDtlMode.value || !fnMxBulkGuard()) { return; }
+      const f = fnMxField();
+      const targets = [];
+      fnMxItems(1).forEach(i1 => fnMxItems(2).forEach(i2 => targets.push(fnMxSku(i1._id, i2._id))));
+      const cnt = targets.filter(s => s ? s.useYn === 'Y' : false).length;
+      const ok = await showConfirm('전체 적용',
+        `활성 조합 ${cnt}개의 [${f.label}] 을(를) "${uiState.skuMxBulk}" 로 모두 덮어씁니다.
+계속하시겠습니까?`);
+      if (!ok) { return; }
+      showToast(`${fnMxApply(targets)}개 조합에 적용했습니다.`, 'success');
+    };
+
     // -- SKU 행 이동 (위/아래 한 칸) — 원본 skus 배열 인덱스 기준 swap
     /* moveSku — 이동 */
     const moveSku = (sku, dir) => {
@@ -968,19 +1057,47 @@ window.PdProdDtl = {
     const images = reactive([]);
     let imgIdSeq = 1;
     const fileInputRef = ref(null);
+    /* 파일 교체 — 어느 행을 바꾸는 중인지 기억해 둘 별도 input.
+       추가(onFileChange)는 multiple 이라 같은 input 을 쓰면 "교체"인지 "추가"인지 구분할 수 없다. */
+    const replaceInputRef = ref(null);
+    const replaceImgId = ref(null);
 
-    /* triggerFileInput — trigger 파일 입력 */
-    const triggerFileInput = () => fileInputRef.value?.click();
+    /* fnOpt1KeyOf — 옵션1 항목 → pd_prod_img.prod_opt1_id 에 저장되는 키 (행 select 의 :value 와 동일 규칙) */
+    const fnOpt1KeyOf = (item) => (item ? (item.val || String(item._id)) : '');
+    /* fnNormOpt1Key — 그룹 key → 실제 저장값. '__etc__'(고아 그룹)는 공통으로 취급 */
+    const fnNormOpt1Key = (key) => (key === '__etc__' || !key ? '' : key);
 
-    /* addImageByUrl — 추가 */
-    const addImageByUrl = () => images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0, prodOpt1Id: '', prodOpt2Id: '' });
+    /* cfImgGroups — 이미지를 옵션1(색상) 그룹으로 묶는다.
+       옵션상품 이미지는 "색상 단위로 여러 장" 이 실무 기본이라, 평면 목록보다 그룹이 훨씬 읽기 쉽다.
+       - 그룹 순서: 공통(NULL) → 옵션설정 탭의 옵션1 항목 순서(배열 순서 = 정렬순서)
+       - items 의 idx 는 images 원본 인덱스 — 순서변경 드래그/대표/삭제가 그대로 동작해야 한다
+       - 옵션설정에서 지워진 옵션값을 물고 있는 이미지는 '__etc__' 그룹으로 모아 눈에 띄게 한다
+         (그렇게 안 하면 화면에서 조용히 사라져 저장 시 통째로 날아간다) */
+    const cfImgGroups = computed(() => {
+      const opt1Items = optGroups[0]?.items || [];
+      const hasOpt1 = opt1Items.length > 0;
+      const groups = [{ key: '', label: hasOpt1 ? '공통 (옵션 무관)' : '이미지', isEtc: false, items: [] }];
+      opt1Items.forEach((it) => {
+        if (!it) { return; }
+        groups.push({ key: fnOpt1KeyOf(it), label: (it.nm || '(이름 없음)') + (it.val ? ' (' + it.val + ')' : ''), isEtc: false, items: [] });
+      });
+      const byKey = new Map(groups.map(g => [g.key, g]));
+      const etc = { key: '__etc__', label: '옵션값 없음', isEtc: true, items: [] };
+      images.forEach((img, idx) => {
+        if (!img) { return; }
+        const g = byKey.get(img.prodOpt1Id || '');
+        (g || etc).items.push({ img, idx });
+      });
+      if (etc.items.length) { groups.push(etc); }
+      return groups;
+    });
 
-    /* onFileChange — 이벤트. base64 인코딩 대신 실제 업로드(coApiSvc.cmUpload)로 CDN URL 확보 —
+    /* fnUploadFilesTo — 파일 목록을 특정 옵션1 그룹으로 업로드. [+ 파일 선택]과 파일 드롭이 공용한다.
+       base64 인코딩 대신 실제 업로드(coApiSvc.cmUpload)로 CDN URL 확보 —
        sy_attach 에 물리 저장되고, attachId 는 저장 시 pd_prod_img.attach_id 로 연계된다. */
-    const onFileChange = async (e) => {
-      const files = Array.from(e.target.files || []);
-      e.target.value = '';
-      if (!files.length) return;
+    const fnUploadFilesTo = async (fileList, opt1Key) => {
+      const files = Array.from(fileList || []);
+      if (!files.length) { return; }
       const fd = new FormData();
       files.forEach(f => fd.append('files', f));
       fd.append('businessCode', 'PROD_IMG');
@@ -990,12 +1107,90 @@ window.PdProdDtl = {
         uploaded.forEach(f => {
           images.push({
             id: imgIdSeq++, attachId: f.attachId, _persisted: false,
-            previewUrl: f.cdnImgUrl || '', prodOpt1Id: '', prodOpt2Id: '',
+            previewUrl: f.cdnImgUrl || '',
+            prodOpt1Id: fnNormOpt1Key(opt1Key), prodOpt2Id: '',
             isMain: images.length === 0,
           });
         });
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '이미지 업로드 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* triggerFileInput — 어느 그룹에 넣을지 기억해 두고 파일 선택창을 연다 */
+    const triggerFileInput = (opt1Key) => {
+      if (cfDtlMode.value) { return; }
+      uiState.uploadOpt1 = fnNormOpt1Key(opt1Key);
+      fileInputRef.value?.click();
+    };
+
+    /* addImageByUrl — 해당 그룹에 URL 입력용 빈 행 추가 */
+    const addImageByUrl = (opt1Key) => {
+      if (cfDtlMode.value) { return; }
+      images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0,
+        prodOpt1Id: fnNormOpt1Key(opt1Key), prodOpt2Id: '' });
+    };
+
+    /* onFileChange — 파일 선택창 결과. 대상 그룹은 triggerFileInput 이 심어둔 uploadOpt1 */
+    const onFileChange = async (e) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = '';
+      await fnUploadFilesTo(files, uiState.uploadOpt1);
+    };
+
+    /* onImgGroupDragOver / DragLeave / Drop — 그룹 카드에 대한 드래그드롭.
+       OS 파일 드롭과 "행 순서변경" 내부 드롭이 같은 drop 이벤트를 타므로 dataTransfer.files 로 구분한다.
+       (내부 순서변경엔 files 가 비어 있다 — 그 경우 그룹 간 이동으로 보고 옵션1 을 재지정한다) */
+    const fnIsFileDrag = (e) => Array.from(e?.dataTransfer?.types || []).includes('Files');
+    const onImgGroupDragOver = (e, key) => {
+      if (cfDtlMode.value) { return; }
+      if (!fnIsFileDrag(e)) { return; }
+      uiState.dropOpt1 = key;
+    };
+    const onImgGroupDragLeave = (key) => { if (uiState.dropOpt1 === key) { uiState.dropOpt1 = null; } };
+    const onImgGroupDrop = async (e, key) => {
+      uiState.dropOpt1 = null;
+      if (cfDtlMode.value) { return; }
+      if (fnIsFileDrag(e)) { await fnUploadFilesTo(e.dataTransfer?.files, key); return; }
+      /* 내부 드래그: 다른 그룹으로 끌어다 놓았으면 그 그룹의 옵션1 로 옮긴다.
+         (행의 onImgDrop 이 먼저 순서변경을 끝내고 dragImgIdx 를 지우므로 id 로 대상을 찾는다) */
+      const target = uiState.dragImgId != null ? images.find(i => i ? i.id === uiState.dragImgId : false) : null;
+      if (!target) { return; }
+      const newKey = fnNormOpt1Key(key);
+      if ((target.prodOpt1Id || '') === newKey) { return; }
+      target.prodOpt1Id = newKey;
+      target.prodOpt2Id = '';
+      showToast('옵션1 을 "' + (cfImgGroups.value.find(g => g.key === key)?.label || '공통') + '" 으로 변경했습니다.', 'success');
+    };
+
+    /* triggerReplaceFile / onReplaceFileChange — 이미 등록된 이미지의 파일만 바꾼다.
+       삭제 후 재등록과 달리 순서·대표여부·옵션 지정(opt_id_1/2)이 그대로 유지된다.
+       기존 attachId 는 저장 시 백엔드가 "더 이상 참조되지 않는 첨부"로 판단해 정리한다. */
+    const triggerReplaceFile = (id) => {
+      if (cfDtlMode.value) { return; }
+      replaceImgId.value = id;
+      replaceInputRef.value?.click();
+    };
+    const onReplaceFileChange = async (e) => {
+      const f = (e.target.files || [])[0];
+      e.target.value = '';
+      const targetId = replaceImgId.value;
+      replaceImgId.value = null;
+      if (!f || targetId == null) { return; }
+      const target = images.find(i => i && i.id === targetId);
+      if (!target) { return; }
+      try {
+        const fd = new FormData();
+        fd.append('files', f);
+        fd.append('businessCode', 'PROD_IMG');
+        const res = await window.coApiSvc.cmUpload.uploadMulti(fd, '상품관리', '이미지교체');
+        const up = (res.data?.data?.files || [])[0];
+        if (!up) { throw new Error('업로드 결과를 받지 못했습니다.'); }
+        target.previewUrl = up.cdnImgUrl || '';
+        target.attachId   = up.attachId || null;
+        showToast('파일이 교체되었습니다. [저장] 을 눌러야 반영됩니다.', 'success');
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '이미지 교체 중 오류가 발생했습니다.', 'error', 0);
       }
     };
 
@@ -1050,7 +1245,7 @@ window.PdProdDtl = {
     };
 
     // -- 이미지 드래그 정렬
-            const onImgDragStart = (idx) => { uiState.dragImgIdx = idx; };
+            const onImgDragStart = (idx) => { uiState.dragImgIdx = idx; uiState.dragImgId = images[idx]?.id ?? null; };
 
     /* onImgDragOver — 이벤트 */
     const onImgDragOver  = (idx) => { uiState.dragoverImgIdx = idx; };
@@ -1188,37 +1383,6 @@ window.PdProdDtl = {
     const cfMarginRateCalc = computed(() => {
       if (!form.salePrice || !form.purchasePrice) { return null; }
       return ((form.salePrice - form.purchasePrice) / form.salePrice * 100).toFixed(2);
-    });
-    const cfDiscountRate = computed(() => {
-      if (!form.stdPrice || form.stdPrice <= 0) { return 0; }
-      return Math.round((1 - form.salePrice / form.stdPrice) * 100);
-    });
-    // 플랫폼수수료: amount 우선 — amount 가 비어 있으면 rate × salePrice 로 환산
-    const cfPlatformFee = computed(() => {
-      const sale = Number(form.salePrice || 0);
-      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') {
-        return Math.round(Number(form.platformFeeAmount) || 0);
-      }
-      if (form.platformFeeRate != null && form.platformFeeRate !== '') {
-        return Math.round(sale * (Number(form.platformFeeRate) || 0) / 100);
-      }
-      return 0;
-    });
-    const cfPlatformFeeDisp = computed(() => {
-      const fee = cfPlatformFee.value;
-      if (!fee) { return '-'; }
-      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') { return fee.toLocaleString() + '원'; }
-      if (form.platformFeeRate   != null && form.platformFeeRate   !== '') { return fee.toLocaleString() + '원 (' + form.platformFeeRate + '%)'; }
-      return '-';
-    });
-    // 예상 순수익 = 판매가 - 매입가 - 플랫폼수수료
-    const cfNetRevenueDisp = computed(() => {
-      const sale = Number(form.salePrice || 0);
-      if (!sale) { return '-'; }
-      const cost = Number(form.purchasePrice || 0);
-      const fee  = cfPlatformFee.value;
-      const net  = sale - cost - fee;
-      return net.toLocaleString() + '원';
     });
 
     // -- 연관상품 / 코드상품
@@ -1452,14 +1616,15 @@ window.PdProdDtl = {
           // SKU — tabData.skus에서 채움
           if (tabData.skus.length) { skus.splice(0, skus.length, ...tabData.skus); fnEnforceBaseSku(); }
 
-          // 옵션 사용 여부 — DB 값 우선 반영 (없으면 true 기본)
-          if (p.useOptYn !== undefined) { uiState.useOpt = p.useOptYn === 'Y'; }
-          else { uiState.useOpt = true; }
-
-          // 옵션 카테고리 복원 — optGroups 의 level1Cd(=1레벨 code_value) 로 직접 복원
-          if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
-            const level1Cds = optGroups.map(g => g.level1Cd || '').filter(Boolean);
-            if (level1Cds.length) { uiState.prodOptCategoryTypeCd = level1Cds[0]; }
+          /* 옵션 카테고리 복원 — pd_prod.prod_opt_std_cd 가 1순위.
+             그 컬럼이 비어 있는 과거 데이터만 optGroups 의 level1Cd 로 유추한다(폴백). */
+          if (!uiState.prodOptCategoryTypeCd) {
+            if (p.prodOptStdCd) {
+              uiState.prodOptCategoryTypeCd = p.prodOptStdCd;
+            } else if (optGroups.length) {
+              const level1Cds = optGroups.map(g => g.level1Cd || '').filter(Boolean);
+              if (level1Cds.length) { uiState.prodOptCategoryTypeCd = level1Cds[0]; }
+            }
           }
           // 변경 confirm 비교용 — 현재 카테고리를 baseline 으로 기록
           _prevCategoryCd = uiState.prodOptCategoryTypeCd || '';
@@ -1519,11 +1684,6 @@ window.PdProdDtl = {
     /* info 외 탭의 [저장] 버튼은 prodId 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => topTab.value !== 'info' && !cfHasProdId.value);
 
-    /* 회원 적용가능 쿠폰 목록 — 한 번 조회한 tabData.promoApplicableCoupons 를 apply_scope_cd(신설 컬럼)로 3분류
-       (클라이언트 필터. 이미 로드된 소량 목록의 단순 분류이므로 watch/재조회 없이 computed 로 처리) */
-    const cfApplicableOrderCoupons = computed(() => tabData.promoApplicableCoupons.filter(c => c.applyScopeCd === 'ORDER'));
-    const cfApplicableProdCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.applyScopeCd === 'PRODUCT'));
-    const cfApplicableDlivCoupons  = computed(() => tabData.promoApplicableCoupons.filter(c => c.applyScopeCd === 'DELIVERY'));
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
@@ -1560,12 +1720,35 @@ window.PdProdDtl = {
           showToast('카테고리를 1개 이상 선택해주세요.', 'error');
           return;
         }
+        /* 옵션상품 필수값 — "어떤 옵션 체계로 파는가" 가 없으면 SKU 자체를 만들 수 없다.
+           옵션 표준코드는 uiState, 옵션1 은 optGroups[0] 에 있어 form 기반 Yup 이 못 잡는다. */
+        if (tabId === 'info' ? form.prodTypeCd === 'OPTION' : false) {
+          if (!uiState.prodOptCategoryTypeCd) {
+            showToast('옵션 표준코드를 선택해주세요.', 'error');
+            return;
+          }
+          if (!fnOptGrpType(1)) {
+            showToast('옵션1을 선택해주세요.', 'error');
+            return;
+          }
+        }
 
         const isCreate = !cfHasProdId.value; // info 신규
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
           const payload = { ...form };
+          /* 옵션 구성(표준코드/옵션1/옵션2)은 form 이 아니라 uiState·optGroups 에 있어서
+             { ...form } 만으로는 pd_prod 의 3개 컬럼에 절대 도달하지 못한다.
+             → 목록의 옵션카테고리/옵션1/옵션2 가 항상 "-" 로 보이던 원인. info 탭 저장 시 직접 싣는다.
+             백엔드 VoUtil 은 null 필드를 "변경 없음" 으로 보고 건너뛰므로,
+             지워야 할 때(단품 전환 등)는 null 이 아니라 '' 를 보내야 실제로 비워진다. */
+          if (tabId === 'info') {
+            const isOpt = form.prodTypeCd === 'OPTION';
+            payload.prodOptStdCd   = isOpt ? (uiState.prodOptCategoryTypeCd || '') : '';
+            payload.prodOpt1TypeCd = isOpt ? (fnOptGrpType(1) || '') : '';
+            payload.prodOpt2TypeCd = isOpt ? (fnOptGrpType(2) || '') : '';
+          }
           const res = isCreate
             ? await boApiSvc.pdProd.create(payload, '상품관리', '등록')
             : await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', tabId === 'info' ? '기본정보저장' : '상세설정저장');
@@ -1733,7 +1916,6 @@ window.PdProdDtl = {
     const skuFilter2 = Vue.toRef(uiState, 'skuFilter2');
     const skuFilterStock = Vue.toRef(uiState, 'skuFilterStock');
     const splitPct = Vue.toRef(uiState, 'splitPct');
-    const useOpt = Vue.toRef(uiState, 'useOpt');
 
     // 묶음구성 상품 피커 상태
     let _bundleSeq = 1;
@@ -1954,28 +2136,59 @@ window.PdProdDtl = {
     // 기본정보 통합 폼 (cols=3 한 줄에 3필드씩 배치)
     columns.infoForm = [
       { type: 'group', label: '기본정보' },
-      // 1행: 상품명 / 상품코드(SKU) / 상품유형
+      /* 기본정보 — "이 상품이 무엇이고 지금 어떤 상태인가". 상품 자체의 정체성만 둔다.
+         소속(카테고리/브랜드/업체)과 사람(담당MD)은 아래 [담당] 그룹으로 분리했다. */
       { key: 'prodNm',       label: '상품명', type: 'text', required: true, placeholder: '상품명' },
-      { key: 'prodCode',     label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
-      { key: 'prodTypeCd',   label: '상품유형 (prod_type_cd)', type: 'select', nullable: false, required: true,
+      { key: 'prodCode',     label: '상품코드', type: 'text', placeholder: '예: SKU-20260419-001' },
+      { key: 'prodTypeCd',   label: '상품유형', type: 'select', nullable: false, required: true,
         options: () => grpCodes.PROD_TYPE },
-      // 2행: 카테고리 / 브랜드 / 업체
-      { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories', required: true },
-      { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
-      { key: 'vendorId',     label: '업체', type: 'slot', name: 'vendor' },
-      { type: 'group', label: '담당 · 상태' },
-      // 3행: 담당MD / 상품상태 (빈칸 1 — 담당·상태 성격에 맞는 세 번째 필드 없음)
-      { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
-      { key: 'prodStatusCd', label: '상품상태 (prod_status_cd)', type: 'select',
+      { key: 'prodStatusCd', label: '상품상태', type: 'select',
         options: () => grpCodes.PROD_STATUS_CD,
         helpText: 'DRAFT(임시저장)/ACTIVE(전시중)/INACTIVE(판매중지)/ENDED(판매종료) 4종. "지금 판매중/판매예정/품절"인지는 이 상태가 아니라 판매기간·재고로 FO가 그때그때 판단 — ACTIVE(전시중)는 노출 여부만 뜻함. ACTIVE↔INACTIVE는 판매기간 벗어나면(또는 다시 들어오면) 매시간 배치가 자동 전환하고, DRAFT·ENDED는 배치가 절대 건드리지 않음(관리자만 전환).' },
-      { type: 'group', label: '배송' },
-      // 4행: 배송템플릿 / 배송방법 override (빈칸 1)
-      { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt', required: true },
-      { key: 'dlivMethodCd', label: '배송방법 override (dliv_method_cd)', type: 'select',
-        options: () => grpCodes.DLIV_METHOD, nullLabel: '배송템플릿 기본값 사용',
-        hint: '긴급 발송 등 이 상품만 다른 배송방법을 써야 할 때만 지정 (수수료는 배송수수료정책에 따름)' },
-      { type: 'group', label: '상세속성 · 판매기간',
+      /* ── 옵션상품 전용 그룹 (상품유형이 OPTION 일 때만 통째로 노출) ──────────────
+         옵션설정 탭 상단 바에 있던 3항목을 여기로 옮겼다. "어떤 옵션 체계로 팔 상품인가"는
+         옵션 값을 채우기 전에 정해야 하는 상품의 기본 속성이라 기본정보가 맞는 자리다.
+         옵션설정 탭은 이 3값을 읽어 값(항목) 편집과 SKU 생성만 담당한다.
+         group 도 visible 을 지원하므로(BoAreaComp cfRows) 단품이면 섹션 제목까지 사라진다. */
+      { type: 'group',       label: '옵션상품', visible: (f) => f.prodTypeCd === 'OPTION' },
+      { key: '_optCategory', label: '옵션 표준코드', colNm: 'prod_opt_std_cd', type: 'slot', name: 'optCategory', required: true,
+        visible: (f) => f.prodTypeCd === 'OPTION' },
+      { key: '_optType1',    label: '옵션1', colNm: 'prod_opt1_type_cd', type: 'slot', name: 'optType1',
+        required: true, visible: (f) => f.prodTypeCd === 'OPTION' },
+      { key: '_optType2',    label: '옵션2', colNm: 'prod_opt2_type_cd', type: 'slot', name: 'optType2',
+        visible: (f) => f.prodTypeCd === 'OPTION' },
+      /* ── 그룹 — "이 상품이 어디에 속하고 누가 맡는가" ─────────────────────────
+         카테고리·브랜드·업체는 소속, 담당MD 는 그 소속을 관리하는 사람이라 한 묶음으로 본다. */
+      { type: 'group',       label: '그룹' },
+      { key: '_categories',  label: '카테고리', colNm: 'pd_category_prod', type: 'slot', name: 'categories', required: true },
+      { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
+      { key: 'vendorId',     label: '업체', type: 'slot', name: 'vendor' },
+      { key: 'mdUserId',     label: '담당MD', type: 'slot', name: 'mdUser' },
+      /* ── 가격 / 원가·마진·수수료 — 예전엔 별도 BoFormArea(columns.basePriceForm) 였다.
+         가격 → 판매설정 → 배송 순으로 보이려면 한 폼 안에 있어야 순서를 잡을 수 있어 여기로 합쳤다. */
+      { type: 'group', label: '가격',
+        desc: '정가·판매가·판매할인율·판매할인금액은 서로 동기화됩니다 — 넷 중 어느 것을 고쳐도 나머지가 자동 재계산됩니다. '
+          + '판매할인금액이 항상 "정가-판매가" 기준의 최종 저장값입니다. (pd_prod)' },
+      { key: 'stdPrice',         label: '정가', type: 'number', required: true, min: 0, placeholder: '0',
+        onChange: (v, form) => fnSyncFromStdPrice(form) },
+      { key: 'salePrice',         label: '판매가', type: 'number', required: true, min: 0, placeholder: '0',
+        onChange: (v, form) => fnSyncFromSalePrice(form) },
+      { key: 'currCd',           label: '통화', type: 'select',
+        options: () => [{ value: 'KRW', label: '원 (KRW)' }, { value: 'USD', label: '달러 (USD)' }, { value: 'CNY', label: '위안화 (CNY)' }, { value: 'JPY', label: '엔화 (JPY)' }],
+        helpText: '금액 필드(정가/판매가 등)의 표시 기준 통화만 지정 — 환율 자동 변환은 하지 않음.' },
+      { key: 'saleDiscntRate',        label: '판매할인율', type: 'number', min: 0, max: 100,
+        placeholder: '(예: 20)', hint: '% — 입력 시 판매가 자동계산', onChange: (v, form) => fnSyncFromSaleDiscntRate(form) },
+      { key: 'saleDiscntAmt',         label: '판매할인금액', type: 'number', min: 0,
+        placeholder: '(원)', hint: '원 — 판매가·할인율에 항상 동기화되는 최종 기준값', onChange: (v, form) => fnSyncFromSaleDiscntAmt(form) },
+      { type: 'group', label: '원가 · 마진 · 수수료' },
+      { key: 'purchasePrice',     label: '매입가 / 원가', type: 'number', placeholder: '(선택)',
+        hint: '내부관리용' },
+      { key: '_marginRate',       label: '마진율', colNm: 'margin_rate', type: 'slot', name: 'marginRate' },
+      { key: 'platformFeeRate',   label: '플랫폼수수료 율', type: 'number',
+        placeholder: '(예: 5.5)', hint: '% — 내부관리용' },
+      { key: 'platformFeeAmount', label: '플랫폼수수료 금액', type: 'number', min: 0,
+        placeholder: '(요율과 둘 중 하나만 입력)', hint: '원 — 내부관리용' },
+      { type: 'group', label: '판매설정',
         desc: '상품상태(PROD_STATUS_CD)는 DRAFT(임시저장)/ACTIVE(전시중)/INACTIVE(판매중지)/ENDED(판매종료) 4종뿐이다. '
           + '예전엔 판매예정·판매중·품절을 각각 다른 상태로 뒀지만, 이 셋은 노출(전시중) 여부와 무관하게 '
           + '"지금 진짜 살 수 있는가"만 다른 것이라 상태를 늘리는 대신 FO가 응답 시점에 판매기간(sale_start_date~'
@@ -1988,14 +2201,15 @@ window.PdProdDtl = {
           + '전시기간은 상품페이지 노출 구간(disp_start_date~disp_end_date) — 이 기간 밖이면 상태가 ACTIVE여도 FO에 안 보인다. '
           + '판매·전시 시작일은 NOT NULL(미입력 시 등록시각 자동기입), 종료일은 NULL=무기한.' },
       // 5행: 판매상태(담당·상태 항목과 동일 값 — 판매기간 문맥에서 다시 확인하도록 중복 배치) / 미판매메시지 / 무게
-      { key: 'prodStatusCd', label: '판매상태 (prod_status_cd)', type: 'select',
+      { key: 'prodStatusCd', label: '판매상태', type: 'select',
         options: () => grpCodes.PROD_STATUS_CD,
         helpText: 'ACTIVE(전시중)↔INACTIVE(판매중지)는 판매기간(위 시작/종료일)을 벗어나거나 다시 들어오면 매시간 배치가 자동 전환. 판매예정/품절 구분은 이 값이 아니라 FO가 판매기간·재고로 그때그때 계산. DRAFT·ENDED는 배치가 손대지 않는 관리자 전용 상태.' },
-      { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
+      /* pd_prod 에 unsale_msg 컬럼이 없다(DB 확인). 컬럼명 자동 유도를 끈다 — 저장 경로 자체가 없는 상태 */
+      { key: 'unsaleMsg',    label: '미판매메시지', colNm: false, type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
-      { key: 'weight',       label: '무게 (kg)', type: 'number', min: 0, placeholder: '예: 0.35' },
+      { key: 'weight',       label: '무게', hint: 'kg', type: 'number', min: 0, placeholder: '예: 0.35' },
       // 6행: 사이즈 / 판매시작 / 판매종료
-      { key: 'sizeInfoCd',   label: '사이즈 (size_info_cd)', type: 'select',
+      { key: 'sizeInfoCd',   label: '사이즈', type: 'select',
         options: () => ['FREE','XS','S','M','L','XL','XXL'] },
       { key: 'saleStartDate', label: '판매 시작일시', type: 'slot', name: 'saleStart',
         hint: 'NULL=즉시' },
@@ -2006,6 +2220,15 @@ window.PdProdDtl = {
         hint: 'NULL=즉시. 판매시작일 이전이면 출시예정 표시' },
       { key: 'dispEndDate',   label: '전시 종료일시', type: 'slot', name: 'dispEnd',
         hint: 'NULL=무기한' },
+      /* 상품 속성 — 예전엔 폼 밖에 33% 폭 div 로 따로 그렸는데, 판매설정에 속하는 값이라 폼 안으로 넣었다 */
+      { key: '_prodFlags', label: '상품 속성', colNm: 'is_new / is_best / adlt_yn / same_day_dliv_yn / sold_out_yn',
+        type: 'slot', name: 'prodFlags' },
+      { type: 'group', label: '배송' },
+      // 4행: 배송템플릿 / 배송방법 override (빈칸 1)
+      { key: 'dlivTmpltId',  label: '배송템플릿', type: 'slot', name: 'dlivTmplt', required: true },
+      { key: 'dlivMethodCd', label: '배송방법 override', type: 'select',
+        options: () => grpCodes.DLIV_METHOD, nullLabel: '배송템플릿 기본값 사용',
+        hint: '긴급 발송 등 이 상품만 다른 배송방법을 써야 할 때만 지정 (수수료는 배송수수료정책에 따름)' },
     ];
     // 상세설정 통합 (광고 노출 기간 + 구매 제한) — cols=3 한 행 3필드 채움
     columns.detailForm = [
@@ -2019,29 +2242,6 @@ window.PdProdDtl = {
       { key: 'maxBuyQty',      label: '1회 최대구매수량 (max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
       { key: 'dayMaxBuyQty',   label: '1일 최대구매수량 (day_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
       { key: 'idMaxBuyQty',    label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
-    ];
-    // 기본 가격 — 정가/판매가/판매할인(그룹 헤더 없이 바로 시작, 상위 "기본 가격" 제목이 이미 안내 아이콘을 겸함),
-    // [원가·마진·수수료] 매입가/마진율/플랫폼수수료율·금액 은 하위 그룹으로 분리
-    columns.basePriceForm = [
-      { key: 'stdPrice',         label: '정가 (std_price)', type: 'number', required: true, min: 0, placeholder: '0',
-        onChange: (v, form) => fnSyncFromStdPrice(form) },
-      { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0',
-        onChange: (v, form) => fnSyncFromSalePrice(form) },
-      { key: 'currCd',           label: '통화 (curr_cd)', type: 'select',
-        options: () => [{ value: 'KRW', label: '원 (KRW)' }, { value: 'USD', label: '달러 (USD)' }, { value: 'CNY', label: '위안화 (CNY)' }, { value: 'JPY', label: '엔화 (JPY)' }],
-        helpText: '금액 필드(정가/판매가 등)의 표시 기준 통화만 지정 — 환율 자동 변환은 하지 않음.' },
-      { key: 'saleDiscntRate',        label: '판매할인율 (sale_discnt_rate)', type: 'number', min: 0, max: 100,
-        placeholder: '(예: 20)', hint: '% — 입력 시 판매가 자동계산', onChange: (v, form) => fnSyncFromSaleDiscntRate(form) },
-      { key: 'saleDiscntAmt',         label: '판매할인금액 (sale_discnt_amt)', type: 'number', min: 0,
-        placeholder: '(원)', hint: '원 — 판매가·할인율에 항상 동기화되는 최종 기준값', onChange: (v, form) => fnSyncFromSaleDiscntAmt(form) },
-      { type: 'group', label: '원가 · 마진 · 수수료' },
-      { key: 'purchasePrice',     label: '매입가 / 원가 (purchase_price)', type: 'number', placeholder: '(선택)',
-        hint: '내부관리용' },
-      { key: '_marginRate',       label: '마진율 (margin_rate)', type: 'slot', name: 'marginRate' },
-      { key: 'platformFeeRate',   label: '플랫폼수수료 율 (platform_fee_rate)', type: 'number',
-        placeholder: '(예: 5.5)', hint: '% — 내부관리용' },
-      { key: 'platformFeeAmount', label: '플랫폼수수료 금액 (platform_fee_amount)', type: 'number', min: 0,
-        placeholder: '(요율과 둘 중 하나만 입력)', hint: '원 — 내부관리용' },
     ];
     // (광고 노출 기간 / 구매 제한은 detailFormColumns 로 통합됨 — 위 정의 참조)
     // 단일 재고 — pd_prod_stock 기반으로 별도 관리 (columns.singleStockForm 미사용)
@@ -2085,40 +2285,12 @@ window.PdProdDtl = {
       { key: 'applyEndDate',   label: '적용종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
       { key: '_remainTime',    label: '남은기간', align: 'center', fmt: (v, r) => fnRemainingTime(r.applyEndDate) },
     ];
-    // 프로모션 탭 — 회원 적용가능 쿠폰 목록 (읽기전용 미리보기). "상품 쿠폰 목록"(pm_coupon_item, 이 상품에
-    // 직접 연결한 것만)과 달리 pm_coupon_prod(전개 테이블)를 통해 ALL/CATEGORY/VENDOR/BRAND 등
-    // 다른 방식으로 지정된 쿠폰까지 포함해 "고객이 실제로 이 상품에 쓸 수 있는" 전체 쿠폰을 보여준다.
-    columns.promoApplicableCouponGrid = [
-      { key: 'couponId',   label: '쿠폰 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
-      { key: 'couponNm',   label: '쿠폰명' },
-      { key: 'targetTypeCd', label: '적용대상', style: 'width:90px;', align: 'center',
-        badge: () => 'badge-purple', fmt: (v, r) => r.targetTypeCdNm || v || '-' },
-      { key: 'couponTypeCd', label: '할인', align: 'center',
-        fmt: (v, r) => r.discountRate ? (r.discountRate + '%') : (r.discountAmt ? coUtil.cofWon(r.discountAmt) : '-') },
-      { key: 'validFrom',  label: '유효시작일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '즉시' },
-      { key: 'validTo',    label: '유효종료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
-      { key: 'couponStatusCd', label: '상태', style: 'width:80px;', align: 'center',
-        badge: (r) => r.couponStatusCd === 'ACTIVE' ? 'badge-green' : (r.couponStatusCd === 'EXPIRED' ? 'badge-gray' : 'badge-red'),
-        fmt: (v, r) => r.couponStatusCdNm || v || '-' },
-    ];
-    // 프로모션 탭 — 회원 적용가능 적립금 목록 (읽기전용 미리보기, pm_save_prod 전개 기준)
-    // ⚠ pm_save 는 회원별 적립/사용 원장 구조라 coupon 처럼 이름·유효기간을 갖는 정책 레코드가 아닐 수
-    //   있음(pd.08/§적립금 아키텍처 갭 — 기존에 알려진 이슈, 이 그리드가 새로 만든 문제는 아님)
-    columns.promoApplicableSaveGrid = [
-      { key: 'saveId',      label: '적립금 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
-      { key: 'saveTypeCd',  label: '유형', style: 'width:100px;', align: 'center',
-        badge: () => 'badge-purple', fmt: (v, r) => r.saveTypeCdNm || v || '-' },
-      { key: 'saveAmt',     label: '적립액', align: 'right', fmt: v => v != null ? coUtil.cofWon(v) : '-' },
-      { key: 'expireDate',  label: '만료일', align: 'center', fmt: v => v ? String(v).slice(0, 10) : '무기한' },
-    ];
-
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns, handleBtnAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
       handleShareKakao, handleCopyLink, pdfAreaRef, pdfExporting, handleExportPdf,   // 링크/카카오공유/PDF
       cfIsNew, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, codeGrpModal, openCodeGrpModal,
-      cfApplicableOrderCoupons, cfApplicableProdCoupons, cfApplicableDlivCoupons,
       tabPage, tabData, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, mdModalOpen, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       optGroups, skus, cfTotalStock, generateSkus, moveSku,
@@ -2126,8 +2298,11 @@ window.PdProdDtl = {
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, getOptValCodes,
       fnBuildLevel1Items, fnBuildLevel2Items,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
+      fnOptGrpType, fnOptGrpTypeLabel, onOptGrpTypeChange,
       onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput, fnOptItem2Label,
+      cfImgGroups, onImgGroupDragOver, onImgGroupDragLeave, onImgGroupDrop,
+      replaceInputRef, onReplaceFileChange,
       onImgDragStart, onImgDragOver, onImgDrop,
       prodCategories, cfCatExcludeSet, catPickerOpen, removeCategory,
       onCatDragStart, onCatDragOver, onCatDrop,
@@ -2138,7 +2313,9 @@ window.PdProdDtl = {
       bundlePickerOpen, addBundleItem, removeBundleItem, cfBundleRateSum, cfBundleRateOk,
       setPickerOpen, addSetItem, removeSetItem,
       cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked,
-      cfMarginRateCalc, cfDiscountRate, cfPlatformFeeDisp, cfNetRevenueDisp,
+      cfMarginRateCalc,
+      SKU_MX_FIELDS, fnMxField, fnMxItems, fnMxSku, fnMxOn, fnMxCellStyle,
+      onMxFillRow, onMxFillCol, onMxFillAll,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
@@ -2193,6 +2370,50 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
+        <!-- 옵션 카테고리 — 옵션설정 탭에서 이동해 온 항목. 값이 바뀌면 onCategoryChange 가
+             기존 옵션 구성 초기화 여부를 confirm 한 뒤 1단/2단 유형 후보를 갈아끼운다. -->
+        <template #optCategory>
+          <div v-if="cfDtlMode" class="readonly-field-plain">
+            {{ cfOptTypeLevel1Codes.find(c => c.codeValue === prodOptCategoryTypeCd)?.codeLabel || '-' }}
+          </div>
+          <template v-else>
+            <select class="form-control" v-model="prodOptCategoryTypeCd" @change="onCategoryChange">
+              <option value="">-- 선택 --</option>
+              <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            </select>
+            <div v-if="!prodOptCategoryTypeCd" style="font-size:11px;color:#f5a623;margin-top:3px;">
+              옵션 카테고리를 선택해야 옵션1 · 옵션2를 지정할 수 있습니다.
+            </div>
+          </template>
+        </template>
+        <!-- 옵션1 / 옵션2 — 옵션설정 탭의 "1단/2단 유형" select 를 옮겨온 것.
+             optGroups 배열(0~2개)과 폼의 고정 2칸 사이 간극은 onOptGrpTypeChange 가 흡수한다. -->
+        <template #optType1>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ fnOptGrpTypeLabel(1) }}</div>
+          <template v-else>
+            <select class="form-control" :value="fnOptGrpType(1)" :disabled="!prodOptCategoryTypeCd"
+              @change="onOptGrpTypeChange(1, $event.target.value)">
+              <option value="">-- 선택 --</option>
+              <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
+            </select>
+            <div v-if="optGroups[0] ? optGroups[0].items.length > 0 : false" style="font-size:11px;color:#1677ff;margin-top:3px;">
+              값 {{ optGroups[0].items.length }}개 — 옵션설정 탭에서 편집
+            </div>
+          </template>
+        </template>
+        <template #optType2>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ fnOptGrpTypeLabel(2) }}</div>
+          <template v-else>
+            <select class="form-control" :value="fnOptGrpType(2)" :disabled="!prodOptCategoryTypeCd"
+              @change="onOptGrpTypeChange(2, $event.target.value)">
+              <option value="">-- 미사용 (1차원 옵션) --</option>
+              <option v-for="c in cfOptTypeCodes" :key="'t2-'+c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
+            </select>
+            <div v-if="optGroups[1] ? optGroups[1].items.length > 0 : false" style="font-size:11px;color:#1677ff;margin-top:3px;">
+              값 {{ optGroups[1].items.length }}개 — 옵션설정 탭에서 편집
+            </div>
+          </template>
+        </template>
         <template #categories>
           <div v-if="cfDtlMode" class="readonly-field-plain">
             {{ prodCategories.length ? prodCategories.map(c => c.categoryNm).join(' , ') : '-' }}
@@ -2265,6 +2486,20 @@ window.PdProdDtl = {
           <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.dispStartDate ? fnDateTime(form.dispStartDate) : '즉시' }}</div>
           <bo-date-time-picker v-else v-model="form.dispStartDate" placeholder-date="즉시" />
         </template>
+        <!-- 마진율 — 별도 가격 폼에서 이관 (읽기 전용 자동 계산값) -->
+        <template #marginRate>
+          <div v-if="cfDtlMode" class="readonly-field-plain" :style="{ color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}
+          </div>
+          <div v-else class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
+          </div>
+        </template>
+        <!-- 상품 속성 — 폼 밖 33% 폭 div 에서 이관. 이제 판매설정 그룹의 한 칸을 차지한다 -->
+        <template #prodFlags>
+          <bo-multi-check-select v-model="cfProdFlags" :options="PROD_FLAG_OPTIONS" :show-all="false" wrap list-all
+            placeholder="선택 안 함" :plain="cfDtlMode" :disabled="cfDtlMode" min-width="100%" />
+        </template>
         <template #dispEnd>
           <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.dispEndDate ? fnDateTime(form.dispEndDate) : '무기한' }}</div>
           <bo-date-time-picker v-else v-model="form.dispEndDate" placeholder-date="무기한" />
@@ -2278,62 +2513,6 @@ window.PdProdDtl = {
       <bo-cm-popup-modal v-if="mdModalOpen" popup-cmd="cmPopup-md-pick" popup-code="user"
         title="담당MD 선택" :on-callback="fnCallbackModal"
         @close="handleBtnAction('mdModal-close')" />
-      <!-- ===== ■.■.■. 신상품/베스트/성인상품/당일배송/강제품절 (BoMultiCheckSelect, 1/3 폭) ============== -->
-      <div style="width:33%;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
-        <label class="form-label" style="margin-bottom:6px;display:block;">상품 속성 (신상품·베스트·성인상품·당일배송·강제품절)</label>
-        <bo-multi-check-select v-model="cfProdFlags" :options="PROD_FLAG_OPTIONS" :show-all="false" wrap list-all
-          placeholder="선택 안 함" :plain="cfDtlMode" :disabled="cfDtlMode" min-width="100%" />
-      </div>
-      <!-- ===== ■.■.■. 기본 가격 (BoFormArea 자동 렌더) ============================ -->
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
-      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
-        기본 가격
-        <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
-        <span title="정가·판매가·판매할인율·판매할인금액은 서로 동기화됩니다 — 넷 중 어느 것을 고쳐도 나머지가 자동 재계산됩니다. 판매할인금액이 항상 &quot;정가-판매가&quot; 기준의 최종 저장값입니다."
-          style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:10px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
-          i
-        </span>
-      </div>
-      <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
-        <template #marginRate>
-          <div v-if="cfDtlMode" class="readonly-field-plain" :style="{ color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
-            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}
-          </div>
-          <div v-else class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
-            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
-          </div>
-        </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 가격 요약 카드 (컴팩트) ====================================== -->
-      <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
-          <div>
-            <div style="font-size:14px;font-weight:700;">{{ (form.stdPrice||0).toLocaleString() }}원</div>
-            <div style="font-size:10px;color:#888;">정가</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
-            <div style="font-size:10px;color:#888;">판매가</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
-            <div style="font-size:10px;color:#888;">할인율</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
-            <div style="font-size:10px;color:#888;">마진율</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#722ed1;">{{ cfPlatformFeeDisp }}</div>
-            <div style="font-size:10px;color:#888;">플랫폼수수료</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#1677ff;">{{ cfNetRevenueDisp }}</div>
-            <div style="font-size:10px;color:#888;">예상 순수익</div>
-          </div>
-        </div>
-      </div>
       </fieldset>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
@@ -2356,36 +2535,33 @@ window.PdProdDtl = {
       <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 옵션 카테고리 선택 바 ======================================== -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;padding:10px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;flex-shrink:0;cursor:default;">
-          <input type="checkbox" :checked="!!prodOptCategoryTypeCd" disabled style="width:14px;height:14px;cursor:not-allowed;opacity:0.6;" />
-          옵션 사용
-        </label>
-        <span style="font-size:11px;color:#ddd;">│</span>
+        <!-- 옵션 카테고리 select 는 기본정보 탭으로 이동했다. 여기서는 선택된 값을 읽기 전용으로만 보여준다
+             (1단/2단 유형이 이 값에 종속되므로 무엇이 선택돼 있는지는 계속 보여야 한다) -->
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="font-size:12px;color:#555;font-weight:600;flex-shrink:0;">옵션 카테고리</span>
-          <select class="form-control" v-model="prodOptCategoryTypeCd" style="width:160px;font-size:12px;" @change="onCategoryChange">
-            <option value="">-- 선택 --</option>
-            <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
+          <span v-if="prodOptCategoryTypeCd" class="badge badge-purple" style="font-size:11px;">
+            {{ cfOptTypeLevel1Codes.find(c => c.codeValue === prodOptCategoryTypeCd)?.codeLabel || prodOptCategoryTypeCd }}
+          </span>
+          <span v-else style="font-size:11px;color:#aaa;">미선택</span>
         </div>
+        <!-- 1단/2단 유형 select 도 기본정보 [옵션상품] 그룹으로 이동했다.
+             이 탭은 이제 "값(항목) 편집 + SKU 생성" 만 담당하고, 어떤 유형인지는 읽기 전용으로 보여준다. -->
         <template v-if="prodOptCategoryTypeCd ? (optGroups.length>0) : false">
           <span style="font-size:11px;color:#ddd;">│</span>
           <div v-for="(grp, gi) in optGroups" :key="'typeSel-'+grp._id" style="display:flex;align-items:center;gap:6px;">
-            <span class="badge badge-blue" style="font-size:11px;">{{ gi+1 }}단 유형</span>
-            <select class="form-control" v-model="grp.level2Cd" style="width:130px;font-size:12px;" @change="grp.items.splice(0,grp.items.length,...(grp.level===1?fnBuildLevel1Items(grp.level2Cd):fnBuildLevel2Items(grp.level2Cd)));generateSkus()">
-              <option value="">-- 유형 --</option>
-              <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
+            <span class="badge badge-blue" style="font-size:11px;">옵션{{ gi+1 }}</span>
+            <span v-if="grp.level2Cd" style="font-size:12px;color:#333;font-weight:600;">{{ fnOptGrpTypeLabel(gi+1) }}</span>
+            <span v-else style="font-size:11px;color:#aaa;">유형 미지정</span>
             <span v-if="grp.level2Cd" style="font-size:11px;color:#1677ff;">{{ grp.items.length }}개</span>
           </div>
         </template>
-        <span v-if="!prodOptCategoryTypeCd" style="font-size:11px;color:#f5a623;">← 옵션 카테고리를 먼저 선택하세요</span>
-        <button v-if="prodOptCategoryTypeCd ? !cfDtlMode : false" class="btn btn-xs btn-secondary" style="margin-left:auto;" @click="handleBtnAction('optGroup-add')" :disabled="optGroups.length>=2">+ 차원 추가</button>
+        <span v-if="!prodOptCategoryTypeCd" style="font-size:11px;color:#f5a623;">← [기본정보] 탭에서 옵션 카테고리를 먼저 선택하세요</span>
+        <span v-else style="font-size:11px;color:#aaa;margin-left:auto;">옵션 카테고리 · 옵션1 · 옵션2 변경은 [기본정보] 탭에서</span>
       </div>
       <!-- ===== ■.■.■. 미사용 안내 ============================================== -->
       <template v-if="!prodOptCategoryTypeCd">
         <div style="padding:10px 14px;background:#f9f0ff;border-radius:8px;border:1px solid #d3adf7;font-size:12px;color:#531dab;margin-bottom:8px;">
-          💡 옵션 카테고리를 선택하면 옵션 설정이 활성화됩니다.
+          💡 [기본정보] 탭의 <b>옵션 카테고리</b>를 선택하면 옵션 설정이 활성화됩니다.
         </div>
       </template>
       <!-- ===== ■.■.■. 옵션 값 입력 (1단 / 2단 나란히) ============================= -->
@@ -2861,8 +3037,7 @@ window.PdProdDtl = {
       </pm-discnt-pick-modal>
       <bo-cm-popup-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
       </pm-gift-pick-modal>
-      <bo-cm-popup-modal v-if="uiState.promoMemberPickerOpen" popup-code="member" @select="r => handleBtnAction('promo-member-pick', r)" @close="uiState.promoMemberPickerOpen = false" />
-      <!-- 상품 프로모션 정보 그룹의 저장/취소/닫기 — 회원 적용가능 프로모션정보(읽기전용) 보다 위, 편집 그룹 바로 아래 배치 -->
+      <!-- 상품 프로모션 정보 그룹의 저장/취소/닫기 -->
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -2874,90 +3049,6 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <!-- ===== ■.■.■. 회원 적용가능 프로모션정보 (읽기전용 — pm_coupon_prod/pm_save_prod 전개 + 회원 발급여부, 2x2) ===== -->
-      <div class="section-title">(정보확인) 회원 적용가능 프로모션정보</div>
-      <div style="display:flex;align-items:center;gap:8px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
-        <span style="font-size:13px;font-weight:700;">회원검색</span>
-        <span style="font-size:12px;color:#333;">{{ uiState.applicableMemberNm ? (uiState.applicableMemberNm + ' (' + uiState.applicableMemberId + ')') : '전체 상품 적용가능 프로모션 표시 중' }}</span>
-        <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-member-search-open')">🔍 회원선택</button>
-        <button v-if="uiState.applicableMemberId" class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-member-clear')">✕ 선택해제</button>
-        <span style="font-size:11px;color:#aaa;">(선택)</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-      <!-- 회원 적용가능 주문 쿠폰 목록 -->
-      <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">
-          회원 적용가능 주문 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
-          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableOrderCoupons.length }}건</span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-coupon-reload')">🔄 재조회</button>
-        </div>
-      </div>
-      <div class="pd-applicable-coupon-grid">
-        <style>.pd-applicable-coupon-grid thead th{background:linear-gradient(180deg,#fdeec8,#f8d878)!important;color:#7a5a06!important;border-bottom:2px solid #d9ae2f!important;}</style>
-        <bo-grid bare :columns="columns.promoApplicableCouponGrid" :rows="cfApplicableOrderCoupons"
-          row-key="couponId"
-          empty-text="이 상품에 적용 가능한 주문 쿠폰이 없습니다.">
-        </bo-grid>
-      </div>
-      </div>
-      <!-- 회원 적용가능 상품 쿠폰 목록 -->
-      <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">
-          회원 적용가능 상품 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(상품당 1개)</span>
-          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableProdCoupons.length }}건</span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-coupon-reload')">🔄 재조회</button>
-        </div>
-      </div>
-      <div class="pd-applicable-coupon-grid">
-        <bo-grid bare :columns="columns.promoApplicableCouponGrid" :rows="cfApplicableProdCoupons"
-          row-key="couponId"
-          empty-text="이 상품에 적용 가능한 상품 쿠폰이 없습니다.">
-        </bo-grid>
-      </div>
-      </div>
-      <!-- 회원 적용가능 배송비 쿠폰 목록 -->
-      <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">
-          회원 적용가능 배송비 쿠폰 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
-          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfApplicableDlivCoupons.length }}건</span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-coupon-reload')">🔄 재조회</button>
-        </div>
-      </div>
-      <div class="pd-applicable-coupon-grid">
-        <bo-grid bare :columns="columns.promoApplicableCouponGrid" :rows="cfApplicableDlivCoupons"
-          row-key="couponId"
-          empty-text="이 상품에 적용 가능한 배송비 쿠폰이 없습니다.">
-        </bo-grid>
-      </div>
-      </div>
-      <!-- 회원 적용가능 적립금 목록 -->
-      <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">
-          회원 적용가능 적립금 목록 <span style="font-size:11px;font-weight:400;color:#aaa;">(주문당 1개)</span>
-          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoApplicableSaves.length }}건</span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-applicable-save-reload')">🔄 재조회</button>
-        </div>
-      </div>
-      <div class="pd-applicable-coupon-grid">
-        <bo-grid bare :columns="columns.promoApplicableSaveGrid" :rows="tabData.promoApplicableSaves"
-          row-key="saveId"
-          empty-text="이 상품에 적용 가능한 적립금이 없습니다.">
-        </bo-grid>
-      </div>
-      </div>
-      </div>
     </div>
     <!-- ══════════════════════════════════════
      🖼 이미지  (pd_prod_img)
@@ -2965,19 +3056,40 @@ window.PdProdDtl = {
     <div class="dtl-pane" v-show="showTab('image')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
       <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
-        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('img-triggerFile')">+ 파일 선택</button>
-        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('img-addByUrl')">+ URL 입력</button>
-        <span style="font-size:12px;color:#aaa;">{{ images.length }}개</span>
+      <input type="file" ref="replaceInputRef" accept="image/*" style="display:none" @change="onReplaceFileChange" />
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+        <span style="font-size:12px;color:#888;">총 {{ images.length }}개</span>
+        <span style="font-size:11px;color:#bbb;">· 옵션1 그룹별로 등록합니다. 파일을 그룹 위에 끌어다 놓아도 됩니다.</span>
       </div>
-      <div v-if="images.length===0"
-        :style="'border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;' + (cfDtlMode ? '' : 'cursor:pointer;')"
-        @click="cfDtlMode ? null : handleBtnAction('img-triggerFile')">
-        {{ cfDtlMode ? '등록된 이미지가 없습니다.' : '클릭하거나 파일을 끌어다 놓으세요' }}
-      </div>
-      <!-- ===== ■.■.■. 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) ===== -->
-      <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
-        <div v-for="(img, idx) in images" :key="img?.id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onImgDragStart(idx)" @dragover.prevent="cfDtlMode ? null : onImgDragOver(idx)" @drop.prevent="cfDtlMode ? null : onImgDrop()" @dragend="dragImgIdx=null;dragoverImgIdx=null" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;" :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : ((dragoverImgIdx===idx ? dragImgIdx!==idx : false) ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
+      <!-- ===== ■.■.■. 옵션1 그룹 목록 =============================================
+       옵션상품 이미지는 "색상(옵션1) 단위로 여러 장" 이 실무 기본이라 그룹으로 묶어 보여준다.
+       그룹 순서는 옵션설정 탭의 옵션1 항목 순서(= 정렬순서), 공통(NULL)이 맨 앞.
+       그룹 카드 전체가 파일 드롭 존이며, 행을 다른 그룹으로 끌어다 놓으면 옵션1 이 바뀐다. -->
+      <div style="max-height:620px;overflow-y:auto;padding:2px;">
+        <div v-for="g in cfImgGroups" :key="g.key"
+          @dragover.prevent="onImgGroupDragOver($event, g.key)"
+          @dragleave.self="onImgGroupDragLeave(g.key)"
+          @drop.prevent="onImgGroupDrop($event, g.key)"
+          style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:12px;background:#fff;transition:border-color 0.15s,background 0.15s;"
+          :style="uiState.dropOpt1===g.key ? 'border-color:#1677ff;background:#e6f4ff;' : (g.isEtc ? 'border-color:#f0c0c2;' : '')">
+          <!-- ===== ■.■.■.■. 그룹 헤더 (그룹별 업로드 버튼) ======================== -->
+          <div style="display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #f0f0f0;background:#fafbfc;border-radius:10px 10px 0 0;">
+            <span style="font-size:12px;font-weight:700;color:#333;">{{ g.label }}</span>
+            <span style="font-size:11px;color:#aaa;">{{ g.items.length }}개</span>
+            <span v-if="g.isEtc" style="font-size:11px;color:#d9363e;">옵션설정에 없는 옵션값입니다. 각 행의 opt_id_1 을 다시 지정하세요.</span>
+            <div style="margin-left:auto;display:flex;gap:6px;">
+              <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" @click="handleBtnAction('img-triggerFile', g.key)" style="font-size:11px;">+ 파일 선택</button>
+              <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" @click="handleBtnAction('img-addByUrl', g.key)" style="font-size:11px;">+ URL 입력</button>
+            </div>
+          </div>
+          <!-- ===== ■.■.■.■. 그룹 본문 ============================================ -->
+          <div style="padding:8px;background:#fafafa;border-radius:0 0 10px 10px;">
+            <div v-if="g.items.length===0"
+              :style="'border:2px dashed #e4e4e4;border-radius:8px;padding:16px;text-align:center;color:#bbb;font-size:12px;' + (cfDtlMode ? '' : 'cursor:pointer;')"
+              @click="cfDtlMode ? null : handleBtnAction('img-triggerFile', g.key)">
+              {{ cfDtlMode ? '등록된 이미지가 없습니다.' : '클릭하거나 파일을 끌어다 놓으세요' }}
+            </div>
+            <div v-for="{ img, idx } in g.items" :key="img?.id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onImgDragStart(idx)" @dragover.prevent="cfDtlMode ? null : onImgDragOver(idx)" @drop.prevent="cfDtlMode ? null : onImgDrop()" @dragend="dragImgIdx=null;dragoverImgIdx=null;uiState.dragImgId=null" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;" :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : ((dragoverImgIdx===idx ? dragImgIdx!==idx : false) ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
           <!-- ===== ■.■.■.■.■. 드래그 핸들 (수정모드 전용) ============================= -->
           <div v-if="!cfDtlMode" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
             ⋮⋮
@@ -3029,12 +3141,15 @@ window.PdProdDtl = {
             <span v-if="img.isMain" style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">
               ★ 대표
             </span>
+            <button v-if="!cfDtlMode" class="btn btn-sm btn-secondary" @click="handleBtnAction('img-replaceFile', img.id)" style="font-size:11px;" title="이 행의 파일만 교체 — 순서·대표·옵션 지정은 유지됩니다">파일 교체</button>
             <button v-if="!cfDtlMode" class="btn btn-sm btn-danger" @click="handleBtnAction('img-remove', img.id)" style="font-size:11px;">삭제</button>
-            <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
+            <span style="font-size:11px;color:#bbb;" title="전체 정렬순서(sort_ord) — 그룹과 무관한 통합 순번입니다">{{ idx+1 }}/{{ images.length }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <!-- ===== ■.■.■. /이미지 스크롤 컨테이너 ======================================= -->
+      <!-- ===== ■.■.■. /옵션1 그룹 목록 ============================================= -->
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -3170,10 +3285,89 @@ window.PdProdDtl = {
             </button>
             <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong> {{ cfTotalStock }} </strong> 개</span>
             <button v-if="!cfDtlMode" class="btn btn-sm btn-secondary" @click="handleBtnAction('sku-generate')">🔄 SKU 재생성</button>
+            <!-- 뷰 전환 — 2단 옵션일 때만. 1차원 옵션은 행이 하나라 격자로 얻을 게 없다 -->
+            <div v-if="optGroups.length===2" style="display:flex;border:1px solid #d0d0d0;border-radius:6px;overflow:hidden;">
+              <button class="btn btn-xs" :class="uiState.skuView==='list' ? 'btn-blue' : 'btn-secondary'"
+                style="font-size:11px;border:none;border-radius:0;" @click="uiState.skuView='list'"
+                title="SKU 한 건의 모든 값을 편집 — SKU코드·재고코드 포함">📋 목록</button>
+              <button class="btn btn-xs" :class="uiState.skuView==='matrix' ? 'btn-blue' : 'btn-secondary'"
+                style="font-size:11px;border:none;border-radius:0;" @click="uiState.skuView='matrix'"
+                title="한 값을 모든 조합에 걸쳐 편집 — 패턴·누락이 한눈에">▦ 매트릭스</button>
+            </div>
           </div>
         </div>
-        <!-- ===== ■.■.■.■.■. SKU 테이블 (가격 섹션 + 재고 섹션 컬럼 분리) =============== -->
-        <div style="overflow:auto;max-height:320px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;">
+        <!-- ===== ■.■.■.■. 매트릭스 뷰 (한 필드 × 전체 조합) ========================
+         목록과 같은 skus 배열을 직접 편집한다. 행/열 헤더 클릭 = 그 줄에 일괄값 채우기. -->
+        <div v-if="optGroups.length===2 ? uiState.skuView==='matrix' : false"
+          style="border:1px solid #bae0ff;border-radius:8px;padding:12px;background:#f0f8ff;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:700;color:#0958d9;">▦ {{ fnMxField().label }} 매트릭스</span>
+            <select v-model="uiState.skuMxField" style="font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;">
+              <option v-for="f in SKU_MX_FIELDS" :key="f.key" :value="f.key">{{ f.label }}</option>
+            </select>
+            <span style="color:#c0d8f0;">│</span>
+            <span style="font-size:11px;color:#555;flex-shrink:0;">일괄값</span>
+            <input v-if="fnMxField().type==='number'" type="number" v-model="uiState.skuMxBulk" placeholder="0"
+              style="width:90px;font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;text-align:right;" />
+            <select v-else v-model="uiState.skuMxBulk" style="font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;">
+              <option value="">-- 선택 --</option>
+              <option v-for="c in grpCodes.OPT_STOCK_STATUS" :key="'mxb-'+c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            </select>
+            <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" style="font-size:11px;" @click="onMxFillAll()">전체 적용</button>
+            <span style="font-size:11px;color:#888;margin-left:auto;">행/열 헤더 클릭 = 그 줄에 일괄값 채우기 · 비활성 조합은 제외</span>
+          </div>
+          <div style="overflow:auto;max-height:420px;">
+            <table style="border-collapse:collapse;font-size:11px;">
+              <thead style="position:sticky;top:0;z-index:2;">
+                <tr>
+                  <th style="padding:4px 8px;background:#dbeafe;border:1px solid #bae0ff;min-width:80px;white-space:nowrap;position:sticky;left:0;z-index:3;">
+                    {{ (optGroups[0]?.grpNm)||'1단' }} / {{ (optGroups[1]?.grpNm)||'2단' }}
+                  </th>
+                  <th v-for="i2 in fnMxItems(2)" :key="'mxh-'+i2._id"
+                    style="padding:4px 6px;background:#dbeafe;border:1px solid #bae0ff;text-align:center;white-space:nowrap;cursor:pointer;min-width:62px;"
+                    :title="'이 열 전체에 일괄값 채우기: '+i2.nm" @click="onMxFillCol(i2)">
+                    <span v-if="i2.prodOptStyle ? i2.prodOptStyle.startsWith('#') : false"
+                      :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;background:'+i2.prodOptStyle+';border:1px solid #ddd;vertical-align:middle;'"></span>
+                    {{ i2.nm }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="i1 in fnMxItems(1)" :key="'mxr-'+i1._id">
+                  <td style="padding:4px 8px;background:#eff6ff;border:1px solid #bae0ff;white-space:nowrap;cursor:pointer;font-weight:600;position:sticky;left:0;z-index:1;"
+                    :title="'이 행 전체에 일괄값 채우기: '+i1.nm" @click="onMxFillRow(i1)">
+                    <span v-if="i1.prodOptStyle ? i1.prodOptStyle.startsWith('#') : false"
+                      :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;background:'+i1.prodOptStyle+';border:1px solid #ddd;vertical-align:middle;'"></span>
+                    {{ i1.nm }}
+                  </td>
+                  <td v-for="i2 in fnMxItems(2)" :key="'mxc-'+i1._id+'-'+i2._id"
+                    style="padding:2px 3px;border:1px solid #e0ecff;text-align:center;"
+                    :style="fnMxCellStyle(i1._id, i2._id)"
+                    :title="fnMxOn(i1._id, i2._id) ? '' : '비활성 조합 — 옵션설정 탭의 조합 설정에서 켜야 합니다'">
+                    <template v-if="fnMxSku(i1._id, i2._id)">
+                      <input v-if="fnMxField().type==='number'" type="number" min="0"
+                        :value="fnMxSku(i1._id, i2._id)[fnMxField().key]"
+                        @input="fnMxSku(i1._id, i2._id)[fnMxField().key] = Number($event.target.value) || 0"
+                        :disabled="cfDtlMode"
+                        style="width:56px;font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:2px 4px;height:21px;text-align:right;background:transparent;" />
+                      <select v-else :value="fnMxSku(i1._id, i2._id).statusCd"
+                        @change="fnMxSku(i1._id, i2._id).statusCd = $event.target.value"
+                        :disabled="cfDtlMode"
+                        style="width:74px;font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:1px 2px;height:21px;background:transparent;">
+                        <option v-for="c in grpCodes.OPT_STOCK_STATUS" :key="'mxs-'+c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+                      </select>
+                    </template>
+                    <span v-else style="color:#ccc;">-</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ===== ■.■.■.■.■. SKU 테이블 (가격 섹션 + 재고 섹션 컬럼 분리) ===============
+         매트릭스 뷰일 때만 숨긴다. 2단 옵션이 아니면 뷰 전환 버튼 자체가 없으므로 항상 목록. -->
+        <div v-if="optGroups.length===2 ? uiState.skuView==='list' : true"
+          style="overflow:auto;max-height:320px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;">
           <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
             <thead style="position:sticky;top:0;z-index:2;">
               <!-- ===== 그룹 헤더 행 ================================================= -->

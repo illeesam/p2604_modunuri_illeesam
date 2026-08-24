@@ -712,7 +712,11 @@ window.FoGrid = {
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
 
-    return { U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
              cfTableStyle, fnRowChecked,
              cfPinDragLeft, cfPinNoLeft, pinLeftStyle, pinRightStyle, fnPinBg,
@@ -757,6 +761,7 @@ window.FoGrid = {
               :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
               @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
+              <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
               <span v-if="col.sortKey"
                 :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
                 {{ sortIcon(col) }}
@@ -1031,7 +1036,11 @@ window.FoGridCrud = {
       emit('scroll-end');
     };
 
-    return { U, cfVisibleCount, cfCountText, onScroll, fnStatusClass, allChecked,
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, U, cfVisibleCount, cfCountText, onScroll, fnStatusClass, allChecked,
              fnColTitle, cfEmptyColspan, sortIcon, sortActive, cfTableStyle,
              cfPinIdLeft, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected,
              handleBtnAction, handleSelectAction };
@@ -1091,6 +1100,7 @@ window.FoGridCrud = {
               :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
               :title="fnColTitle(col)" @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
+              <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
               <span v-if="col.sortKey"
                 :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
                 {{ sortIcon(col) }}
@@ -1427,7 +1437,11 @@ window.FoFormArea = {
       return (v == null || v === '') ? '-' : v;
     };
 
-    return { cfRows, normOpts, dispVal, handleBtnAction, handleSelectAction };
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, cfRows, normOpts, dispVal, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="fo-form-area">
@@ -1436,11 +1450,11 @@ window.FoFormArea = {
     <div v-for="col in row" :key="col.key || col.label" :style="((col.colSpan ? col.colSpan>1 : false) ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
     <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
     <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
-    {{ col.label }}
+    {{ fnColLabel(col) }}
   </div>
     <!-- 라벨 -->
     <label v-else-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label">
-    {{ col.label }}
+    {{ fnColLabel(col) }}
     <span v-if="col.required" class="form-required">
       *
     </span>

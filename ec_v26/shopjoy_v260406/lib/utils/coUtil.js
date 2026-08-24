@@ -1280,6 +1280,38 @@
 
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
+  /* ── 개발용: 항목명 뒤에 DB 컬럼명 병기 ────────────────────────────────────
+     "상품상태 (prod_status_cd)" 처럼 보여 개발 중 화면↔테이블 대조를 쉽게 한다.
+     ⚠ 정식 오픈 시 아래 SHOW_COL_NM 을 false 로 바꾸면 **전 화면에서 한 번에** 사라진다.
+        라벨 문자열에 직접 박아 넣지 않는 이유가 이것이다(그러면 수백 곳을 손으로 지워야 함).
+
+     컬럼명은 컬럼 정의의 key 에서 유도한다 — 이 프로젝트는 Java 필드(camelCase) ↔
+     DB 컬럼(snake_case) 이 1:1 이라 prodStatusCd → prod_status_cd 로 정확히 떨어진다.
+       · col.colNm 이 문자열  → 그 값을 그대로 표기 (가상 키·조인 테이블·다중 컬럼용)
+       · col.colNm === false  → 그 항목만 숨김 (대응 컬럼이 없는 화면 전용 필드)
+       · key 가 '_' 로 시작    → 가상 필드로 보고 기본 표기 없음 (명시했을 때만 나옴) */
+  global.coUtil.SHOW_COL_NM = true;
+
+  /* cofColNm — 컬럼 정의 → 표기할 DB 컬럼명 (없으면 빈 문자열) */
+  function cofColNm(col) {
+    if (!global.coUtil.SHOW_COL_NM || !col) { return ''; }
+    if (col.colNm === false) { return ''; }
+    if (typeof col.colNm === 'string') { return col.colNm; }
+    var k = col.key || '';
+    if (!k || k.charAt(0) === '_') { return ''; }
+    if (k.indexOf('_') >= 0) { return k; }          // 이미 snake_case 면 그대로
+    return k.replace(/([A-Z])/g, '_$1').toLowerCase();
+  }
+  global.coUtil.cofColNm = global.coUtil.cofColNm || cofColNm;
+
+  /* cofColLabel — "라벨 (컬럼명)" 한 줄 문자열. 폼 라벨이 그대로 쓴다 */
+  function cofColLabel(col) {
+    var lb = col ? (col.label || '') : '';
+    var cn = cofColNm(col);
+    return cn ? (lb + ' (' + cn + ')') : lb;
+  }
+  global.coUtil.cofColLabel = global.coUtil.cofColLabel || cofColLabel;
+
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
   global.coUtil.cofApiInfo = global.coUtil.cofApiInfo || cofApiInfo;
   global.coUtil.cofAnd = global.coUtil.cofAnd || cofAnd;

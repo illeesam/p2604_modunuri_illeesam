@@ -1036,7 +1036,11 @@ window.BoGrid = {
       return col;
     }));
 
-    return { U, cfTotal, cfCountText, cfScrollMaxHeight, cfBodyStyle, bodyRef, onScroll, cfShowTfoot, rowNo, sortIcon, sortActive,
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, U, cfTotal, cfCountText, cfScrollMaxHeight, cfBodyStyle, bodyRef, onScroll, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle,
@@ -1089,6 +1093,7 @@ window.BoGrid = {
             :style="thResizeStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinLeftOffset[col.key], 6, col.key === cfPinLeftLastKey) + 'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' : '')"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
+              <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
               <span v-if="col.sortKey"
               :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
                 {{ sortIcon(col) }}
@@ -1537,7 +1542,11 @@ window.BoGridCrud = {
       return st;
     };
 
-    return { U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
              sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls, fnPinBg,
              cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, cfTreeNoList, pinLeftStyle, pinRightStyle, fnRowSelected, handleBtnAction, handleSelectAction };
   },
@@ -1594,6 +1603,7 @@ window.BoGridCrud = {
               :style="U.thStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
               :title="fnColTitle(col)" @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
+              <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
               <span v-if="col.sortKey"
                 :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
                 {{ sortIcon(col) }}
@@ -2680,7 +2690,11 @@ window.BoFormArea = {
     const fnAutoPlain = (col) => props.readonly && props.plainReadonly
       && !['slot', 'pathPick', 'pick', 'readonly', 'group', 'rowBreak'].includes(col.type);
 
-    return { cfRows, cfFieldStyle, normOpts, dispVal, fnAutoPlain, handleBtnAction, handleSelectAction };
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, cfRows, cfFieldStyle, normOpts, dispVal, fnAutoPlain, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="bo-form-area" :class="compact?'bo-form-compact':''">
@@ -2688,7 +2702,7 @@ window.BoFormArea = {
     <div v-for="col in row" :key="col.key || col.label" class="form-group" :class="plainReadonly && (col.type==='readonly' || fnAutoPlain(col)) ? 'form-group-plain' : ''" :style="cfFieldStyle(col)">
     <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
     <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
-    {{ col.label }}
+    {{ fnColLabel(col) }}
     <span v-if="col.desc" :title="col.desc"
       style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#64748b;font-size:10px;font-style:normal;font-weight:700;margin-left:5px;cursor:help;vertical-align:middle;">
       i
@@ -2698,7 +2712,7 @@ window.BoFormArea = {
          slot 타입도 col.label 이 있으면 위쪽 라벨 모드에서 자동 렌더 (라벨 누락 방지).
          단, labelLeft 모드 + slot 의 경우 grid 첫 칸 채우기 위해 별도 렌더 분기. -->
     <label v-else-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
-    {{ col.label }}
+    {{ fnColLabel(col) }}
     <span v-if="col.required ? (!readonly) : false" class="req">
     *
   </span>
@@ -2714,7 +2728,7 @@ window.BoFormArea = {
 ·
 </label>
 <label v-else-if="col.type === 'slot' ? (labelLeft ? (col.label ? (!col.hideLabel) : false) : false) : false" class="form-label" style="margin-bottom:0;white-space:nowrap;">
-{{ col.label }}
+{{ fnColLabel(col) }}
 <span v-if="col.required ? (!readonly) : false" class="req">
 *
 </span>
@@ -2724,7 +2738,7 @@ i
 </span>
 </label>
 <label v-else-if="col.type === 'slot' ? (!labelLeft ? (col.label ? (!col.hideLabel) : false) : false) : false" class="form-label">
-{{ col.label }}
+{{ fnColLabel(col) }}
 <span v-if="col.required ? (!readonly) : false" class="req">
 *
 </span>
