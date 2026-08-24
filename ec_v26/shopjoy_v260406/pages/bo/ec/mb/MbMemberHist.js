@@ -100,6 +100,9 @@ window.MbMemberHist = {
       { key: 'prodNm', label: '상품' },
       { key: 'totalPrice', label: '금액', fmt: (v) => coUtil.cofWon(v) },
       { key: 'statusCd', label: '상태' },
+      { type: 'actions', actions: [
+        { label: '상세', cls: 'btn btn_detail', onClick: (row) => handleSelectAction('orders-rowView', row.orderId) },
+      ] },
     ];
     // 클레임 그리드
     columns.claimGrid = [
@@ -109,6 +112,9 @@ window.MbMemberHist = {
       { key: 'statusCd', label: '상태' },
       { key: 'reasonCd', label: '사유' },
       { key: 'requestDate', label: '신청일', fmt: (v) => (v ? v.slice(0, 10) : '') },
+      { type: 'actions', actions: [
+        { label: '상세', cls: 'btn btn_detail', onClick: (row) => handleSelectAction('claims-rowView', row.claimId) },
+      ] },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -153,13 +159,7 @@ window.MbMemberHist = {
         </div>
       </template>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="columns.orderGrid" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn_detail" @click="handleSelectAction('orders-rowView', row.orderId)">
-            상세
-          </button>
-        </template>
-      </bo-grid>
+      <bo-grid bare :columns="columns.orderGrid" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" />
     </bo-container>
     <!-- ===== □.■. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
@@ -173,13 +173,7 @@ window.MbMemberHist = {
         </div>
       </template>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="columns.claimGrid" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn_detail" @click="handleSelectAction('claims-rowView', row.claimId)">
-            상세
-          </button>
-        </template>
-      </bo-grid>
+      <bo-grid bare :columns="columns.claimGrid" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" />
     </bo-container>
     <!-- ===== □.■. 연관 클레임 ================================================ -->
   </div>

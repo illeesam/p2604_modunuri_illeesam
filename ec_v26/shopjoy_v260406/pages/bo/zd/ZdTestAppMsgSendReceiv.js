@@ -403,7 +403,7 @@ window.ZdTestAppMsgSendReceiv = {
         });
         showToast('발송 완료 (' + cfActiveChannels.value.join(', ') + ')', 'success');
       } catch (e) {
-        result.error = e.response?.data?.message || e.message || '발송 오류';
+        result.error = coUtil.cofErrMsg(e, '발송 오류');
         addSendLog(cfActiveChannels.value.join('+'), targetLabel, '❌ ' + result.error, 'error');
         showToast(result.error, 'error', 0);
       }
@@ -427,7 +427,7 @@ window.ZdTestAppMsgSendReceiv = {
         devices.rows              = d.pageList       || d || [];
         devices.pager.pageTotalCount = d.pageTotalCount || (Array.isArray(d) ? d.length : 0);
       } catch (e) {
-        showToast('디바이스 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        showToast('디바이스 목록 조회 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       }
       result.loadingDev = false;
     };
@@ -451,7 +451,7 @@ window.ZdTestAppMsgSendReceiv = {
         hist.rows              = d.pageList       || [];
         hist.pager.pageTotalCount = d.pageTotalCount || 0;
       } catch (e) {
-        showToast('발송 이력 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        showToast('발송 이력 조회 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       }
       result.loadingHist = false;
     };
@@ -527,7 +527,7 @@ window.ZdTestAppMsgSendReceiv = {
           addSendLog(ch, token, '✅ 발송완료 → ' + (dev.memberId || '-'), 'success');
           successCnt++;
         } catch (e) {
-          addSendLog(ch, token, '❌ ' + (e.response?.data?.message || e.message), 'error');
+          addSendLog(ch, token, '❌ ' + (coUtil.cofErrMsg(e)), 'error');
           failCnt++;
         }
       }

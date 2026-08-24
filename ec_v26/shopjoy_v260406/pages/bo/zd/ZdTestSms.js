@@ -100,7 +100,7 @@ window.ZdTestSms = {
         addLog('✅ 발송 완료 → ' + form.toPhone, 'success');
         showToast('SMS 발송 완료', 'success');
       } catch (e) {
-        result.error  = e.response?.data?.message || e.message || '알 수 없는 오류';
+        result.error  = coUtil.cofErrMsg(e, '알 수 없는 오류');
         result.status = '❌ SMS 발송 실패';
         addLog('❌ 실패: ' + result.error, 'error');
         showToast('SMS 발송 실패: ' + result.error, 'error', 0);

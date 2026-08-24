@@ -266,7 +266,7 @@ window.SyPropMng = {
         showToast('저장되었습니다.', 'success');
         await fetchData();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -282,7 +282,7 @@ window.SyPropMng = {
         if (data?.syApp)   { window.useBoAppStore?.()?.saSetApp(data.syApp); }
         showToast('런타임 프로퍼티가 갱신되었습니다.', 'success');
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '갱신 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '갱신 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 

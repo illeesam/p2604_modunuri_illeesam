@@ -394,15 +394,12 @@ window.SyBbsDtl = {
     </template>
   </bo-form-area>
   <!-- ===== ■.■. 폼 액션 (보기모드: 수정/닫기 · 수정모드: 저장/취소) ================== -->
-  <div class="form-actions" v-if="active ? (cfDtlMode) : false">
-    <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-  </div>
-  <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
-    <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-    <button class="btn btn_cancel" v-if="!cfIsNew" @click="handleBtnAction('form-cancel')">취소</button>
-    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-  </div>
+  <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false" :show-cancel="!cfIsNew"
+    :edit-click="() => handleBtnAction('form-edit')"
+    :save-click="() => handleBtnAction('form-save')"
+    :delete-click="() => handleBtnAction('form-delete')"
+    :cancel-click="() => handleBtnAction('form-cancel')"
+    :close-click="() => handleBtnAction('form-close')" />
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
   <bo-cm-popup-modal v-if="showBbmModal" popup-cmd="cmPopup-bbm-select" popup-code="bbm" :on-callback="fnCallbackModal" />

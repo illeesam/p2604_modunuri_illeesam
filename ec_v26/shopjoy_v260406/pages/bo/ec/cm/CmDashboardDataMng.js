@@ -333,7 +333,7 @@ window.CmDashboardDataMng = {
         fnMergeCharts(key, res.data?.data?.charts);
         groupState[key].searched = true;
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         groupState[key].loading = false;
       }
@@ -415,7 +415,7 @@ window.CmDashboardDataMng = {
         await handleSearchDashItems();
         await handleSearchGroup(chart.inputOpts || DEFAULT_INPUT_OPTS);
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -445,7 +445,7 @@ window.CmDashboardDataMng = {
         showToast(res.data?.message || '저장되었습니다.', 'success');
         await handleSearchGroup(key);
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         groupState[key].saving = false;
       }
@@ -472,7 +472,7 @@ window.CmDashboardDataMng = {
           await boApiSvc.cmDashboard.saveDataGrid(body, params, '대시보드데이타관리', '전체저장');
           await handleSearchGroup(g.key);
         } catch (err) {
-          showToast((err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.') + ' (' + g.key + ')', 'error', 0);
+          showToast((coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.')) + ' (' + g.key + ')', 'error', 0);
         } finally {
           groupState[g.key].saving = false;
         }
@@ -513,7 +513,7 @@ window.CmDashboardDataMng = {
           charts.splice(0, charts.length);
         }
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.itemLoading = false;
       }
@@ -594,7 +594,7 @@ window.CmDashboardDataMng = {
         fnEnsureGroupsFor(list);   /* input_opts 그룹별 조회조건 기본값 미리 채우기 */
         uiState.selectedItemIds = list.map(i => i.dashboardItemId);   /* 기본값: 전체선택 */
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '위젯항목 조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '위젯항목 조회 오류'), 'error', 0);
       } finally {
         uiState.itemLoading = false;
       }

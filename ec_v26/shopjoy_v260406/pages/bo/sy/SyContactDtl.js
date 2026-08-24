@@ -422,21 +422,13 @@ window.SyContactDtl = {
             :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
         </template>
       </bo-form-area>
-      <div class="form-actions" v-if="active">
-        <template v-if="cfDtlMode">
-          <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
-          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-        </template>
-        <template v-else>
-          <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-            저장
-          </button>
-          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
-          <button class="btn btn_cancel" v-if="cfHasId" @click="handleBtnAction('form-cancel')">취소</button>
-          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-        </template>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="cfHasId" :show-cancel="cfHasId"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('form-edit')"
+        :save-click="() => handleBtnAction('form-save')"
+        :delete-click="() => handleBtnAction('form-delete')"
+        :cancel-click="() => handleBtnAction('form-cancel')"
+        :close-click="() => handleBtnAction('form-close')" />
     </div>
     <!-- ===== ■.■.■. 답변 ================================================== -->
     <div class="dtl-pane" v-show="showTab('answer')" style="margin:0;">
@@ -463,21 +455,10 @@ window.SyContactDtl = {
             :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
         </template>
       </bo-form-area>
-      <div class="form-actions" v-if="active">
-        <template v-if="cfDtlMode">
-          <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
-          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-        </template>
-        <template v-else>
-          <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
-            답변 저장
-          </button>
-          <button class="btn btn_delete" v-if="cfHasId" @click="handleBtnAction('form-delete')">삭제</button>
-          <button class="btn btn_cancel" v-if="cfHasId" @click="handleBtnAction('form-cancel')">취소</button>
-          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-        </template>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="cfHasId" :show-cancel="cfHasId"
+        save-label="답변 저장" :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''"
+        @save="handleBtnAction('form-saveAnswer')" @cancel="handleBtnAction('form-cancel')"
+        @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" @delete="handleBtnAction('form-delete')" />
     </div>
   </div>
 </bo-container>

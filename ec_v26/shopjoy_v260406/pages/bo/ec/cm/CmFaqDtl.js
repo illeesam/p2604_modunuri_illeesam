@@ -308,19 +308,12 @@ window.CmFaqDtl = {
     </template>
   </bo-form-area>
   <!-- ===== ■.■. 폼 액션 (행 선택/신규 시에만 노출) ============================ -->
-  <div class="form-actions" v-if="active">
-    <template v-if="cfDtlMode">
-      <button class="btn btn_edit"  @click="handleBtnAction('form-edit')">수정</button>
-      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-    </template>
-    <template v-else>
-      <button class="btn btn_save"   @click="handleBtnAction('form-save')">저장</button>
-      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-      <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-    </template>
-  </div>
+  <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+    :edit-click="() => handleBtnAction('form-edit')"
+    :save-click="() => handleBtnAction('form-save')"
+    :delete-click="() => handleBtnAction('form-delete')"
+    :cancel-click="() => handleBtnAction('form-cancel')"
+    :close-click="() => handleBtnAction('form-close')" />
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
   <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'cm_faq' }" title="FAQ 분류(표시경로) 선택" :on-callback="fnCallbackModal" />
 </bo-container>

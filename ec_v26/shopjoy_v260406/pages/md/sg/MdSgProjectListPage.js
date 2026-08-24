@@ -28,7 +28,7 @@ window.MdSgProjectListPage = {
         pager.pageTotalCount = d.pageTotalCount || 0;
         pager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '목록 조회 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '목록 조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         loading.value = false;
       }
@@ -48,7 +48,17 @@ window.MdSgProjectListPage = {
     };
 
     const fnFmtDate = (d) => (d ? String(d).slice(0, 10) : '-');
-    const fnFmtDateTime = (d) => (d ? String(d).replace('T', ' ').slice(0, 16) : '-');
+    /* ##### [05] 컬럼정의 #################### */
+    const baseGridColumns = [
+      { key: '_thumb',      label: '', width: '44px', align: 'center' },
+      { key: 'projectNm',   label: '프로젝트명' },
+      { key: 'basePackage', label: 'Base Package', width: '220px', cellClass: 'sg-list-mono', fmt: (v) => v || '-' },
+      { key: 'dbTypeCd',    label: 'DB', width: '90px', fmt: (v, r) => r.dbTypeCdNm || v || '-' },
+      { key: 'ddlCount',    label: '테이블', width: '80px', align: 'center', fmt: (v) => v || 0 },
+      { key: 'genHistCount', label: '생성이력', width: '80px', align: 'center', fmt: (v) => v || 0 },
+      { key: 'lastGenDate', label: '최근 생성', width: '140px', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
+      { key: 'regUserNm',   label: '작성자', width: '120px', fmt: (v, r) => v || r.memberNm || '알 수 없음' },
+    ];
 
     /* fnThumbStyle — 프로젝트ID 기반 해시 색상의 그라데이션 썸네일(실 이미지가 없는 도메인) */
     const fnThumbStyle = (id) => {
@@ -73,8 +83,8 @@ window.MdSgProjectListPage = {
       fnLoad();
     });
 
-    return { searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange, onOpen, onNew, onChangeView,
-      fnFmtDate, fnFmtDateTime, fnThumbStyle, fnStatusBadge, viewMode, onSetViewMode };
+    return {baseGridColumns, searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange, onOpen, onNew, onChangeView,
+      fnFmtDate,  fnThumbStyle, fnStatusBadge, viewMode, onSetViewMode };
   },
   template: /* html */`
 <div class="sg-page">
@@ -131,45 +141,24 @@ window.MdSgProjectListPage = {
 
   <!-- 일반목록(기본) -->
   <div v-else class="sg-list-table-wrap">
-    <table class="sg-list-table">
-      <thead>
-        <tr>
-          <th style="width:60px;text-align:center;">번호</th>
-          <th style="width:44px;"></th>
-          <th>프로젝트명</th>
-          <th style="width:220px;">Base Package</th>
-          <th style="width:90px;">DB</th>
-          <th style="width:80px;text-align:center;">테이블</th>
-          <th style="width:80px;text-align:center;">생성이력</th>
-          <th style="width:140px;">최근 생성</th>
-          <th style="width:120px;">작성자</th>
-          <th style="width:28px;"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(p, idx) in rows" :key="p.projectId" @click="onOpen(p)">
-          <td style="text-align:center;color:var(--text-muted,#999);">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</td>
-          <td>
-            <div class="sg-list-thumb" :style="p.thumbnailUrl ? '' : fnThumbStyle(p.projectId)">
-              <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" class="sg-list-thumb-img" />
-              <span v-else class="sg-list-thumb-icon">⚙️</span>
-            </div>
-          </td>
-          <td class="sg-list-table-nm">
-            {{ p.projectNm }}
-            <span class="sg-badge sg-badge-inline" :class="'sg-badge-' + fnStatusBadge(p).cls">{{ fnStatusBadge(p).icon }} {{ fnStatusBadge(p).label }}</span>
-          </td>
-          <td class="sg-list-mono">{{ p.basePackage || '-' }}</td>
-          <td>{{ p.dbTypeCdNm || p.dbTypeCd || '-' }}</td>
-          <td style="text-align:center;">{{ p.ddlCount || 0 }}</td>
-          <td style="text-align:center;">{{ p.genHistCount || 0 }}</td>
-          <td>{{ fnFmtDateTime(p.lastGenDate) }}</td>
-          <td>{{ p.regUserNm || p.memberNm || '알 수 없음' }}</td>
-          <td class="sg-list-table-arrow">›</td>
-        </tr>
-        <tr v-if="!loading && !rows.length"><td colspan="10" class="sg-empty-hint">검색 결과가 없습니다.</td></tr>
-      </tbody>
-    </table>
+    <fo-grid :columns="baseGridColumns" :rows="rows" row-key="projectId" :loading="loading"
+      list-title="프로젝트목록" bare min-width="1000px" :row-click="onOpen"
+      empty-text="검색 결과가 없습니다.">
+      <!-- 썸네일: 이미지 + 없을 때 프로젝트ID 해시 그라데이션 — 단순 fmt 로는 표현 불가라 슬롯 유지 -->
+      <template #cell-_thumb="{ row }">
+        <div class="sg-list-thumb" :style="row.thumbnailUrl ? '' : fnThumbStyle(row.projectId)">
+          <img v-if="row.thumbnailUrl" :src="row.thumbnailUrl" class="sg-list-thumb-img" />
+          <span v-else class="sg-list-thumb-icon">⚙️</span>
+        </div>
+      </template>
+      <!-- 프로젝트명 + 상태 배지(아이콘·라벨·색 3요소) -->
+      <template #cell-projectNm="{ row }">
+        <span class="sg-list-table-nm">{{ row.projectNm }}</span>
+        <span class="sg-badge sg-badge-inline" :class="'sg-badge-' + fnStatusBadge(row).cls">
+          {{ fnStatusBadge(row).icon }} {{ fnStatusBadge(row).label }}
+        </span>
+      </template>
+    </fo-grid>
   </div>
 
   <fo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />

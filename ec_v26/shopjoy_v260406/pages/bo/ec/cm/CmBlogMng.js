@@ -476,6 +476,14 @@ window.CmBlogMng = {
       { key: 'isNotice',   label: '공지',     style: 'width:70px;', align: 'center', badge: row => row.isNotice==='Y' ? 'badge-orange' : 'badge-gray' },
       { key: 'useYn',      label: '공개',     style: 'width:70px;', align: 'center', badge: row => fnYnBadge(row.useYn), fmt: v => v==='Y' ? '공개' : '비공개' },
       { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+      /* type:'actions' — 관리 버튼모음도 별도 배열로 분리하지 않고 baseGrid 항목 하나로 선언(#row-actions 슬롯 대체, 2026-08-25) */
+      { type: 'actions', actions: [
+        { label: '수정', cls: 'btn btn_row_edit btn-sm', onClick: (row) => handleGridCellAction('blogs-cellClick', 'btn_row_edit', row) },
+        { label: '삭제', cls: 'btn btn_row_delete btn-sm', onClick: (row) => handleSelectAction('blogs-rowDelete', row) },
+        { label: (row) => (row.useYn === 'Y' ? '비공개' : '공개'),
+          cls: (row) => ['btn', 'btn-sm', row.useYn === 'Y' ? 'btn-secondary' : 'btn-green'],
+          onClick: (row) => handleSelectAction('blogs-rowToggleUse', row) },
+      ] },
     ];
 
     // 블로그 폼
@@ -542,23 +550,12 @@ window.CmBlogMng = {
       :sort-state="uiState"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('blogs-sort', key)"
-      grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+      grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
             table-max-height="540px">
       <template #cell-_thumb="{ row }">
         <img v-if="fnRowThumb(row)" :src="fnRowThumb(row)" :alt="row.blogTitle"
           style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid #eee;" />
         <span v-else style="color:#ccc;font-size:11px;">없음</span>
-      </template>
-      <template #row-actions="{ row }">
-        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('blogs-cellClick', 'btn_row_edit', row)">
-          수정
-        </button>
-        <button class="btn btn_row_delete btn-sm" @click.stop="handleSelectAction('blogs-rowDelete', row)">
-          삭제
-        </button>
-        <button :class="['btn','btn-sm',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
-          {{ row.useYn==='Y'?'비공개':'공개' }}
-        </button>
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
@@ -626,30 +623,12 @@ window.CmBlogMng = {
           </div>
         </div>
         <!-- ===== ■.■.■. 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[저장][삭제][취소] (.form-actions 중앙 정렬) ===== -->
-        <div class="form-actions">
-          <template v-if="cfDtlMode">
-            <button class="btn btn_edit" @click="handleBtnAction('detailPanel-edit')">
-              수정
-            </button>
-            <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-              닫기
-            </button>
-          </template>
-          <template v-else>
-            <button class="btn btn_save" @click="handleBtnAction('detailPanel-save')">
-              저장
-            </button>
-            <button v-if="!detailPanel.isNew" class="btn btn_delete" @click="handleBtnAction('detailPanel-delete')">
-              삭제
-            </button>
-            <button v-if="!detailPanel.isNew" class="btn btn_cancel" @click="handleBtnAction('detailPanel-cancel')">
-              취소
-            </button>
-            <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-              닫기
-            </button>
-          </template>
-        </div>
+        <bo-form-actions :readonly="cfDtlMode" :show-delete="!detailPanel.isNew" :show-cancel="!detailPanel.isNew"
+          :edit-click="() => handleBtnAction('detailPanel-edit')"
+          :save-click="() => handleBtnAction('detailPanel-save')"
+          :delete-click="() => handleBtnAction('detailPanel-delete')"
+          :cancel-click="() => handleBtnAction('detailPanel-cancel')"
+          :close-click="() => handleBtnAction('detailPanel-close')" />
       </div>
       <!-- ===== □.■. 블로그 detail 폼 ========================================== -->
     </div>

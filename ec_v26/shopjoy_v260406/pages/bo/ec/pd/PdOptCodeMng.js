@@ -187,7 +187,7 @@ window.PdOptCodeMng = {
         }
       } catch (e) {
         console.error('[handleLoad]', e);
-        _toast('로드 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        _toast('로드 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       } finally {
         uiState.loading = false;
       }

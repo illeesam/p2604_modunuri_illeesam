@@ -280,6 +280,9 @@ window.OdCartMng = {
         align: 'center', fmt: (v) => fnCheckedNm(v), badge: (row) => fnCheckedBadgeCls(row.isChecked) },
       { key: 'regDate',  label: '등록일시', style: 'width:130px;',
         fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
+      { type: 'actions', actions: [
+        { label: '삭제', cls: 'btn btn_row_delete', onClick: (row) => handleSelectAction('carts-rowDelete', row.cartId) },
+      ] },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */
@@ -336,13 +339,7 @@ window.OdCartMng = {
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
       @toggle-check="id => handleSelectAction('carts-rowToggleCheck', id)"
-      @toggle-check-all="handleSelectAction('carts-rowToggleCheckAll')" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn_row_delete" @click="handleSelectAction('carts-rowDelete', row.cartId)">
-          삭제
-        </button>
-      </template>
-    </bo-grid>
+      @toggle-check-all="handleSelectAction('carts-rowToggleCheckAll')" />
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager" :on-set-page="n => handleBtnAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="odCart" area-nm="장바구니"
       :columns="columns.listGrid" ui-nm="장바구니관리" :params="buildExcelParams()"

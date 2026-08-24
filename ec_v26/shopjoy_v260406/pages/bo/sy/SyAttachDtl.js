@@ -50,7 +50,7 @@ window.SyAttachDtl = {
         const res = await boApiSvc.syAttach.getById(props.dtlId, '첨부파일관리', '조회');
         Object.assign(baseForm, res.data?.data || {});
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -71,7 +71,7 @@ window.SyAttachDtl = {
         uiState.dtlMode = 'view';
         await fnLoadDetail();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -128,16 +128,11 @@ window.SyAttachDtl = {
   <div v-else style="padding:12px;">
     <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="{}"
       :cols="3" :readonly="uiState.dtlMode === 'view'" :show-actions="false" />
-    <div class="form-actions">
-      <template v-if="uiState.dtlMode === 'view'">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </template>
-      <template v-else>
-        <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-      </template>
-    </div>
+    <bo-form-actions :readonly="uiState.dtlMode === 'view'" :show-delete="false" :edit-click="() => handleBtnAction('form-edit')"
+ :save-click="() => handleBtnAction('form-save')"
+ :delete-click="() => handleBtnAction('form-delete')"
+ :cancel-click="() => handleBtnAction('form-cancel')"
+ :close-click="() => handleBtnAction('form-close')" />
   </div>
 </bo-container>
 `

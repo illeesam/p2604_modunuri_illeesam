@@ -113,6 +113,14 @@
 .fo-grid-pager button:disabled { opacity:.4; cursor:not-allowed; }
 .fo-grid-pager-size { padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-card); color:var(--text-secondary); cursor:pointer; font-size:0.82rem; margin-left:6px; }
 .fo-grid-scroll { overflow:auto; }
+.fo-grid-cardview { display:grid; grid-template-columns:repeat(auto-fill,minmax(var(--fo-grid-card-min,220px),1fr)); gap:14px; }
+.fo-grid-card-item { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px; box-shadow:var(--shadow); transition:transform .15s,box-shadow .15s; }
+.fo-grid-card-item.fo-grid-clickable { cursor:pointer; }
+.fo-grid-card-item.fo-grid-clickable:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.1); }
+.fo-grid-cardview .fo-grid-empty { grid-column:1/-1; padding:30px; text-align:center; color:var(--text-muted); }
+.fo-grid-card-default-title { font-weight:700; color:var(--text-primary); margin-bottom:6px; font-size:0.9rem; }
+.fo-grid-card-default-row { display:flex; justify-content:space-between; gap:8px; font-size:0.78rem; padding:2px 0; color:var(--text-secondary); }
+.fo-grid-card-default-row b { color:var(--text-muted); font-weight:600; }
 .fo-modal-box { display:flex; flex-direction:column; text-align:left; }
 .fo-modal-header { display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:18px; }
 .fo-modal-title { font-weight:800; font-size:1rem; color:var(--text-primary); letter-spacing:-0.2px; }
@@ -602,6 +610,14 @@ window.FoGrid = {
     checkedKey: { type: String,  default: null },
     isChecked:  { type: Function, default: null },
     allChecked: { type: Boolean, default: false },
+    layout:       { type: String, default: 'table' },  // 'table'(기본) | 'card' — 카드형식 목록
+    cardMinWidth: { type: String, default: '220px' },  // 카드 최소 폭(auto-fill 반응형 그리드)
+    cardClass:    { type: String, default: '' },       // 카드 1장 wrapper 클래스 교체(page 가 자체 카드 CSS 를 이미 갖고 있을 때).
+                                                           // 지정 시 기본 .fo-grid-card-item 대신 이 클래스만 붙는다(레이아웃 원본 존중).
+    rowActionsCols: { type: Array, default: null },    // [{ label, cls, style, title: 문자열|(row,idx)=>값,
+                                                         //    onClick(row,idx), href(row,idx), target, visible(row,idx), disabled(row,idx) }]
+                                                         // 주면 #row-actions 기본 콘텐츠로 버튼 자동 렌더(그 화면이 직접
+                                                         // #row-actions 템플릿을 주면 그쪽이 항상 우선 — 슬롯 오버라이드 그대로).
   },
   emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder',
           'toggle-check', 'toggle-check-all'],
@@ -612,9 +628,20 @@ window.FoGrid = {
     const cfTotal = Vue.computed(() => U.pgTotal(props.pager, props.rows.length));
     const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
     const dragSrc = Vue.ref(null);
-    const cfColspan = Vue.computed(() => props.columns.length
+    /* cfActionsColDef — columns 배열 안에 { type:'actions', actions:[...] } 항목으로 행액션을 같이 선언한 경우 그 항목.
+       rowActions/rowActionsCols prop 을 별도로 안 줘도 columns 하나로 정의 가능(2026-08-25).
+       column.visible: ()=>bool 을 주면(행별이 아니라 컬럼 전체 노출 여부) 그 값도 반영. */
+    const cfActionsColDef = Vue.computed(() => {
+      const c = props.columns.find(c => c.type === 'actions');
+      if (!c) return null;
+      if (typeof c.visible === 'function' && !c.visible()) return null;
+      return c;
+    });
+    /* cfEffectiveCols — columns 에서 { type:'actions' } 항목 제외(데이터 컬럼 아님) */
+    const cfEffectiveCols = Vue.computed(() => props.columns.filter(col => col.type !== 'actions'));
+    const cfColspan = Vue.computed(() => cfEffectiveCols.value.length
       + (props.showRowNo ? 1 : 0)
-      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
+      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + ((props.rowActions || cfActionsColDef.value) ? 1 : 0));
     const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
 
     /* ── ▼ 좌/우 고정(pin) — 번호 항상 좌측 고정, 관리(rowActions) 항상 우측 고정.
@@ -712,15 +739,28 @@ window.FoGrid = {
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
 
+    /* rowActionsCols 항목 헬퍼 — label/cls/style/title 은 문자열 또는 (row,idx)=>값 함수 둘 다 허용.
+       실사용 34곳을 조사해 보니 정적 문자열만으론 안 되는 경우(토글 라벨/동적 클래스)가 있었다. */
+    const fnRowActionVal = (v, row, idx) => (typeof v === 'function' ? v(row, idx) : v);
+    /* fnRowActionVisible — 없으면 항상 표시(true) */
+    const fnRowActionVisible = (a, row, idx) => (typeof a.visible === 'function' ? !!a.visible(row, idx) : true);
+    /* fnRowActionDisabled — 없으면 항상 활성(false). visible(숨김)과 별개 — CmDashboardItemMng 처럼
+       "보이되 잠금" 상태(cfDtlMode 등)를 표현하려고 둘을 분리했다. */
+    const fnRowActionDisabled = (a, row, idx) => (typeof a.disabled === 'function' ? !!a.disabled(row, idx) : false);
     /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
     const fnColLabel = (col) => coUtil.cofColLabel(col);
     const fnColNm    = (col) => coUtil.cofColNm(col);
+    /* cfEffectiveRowActions / cfEffectiveRowActionsCols — rowActions/rowActionsCols prop 을 직접 안 줬어도
+       columns 안의 { type:'actions', actions:[...] } 항목이 있으면 그걸로 갈음(아래 return 에서 동명 prop 을 shadow). */
+    const cfEffectiveRowActions = Vue.computed(() => props.rowActions || !!cfActionsColDef.value);
+    const cfEffectiveRowActionsCols = Vue.computed(() => props.rowActionsCols || (cfActionsColDef.value && cfActionsColDef.value.actions) || null);
 
-    return { fnColLabel, fnColNm, U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
+    return { fnRowActionVal, fnRowActionVisible, fnRowActionDisabled, fnColLabel, fnColNm, U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
              cfTableStyle, fnRowChecked,
              cfPinDragLeft, cfPinNoLeft, pinLeftStyle, pinRightStyle, fnPinBg,
-             handleBtnAction, handleSelectAction };
+             handleBtnAction, handleSelectAction,
+             columns: cfEffectiveCols, rowActions: cfEffectiveRowActions, rowActionsCols: cfEffectiveRowActionsCols };
   },
   template: /* html */`
 <div :class="bare ? '' : 'fo-grid-card'">
@@ -740,7 +780,7 @@ window.FoGrid = {
       </button>
     </div>
   </div>
-  <div class="fo-grid-scroll" :style="tableMaxHeight ? ('position:relative;max-height:' + tableMaxHeight + ';overflow:auto;') : 'position:relative;'">
+  <div v-if="layout==='table'" class="fo-grid-scroll" :style="tableMaxHeight ? ('position:relative;max-height:' + tableMaxHeight + ';overflow:auto;') : 'position:relative;'">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:var(--accent);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
@@ -824,7 +864,16 @@ window.FoGrid = {
             </template>
             <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true) + 'background:' + fnPinBg(row, idx) + ';'">
               <slot name="row-actions" :row="row" :idx="idx">
-                <button class="btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
+                <template v-if="rowActionsCols">
+                  <template v-for="(a, ai) in rowActionsCols" :key="ai">
+                    <a v-if="a.href && fnRowActionVisible(a, row, idx)" :href="a.href(row, idx)" :target="a.target || '_blank'" rel="noopener"
+                      :class="fnRowActionVal(a.cls, row, idx)" :style="fnRowActionVal(a.style, row, idx)" :title="fnRowActionVal(a.title, row, idx)">{{ fnRowActionVal(a.label, row, idx) }}</a>
+                    <button v-else-if="fnRowActionVisible(a, row, idx)" type="button" :disabled="fnRowActionDisabled(a, row, idx)"
+                      :class="fnRowActionVal(a.cls, row, idx)" :style="fnRowActionVal(a.style, row, idx)" :title="fnRowActionVal(a.title, row, idx)"
+                      @click="a.onClick && a.onClick(row, idx)">{{ fnRowActionVal(a.label, row, idx) }}</button>
+                  </template>
+                </template>
+                <button v-else class="btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
                 </button>
               </slot>
@@ -851,6 +900,25 @@ window.FoGrid = {
         </slot>
       </tfoot>
     </table>
+  </div>
+  <!-- ▼ 카드형식(layout='card') — 표 대신 카드 그리드로 렌더. #card 슬롯이 콘텐츠를 전담하고
+       (row/idx/no 스코프 제공), 미제공 시 columns 기반 기본 카드(제목=첫 컬럼, 나머지는 라벨:값)로 대체 —
+       화면이 슬롯을 깜빡 빠뜨려도 빈 카드가 뜨지 않도록 하는 안전망이다. -->
+  <div v-else class="fo-grid-cardview" :style="{ '--fo-grid-card-min': cardMinWidth }">
+    <div v-if="loading && !rows.length" class="fo-grid-empty">⏳ 조회 중…</div>
+    <div v-else-if="!rows.length" class="fo-grid-empty">{{ emptyText }}</div>
+    <template v-else>
+      <div v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx"
+        :class="[cardClass || 'fo-grid-card-item', fnRowClass(row, idx)]" :style="fnRowStyle(row, idx)"
+        @click="handleSelectAction('grid-row-click', { row })">
+        <slot name="card" :row="row" :idx="idx" :no="rowNo(idx)">
+          <div class="fo-grid-card-default-title">{{ U.cellText(columns[0], row) }}</div>
+          <div v-for="col in columns.slice(1)" :key="col.key" class="fo-grid-card-default-row">
+            <b>{{ col.label }}</b><span>{{ U.cellText(col, row) }}</span>
+          </div>
+        </slot>
+      </div>
+    </template>
   </div>
   <!-- ▼ pager 는 그리드 외부 <fo-pager> 로만 구현 (내부 페이저 제거됨) -->
 </div>

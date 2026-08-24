@@ -128,6 +128,9 @@ window.OdOrderHist = {
       { key: 'totalPrice', label: '금액',   style: 'width:100px;text-align:right;',
         align: 'right', cellStyle: 'font-weight:600', fmt: (v) => coUtil.cofWon(v) },
       { key: 'statusCd',   label: '상태',   style: 'width:90px;' },
+      { type: 'actions', actions: [
+        { label: '보기', cls: 'btn btn-secondary btn-xs', onClick: () => handleBtnAction('histList-orderRef') },
+      ] },
     ];
     // 배송 이력 그리드
     columns.dlivHistGrid = [
@@ -144,6 +147,9 @@ window.OdOrderHist = {
       { key: 'claimStatusCd', label: '상태',   fmt: (v, r) => r.claimStatusCdNm || r.claimStatusCd },
       { key: 'reasonCd',      label: '사유' },
       { key: 'requestDate',   label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
+      { type: 'actions', actions: [
+        { label: '상세', cls: 'btn btn-blue btn-xs', onClick: (row) => handleSelectAction('histList-rowClaimEdit', row.claimId) },
+      ] },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -183,13 +189,7 @@ window.OdOrderHist = {
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.itemGrid" :rows="orderItems" row-key="no"
-        empty-text="구성 상품 정보가 없습니다." row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-orderRef')">
-            보기
-          </button>
-        </template>
-      </bo-grid>
+        empty-text="구성 상품 정보가 없습니다." />
     </div>
     <!-- ===== □.□. 구성 상품 ================================================= -->
     <!-- ===== ■.■. 배송 이력 ================================================= -->
@@ -248,13 +248,7 @@ window.OdOrderHist = {
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.claimGrid" :rows="cfRelatedClaims" row-key="claimId"
-        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
-            상세
-          </button>
-        </template>
-      </bo-grid>
+        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" />
     </div>
   </div>
 </div>

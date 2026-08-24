@@ -105,7 +105,7 @@ window.ZdTestPayKakaopay = {
         }
         showToast('결제 준비 완료. 카카오페이 결제창을 열어주세요.', 'success');
       } catch (e) {
-        result.error = e.response?.data?.message || e.message;
+        result.error = coUtil.cofErrMsg(e);
         result.phase = 'idle';
         showToast('결제 준비 실패: ' + result.error, 'error', 0);
       }
@@ -138,7 +138,7 @@ window.ZdTestPayKakaopay = {
         result.phase = 'done';
         showToast('결제 승인 완료', 'success');
       } catch (e) {
-        result.error = e.response?.data?.message || e.message;
+        result.error = coUtil.cofErrMsg(e);
         result.phase = 'ready';
         showToast('결제 승인 실패: ' + result.error, 'error', 0);
       }
@@ -160,7 +160,7 @@ window.ZdTestPayKakaopay = {
         result.cancelResult = res.data?.data || res.data;
         showToast('결제 취소 완료', 'success');
       } catch (e) {
-        showToast('취소 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        showToast('취소 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       }
       uiState.loading = false;
     };
@@ -174,7 +174,7 @@ window.ZdTestPayKakaopay = {
         await boApi.put('/bo/sy/prop/bulk', rows, coUtil.cofApiHdr('카카오페이 결제 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
-        showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
+        showToast(coUtil.cofErrMsg(e, '저장 실패'), 'error', 0);
       }
     };
 

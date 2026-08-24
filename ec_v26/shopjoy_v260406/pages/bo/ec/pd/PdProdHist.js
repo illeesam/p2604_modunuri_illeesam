@@ -241,6 +241,9 @@ window.PdProdHist = {
       { key: 'orderQty',       label: '수량' },
       { key: 'orderStatusCd',  label: '상태', badge: () => 'badge-blue',
         fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd) },
+      { type: 'actions', actions: [
+        { label: '상세', cls: 'btn btn-blue btn-xs', onClick: (row) => handleSelectAction('orders-rowDetail', row) },
+      ] },
     ];
     // 재고 그리드
     columns.stockGrid = [
@@ -468,12 +471,7 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.orderGrid" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions :is-expanded="(row) => isExpanded(fnExpKey('orders', row))">
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowDetail', row)">
-          상세
-        </button>
-      </template>
+    <bo-grid bare :columns="columns.orderGrid" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" :is-expanded="(row) => isExpanded(fnExpKey('orders', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
           <bo-form-area plain-readonly :columns="columns.orderGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />

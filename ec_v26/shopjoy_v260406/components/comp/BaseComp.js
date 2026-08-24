@@ -250,7 +250,7 @@ window.BaseAttachGrp = {
 
       } catch (err) {
         console.error('[BaseAttachGrp] 업로드 실패', err);
-        const msg = err.response?.data?.message || err.message || '업로드 중 오류가 발생했습니다.';
+        const msg = coUtil.cofErrMsg(err, '업로드 중 오류가 발생했습니다.');
         props.showToast(msg, 'error', 0);
       } finally {
         uiState.uploading = false;
@@ -673,7 +673,7 @@ window.BaseAttachOne = {
         emit('update:modelValue', uploaded ? uploaded.attachId : null);
         props.showToast('업로드되었습니다.', 'success');
       } catch(err) {
-        props.showToast(err.response?.data?.message || err.message || '업로드 오류', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '업로드 오류'), 'error', 0);
       } finally { uiState.uploading = false; }
     };
 

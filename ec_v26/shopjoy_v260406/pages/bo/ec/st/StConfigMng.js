@@ -74,7 +74,7 @@ window.StConfigMng = {
         configs.splice(0, configs.length, ...pageList);
       } catch (err) {
         console.error('[handleLoadList]', err);
-        showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast?.(coUtil.cofErrMsg(err), 'error', 0);
       } finally {
         uiState.loading = false;
       }

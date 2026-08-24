@@ -251,6 +251,9 @@ window.SyI18nMng = {
       { key: 'i18nMsgCn',   label: 'cn', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row, 'cn') },
       { key: 'i18nMsgJa',   label: 'ja', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row, 'ja') },
       { key: 'useYn',       label: '사용', align: 'center', badge: (row) => fnYnBadge(row.useYn) },
+      { type: 'actions', actions: [
+        { label: '수정', cls: 'btn btn_row_edit btn-sm', onClick: (row) => handleGridCellAction('i18ns-cellClick', 'btn_row_edit', row) },
+      ] },
     ];
 
     const msgFormColumns = LANGS.map(lang => ({
@@ -297,11 +300,7 @@ window.SyI18nMng = {
     <bo-grid bare
       :columns="columns.baseGrid" :rows="i18ns" row-key="i18nKey" :selected-key="uiState.selectedKey"
       :row-style="fnRowStyle"
-      grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('i18ns-cellClick', 'btn_row_edit', row)">수정</button>
-      </template>
-    </bo-grid>
+      grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="syI18n" area-nm="다국어"
       :columns="columns.baseGrid" ui-nm="다국어관리" :params="buildExcelParams()"

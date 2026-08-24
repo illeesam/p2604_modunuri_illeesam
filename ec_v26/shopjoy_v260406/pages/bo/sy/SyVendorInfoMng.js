@@ -264,6 +264,10 @@ window.SyVendorInfoMng = {
         cellInnerStyle: 'font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-family:monospace;' },
       { key: 'vendorPhone',   label: '전화번호', cellStyle: 'font-size:11.5px' },
       { key: 'vendorStatusCd', label: '상태', align: 'center', badge: (row) => fnStatusBadge(row.vendorStatusCd) },
+      { type: 'actions', actions: [
+        { label: (row) => (uiState.selectedVendorId === row.vendorId ? '선택됨' : '선택'), cls: 'btn btn-primary btn-xs',
+          onClick: (row) => handleSelectAction('vendors-rowSelect', row) },
+      ] },
     ];
 
     // 3단 탭: 브랜드 그리드
@@ -322,14 +326,8 @@ window.SyVendorInfoMng = {
     </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
-      :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId" row-actions
-      grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-      <template #row-actions="{ row }">
-        <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
-          {{ uiState.selectedVendorId===row.vendorId ? '선택됨' : '선택' }}
-        </button>
-      </template>
-    </bo-grid>
+      :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId"
+      grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="syVendor" area-nm="업체"
       :columns="columns.baseGrid" ui-nm="업체정보" :params="buildExcelParams()"

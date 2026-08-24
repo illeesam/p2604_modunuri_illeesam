@@ -163,14 +163,6 @@ function fnTsSuffix(d) {
   return `_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
 }
 
-/* fnFmtBytes — 파일 크기 사람이 읽는 단위로 */
-function fnFmtBytes(n) {
-  if (!n) return '-';
-  if (n < 1024) return n + ' B';
-  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
-  return (n / 1024 / 1024).toFixed(2) + ' MB';
-}
-
 /* ══════════════════ 대표이미지 — 첨부가 없으면 DDL 정보로 자동 생성 ══════════════════
    업로드된 사진이 없으면 저장 시 DDL 요약(테이블명 + 컬럼 목록)을 카드 이미지로 그려 올린다.
    코바늘 모듈의 자동 썸네일과 같은 방식 — 외부 라이브러리 없이 SVG 조립 → canvas 래스터화. */
@@ -430,8 +422,25 @@ window.MdSgSourcegenPage = {
     );
 
     const genHists = reactive([]);   // 생성 이력(첨부 ZIP) 목록
+    /* genHistGridColumns — fo-grid 전환(2026-08-25). 번호는 idx+1(페이저 없는 로컬 배열이라
+       그대로), 일시/크기는 coUtil 공통 헬퍼(cofYmdHm/cofFileSize) 사용. */
+    const genHistGridColumns = [
+      { key: 'genDate',     label: '생성일시', width: '150px', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
+      { key: 'zipFileNm',   label: '파일명', cellClass: 'sg-list-mono' },
+      { key: 'ddlCount',    label: '테이블', width: '80px', align: 'center', fmt: (v) => v || 0 },
+      { key: 'fileCount',   label: '파일수', width: '80px', align: 'center', fmt: (v) => v || 0 },
+      { key: 'zipFileSize', label: '크기', width: '90px', align: 'right', fmt: (v) => coUtil.cofFileSize(v) },
+      { key: 'genMemo',     label: '메모', fmt: (v) => v || '-' },
+    ];
 
     const cfReadonly = computed(() => uiState.dtlMode === 'view');
+
+    /* type:'actions' — 관리 버튼모음도 별도 배열로 분리하지 않고 genHistGridColumns 항목 하나로 선언
+       (#row-actions 슬롯 대체, 2026-08-25). cfReadonly 선언 직후에 둔다 — 삭제 버튼이 그 값을 읽는다. */
+    genHistGridColumns.push({ type: 'actions', actions: [
+      { label: '다운로드', cls: 'btn btn-sm btn-secondary', href: (row) => row.zipUrl, visible: (row) => !!row.zipUrl },
+      { label: '삭제',     cls: 'btn btn-sm btn_row_delete', onClick: (row) => onDeleteGenHist(row), visible: () => !cfReadonly.value },
+    ] });
     const cfIsNew = computed(() => !form.projectId);
     const cfCurTab = computed(() => tabs[uiState.activeTabIdx] || tabs[0]);
     const cfResultTab = computed(() => tabs[uiState.resultTabIdx] || tabs[0]);
@@ -507,7 +516,7 @@ window.MdSgSourcegenPage = {
           props.showToast('대표이미지가 등록되었습니다.', 'success');
         }
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '이미지 업로드 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '이미지 업로드 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.thumbUploading = false;
       }
@@ -766,7 +775,7 @@ window.MdSgSourcegenPage = {
         await fnLoadGenHists(form.projectId);
         props.showToast('생성결과를 첨부로 보관했습니다.', 'success');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '보관 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '보관 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.saving = false;
       }
@@ -779,7 +788,7 @@ window.MdSgSourcegenPage = {
         await fnLoadGenHists(form.projectId);
         props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '삭제 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -825,14 +834,14 @@ window.MdSgSourcegenPage = {
             archived = true;
           } catch (e) {
             props.showToast('저장은 완료됐지만 생성결과 보관에 실패했습니다: '
-              + (e.response?.data?.message || e.message || ''), 'info', 0);
+              + (coUtil.cofErrMsg(e, '')), 'info', 0);
           }
         }
         props.showToast(archived
           ? `저장되었습니다. (생성결과 ${cfTotalFileCount.value}개 파일도 이력에 보관)`
           : '저장되었습니다.', 'success');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -845,7 +854,7 @@ window.MdSgSourcegenPage = {
         await mdSgApiSvc.project.remove(form.projectId, '소스젠', '삭제');
         onBackToList();
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '삭제 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -857,10 +866,10 @@ window.MdSgSourcegenPage = {
     });
 
     return {
-      uiState, form, tabs, genHists,
+      uiState, form, tabs, genHists, genHistGridColumns,
       cfReadonly, cfIsNew, cfCurTab, cfResultTab, cfTotalFileCount, cfFilledTabs,
       cfResultTabIndices, cfGroupedFiles,
-      fnHasData, fnShortName, fnFmtBytes, fnLangOf, fnFileLabels,
+      fnHasData, fnShortName, fnLangOf, fnFileLabels,
       SG_SAMPLE_GROUPS, onLoadSample, codeBoxRef, thumbInputRef,
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
       onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
@@ -1020,36 +1029,9 @@ window.MdSgSourcegenPage = {
     <div v-if="!cfReadonly" class="sg-memo-row">
       <input v-model="uiState.genMemo" class="form-control" placeholder="보관 메모(선택) — 예: v1 초안, 리뷰 반영본" />
     </div>
-    <table class="sg-hist-table">
-      <thead>
-        <tr>
-          <th style="width:60px;text-align:center;">번호</th>
-          <th style="width:150px;">생성일시</th>
-          <th>파일명</th>
-          <th style="width:80px;text-align:center;">테이블</th>
-          <th style="width:80px;text-align:center;">파일수</th>
-          <th style="width:90px;text-align:right;">크기</th>
-          <th>메모</th>
-          <th style="width:130px;text-align:center;">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(h, idx) in genHists" :key="h.sourcegenHistId">
-          <td style="text-align:center;color:var(--text-muted,#999);">{{ idx + 1 }}</td>
-          <td>{{ (h.genDate || '').replace('T',' ').slice(0,16) }}</td>
-          <td class="sg-list-mono">{{ h.zipFileNm }}</td>
-          <td style="text-align:center;">{{ h.ddlCount || 0 }}</td>
-          <td style="text-align:center;">{{ h.fileCount || 0 }}</td>
-          <td style="text-align:right;">{{ fnFmtBytes(h.zipFileSize) }}</td>
-          <td>{{ h.genMemo || '-' }}</td>
-          <td style="text-align:center;">
-            <a v-if="h.zipUrl" :href="h.zipUrl" target="_blank" rel="noopener" class="btn btn-sm btn-secondary">다운로드</a>
-            <button v-if="!cfReadonly" class="btn btn-sm btn_row_delete" @click="onDeleteGenHist(h)">삭제</button>
-          </td>
-        </tr>
-        <tr v-if="!genHists.length"><td colspan="8" class="sg-empty-hint">보관된 생성결과가 없습니다. [생성] 후 [생성결과 보관] 을 눌러주세요.</td></tr>
-      </tbody>
-    </table>
+    <!-- fo-grid 전환(2026-08-25). 로컬 배열이라 pager 없음 — 번호는 show-row-no 기본값(idx+1)과 동일. -->
+    <fo-grid :columns="genHistGridColumns" :rows="genHists" row-key="sourcegenHistId" bare
+      empty-text="보관된 생성결과가 없습니다. [생성] 후 [생성결과 보관] 을 눌러주세요." />
   </div>
 
   <!-- ═══ 하단 액션 ═══ -->

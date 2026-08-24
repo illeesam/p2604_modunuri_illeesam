@@ -1622,6 +1622,13 @@ window.AuthUserPickModal = {
       { key: 'userStatusCd', label: '상태', align: 'center',
         badge: (row) => row.userStatusCd === 'ACTIVE' ? 'badge-green' : 'badge-red',
         fmt: (v, row) => v === 'ACTIVE' ? '활성' : (row.userStatusCdNm || '비활성') },
+      /* type:'actions' — 관리 버튼모음도 별도 배열로 분리하지 않고 columns 항목 하나로 선언
+         (#row-actions 슬롯 대체, 2026-08-25). row-click 과 같은 동작(users-pick)이지만,
+         행 전체 클릭 없이 이 버튼만 눌러도 되게 남겨둔다. */
+      { type: 'actions', actions: [
+        { label: '선택', style: 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;',
+          onClick: (row) => handleSelectAction('users-pick', row) },
+      ] },
     ];
 
     /* baseSearchColumns — 검색 영역 컬럼 */
@@ -1674,15 +1681,9 @@ window.AuthUserPickModal = {
       <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
         <bo-grid :columns="userGridColumns" :rows="modal.loading ? [] : rows" :pager="cfPager" row-key="loginId"
           :empty-text="modal.loading ? '⏳ 조회 중...' : '🔍 검색 결과가 없습니다.'"
-          row-clickable :row-actions="true"
+          row-clickable
           :row-style="row => loginId===(row.loginId||row.userId) ? 'background:#fff0f4;' : ''"
-          @row-click="row => handleSelectAction('users-pick', row)">
-          <template #row-actions="{ row }">
-            <button @click.stop="handleSelectAction('users-pick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
-              선택
-            </button>
-          </template>
-        </bo-grid>
+          @row-click="row => handleSelectAction('users-pick', row)" />
         <bo-pager :pager="cfPager" :on-set-page="n => handleBtnAction('pager-set', n)" :on-size-change="() => handleBtnAction('pager-set', 1)" />
       </div>
     </div>
@@ -2280,7 +2281,7 @@ window.BoExcelUploadModal = {
         res = await window.boApi.post(cfUploadUrl.value, body,
           window.coUtil.cofApiHdr(cfUiNm.value, '업로드점검'));
       } catch (err) {
-        const msg = err.response?.data?.message || err.message || '서버 점검 호출 실패';
+        const msg = coUtil.cofErrMsg(err, '서버 점검 호출 실패');
         push('error', '서버 호출 실패', msg);
         Object.assign(inspect, { ran: true, ok: false, items, ranAt: new Date().toLocaleTimeString() });
         loading.value = false;
@@ -2438,7 +2439,7 @@ window.BoExcelUploadModal = {
       try {
         await window.coUtil.cofDownloadExcel(cfAllDataUrl.value, params, cfAreaNm.value + '_전체', cfUiNm.value, '전체다운로드');
       } catch (err) {
-        fnShowToast(err.response?.data?.message || err.message || '전체 다운로드 실패', 'error', 0);
+        fnShowToast(coUtil.cofErrMsg(err, '전체 다운로드 실패'), 'error', 0);
       } finally { loading.value = false; }
     };
 
@@ -2504,7 +2505,7 @@ window.BoExcelUploadModal = {
           loading.value = false;
           return onSave();
         }
-        fnShowToast(err.response?.data?.message || err.message || '엑셀업로드 실패', 'error', 0);
+        fnShowToast(coUtil.cofErrMsg(err, '엑셀업로드 실패'), 'error', 0);
       } finally { loading.value = false; }
     };
 
@@ -2750,7 +2751,7 @@ window.BoExcelUploadModal = {
         emit('close');
         if (props.onCallback) props.onCallback(props.modalName, null, null);
       } catch (err) {
-        const msg = err.response?.data?.message || err.message || '업로드 실패';
+        const msg = coUtil.cofErrMsg(err, '업로드 실패');
         fnShowToast(msg, 'error', 0);
       } finally { loading.value = false; }
     };

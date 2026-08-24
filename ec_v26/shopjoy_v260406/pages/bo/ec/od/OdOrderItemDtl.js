@@ -359,12 +359,11 @@ window.OdOrderItemDtl = {
       </div>
     </div>
     <!-- ===== 하단 액션 (Mng 인라인 상세 패널 표준 — 처리버튼은 하단 중앙 정렬) ===================== -->
-    <div class="form-actions">
-      <button v-if="cfReadonly" class="btn btn_edit" @click="handleBtnAction('btn-edit')">수정</button>
-      <button v-if="!cfReadonly" class="btn btn_save" @click="handleBtnAction('btn-save')">저장</button>
-      <button v-if="!cfReadonly" class="btn btn_cancel" @click="handleBtnAction('btn-cancel')">취소</button>
-      <button class="btn btn_close" @click="handleBtnAction('btn-close')">닫기</button>
-    </div>
+    <bo-form-actions :readonly="cfReadonly" :show-delete="false" :edit-click="() => handleBtnAction('btn-edit')"
+ :save-click="() => handleBtnAction('btn-save')"
+ :delete-click="() => handleBtnAction('btn-delete')"
+ :cancel-click="() => handleBtnAction('btn-cancel')"
+ :close-click="() => handleBtnAction('btn-close')" />
   </template>
 </bo-container>
 `

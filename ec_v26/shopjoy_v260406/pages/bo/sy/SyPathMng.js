@@ -291,7 +291,7 @@ window.SyPathMng = {
         await handleSearchTree();
         await handleGridSearch();
       } catch (err) {
-        showToast?.(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast?.(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 

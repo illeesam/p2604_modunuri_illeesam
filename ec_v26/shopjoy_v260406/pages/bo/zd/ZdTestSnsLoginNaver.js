@@ -146,7 +146,7 @@ window.ZdTestSnsLoginNaver = {
         uiState.loggedIn  = true;
         showToast('프로필 조회 성공', 'success');
       } catch (e) {
-        result.error = e.response?.data?.message || e.message || '프로필 조회 실패';
+        result.error = coUtil.cofErrMsg(e, '프로필 조회 실패');
         showToast(result.error, 'error', 0);
       }
       uiState.loading = false;
@@ -161,7 +161,7 @@ window.ZdTestSnsLoginNaver = {
         ], coUtil.cofApiHdr('네이버 로그인 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
-        showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
+        showToast(coUtil.cofErrMsg(e, '저장 실패'), 'error', 0);
       }
     };
 

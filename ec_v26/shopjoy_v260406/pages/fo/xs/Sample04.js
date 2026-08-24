@@ -251,6 +251,10 @@ window.XsSample04 = {
         cellStyle: 'color:var(--text-primary);font-weight:700',
         fmt: (v) => coUtil.cofWon(v) },
       { key: 'joinDate', label: '가입일', width: '86px', align: 'center' },
+      { type: 'actions', actions: [
+        { label: '상세', style: 'font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;',
+          onClick: (row) => openModal('detail', { data: row }) },
+      ] },
     ];
     const sample04Top3 = Vue.computed(() => members.slice(0, 3));
 
@@ -505,16 +509,9 @@ window.XsSample04 = {
   </div>
   <!-- ===== ■.■. 목록 영역 ================================================= -->
   <fo-grid bare :columns="columns.sample04Grid" :rows="sample04Top3"
-      row-key="memberId" :show-row-no="false" min-width="680px" row-actions
+      row-key="memberId" :show-row-no="false" min-width="680px"
       empty-text="데이터 로딩 중…"
-      :row-click="m => openModal('detail',{data:m})">
-    <template #row-actions="{ row }">
-      <button @click.stop="openModal('detail',{data:row})"
-          style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">
-        상세
-      </button>
-    </template>
-  </fo-grid>
+      :row-click="m => openModal('detail',{data:m})" />
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->
 <!-- ===== □. ━━━ 회원 그리드 (상세보기 클릭) ━━━ ================================ -->

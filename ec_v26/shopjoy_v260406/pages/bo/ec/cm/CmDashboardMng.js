@@ -98,7 +98,7 @@ window.CmDashboardMng = {
         Object.keys(panelCnt).forEach(k => delete panelCnt[k]);
         items.forEach(i => { panelCnt[i.dashboardId] = (panelCnt[i.dashboardId] || 0) + 1; });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -172,7 +172,7 @@ window.CmDashboardMng = {
         showToast('저장되었습니다.', 'success');
         await handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       }
     };
 
@@ -189,7 +189,7 @@ window.CmDashboardMng = {
         if (baseDetail.selectedId === row.dashboardId) resetDashDetail();
         await handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
       }
     };
 
@@ -290,16 +290,11 @@ window.CmDashboardMng = {
     <div v-if="baseDetail.selectedId || baseDetail.isNew" style="padding:12px;">
       <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="baseErrors"
         :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly />
-      <div class="form-actions">
-        <template v-if="cfDtlMode">
-          <button class="btn btn_edit" @click="handleBtnAction('baseForm-edit')">수정</button>
-          <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
-        </template>
-        <template v-else>
-          <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
-          <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
-        </template>
-      </div>
+      <bo-form-actions :readonly="cfDtlMode" :show-delete="false" :edit-click="() => handleBtnAction('baseForm-edit')"
+ :save-click="() => handleBtnAction('baseForm-save')"
+ :delete-click="() => handleBtnAction('baseForm-delete')"
+ :cancel-click="() => handleBtnAction('baseForm-cancel')"
+ :close-click="() => handleBtnAction('baseForm-close')" />
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">목록에서 대시보드를 선택하거나 [+ 신규]를 클릭하세요.</div>
   </bo-container>

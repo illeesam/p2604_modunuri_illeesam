@@ -137,7 +137,7 @@ window.SySendMsgLogMng = {
         const res = await fnCurSvc().getById(id, '메시지발송이력', '상세조회');
         detailCache[key] = res.data?.data || res.data || {};
       } catch (err) {
-        if (showToast) { showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '상세 조회 오류'), 'error', 0); }
       } finally {
         detailLoading.delete(key);
       }
@@ -236,7 +236,7 @@ window.SySendMsgLogMng = {
         if (uiState.hasMore) { baseGridPager.pageNo += 1; }
       } catch (err) {
         console.error('[handleSearchList]', err);
-        if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0); }
       } finally {
         uiState.loading = false;
       }

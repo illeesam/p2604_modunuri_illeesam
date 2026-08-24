@@ -528,19 +528,14 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <!-- ===== □.□. 폼 영역 ================================================== -->
       <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="active ? (cfDtlMode) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
-        <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn_save">
-          {{ cfIsNew ? '등록' : '저장' }}
-        </button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button v-if="!cfIsNew" @click="handleBtnAction('form-cancel')" class="btn btn_cancel">취소</button>
-        <button @click="handleBtnAction('form-close')" class="btn btn_close">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+        :save-label="cfIsNew ? '등록' : '저장'"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''"
+        :edit-click="() => handleBtnAction('form-edit')"
+        :save-click="() => handleBtnAction('form-save')"
+        :delete-click="() => handleBtnAction('form-delete')"
+        :cancel-click="() => handleBtnAction('form-cancel')"
+        :close-click="() => handleBtnAction('form-close')" />
     </div>
     <!-- ===== □.□. 판매업체 선택 모달 ============================================ -->
     <!-- ===== □. 조건부 영역 ================================================== -->

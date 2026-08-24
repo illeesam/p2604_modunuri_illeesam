@@ -390,6 +390,10 @@ window.PdReviewMng = {
         selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.REVIEW_STATUS,
           onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
           { key: 'siteNm', label: '사이트' },
+      { type: 'actions', actions: [
+        { label: '👁', cls: 'btn btn-xs', style: 'background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;', title: '상품 미리보기',
+          onClick: (row) => handleSelectAction('reviews-rowPreview', row.prodId) },
+      ] },
     ];
     /* fnGridRowClass — 유틸 */
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
@@ -445,15 +449,9 @@ window.PdReviewMng = {
     </template>
     <bo-grid bare :columns="columns.listGrid" :rows="reviews" :pager="listGridPager" row-key="reviewId" :selected-key="selectedId"
       :sort-state="uiState"
-      :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-actions
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
-            table-max-height="540px">
-      <template #row-actions="{ row }">
-        <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
-          👁
-        </button>
-      </template>
-    </bo-grid>
+            table-max-height="540px" />
     <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="pdReview" area-nm="리뷰"
       :columns="columns.listGrid" ui-nm="상품리뷰관리" :params="buildExcelParams()"

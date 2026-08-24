@@ -164,7 +164,7 @@ window.Contact = {
         Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
         attachResetKey.value++;   // 다음 문의 작성을 위해 첨부 위젯을 완전히 새로 마운트(초기화)
       } catch (err) {
-        const msg = err.response?.data?.message || err.message || '문의 접수 중 오류가 발생했습니다.';
+        const msg = coUtil.cofErrMsg(err, '문의 접수 중 오류가 발생했습니다.');
         showToast(msg, 'error', 0);
       } finally {
         uiState.loading = false;

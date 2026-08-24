@@ -77,7 +77,7 @@ window.CmDashboardLayoutMng = {
         const list = res.data?.data || [];
         dashboards.splice(0, dashboards.length, ...list);
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       }
     };
 
@@ -109,7 +109,7 @@ window.CmDashboardLayoutMng = {
         Object.keys(simState.widgets).forEach(k => delete simState.widgets[k]);
         if (simState.on) await handleLoadSimData();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '항목 조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -147,7 +147,7 @@ window.CmDashboardLayoutMng = {
           simState.widgets[c.dashboardItemId] = util.buildWidget(c, rows);
         }));
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '시뮬레이션 데이터 조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '시뮬레이션 데이터 조회 오류'), 'error', 0);
       } finally {
         simState.loading = false;
       }
@@ -173,7 +173,7 @@ window.CmDashboardLayoutMng = {
         showToast('배치가 저장되었습니다.', 'success');
         await handleLoadCards();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       } finally {
         uiState.saving = false;
       }

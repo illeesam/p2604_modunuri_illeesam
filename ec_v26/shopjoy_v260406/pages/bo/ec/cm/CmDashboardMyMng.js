@@ -149,7 +149,7 @@ window.CmDashboardMyMng = {
           await fnSelectFirstOfTab();
         }
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -187,7 +187,7 @@ window.CmDashboardMyMng = {
         uiState.catalogOpen = true;
         fnNotifyMenuChanged();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '생성 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '생성 오류'), 'error', 0);
       }
     };
 
@@ -207,7 +207,7 @@ window.CmDashboardMyMng = {
         fnInitShareForm();   /* 저장된 값으로 폼 갱신 */
         fnNotifyMenuChanged();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
       }
     };
 
@@ -300,7 +300,7 @@ window.CmDashboardMyMng = {
         await handleLoadDashes();
         fnNotifyMenuChanged();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       }
     };
 
@@ -339,7 +339,7 @@ window.CmDashboardMyMng = {
           simState.widgets[c.dashboardItemId] = util.buildWidget(c, res.data?.data || []);
         }));
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '데이터 조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '데이터 조회 오류'), 'error', 0);
       } finally {
         simState.loading = false;
       }
@@ -404,7 +404,7 @@ window.CmDashboardMyMng = {
         showToast('[' + src.itemNm + '] 항목이 추가되었습니다.', 'success');
         await handleLoadCards();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '항목 추가 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '항목 추가 오류'), 'error', 0);
       }
     };
 
@@ -419,7 +419,7 @@ window.CmDashboardMyMng = {
         showToast('제거되었습니다.', 'success');
         await handleLoadCards();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '제거 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '제거 오류'), 'error', 0);
       }
     };
 
@@ -437,7 +437,7 @@ window.CmDashboardMyMng = {
         showToast('배치가 저장되었습니다.', 'success');
         uiState.dirty = false;
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       } finally {
         uiState.saving = false;
       }

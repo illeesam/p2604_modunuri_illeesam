@@ -152,7 +152,7 @@ window.SyUserLoginHist = {
         const res = await svc.getById(id, '사용자로그인이력', '상세조회');
         detailCache[key] = res.data?.data || res.data || {};
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '상세 조회 오류'), 'error', 0);
       } finally {
         detailLoading.delete(key);
       }
@@ -248,7 +248,7 @@ window.SyUserLoginHist = {
         uiState.hasMore = list.length >= logGridPager.pageSize && logs.length < logGridPager.pageTotalCount;
         if (uiState.hasMore) { logGridPager.pageNo += 1; }
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -275,7 +275,7 @@ window.SyUserLoginHist = {
         uiState.hasMore = list.length >= logGridPager.pageSize && tokens.length < logGridPager.pageTotalCount;
         if (uiState.hasMore) { logGridPager.pageNo += 1; }
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -323,7 +323,7 @@ window.SyUserLoginHist = {
         else                           { tokens.splice(0); tabCounts.token=0; }
         logGridPager.pageTotalCount=0; logGridPager.pageTotalPage=1; expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]); allExpanded.value=false;
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
       }
     };
 

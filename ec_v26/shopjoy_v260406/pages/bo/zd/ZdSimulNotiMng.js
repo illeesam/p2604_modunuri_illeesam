@@ -228,7 +228,7 @@
           templates.splice(0, templates.length, ...rows);
         } catch (err) {
           templates.splice(0, templates.length);
-          props.showToast(err.response?.data?.message || err.message || '템플릿 조회 실패', 'error', 0);
+          props.showToast(coUtil.cofErrMsg(err, '템플릿 조회 실패'), 'error', 0);
         } finally {
           uiState.tplLoading = false;
         }
@@ -266,7 +266,7 @@
             }, coUtil.cofApiHdr('알림시뮬', '발송'));
             apiMsg = '채널 발송 OK';
           } catch (err) {
-            apiMsg = '채널 발송 실패: ' + (err.response?.data?.message || err.message || '알 수 없음');
+            apiMsg = '채널 발송 실패: ' + (coUtil.cofErrMsg(err, '알 수 없음'));
           }
         } else {
           apiMsg = '채널 발송 API 없음 (알림만 적재)';
@@ -288,7 +288,7 @@
           saved = res.data?.data || recipients.length;
           apiMsg += ' / 알림 저장 ' + saved + '건';
         } catch (err) {
-          apiMsg += ' / 알림 저장 실패: ' + (err.response?.data?.message || err.message || '알 수 없음');
+          apiMsg += ' / 알림 저장 실패: ' + (coUtil.cofErrMsg(err, '알 수 없음'));
         }
 
         sendLogs.unshift({

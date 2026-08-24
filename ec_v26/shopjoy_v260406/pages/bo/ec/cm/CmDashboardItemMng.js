@@ -168,7 +168,7 @@ window.CmDashboardItemMng = {
         panelsPager.pageNo = 1;
         await handleSearchPanels();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -224,7 +224,7 @@ window.CmDashboardItemMng = {
         fnTreeCollapseAll();
         fnAttachChildCounts();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '항목 조회 오류'), 'error', 0);
       } finally {
         uiState.panelLoading = false;
       }
@@ -411,7 +411,7 @@ window.CmDashboardItemMng = {
         await handleSearchPanels();
         await fnLoadPanelCounts();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       }
     };
 
@@ -445,7 +445,7 @@ window.CmDashboardItemMng = {
         _loadDetailForm(panelForm, panelDetail.dtlMode);
         await fnLoadPanelCounts();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '쿼리 실행 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '쿼리 실행 오류'), 'error', 0);
       }
     };
 
@@ -460,7 +460,7 @@ window.CmDashboardItemMng = {
         await handleSearchPanels();
         await fnLoadPanelCounts();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
       }
     };
 
@@ -552,18 +552,9 @@ window.CmDashboardItemMng = {
     const fnDelColRow    = (i) => colRows.splice(i, 1);
 
     /* ── 시리즈·항목 정의 그리드 드래그 정렬 ────────────────────────────────
-       좌측 ☰ 손잡이를 잡고 끌면 순서가 바뀐다(순서 = 표시 순서·저장 시 sortOrd). rows 자체가
-       어느 그리드(seriesRows/colRows)인지로 드래그 소스를 식별한다 — 두 그리드를 오가며
-       끌리지 않도록 dragSrc.rows !== rows 면 무시한다. */
-    const dragSrc = ref(null);   // { rows, idx }
-    const onRowDragStart = (rows, idx) => { dragSrc.value = { rows, idx }; };
-    const onRowDragOver = (rows, idx) => {
-      if (!dragSrc.value || dragSrc.value.rows !== rows || dragSrc.value.idx === idx) return;
-      const moved = rows.splice(dragSrc.value.idx, 1)[0];
-      rows.splice(idx, 0, moved);
-      dragSrc.value.idx = idx;
-    };
-    const onRowDragEnd = () => { dragSrc.value = null; };
+       좌측 ☰ 손잡이를 잡고 끌면 순서가 바뀐다(순서 = 표시 순서·저장 시 sortOrd).
+       2026-08-25: bo-grid 의 draggable prop 이 이 splice 로직을 그대로 내장하고 있어
+       (BoAreaComp.js handleSelectAction 'grid-row-drag-*') 로컬 헬퍼는 걷어냈다. */
 
     /* fnPreviewCode — 편집 중인 행의 고유 item_key 미리보기 */
     const fnPreviewCode = (seriesCd, colCd) => {
@@ -1573,6 +1564,49 @@ window.CmDashboardItemMng = {
     };
 
     const columns = {};
+    /* 시리즈/항목 행 그리드 — 코드·색상은 입력 방식이 복합(선택/직접입력, 컬러피커+텍스트)이라
+       col.edit 로 표현할 수 없어 #cell-{key} 슬롯으로 override 한다(값 표시용 fmt 는 안 쓰임). */
+    columns.dashTreeGrid = [
+      { key: '_no',            label: '번호', width: '64px', align: 'left',
+        cellStyle: 'color:#94a3b8;', fmt: (v, r) => fnTreeNo(r) },
+      { key: '_dashboardNm',   label: '대시보드명', width: '120px',
+        cellStyle: 'color:#64748b;', fmt: (v, r) => (r.lvl === 1 ? (r._dashboardNm || '-') : '') },
+      { key: 'lvl',            label: '레벨', width: '56px', align: 'center',
+        badge: (r) => (r.lvl === 1 ? 'badge-red' : (r.lvl === 2 ? 'badge-blue' : 'badge-gray')),
+        fmt: (v, r) => fnLvlLabel(r.lvl) },
+      { key: 'itemNm',         label: '항목명 (차트 · 시리즈 · 항목)', width: '220px' }, // #cell-itemNm 슬롯
+      { key: 'widgetGenTypeCd', label: '생성방식', width: '150px' },                      // #cell-widgetGenTypeCd 슬롯
+      { key: 'itemCd',         label: '코드', width: '120px', mono: true, cellStyle: 'color:#2563eb;' },
+      { key: 'itemKey',        label: '고유 item_key', width: '210px', mono: true, cellStyle: 'color:#64748b;' },
+      { key: '_seriesCnt',     label: '행개수', width: '64px', align: 'center',
+        fmt: (v, r) => (r.lvl === 1 ? ((r._seriesCnt || 0) + '개') : '') },
+      { key: '_colCnt',        label: '열개수', width: '64px', align: 'center',
+        fmt: (v, r) => (r.lvl === 1 ? ((r._colCnt || 0) + '개') : '') },
+      { key: 'inputOpts',      label: '조회조건(input_opts)', width: '150px',
+        cellStyle: 'color:#94a3b8;', fmt: (v, r) => (r.lvl === 1 ? (r.inputOpts || 'site_id,yyyymm') : '') },
+      { key: '_mgmt',          label: '관리', width: '96px', align: 'center' },           // #cell-_mgmt 슬롯
+    ];
+
+    columns.seriesRowGrid = [
+      { key: 'cd',       label: '코드 (cd)', width: '190px' },
+      { key: 'name',     label: '시리즈명 (name)' },
+      { key: 'color',    label: '색상 (color)', width: '150px' },
+      { key: '_preview', label: '고유 item_key 미리보기', width: '230px',
+        fmt: (v, r) => fnPreviewCode(r.cd || r.name, '') },
+      { type: 'actions', actions: [
+        { label: '삭제', cls: 'btn btn_row_delete', disabled: () => cfDtlMode.value, onClick: (row, idx) => fnDelSeriesRow(idx) },
+      ] },
+    ];
+    columns.colRowGrid = [
+      { key: 'cd',       label: '코드 (cd)', width: '190px' },
+      { key: 'name',     label: '항목명 (name)' },
+      { key: 'color',    label: '색상 (color, 파이용)', width: '150px' },
+      { key: '_preview', label: '고유 item_key 미리보기', width: '230px',
+        fmt: (v, r) => fnPreviewCode(seriesRows.length ? (seriesRows[0].cd || seriesRows[0].name) : '', r.cd || r.name) },
+      { type: 'actions', actions: [
+        { label: '삭제', cls: 'btn btn_row_delete', disabled: () => cfDtlMode.value, onClick: (row, idx) => fnDelColRow(idx) },
+      ] },
+    ];
 
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', placeholder: '대시보드명/컴포넌트명 검색', label: '대시보드명' },
@@ -1714,7 +1748,6 @@ window.CmDashboardItemMng = {
       seriesRows, colRows, grpCodes,
       fnGrpOptions, onGrpChange, onPickCode, fnPreviewCode,
       fnAddSeriesRow, fnAddColRow, fnDelSeriesRow, fnDelColRow,
-      onRowDragStart, onRowDragOver, onRowDragEnd,
       /* 시뮬레이션 값 · 미리보기 */
       simVals, simOrient, fnSimFit, fnSimRandom, fnSimClear, fnSimRowTotal, fnSimColTotal, fnSimGrandTotal,
       fnToggleColAuto, fnToggleColEditable, fnColAuto, fnColLocked, fnPanelOf,
@@ -1774,80 +1807,49 @@ window.CmDashboardItemMng = {
       </div>
 
       <!-- ===== ■. 3레벨 트리 (1:차트 / 2:시리즈 / 3:항목) ===================== -->
+      <!-- bo-grid 전환(2026-08-25). 드래그·페이징·rowspan 이 없는 단순 평탄화 트리라
+           위험도가 낮았다. "항목명"/"생성방식"/"관리" 는 조건 분기가 많아 원본 마크업을 그대로
+           슬롯에 옮겼고, 나머지는 fmt/badge 로 표현했다. -->
       <div v-if="uiState.viewMode === 'tree'">
-        <div v-if="cfTreeVisible.length" style="height:540px;overflow:auto;">
-          <table class="bo-table bo-table-narrow">
-            <thead>
-              <tr>
-                <th style="width:64px;text-align:left;">번호</th>
-                <th style="width:120px;">대시보드명</th>
-                <th style="width:56px;">레벨</th>
-                <th style="min-width:220px;">항목명 (차트 · 시리즈 · 항목)</th>
-                <th style="width:150px;">생성방식</th>
-                <th style="width:120px;">코드</th>
-                <th style="width:210px;">고유 item_key</th>
-                <th style="width:64px;">행개수</th>
-                <th style="width:64px;">열개수</th>
-                <th style="width:150px;">조회조건(input_opts)</th>
-                <th style="width:96px;">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="node in cfTreeVisible" :key="node.itemKey"
-                :class="node.lvl === 1 ? (panelDetail.selectedId === node.dashboardItemId ? 'bo-row-selected' : '') : ''">
-                <td style="text-align:left;font-size:11px;color:#94a3b8;white-space:nowrap;">{{ fnTreeNo(node) }}</td>
-                <td style="font-size:11px;color:#64748b;white-space:nowrap;">
-                  {{ node.lvl === 1 ? (node._dashboardNm || '-') : '' }}</td>
-                <td style="text-align:center;">
-                  <span class="badge" :class="node.lvl === 1 ? 'badge-red' : (node.lvl === 2 ? 'badge-blue' : 'badge-gray')">
-                    {{ fnLvlLabel(node.lvl) }}</span>
-                </td>
-                <td style="white-space:nowrap;">
-                  <span style="display:inline-flex;align-items:center;gap:4px;"
-                    :style="{ marginLeft:((node.lvl - 1) * 18) + 'px' }">
-                    <span @click.stop="fnToggleNode(node)"
-                      :style="{ cursor: fnHasChild(node) ? 'pointer' : 'default', width:'12px',
-                                color:'#94a3b8', fontSize:'10px', userSelect:'none' }">
-                      {{ fnHasChild(node) ? (treeState.collapsed[node.itemKey] ? '▶' : '▼') : '' }}
-                    </span>
-                    <span :style="{ color: fnLvlColor(node.lvl), fontSize: node.lvl === 1 ? '9px' : '11px' }">
-                      {{ fnLvlBullet(node.lvl) }}</span>
-                    <span :style="{ fontWeight: node.lvl === 1 ? 700 : (node.lvl === 2 ? 600 : 400),
-                                    color: node.lvl === 3 ? '#475569' : '' }">{{ node.itemNm }}</span>
-                    <span v-if="node.lvl === 1" class="badge badge-gray" style="margin-left:4px;">
-                      {{ node.widgetTypeCd === 'CHART' ? (node.chartTypeCd || 'chart') : node.widgetTypeCd }}</span>
-                    <span v-if="node.lvl === 2 ? !fnIsFirstSeries(node) : false"
-                      style="font-size:10px;color:#c2410c;margin-left:2px;">(항목은 1번째 시리즈 참고)</span>
-                  </span>
-                </td>
-                <!-- 위젯생성타입 — 기존(MANUAL) / 쿼리(QUERY, SQL 실행 결과로 자동 생성) + 참조항목명(2026-08-21) -->
-                <td style="white-space:nowrap;">
-                  <template v-if="node.lvl === 1">
-                    <span class="badge" :class="node.widgetGenTypeCd === 'QUERY' ? 'badge-purple' : 'badge-gray'">
-                      {{ node.widgetGenTypeCd === 'QUERY' ? '🔗 쿼리' : '매뉴얼' }}</span>
-                    <div v-if="node.widgetGenTypeCd === 'QUERY'" style="font-size:10px;color:#7c3aed;margin-top:2px;"
-                      title="SQL 실행 결과로 자동 생성됨">참조: {{ fnRefItemNm(node.refItemKey) }}</div>
-                  </template>
-                </td>
-                <td style="font-family:monospace;font-size:11px;color:#2563eb;">{{ node.itemCd }}</td>
-                <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ node.itemKey }}</td>
-                <td style="text-align:center;">{{ node.lvl === 1 ? ((node._seriesCnt || 0) + '개') : '' }}</td>
-                <td style="text-align:center;">{{ node.lvl === 1 ? ((node._colCnt || 0) + '개') : '' }}</td>
-                <td style="font-family:monospace;font-size:10.5px;color:#94a3b8;">
-                  {{ node.lvl === 1 ? (node.inputOpts || 'site_id,yyyymm') : '' }}</td>
-                <td style="text-align:center;">
-                  <!-- 시리즈·항목은 차트 정의(JSON)의 일부라 개별 삭제가 아니라 차트 수정에서 다룬다 -->
-                  <!-- 실제 항목 행을 넘겨야 한다 — id 만 넘기면 폼이 빈 값으로 열린다 -->
-                  <button v-if="node.lvl === 1" class="btn btn_row_edit"
-                    @click.stop="handleGridCellAction('panels-cellClick', 'btn_row_edit', fnPanelOf(node.dashboardItemId))">수정</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div v-else style="padding:32px;text-align:center;color:#aaa;">
-          {{ dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '항목이 없습니다. 상단 [조회]를 눌러보거나 좌측에서 특정 대시보드를 선택하세요.' }}
-        </div>
+        <bo-grid bare narrow :columns="columns.dashTreeGrid" :rows="cfTreeVisible" row-key="itemKey"
+          :row-class="(node) => node.lvl === 1 ? (panelDetail.selectedId === node.dashboardItemId ? 'bo-row-selected' : '') : ''"
+          table-max-height="540px" :show-row-no="false"
+          :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '항목이 없습니다. 상단 [조회]를 눌러보거나 좌측에서 특정 대시보드를 선택하세요.'">
+          <template #cell-itemNm="{ row: node }">
+            <span style="display:inline-flex;align-items:center;gap:4px;"
+              :style="{ marginLeft:((node.lvl - 1) * 18) + 'px' }">
+              <span @click.stop="fnToggleNode(node)"
+                :style="{ cursor: fnHasChild(node) ? 'pointer' : 'default', width:'12px',
+                          color:'#94a3b8', fontSize:'10px', userSelect:'none' }">
+                {{ fnHasChild(node) ? (treeState.collapsed[node.itemKey] ? '▶' : '▼') : '' }}
+              </span>
+              <span :style="{ color: fnLvlColor(node.lvl), fontSize: node.lvl === 1 ? '9px' : '11px' }">
+                {{ fnLvlBullet(node.lvl) }}</span>
+              <span :style="{ fontWeight: node.lvl === 1 ? 700 : (node.lvl === 2 ? 600 : 400),
+                              color: node.lvl === 3 ? '#475569' : '' }">{{ node.itemNm }}</span>
+              <span v-if="node.lvl === 1" class="badge badge-gray" style="margin-left:4px;">
+                {{ node.widgetTypeCd === 'CHART' ? (node.chartTypeCd || 'chart') : node.widgetTypeCd }}</span>
+              <span v-if="node.lvl === 2 ? !fnIsFirstSeries(node) : false"
+                style="font-size:10px;color:#c2410c;margin-left:2px;">(항목은 1번째 시리즈 참고)</span>
+            </span>
+          </template>
+          <!-- 위젯생성타입 — 기존(MANUAL) / 쿼리(QUERY, SQL 실행 결과로 자동 생성) + 참조항목명(2026-08-21) -->
+          <template #cell-widgetGenTypeCd="{ row: node }">
+            <template v-if="node.lvl === 1">
+              <span class="badge" :class="node.widgetGenTypeCd === 'QUERY' ? 'badge-purple' : 'badge-gray'">
+                {{ node.widgetGenTypeCd === 'QUERY' ? '🔗 쿼리' : '매뉴얼' }}</span>
+              <div v-if="node.widgetGenTypeCd === 'QUERY'" style="font-size:10px;color:#7c3aed;margin-top:2px;"
+                title="SQL 실행 결과로 자동 생성됨">참조: {{ fnRefItemNm(node.refItemKey) }}</div>
+            </template>
+          </template>
+          <template #cell-_mgmt="{ row: node }">
+            <!-- 시리즈·항목은 차트 정의(JSON)의 일부라 개별 삭제가 아니라 차트 수정에서 다룬다 -->
+            <!-- 실제 항목 행을 넘겨야 한다 — id 만 넘기면 폼이 빈 값으로 열린다 -->
+            <button v-if="node.lvl === 1" class="btn btn_row_edit"
+              @click.stop="handleGridCellAction('panels-cellClick', 'btn_row_edit', fnPanelOf(node.dashboardItemId))">수정</button>
+          </template>
+        </bo-grid>
+        <!-- 2·3레벨 안내 각주 — 트리에 항목이 있을 때만 (원본과 동일 조건 유지) -->
         <div v-if="cfTreeVisible.length" style="padding:6px 12px;font-size:11px;color:#94a3b8;border-top:1px solid #f0f0f0;">
           2·3레벨은 차트의 <b>시리즈 정의 JSON</b> / <b>항목 정의 JSON</b> 에서 옵니다 — 차트 행의 [수정]에서 편집하세요.
         </div>
@@ -1940,55 +1942,33 @@ window.CmDashboardItemMng = {
             <div style="padding:6px;background:#fafafa;border-bottom:1px solid #f0f0f0;">
               <button class="btn btn_new" :disabled="cfDtlMode" @click="fnAddSeriesRow()">+ 시리즈 추가</button>
             </div>
-            <table class="bo-table bo-table-narrow">
-              <thead>
-                <tr>
-                  <th style="width:28px;background:#ffe8cf;"></th>
-                  <th style="width:44px;background:#ffe8cf;">순서</th>
-                  <th style="width:190px;background:#ffe8cf;">코드 (cd)</th>
-                  <th style="background:#ffe8cf;">시리즈명 (name)</th>
-                  <th style="width:150px;background:#ffe8cf;">색상 (color)</th>
-                  <th style="width:230px;background:#ffe8cf;">고유 item_key 미리보기</th>
-                  <th style="width:60px;background:#ffe8cf;">관리</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(r, i) in seriesRows" :key="'s'+i"
-                  :draggable="!cfDtlMode" @dragstart="onRowDragStart(seriesRows, i)"
-                  @dragover.prevent="onRowDragOver(seriesRows, i)" @dragend="onRowDragEnd">
-                  <td style="text-align:center;cursor:grab;color:#bbb;font-size:16px;user-select:none;">☰</td>
-                  <td style="text-align:center;color:#94a3b8;">{{ i + 1 }}</td>
-                  <td>
-                    <!-- 코드그룹이 지정되면 선택, 아니면 직접입력 -->
-                    <select v-if="fnGrpOptions(panelForm.lvl1CodeGrp).length" class="form-control"
-                      v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl1CodeGrp)">
-                      <option value="">-- 선택 --</option>
-                      <option v-for="o in fnGrpOptions(panelForm.lvl1CodeGrp)" :key="o.codeValue" :value="o.codeValue">
-                        {{ o.codeLabel }} ({{ o.codeValue }})</option>
-                    </select>
-                    <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
-                      placeholder="예: CH_COUPANG (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
-                  </td>
-                  <td><input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 쿠팡" /></td>
-                  <td>
-                    <div style="display:flex;align-items:center;gap:4px;">
-                      <input type="color" v-model="r.color" :disabled="cfDtlMode"
-                        style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
-                      <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
-                        placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
-                    </div>
-                  </td>
-                  <td style="font-family:monospace;font-size:11px;color:#64748b;">{{ fnPreviewCode(r.cd || r.name, '') }}</td>
-                  <td style="text-align:center;white-space:nowrap;">
-                    <button class="btn btn_row_delete" :disabled="cfDtlMode" @click="fnDelSeriesRow(i)">삭제</button>
-                  </td>
-                </tr>
-                <tr v-if="!seriesRows.length">
-                  <td colspan="7" style="text-align:center;color:#aaa;padding:14px;">
-                    시리즈가 없습니다. [+ 시리즈 추가]로 등록하세요. (없으면 단일 시리즈로 동작)</td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- bo-grid 전환(2026-08-25) — 셀 내부 입력/select/color 마크업은 원본과 동일, 표 틀만 교체.
+                 draggable 이 ☰ 드래그 열을 자동 렌더하므로 수기 "순서" 열은 뺐다(show-row-no 가 같은 값). -->
+            <bo-grid bare :columns="columns.seriesRowGrid" :rows="seriesRows" :draggable="!cfDtlMode"
+              empty-text="시리즈가 없습니다. [+ 시리즈 추가]로 등록하세요. (없으면 단일 시리즈로 동작)">
+              <template #cell-cd="{ row: r }">
+                <!-- 코드그룹이 지정되면 선택, 아니면 직접입력 -->
+                <select v-if="fnGrpOptions(panelForm.lvl1CodeGrp).length" class="form-control"
+                  v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl1CodeGrp)">
+                  <option value="">-- 선택 --</option>
+                  <option v-for="o in fnGrpOptions(panelForm.lvl1CodeGrp)" :key="o.codeValue" :value="o.codeValue">
+                    {{ o.codeLabel }} ({{ o.codeValue }})</option>
+                </select>
+                <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
+                  placeholder="예: CH_COUPANG (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
+              </template>
+              <template #cell-name="{ row: r }">
+                <input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 쿠팡" />
+              </template>
+              <template #cell-color="{ row: r }">
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <input type="color" v-model="r.color" :disabled="cfDtlMode"
+                    style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
+                  <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
+                    placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
+                </div>
+              </template>
+            </bo-grid>
           </div>
         </template>
 
@@ -2001,55 +1981,33 @@ window.CmDashboardItemMng = {
                 시리즈 {{ seriesRows.length || 1 }}개 × 항목 {{ colRows.length }}개 =
                 <b>{{ (seriesRows.length || 1) * colRows.length }}</b>개 행이 트리 3레벨에 생성됩니다.</span>
             </div>
-            <table class="bo-table bo-table-narrow">
-              <thead>
-                <tr>
-                  <th style="width:28px;background:#eaf2ff;"></th>
-                  <th style="width:44px;background:#eaf2ff;">순서</th>
-                  <th style="width:190px;background:#eaf2ff;">코드 (cd)</th>
-                  <th style="background:#eaf2ff;">항목명 (name)</th>
-                  <th style="width:150px;background:#eaf2ff;">색상 (color, 파이용)</th>
-                  <th style="width:230px;background:#eaf2ff;">고유 item_key 미리보기</th>
-                  <th style="width:60px;background:#eaf2ff;">관리</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(r, i) in colRows" :key="'c'+i"
-                  :draggable="!cfDtlMode" @dragstart="onRowDragStart(colRows, i)"
-                  @dragover.prevent="onRowDragOver(colRows, i)" @dragend="onRowDragEnd">
-                  <td style="text-align:center;cursor:grab;color:#bbb;font-size:16px;user-select:none;">☰</td>
-                  <td style="text-align:center;color:#94a3b8;">{{ i + 1 }}</td>
-                  <td>
-                    <select v-if="fnGrpOptions(panelForm.lvl2CodeGrp).length" class="form-control"
-                      v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl2CodeGrp)">
-                      <option value="">-- 선택 --</option>
-                      <option v-for="o in fnGrpOptions(panelForm.lvl2CodeGrp)" :key="o.codeValue" :value="o.codeValue">
-                        {{ o.codeLabel }} ({{ o.codeValue }})</option>
-                    </select>
-                    <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
-                      placeholder="예: M01 (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
-                  </td>
-                  <td><input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 1월" /></td>
-                  <td>
-                    <div style="display:flex;align-items:center;gap:4px;">
-                      <input type="color" v-model="r.color" :disabled="cfDtlMode"
-                        style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
-                      <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
-                        placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
-                    </div>
-                  </td>
-                  <td style="font-family:monospace;font-size:11px;color:#64748b;">
-                    {{ fnPreviewCode(seriesRows.length ? (seriesRows[0].cd || seriesRows[0].name) : '', r.cd || r.name) }}</td>
-                  <td style="text-align:center;white-space:nowrap;">
-                    <button class="btn btn_row_delete" :disabled="cfDtlMode" @click="fnDelColRow(i)">삭제</button>
-                  </td>
-                </tr>
-                <tr v-if="!colRows.length">
-                  <td colspan="6" style="text-align:center;color:#aaa;padding:14px;">
-                    항목이 없습니다. 비워두면 데이터관리 화면에서 열 제목을 직접 입력합니다.</td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- bo-grid 전환(2026-08-25). 원본 colspan="6"(시리즈 표는 7)이던 이유는 이 표에
+                 순서 열만 있고 관리 열이 하나 더 있었던 계산 차이인데, bo-grid 는 콜스팬을
+                 자동 계산하므로 더 이상 손으로 맞출 필요가 없다. -->
+            <bo-grid bare :columns="columns.colRowGrid" :rows="colRows" :draggable="!cfDtlMode"
+              empty-text="항목이 없습니다. 비워두면 데이터관리 화면에서 열 제목을 직접 입력합니다.">
+              <template #cell-cd="{ row: r }">
+                <select v-if="fnGrpOptions(panelForm.lvl2CodeGrp).length" class="form-control"
+                  v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl2CodeGrp)">
+                  <option value="">-- 선택 --</option>
+                  <option v-for="o in fnGrpOptions(panelForm.lvl2CodeGrp)" :key="o.codeValue" :value="o.codeValue">
+                    {{ o.codeLabel }} ({{ o.codeValue }})</option>
+                </select>
+                <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
+                  placeholder="예: M01 (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
+              </template>
+              <template #cell-name="{ row: r }">
+                <input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 1월" />
+              </template>
+              <template #cell-color="{ row: r }">
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <input type="color" v-model="r.color" :disabled="cfDtlMode"
+                    style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
+                  <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
+                    placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
+                </div>
+              </template>
+            </bo-grid>
           </div>
         </template>
 
@@ -2075,105 +2033,44 @@ window.CmDashboardItemMng = {
             </div>
             <div v-if="colRows.length" style="overflow-x:auto;">
               <!-- ROW: 시리즈=행 · 항목=열 (기본) -->
-              <table v-if="simOrient !== 'COL'" class="bo-table bo-table-narrow">
-                <thead>
-                  <tr>
-                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">
-                      시리즈 \\ 항목
-                      <span style="display:inline-flex;gap:4px;margin-left:4px;">
-                        <span @click="fnToggleAllAuto()" title="전체 자동수집 켜기/끄기" style="cursor:pointer;font-size:10px;">🤖</span>
-                        <span @click="fnToggleAllEditable()" title="전체 수정불가 켜기/끄기" style="cursor:pointer;font-size:10px;">🔒</span>
-                      </span>
-                    </th>
-                    <th v-for="(c, ci) in cfSimColNms" :key="'sc'+ci" style="min-width:96px;background:#eaf2ff;padding:4px 6px;font-size:11px;">
-                      {{ c }}
-                    </th>
-                    <th style="width:80px;padding:4px 6px;font-size:11px;">합계</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(nm, si) in cfSimSeriesNms" :key="'sr'+si">
-                    <td style="font-weight:600;background:#ffe8cf;">{{ nm }}</td>
-                    <td v-for="(c, ci) in cfSimColNms" :key="'sv'+si+'_'+ci"
-                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(si, ci) ? 'background:#f1f5f9;' : '')">
-                      <!-- 자동수집 표시(왼쪽 위 녹색 삼각형, 데이터관리 그리드와 동일한 표시) +
-                           자동수집/수정가능 토글(오른쪽 위 작은 아이콘, 클릭으로 전환)(2026-08-21) -->
-                      <span v-if="fnColAuto(si, ci)"
-                        style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
-                        title="자동수집 항목"></span>
-                      <span style="position:absolute;top:1px;right:2px;display:flex;gap:2px;z-index:2;line-height:1;">
-                        <span @click="fnToggleColAuto(si, ci)" title="자동수집여부(클릭으로 전환)"
-                          :style="'cursor:pointer;font-size:8px;' + (fnColAuto(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🤖</span>
-                        <span @click="fnToggleColEditable(si, ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
-                          :style="'cursor:pointer;font-size:8px;' + (fnColLocked(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🔒</span>
-                      </span>
-                      <input type="number" class="form-control"
-                        :disabled="fnColLocked(si, ci)"
-                        :style="'text-align:right;padding-right:26px;' + (fnColLocked(si, ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
-                        :value="simVals[si] ? simVals[si][ci] : null"
-                        @input="e => { fnSimFit(); simVals[si][ci] = e.target.value; }" />
-                    </td>
-                    <td style="text-align:right;font-weight:700;color:#475569;background:#eef1f5;">{{ fnSimRowTotal(si) }}</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td style="font-weight:700;background:#eef1f5;color:#475569;">합계</td>
-                    <td v-for="(c, ci) in cfSimColNms" :key="'ct'+ci"
-                      style="text-align:right;font-weight:700;background:#eef1f5;color:#475569;">{{ fnSimColTotal(ci) }}</td>
-                    <td style="text-align:right;font-weight:700;background:#e9edf3;color:#1f4a73;">{{ fnSimGrandTotal() }}</td>
-                  </tr>
-                </tfoot>
-              </table>
-              <!-- COL: 항목=행 · 시리즈=열 (전치 보기, simVals 물리적 변경 없이 렌더 순서만 교체) -->
-              <table v-else class="bo-table bo-table-narrow">
-                <thead>
-                  <tr>
-                    <th style="width:150px;background:#eef1f5;color:#475569;padding:4px 6px;font-size:11px;">
-                      항목 \\ 시리즈
-                      <span style="display:inline-flex;gap:4px;margin-left:4px;">
-                        <span @click="fnToggleAllAuto()" title="전체 자동수집 켜기/끄기" style="cursor:pointer;font-size:10px;">🤖</span>
-                        <span @click="fnToggleAllEditable()" title="전체 수정불가 켜기/끄기" style="cursor:pointer;font-size:10px;">🔒</span>
-                      </span>
-                    </th>
-                    <th v-for="(nm, si) in cfSimSeriesNms" :key="'cs'+si" style="min-width:96px;background:#ffe8cf;padding:4px 6px;font-size:11px;">{{ nm }}</th>
-                    <th style="width:80px;padding:4px 6px;font-size:11px;">합계</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(c, ci) in cfSimColNms" :key="'cr'+ci">
-                    <td style="font-weight:600;background:#eaf2ff;">{{ c }}</td>
-                    <td v-for="(nm, si) in cfSimSeriesNms" :key="'cv'+ci+'_'+si"
-                      :style="'padding:2px 4px;position:relative;' + (fnColLocked(si, ci) ? 'background:#f1f5f9;' : '')">
-                      <!-- 자동수집 표시(왼쪽 위 녹색 삼각형, 데이터관리 그리드와 동일한 표시) +
-                           자동수집/수정가능 토글(오른쪽 위 작은 아이콘, 클릭으로 전환)(2026-08-21) -->
-                      <span v-if="fnColAuto(si, ci)"
-                        style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
-                        title="자동수집 항목"></span>
-                      <span style="position:absolute;top:1px;right:2px;display:flex;gap:2px;z-index:2;line-height:1;">
-                        <span @click="fnToggleColAuto(si, ci)" title="자동수집여부(클릭으로 전환)"
-                          :style="'cursor:pointer;font-size:8px;' + (fnColAuto(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🤖</span>
-                        <span @click="fnToggleColEditable(si, ci)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
-                          :style="'cursor:pointer;font-size:8px;' + (fnColLocked(si, ci) ? 'opacity:1;' : 'opacity:.2;')">🔒</span>
-                      </span>
-                      <input type="number" class="form-control"
-                        :disabled="fnColLocked(si, ci)"
-                        :style="'text-align:right;padding-right:26px;' + (fnColLocked(si, ci) ? 'background:#e2e8f0;color:#64748b;' : '')"
-                        :value="simVals[si] ? simVals[si][ci] : null"
-                        @input="e => { fnSimFit(); simVals[si][ci] = e.target.value; }" />
-                    </td>
-                    <td style="text-align:right;font-weight:700;color:#475569;background:#eef1f5;">{{ fnSimColTotal(ci) }}</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td style="font-weight:700;background:#eef1f5;color:#475569;">합계</td>
-                    <td v-for="(nm, si) in cfSimSeriesNms" :key="'st'+si"
-                      style="text-align:right;font-weight:700;background:#eef1f5;color:#475569;">{{ fnSimRowTotal(si) }}</td>
-                    <td style="text-align:right;font-weight:700;background:#e9edf3;color:#1f4a73;">{{ fnSimGrandTotal() }}</td>
-                  </tr>
-                </tfoot>
-              </table>
+              <!-- 시리즈 × 항목 교차표. simOrient='COL' 이면 축을 전치해 보여준다.
+                   예전엔 전치용 표를 통째로 복붙해 두 벌 유지했는데, bo-matrix 의 orient 로 한 벌이 됐다.
+                   simVals 는 [시리즈][항목] 2차원이라 셀에서 원본 축 인덱스(srcRowIdx/srcColIdx)를 쓴다. -->
+              <bo-matrix
+                :rows="cfSimSeriesNms" :cols="cfSimColNms"
+                :orient="simOrient === 'COL' ? 'col' : 'row'"
+                :row-label="v => v" :col-label="v => v"
+                cell-type="slot" tone="plain" cell-width="96px" max-height="none"
+                :row-total="(nm, si) => fnSimRowTotal(si)"
+                :col-total="(c, ci) => fnSimColTotal(ci)"
+                :grand-total="fnSimGrandTotal">
+                <template #corner>
+                  {{ simOrient === 'COL' ? '항목 \\ 시리즈' : '시리즈 \\ 항목' }}
+                  <span style="display:inline-flex;gap:4px;margin-left:4px;">
+                    <span @click.stop="fnToggleAllAuto()" title="전체 자동수집 켜기/끄기" style="cursor:pointer;font-size:10px;">🤖</span>
+                    <span @click.stop="fnToggleAllEditable()" title="전체 수정불가 켜기/끄기" style="cursor:pointer;font-size:10px;">🔒</span>
+                  </span>
+                </template>
+                <template #cell="{ srcRowIdx, srcColIdx }">
+                  <div style="position:relative;">
+                    <!-- 자동수집 표시(왼쪽 위 녹색 삼각형) + 자동수집/수정가능 토글(오른쪽 위) -->
+                    <span v-if="fnColAuto(srcRowIdx, srcColIdx)"
+                      style="position:absolute;top:0;left:0;width:0;height:0;border-top:9px solid #16a34a;border-right:9px solid transparent;z-index:1;"
+                      title="자동수집 항목"></span>
+                    <span style="position:absolute;top:1px;right:2px;display:flex;gap:2px;z-index:2;line-height:1;">
+                      <span @click="fnToggleColAuto(srcRowIdx, srcColIdx)" title="자동수집여부(클릭으로 전환)"
+                        :style="'cursor:pointer;font-size:8px;' + (fnColAuto(srcRowIdx, srcColIdx) ? 'opacity:1;' : 'opacity:.2;')">🤖</span>
+                      <span @click="fnToggleColEditable(srcRowIdx, srcColIdx)" title="수정가능여부(클릭으로 전환 · 켜면 잠금)"
+                        :style="'cursor:pointer;font-size:8px;' + (fnColLocked(srcRowIdx, srcColIdx) ? 'opacity:1;' : 'opacity:.2;')">🔒</span>
+                    </span>
+                    <input type="number" class="form-control"
+                      :disabled="fnColLocked(srcRowIdx, srcColIdx)"
+                      :style="'text-align:right;padding-right:26px;' + (fnColLocked(srcRowIdx, srcColIdx) ? 'background:#e2e8f0;color:#64748b;' : '')"
+                      :value="simVals[srcRowIdx] ? simVals[srcRowIdx][srcColIdx] : null"
+                      @input="e => { fnSimFit(); simVals[srcRowIdx][srcColIdx] = e.target.value; }" />
+                  </div>
+                </template>
+              </bo-matrix>
             </div>
             <div v-else style="padding:18px;text-align:center;color:#aaa;font-size:12px;">
               먼저 위에서 <b>3레벨 항목</b>을 추가하면 값 입력칸이 생깁니다.</div>

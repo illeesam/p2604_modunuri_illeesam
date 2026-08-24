@@ -31,7 +31,7 @@
           // 401(미인증)은 조용히 무시 — 로그인 전 또는 세션 만료
           const status = e.response?.status;
           if (status !== 401) {
-            const msg = e.response?.data?.message || e.message || '오류가 발생했습니다.';
+            const msg = coUtil.cofErrMsg(e);
             window.boApp?.showToast?.('개인화 설정 로드 실패: ' + msg, 'error');
           }
         }
@@ -48,7 +48,7 @@
           );
         } catch (e) {
           // 로컬 상태는 이미 반영 — 서버 오류만 알림
-          const msg = e.response?.data?.message || e.message || '오류가 발생했습니다.';
+          const msg = coUtil.cofErrMsg(e);
           window.boApp?.showToast?.('개인화 설정 저장 실패: ' + msg, 'error');
         }
       },

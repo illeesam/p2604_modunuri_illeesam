@@ -115,7 +115,7 @@ window.MbMemberDtl = {
         props.navigate('__cancelEdit__'); // boAppBase.js standaloneDtlMode 를 view 로 되돌림
         await fnLoadStandalone(props.dtlId); // 서버 기준으로 새로고침
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -128,7 +128,7 @@ window.MbMemberDtl = {
         showToast('삭제되었습니다.', 'success');
         try { window.close(); } catch (e) {}
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 

@@ -154,7 +154,7 @@ window.SyApiLogMng = {
         const res = await svc.getById(id, 'API로그조회', '상세조회');
         detailCache[key] = res.data?.data || res.data || {};
       } catch (err) {
-        if (showToast) { showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '상세 조회 오류'), 'error', 0); }
       } finally {
         detailLoading.delete(key);
       }
@@ -258,7 +258,7 @@ window.SyApiLogMng = {
         if (uiState.hasMore) { accessGridPager.pageNo += 1; }
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
-        if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0); }
       } finally {
         uiState.loading = false;
       }
@@ -287,7 +287,7 @@ window.SyApiLogMng = {
         if (uiState.hasMore) { accessGridPager.pageNo += 1; }
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);
-        if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0); }
       } finally {
         uiState.loading = false;
       }
@@ -330,7 +330,7 @@ window.SyApiLogMng = {
         accessGridPager.pageTotalCount = 0; accessGridPager.pageTotalPage = 1;
         expandedRows.clear(); allExpanded.value = false;
       } catch (err) {
-        if (showToast) { showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0); }
       }
     };
 

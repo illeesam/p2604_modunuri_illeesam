@@ -172,6 +172,9 @@ window.StSettleCloseMng = {
       { key: 'etcAdjAmt',       label: '기타조정합계', fmt: fmtW },
       { key: 'finalSettleAmt',  label: '최종정산액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
       { key: 'settleStatusCd',  label: '정산상태', badge: (row) => fnSettleStatusBadge(row.settleStatusCd) },
+      { type: 'actions', actions: [
+        { label: '마감', cls: 'btn btn-xs btn-primary', onClick: (row) => handleSelectAction('settleCandidates-rowClose', row) },
+      ] },
     ];
 
     /* 마감 이력 그리드
@@ -188,6 +191,10 @@ window.StSettleCloseMng = {
         fmt: (v) => (v === 'CLOSED' ? '마감완료' : v === 'OPEN' ? '마감취소' : v) },
       { key: 'closeBy',       label: '처리자' },
       { key: 'closeDate',     label: '처리일시', fmt: (v) => coUtil.cofYmd(v) || '-' },
+      { type: 'actions', actions: [
+        { label: '마감취소', cls: 'btn btn-xs btn-secondary', visible: (row) => row.closeStatusCd === 'CLOSED',
+          onClick: (row) => handleSelectAction('settleCloses-rowReopen', row) },
+      ] },
     ];
 
     /* buildExcelParams — 엑셀 다운로드 조건.
@@ -211,15 +218,9 @@ window.StSettleCloseMng = {
   <!-- ===== ■. 마감 대상 =============================================== -->
   <bo-container title="마감 대상" :count-text="cfCloseCandidates.length + '건'">
     <bo-grid bare
-      :columns="columns.candidateGrid" :rows="cfCloseCandidates" row-key="settleId"
-      :row-actions="true">
+      :columns="columns.candidateGrid" :rows="cfCloseCandidates" row-key="settleId">
       <template #head-actions>
         액션
-      </template>
-      <template #row-actions="{ row: r }">
-        <button class="btn btn-xs btn-primary" @click="handleSelectAction('settleCandidates-rowClose', r)">
-          마감
-        </button>
       </template>
     </bo-grid>
     <div v-if="!cfCloseCandidates.length" style="text-align:center;color:#bbb;font-size:13px;padding:20px 16px;">
@@ -238,15 +239,9 @@ window.StSettleCloseMng = {
       </select>
     </template>
     <bo-grid bare
-      :columns="columns.baseGrid" :rows="cfFilteredClose" row-key="settleCloseId"
-      :row-actions="true">
+      :columns="columns.baseGrid" :rows="cfFilteredClose" row-key="settleCloseId">
       <template #head-actions>
         액션
-      </template>
-      <template #row-actions="{ row: r }">
-        <button v-if="r.closeStatusCd==='CLOSED'" class="btn btn-xs btn-secondary" @click="handleSelectAction('settleCloses-rowReopen', r)">
-          마감취소
-        </button>
       </template>
     </bo-grid>
   </bo-container>

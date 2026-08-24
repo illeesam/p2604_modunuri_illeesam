@@ -201,6 +201,10 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
       { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
       { key: 'remark',     label: '비고',
         cellStyle: 'font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
+      { type: 'actions', actions: [
+        { label: '조정', cls: 'btn btn-xs btn-primary', visible: (row) => row.diffStatus !== 'MATCH',
+          onClick: (row) => handleSelectAction('recons-rowFix', row) },
+      ] },
     ];
 
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
@@ -241,15 +245,9 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
       <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
     </template>
     <bo-grid bare
-      :columns="columns.baseGrid" :rows="recons" row-key="reconId"
-      :row-actions="true">
+      :columns="columns.baseGrid" :rows="recons" row-key="reconId">
       <template #head-actions>
         액션
-      </template>
-      <template #row-actions="{ row: r }">
-        <button v-if="r.diffStatus!=='MATCH'" class="btn btn-xs btn-primary" @click="handleSelectAction('recons-rowFix', r)">
-          조정
-        </button>
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('recons-pager-setPage', n)" :on-size-change="() => handleSelectAction('recons-pager-sizeChange')" />

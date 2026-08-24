@@ -200,7 +200,7 @@ const raws = reactive([]);
         const res = await boApiSvc.stSettleRaw.getById(id, '정산데이터관리', '상세조회');
         detailCache[id] = res.data?.data || res.data || {};
       } catch (err) {
-        if (showToast) { showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err, '상세 조회 오류'), 'error', 0); }
       } finally {
         detailLoading.delete(id);
       }
@@ -288,7 +288,7 @@ const raws = reactive([]);
         if (showToast) { showToast('재수집이 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
-        if (showToast) { showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err), 'error', 0); }
       }
     };
 

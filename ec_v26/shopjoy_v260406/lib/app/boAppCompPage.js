@@ -101,6 +101,8 @@
     mdCbSymbolMng: 'md-cb-symbol-mng',
     mdCbYarnMng: 'md-cb-yarn-mng',
     mdCbPatternMng: 'md-cb-pattern-mng',
+    mdSgProjectMng: 'md-sg-project-mng',
+    mdSgGenHistMng: 'md-sg-gen-hist-mng',
     syUserMng: 'sy-user-mng',
     syUserDtl: 'sy-user-dtl',
     syBatchMng: 'sy-batch-mng',

@@ -48,6 +48,8 @@ window.boRegisterComponents = function (app) {
     .component('MdCbSymbolMng', window.MdCbSymbolMng)
     .component('MdCbYarnMng', window.MdCbYarnMng)
     .component('MdCbPatternMng', window.MdCbPatternMng)
+    .component('MdSgProjectMng', window.MdSgProjectMng)
+    .component('MdSgGenHistMng', window.MdSgGenHistMng)
     /* ── pages/co/ec/ — 주문 칸반 ── */
     .component('OdOrderKanban', window.OdOrderKanban)
     /* ── pages/bo/ec/ — 주문 ── */
@@ -187,7 +189,9 @@ window.boRegisterComponents = function (app) {
     .component('BoContainer', window.BoContainer)
     .component('BoSearchArea', window.BoSearchArea)
     .component('BoFormArea', window.BoFormArea)
+    .component('BoFormActions', window.BoFormActions)
     .component('BoGrid', window.BoGrid)
+    .component('BoMatrix', window.BoMatrix)
     .component('BoGridCrud', window.BoGridCrud)
     .component('BoGroupTable', window.BoGroupTable)
     .component('BoStatRow', window.BoStatRow)

@@ -112,7 +112,7 @@ window.ZdTestMailSmtp = {
         addLog((ok ? '✅' : '⚠️') + ' 발송 ' + (ok ? '완료' : '실패(서버응답)') + ' → ' + form.toEmail, ok ? 'success' : 'error');
         showToast('테스트 메일 ' + (ok ? '발송 완료' : '발송 실패: ' + (result.response?.failReason || '')), ok ? 'success' : 'error', ok ? undefined : 0);
       } catch (e) {
-        result.error  = e.response?.data?.message || e.message || '알 수 없는 오류';
+        result.error  = coUtil.cofErrMsg(e, '알 수 없는 오류');
         result.status = 'error';
         addLog('❌ 실패: ' + result.error, 'error');
         showToast('메일 발송 실패: ' + result.error, 'error', 0);

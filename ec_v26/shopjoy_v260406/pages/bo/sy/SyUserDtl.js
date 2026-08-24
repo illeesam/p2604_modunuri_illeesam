@@ -391,19 +391,12 @@ window.SyUserDtl = {
   </bo-form-area>
   <!-- ===== □.□. 기본정보 폼 (주소/프로필 포함, 단일 BoFormArea) ================== -->
   <!-- ===== ■.■. 폼 액션 (active 일 때만 노출) ================================ -->
-  <div class="form-actions" v-if="active">
-    <template v-if="cfDtlMode">
-      <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-    </template>
-    <template v-else>
-      <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-      <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-    </template>
-  </div>
+  <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+    :edit-click="() => handleBtnAction('form-edit')"
+    :save-click="() => handleBtnAction('form-save')"
+    :delete-click="() => handleBtnAction('form-delete')"
+    :cancel-click="() => handleBtnAction('form-cancel')"
+    :close-click="() => handleBtnAction('form-close')" />
   <!-- ===== □.□. 폼 액션 ================================================== -->
 </bo-container>
 <!-- ===== □. 카드 영역 =================================================== -->

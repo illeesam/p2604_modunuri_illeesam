@@ -314,7 +314,7 @@ window.DpDispWidgetLibMng = {
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
-        if (showToast) { showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0); }
+        if (showToast) { showToast(coUtil.cofErrMsg(err), 'error', 0); }
       }
     };
 

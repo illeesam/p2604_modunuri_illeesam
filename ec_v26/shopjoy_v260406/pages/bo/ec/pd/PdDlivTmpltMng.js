@@ -290,6 +290,9 @@ window.PdDlivTmpltMng = {
       { key: 'useYn',         label: '사용',       style: 'width:60px;text-align:center;', align: 'center',
         badge: (row) => fnYnBadge(row.useYn) },
           { key: 'siteNm', label: '사이트' },
+      { type: 'actions', actions: [
+        { label: '수정', cls: 'btn btn_row_edit btn-sm', onClick: (row) => handleGridCellAction('dlivTmplts-cellClick', 'btn_row_edit', row) },
+      ] },
     ];
 
     // 기본 폼 — cols=3 기준 자연 배치
@@ -359,11 +362,7 @@ window.PdDlivTmpltMng = {
       :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId" :selected-key="uiState.selectedId"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('dlivTmplts-cellClick', 'btn_row_edit', row)">수정</button>
-      </template>
-    </bo-grid>
+      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
     <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="pdDlivTmplt" area-nm="배송템플릿"
@@ -391,17 +390,11 @@ window.PdDlivTmpltMng = {
       <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
         :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <!-- ===== ■.■.■. 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[저장][삭제][취소] (.form-actions 중앙 정렬) ===== -->
-      <div class="form-actions">
-        <template v-if="cfDtlMode">
-          <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-        </template>
-        <template v-else>
-          <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-          <button v-if="!uiState.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        </template>
-      </div>
+      <bo-form-actions :readonly="cfDtlMode" :show-delete="!uiState.isNew" :edit-click="() => handleBtnAction('form-edit')"
+ :save-click="() => handleBtnAction('form-save')"
+ :delete-click="() => handleBtnAction('form-delete')"
+ :cancel-click="() => handleBtnAction('form-cancel')"
+ :close-click="() => handleBtnAction('form-close')" />
     </div>
   </bo-container>
   <!-- ===== □. 상세 패널 =================================================== -->

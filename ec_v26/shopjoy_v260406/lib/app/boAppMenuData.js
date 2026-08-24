@@ -255,6 +255,9 @@
       { id: 'mdCbPatternMng', label: '도안관리' },
       { id: 'mdCbSymbolMng', label: '기호관리' },
       { id: 'mdCbYarnMng', label: '실관리' },
+      { group: '소스젠' },
+      { id: 'mdSgProjectMng', label: '프로젝트관리' },
+      { id: 'mdSgGenHistMng', label: '생성이력관리' },
     ],
   };
 

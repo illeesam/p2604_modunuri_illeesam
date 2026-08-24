@@ -100,7 +100,7 @@ window.StErpViewMng = {
         await boApiSvc.stErp.resend(r.erpVoucherId || r.slipId, {}, 'ERP전표조회', '전송');
         showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 

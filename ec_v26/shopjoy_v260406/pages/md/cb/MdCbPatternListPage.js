@@ -70,8 +70,18 @@ window.MdCbPatternListPage = {
       fnLoad();
     });
 
+    /* ##### 컬럼정의 — fo-grid 전환(2026-08-25). 번호/#는 pager 전달 시 자동. */
+    const baseGridColumns = [
+      { key: '_thumb',   label: '', width: '44px' },
+      { key: 'patternNm', label: '도안명' },
+      { key: '_size',    label: '규격', width: '110px', fmt: (v, r) => r.rowCount + '단 × ' + r.maxStitchCount + '코' },
+      { key: '_author',  label: '작성자', width: '120px', fmt: (v, r) => r.regUserNm || r.memberNm || '알 수 없음' },
+      { key: 'regDate',  label: '등록일', width: '100px', fmt: (v) => fnFmtDate(v) },
+      { key: '_arrow',   label: '', width: '28px', cellClass: 'cb-list-table-arrow', fmt: () => '›' },
+    ];
+
     return { searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange, onOpen, onNew, fnFmtDate, fnThumbStyle, fnPatternType,
-      viewMode, onSetViewMode };
+      viewMode, onSetViewMode, baseGridColumns };
   },
   template: /* html */`
 <div class="cb-page">
@@ -97,9 +107,12 @@ window.MdCbPatternListPage = {
 
   <div class="cb-list-count">총 {{ pager.pageTotalCount }}개 도안</div>
 
-  <!-- 카드형식 -->
-  <div v-if="viewMode==='card'" class="cb-card-grid">
-    <div v-for="p in rows" :key="p.patternId" class="cb-pattern-card" @click="onOpen(p)">
+  <!-- 카드형식 — fo-grid layout="card" 전환(2026-08-25). 카드 내용은 그대로 #card 슬롯으로,
+       컨테이너(반응형 그리드)·로딩·빈상태는 fo-grid 가 담당한다. -->
+  <fo-grid v-if="viewMode==='card'" layout="card" card-min-width="240px" card-class="cb-pattern-card"
+    :columns="baseGridColumns" :rows="rows" row-key="patternId" bare
+    :loading="loading" :row-click="onOpen" empty-text="검색 결과가 없습니다.">
+    <template #card="{ row: p }">
       <div class="cb-pattern-thumb" :style="p.thumbnailUrl ? '' : fnThumbStyle(p.patternId)">
         <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" class="cb-pattern-thumb-img" />
         <span v-else class="cb-pattern-thumb-icon">🧶</span>
@@ -117,46 +130,25 @@ window.MdCbPatternListPage = {
         </div>
         <button class="btn btn_detail cb-card-btn" @click.stop="onOpen(p)">상세보기</button>
       </div>
-    </div>
-    <div v-if="!loading && !rows.length" class="cb-empty-hint" style="grid-column:1/-1;">검색 결과가 없습니다.</div>
-  </div>
+    </template>
+  </fo-grid>
 
-  <!-- 일반목록(기본) -->
-  <div v-else class="cb-list-table-wrap">
-    <table class="cb-list-table">
-      <thead>
-        <tr>
-          <th style="width:60px;text-align:center;">번호</th>
-          <th style="width:44px;"></th>
-          <th>도안명</th>
-          <th style="width:110px;">규격</th>
-          <th style="width:120px;">작성자</th>
-          <th style="width:100px;">등록일</th>
-          <th style="width:28px;"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(p, idx) in rows" :key="p.patternId" @click="onOpen(p)">
-          <td style="text-align:center;color:var(--text-muted,#999);">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</td>
-          <td>
-            <div class="cb-list-thumb" :style="p.thumbnailUrl ? '' : fnThumbStyle(p.patternId)">
-              <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" class="cb-list-thumb-img" />
-              <span v-else class="cb-list-thumb-icon">🧶</span>
-            </div>
-          </td>
-          <td class="cb-list-table-nm">
-            {{ p.patternNm }}
-            <span class="cb-badge cb-badge-inline" :class="'cb-badge-' + fnPatternType(p).cls">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
-          </td>
-          <td>{{ p.rowCount }}단 × {{ p.maxStitchCount }}코</td>
-          <td>{{ p.regUserNm || p.memberNm || '알 수 없음' }}</td>
-          <td>{{ fnFmtDate(p.regDate) }}</td>
-          <td class="cb-list-table-arrow">›</td>
-        </tr>
-        <tr v-if="!loading && !rows.length"><td colspan="7" class="cb-empty-hint">검색 결과가 없습니다.</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- 일반목록(기본) — fo-grid 전환(2026-08-25). 행 전체 클릭은 row-click, 번호는 pager 로 자동. -->
+  <fo-grid v-else :columns="baseGridColumns" :rows="rows" row-key="patternId" :pager="pager"
+    bare :row-click="onOpen" empty-text="검색 결과가 없습니다.">
+    <template #cell-_thumb="{ row: p }">
+      <div class="cb-list-thumb" :style="p.thumbnailUrl ? '' : fnThumbStyle(p.patternId)">
+        <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" class="cb-list-thumb-img" />
+        <span v-else class="cb-list-thumb-icon">🧶</span>
+      </div>
+    </template>
+    <template #cell-patternNm="{ row: p }">
+      <span class="cb-list-table-nm">
+        {{ p.patternNm }}
+        <span class="cb-badge cb-badge-inline" :class="'cb-badge-' + fnPatternType(p).cls">{{ fnPatternType(p).icon }} {{ fnPatternType(p).label }}</span>
+      </span>
+    </template>
+  </fo-grid>
 
   <fo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
 </div>

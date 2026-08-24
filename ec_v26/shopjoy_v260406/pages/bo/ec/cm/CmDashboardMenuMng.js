@@ -103,7 +103,7 @@ window.CmDashboardMenuMng = {
         myDashes.splice(0, myDashes.length, ...all.filter(d => d.ownerUserId === me));
         sharedDashes.splice(0, sharedDashes.length, ...all.filter(d => d.ownerUserId !== me));
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -173,7 +173,7 @@ window.CmDashboardMenuMng = {
         await fnLoadMenuTree();
         fnNotifyMenuChanged();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       }
     };
 

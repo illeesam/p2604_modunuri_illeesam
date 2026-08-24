@@ -28,7 +28,7 @@ window.MdSgGenHistListPage = {
         pager.pageTotalCount = d.pageTotalCount || 0;
         pager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '이력 조회 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '이력 조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         loading.value = false;
       }
@@ -55,16 +55,34 @@ window.MdSgGenHistListPage = {
         await fnLoad();
         props.showToast('삭제되었습니다.', 'success');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '삭제 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
-    const fnFmtDateTime = (d) => (d ? String(d).replace('T', ' ').slice(0, 16) : '-');
-    const fnFmtBytes = (n) => {
-      if (!n) return '-';
-      if (n < 1024) return n + ' B';
-      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
-      return (n / 1024 / 1024).toFixed(2) + ' MB';
+    /* ##### [05] 컬럼정의 ####################
+       그리드 컬럼은 fo-grid 가 헤더·번호·빈목록·정렬까지 처리한다(원시 <table> 제거). */
+    const baseGridColumns = [
+      { key: 'genDate',     label: '생성일시', align: 'center', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
+      { key: 'projectNm',   label: '프로젝트명', cellClass: 'sg-hist-link',
+        cellTitle: (v) => '프로젝트 열기: ' + (v || ''), fmt: (v) => v || '(삭제된 프로젝트)' },
+      { key: 'zipFileNm',   label: '파일명', cellClass: 'sg-list-mono' },
+      { key: 'basePackage', label: 'Base Package', cellClass: 'sg-list-mono', fmt: (v) => v || '-' },
+      { key: 'ddlCount',    label: '테이블', align: 'center', fmt: (v) => v || 0 },
+      { key: 'fileCount',   label: '파일수', align: 'center', fmt: (v) => v || 0 },
+      { key: 'zipFileSize', label: '크기', align: 'right', fmt: (v) => coUtil.cofFileSize(v) },
+      { key: 'genMemo',     label: '메모', fmt: (v) => v || '-' },
+      { key: 'regUserNm',   label: '작성자', fmt: (v, r) => v || r.memberNm || '알 수 없음' },
+      /* type:'actions' — 관리 버튼모음도 별도 배열로 분리하지 않고 baseGridColumns 항목 하나로 선언(#row-actions 슬롯 대체, 2026-08-25).
+         다운로드는 href 지정 시 <a> 로 렌더된다(zipUrl 없는 행은 visible 로 감춤). */
+      { type: 'actions', actions: [
+        { label: '다운로드', cls: 'btn btn_detail', href: (row) => row.zipUrl, visible: (row) => !!row.zipUrl },
+        { label: '삭제',     cls: 'btn btn_delete',  onClick: (row) => onDelete(row) },
+      ] },
+    ];
+
+    /* onCellClick — 프로젝트명 셀 클릭 시 해당 프로젝트 열기 (그리드 셀클릭 라우터 표준) */
+    const onCellClick = (cmd, colKey, row) => {
+      if (colKey === 'projectNm') { onOpenProject(row); }
     };
 
     onMounted(() => {
@@ -75,8 +93,8 @@ window.MdSgGenHistListPage = {
       fnLoad();
     });
 
-    return { searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange,
-      onChangeView, onOpenProject, onDelete, fnFmtDateTime, fnFmtBytes };
+    return { baseGridColumns, searchParam, pager, rows, loading, onSearch, onSetPage, onSizeChange,
+      onChangeView, onOpenProject, onDelete, onCellClick };
   },
   template: /* html */`
 <div class="sg-page">
@@ -107,51 +125,10 @@ window.MdSgGenHistListPage = {
     </span>
   </div>
 
-  <div class="sg-list-table-wrap">
-    <table class="sg-list-table">
-      <thead>
-        <tr>
-          <th style="width:60px;text-align:center;">번호</th>
-          <th style="width:150px;">생성일시</th>
-          <th style="width:190px;">프로젝트명</th>
-          <th>파일명</th>
-          <th style="width:190px;">Base Package</th>
-          <th style="width:70px;text-align:center;">테이블</th>
-          <th style="width:70px;text-align:center;">파일수</th>
-          <th style="width:90px;text-align:right;">크기</th>
-          <th style="width:160px;">메모</th>
-          <th style="width:110px;">작성자</th>
-          <th style="width:150px;text-align:center;">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(h, idx) in rows" :key="h.sourcegenHistId">
-          <td style="text-align:center;color:var(--text-muted,#999);">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</td>
-          <td>{{ fnFmtDateTime(h.genDate) }}</td>
-          <td class="sg-list-table-nm sg-hist-link" @click="onOpenProject(h)" :title="'프로젝트 열기: ' + (h.projectNm || '')">
-            {{ h.projectNm || '(삭제된 프로젝트)' }}
-          </td>
-          <td class="sg-list-mono">{{ h.zipFileNm }}</td>
-          <td class="sg-list-mono">{{ h.basePackage || '-' }}</td>
-          <td style="text-align:center;">{{ h.ddlCount || 0 }}</td>
-          <td style="text-align:center;">{{ h.fileCount || 0 }}</td>
-          <td style="text-align:right;">{{ fnFmtBytes(h.zipFileSize) }}</td>
-          <td>{{ h.genMemo || '-' }}</td>
-          <td>{{ h.regUserNm || h.memberNm || '알 수 없음' }}</td>
-          <td style="text-align:center;">
-            <a v-if="h.zipUrl" :href="h.zipUrl" target="_blank" rel="noopener" class="btn btn_detail">다운로드</a>
-            <button class="btn btn_delete" @click="onDelete(h)">삭제</button>
-          </td>
-        </tr>
-        <tr v-if="!loading && !rows.length">
-          <td colspan="11" class="sg-empty-hint">
-            보관된 생성이력이 없습니다.<br>프로젝트 상세에서 [소스 생성] 후 [생성결과 보관] 을 누르면 여기에 쌓입니다.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
+  <fo-grid :columns="baseGridColumns" :rows="rows" row-key="sourcegenHistId" :loading="loading"
+    list-title="생성이력" bare min-width="1100px"
+    empty-text="보관된 생성이력이 없습니다. 프로젝트 상세에서 [소스 생성] 후 [생성결과 보관] 을 누르면 여기에 쌓입니다."
+    @cell-click="onCellClick" />
   <fo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
 </div>
 `,

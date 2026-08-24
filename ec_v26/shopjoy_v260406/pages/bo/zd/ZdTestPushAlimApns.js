@@ -148,7 +148,7 @@ window.ZdTestPushAlimApns = {
         addLog('✅ 발송 완료 (apnsId: ' + (result.response?.apnsId || '-') + ')', 'success');
         showToast('APNs 푸시 발송 완료', 'success');
       } catch (e) {
-        result.error  = e.response?.data?.message || e.message || '알 수 없는 오류';
+        result.error  = coUtil.cofErrMsg(e, '알 수 없는 오류');
         result.status = '❌ 발송 실패';
         addLog('❌ ' + result.error, 'error');
         showToast('APNs 발송 실패: ' + result.error, 'error', 0);
@@ -162,7 +162,7 @@ window.ZdTestPushAlimApns = {
         const res = await boApi.get('/co/ext/push-apns-send/tokens', coUtil.cofApiHdr('APNs 테스트', 'iOS 토큰 목록'));
         result.tokenLogs = res.data?.data || [];
       } catch (e) {
-        showToast('토큰 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        showToast('토큰 목록 조회 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       }
       uiState.loadingTokens = false;
     };
@@ -183,7 +183,7 @@ window.ZdTestPushAlimApns = {
         ], coUtil.cofApiHdr('APNs 테스트', '설정 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
-        showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
+        showToast(coUtil.cofErrMsg(e, '저장 실패'), 'error', 0);
       }
     };
 

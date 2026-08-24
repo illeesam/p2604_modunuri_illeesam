@@ -509,19 +509,13 @@ window.PmDiscntDtl = {
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="!cfIsNew"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('form-edit')"
+        :save-click="() => handleBtnAction('form-save')"
+        :delete-click="() => handleBtnAction('form-delete')"
+        :cancel-click="() => handleBtnAction('form-cancel')"
+        :close-click="() => handleBtnAction('form-close')" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 상세정보 ================================================== -->
@@ -556,19 +550,13 @@ window.PmDiscntDtl = {
         <bo-form-area :columns="columns.discntStatusForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
       </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="!cfIsNew"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('form-edit')"
+        :save-click="() => handleBtnAction('form-save')"
+        :delete-click="() => handleBtnAction('form-delete')"
+        :cancel-click="() => handleBtnAction('form-cancel')"
+        :close-click="() => handleBtnAction('form-close')" />
     </div>
     <!-- ===== □.□. 상세정보 ================================================== -->
     <!-- ===== ■.■. 적용대상 ================================================== -->
@@ -602,19 +590,13 @@ window.PmDiscntDtl = {
       <div v-else style="margin-top:12px;padding:10px 14px;background:#f0f7ff;border:1px solid #c5d9f1;border-radius:6px;font-size:12px;color:#1565c0;">
         ✓ 전체 상품에 이 할인이 적용됩니다.
       </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="!cfIsNew"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('form-edit')"
+        :save-click="() => handleBtnAction('form-save')"
+        :delete-click="() => handleBtnAction('form-delete')"
+        :cancel-click="() => handleBtnAction('form-cancel')"
+        :close-click="() => handleBtnAction('form-close')" />
     </div>
     <!-- ===== □.□. 적용대상 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
@@ -645,11 +627,12 @@ window.PmDiscntDtl = {
         </div>
         <button class="btn btn-primary" @click="handleBtnAction('preview-confirm')">할인 확인</button>
       </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active && cfDtlMode" :readonly="true" :show-delete="!cfIsNew"
+        :edit-click="() => handleBtnAction('form-edit')"
+        :save-click="() => handleBtnAction('form-save')"
+        :delete-click="() => handleBtnAction('form-delete')"
+        :cancel-click="() => handleBtnAction('form-cancel')"
+        :close-click="() => handleBtnAction('form-close')" />
     </div>
     <!-- ===== □.□. 미리보기 ================================================== -->
   </div>

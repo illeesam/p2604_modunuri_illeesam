@@ -103,6 +103,9 @@ window.OdDlivHist = {
       { key: 'statusCd',    label: '상태',   style: 'width:90px;' },
       { key: 'reasonCd',    label: '사유' },
       { key: 'requestDate', label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
+      { type: 'actions', actions: [
+        { label: '상세', cls: 'btn btn-blue btn-xs', onClick: (row) => handleSelectAction('histList-rowClaimEdit', row.claimId) },
+      ] },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -197,13 +200,7 @@ window.OdDlivHist = {
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
     <bo-grid bare :columns="columns.claimGrid" :rows="cfRelatedClaims" row-key="claimId"
-      empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
-          상세
-        </button>
-      </template>
-    </bo-grid>
+      empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" />
   </div>
   <!-- ===== □.□. 연관 클레임 ================================================ -->
 </div>

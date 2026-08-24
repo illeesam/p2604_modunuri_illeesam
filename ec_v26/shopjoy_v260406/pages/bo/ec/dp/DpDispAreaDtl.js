@@ -137,7 +137,7 @@ window.DpDispAreaDtl = {
         showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
         props.navigate('dpDispAreaMng', { reload: true });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -151,7 +151,7 @@ window.DpDispAreaDtl = {
         showToast('삭제되었습니다.', 'success');
         props.navigate('dpDispAreaMng', { reload: true });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 

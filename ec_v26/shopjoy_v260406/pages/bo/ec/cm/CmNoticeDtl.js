@@ -139,7 +139,7 @@ window.CmNoticeDtl = {
         showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
         props.navigate('cmNoticeMng', { reload: true });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -152,7 +152,7 @@ window.CmNoticeDtl = {
         showToast('삭제되었습니다.', 'success');
         props.navigate('cmNoticeMng', { reload: true });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -264,19 +264,12 @@ window.CmNoticeDtl = {
     </template>
   </bo-form-area>
   <!-- 폼 액션 (행 선택/신규 시에만 노출) -->
-  <div class="form-actions" v-if="active">
-    <template v-if="cfReadonly">
-      <button class="btn btn_edit"      @click="handleBtnAction('baseForm-edit')">수정</button>
-      <button class="btn btn_delete" v-if="!cfIsNew" @click="handleBtnAction('baseForm-delete')">삭제</button>
-      <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
-    </template>
-    <template v-else>
-      <button class="btn btn_save"   @click="handleBtnAction('baseForm-save')">저장</button>
-      <button class="btn btn_delete" v-if="!cfIsNew" @click="handleBtnAction('baseForm-delete')">삭제</button>
-      <button class="btn btn_cancel" v-if="!cfIsNew" @click="handleBtnAction('baseForm-cancel')">취소</button>
-      <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
-    </template>
-  </div>
+  <bo-form-actions v-if="active" :readonly="cfReadonly" :is-new="cfIsNew"
+    :edit-click="() => handleBtnAction('baseForm-edit')"
+    :save-click="() => handleBtnAction('baseForm-save')"
+    :delete-click="() => handleBtnAction('baseForm-delete')"
+    :cancel-click="() => handleBtnAction('baseForm-cancel')"
+    :close-click="() => handleBtnAction('baseForm-close')" />
 </bo-container>
 </div>
 `,

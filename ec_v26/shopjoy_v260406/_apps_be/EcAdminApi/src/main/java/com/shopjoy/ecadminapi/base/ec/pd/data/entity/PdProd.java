@@ -115,6 +115,11 @@ public class PdProd extends BaseEntity {
     @Size(max = 20, message = "prodStatusCdBefore 는 20자 이내여야 합니다.")
     private String prodStatusCdBefore;
 
+    @Comment("판매불가 시 고객 노출 메시지")
+    @Column(name = "unsale_msg", length = 200)
+    @Size(max = 200, message = "unsaleMsg 는 200자 이내여야 합니다.")
+    private String unsaleMsg;
+
     @Comment("썸네일URL")
     @Column(name = "thumbnail_url", length = 500)
     @Size(max = 500, message = "thumbnailUrl 는 500자 이내여야 합니다.")

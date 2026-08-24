@@ -160,7 +160,7 @@ window.BoExcelDownModal = {
         /* 임계 초과면 예약을 기본 선택으로 바꿔준다 */
         uiState.mode = cfSyncOk.value ? 'sync' : 'async';
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '상태 조회 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '상태 조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -193,7 +193,7 @@ window.BoExcelDownModal = {
         showToast(res.data?.message || '예약되었습니다. 완료되면 알림으로 알려드립니다.', 'success');
         onClose();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '예약 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '예약 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.running = false;
       }
@@ -211,7 +211,7 @@ window.BoExcelDownModal = {
         showToast('취소되었습니다.', 'success');
         await handleLoadStatus();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '취소 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '취소 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -224,7 +224,7 @@ window.BoExcelDownModal = {
           return j.message || '다운로드 중 오류가 발생했습니다.';
         } catch (e) { /* blob 이 JSON 이 아니면 아래 기본 문구 */ }
       }
-      return err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.';
+      return coUtil.cofErrMsg(err, '다운로드 중 오류가 발생했습니다.');
     };
 
     /* onClose — 닫기 */

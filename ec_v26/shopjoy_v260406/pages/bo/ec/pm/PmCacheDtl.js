@@ -346,23 +346,12 @@ window.PmCacheDtl = {
       </template>
     </bo-form-area>
     <!-- ===== ■.■.■. 폼 액션 버튼 (보기모드: 수정/닫기) =============================== -->
-    <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-      <button class="btn btn_edit" @click="handleBtnAction('form-edit')">
-        수정
-      </button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">
-        닫기
-      </button>
-    </div>
-    <!-- ===== ■.■.■. 폼 액션 버튼 (편집모드: 저장/취소) =============================== -->
-    <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
-      <button class="btn btn_save" @click="handleBtnAction('form-save')">
-        저장
-      </button>
-      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">
-        취소
-      </button>
-    </div>
+    <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+      :edit-click="() => handleBtnAction('form-edit')"
+      :save-click="() => handleBtnAction('form-save')"
+      :delete-click="() => handleBtnAction('form-delete')"
+      :cancel-click="() => handleBtnAction('form-cancel')"
+      :close-click="() => handleBtnAction('form-close')" />
   </div>
   <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
   <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->

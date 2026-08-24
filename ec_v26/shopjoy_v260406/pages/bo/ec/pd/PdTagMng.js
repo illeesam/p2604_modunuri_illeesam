@@ -138,7 +138,7 @@ window.PdTagMng = {
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         await handleSearchList();
       } catch (err) {
-        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        const errMsg = coUtil.cofErrMsg(err);
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -196,6 +196,9 @@ window.PdTagMng = {
       { key: 'useYn',    label: '사용',   style: 'width:70px;text-align:center;',
         edit: 'select', options: () => codes.use_yn },
           { key: 'siteNm', label: '사이트' },
+      { type: 'actions', actions: [
+        { label: '삭제', cls: 'btn btn_row_delete', onClick: (row, idx) => handleSelectAction('tags-rowDelete', idx) },
+      ] },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */
@@ -232,15 +235,9 @@ window.PdTagMng = {
     </template>
     <bo-grid
       bare max-height="calc(100vh - 320px)"
-      :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
+      :columns="columns.baseGrid" :rows="gridRows" row-key="tagId"
       :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
-      grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-      <template #row-actions="{ idx }">
-        <button class="btn btn_row_delete" @click="handleSelectAction('tags-rowDelete', idx)">
-          삭제
-        </button>
-      </template>
-    </bo-grid>
+      grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
     <!-- 페이저는 그리드 밖(컨테이너 안)에 배치 -->
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="pdTag" area-nm="태그"

@@ -437,7 +437,7 @@ window.SyVendorUserMng = {
           uiState.dtlMode = 'view';
         }
       } catch(err) {
-        const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        const msg = coUtil.cofErrMsg(err);
         showToast(msg, 'error', 0);
       }
     };
@@ -452,7 +452,7 @@ window.SyVendorUserMng = {
         await loadVendorUsers(u.vendorId);
         if (uiState.formMode === 'edit' && formData.vendorUserId === u.vendorUserId) { closeForm(); }
       } catch(err) {
-        const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        const msg = coUtil.cofErrMsg(err);
         showToast(msg, 'error', 0);
       }
     };
@@ -544,7 +544,7 @@ window.SyVendorUserMng = {
         showToast('역할이 부여되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
-        const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        const msg = coUtil.cofErrMsg(err);
         showToast(msg, 'error', 0);
       }
       closeRoleModal();
@@ -559,7 +559,7 @@ window.SyVendorUserMng = {
         showToast('역할이 삭제되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -660,6 +660,10 @@ window.SyVendorUserMng = {
         cellInnerStyle: 'font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-family:monospace;' },
       { key: 'ceo',          label: '대표자' },
       { key: 'phone',        label: '전화', cellStyle: 'font-size:11.5px' },
+      { type: 'actions', actions: [
+        { label: (row) => (uiState.searchVendorId === row.vendorId ? '선택됨' : '선택'), cls: 'btn btn-primary btn-xs',
+          onClick: (row) => handleSelectAction('vendors-rowSelect', row) },
+      ] },
     ];
     // 사용자 그리드
     columns.userGrid = [
@@ -669,6 +673,10 @@ window.SyVendorUserMng = {
       { key: 'vendorUserMobile',   label: '휴대전화' },
       { key: 'vendorUserEmail',    label: '이메일' },
       { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;', align: 'center', badge: (row) => fnStatusBadge(row.vendorUserStatusCd), fmt: (v) => fnStatusLabel(v) },
+      { type: 'actions', actions: [
+        { label: '수정', cls: 'btn btn_row_edit btn-sm', onClick: (row) => handleGridCellAction('vendorUsers-cellClick', 'btn_row_edit', row) },
+        { label: '삭제', cls: 'btn btn_row_delete',       onClick: (row) => handleSelectAction('vendorUsers-rowDelete', row) },
+      ] },
     ];
     /* BoGrid(bare) 컬럼 정의 — 부여된 역할 목록 */
     columns.userRoleGrid = [
@@ -677,6 +685,9 @@ window.SyVendorUserMng = {
       { key: 'validTerm', label: '유효기간', cellStyle: 'color:#6b7280;',
         fmt: (v, row) => (row.validFrom || row.validTo) ? `${row.validFrom||'∞'} ~ ${row.validTo||'∞'}` : '제한없음',
         cellInnerStyle: (v, row) => (row.validFrom || row.validTo) ? '' : 'color:#d1d5db;' },
+      { type: 'actions', actions: [
+        { label: '삭제', cls: 'btn btn_row_delete', onClick: (row) => handleSelectAction('userRoles-rowDelete', row) },
+      ] },
     ];
     /* fnVendorRowStyle — 유틸 (선택 강조는 selected-key 의 파란 테두리로 처리) */
     const fnVendorRowStyle = (v) => '';
@@ -751,13 +762,7 @@ window.SyVendorUserMng = {
         <bo-grid bare
           :columns="columns.vendorGrid" :rows="vendors" :pager="vendorGridPager" row-key="vendorId" :selected-key="uiState.searchVendorId"
           :row-style="fnVendorRowStyle"
-          grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-          <template #row-actions="{ row }">
-            <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
-              {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
-            </button>
-          </template>
-        </bo-grid>
+          grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
         <bo-pager :pager="vendorGridPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
       </bo-container>
     </div>
@@ -779,14 +784,9 @@ window.SyVendorUserMng = {
         </template>
         <bo-grid bare
           :columns="columns.userGrid" :rows="vendorUsers" :pager="userGridPager" row-key="vendorUserId" :selected-key="formData.vendorUserId"
-          :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true"
+          :row-style="fnUserRowStyle" :loading="uiState.loading"
           :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
-          grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-          <template #row-actions="{ row }">
-            <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('vendorUsers-cellClick', 'btn_row_edit', row)">수정</button>
-            <button class="btn btn_row_delete" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">삭제</button>
-          </template>
-        </bo-grid>
+          grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
         <bo-pager v-if="uiState.searchVendorId != null" :pager="userGridPager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
         <bo-excel-down-modal :show="excelModal.show" domain="syVendorUser" area-nm="업체 사용자"
           :columns="columns.userGrid" ui-nm="업체 사용자관리" :params="buildExcelParams()"
@@ -835,11 +835,7 @@ window.SyVendorUserMng = {
         <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
         <!-- ===== ■.■.■. 목록 영역 =============================================== -->
         <bo-grid v-else bare :columns="columns.userRoleGrid" :rows="userRoles" row-key="vendorUserRoleId"
-          empty-text="부여된 역할이 없습니다." row-actions>
-          <template #row-actions="{ row }">
-            <button class="btn btn_row_delete" @click="handleSelectAction('userRoles-rowDelete', row)">삭제</button>
-          </template>
-        </bo-grid>
+          empty-text="부여된 역할이 없습니다." />
       </div>
     </div>
   </bo-container>

@@ -138,7 +138,7 @@ window.ZdTestAiChatbot = {
         result.status = '✅ 응답 완료';
         scrollBottom();
       } catch (e) {
-        result.error = e.response?.data?.message || e.message || '오류 발생';
+        result.error = coUtil.cofErrMsg(e, '오류 발생');
         result.messages.push({ role: 'system', content: '❌ ' + result.error, time: new Date().toLocaleTimeString() });
         result.status = '❌ 오류';
         showToast(result.error, 'error', 0);
@@ -159,7 +159,7 @@ window.ZdTestAiChatbot = {
         ], coUtil.cofApiHdr('AI 챗봇 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
-        showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
+        showToast(coUtil.cofErrMsg(e, '저장 실패'), 'error', 0);
       }
     };
 

@@ -661,7 +661,7 @@ window.ZdInfDashboard = {
         row.testMsg    = msg;
       } catch (e) {
         ok  = false;
-        msg = e.response?.data?.message || e.message || '연결 실패';
+        msg = coUtil.cofErrMsg(e, '연결 실패');
         row.testResultCd = '실패';
         row.testMsg    = msg;
       } finally {

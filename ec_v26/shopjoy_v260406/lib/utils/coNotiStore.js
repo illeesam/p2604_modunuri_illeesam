@@ -204,7 +204,7 @@
         if (fresh > 0) { shakeSeq.value++; }
         return fresh;
       } catch (err) {
-        uiState.lastError = err.response?.data?.message || err.message || '알림 조회 실패';
+        uiState.lastError = coUtil.cofErrMsg(err, '알림 조회 실패');
         return 0;
       } finally {
         uiState.loading = false;

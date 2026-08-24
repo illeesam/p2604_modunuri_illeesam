@@ -84,7 +84,7 @@ window.MdCbPatternMng = {
         showToast('삭제되었습니다.', 'success');
         await handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -118,6 +118,10 @@ window.MdCbPatternMng = {
       { key: 'maxStitchCount',  label: '코수', align: 'center', fmt: v => v != null ? v + '코' : '-' },
       { key: 'patternStatusCd', label: '상태', align: 'center', badge: (r) => fnStatusBadge(r.patternStatusCd), fmt: (v, r) => r.patternStatusCdNm || v || '-' },
       { key: 'regDate',         label: '등록일', align: 'center', fmt: v => coUtil.cofYmd(v) || '-' },
+      { type: 'actions', actions: [
+        { label: '열기', cls: 'btn btn_detail btn-xs', onClick: (row) => handleSelectAction('pattern-open', row.patternId) },
+        { label: '삭제', cls: 'btn btn_row_delete',    onClick: (row) => handleSelectAction('pattern-delete', row) },
+      ] },
     ];
 
     return {
@@ -132,12 +136,7 @@ window.MdCbPatternMng = {
   </bo-container>
   <bo-container bare :count-text="baseGridPager.pageTotalCount + '건'">
     <bo-grid :columns="columns.baseGrid" :rows="patterns" row-key="patternId" :loading="uiState.loading"
-      list-title="도안목록" row-actions empty-text="등록된 도안이 없습니다.">
-      <template #row-actions="{ row }">
-        <button class="btn btn_detail btn-xs" @click="handleSelectAction('pattern-open', row.patternId)">열기</button>
-        <button class="btn btn_row_delete" @click="handleSelectAction('pattern-delete', row)">삭제</button>
-      </template>
-    </bo-grid>
+      list-title="도안목록" empty-text="등록된 도안이 없습니다." />
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('patternList-pager-setPage', n)" :on-size-change="() => handleSelectAction('patternList-pager-sizeChange')" />
   </bo-container>
 </bo-page>

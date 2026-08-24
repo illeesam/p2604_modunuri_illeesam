@@ -133,7 +133,7 @@ window.SyExceldownDtl = {
         await boApiSvc.syExceldown.markDownloaded(props.dtlId, '엑셀다운로드', '다운로드');
         emit('downloaded');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '다운로드 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -148,7 +148,7 @@ window.SyExceldownDtl = {
         await boApiSvc.syExceldown.markDownloaded(props.dtlId, '엑셀다운로드', '전체다운로드');
         setTimeout(() => emit('downloaded'), files.length * 350 + 300);
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '다운로드 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -161,7 +161,7 @@ window.SyExceldownDtl = {
         const res = await boApiSvc.syExceldown.getById(props.dtlId, '엑셀다운로드', '상세조회');
         uiState.detail = res.data?.data || null;
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '상세 조회 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '상세 조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }

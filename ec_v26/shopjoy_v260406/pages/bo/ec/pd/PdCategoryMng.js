@@ -458,7 +458,7 @@ window.PdCategoryMng = {
         gridRows.splice(idx, 1);
       } catch (err) {
         console.error('[catch-info]', err);
-        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+        const errMsg = coUtil.cofErrMsg(err);
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -503,7 +503,7 @@ window.PdCategoryMng = {
           row._row_status = null;
         } catch (err) {
           console.error('[handleSave]', err);
-          const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+          const errMsg = coUtil.cofErrMsg(err);
           if (showToast) { showToast(errMsg, 'error', 0); }
           return;
         }

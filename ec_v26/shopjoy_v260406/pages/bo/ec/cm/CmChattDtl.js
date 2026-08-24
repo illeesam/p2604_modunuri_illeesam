@@ -385,6 +385,9 @@ window.CmChattDtl = {
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
+      { type: 'actions', actions: [
+        { label: '상세', cls: 'btn btn_detail', onClick: (row) => handleSelectAction('memberChats-rowView', row.chattRoomId) },
+      ] },
     ];
 
     // 사용자 채팅 그리드
@@ -395,6 +398,9 @@ window.CmChattDtl = {
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
+      { type: 'actions', actions: [
+        { label: '보기', cls: 'btn btn-blue btn-xs', onClick: (row) => handleSelectAction('userChats-rowView', row.chattRoomId) },
+      ] },
     ];
 
     // 신규 폼
@@ -613,11 +619,7 @@ window.CmChattDtl = {
             </span>
           </div>
           <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-          <bo-grid bare :columns="columns.memberChatGrid" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
-            <template #row-actions="{ row }">
-              <button class="btn btn_detail" @click="handleSelectAction('memberChats-rowView', row.chattRoomId)">상세</button>
-            </template>
-          </bo-grid>
+          <bo-grid bare :columns="columns.memberChatGrid" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." />
         </div>
       </div>
     </div>
@@ -655,11 +657,7 @@ window.CmChattDtl = {
           <button class="btn btn_search" @click="handleBtnAction('userChats-search')">조회</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-        <bo-grid bare :columns="columns.userChatGrid" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
-          <template #row-actions="{ row }">
-            <button class="btn btn-blue btn-xs" @click="handleSelectAction('userChats-rowView', row.chattRoomId)">보기</button>
-          </template>
-        </bo-grid>
+        <bo-grid bare :columns="columns.userChatGrid" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" />
       </div>
     </template>
   </bo-container>

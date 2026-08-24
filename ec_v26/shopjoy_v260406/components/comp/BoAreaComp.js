@@ -758,6 +758,13 @@ window.BoGrid = {
     gridId:       { type: String,  default: '' },                // 그리드 식별자(=셀 클릭 라우터 cmd, 예: 'members-cellClick'). @cell-click emit 의 e.cmd + #row-actions 슬롯 gridId 로 전달 → cmd 한 곳 정의
     selectedKey: { type: [String, Number], default: null },      // 선택된 행의 rowKey 값. 일치하는 행에 .bo-row-selected (파란 테두리) 자동 부여
     showRowNo:  { type: Boolean, default: true },                 // 번호 컬럼 표시. false=columns 배열에 직접 정의한 커스텀 번호 컬럼(예: 역순 카운트) 사용 시 끔 — 중복 방지
+    layout:       { type: String, default: 'table' },            // 'table'(기본) | 'card' — 카드형식 목록 (2026-08-25)
+    cardMinWidth: { type: String, default: '220px' },             // 카드 최소 폭(auto-fill 반응형 그리드)
+    cardClass:    { type: String, default: '' },                  // 카드 1장 wrapper 클래스 교체(page 가 자체 카드 CSS 를 이미 갖고 있을 때)
+    rowActionsCols: { type: Array, default: null },               // [{ label, cls, style, title: 문자열|(row,idx)=>값,
+                                                                    //    onClick(row,idx), href(row,idx), target, visible(row,idx), disabled(row,idx) }]
+                                                                    // 주면 #row-actions 기본 콘텐츠로 버튼 자동 렌더(그 화면이 직접
+                                                                    // #row-actions 템플릿을 주면 그쪽이 항상 우선).
   },
   emits: ['scroll-end', 'sort', 'row-click', 'row-dblclick', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
@@ -770,9 +777,18 @@ window.BoGrid = {
     const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
     /* 드래그 정렬 — rows 를 in-place splice 후 reorder emit */
     const dragSrc = Vue.ref(null);
-    /* 빈행 colspan = 데이터컬럼 + 번호 + (체크/드래그/행액션) */
-    const cfColspan = Vue.computed(() => props.columns.length + (props.showRowNo ? 1 : 0)
-      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
+    /* cfActionsColDef — columns 배열 안에 { type:'actions', actions:[...] } 항목으로 행액션을 같이 선언한 경우 그 항목.
+       rowActions/rowActionsCols prop 을 별도로 안 줘도 columns 하나로 정의 가능(2026-08-25, 컬럼 속성화 철학 확장).
+       column.visible: ()=>bool 을 주면(행별이 아니라 컬럼 전체 노출 여부, 예: cfDtlMode 에 따라 통째로 숨김) 그 값도 반영. */
+    const cfActionsColDef = Vue.computed(() => {
+      const c = props.columns.find(c => c.type === 'actions');
+      if (!c) return null;
+      if (typeof c.visible === 'function' && !c.visible()) return null;
+      return c;
+    });
+    /* 빈행 colspan = 데이터컬럼(행액션 컬럼 제외) + 번호 + (체크/드래그/행액션) */
+    const cfColspan = Vue.computed(() => (props.columns.length - (cfActionsColDef.value ? 1 : 0)) + (props.showRowNo ? 1 : 0)
+      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + ((props.rowActions || cfActionsColDef.value) ? 1 : 0));
 
     /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
     /* handleBtnAction — 버튼/페이지 액션 dispatch */
@@ -1024,9 +1040,10 @@ window.BoGrid = {
         : coUtil.cofCountText(cfTotal.value, props.loadedCount)
     ));
 
-    /* cfEffectiveCols — 명/제목/이름 끝 컬럼을 link:true 로 자동 표시 (링크스타일 + cell-click emit).
+    /* cfEffectiveCols — columns 배열에서 { type:'actions' } 항목은 제외(데이터 컬럼 아님, 행액션 컬럼으로 별도 렌더)하고,
+       명/제목/이름 끝 컬럼을 link:true 로 자동 표시 (링크스타일 + cell-click emit).
        badge/edit/refLink/명시적 link 있으면 스킵. link:false 명시 시도 스킵. */
-    const cfEffectiveCols = Vue.computed(() => props.columns.map(col => {
+    const cfEffectiveCols = Vue.computed(() => props.columns.filter(col => col.type !== 'actions').map(col => {
       if (col.link != null || col.badge || col.edit || col.refLink) return col;
       const k = (col.key || '').toLowerCase();
       const l = col.label || '';
@@ -1036,16 +1053,28 @@ window.BoGrid = {
       return col;
     }));
 
+    /* rowActionsCols 항목 헬퍼 — label/cls/style/title 은 문자열 또는 (row,idx)=>값 함수 둘 다 허용.
+       실사용 34곳을 조사해 보니 정적 문자열만으론 안 되는 경우(토글 라벨/동적 클래스)가 있었다. */
+    const fnRowActionVal = (v, row, idx) => (typeof v === 'function' ? v(row, idx) : v);
+    /* fnRowActionVisible — 없으면 항상 표시(true) */
+    const fnRowActionVisible = (a, row, idx) => (typeof a.visible === 'function' ? !!a.visible(row, idx) : true);
+    /* fnRowActionDisabled — 없으면 항상 활성(false). visible(숨김)과 별개 — CmDashboardItemMng 처럼
+       "보이되 잠금" 상태(cfDtlMode 등)를 표현하려고 둘을 분리했다. */
+    const fnRowActionDisabled = (a, row, idx) => (typeof a.disabled === 'function' ? !!a.disabled(row, idx) : false);
     /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
     const fnColLabel = (col) => coUtil.cofColLabel(col);
     const fnColNm    = (col) => coUtil.cofColNm(col);
+    /* cfEffectiveRowActions / cfEffectiveRowActionsCols — rowActions/rowActionsCols prop 을 직접 안 줬어도
+       columns 안의 { type:'actions', actions:[...] } 항목이 있으면 그걸로 갈음(§2 아래 return 에서 동명 prop 을 shadow). */
+    const cfEffectiveRowActions = Vue.computed(() => props.rowActions || !!cfActionsColDef.value);
+    const cfEffectiveRowActionsCols = Vue.computed(() => props.rowActionsCols || (cfActionsColDef.value && cfActionsColDef.value.actions) || null);
 
-    return { fnColLabel, fnColNm, U, cfTotal, cfCountText, cfScrollMaxHeight, cfBodyStyle, bodyRef, onScroll, cfShowTfoot, rowNo, sortIcon, sortActive,
+    return { fnRowActionVal, fnRowActionVisible, fnRowActionDisabled, fnColLabel, fnColNm, U, cfTotal, cfCountText, cfScrollMaxHeight, cfBodyStyle, bodyRef, onScroll, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle,
              cfPinNoLeft, cfPinFirstLeft, cfPinLeftOffset, cfPinLeftLastKey, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected, onRowMouseEnter, onRowMouseLeave,
-             columns: cfEffectiveCols };
+             columns: cfEffectiveCols, rowActions: cfEffectiveRowActions, rowActionsCols: cfEffectiveRowActionsCols };
   },
   template: /* html */`
 <div :class="bare ? '' : 'card'">
@@ -1066,7 +1095,7 @@ window.BoGrid = {
        tableMaxHeight 명시 시: 해당 높이로 내부 스크롤 (thead sticky = 이 div 기준).
        tableMaxHeight 미지정: overflow 없음 — bo-main 스크롤 컨테이너 기준으로 thead sticky top:0 동작.
        bare: 가로 스크롤만. -->
-  <div ref="bodyRef" :style="cfBodyStyle" @scroll="onScroll">
+  <div v-if="layout==='table'" ref="bodyRef" :style="cfBodyStyle" @scroll="onScroll">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:#e8587a;background:#fff;border:1px solid #f3c6d4;border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
@@ -1239,7 +1268,16 @@ window.BoGrid = {
             </template>
             <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
               <slot name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
-                <button class="btn btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
+                <template v-if="rowActionsCols">
+                  <template v-for="(a, ai) in rowActionsCols" :key="ai">
+                    <a v-if="a.href && fnRowActionVisible(a, row, idx)" :href="a.href(row, idx)" :target="a.target || '_blank'" rel="noopener"
+                      :class="fnRowActionVal(a.cls, row, idx)" :style="fnRowActionVal(a.style, row, idx)" :title="fnRowActionVal(a.title, row, idx)">{{ fnRowActionVal(a.label, row, idx) }}</a>
+                    <button v-else-if="fnRowActionVisible(a, row, idx)" type="button" :disabled="fnRowActionDisabled(a, row, idx)"
+                      :class="fnRowActionVal(a.cls, row, idx)" :style="fnRowActionVal(a.style, row, idx)" :title="fnRowActionVal(a.title, row, idx)"
+                      @click="a.onClick && a.onClick(row, idx)">{{ fnRowActionVal(a.label, row, idx) }}</button>
+                  </template>
+                </template>
+                <button v-else class="btn btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
                 </button>
               </slot>
@@ -1268,6 +1306,24 @@ window.BoGrid = {
         </slot>
       </tfoot>
     </table>
+  </div>
+  <!-- 카드형식(layout='card') — fo-grid 와 동일 설계. #card 슬롯이 콘텐츠 전담, 미제공 시
+       columns 기반 기본 카드(제목=첫 컬럼, 나머지는 라벨:값)로 대체. -->
+  <div v-else class="bo-grid-cardview" :style="{ '--bo-grid-card-min': cardMinWidth }">
+    <div v-if="loading && !rows.length" style="grid-column:1/-1;text-align:center;padding:30px;color:#bbb;">⏳ 조회 중…</div>
+    <div v-else-if="!rows.length" style="grid-column:1/-1;text-align:center;padding:30px;color:#bbb;">{{ emptyText }}</div>
+    <template v-else>
+      <div v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx"
+        :class="[cardClass || 'bo-grid-card-item', fnRowClass(row, idx)]" :style="fnRowStyle(row, idx)"
+        @click="handleSelectAction('grid-row-click', { row })">
+        <slot name="card" :row="row" :idx="idx" :no="rowNo(idx)">
+          <div class="bo-grid-card-default-title">{{ U.cellText(columns[0], row) }}</div>
+          <div v-for="col in columns.slice(1)" :key="col.key" class="bo-grid-card-default-row">
+            <b>{{ col.label }}</b><span>{{ U.cellText(col, row) }}</span>
+          </div>
+        </slot>
+      </div>
+    </template>
   </div>
   <!-- /그리드 본문 스크롤 컨테이너 -->
   <!-- ▼ 하단 바 — 좌측 건수 + #footer 슬롯(<bo-pager> 등). bare 모드는 미노출.
@@ -2852,43 +2908,129 @@ i
 </span>
 </div>
 </div>
-<!-- ▼ form-actions 영역 -->
-<div v-if="showActions" class="form-actions">
+<!-- ▼ form-actions 영역 — BoFormActions 로 분리(2026-08-25). 표준 버튼 세트 정의는 그 컴포넌트 한 곳만 유지 -->
+<bo-form-actions v-if="showActions" :readonly="readonly" :compact="compact"
+  :show-delete="showDelete" :show-cancel="showCancel"
+  :save-label="saveLabel" :cancel-label="cancelLabel" :edit-label="editLabel" :close-label="closeLabel" :delete-label="deleteLabel"
+  cmd-prefix="form" :on-dispatch="handleBtnAction">
+  <template #actions-before>
+    <slot name="actions-before">
+    </slot>
+  </template>
+  <template #actions-after>
+    <slot name="actions-after">
+    </slot>
+  </template>
+</bo-form-actions>
+</div>
+`,
+};
+
+/* ============================================================
+ * BoFormActions — Dtl 보기/편집모드 표준 버튼 세트 (2026-08-25 분리)
+ *
+ * BoFormArea 의 :show-actions="true" 내장 버튼과 동일한 마크업이다. 첨부파일 슬롯 등
+ * 추가 콘텐츠 뒤에 버튼을 둬야 하거나(#attachGrp 다음), 행 미선택 시 버튼만 숨겨야 하는
+ * (:show-actions="false" + 화면이 직접 그리는) 화면들이 거의 동일한 13줄을 반복 작성하던 것을
+ * 이 컴포넌트로 분리했다 — BoFormArea 도 내부적으로 이 컴포넌트를 사용한다(§ 아래).
+ *
+ * 표준(정책서 §Dtl 보기/편집모드 표준 버튼, 2026-08-22 확정):
+ *   보기모드: [수정][삭제(showDelete)][닫기]
+ *   편집모드: [저장][삭제(showDelete, 기존만)][취소(showCancel, 신규는 숨김)][닫기]
+ *
+ * 사용 예 (Dtl 화면에서 bo-form-area 뒤에 단독 배치 — 표준 권장 패턴, 2026-08-25):
+ *   <bo-form-actions v-if="active" :readonly="cfReadonly" :is-new="cfIsNew"
+ *     :edit-click="() => handleBtnAction('baseForm-edit')"
+ *     :save-click="() => handleBtnAction('baseForm-save')"
+ *     :delete-click="() => handleBtnAction('baseForm-delete')"
+ *     :cancel-click="() => handleBtnAction('baseForm-cancel')"
+ *     :close-click="() => handleBtnAction('baseForm-close')" />
+ *   각 버튼 클릭이 어느 cmd 로 가는지 태그만 보고 바로 알 수 있다(cmd-prefix 의 암묵적 문자열 조합 대신).
+ *
+ * cmd-prefix + on-dispatch — BoFormArea 가 내부적으로 쓰는 대안 모드(짧게 한 줄로 위임하고 싶을 때):
+ *   cmd-prefix="baseForm" :on-dispatch="handleBtnAction" → handleBtnAction('baseForm-edit'|'baseForm-save'|...) 로 위임.
+ *
+ * 아무 것도 안 주면 save/cancel/edit/close/delete 5개 이벤트를 표준 Vue emit 으로 그대로 내보낸다
+ * (모달 등에서 @save 처럼 직접 리스닝하거나, cmd 이름이 화면마다 달라야 하는 경우 — 예: SyContactDtl.js 답변탭 saveAnswer).
+ * ============================================================ */
+window.BoFormActions = {
+  name: 'BoFormActions',
+  props: {
+    readonly:     { type: Boolean, default: false },  // true=보기모드([수정][삭제][닫기]), false=편집모드([저장][삭제][취소][닫기])
+    compact:      { type: Boolean, default: false },  // true=btn-sm
+    showDelete:   { type: Boolean, default: true },   // [삭제] 노출 여부(신규 등록 등 삭제 대상 없을 때 false)
+    showCancel:   { type: Boolean, default: true },   // 편집모드 [취소] 노출 여부(신규 등록은 되돌아갈 보기화면이 없어 false)
+    isNew:        { type: Boolean, default: false },  // true 면 showDelete/showCancel 을 강제로 false 로 덮음(둘 다 !cfIsNew 로 주는
+                                                         // 반복이 실사용의 다수라 축약용으로 추가 — :is-new="cfIsNew" 한 줄로 대체)
+    saveDisabled: { type: Boolean, default: false },  // [저장] 비활성(선행조건 미충족 등)
+    saveTitle:    { type: String,  default: '' },     // [저장] 비활성 사유 등 title 툴팁
+    saveLabel:    { type: String,  default: '저장' },
+    cancelLabel:  { type: String,  default: '취소' },
+    editLabel:    { type: String,  default: '수정' },
+    closeLabel:   { type: String,  default: '닫기' },
+    deleteLabel:  { type: String,  default: '삭제' },
+    cmdPrefix:    { type: String,  default: '' },     // 주면 onDispatch(prefix+'-'+event) 로 위임 — 개별 @이벤트 연결 생략 가능
+    onDispatch:   { type: Function, default: null },
+    btnStyle:     { type: String,  default: '' },     // 버튼 4개 공통 인라인 style 추가(예: 'min-width:120px;' 폭 통일)
+    /* 개별 버튼 클릭 함수 (2026-08-25 추가) — 주어지면 그 버튼의 클릭 핸들러로 직접 쓴다(cmd-prefix 우회).
+       deleteClick 은 추가로 "존재하면 그 버튼도 자동 노출"(showDelete/isNew 와 OR) — 별도 show-delete 없이
+       :delete-click="fn" 하나만 줘도 삭제 버튼이 뜨게 하기 위함. edit/save 는 이미 항상 노출이라 존재 여부로
+       노출을 가리지 않고 핸들러 오버라이드 용도로만 쓴다. cancel/close 도 마찬가지(예외 — 노출 여부는
+       showCancel/신규여부로만 결정, 핸들러만 오버라이드). */
+    editClick:    { type: Function, default: null },
+    saveClick:    { type: Function, default: null },
+    deleteClick:  { type: Function, default: null },
+    cancelClick:  { type: Function, default: null },
+    closeClick:   { type: Function, default: null },
+  },
+  emits: ['save', 'cancel', 'edit', 'close', 'delete'],
+  setup(props, { emit }) {
+    /* fire — editClick/saveClick/... 개별 prop 이 주어지면 그걸 그대로 호출,
+       아니면 cmdPrefix+onDispatch(화면 handleBtnAction 라우터 위임), 그것도 없으면 표준 Vue emit
+       (모달 등 화면이 직접 @save 등으로 리스닝하는 경우 대비). */
+    const fire = (name) => {
+      const fn = props[name + 'Click'];
+      if (typeof fn === 'function') { return fn(); }
+      if (props.cmdPrefix && props.onDispatch) { return props.onDispatch(props.cmdPrefix + '-' + name); }
+      emit(name);
+    };
+    /* cfShowDelete — isNew 면 강제 false. 그 외엔 showDelete prop 또는 deleteClick 존재 여부(둘 중 하나만 true 여도 노출).
+       cfShowCancel — showCancel/isNew 로만 결정(예외 — cancelClick 존재만으론 노출 안 바뀜). */
+    const cfShowDelete = Vue.computed(() => !props.isNew && (props.showDelete || !!props.deleteClick));
+    const cfShowCancel = Vue.computed(() => props.showCancel && !props.isNew);
+    return { fire, cfShowDelete, cfShowCancel };
+  },
+  template: /* html */`
+<div class="form-actions">
   <slot name="actions-before">
   </slot>
   <template v-if="readonly">
-    <button class="btn btn_edit" :class="compact?'btn-sm':''" @click="handleBtnAction('form-edit')">
+    <button class="btn btn_edit" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('edit')">
       {{ editLabel }}
     </button>
-    <!-- 보기모드에서도 [삭제] 바로 노출(2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) -->
-    <button v-if="showDelete" class="btn btn_delete" :class="compact?'btn-sm':''" @click="handleBtnAction('form-delete')">
+    <button v-if="cfShowDelete" class="btn btn_delete" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('delete')">
       {{ deleteLabel }}
     </button>
-    <button class="btn btn_close" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
+    <button class="btn btn_close" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('close')">
       {{ closeLabel }}
     </button>
   </template>
   <template v-else>
-    <button class="btn btn_save" :class="compact?'btn-sm':''" @click="handleBtnAction('form-save')">
+    <button class="btn btn_save" :class="compact?'btn-sm':''" :style="btnStyle" :disabled="saveDisabled" :title="saveTitle" @click="fire('save')">
       {{ saveLabel }}
     </button>
-    <!-- 편집모드에서도 [삭제] 노출(2026-08-22 정책: 편집모드 표준 버튼 = [저장][삭제(기존만)][취소][닫기]) -->
-    <button v-if="showDelete" class="btn btn_delete" :class="compact?'btn-sm':''" @click="handleBtnAction('form-delete')">
+    <button v-if="cfShowDelete" class="btn btn_delete" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('delete')">
       {{ deleteLabel }}
     </button>
-    <!-- 신규 등록(되돌아갈 보기화면 자체가 없음)은 [취소] 숨김 — 2026-08-22 사용자 피드백 -->
-    <button v-if="showCancel" class="btn btn_cancel" :class="compact?'btn-sm':''" @click="handleBtnAction('form-cancel')">
+    <button v-if="cfShowCancel" class="btn btn_cancel" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('cancel')">
       {{ cancelLabel }}
     </button>
-    <!-- 편집 중에도 [닫기]는 별도로 노출 — [취소]는 보기모드로 되돌리고, [닫기]는 모드 무관 무조건
-         닫는다(2026-08-22 사용자 피드백: 새창에서 편집 중 닫기가 사라지는 문제). -->
-    <button class="btn btn_close" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
+    <button class="btn btn_close" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('close')">
       {{ closeLabel }}
     </button>
   </template>
   <slot name="actions-after">
   </slot>
-</div>
 </div>
 `,
 };
@@ -3332,6 +3474,257 @@ window.BoGroupTable = {
  *   items       — 카드 배열:
  *                 { label, value, bg, color, sub, subColor, detail }
  * ============================================================ */
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BoMatrix — N×M 교차표(cross-tab) 전용 그리드
+ *
+ * 왜 BoGrid 로 안 되나: BoGrid 는 "행=레코드 / 열=필드" 구조다. 교차표는
+ * "행=축A항목 / 열=축B항목 / 셀=두 축의 교차점 값" 이라 열 정의가 데이터에서 나온다.
+ * 그래서 지금까지 화면마다 <table> 을 손으로 그렸고, 속성 안에 거대한 IIFE 를 넣느라
+ * `&amp;&amp;` 이스케이프가 번졌으며, 축을 뒤집으려고 같은 표를 통째로 복붙했다.
+ *
+ * 쓰는 곳(2026-08-25 기준): 상품 옵션 조합설정 / SKU 가격·재고 매트릭스 /
+ *                           대시보드 시뮬레이션(시리즈×항목, 전치 포함)
+ *
+ * 사용 예)
+ *   <bo-matrix :rows="colors" :cols="sizes" row-key="_id" col-key="_id"
+ *     row-label="nm" col-label="nm" corner="색상 / 사이즈"
+ *     cell-type="checkbox" header-toggle
+ *     :cell="(r,c)=>fnOn(r,c)" :all-on="(items,axis,fixed)=>fnAllOn(...)"
+ *     @cell-change="(r,c,v)=>fnSet(r,c,v)"
+ *     @row-header="fnToggleRow" @col-header="fnToggleCol" />
+ *
+ * 축 전치: orient="col" 이면 rows/cols 를 서로 바꿔 렌더한다(데이터는 그대로 둔 채).
+ *          전치용으로 표를 하나 더 만들 필요가 없다.
+ * 탈출구: 셀이 복잡하면 cell-type="slot" + <template #cell="{ row, col, rowIdx, colIdx }">.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+window.BoMatrix = {
+  name: 'BoMatrix',
+  props: {
+    rows:      { type: Array,  default: () => [] },        // 행 축 항목
+    cols:      { type: Array,  default: () => [] },        // 열 축 항목
+    rowKey:    { type: String, default: null },            // 행 :key 로 쓸 필드 (없으면 index)
+    colKey:    { type: String, default: null },            // 열 :key 로 쓸 필드
+    rowLabel:  { type: [String, Function], default: null },// 행 머리글 (필드명 또는 (item)=>string)
+    colLabel:  { type: [String, Function], default: null },// 열 머리글
+    rowStyleKey: { type: String, default: null },          // 색상 스와치로 쓸 필드(#rrggbb 면 사각형 표시)
+    colStyleKey: { type: String, default: null },
+    corner:    { type: String, default: '' },              // 좌상단 코너 텍스트
+    orient:    { type: String, default: 'row' },           // 'row' 기본 / 'col' 이면 축 전치
+    cellType:  { type: String, default: 'checkbox' },      // checkbox | number | select | text | slot | none
+    cell:      { type: Function, default: null },          // (rowItem, colItem) => 값
+    cellStyle: { type: Function, default: null },          // (rowItem, colItem) => 인라인 style
+    cellTitle: { type: Function, default: null },          // (rowItem, colItem) => title
+    cellDisabled: { type: Function, default: null },       // (rowItem, colItem) => bool
+    options:   { type: Array,  default: () => [] },        // cellType='select' 옵션 [{value,label}|{codeValue,codeLabel}]
+    allOn:     { type: Function, default: null },          // (items, axis, fixedItem) => bool — 헤더 체크박스 상태
+    headerToggle: { type: Boolean, default: false },       // 행/열 머리글에 전체 토글 체크박스
+    readonly:  { type: Boolean, default: false },
+    stickyFirst: { type: Boolean, default: true },         // 첫 열 고정
+    maxHeight: { type: String,  default: '420px' },
+    cellWidth: { type: String,  default: '62px' },
+    emptyText: { type: String,  default: '표시할 항목이 없습니다.' },
+    tone:      { type: String,  default: 'blue' },         // blue | plain
+    /* 합계 — 교차표는 합계가 거의 항상 따라붙는다. 원본 축 항목/인덱스를 그대로 넘겨준다.
+       세 개 중 하나라도 주면 합계 열/행이 생긴다. */
+    rowTotal:   { type: Function, default: null },         // (rowItem, rowIdx) => 표시값  — 합계 '열'
+    colTotal:   { type: Function, default: null },         // (colItem, colIdx) => 표시값  — 합계 '행'
+    grandTotal: { type: Function, default: null },         // () => 표시값 — 우하단 총계
+    totalLabel: { type: String,   default: '합계' },
+  },
+  emits: ['cell-change', 'row-header', 'col-header'],
+  setup(props, { emit }) {
+    const { computed } = Vue;
+
+    /* 전치 — 데이터는 그대로 두고 렌더 축만 바꾼다.
+       (이게 없어서 대시보드 화면이 같은 표를 축만 바꿔 통째로 복붙하고 있었다) */
+    const cfFlip    = computed(() => props.orient === 'col');
+    const cfRows    = computed(() => (cfFlip.value ? props.cols : props.rows) || []);
+    const cfCols    = computed(() => (cfFlip.value ? props.rows : props.cols) || []);
+    const cfRowKeyF = computed(() => (cfFlip.value ? props.colKey : props.rowKey));
+    const cfColKeyF = computed(() => (cfFlip.value ? props.rowKey : props.colKey));
+
+    /* fnLabel — 문자열이면 필드명, 함수면 그대로 호출. 둘 다 없으면 nm/label/name 순 추정 */
+    const fnLabelOf = (item, spec) => {
+      if (!item) { return ''; }
+      if (typeof spec === 'function') { return spec(item); }
+      if (typeof spec === 'string') { return item[spec]; }
+      return item.nm || item.label || item.name || '';
+    };
+    const fnRowLabel = (item) => fnLabelOf(item, cfFlip.value ? props.colLabel : props.rowLabel);
+    const fnColLabel = (item) => fnLabelOf(item, cfFlip.value ? props.rowLabel : props.colLabel);
+
+    /* 색상 스와치 — 값이 '#' 로 시작할 때만 작은 사각형을 앞에 붙인다 */
+    const fnRowSwatch = (item) => fnSwatch(item, cfFlip.value ? props.colStyleKey : props.rowStyleKey);
+    const fnColSwatch = (item) => fnSwatch(item, cfFlip.value ? props.rowStyleKey : props.colStyleKey);
+    const fnSwatch = (item, key) => {
+      const v = (item ? (key ? item[key] : null) : null) || '';
+      return String(v).charAt(0) === '#' ? v : '';
+    };
+
+    /* fnKey — :key 값. 키 필드가 없으면 index 로 폴백 */
+    const fnRowK = (item, i) => (cfRowKeyF.value ? (item ? item[cfRowKeyF.value] : i) : i);
+    const fnColK = (item, i) => (cfColKeyF.value ? (item ? item[cfColKeyF.value] : i) : i);
+
+    /* 원본 축 기준으로 (rowItem, colItem) 을 돌려준다 — 전치돼 있어도 호출부는 축을 헷갈리지 않는다 */
+    const fnPair = (r, c) => (cfFlip.value ? [c, r] : [r, c]);
+
+    const fnCellVal   = (r, c) => { const p = fnPair(r, c); return props.cell ? props.cell(p[0], p[1]) : null; };
+    const fnCellStyle = (r, c) => { const p = fnPair(r, c); return props.cellStyle ? (props.cellStyle(p[0], p[1]) || '') : ''; };
+    const fnCellTitle = (r, c) => { const p = fnPair(r, c); return props.cellTitle ? (props.cellTitle(p[0], p[1]) || '') : ''; };
+    const fnCellOff   = (r, c) => {
+      if (props.readonly) { return true; }
+      const p = fnPair(r, c);
+      return props.cellDisabled ? !!props.cellDisabled(p[0], p[1]) : false;
+    };
+
+    /* 헤더 체크박스 상태 — "이 줄이 전부 켜졌는가". allOn 미지정이면 cell 값으로 판단 */
+    const fnLineAllOn = (fixed, axis) => {
+      const others = axis === 'row' ? cfCols.value : cfRows.value;
+      if (!others.length) { return false; }
+      if (props.allOn) {
+        const p = cfFlip.value ? (axis === 'row' ? 'col' : 'row') : axis;
+        return !!props.allOn(others, p, fixed);
+      }
+      return others.every(o => !!fnCellVal(axis === 'row' ? fixed : o, axis === 'row' ? o : fixed));
+    };
+
+    /* 헤더 클릭/토글 — 항상 "원본 축" 이벤트로 올려보낸다 */
+    const onRowHead = (item) => emit(cfFlip.value ? 'col-header' : 'row-header', item);
+    const onColHead = (item) => emit(cfFlip.value ? 'row-header' : 'col-header', item);
+
+    const onCell = (r, c, v) => { const p = fnPair(r, c); emit('cell-change', p[0], p[1], v); };
+
+    /* 원본 축 인덱스 — 값이 [행][열] 2차원 배열인 화면은 전치 상태에서도 원본 si/ci 가 필요하다.
+       렌더 인덱스(ri/ci)를 그대로 쓰면 전치했을 때 축이 뒤바뀌어 엉뚱한 칸을 읽는다. */
+    const fnSrcRowIdx = (ri, ci) => (cfFlip.value ? ci : ri);
+    const fnSrcColIdx = (ri, ci) => (cfFlip.value ? ri : ci);
+
+    /* 합계 — 렌더 축 기준 한 줄의 합계를 원본 축 콜백으로 환원해 호출한다 */
+    const cfHasTotal = computed(() => !!(props.rowTotal || props.colTotal || props.grandTotal));
+    const fnLineTotal = (item, ri) => {
+      /* 렌더상의 '행' 은 전치 시 원본의 '열' 이다 */
+      const f = cfFlip.value ? props.colTotal : props.rowTotal;
+      return f ? f(item, ri) : '';
+    };
+    const fnFootTotal = (item, ci) => {
+      const f = cfFlip.value ? props.rowTotal : props.colTotal;
+      return f ? f(item, ci) : '';
+    };
+
+    /* select 옵션 정규화 — {value,label} / {codeValue,codeLabel} / 'A' 모두 허용 */
+    const cfOpts = computed(() => (props.options || []).map(o => (
+      typeof o === 'string' ? { value: o, label: o }
+        : { value: (o.value != null ? o.value : o.codeValue), label: (o.label != null ? o.label : o.codeLabel) }
+    )));
+
+    const cfHeadBg = computed(() => (props.tone === 'plain' ? '#f5f5f5' : '#dbeafe'));
+    const cfSideBg = computed(() => (props.tone === 'plain' ? '#fafafa' : '#eff6ff'));
+    const cfLineC  = computed(() => (props.tone === 'plain' ? '#e0e0e0' : '#bae0ff'));
+
+    return { cfRows, cfCols, fnRowK, fnColK, fnRowLabel, fnColLabel, fnRowSwatch, fnColSwatch,
+             fnCellVal, fnCellStyle, fnCellTitle, fnCellOff, fnLineAllOn,
+             onRowHead, onColHead, onCell, cfOpts, cfHeadBg, cfSideBg, cfLineC,
+             fnSrcRowIdx, fnSrcColIdx, cfHasTotal, fnLineTotal, fnFootTotal };
+  },
+  template: /* html */`
+<div>
+  <div v-if="cfRows.length ? (cfCols.length === 0) : true"
+    style="border:2px dashed #e4e4e4;border-radius:8px;padding:18px;text-align:center;color:#bbb;font-size:12px;">
+    {{ emptyText }}
+  </div>
+  <div v-else :style="'overflow:auto;' + (maxHeight ? 'max-height:' + maxHeight + ';' : '')">
+    <table style="border-collapse:collapse;font-size:11px;">
+      <thead style="position:sticky;top:0;z-index:2;">
+        <tr>
+          <th :style="'padding:4px 8px;white-space:nowrap;min-width:80px;background:' + cfHeadBg + ';border:1px solid ' + cfLineC + ';' + (stickyFirst ? 'position:sticky;left:0;z-index:3;' : '')">
+            <slot name="corner">{{ corner }}</slot>
+          </th>
+          <th v-for="(c, ci) in cfCols" :key="'mh-' + fnColK(c, ci)"
+            :style="'padding:4px 6px;text-align:center;white-space:nowrap;background:' + cfHeadBg + ';border:1px solid ' + cfLineC + ';min-width:' + cellWidth + ';' + (readonly ? '' : 'cursor:pointer;')"
+            @click="readonly ? null : onColHead(c)">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+              <input v-if="headerToggle ? !readonly : false" type="checkbox"
+                :checked="fnLineAllOn(c, 'col')" @click.stop
+                @change="onColHead(c)" style="width:13px;height:13px;cursor:pointer;margin:0;" />
+              <span>
+                <span v-if="fnColSwatch(c)"
+                  :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;vertical-align:middle;border:1px solid #ddd;background:' + fnColSwatch(c)"></span>
+                <slot name="col-label" :col="c" :idx="ci">{{ fnColLabel(c) }}</slot>
+              </span>
+            </div>
+          </th>
+          <th v-if="cfHasTotal"
+            :style="'padding:4px 6px;text-align:center;white-space:nowrap;background:' + cfHeadBg + ';border:1px solid ' + cfLineC + ';min-width:70px;'">
+            {{ totalLabel }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(r, ri) in cfRows" :key="'mr-' + fnRowK(r, ri)">
+          <td :style="'padding:4px 8px;white-space:nowrap;font-weight:600;background:' + cfSideBg + ';border:1px solid ' + cfLineC + ';' + (stickyFirst ? 'position:sticky;left:0;z-index:1;' : '') + (readonly ? '' : 'cursor:pointer;')"
+            @click="readonly ? null : onRowHead(r)">
+            <div style="display:flex;align-items:center;gap:5px;">
+              <input v-if="headerToggle ? !readonly : false" type="checkbox"
+                :checked="fnLineAllOn(r, 'row')" @click.stop
+                @change="onRowHead(r)" style="width:13px;height:13px;cursor:pointer;flex-shrink:0;" />
+              <span v-if="fnRowSwatch(r)"
+                :style="'display:inline-block;width:9px;height:9px;border-radius:2px;flex-shrink:0;border:1px solid #ddd;background:' + fnRowSwatch(r)"></span>
+              <slot name="row-label" :row="r" :idx="ri">{{ fnRowLabel(r) }}</slot>
+            </div>
+          </td>
+          <td v-for="(c, ci) in cfCols" :key="'mc-' + fnRowK(r, ri) + '-' + fnColK(c, ci)"
+            :style="'padding:2px 3px;text-align:center;border:1px solid ' + cfLineC + ';' + fnCellStyle(r, c)"
+            :title="fnCellTitle(r, c)">
+            <slot name="cell" :row="r" :col="c" :row-idx="ri" :col-idx="ci"
+              :src-row-idx="fnSrcRowIdx(ri, ci)" :src-col-idx="fnSrcColIdx(ri, ci)"
+              :value="fnCellVal(r, c)" :disabled="fnCellOff(r, c)">
+              <input v-if="cellType === 'checkbox'" type="checkbox"
+                :checked="!!fnCellVal(r, c)" :disabled="fnCellOff(r, c)"
+                @change="onCell(r, c, $event.target.checked)"
+                style="width:13px;height:13px;cursor:pointer;" />
+              <input v-else-if="cellType === 'number'" type="number" min="0"
+                :value="fnCellVal(r, c)" :disabled="fnCellOff(r, c)"
+                @input="onCell(r, c, Number($event.target.value) || 0)"
+                :style="'width:' + cellWidth + ';font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:2px 4px;height:21px;text-align:right;background:transparent;'" />
+              <select v-else-if="cellType === 'select'"
+                :value="fnCellVal(r, c)" :disabled="fnCellOff(r, c)"
+                @change="onCell(r, c, $event.target.value)"
+                style="font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:1px 2px;height:21px;background:transparent;">
+                <option v-for="o in cfOpts" :key="'mo-' + o.value" :value="o.value">{{ o.label }}</option>
+              </select>
+              <input v-else-if="cellType === 'text'" type="text"
+                :value="fnCellVal(r, c)" :disabled="fnCellOff(r, c)"
+                @input="onCell(r, c, $event.target.value)"
+                :style="'width:' + cellWidth + ';font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:2px 4px;height:21px;background:transparent;'" />
+              <span v-else>{{ fnCellVal(r, c) }}</span>
+            </slot>
+          </td>
+          <td v-if="cfHasTotal"
+            :style="'padding:2px 6px;text-align:right;font-weight:700;background:' + cfSideBg + ';border:1px solid ' + cfLineC + ';'">
+            {{ fnLineTotal(r, ri) }}
+          </td>
+        </tr>
+      </tbody>
+      <tfoot v-if="cfHasTotal">
+        <tr>
+          <td :style="'padding:4px 8px;font-weight:700;background:' + cfSideBg + ';border:1px solid ' + cfLineC + ';' + (stickyFirst ? 'position:sticky;left:0;z-index:1;' : '')">
+            {{ totalLabel }}
+          </td>
+          <td v-for="(c, ci) in cfCols" :key="'mf-' + fnColK(c, ci)"
+            :style="'padding:2px 6px;text-align:right;font-weight:700;background:' + cfSideBg + ';border:1px solid ' + cfLineC + ';'">
+            {{ fnFootTotal(c, ci) }}
+          </td>
+          <td :style="'padding:2px 6px;text-align:right;font-weight:700;background:' + cfHeadBg + ';border:1px solid ' + cfLineC + ';'">
+            {{ grandTotal ? grandTotal() : '' }}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+  `,
+};
+
 window.BoStatRow = {
   name: 'BoStatRow',
   props: {

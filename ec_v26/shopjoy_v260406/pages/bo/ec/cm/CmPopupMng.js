@@ -161,7 +161,7 @@ window.CmPopupMng = {
         baseGridPager.pageTotalCount = d.pageTotalCount || 0;
         baseGridPager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -265,7 +265,7 @@ window.CmPopupMng = {
         await handleSearchList();
         await handleSearchItems();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       }
     };
 
@@ -277,7 +277,7 @@ window.CmPopupMng = {
         if (baseDetail.selectedId === row.popupId) resetPopupDetail();
         await handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
       }
     };
 
@@ -299,7 +299,7 @@ window.CmPopupMng = {
         const res = await boApiSvc.cmPopupPick.getPopupItems(baseDetail.selectedId, '공통팝업관리', '항목조회');
         items.splice(0, items.length, ...(res.data?.data || []));
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '항목 조회 오류'), 'error', 0);
       } finally {
         uiState.itemLoading = false;
       }
@@ -377,7 +377,7 @@ window.CmPopupMng = {
         resetItemDetail();
         await handleSearchItems();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 오류'), 'error', 0);
       }
     };
 
@@ -389,7 +389,7 @@ window.CmPopupMng = {
         if (itemDetail.selectedId === row.popupItemId) resetItemDetail();
         await handleSearchItems();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
       }
     };
 
@@ -673,16 +673,11 @@ window.CmPopupMng = {
       <div v-show="uiState.tab==='info'" style="padding:12px;">
         <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="baseErrors"
           :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
-        <div class="form-actions">
-          <template v-if="cfDtlMode">
-            <button class="btn btn_edit" @click="handleBtnAction('baseForm-edit')">수정</button>
-            <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
-          </template>
-          <template v-else>
-            <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
-            <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
-          </template>
-        </div>
+        <bo-form-actions :readonly="cfDtlMode" :show-delete="false" :edit-click="() => handleBtnAction('baseForm-edit')"
+ :save-click="() => handleBtnAction('baseForm-save')"
+ :delete-click="() => handleBtnAction('baseForm-delete')"
+ :cancel-click="() => handleBtnAction('baseForm-cancel')"
+ :close-click="() => handleBtnAction('baseForm-close')" />
       </div>
       <!-- ===== □.□. 기본정보 탭 ============================================== -->
       <!-- ===== ■.■. 항목정보 탭 (cm_popup_item) ============================== -->
@@ -720,16 +715,11 @@ window.CmPopupMng = {
             <template v-if="itemDetail.show">
               <bo-form-area :columns="columns.itemForm" :form="itemForm" :errors="itemErrors"
                 :cols="3" compact :show-actions="false" :readonly="cfItemDtlMode" plain-readonly />
-              <div class="form-actions">
-                <template v-if="cfItemDtlMode">
-                  <button class="btn btn_edit" @click="handleBtnAction('itemForm-edit')">수정</button>
-                  <button class="btn btn_close" @click="handleBtnAction('itemForm-close')">닫기</button>
-                </template>
-                <template v-else>
-                  <button class="btn btn_save" @click="handleBtnAction('itemForm-save')">저장</button>
-                  <button class="btn btn_cancel" @click="handleBtnAction('itemForm-cancel')">취소</button>
-                </template>
-              </div>
+              <bo-form-actions :readonly="cfItemDtlMode" :show-delete="false" :edit-click="() => handleBtnAction('itemForm-edit')"
+ :save-click="() => handleBtnAction('itemForm-save')"
+ :delete-click="() => handleBtnAction('itemForm-delete')"
+ :cancel-click="() => handleBtnAction('itemForm-cancel')"
+ :close-click="() => handleBtnAction('itemForm-close')" />
             </template>
             <div v-else style="padding:20px;text-align:center;color:#aaa;font-size:12px;">
               항목을 선택하거나 [+ 항목 추가]를 클릭하세요.

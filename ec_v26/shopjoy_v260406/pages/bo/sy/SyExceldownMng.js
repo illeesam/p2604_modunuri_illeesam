@@ -202,7 +202,7 @@ window.SyExceldownMng = {
         baseGridPager.pageTotalPage  = d.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -232,7 +232,7 @@ window.SyExceldownMng = {
         showToast('취소되었습니다.', 'success');
         handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '취소 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '취소 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -267,7 +267,7 @@ window.SyExceldownMng = {
           handleSearchList();
         }
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '다운로드 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -288,7 +288,7 @@ window.SyExceldownMng = {
         }
         uiState.selectedId = row.exceldownId;
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '다운로드 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 

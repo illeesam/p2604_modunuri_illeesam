@@ -807,7 +807,7 @@ window.MdCbCobanulPage = {
           props.showToast('대표이미지가 등록되었습니다.', 'success');
         }
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '이미지 업로드 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '이미지 업로드 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.thumbUploading = false;
       }
@@ -878,7 +878,7 @@ window.MdCbCobanulPage = {
         await mdCbApiSvc.patternYarn.saveList(patternId, patternYarns.map(y => ({ yarnId: y.yarnId, usageDesc: y.usageDesc })), '코바늘도안', '재료저장');
         props.showToast('저장되었습니다.', 'success');
       } catch (err) {
-        props.showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        props.showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }

@@ -101,7 +101,7 @@ window.ZdTestPayNaverpay = {
         }
         showToast('결제 예약 완료. 네이버페이 결제창을 열어주세요.', 'success');
       } catch (e) {
-        result.error = e.response?.data?.message || e.message;
+        result.error = coUtil.cofErrMsg(e);
         result.phase = 'idle';
         showToast('결제 예약 실패: ' + result.error, 'error', 0);
       }
@@ -132,7 +132,7 @@ window.ZdTestPayNaverpay = {
         result.phase = 'done';
         showToast('결제 승인 완료', 'success');
       } catch (e) {
-        result.error = e.response?.data?.message || e.message;
+        result.error = coUtil.cofErrMsg(e);
         result.phase = 'reserved';
         showToast('결제 승인 실패: ' + result.error, 'error', 0);
       }
@@ -156,7 +156,7 @@ window.ZdTestPayNaverpay = {
         result.cancelResult = res.data?.data || res.data;
         showToast('결제 취소 완료', 'success');
       } catch (e) {
-        showToast('취소 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        showToast('취소 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       }
       uiState.loading = false;
     };
@@ -171,7 +171,7 @@ window.ZdTestPayNaverpay = {
         await boApi.put('/bo/sy/prop/bulk', rows, coUtil.cofApiHdr('네이버페이 결제 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
-        showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
+        showToast(coUtil.cofErrMsg(e, '저장 실패'), 'error', 0);
       }
     };
 

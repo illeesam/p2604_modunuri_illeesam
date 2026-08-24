@@ -197,6 +197,10 @@ window.Login = {
           : 'display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;' },
       { key: 'memberPhone', label: '연락처', fmt: v => v || '-' },
       { key: 'joinDate', label: '가입일', fmt: v => (v ? v.substring(0, 10) : '-') },
+      { type: 'actions', actions: [
+        { label: '선택', style: 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-block;',
+          onClick: (row) => handleSelectAction('members-rowPick', row) },
+      ] },
     ];
 
     /* _loadMemberPick — 로드 */
@@ -619,15 +623,9 @@ window.Login = {
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
             <!-- ===== ■.■.■.■.■.■. 목록 영역 ========================================= -->
             <fo-grid bare show-row-no :columns="columns.memberPickGrid" :rows="memberPick.rows" :pager="memberPick"
-              row-key="memberId" row-actions
+              row-key="memberId"
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
-              :row-click="(row) => handleSelectAction('members-rowPick', row)">
-              <template #row-actions="{ row }">
-                <button @click.stop="handleSelectAction('members-rowPick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-block;">
-                  선택
-                </button>
-              </template>
-            </fo-grid>
+              :row-click="(row) => handleSelectAction('members-rowPick', row)" />
           </div>
         </div>
         <!-- ===== ■.■.■.■. 페이지네이션 (고정) ======================================= -->

@@ -758,6 +758,31 @@
    *   ⚠ 이건 자르기가 아니라 표시 포맷이다. 값 비교/전송에는 cofYmd 를 쓸 것. */
   function cofYmdDot(v) { return cofYmd(v).replace(/-/g, '.'); }
 
+  /* cofYmdHm — ISO 일시를 'YYYY-MM-DD HH:mm' 로. 목록/이력 그리드의 표준 일시 표기.
+   *   화면마다 `String(v).replace('T',' ').slice(0,16)` 를 손으로 쓰던 것을 모았다.
+   *   값이 없으면 '' — 그리드 fmt 에서 `|| '-'` 로 받으면 된다. */
+  function cofYmdHm(v) { return v ? String(v).replace('T', ' ').slice(0, 16) : ''; }
+
+  /* cofFileSize — 바이트 → 'N B' / 'N KB' / 'N MB' / 'N GB'.
+   *   첨부·ZIP 크기 표기용. 0/null 은 '-' (크기 없음과 0바이트를 굳이 구분하지 않는다). */
+  function cofFileSize(n) {
+    var b = Number(n) || 0;
+    if (!b) { return '-'; }
+    if (b < 1024) { return b + ' B'; }
+    if (b < 1024 * 1024) { return (b / 1024).toFixed(1) + ' KB'; }
+    if (b < 1024 * 1024 * 1024) { return (b / 1024 / 1024).toFixed(2) + ' MB'; }
+    return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+  }
+
+  /* cofErrMsg — API 오류에서 사용자에게 보여줄 메시지 뽑기.
+   *   `err.response?.data?.message || err.message || '오류가 발생했습니다.'` 가
+   *   63개 파일에 144번 반복되던 것을 모았다. 기본 문구는 호출부에서 바꿀 수 있다. */
+  function cofErrMsg(err, dft) {
+    return (err && err.response && err.response.data && err.response.data.message)
+      || (err && err.message)
+      || dft || '오류가 발생했습니다.';
+  }
+
   /* cofDatetimeNorm — LocalDateTime 정규화: space→T + 앞 16자('YYYY-MM-DDTHH:mm').
    *   <input type="datetime-local"> 비교/바인딩용. DispX01Ui/DispX04Widget/Sample* 의 _norm 통합. */
   function cofDatetimeNorm(v) { return String(v || '').replace(' ', 'T').slice(0, 16); }
@@ -1344,6 +1369,9 @@
   global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
   global.coUtil.cofYm = global.coUtil.cofYm || cofYm;
   global.coUtil.cofYmdDot = global.coUtil.cofYmdDot || cofYmdDot;
+  global.coUtil.cofYmdHm = global.coUtil.cofYmdHm || cofYmdHm;
+  global.coUtil.cofFileSize = global.coUtil.cofFileSize || cofFileSize;
+  global.coUtil.cofErrMsg = global.coUtil.cofErrMsg || cofErrMsg;
   global.coUtil.cofDatetimeNorm = global.coUtil.cofDatetimeNorm || cofDatetimeNorm;
   global.coUtil.cofDecodeUri = global.coUtil.cofDecodeUri || cofDecodeUri;
   global.coUtil.cofShortApiUrl = global.coUtil.cofShortApiUrl || cofShortApiUrl;

@@ -483,7 +483,7 @@ window.FoCmPopupModal = {
         /* 필수 조회조건이 비어 있으면 자동 조회하지 않는다 — 조건 입력 후 [조회] */
         if (cfHasList.value) { if (fnMissingRequired().length) { uiState.needCond = true; } else { await handleSearchList(); } }
       } catch (err) {
-        uiState.errorMsg = err.response?.data?.message || err.message || '팝업 구성을 불러오지 못했습니다.';
+        uiState.errorMsg = coUtil.cofErrMsg(err, '팝업 구성을 불러오지 못했습니다.');
       } finally {
         uiState.initing = false;
       }
@@ -602,7 +602,7 @@ window.FoCmPopupModal = {
         gridPager.pageTotalCount = d.pageTotalCount || 0;
         gridPager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) {
-        window.foApp?.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        window.foApp?.showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -621,7 +621,7 @@ window.FoCmPopupModal = {
         treeRows.filter(n => n.parentId == null || n.parentId === '')
           .forEach(n => { expanded[String(n.id)] = true; });
       } catch (err) {
-        window.foApp?.showToast(err.response?.data?.message || err.message || '트리 조회 오류', 'error', 0);
+        window.foApp?.showToast(coUtil.cofErrMsg(err, '트리 조회 오류'), 'error', 0);
       }
     };
 

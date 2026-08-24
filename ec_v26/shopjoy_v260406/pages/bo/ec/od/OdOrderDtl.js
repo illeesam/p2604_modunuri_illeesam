@@ -272,7 +272,7 @@ window.OdOrderDtl = {
         showToast('추가결제 요청이 전송되었습니다.', 'success');
         payments.unshift({ payMethod: '추가결제요청', payStatus: '미결제', amount: amt, payDate: '', apprNo: '-', issuer: form.extraReqReason || '-' });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '추가결제 요청 실패', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '추가결제 요청 실패'), 'error', 0);
       }
     };
 
@@ -668,6 +668,9 @@ window.OdOrderDtl = {
           },
           onTrack: openTracking,
         } },
+      { type: 'actions', visible: () => !cfDtlMode.value, actions: [
+        { label: '삭제', cls: 'btn btn_row_delete', onClick: (row, idx) => handleBtnAction('orderItems-remove', idx) },
+      ] },
     ];
 
     // pay_statuses 폴백 옵션 — sy_code 로딩 전엔 PAY_STATUS_FALLBACK 사용
@@ -969,11 +972,8 @@ window.OdOrderDtl = {
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.orderItemGrid" :rows="orderItems"
-        :is-expanded="fnItemExpanded" :row-actions="!cfDtlMode"
+        :is-expanded="fnItemExpanded"
         empty-text="주문 항목 정보가 없습니다.">
-        <template #row-actions="{ idx }">
-          <button class="btn btn_row_delete" @click.stop="handleBtnAction('orderItems-remove', idx)">삭제</button>
-        </template>
         <template #cell-prodNm="{ row, idx }">
           <td style="font-size:12px;">
             <span v-if="cfRelatedClaim ? (cfRelatedClaim.type==='교환') : false" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">

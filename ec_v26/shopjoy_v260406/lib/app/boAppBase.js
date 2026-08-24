@@ -1875,7 +1875,7 @@
           showToast('가입이 완료되었습니다. 로그인해주세요.');
         } catch (err) {
           console.error('[catch-info]', err);
-          loginError.value = err.response?.data?.message || err.message || '가입 실패';
+          loginError.value = coUtil.cofErrMsg(err, '가입 실패');
         }
       };
 
@@ -2808,6 +2808,8 @@
             <md-cb-symbol-mng  v-else-if="page==='mdCbSymbolMng'"  :navigate="navigate" />
             <md-cb-yarn-mng  v-else-if="page==='mdCbYarnMng'"  :navigate="navigate" />
             <md-cb-pattern-mng  v-else-if="page==='mdCbPatternMng'"  :navigate="navigate" />
+            <md-sg-project-mng  v-else-if="page==='mdSgProjectMng'"  :navigate="navigate" />
+            <md-sg-gen-hist-mng  v-else-if="page==='mdSgGenHistMng'"  :navigate="navigate"  :project-id="dtlId" />
             <sy-attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" />
             <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :open-new-window="openNewWindow" />
             <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />

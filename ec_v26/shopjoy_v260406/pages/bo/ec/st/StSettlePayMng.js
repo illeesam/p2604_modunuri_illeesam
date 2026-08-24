@@ -200,6 +200,10 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       { key: 'bankHolder', label: '예금주' },
       { key: 'payStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.payStatusCd) },
       { key: 'regBy',      label: '담당자' },
+      { type: 'actions', actions: [
+        { label: '지급처리', cls: 'btn btn-xs btn-green', visible: (row) => row.payStatusCd === 'PENDING',
+          onClick: (row) => handleSelectAction('settlePays-rowPay', row) },
+      ] },
     ];
 
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
@@ -242,15 +246,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
     </template>
     <bo-grid bare
-      :columns="columns.baseGrid" :rows="pays" row-key="payId"
-      :row-actions="true">
+      :columns="columns.baseGrid" :rows="pays" row-key="payId">
       <template #head-actions>
         액션
-      </template>
-      <template #row-actions="{ row: r }">
-        <button v-if="r.payStatusCd==='PENDING'" class="btn btn-xs btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
-          지급처리
-        </button>
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('settlePays-pager-setPage', n)" :on-size-change="() => handleSelectAction('settlePays-pager-sizeChange')" />

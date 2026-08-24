@@ -436,7 +436,7 @@ window.SyCodeMng = {
         showToast(`${toastParts.join(', ')} 저장되었습니다.`);
         await handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       } finally { uiState.loading = false; }
     };
 
@@ -492,7 +492,7 @@ window.SyCodeMng = {
         showToast('저장되었습니다.', 'success');
         await handleLoadAllGroups();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 

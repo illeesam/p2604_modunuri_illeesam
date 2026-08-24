@@ -511,7 +511,7 @@ window.SyRoleMng = {
         ]);
         showToast('설정이 저장되었습니다.', 'success');
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -632,7 +632,7 @@ window.SyRoleMng = {
         /* RELOAD 모드 — 그리드 + 좌측 트리(treeRoles) 모두 새로고침 */
         await handleSearchList('RELOAD');
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 
@@ -787,7 +787,7 @@ window.SyRoleMng = {
         await boApiSvc.syRole.saveUsers(uiState.selectedRoleId, { users: userPayload }, '역할관리', '대상사용자저장');
         showToast('대상사용자가 저장되었습니다.', 'success');
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '저장 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 

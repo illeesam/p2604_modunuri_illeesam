@@ -131,7 +131,7 @@ window.ZdTestPushAlimFcm = {
         addLog('✅ 발송 완료 (messageId: ' + (result.response?.messageId || '-') + ')', 'success');
         showToast('FCM 푸시 발송 완료', 'success');
       } catch (e) {
-        result.error  = e.response?.data?.message || e.message || '알 수 없는 오류';
+        result.error  = coUtil.cofErrMsg(e, '알 수 없는 오류');
         result.status = '❌ 푸시 발송 실패';
         addLog('❌ 실패: ' + result.error, 'error');
         showToast('푸시 발송 실패: ' + result.error, 'error', 0);
@@ -145,7 +145,7 @@ window.ZdTestPushAlimFcm = {
         const res = await boApi.get('/co/ext/push-fcm-send/tokens', coUtil.cofApiHdr('FCM 푸시 테스트', '토큰 목록'));
         result.tokenLogs = res.data?.data || [];
       } catch (e) {
-        showToast('토큰 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
+        showToast('토큰 목록 조회 실패: ' + (coUtil.cofErrMsg(e)), 'error', 0);
       }
       uiState.loadingTokens = false;
     };

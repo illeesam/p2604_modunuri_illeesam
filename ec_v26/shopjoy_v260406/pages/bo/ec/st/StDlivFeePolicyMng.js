@@ -141,7 +141,7 @@ window.StDlivFeePolicyMng = {
         gridRows.splice(0);
         list.forEach(p => gridRows.push(makeRow(p)));
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '조회 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '조회 중 오류가 발생했습니다.'), 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -167,7 +167,7 @@ window.StDlivFeePolicyMng = {
         showToast('저장되었습니다.', 'success');
         await handleSearchList();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
       }
     };
 

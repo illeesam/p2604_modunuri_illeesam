@@ -1048,8 +1048,13 @@ window.DpDispPanelDtl = {
       { key: 'url',  label: 'URL / 경로',
         editIntercept: { placeholder: 'https://... 또는 /files/sample.pdf',
           onInput: (row, val, idx) => updateFileItem(idx, 'url', val) } },
+      { type: 'actions', actions: [
+        { label: '✕', style: 'background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;',
+          onClick: (row, idx) => handleBtnAction('fileList-remove', idx) },
+      ] },
     ];
-    /* fnFileListColsForRow — 유틸 */
+    /* fnFileListColsForRow — 유틸. r(=상위 행)을 클로저로 잡는 함수형 컬럼정의라
+       type:'actions' 항목도 이 함수 안에서 r 을 참조하며 같이 선언한다. */
     const fnFileListColsForRow = (r) => [
       { key: 'name', label: '파일명',     style: 'width:200px;',
         editIntercept: { placeholder: '파일명.pdf',
@@ -1057,6 +1062,10 @@ window.DpDispPanelDtl = {
       { key: 'url',  label: 'URL / 경로',
         editIntercept: { placeholder: 'https://...',
           onInput: (row, val, idx) => fnSetFileItem(r, idx, 'url', val) } },
+      { type: 'actions', actions: [
+        { label: '✕', style: 'background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;',
+          onClick: (row, idx) => handleBtnAction('fileListRow-remove', { row: r, idx }) },
+      ] },
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 패널코드/패널명/상태 ==========
@@ -1342,19 +1351,12 @@ window.DpDispPanelDtl = {
                 <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
               </div>
               <!-- ===== /내용 ======================================================== -->
-              <div class="form-actions" v-if="active">
-                <template v-if="cfDtlMode">
-                  <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-                </template>
-                <template v-else>
-                  <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                  <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-                </template>
-              </div>
+              <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+                :edit-click="() => handleBtnAction('form-edit')"
+                :save-click="() => handleBtnAction('form-save')"
+                :delete-click="() => handleBtnAction('form-delete')"
+                :cancel-click="() => handleBtnAction('form-cancel')"
+                :close-click="() => handleBtnAction('form-close')" />
             </div>
             <!-- ===== ■.■.■.■.■.■. 1~5행 콘텐츠 ====================================== -->
             <div v-if="cfActiveRow">
@@ -1546,16 +1548,9 @@ window.DpDispPanelDtl = {
                   </div>
                   <div v-else>
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 목록 영역 ================================= -->
-                    <bo-grid bare :columns="columns.fileListGrid" :rows="cfFileListItems" row-actions
+                    <bo-grid bare :columns="columns.fileListGrid" :rows="cfFileListItems"
                       empty-text="첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요."
-                      style="margin-bottom:8px;">
-                      <template #row-actions="{ idx }">
-                        <button @click="handleBtnAction('fileList-remove', idx)"
-                          style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;">
-                          ✕
-                        </button>
-                      </template>
-                    </bo-grid>
+                      style="margin-bottom:8px;" />
                     <button @click="handleBtnAction('fileList-add')"
                       style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;color:#555;">
                       + 파일 추가
@@ -1678,19 +1673,12 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <!-- ===== /내용 영역 ===================================================== -->
-              <div class="form-actions" v-if="active">
-                <template v-if="cfDtlMode">
-                  <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-                </template>
-                <template v-else>
-                  <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                  <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-                </template>
-              </div>
+              <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+                :edit-click="() => handleBtnAction('form-edit')"
+                :save-click="() => handleBtnAction('form-save')"
+                :delete-click="() => handleBtnAction('form-delete')"
+                :cancel-click="() => handleBtnAction('form-cancel')"
+                :close-click="() => handleBtnAction('form-close')" />
             </div>
           </div>
           <!-- ===== /폼 영역 ====================================================== -->
@@ -1879,19 +1867,12 @@ window.DpDispPanelDtl = {
             <div v-else style="margin-bottom:16px;">
               <base-html-editor v-model="form.htmlDesc" height="280px" />
             </div>
-            <div class="form-actions" v-if="active">
-              <template v-if="cfDtlMode">
-                <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-                <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-              </template>
-              <template v-else>
-                <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-                <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-                <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-              </template>
-            </div>
+            <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+              :edit-click="() => handleBtnAction('form-edit')"
+              :save-click="() => handleBtnAction('form-save')"
+              :delete-click="() => handleBtnAction('form-delete')"
+              :cancel-click="() => handleBtnAction('form-cancel')"
+              :close-click="() => handleBtnAction('form-close')" />
           </div>
           <!-- ===== ■.■.■.■.■. 위젯 1~5: 각 섹션이 독립 row 바인딩 ======================== -->
           <!-- ===== ■.■.■.■.■. v-else-if 와 v-for 를 분리 (같은 엘리먼트 동시 사용 금지 → _vei 크래시) === -->
@@ -1945,14 +1926,8 @@ window.DpDispPanelDtl = {
                 </div>
                 <div v-else>
                   <!-- ===== ■.■.■.■.■.■.■.■. 목록 영역 ===================================== -->
-                  <bo-grid bare :columns="fnFileListColsForRow(r)" :rows="fnGetFileListItems(r)" row-actions
-                    empty-text="첨부파일이 없습니다." style="margin-bottom:8px;">
-                    <template #row-actions="{ idx }">
-                      <button @click="handleBtnAction('fileListRow-remove', {row:r, idx:idx})" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;">
-                        ✕
-                      </button>
-                    </template>
-                  </bo-grid>
+                  <bo-grid bare :columns="fnFileListColsForRow(r)" :rows="fnGetFileListItems(r)"
+                    empty-text="첨부파일이 없습니다." style="margin-bottom:8px;" />
                   <button @click="handleBtnAction('fileListRow-add', r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;color:#555;">
                     + 파일 추가
                   </button>
@@ -2063,19 +2038,12 @@ window.DpDispPanelDtl = {
                   </tr>
                 </tbody>
               </table>
-              <div class="form-actions" v-if="active">
-                <template v-if="cfDtlMode">
-                  <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-                </template>
-                <template v-else>
-                  <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-                  <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-                  <button v-if="!cfIsNew" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-                </template>
-              </div>
+              <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+                :edit-click="() => handleBtnAction('form-edit')"
+                :save-click="() => handleBtnAction('form-save')"
+                :delete-click="() => handleBtnAction('form-delete')"
+                :cancel-click="() => handleBtnAction('form-cancel')"
+                :close-click="() => handleBtnAction('form-close')" />
             </template>
           </template>
         </div>

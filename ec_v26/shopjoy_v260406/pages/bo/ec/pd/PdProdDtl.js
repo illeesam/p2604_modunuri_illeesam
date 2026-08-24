@@ -60,17 +60,34 @@ window.PdProdDtl = {
      * 자식 컴포넌트 콜백 / SKU / 카테고리 매핑 / Quill 등 세부 액션은 기존 함수 유지 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장 (현재 탭)
-      if (cmd === 'form-save') {
+      // 폼 저장 — 탭별 분기(현재는 전부 handleSave() 공용 저장. 특정 탭만 다른 저장 로직이 필요해지면
+      // 그 탭의 분기만 별도 함수로 교체하면 됨 — 다른 탭에 영향 없음)
+      if (cmd === 'info-form-save') {
         return handleSave();
-      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'option-form-save') {
+        return handleSave();
+      } else if (cmd === 'content-form-save') {
+        return handleSave();
+      } else if (cmd === 'detail-form-save') {
+        return handleSave();
+      } else if (cmd === 'promo-form-save') {
+        return handleSave();
+      } else if (cmd === 'image-form-save') {
+        return handleSave();
+      } else if (cmd === 'related-form-save') {
+        return handleSave();
+      } else if (cmd === 'price-form-save') {
+        return handleSave();
+      } else if (cmd === 'bundle-form-save') {
+        return handleSave();
+      } else if (cmd === 'setitems-form-save') {
+        return handleSave();
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요, 접미어로 일괄 처리)
+      } else if (cmd.endsWith('-form-cancel')) {
         return props.navigate('__cancelEdit__');
-      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
-      } else if (cmd === 'form-close') {
+      } else if (cmd.endsWith('-form-close')) {
         return props.navigate('__closeDtl__');
-      // 보기모드 → 수정모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd.endsWith('-form-edit')) {
         return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -953,11 +970,16 @@ window.PdProdDtl = {
        144행 목록에서는 "XL 이상만 +2000" 같은 패턴도, 값이 비어 있는 조합도 보이지 않는다.
        조합 설정(useYn 토글)과 같은 격자에 값 필드 하나를 얹어 한 화면에서 채우게 한다.
        목록과 **같은 skus 배열을 직접 편집**하므로 두 뷰 사이에 동기화 로직이 없다.
-       SKU코드·재고코드는 자유 텍스트(+피커)라 격자 셀에 담을 수 없어 목록 전용으로 남긴다. */
+       SKU코드·재고코드도 값 자체는 텍스트라 격자에 담을 수 있다(2026-08-25 추가) —
+       다만 이 둘은 SKU마다 달라야 하는 식별자라 unique:true 로 표시하고,
+       fnMxBulkGuard 가 이 플래그를 보고 행/열 일괄 채우기를 원천 차단한다
+       (똑같은 코드를 여러 SKU에 한 번의 클릭으로 뿌리는 사고 방지). */
     const SKU_MX_FIELDS = [
-      { key: 'addPrice', label: '추가금액', type: 'number', unit: '원' },
-      { key: 'stock',    label: '재고수량', type: 'number', unit: '개' },
-      { key: 'statusCd', label: '판매상태', type: 'select' },
+      { key: 'addPrice',  label: '추가금액', type: 'number', unit: '원' },
+      { key: 'stock',     label: '재고수량', type: 'number', unit: '개' },
+      { key: 'statusCd',  label: '판매상태', type: 'select' },
+      { key: 'skuCode',   label: 'SKU코드', type: 'text', unique: true },
+      { key: 'stockCode', label: '재고코드', type: 'text', unique: true },
     ];
     /* fnMxField — 현재 편집 중인 필드 정의 */
     const fnMxField = () => SKU_MX_FIELDS.find(f => f.key === uiState.skuMxField) || SKU_MX_FIELDS[0];
@@ -967,6 +989,32 @@ window.PdProdDtl = {
     const fnMxSku = (id1, id2) => skus.find(s => s ? s._optKey === (id1 + '_' + id2) : false) || null;
     /* fnMxOn — 그 조합이 활성(useYn=Y)인가. 비활성 셀은 흐리게 + 일괄 채우기 대상에서 제외 */
     const fnMxOn = (id1, id2) => { const s = fnMxSku(id1, id2); return s ? s.useYn === 'Y' : false; };
+
+    /* ── 조합 설정(useYn 토글) 매트릭스 ─────────────────────────────────────
+       예전엔 이 로직이 전부 템플릿 속성값 안의 즉시실행함수로 들어가 있었다.
+       속성값에 `&&` 를 쓸 수 없어(런타임 컴파일러 크래시) `&amp;&amp;` 로 이스케이프해야 했고,
+       한 줄이 300자를 넘어 읽을 수 없었다. setup 으로 빼면 그 제약이 사라진다. */
+    const fnCombOn     = (i1, i2) => { const s2 = fnMxSku(i1._id, i2._id); return s2 ? s2.useYn === 'Y' : false; };
+    const onCombChange = (i1, i2, v) => { const s2 = fnMxSku(i1._id, i2._id); if (s2) { s2.useYn = v ? 'Y' : 'N'; } };
+    /* 행/열 머리글 클릭 — 그 줄이 전부 켜져 있으면 전부 끄고, 아니면 전부 켠다 */
+    const fnCombToggle = (fixed, others, pick) => {
+      const list = others.map(o => fnMxSku(...pick(fixed, o)));
+      const allOn = list.every(x => (x ? x.useYn === 'Y' : false));
+      list.forEach(x => { if (x) { x.useYn = allOn ? 'N' : 'Y'; } });
+    };
+    const onCombRow = (i1) => { if (!cfDtlMode.value) { fnCombToggle(i1, fnMxItems(2), (a, b) => [a._id, b._id]); } };
+    const onCombCol = (i2) => { if (!cfDtlMode.value) { fnCombToggle(i2, fnMxItems(1), (a, b) => [b._id, a._id]); } };
+
+    /* ── BoMatrix 어댑터 ─────────────────────────────────────────────────
+       BoMatrix 는 콜백에 (행 항목, 열 항목) 객체를 넘긴다. 기존 헬퍼는 (id1, id2) 기반이라
+       여기서만 얇게 변환한다 — 헬퍼 자체는 목록 뷰와 공유하므로 손대지 않는다. */
+    const fnMxCell   = (i1, i2) => { const s2 = fnMxSku(i1._id, i2._id); return s2 ? s2[fnMxField().key] : ''; };
+    const fnMxStyle  = (i1, i2) => fnMxCellStyle(i1._id, i2._id);
+    const fnMxTitle  = (i1, i2) => (fnMxOn(i1._id, i2._id) ? '' : '비활성 조합 — 옵션설정 탭의 조합 설정에서 켜야 합니다');
+    const onMxCellChange = (i1, i2, v) => {
+      const sku = fnMxSku(i1._id, i2._id);
+      if (sku) { sku[fnMxField().key] = v; }
+    };
 
     /* fnMxCellStyle — 값 자체로 상태가 읽히게 한다.
        "0 원 / 재고 0" 을 눈에 띄게 해야 채우다 만 조합이 한눈에 드러난다. */
@@ -992,8 +1040,14 @@ window.PdProdDtl = {
       targets.forEach(sku => { if (sku ? sku.useYn === 'Y' : false) { sku[f.key] = val; n++; } });
       return n;
     };
-    /* fnMxBulkGuard — 일괄값이 비었으면 막는다 (빈 값으로 전체를 밀어버리는 사고 방지) */
+    /* fnMxBulkGuard — 일괄값이 비었으면 막는다 (빈 값으로 전체를 밀어버리는 사고 방지).
+       unique 필드(SKU코드/재고코드)는 애초에 여러 SKU에 같은 값을 넣으면 안 되므로
+       행/열 일괄 채우기 자체를 막는다 — 개별 셀 입력만 허용. */
     const fnMxBulkGuard = () => {
+      if (fnMxField().unique) {
+        showToast(`${fnMxField().label} 은(는) SKU마다 달라야 해서 일괄 채우기를 지원하지 않습니다. 셀을 하나씩 입력해주세요.`, 'error');
+        return false;
+      }
       if (String(uiState.skuMxBulk || '').trim() === '') {
         showToast('먼저 [일괄값] 을 입력한 뒤 행/열 헤더를 클릭하세요.', 'error');
         return false;
@@ -1113,7 +1167,7 @@ window.PdProdDtl = {
           });
         });
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '이미지 업로드 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '이미지 업로드 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -1190,7 +1244,7 @@ window.PdProdDtl = {
         target.attachId   = up.attachId || null;
         showToast('파일이 교체되었습니다. [저장] 을 눌러야 반영됩니다.', 'success');
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '이미지 교체 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '이미지 교체 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
 
@@ -1301,7 +1355,7 @@ window.PdProdDtl = {
         block.fileName = uploaded.originalName || file.name;
         block._persisted = false;
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '파일 업로드 중 오류가 발생했습니다.', 'error', 0);
+        showToast(coUtil.cofErrMsg(err, '파일 업로드 중 오류가 발생했습니다.'), 'error', 0);
       }
     };
             const onBlockDragStart = (idx) => { uiState.dragBlockIdx = idx; };
@@ -2204,8 +2258,7 @@ window.PdProdDtl = {
       { key: 'prodStatusCd', label: '판매상태', type: 'select',
         options: () => grpCodes.PROD_STATUS_CD,
         helpText: 'ACTIVE(전시중)↔INACTIVE(판매중지)는 판매기간(위 시작/종료일)을 벗어나거나 다시 들어오면 매시간 배치가 자동 전환. 판매예정/품절 구분은 이 값이 아니라 FO가 판매기간·재고로 그때그때 계산. DRAFT·ENDED는 배치가 손대지 않는 관리자 전용 상태.' },
-      /* pd_prod 에 unsale_msg 컬럼이 없다(DB 확인). 컬럼명 자동 유도를 끈다 — 저장 경로 자체가 없는 상태 */
-      { key: 'unsaleMsg',    label: '미판매메시지', colNm: false, type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
+      { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
       { key: 'weight',       label: '무게', hint: 'kg', type: 'number', min: 0, placeholder: '예: 0.35' },
       // 6행: 사이즈 / 판매시작 / 판매종료
@@ -2316,6 +2369,8 @@ window.PdProdDtl = {
       cfMarginRateCalc,
       SKU_MX_FIELDS, fnMxField, fnMxItems, fnMxSku, fnMxOn, fnMxCellStyle,
       onMxFillRow, onMxFillCol, onMxFillAll,
+      fnMxCell, fnMxStyle, fnMxTitle, onMxCellChange,
+      fnCombOn, onCombChange, onCombRow, onCombCol,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
@@ -2514,17 +2569,13 @@ window.PdProdDtl = {
         title="담당MD 선택" :on-callback="fnCallbackModal"
         @close="handleBtnAction('mdModal-close')" />
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('info-form-edit')"
+        :save-click="() => handleBtnAction('info-form-save')"
+        :delete-click="() => handleBtnAction('info-form-delete')"
+        :cancel-click="() => handleBtnAction('info-form-cancel')"
+        :close-click="() => handleBtnAction('info-form-close')" />
     </div>
     <!-- ══════════════════════════════════════
      ⚙ 옵션설정  (pd_prod_opt / pd_prod_opt_item / pd_prod_sku)
@@ -2639,72 +2690,24 @@ window.PdProdDtl = {
             <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" style="margin-top:6px;" @click="handleBtnAction('optItem-add', grp)">+ 값 추가</button>
           </div>
         </div>
-        <!-- ===== ■.■.■. N×M 조합 설정 (체크/언체크로 SKU useYn 토글) ================== -->
+        <!-- ===== ■.■.■. N×M 조합 설정 (체크/언체크로 SKU useYn 토글) ==================
+         bo-matrix 로 교체(2026-08-25). 이전엔 셀·헤더 로직이 전부 속성값 안 IIFE 였다. -->
         <div v-if="optGroups.length===2" style="border:1px solid #bae0ff;border-radius:8px;padding:12px;background:#f0f8ff;margin-bottom:12px;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
             <span style="font-size:12px;font-weight:700;color:#0958d9;">📊 N×M 조합 설정</span>
             <span style="font-size:11px;color:#555;">
-              {{ (optGroups[0]?.items||[]).filter(i=>i.useYn==='Y' &amp;&amp; i.nm.trim()).length }} × {{ (optGroups[1]?.items||[]).filter(i=>i.useYn==='Y' &amp;&amp; i.nm.trim()).length }}
+              {{ fnMxItems(1).length }} × {{ fnMxItems(2).length }}
               = <strong>{{ skus.filter(s=>s.useYn==='Y').length }}</strong> / {{ skus.length }} 활성 SKU
             </span>
           </div>
-          <div style="overflow-x:auto;">
-            <table style="border-collapse:collapse;font-size:11px;">
-              <thead>
-                <tr>
-                  <th style="padding:4px 8px;background:#dbeafe;border:1px solid #bae0ff;font-size:11px;min-width:70px;white-space:nowrap;">
-                    {{ (optGroups[0]?.grpNm)||'1단' }} / {{ (optGroups[1]?.grpNm)||'2단' }}
-                  </th>
-                  <th v-for="i2 in (optGroups[1]?.items||[]).filter(i=>i.useYn==='Y' &amp;&amp; i.nm.trim())" :key="i2._id"
-                    style="padding:4px 6px;background:#dbeafe;border:1px solid #bae0ff;text-align:center;white-space:nowrap;cursor:pointer;min-width:52px;"
-                    :title="'열 전체 토글: '+i2.nm"
-                    @click="(function(id2){var g1=optGroups[0]?.items.filter(function(i){return i.useYn==='Y'&amp;&amp;i.nm.trim();});var allOn=g1.every(function(i1){var s=skus.find(function(s){return s._optKey===i1._id+'_'+id2;});return s?s.useYn==='Y':false;});g1.forEach(function(i1){var s=skus.find(function(s){return s._optKey===i1._id+'_'+id2;});if(s)s.useYn=allOn?'N':'Y';});})(i2._id)">
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                      <input type="checkbox"
-                        :checked="(function(id2){var g1=optGroups[0]?.items.filter(function(i){return i.useYn==='Y'&amp;&amp;i.nm.trim();});return g1.length>0 ? g1.every(function(i1){var s=skus.find(function(s){return s._optKey===i1._id+'_'+id2;});return s?s.useYn==='Y':false;}) : false;})(i2._id)"
-                        @click.stop
-                        @change="(function(id2,v){var g1=optGroups[0]?.items.filter(function(i){return i.useYn==='Y'&amp;&amp;i.nm.trim();});g1.forEach(function(i1){var s=skus.find(function(s){return s._optKey===i1._id+'_'+id2;});if(s)s.useYn=v?'Y':'N';}); })(i2._id,$event.target.checked)"
-                        style="width:13px;height:13px;cursor:pointer;margin:0;" />
-                      <span style="font-size:11px;">
-                        <span v-if="i2.prodOptStyle ? i2.prodOptStyle.startsWith('#') : false"
-                          :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;background:'+i2.prodOptStyle+';border:1px solid #ddd;vertical-align:middle;'"></span>
-                        {{ i2.nm }}
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="i1 in (optGroups[0]?.items||[]).filter(i=>i.useYn==='Y' &amp;&amp; i.nm.trim())" :key="i1._id">
-                  <td style="padding:4px 8px;background:#eff6ff;border:1px solid #bae0ff;white-space:nowrap;cursor:pointer;"
-                    :title="'행 전체 토글: '+i1.nm"
-                    @click="(function(id1){var g2=optGroups[1]?.items.filter(function(i){return i.useYn==='Y'&amp;&amp;i.nm.trim();});var allOn=g2.every(function(i2){var s=skus.find(function(s){return s._optKey===id1+'_'+i2._id;});return s?s.useYn==='Y':false;});g2.forEach(function(i2){var s=skus.find(function(s){return s._optKey===id1+'_'+i2._id;});if(s)s.useYn=allOn?'N':'Y';});})(i1._id)">
-                    <div style="display:flex;align-items:center;gap:5px;">
-                      <input type="checkbox"
-                        :checked="(function(id1){var g2=optGroups[1]?.items.filter(function(i){return i.useYn==='Y'&amp;&amp;i.nm.trim();});return g2.length>0 ? g2.every(function(i2){var s=skus.find(function(s){return s._optKey===id1+'_'+i2._id;});return s?s.useYn==='Y':false;}) : false;})(i1._id)"
-                        @click.stop
-                        @change="(function(id1,v){var g2=optGroups[1]?.items.filter(function(i){return i.useYn==='Y'&amp;&amp;i.nm.trim();});g2.forEach(function(i2){var s=skus.find(function(s){return s._optKey===id1+'_'+i2._id;});if(s)s.useYn=v?'Y':'N';}); })(i1._id,$event.target.checked)"
-                        style="width:13px;height:13px;cursor:pointer;flex-shrink:0;" />
-                      <span style="font-weight:600;font-size:11px;">
-                        <span v-if="i1.prodOptStyle ? i1.prodOptStyle.startsWith('#') : false"
-                          :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;background:'+i1.prodOptStyle+';border:1px solid #ddd;vertical-align:middle;'"></span>
-                        {{ i1.nm }}
-                      </span>
-                    </div>
-                  </td>
-                  <td v-for="i2 in (optGroups[1]?.items||[]).filter(i=>i.useYn==='Y' &amp;&amp; i.nm.trim())" :key="i2._id"
-                    style="padding:2px 6px;border:1px solid #e0ecff;text-align:center;">
-                    <label style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;width:100%;padding:4px 0;">
-                      <input type="checkbox"
-                        :checked="(function(k){var s=skus.find(function(s){return s._optKey===k;});return s?s.useYn==='Y':false;})(i1._id+'_'+i2._id)"
-                        @change="(function(k,v){var s=skus.find(function(s){return s._optKey===k;});if(s)s.useYn=v?'Y':'N';})(i1._id+'_'+i2._id,$event.target.checked)"
-                        style="width:13px;height:13px;cursor:pointer;" />
-                    </label>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <bo-matrix
+            :rows="fnMxItems(1)" :cols="fnMxItems(2)"
+            row-key="_id" col-key="_id" row-label="nm" col-label="nm"
+            row-style-key="prodOptStyle" col-style-key="prodOptStyle"
+            :corner="((optGroups[0]?.grpNm)||'1단') + ' / ' + ((optGroups[1]?.grpNm)||'2단')"
+            cell-type="checkbox" header-toggle :cell="fnCombOn" :readonly="cfDtlMode"
+            max-height="none" cell-width="52px"
+            @cell-change="onCombChange" @row-header="onCombRow" @col-header="onCombCol" />
           <div style="margin-top:6px;font-size:11px;color:#888;">💡 행/열 헤더의 체크박스 또는 헤더 셀 클릭 시 해당 행/열 전체 토글</div>
         </div>
         <div style="padding:8px 12px;background:#e6f4ff;border-radius:8px;border:1px solid #bae0ff;font-size:12px;color:#0958d9;">
@@ -2712,17 +2715,13 @@ window.PdProdDtl = {
         </div>
       </template>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('option-form-edit')"
+        :save-click="() => handleBtnAction('option-form-save')"
+        :delete-click="() => handleBtnAction('option-form-delete')"
+        :cancel-click="() => handleBtnAction('option-form-cancel')"
+        :close-click="() => handleBtnAction('option-form-close')" />
     </div>
     <!-- ══════════════════════════════════════
      📄 상품설명  (contentBlocks — 첨부/URL/HTML 블록)
@@ -2841,16 +2840,14 @@ window.PdProdDtl = {
           </div>
         </div>
       </div>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      <div v-if="active" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
+        <bo-form-actions :readonly="cfDtlMode" :show-delete="false"
+          :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+          :edit-click="() => handleBtnAction('content-form-edit')"
+          :save-click="() => handleBtnAction('content-form-save')"
+          :delete-click="() => handleBtnAction('content-form-delete')"
+          :cancel-click="() => handleBtnAction('content-form-cancel')"
+          :close-click="() => handleBtnAction('content-form-close')" />
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2906,17 +2903,13 @@ window.PdProdDtl = {
         <span style="background:#fff1f0;border:1px solid #ffa39e;border-radius:3px;padding:1px 6px;color:#cf1322;">D 삭제예정</span>
       </div>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('detail-form-edit')"
+        :save-click="() => handleBtnAction('detail-form-save')"
+        :delete-click="() => handleBtnAction('detail-form-delete')"
+        :cancel-click="() => handleBtnAction('detail-form-cancel')"
+        :close-click="() => handleBtnAction('detail-form-close')" />
     </div>
     <!-- ══════════════════════════════════════
      🎯 프로모션  (쿠폰 / 적립금 / 할인 / 프로모션 적용 여부)
@@ -3038,17 +3031,13 @@ window.PdProdDtl = {
       <bo-cm-popup-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
       </pm-gift-pick-modal>
       <!-- 상품 프로모션 정보 그룹의 저장/취소/닫기 -->
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('promo-form-edit')"
+        :save-click="() => handleBtnAction('promo-form-save')"
+        :delete-click="() => handleBtnAction('promo-form-delete')"
+        :cancel-click="() => handleBtnAction('promo-form-cancel')"
+        :close-click="() => handleBtnAction('promo-form-close')" />
     </div>
     <!-- ══════════════════════════════════════
      🖼 이미지  (pd_prod_img)
@@ -3150,17 +3139,13 @@ window.PdProdDtl = {
         </div>
       </div>
       <!-- ===== ■.■.■. /옵션1 그룹 목록 ============================================= -->
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('image-form-edit')"
+        :save-click="() => handleBtnAction('image-form-save')"
+        :delete-click="() => handleBtnAction('image-form-delete')"
+        :cancel-click="() => handleBtnAction('image-form-cancel')"
+        :close-click="() => handleBtnAction('image-form-close')" />
     </div>
     <!-- ══════════════════════════════════════
      🔗 연관상품
@@ -3221,17 +3206,13 @@ window.PdProdDtl = {
         </bo-grid>
       </div>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('related-form-edit')"
+        :save-click="() => handleBtnAction('related-form-save')"
+        :delete-click="() => handleBtnAction('related-form-delete')"
+        :cancel-click="() => handleBtnAction('related-form-cancel')"
+        :close-click="() => handleBtnAction('related-form-close')" />
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
       <bo-cm-popup-modal v-if="prodPickerOpen" popup-cmd="cmPopup-prod-cate-pick" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :init-selected-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" :on-callback="fnProdPickerCallback" />
     </div>
@@ -3306,63 +3287,32 @@ window.PdProdDtl = {
               <option v-for="f in SKU_MX_FIELDS" :key="f.key" :value="f.key">{{ f.label }}</option>
             </select>
             <span style="color:#c0d8f0;">│</span>
-            <span style="font-size:11px;color:#555;flex-shrink:0;">일괄값</span>
-            <input v-if="fnMxField().type==='number'" type="number" v-model="uiState.skuMxBulk" placeholder="0"
-              style="width:90px;font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;text-align:right;" />
-            <select v-else v-model="uiState.skuMxBulk" style="font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;">
-              <option value="">-- 선택 --</option>
-              <option v-for="c in grpCodes.OPT_STOCK_STATUS" :key="'mxb-'+c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
-            <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" style="font-size:11px;" @click="onMxFillAll()">전체 적용</button>
-            <span style="font-size:11px;color:#888;margin-left:auto;">행/열 헤더 클릭 = 그 줄에 일괄값 채우기 · 비활성 조합은 제외</span>
+            <!-- SKU코드/재고코드는 SKU마다 달라야 하는 식별자라 일괄 채우기 UI 자체를 숨긴다
+                 (fnMxBulkGuard 가 로직상으로도 막지만, 애초에 안 되는 조작을 보여주지 않는 게 낫다). -->
+            <template v-if="!fnMxField().unique">
+              <span style="font-size:11px;color:#555;flex-shrink:0;">일괄값</span>
+              <input v-if="fnMxField().type==='number'" type="number" v-model="uiState.skuMxBulk" placeholder="0"
+                style="width:90px;font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;text-align:right;" />
+              <select v-else v-model="uiState.skuMxBulk" style="font-size:11px;border:1px solid #91caff;border-radius:4px;padding:3px 6px;">
+                <option value="">-- 선택 --</option>
+                <option v-for="c in grpCodes.OPT_STOCK_STATUS" :key="'mxb-'+c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+              </select>
+              <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" style="font-size:11px;" @click="onMxFillAll()">전체 적용</button>
+            </template>
+            <span v-else style="font-size:11px;color:#c2410c;">SKU마다 고유해야 하는 값이라 셀을 하나씩 입력합니다(일괄 채우기 불가)</span>
+            <span style="font-size:11px;color:#888;margin-left:auto;">
+              {{ fnMxField().unique ? '' : '행/열 헤더 클릭 = 그 줄에 일괄값 채우기 · ' }}비활성 조합은 제외
+            </span>
           </div>
-          <div style="overflow:auto;max-height:420px;">
-            <table style="border-collapse:collapse;font-size:11px;">
-              <thead style="position:sticky;top:0;z-index:2;">
-                <tr>
-                  <th style="padding:4px 8px;background:#dbeafe;border:1px solid #bae0ff;min-width:80px;white-space:nowrap;position:sticky;left:0;z-index:3;">
-                    {{ (optGroups[0]?.grpNm)||'1단' }} / {{ (optGroups[1]?.grpNm)||'2단' }}
-                  </th>
-                  <th v-for="i2 in fnMxItems(2)" :key="'mxh-'+i2._id"
-                    style="padding:4px 6px;background:#dbeafe;border:1px solid #bae0ff;text-align:center;white-space:nowrap;cursor:pointer;min-width:62px;"
-                    :title="'이 열 전체에 일괄값 채우기: '+i2.nm" @click="onMxFillCol(i2)">
-                    <span v-if="i2.prodOptStyle ? i2.prodOptStyle.startsWith('#') : false"
-                      :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;background:'+i2.prodOptStyle+';border:1px solid #ddd;vertical-align:middle;'"></span>
-                    {{ i2.nm }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="i1 in fnMxItems(1)" :key="'mxr-'+i1._id">
-                  <td style="padding:4px 8px;background:#eff6ff;border:1px solid #bae0ff;white-space:nowrap;cursor:pointer;font-weight:600;position:sticky;left:0;z-index:1;"
-                    :title="'이 행 전체에 일괄값 채우기: '+i1.nm" @click="onMxFillRow(i1)">
-                    <span v-if="i1.prodOptStyle ? i1.prodOptStyle.startsWith('#') : false"
-                      :style="'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:2px;background:'+i1.prodOptStyle+';border:1px solid #ddd;vertical-align:middle;'"></span>
-                    {{ i1.nm }}
-                  </td>
-                  <td v-for="i2 in fnMxItems(2)" :key="'mxc-'+i1._id+'-'+i2._id"
-                    style="padding:2px 3px;border:1px solid #e0ecff;text-align:center;"
-                    :style="fnMxCellStyle(i1._id, i2._id)"
-                    :title="fnMxOn(i1._id, i2._id) ? '' : '비활성 조합 — 옵션설정 탭의 조합 설정에서 켜야 합니다'">
-                    <template v-if="fnMxSku(i1._id, i2._id)">
-                      <input v-if="fnMxField().type==='number'" type="number" min="0"
-                        :value="fnMxSku(i1._id, i2._id)[fnMxField().key]"
-                        @input="fnMxSku(i1._id, i2._id)[fnMxField().key] = Number($event.target.value) || 0"
-                        :disabled="cfDtlMode"
-                        style="width:56px;font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:2px 4px;height:21px;text-align:right;background:transparent;" />
-                      <select v-else :value="fnMxSku(i1._id, i2._id).statusCd"
-                        @change="fnMxSku(i1._id, i2._id).statusCd = $event.target.value"
-                        :disabled="cfDtlMode"
-                        style="width:74px;font-size:11px;border:1px solid #cfe4ff;border-radius:3px;padding:1px 2px;height:21px;background:transparent;">
-                        <option v-for="c in grpCodes.OPT_STOCK_STATUS" :key="'mxs-'+c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-                      </select>
-                    </template>
-                    <span v-else style="color:#ccc;">-</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <bo-matrix
+            :rows="fnMxItems(1)" :cols="fnMxItems(2)"
+            row-key="_id" col-key="_id" row-label="nm" col-label="nm"
+            row-style-key="prodOptStyle" col-style-key="prodOptStyle"
+            :corner="((optGroups[0]?.grpNm)||'1단') + ' / ' + ((optGroups[1]?.grpNm)||'2단')"
+            :cell-type="fnMxField().type" :options="grpCodes.OPT_STOCK_STATUS"
+            :cell="fnMxCell" :cell-style="fnMxStyle" :cell-title="fnMxTitle"
+            :readonly="cfDtlMode" max-height="420px" cell-width="70px"
+            @cell-change="onMxCellChange" @row-header="onMxFillRow" @col-header="onMxFillCol" />
         </div>
         <!-- ===== ■.■.■.■.■. SKU 테이블 (가격 섹션 + 재고 섹션 컬럼 분리) ===============
          매트릭스 뷰일 때만 숨긴다. 2단 옵션이 아니면 뷰 전환 버튼 자체가 없으므로 항상 목록. -->
@@ -3538,17 +3488,13 @@ window.PdProdDtl = {
       </template>
       </fieldset>
       <!-- ===== ■.■.■. 저장/취소 버튼 (맨 아래) ===================================== -->
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('price-form-edit')"
+        :save-click="() => handleBtnAction('price-form-save')"
+        :delete-click="() => handleBtnAction('price-form-delete')"
+        :cancel-click="() => handleBtnAction('price-form-cancel')"
+        :close-click="() => handleBtnAction('price-form-close')" />
     </div>
     <!-- ══════════════════════════════════════
      📦 묶음구성  (pd_prod_bundle_item)
@@ -3581,17 +3527,14 @@ window.PdProdDtl = {
         </template>
       </bo-grid>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled || !cfBundleRateOk"
-          :title="!cfBundleRateOk ? '안분율 합계가 100%여야 합니다.' : (cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : '')"
-          @click="handleBtnAction('form-save')">저장</button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled || !cfBundleRateOk"
+        :save-title="!cfBundleRateOk ? '안분율 합계가 100%여야 합니다.' : (cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : '')"
+        :edit-click="() => handleBtnAction('bundle-form-edit')"
+        :save-click="() => handleBtnAction('bundle-form-save')"
+        :delete-click="() => handleBtnAction('bundle-form-delete')"
+        :cancel-click="() => handleBtnAction('bundle-form-cancel')"
+        :close-click="() => handleBtnAction('bundle-form-close')" />
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
       <bo-cm-popup-modal v-if="bundlePickerOpen" popup-cmd="cmPopup-bundle-pick" popup-code="prod"
         title="묶음 상품 선택" :init-selected-ids="tabData.bundleItems.map(r => r.prodId)"
@@ -3625,16 +3568,13 @@ window.PdProdDtl = {
         </template>
       </bo-grid>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
-        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
-      </div>
-      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
-        <button class="btn btn_save" :disabled="cfSaveDisabled"
-          :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
-          @click="handleBtnAction('form-save')">저장</button>
-        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('setitems-form-edit')"
+        :save-click="() => handleBtnAction('setitems-form-save')"
+        :delete-click="() => handleBtnAction('setitems-form-delete')"
+        :cancel-click="() => handleBtnAction('setitems-form-cancel')"
+        :close-click="() => handleBtnAction('setitems-form-close')" />
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
       <bo-cm-popup-modal v-if="setPickerOpen" popup-cmd="cmPopup-set-pick" popup-code="prod"

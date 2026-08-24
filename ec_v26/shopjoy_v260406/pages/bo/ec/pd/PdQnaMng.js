@@ -269,6 +269,9 @@ window.PdQnaMng = {
       { key: 'memberId', label: '작성자', fmt: (v) => getMemNm(v) },
       { key: 'answYn',   label: '상태', badge: (q) => fnStatusBadge(q.answYn), fmt: (v) => fnAnswLabel(v) },
       { key: 'regDate',  label: '등록일', sortKey: 'reg', fmt: (v) => (v || '').slice(0, 10) },
+      { type: 'actions', actions: [
+        { label: '수정', cls: 'btn btn_row_edit btn-sm', onClick: (row) => handleGridCellAction('qnas-cellClick', 'btn_row_edit', row) },
+      ] },
     ];
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */
@@ -306,11 +309,7 @@ window.PdQnaMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
       @sort="key => handleBtnAction('qnas-sort', key)"
-      grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('qnas-cellClick', 'btn_row_edit', row)">수정</button>
-      </template>
-    </bo-grid>
+      grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
     <bo-excel-down-modal :show="excelModal.show" domain="pdQna" area-nm="상품문의"
       :columns="columns.baseGrid" ui-nm="상품Q&A관리" :params="buildExcelParams()"
@@ -356,27 +355,11 @@ window.PdQnaMng = {
           </template>
         </bo-form-area>
         <!-- 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[답변저장][취소] -->
-        <div class="form-actions">
-          <template v-if="cfDtlMode">
-            <button class="btn btn_edit" @click="handleBtnAction('form-edit')">
-              수정
-            </button>
-            <button class="btn btn_close" @click="handleBtnAction('form-close')">
-              닫기
-            </button>
-          </template>
-          <template v-else>
-            <button class="btn btn_save" @click="handleBtnAction('form-save')">
-              답변 저장
-            </button>
-            <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">
-              취소
-            </button>
-            <button class="btn btn_close" @click="handleBtnAction('form-close')">
-              닫기
-            </button>
-          </template>
-        </div>
+        <bo-form-actions :readonly="cfDtlMode" :show-delete="false" save-label="답변 저장" :edit-click="() => handleBtnAction('form-edit')"
+ :save-click="() => handleBtnAction('form-save')"
+ :delete-click="() => handleBtnAction('form-delete')"
+ :cancel-click="() => handleBtnAction('form-cancel')"
+ :close-click="() => handleBtnAction('form-close')" />
       </div>
     </div>
   </bo-container>
