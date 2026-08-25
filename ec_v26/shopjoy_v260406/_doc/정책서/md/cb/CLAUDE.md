@@ -1,6 +1,6 @@
 # 정책서/md/cb/ — 모듈 > 코바늘(Crochet) 도안 도메인 정책
 
-기호 기반 코바늘 도안 격자 편집기 + 한글 설명 자동생성. 독립 FO 모듈(`mdCbCobanul.html`).
+기호 기반 코바늘 도안 격자 편집기 + 한글 설명 자동생성. 독립 FO 모듈(`fo-md-cb-cobanul.html`).
 
 ## 파일 목록
 
@@ -14,8 +14,8 @@
 ## 관련 화면
 | 위치 | pageId / URL | 라벨 |
 |---|---|---|
-| FO | `mdCbCobanul.html?view=list` | 코바늘 도안 목록 |
-| FO | `mdCbCobanul.html?view=editor` | 코바늘 도안 상세/편집 |
+| FO | `fo-md-cb-cobanul.html?view=list` | 코바늘 도안 목록 |
+| FO | `fo-md-cb-cobanul.html?view=editor` | 코바늘 도안 상세/편집 |
 | BO | `mdCbPatternMng` | 모듈 > 코바늘 > 도안관리 |
 | BO | `mdCbSymbolMng` | 모듈 > 코바늘 > 기호관리 |
 | BO | `mdCbYarnMng` | 모듈 > 코바늘 > 실관리 |

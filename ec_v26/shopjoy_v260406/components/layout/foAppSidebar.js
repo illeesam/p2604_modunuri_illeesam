@@ -49,12 +49,12 @@ window.foAppSidebar = {
        navTo() 의 SPA pageId 이동이 아니라 href 로 실제 페이지 전체 이동한다. */
     const MODULE_GROUPS = [
       { groupId: 'cb', groupNm: '코바늘 도안', icon: '🧶', items: [
-        { menuId: 'cobanul',     menuNm: '코바늘 도안',    href: 'mdCbCobanul.html' },
-        { menuId: 'myCobanul',   menuNm: '내 코바늘 도안', href: 'mdCbCobanul.html?mine=1' },
+        { menuId: 'cobanul',     menuNm: '코바늘 도안',    href: 'fo-md-cb-cobanul.html' },
+        { menuId: 'myCobanul',   menuNm: '내 코바늘 도안', href: 'fo-md-cb-cobanul.html?mine=1' },
       ] },
       { groupId: 'sg', groupNm: '소스젠', icon: '⚙️', items: [
-        { menuId: 'sourcegen',   menuNm: '소스젠',    href: 'mdSgSourcegen.html' },
-        { menuId: 'mySourcegen', menuNm: '내 소스젠', href: 'mdSgSourcegen.html?mine=1' },
+        { menuId: 'sourcegen',   menuNm: '소스젠',    href: 'fo-md-sg-sourcegen.html' },
+        { menuId: 'mySourcegen', menuNm: '내 소스젠', href: 'fo-md-sg-sourcegen.html?mine=1' },
       ] },
     ];
     /* MODULE_ITEMS — 평면 목록(현재 page 가 모듈 메뉴인지 판정 등 기존 로직 호환용) */

@@ -591,7 +591,7 @@ window.MdSgSourcegenPage = {
     };
 
     /* ── 4) 화면 이동 / 모드 전환 ── */
-    const onBackToList = () => { location.href = 'mdSgSourcegen.html?view=list'; };
+    const onBackToList = () => { location.href = 'fo-md-sg-sourcegen.html?view=list'; };
     const onNewProject = () => {
       Object.assign(form, { projectId: null, projectNm: '', projectDesc: '', basePackage: 'com.exam.app',
         dbTypeCd: 'POSTGRESQL', thumbnailUrl: '', thumbnailAttachId: null });
@@ -600,7 +600,7 @@ window.MdSgSourcegenPage = {
       uiState.dtlMode = 'edit';
       uiState.activeTabIdx = 0;
       uiState.activeFile = '';
-      history.replaceState(null, '', 'mdSgSourcegen.html?view=editor');
+      history.replaceState(null, '', 'fo-md-sg-sourcegen.html?view=editor');
     };
     const onSwitchToEdit = () => { uiState.dtlMode = 'edit'; };
     const onCancelEdit = async () => {
@@ -812,7 +812,7 @@ window.MdSgSourcegenPage = {
           const res = await mdSgApiSvc.project.create(body, '소스젠', '등록');
           projectId = res.data?.data?.projectId;
           form.projectId = projectId;
-          history.replaceState(null, '', 'mdSgSourcegen.html?view=editor&projectId=' + encodeURIComponent(projectId));
+          history.replaceState(null, '', 'fo-md-sg-sourcegen.html?view=editor&projectId=' + encodeURIComponent(projectId));
         } else {
           await mdSgApiSvc.project.update(projectId, body, '소스젠', '수정');
         }

@@ -41,11 +41,11 @@ window.MdSgGenHistListPage = {
 
     /* onChangeView — 목록/이력 화면 전환 (모듈은 해시라우터가 없어 전체 페이지 이동) */
     const onChangeView = (v) => {
-      if (v === 'list') location.href = 'mdSgSourcegen.html?view=list';
+      if (v === 'list') location.href = 'fo-md-sg-sourcegen.html?view=list';
     };
     const onOpenProject = (h) => {
       if (!h.projectId) return;
-      location.href = 'mdSgSourcegen.html?view=editor&projectId=' + encodeURIComponent(h.projectId);
+      location.href = 'fo-md-sg-sourcegen.html?view=editor&projectId=' + encodeURIComponent(h.projectId);
     };
 
     const onDelete = async (h) => {

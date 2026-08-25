@@ -52,7 +52,7 @@ window.MdSgGenHistMng = {
         return handleSearchList();
       } else if (cmd === 'hist-project-open') {
         if (!param) return;
-        return window.open('mdSgSourcegen.html?view=editor&projectId=' + encodeURIComponent(param), '_blank');
+        return window.open('fo-md-sg-sourcegen.html?view=editor&projectId=' + encodeURIComponent(param), '_blank');
       } else if (cmd === 'hist-download') {
         if (!param) { return showToast('보관된 ZIP 이 없습니다.', 'error'); }
         return window.open(param, '_blank');

@@ -37,8 +37,8 @@ window.MdCbPatternListPage = {
     const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
 
     /* onOpen / onNew — 상세(편집) 화면은 별도 뷰라 쿼리스트링으로 이동한다 */
-    const onOpen = (row) => { location.href = 'mdCbCobanul.html?view=editor&patternId=' + encodeURIComponent(row.patternId); };
-    const onNew = () => { location.href = 'mdCbCobanul.html?view=editor'; };
+    const onOpen = (row) => { location.href = 'fo-md-cb-cobanul.html?view=editor&patternId=' + encodeURIComponent(row.patternId); };
+    const onNew = () => { location.href = 'fo-md-cb-cobanul.html?view=editor'; };
 
     const fnFmtDate = (d) => (d ? String(d).slice(0, 10) : '-');
 

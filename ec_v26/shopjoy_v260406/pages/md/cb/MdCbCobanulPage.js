@@ -638,7 +638,7 @@ window.MdCbCobanulPage = {
       patternYarns.splice(0, patternYarns.length);
       uiState.dtlMode = 'edit';
       uiState.chartMode = 'symbol';
-      history.replaceState(null, '', 'mdCbCobanul.html?view=editor');
+      history.replaceState(null, '', 'fo-md-cb-cobanul.html?view=editor');
     };
 
     /* onSwitchToEdit / onCancelEdit — 보기 ↔ 수정 모드 전환. 취소는 서버 값으로 되돌린다(편집 중 변경분 폐기) */
@@ -649,7 +649,7 @@ window.MdCbCobanulPage = {
     };
 
     /* onBackToList — 목록 화면으로 이동 */
-    const onBackToList = () => { location.href = 'mdCbCobanul.html'; };
+    const onBackToList = () => { location.href = 'fo-md-cb-cobanul.html'; };
 
     /* fnLoadPatternById — patternId 로 기존 도안(메타+격자+재료) 불러오기 */
     const fnLoadPatternById = async (patternId) => {
@@ -864,7 +864,7 @@ window.MdCbCobanulPage = {
           const res = await mdCbApiSvc.pattern.create(body, '코바늘도안', '등록');
           patternId = res.data?.data?.patternId;
           form.patternId = patternId;
-          history.replaceState(null, '', 'mdCbCobanul.html?view=editor&patternId=' + encodeURIComponent(patternId));
+          history.replaceState(null, '', 'fo-md-cb-cobanul.html?view=editor&patternId=' + encodeURIComponent(patternId));
         } else {
           await mdCbApiSvc.pattern.update(patternId, body, '코바늘도안', '수정');
         }

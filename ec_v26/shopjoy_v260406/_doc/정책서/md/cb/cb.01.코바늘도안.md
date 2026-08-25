@@ -7,14 +7,14 @@
 ## 범위
 
 - 관련 역할: 회원(도안 작성·수정·삭제), 비로그인 사용자(목록·상세 열람 가능 — 권한 구분 없이 전체 공개)
-- 관련 시스템: 독립 FO 모듈(`mdCbCobanul.html`), BO 코바늘 관리 메뉴(기호/실/도안 마스터 관리)
+- 관련 시스템: 독립 FO 모듈(`fo-md-cb-cobanul.html`), BO 코바늘 관리 메뉴(기호/실/도안 마스터 관리)
 - **2026-08-23 단순화 확정**: 소유권·권한 체크 없이 전체 회원이 서로의 도안을 조회 가능. 본인 것만 수정 가능하도록 하는 제약은 현재 버전에 없음(추후 필요 시 `memberId` 비교 추가)
 
 ## 아키텍처 요약
 
 ### 독립 FO 모듈 패턴
 
-"FO 업무 성격은 가급적 독립적으로 만든다"는 프로젝트 방침에 따라 `index.html` 라우팅에 얹지 않고 자체 HTML 진입점(`mdCbCobanul.html`)을 가진다. 다만 ShopJoy 공통 헤더(`FoAppHeader`)·사이드바(`FoAppSidebar`)·푸터(`FoAppFooter`)·로그인 모달(`Login`)은 index.html과 동일 컴포넌트를 그대로 재사용해 로그인·알림·장바구니뱃지·링크공유·카카오공유·PDF다운로드가 동일하게 동작한다.
+"FO 업무 성격은 가급적 독립적으로 만든다"는 프로젝트 방침에 따라 `index.html` 라우팅에 얹지 않고 자체 HTML 진입점(`fo-md-cb-cobanul.html`)을 가진다. 다만 ShopJoy 공통 헤더(`FoAppHeader`)·사이드바(`FoAppSidebar`)·푸터(`FoAppFooter`)·로그인 모달(`Login`)은 index.html과 동일 컴포넌트를 그대로 재사용해 로그인·알림·장바구니뱃지·링크공유·카카오공유·PDF다운로드가 동일하게 동작한다.
 
 **부트스트랩 시 반드시 지킬 것**:
 - 컴포넌트 등록은 `app.component(name, window.xxx)` — window 전역 변수명은 실제 정의부 기준 그대로 사용해야 한다(`window.foAppHeader`처럼 소문자 시작인 경우가 많음). `lib/app/foAppComp.js`의 `foRegisterComponents(app)`을 그대로 재사용하면 안 된다 — 그 함수는 `.component()`를 체이닝하는데, Vue의 `app.component(name, def)`는 `def`가 falsy(undefined)면 setter가 아니라 **getter로 오동작**해 `this` 대신 `undefined`를 반환한다. index.html은 모든 페이지 컴포넌트를 다 로드해서 문제가 없었을 뿐, 모듈처럼 일부만 로드하는 경우 체인이 끊겨 크래시한다. → 개별 `app.component()` 호출로 등록할 것
@@ -139,8 +139,8 @@ md_cb_yarn   (실 마스터 — BO 관리)
 
 | 위치 | 화면 | 설명 |
 |---|---|---|
-| FO (독립 모듈) | `mdCbCobanul.html?view=list`(기본) | 도안 목록 — 검색/일반목록·카드형식 |
-| FO (독립 모듈) | `mdCbCobanul.html?view=editor[&patternId=xxx]` | 도안 상세/편집(격자 편집기) |
+| FO (독립 모듈) | `fo-md-cb-cobanul.html?view=list`(기본) | 도안 목록 — 검색/일반목록·카드형식 |
+| FO (독립 모듈) | `fo-md-cb-cobanul.html?view=editor[&patternId=xxx]` | 도안 상세/편집(격자 편집기) |
 | BO | `mdCbPatternMng` (모듈 > 코바늘 > 도안관리) | 전체 도안 목록 조회 + "열기"(새창, view 모드)/삭제 |
 | BO | `mdCbSymbolMng` (모듈 > 코바늘 > 기호관리) | 기호 CRUD 그리드 |
 | BO | `mdCbYarnMng` (모듈 > 코바늘 > 실관리) | 실 CRUD 그리드 |

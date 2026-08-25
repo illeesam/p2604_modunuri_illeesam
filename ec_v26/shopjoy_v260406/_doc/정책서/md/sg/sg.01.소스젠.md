@@ -9,22 +9,22 @@
 
 | 항목 | 내용 |
 |---|---|
-| 진입점 | `mdSgSourcegen.html` (독립 FO 모듈 — index.html 라우팅 밖) |
-| 화면 흐름 | **로그인 → 목록 → 상세** (`mdCbCobanul.html` 과 동일한 3단 구성) |
+| 진입점 | `fo-md-sg-sourcegen.html` (독립 FO 모듈 — index.html 라우팅 밖) |
+| 화면 흐름 | **로그인 → 목록 → 상세** (`fo-md-cb-cobanul.html` 과 동일한 3단 구성) |
 | 생성 엔진 | `assets/md/sg/sourcegen/*.js` — 별도 프로젝트 `p2605_sourcegen` 의 순수 클라이언트 JS 이식 |
 | 실행 위치 | **전부 브라우저** — 서버는 DDL 텍스트 보관 + 결과 ZIP 첨부만 담당 |
 | 테이블 | `md_sg_project` / `md_sg_sourcegen` / `md_sg_sourcegen_hist` |
 
 ---
 
-## 2. 화면 흐름 (mdCbCobanul.html 과 동일 패턴)
+## 2. 화면 흐름 (fo-md-cb-cobanul.html 과 동일 패턴)
 
 ```
-mdSgSourcegen.html              → 목록 (MdSgProjectListPage)
-mdSgSourcegen.html?view=list    → 목록
-mdSgSourcegen.html?view=editor  → 신규 작성 (MdSgSourcegenPage)
-mdSgSourcegen.html?view=editor&projectId=xxx → 상세/편집
-mdSgSourcegen.html?mine=1       → 목록(내 프로젝트만 — 검색어에 내 회원명 자동 주입)
+fo-md-sg-sourcegen.html              → 목록 (MdSgProjectListPage)
+fo-md-sg-sourcegen.html?view=list    → 목록
+fo-md-sg-sourcegen.html?view=editor  → 신규 작성 (MdSgSourcegenPage)
+fo-md-sg-sourcegen.html?view=editor&projectId=xxx → 상세/편집
+fo-md-sg-sourcegen.html?mine=1       → 목록(내 프로젝트만 — 검색어에 내 회원명 자동 주입)
 ```
 
 - 헤더/사이드바/푸터/로그인 모달은 `lib/app/foModuleShell.js` 공용 셸이 제공

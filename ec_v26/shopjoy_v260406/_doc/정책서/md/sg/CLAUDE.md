@@ -1,7 +1,7 @@
 # 정책서/md/sg/ — 모듈 > 소스젠(Source Generator) 도메인 정책
 
 DDL 을 입력하면 백엔드·프론트·풀스택 20여 종 스택의 소스를 한 번에 생성하고,
-결과 ZIP 을 첨부(sy_attach)로 DB 에 보관하는 독립 FO 모듈(`mdSgSourcegen.html`).
+결과 ZIP 을 첨부(sy_attach)로 DB 에 보관하는 독립 FO 모듈(`fo-md-sg-sourcegen.html`).
 
 ## 파일 목록
 
@@ -15,9 +15,9 @@ DDL 을 입력하면 백엔드·프론트·풀스택 20여 종 스택의 소스�
 ## 관련 화면
 | 위치 | pageId / URL | 라벨 |
 |---|---|---|
-| FO | `mdSgSourcegen.html?view=list` | 소스젠 프로젝트 목록 |
-| FO | `mdSgSourcegen.html?view=editor` | 소스젠 상세/편집 |
-| FO | `mdSgSourcegen.html?mine=1` | 내 소스젠 |
+| FO | `fo-md-sg-sourcegen.html?view=list` | 소스젠 프로젝트 목록 |
+| FO | `fo-md-sg-sourcegen.html?view=editor` | 소스젠 상세/편집 |
+| FO | `fo-md-sg-sourcegen.html?mine=1` | 내 소스젠 |
 
 ## 생성 엔진
 `assets/md/sg/sourcegen/*.js` (21개) — 별도 프로젝트 `C:\_pjt_github\p2605_sourcegen` 이식본.

@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 코바늘 도안관리 (전체 회원 도안 조회/삭제, 실제 격자 편집은 mdCbCobanul.html) */
+/* ShopJoy Admin - 코바늘 도안관리 (전체 회원 도안 조회/삭제, 실제 격자 편집은 fo-md-cb-cobanul.html) */
 window.MdCbPatternMng = {
   name: 'MdCbPatternMng',
   props: {
@@ -46,7 +46,7 @@ window.MdCbPatternMng = {
         baseGridPager.pageNo = 1;
         return handleSearchList();
       } else if (cmd === 'pattern-open') {
-        return window.open('mdCbCobanul.html?patternId=' + encodeURIComponent(param), '_blank');
+        return window.open('fo-md-cb-cobanul.html?patternId=' + encodeURIComponent(param), '_blank');
       } else if (cmd === 'pattern-delete') {
         return handleDelete(param);
       } else {

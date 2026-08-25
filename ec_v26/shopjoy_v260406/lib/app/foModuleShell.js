@@ -2,7 +2,7 @@
  * foModuleShell.js — 독립 FO 모듈(자체 HTML 진입점)용 공용 앱 셸.
  *
  * "FO 업무 성격은 가급적 독립적으로 만든다"는 방침에 따라, index.html 의 라우팅에 얹지 않고
- * 코바늘(mdCbCobanul.html)처럼 자기 HTML 진입점을 갖는 FO 모듈이 늘어날 예정이다. 그런 모듈도
+ * 코바늘(fo-md-cb-cobanul.html)처럼 자기 HTML 진입점을 갖는 FO 모듈이 늘어날 예정이다. 그런 모듈도
  * ShopJoy 공통 헤더/사이드바/푸터(같은 FoAppHeader/FoAppSidebar/FoAppFooter 컴포넌트)를 그대로
  * 쓰도록, foAppBase.js 가 index.html 안에서 직접 만들던 테마/로그인/장바구니뱃지/사이드바 상태를
  * 이 파일 하나로 뽑아 재사용한다 — 새 모듈은 이 파일 + 자기 콘텐츠 컴포넌트만 있으면 된다.

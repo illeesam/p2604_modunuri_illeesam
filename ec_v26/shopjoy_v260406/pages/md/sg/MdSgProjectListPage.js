@@ -40,11 +40,11 @@ window.MdSgProjectListPage = {
     const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
 
     /* onOpen / onNew — 상세(편집) 화면은 별도 뷰라 쿼리스트링으로 이동한다 */
-    const onOpen = (row) => { location.href = 'mdSgSourcegen.html?view=editor&projectId=' + encodeURIComponent(row.projectId); };
-    const onNew = () => { location.href = 'mdSgSourcegen.html?view=editor'; };
+    const onOpen = (row) => { location.href = 'fo-md-sg-sourcegen.html?view=editor&projectId=' + encodeURIComponent(row.projectId); };
+    const onNew = () => { location.href = 'fo-md-sg-sourcegen.html?view=editor'; };
     /* onChangeView — 목록/이력 화면 전환 (모듈은 해시라우터가 없어 전체 페이지 이동) */
     const onChangeView = (v) => {
-      if (v === 'hist') location.href = 'mdSgSourcegen.html?view=hist';
+      if (v === 'hist') location.href = 'fo-md-sg-sourcegen.html?view=hist';
     };
 
     const fnFmtDate = (d) => (d ? String(d).slice(0, 10) : '-');

@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 소스젠 프로젝트관리 (전체 회원 프로젝트 조회/삭제, 실제 DDL 편집은 mdSgSourcegen.html) */
+/* ShopJoy Admin - 소스젠 프로젝트관리 (전체 회원 프로젝트 조회/삭제, 실제 DDL 편집은 fo-md-sg-sourcegen.html) */
 window.MdSgProjectMng = {
   name: 'MdSgProjectMng',
   props: {
@@ -47,7 +47,7 @@ window.MdSgProjectMng = {
         return handleSearchList();
       } else if (cmd === 'project-open') {
         /* 실제 편집은 독립 모듈 화면에서 한다 — BO 는 조회·정리만 담당 */
-        return window.open('mdSgSourcegen.html?view=editor&projectId=' + encodeURIComponent(param), '_blank');
+        return window.open('fo-md-sg-sourcegen.html?view=editor&projectId=' + encodeURIComponent(param), '_blank');
       } else if (cmd === 'project-hist') {
         return props.navigate('mdSgGenHistMng', { projectId: param });
       } else if (cmd === 'project-delete') {
