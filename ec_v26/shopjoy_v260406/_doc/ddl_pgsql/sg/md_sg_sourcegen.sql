@@ -27,7 +27,7 @@ COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.sourcegen_id IS '소스젠ID (YYM
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.site_id IS '사이트ID (sy_site.site_id) - 업무 소속 사이트';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.reg_site_id IS '등록 사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.project_id IS '프로젝트ID (md_sg_project.project_id)';
-COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.tab_no IS '탭 번호 (1~10)';
+COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.tab_no IS '표시 순서 (2026-08-26부터 10개 고정 제한 폐지 — 저장 시 화면 순서로 재부여되는 정렬용 번호)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.ddl_text IS 'CREATE TABLE 원문 DDL';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.schema_nm IS '스키마명 (DDL 파싱 자동 추출)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.table_nm IS '테이블명 (DDL 파싱 자동 추출)';

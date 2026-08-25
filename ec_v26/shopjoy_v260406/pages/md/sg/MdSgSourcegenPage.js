@@ -4,8 +4,6 @@
    생성 엔진은 p2605_sourcegen 프로젝트의 순수 클라이언트 JS 를 그대로 가져다 쓴다
    (assets/md/sg/sourcegen/*.js — gnParseDdl / gnGenerate 가 전역으로 노출됨). */
 
-const SG_TAB_COUNT = 10;   // DDL 탭 최대 개수 (원본 소스젠과 동일)
-
 /* SG_FILE_GROUPS — 생성 결과 파일을 좌측 트리에서 묶는 기준(원본 sourcegen_postgresql.html 의 groupedFiles 이식).
    `short` — [소스 생성] 팝오버 체크리스트 전용 축약 라벨(2026-08-26). 팝오버는 이미 "BACKEND" 구획
    헤더 아래 나열되므로 항목마다 "Backend (...)" 를 반복할 필요가 없다. `title` 은 결과 뷰어(파일트리
@@ -408,20 +406,84 @@ COMMENT ON COLUMN shopjoy_2604.md_sg_project.project_nm   IS '프로젝트명';
   ] },
 ];
 
-/* SG_PROJECT_TEMPLATES — [프로젝트템플릿다운로드] 모달에 보여줄 목록(DB 유형별 3개씩).
-   전부 준비중(미구현) 항목이라 실제 다운로드 URL 없이 label/desc 만 갖는다 — 클릭 시 토스트만 안내. */
-const SG_PROJECT_TEMPLATES = [
-  { db: 'ORACLE', dbLabel: 'Oracle', items: [
-    { key: 'ora-tpl1', label: '회원관리 템플릿',  desc: '회원/등급/주소 CRUD 기본형' },
-    { key: 'ora-tpl2', label: '게시판 템플릿',    desc: '게시판/댓글/첨부 CRUD 기본형' },
-    { key: 'ora-tpl3', label: '주문관리 템플릿',  desc: '주문/주문상품 CRUD 기본형' },
+/* SG_TEMPLATE_DOMAINS — [프로젝트템플릿다운로드] 목록. 실제 프로젝트 DDL(_doc/ddl_pgsql/)을
+   업무구분(도메인 prefix)별로 묶은 것 — 지어낸 목업이 아니라 진짜 테이블 목록(2026-08-26).
+   dir 은 _doc/ddl_pgsql/ 밑의 실제 폴더(ec|sy), files 는 그 폴더의 실제 .sql 파일명(확장자 제외).
+   DB 탭(Oracle/PostgreSQL)은 이 목록을 바꾸지 않고 다운로드 시 변환 여부만 결정한다
+   (원본이 전부 PostgreSQL 이라 Oracle 은 fnPgDdlToOracle 로 최선 변환 — 정확도는 참고용). */
+const SG_TEMPLATE_DOMAINS = [
+  { key: 'mb', label: '회원관리', dir: 'ec', files: [
+    'mb_device_token', 'mb_like', 'mb_member', 'mb_member_addr', 'mb_member_grade',
+    'mb_member_group', 'mb_member_group_map', 'mb_member_role', 'mb_member_sns',
+    'mbh_member_login_log', 'mbh_member_token_log',
   ] },
-  { db: 'POSTGRESQL', dbLabel: 'PostgreSQL', items: [
-    { key: 'pg-tpl1', label: '회원관리 템플릿',  desc: '회원/등급/주소 CRUD 기본형' },
-    { key: 'pg-tpl2', label: '게시판 템플릿',    desc: '게시판/댓글/첨부 CRUD 기본형' },
-    { key: 'pg-tpl3', label: '주문관리 템플릿',  desc: '주문/주문상품 CRUD 기본형' },
+  { key: 'pd', label: '상품관리', dir: 'ec', files: [
+    'pd_category', 'pd_category_prod', 'pd_dliv_tmplt', 'pd_prod', 'pd_prod_bundle_item',
+    'pd_prod_content', 'pd_prod_img', 'pd_prod_opt', 'pd_prod_plan', 'pd_prod_qna',
+    'pd_prod_rel', 'pd_prod_set_item', 'pd_prod_sku', 'pd_prod_stock', 'pd_prod_tag',
+    'pd_restock_noti', 'pd_review', 'pd_review_attach', 'pd_review_comment', 'pd_tag',
+    'pdh_prod_chg_hist', 'pdh_prod_content_chg_hist', 'pdh_prod_sku_chg_hist',
+    'pdh_prod_sku_price_hist', 'pdh_prod_sku_stock_hist', 'pdh_prod_status_hist', 'pdh_prod_view_log',
+  ] },
+  { key: 'od', label: '주문관리', dir: 'ec', files: [
+    'od_cart', 'od_claim', 'od_claim_item', 'od_dliv', 'od_dliv_item', 'od_order',
+    'od_order_discnt', 'od_order_item', 'od_order_item_discnt', 'od_pay', 'od_pay_method',
+    'od_refund', 'od_refund_method',
+    'odh_claim_chg_hist', 'odh_claim_item_chg_hist', 'odh_claim_item_status_hist', 'odh_claim_status_hist',
+    'odh_dliv_chg_hist', 'odh_dliv_item_chg_hist', 'odh_dliv_status_hist',
+    'odh_order_chg_hist', 'odh_order_item_chg_hist', 'odh_order_item_status_hist', 'odh_order_status_hist',
+    'odh_pay_chg_hist', 'odh_pay_status_hist',
+  ] },
+  { key: 'pm', label: '프로모션관리', dir: 'ec', files: [
+    'pm_cache', 'pm_coupon', 'pm_coupon_issue', 'pm_coupon_item', 'pm_coupon_prod', 'pm_coupon_usage',
+    'pm_discnt', 'pm_discnt_item', 'pm_discnt_prod', 'pm_discnt_usage',
+    'pm_event', 'pm_event_benefit', 'pm_event_item', 'pm_event_prod',
+    'pm_gift', 'pm_gift_cond', 'pm_gift_issue',
+    'pm_plan', 'pm_plan_item',
+    'pm_save', 'pm_save_issue', 'pm_save_item', 'pm_save_policy', 'pm_save_prod', 'pm_save_usage',
+    'pm_voucher', 'pm_voucher_issue',
+  ] },
+  { key: 'dp', label: '전시관리', dir: 'ec', files: [
+    'dp_area', 'dp_panel', 'dp_panel_item', 'dp_ui', 'dp_widget', 'dp_widget_lib',
+  ] },
+  { key: 'st', label: '정산관리', dir: 'ec', files: [
+    'st_erp_voucher', 'st_erp_voucher_line', 'st_recon', 'st_settle', 'st_settle_adj',
+    'st_settle_close', 'st_settle_config', 'st_settle_etc_adj', 'st_settle_item',
+    'st_settle_pay', 'st_settle_raw',
+  ] },
+  { key: 'cm', label: '공통관리', dir: 'ec', files: [
+    'cm_blog', 'cm_blog_cate', 'cm_blog_file', 'cm_blog_good', 'cm_blog_reply', 'cm_blog_tag',
+    'cm_chatt', 'cm_chatt_member', 'cm_chatt_msg',
+    'cm_dashboard', 'cm_dashboard_item', 'cm_dashboard_item_data', 'cm_dashboard_menu',
+    'cm_faq', 'cm_path', 'cm_popup', 'cm_popup_item',
+    'cmh_push_log',
+  ] },
+  { key: 'sy', label: '시스템관리', dir: 'sy', files: [
+    'sy_alarm', 'sy_attach', 'sy_batch', 'sy_bbm', 'sy_bbs', 'sy_brand', 'sy_code', 'sy_code_grp',
+    'sy_contact', 'sy_dept', 'sy_exceldown', 'sy_i18n', 'sy_menu', 'sy_noti', 'sy_notice', 'sy_path',
+    'sy_prop', 'sy_role', 'sy_role_menu', 'sy_site', 'sy_template', 'sy_user', 'sy_user_bookmark',
+    'sy_user_pref', 'sy_user_role', 'sy_vendor', 'sy_vendor_brand', 'sy_vendor_content',
+    'sy_vendor_user', 'sy_vendor_user_role', 'sy_voc',
+    'syh_access_error_log', 'syh_access_log', 'syh_alarm_send_hist', 'syh_api_log', 'syh_batch_hist',
+    'syh_batch_log', 'syh_ext_test_log', 'syh_send_email_log', 'syh_send_msg_log',
+    'syh_user_login_log', 'syh_user_token_log',
   ] },
 ];
+
+/* fnPgDdlToOracle — PostgreSQL DDL → Oracle 방언 최선 변환(2026-08-26).
+   원본 DDL 이 전부 PostgreSQL 뿐이라 Oracle 탭은 이 함수로 즉석 변환한다 — 정식 마이그레이션
+   도구가 아니라 "템플릿 참고용" 수준의 최선 변환(타입/인덱스 구문 위주)이라는 한계를 UI 안내에 남긴다. */
+function fnPgDdlToOracle(sql) {
+  return sql
+    .replace(/\bVARCHAR\(/gi, 'VARCHAR2(')
+    .replace(/\bTEXT\b/g, 'CLOB')
+    .replace(/\bBOOLEAN\b/gi, 'NUMBER(1)')
+    .replace(/\bBIGINT\b/gi, 'NUMBER(19)')
+    .replace(/\bINTEGER\b/gi, 'NUMBER(10)')
+    .replace(/\bDEFAULT\s+CURRENT_TIMESTAMP\b/gi, 'DEFAULT SYSTIMESTAMP')
+    .replace(/\s+USING\s+btree\s*/gi, ' ')
+    .replace(/::[a-zA-Z_][a-zA-Z_ ]*/g, '');  // PG 캐스트(::character varying 등) 제거 — Oracle 엔 없는 구문
+}
 
 window.MdSgSourcegenPage = {
   name: 'MdSgSourcegenPage',
@@ -437,14 +499,26 @@ window.MdSgSourcegenPage = {
       loading: false, generating: false, saving: false, thumbUploading: false,
       autoThumb: true,        // 대표이미지 미첨부 시 DDL 정보로 자동 생성 (기본 ON)
       dtlMode: 'edit',        // 'view' | 'edit' — 목록에서 행 클릭=보기, [수정] 클릭=수정모드
-      activeTabIdx: 0,        // 현재 편집 중인 DDL 탭
+      activeTabId: null,      // 현재 편집 중인 DDL 탭(tabId — 배열 재정렬과 무관한 안정 식별자)
       activeFile: '',         // 결과 뷰어에서 선택된 파일 키
-      resultTabIdx: 0,        // 결과 뷰어에서 보고 있는 탭
+      resultTabId: null,      // 결과 뷰어에서 보고 있는 탭(tabId)
+      treeNewFolderParent: null, // 트리 [+ 새 폴더] 입력 중인 부모 경로(''=최상위, null=입력 안 함)
+      treeNewFolderText: '',     // 트리 [+ 새 폴더] 입력값
+      treeRenamePath: null,      // 트리 노드 이름변경 입력 중인 대상 경로(null=입력 안 함)
+      treeRenameText: '',        // 트리 노드 이름변경 입력값
+      treeDragKind: null,        // 드래그 중인 대상 종류('tab' | 'folder')
+      treeDragTabId: null,       // 드래그 중인 탭 id (kind==='tab')
+      treeDragFolderPath: null,  // 드래그 중인 폴더 경로 (kind==='folder')
+      treeCollapsed: {},         // { [path]: true } — 접힌 폴더 경로 집합
       copied: false,
       genMemo: '',
       templateModalOpen: false,  // 프로젝트 템플릿 다운로드 모달 표시 여부
       templateDbTab: 'POSTGRESQL', // 템플릿 모달 안 DB 탭 선택('ORACLE' | 'POSTGRESQL')
+      templateDownloadingKey: '', // 다운로드 진행중인 도메인 key(중복클릭 방지 + 버튼 로딩표시)
       stackPopOpen: false,       // [소스 생성] 언어/스택 선택 팝오버 표시 여부
+      uploadModalOpen: false,    // 프로젝트업로드 모달 표시 여부
+      uploadDbType: 'POSTGRESQL', // 업로드 파일의 DDL 방언(파싱 기준 사전선택) 'ORACLE' | 'POSTGRESQL'
+      uploading: false,          // 업로드 파일 처리중
     });
 
     /* selectedStacks — [소스 생성] 팝오버 체크 상태(SG_FILE_GROUPS.prefix 배열). localStorage 영속화 */
@@ -458,14 +532,20 @@ window.MdSgSourcegenPage = {
       thumbnailUrl: '', thumbnailAttachId: null,
     });
     const thumbInputRef = ref(null);
+    const uploadFileInputRef = ref(null);
 
-    /* tabs — DDL 탭 10개. files 는 생성 결과(파일경로 → 소스문자열) */
-    const tabs = reactive(
-      Array.from({ length: SG_TAB_COUNT }, (_, i) => ({
-        tabNo: i + 1, ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '',
-        files: {}, error: '', generatedAt: '',
-      }))
-    );
+    /* tabs — DDL 탭(테이블) 목록. 2026-08-26 부터 10개 고정 슬롯을 없애고 개수 제한 없는 배열로 바꿨다
+       (좌측 트리에서 subPackage 기준으로 묶어 보여주는 구조로 바뀌면서 "탭 10개"라는 전제가 사라짐).
+       tabId 는 배열 재정렬(드래그 이동)과 무관하게 특정 탭을 계속 가리키기 위한 내부 전용 식별자 —
+       tabNo 는 저장 시 현재 배열 순서로 다시 매겨지는 표시/정렬용 값(구 "탭 1~10" 번호와 호환). */
+    let _tabSeq = 0;
+    const fnNewTab = (overrides = {}) => ({
+      tabId: ++_tabSeq, tabNo: 0,
+      ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '',
+      files: {}, error: '', generatedAt: '',
+      ...overrides,
+    });
+    const tabs = reactive([fnNewTab()]);   // 신규 프로젝트는 빈 탭 1개로 시작
 
     const genHists = reactive([]);   // 생성 이력(첨부 ZIP) 목록
     /* genHistGridColumns — fo-grid 전환(2026-08-25). 번호는 idx+1(페이저 없는 로컬 배열이라
@@ -489,14 +569,13 @@ window.MdSgSourcegenPage = {
       { label: '삭제',     cls: 'btn btn-sm btn_row_delete', onClick: (row) => onDeleteGenHist(row), visible: () => !cfReadonly.value },
     ] });
     const cfIsNew = computed(() => !form.projectId);
-    const cfCurTab = computed(() => tabs[uiState.activeTabIdx] || tabs[0]);
-    const cfResultTab = computed(() => tabs[uiState.resultTabIdx] || tabs[0]);
+    const cfCurTab = computed(() => tabs.find(t => t.tabId === uiState.activeTabId) || tabs[0]);
+    const cfResultTab = computed(() => tabs.find(t => t.tabId === uiState.resultTabId) || tabs[0]);
     const cfTotalFileCount = computed(() => tabs.reduce((s, t) => s + Object.keys(t.files).length, 0));
     /* cfFilledTabs — DDL 이 실제로 입력된 탭만 (생성/저장 대상) */
     const cfFilledTabs = computed(() => tabs.filter(t => (t.ddlText || '').trim()));
-    /* cfResultTabIndices — 생성 결과가 있는 탭 인덱스 */
-    const cfResultTabIndices = computed(() =>
-      tabs.map((t, i) => (Object.keys(t.files).length ? i : -1)).filter(i => i >= 0));
+    /* cfResultTabs — 생성 결과가 있는 탭들(탭 id 기준 — 배열 인덱스는 드래그 이동으로 바뀔 수 있어 안 씀) */
+    const cfResultTabs = computed(() => tabs.filter(t => Object.keys(t.files).length));
 
     /* cfGroupedFiles — 결과 뷰어 좌측 트리 (그룹 → 파일 목록).
        구분자 제목은 "{구획} - {스택}" 형식(예: "Backend - JPA", "Frontend - Vue3 CDN (with common)")
@@ -531,7 +610,7 @@ window.MdSgSourcegenPage = {
     const onLoadSample = async (s, dbTypeCd) => {
       const t = cfCurTab.value;
       if ((t.ddlText || '').trim() &&
-          !await props.showConfirm('샘플 넣기', `탭 ${t.tabNo} 의 현재 DDL 을 샘플로 덮어쓰시겠습니까?`)) return;
+          !await props.showConfirm('샘플 넣기', `[${t.tableNm || '현재 탭'}] 의 DDL 을 샘플로 덮어쓰시겠습니까?`)) return;
       if (dbTypeCd) form.dbTypeCd = dbTypeCd;
       t.ddlText = s.text;
       const opts = fnExtractOpts(t.ddlText);
@@ -617,22 +696,19 @@ window.MdSgSourcegenPage = {
         thumbnailUrl: p.thumbnailUrl || '', thumbnailAttachId: p.thumbnailAttachId || null,
       });
 
-      /* DDL 탭 복원 — 저장된 tabNo 자리에 그대로 채우고 나머지는 빈 탭 유지 */
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
+      /* DDL 탭 복원 — 서버가 준 순서(tabNo asc)대로 tabs 배열을 통째로 새로 구성한다
+         (2026-08-26, 고정 10슬롯 폐지 — 저장된 탭 수만큼 그대로 생긴다). */
       const ddlRes = await mdSgApiSvc.ddl.getList(p.projectId, '소스젠', 'DDL조회');
-      (ddlRes.data?.data || []).forEach(d => {
-        const idx = (d.tabNo || 1) - 1;
-        if (idx < 0 || idx >= SG_TAB_COUNT) return;
-        Object.assign(tabs[idx], {
-          ddlText: d.ddlText || '', schemaNm: d.schemaNm || '', tableNm: d.tableNm || '',
-          classNm: d.classNm || '', endpoint: d.endpoint || '', swaggerTag: d.swaggerTag || '',
-          subPackage: d.subPackage || '',
-        });
-      });
+      const ddlRows = ddlRes.data?.data || [];
+      tabs.splice(0, tabs.length, ...(ddlRows.length ? ddlRows.map(d => fnNewTab({
+        tabNo: d.tabNo || 0, ddlText: d.ddlText || '', schemaNm: d.schemaNm || '', tableNm: d.tableNm || '',
+        classNm: d.classNm || '', endpoint: d.endpoint || '', swaggerTag: d.swaggerTag || '',
+        subPackage: d.subPackage || '',
+      })) : [fnNewTab()]));
 
       await fnLoadGenHists(p.projectId);
       uiState.dtlMode = 'view';  // 목록에서 들어온 진입은 항상 보기모드 — [수정] 클릭 시에만 편집
-      uiState.activeTabIdx = 0;
+      uiState.activeTabId = tabs[0].tabId;
     };
 
     const fnLoadGenHists = async (projectId) => {
@@ -645,10 +721,10 @@ window.MdSgSourcegenPage = {
     const onNewProject = () => {
       Object.assign(form, { projectId: null, projectNm: '', projectDesc: '', basePackage: 'com.exam.app',
         dbTypeCd: 'POSTGRESQL', thumbnailUrl: '', thumbnailAttachId: null });
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
+      tabs.splice(0, tabs.length, fnNewTab());
       genHists.splice(0, genHists.length);
       uiState.dtlMode = 'edit';
-      uiState.activeTabIdx = 0;
+      uiState.activeTabId = tabs[0].tabId;
       uiState.activeFile = '';
       history.replaceState(null, '', 'fo-md-sg-sourcegen.html?view=editor');
     };
@@ -658,31 +734,248 @@ window.MdSgSourcegenPage = {
       uiState.dtlMode = 'view';
     };
 
-    /* ── 4b) 프로젝트 템플릿 다운로드 / 프로젝트 업로드 (둘 다 미구현 — 준비중 안내만) ── */
+    /* ── 4b) 프로젝트 템플릿 다운로드 / 프로젝트 업로드 ── */
     const onTemplateModalOpen = () => { uiState.templateModalOpen = true; };
     const onTemplateModalClose = () => { uiState.templateModalOpen = false; };
     const onTemplateDbTab = (db) => { uiState.templateDbTab = db; };
-    /* onTemplateItemClick — 템플릿 항목 클릭. 실제 다운로드는 미구현이라 안내만(2026-08-25) */
-    const onTemplateItemClick = () => { props.showToast('준비중입니다.', 'info'); };
-    /* onProjectUpload — 프로젝트 업로드 버튼. 미구현이라 안내만(2026-08-25) */
-    const onProjectUpload = () => { props.showToast('준비중입니다.', 'info'); };
-    const cfTemplateItems = computed(() => {
-      const grp = SG_PROJECT_TEMPLATES.find(g => g.db === uiState.templateDbTab);
-      return grp ? grp.items : [];
+
+    /* onProjectUploadStart — [프로젝트업로드] 버튼. DB유형 사전선택 모달을 연다(2026-08-26) */
+    const onProjectUploadStart = () => { uiState.uploadModalOpen = true; };
+    const onProjectUploadDbPick = (db) => { uiState.uploadDbType = db; };
+    const onOpenUploadPicker = () => { uploadFileInputRef.value?.click(); };
+
+    /* fnSplitDdlStatements — 텍스트 하나에 CREATE TABLE 이 여러 개 이어붙어 있어도(직접 붙여넣거나
+       여러 테이블을 한 .sql 에 모아 올린 경우) 테이블 단위로 쪼갠다. 그 테이블 뒤에 따라오는
+       COMMENT ON / CREATE INDEX 등 부속 구문은 다음 CREATE TABLE 직전까지 같은 조각으로 묶인다. */
+    const fnSplitDdlStatements = (text) => {
+      const marker = /CREATE\s+TABLE\s+/gi;
+      const starts = [];
+      let m;
+      while ((m = marker.exec(text))) starts.push(m.index);
+      if (!starts.length) return [];
+      return starts.map((s, i) => text.slice(s, i + 1 < starts.length ? starts[i + 1] : text.length).trim());
+    };
+
+    /* onProjectUploadFile — 파일 선택 즉시 파싱해서 트리에 테이블(탭)로 추가한다(기존 탭은 유지 —
+       "업로드"는 가져오기이지 초기화가 아니다). txt/sql 은 그대로 읽고, zip 은 안의 txt/sql 파일들을
+       전부 읽어 합친다. */
+    const onProjectUploadFile = async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      const nameLower = file.name.toLowerCase();
+      if (!/\.(txt|sql|zip)$/.test(nameLower)) {
+        props.showToast('txt, sql, zip 파일만 업로드할 수 있습니다.', 'error'); return;
+      }
+      uiState.uploading = true;
+      try {
+        const texts = [];
+        if (nameLower.endsWith('.zip')) {
+          if (typeof JSZip !== 'function') throw new Error('JSZip 이 로드되지 않았습니다.');
+          const zip = await JSZip.loadAsync(file);
+          const entries = Object.values(zip.files).filter(f => !f.dir && /\.(txt|sql)$/i.test(f.name));
+          if (!entries.length) throw new Error('ZIP 안에 txt/sql 파일이 없습니다.');
+          for (const entry of entries) texts.push(await entry.async('text'));
+        } else {
+          texts.push(await file.text());
+        }
+        const isOracle = uiState.uploadDbType === 'ORACLE';
+        const dbType = isOracle ? 'oracle' : 'postgresql';
+        const newTabs = [];
+        texts.forEach(text => {
+          fnSplitDdlStatements(text).forEach(stmt => {
+            const opts = fnExtractOpts(stmt);
+            if (!opts) return;
+            /* 실제 파싱 가능한지도 확인 — 파싱 실패하는 조각은 건너뛰고 나머지는 계속 진행 */
+            try { gnParseDdl(stmt, dbType); } catch (e) { return; }
+            newTabs.push(fnNewTab({ ddlText: stmt, ...opts }));
+          });
+        });
+        if (!newTabs.length) throw new Error('CREATE TABLE 구문을 찾지 못했습니다.');
+        newTabs.forEach(t => tabs.push(t));
+        form.dbTypeCd = uiState.uploadDbType;
+        uiState.activeTabId = newTabs[0].tabId;
+        uiState.uploadModalOpen = false;
+        fnFillAutoName();
+        props.showToast(`${newTabs.length}개 테이블을 불러왔습니다.`, 'success');
+      } catch (err) {
+        props.showToast(err.message || '업로드 파일 처리 중 오류가 발생했습니다.', 'error', 0);
+      } finally {
+        uiState.uploading = false;
+      }
+    };
+
+    /* onDownloadTemplate — 업무구분(도메인) 하나를 골라 실제 DDL(_doc/ddl_pgsql/)을 그대로
+       ZIP 으로 묶어 다운로드한다(2026-08-26). Oracle 탭이면 fnPgDdlToOracle 로 변환해서 담는다.
+       Live Server 로 서비스되는 정적 파일을 fetch 로 그대로 읽어오는 방식 — 별도 백엔드 API 불필요. */
+    const onDownloadTemplate = async (domain) => {
+      if (uiState.templateDownloadingKey) return;   // 중복 클릭 방지
+      if (typeof JSZip !== 'function') { props.showToast('JSZip 이 로드되지 않았습니다.', 'error', 0); return; }
+      uiState.templateDownloadingKey = domain.key;
+      try {
+        const isOracle = uiState.templateDbTab === 'ORACLE';
+        const results = await Promise.all(domain.files.map(async (fn) => {
+          const res = await fetch(`_doc/ddl_pgsql/${domain.dir}/${fn}.sql`);
+          if (!res.ok) throw new Error(`${fn}.sql 을 불러오지 못했습니다. (${res.status})`);
+          const text = await res.text();
+          return { fn, text: isOracle ? fnPgDdlToOracle(text) : text };
+        }));
+        const zip = new JSZip();
+        results.forEach(({ fn, text }) => { zip.file(`${fn}.sql`, text); });
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `sourcegen_template_${domain.key}_${isOracle ? 'oracle' : 'postgresql'}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        props.showToast(`${domain.label} 템플릿(${domain.files.length}개 테이블)을 다운로드했습니다.`, 'success');
+      } catch (err) {
+        props.showToast(err.message || '템플릿 다운로드 중 오류가 발생했습니다.', 'error', 0);
+      } finally {
+        uiState.templateDownloadingKey = '';
+      }
+    };
+
+    /* ── 5) DDL 탭 편집 + 좌측 트리(subPackage 계층) ──
+       2026-08-26: 상단 "탭1~탭10" 가로 탭을 폐기하고 좌측 트리로 바꿨다. 트리 레벨은 subPackage 를
+       "."(dot) 로 나눈 경로 그대로 — 예) subPackage "ec.mb" → "ec" 폴더 아래 "mb" 폴더.
+       탭 자체가 곧 트리의 리프(테이블) 노드이고, 폴더는 실체가 없는 "탭들의 subPackage 접두어 그룹"
+       이라 폴더만 남기고 탭을 전부 지우면 그 폴더도 자연히 사라진다(별도 폴더 테이블 불필요). */
+    const onSelectTab = (tabId) => { uiState.activeTabId = tabId; };
+
+    /* cfTree — tabs 를 subPackage 경로로 묶은 트리. { path, name, children:[폴더], tabs:[리프] } */
+    const cfTree = computed(() => {
+      const root = { path: '', name: '', children: [], tabs: [] };
+      const nodeMap = { '': root };
+      const ensureNode = (path) => {
+        if (nodeMap[path]) return nodeMap[path];
+        const segs = path.split('.');
+        const name = segs[segs.length - 1];
+        const parent = ensureNode(segs.slice(0, -1).join('.'));
+        const node = { path, name, children: [], tabs: [] };
+        parent.children.push(node);
+        nodeMap[path] = node;
+        return node;
+      };
+      tabs.forEach(t => {
+        const path = (t.subPackage || '').trim();
+        (path ? ensureNode(path) : root).tabs.push(t);
+      });
+      return root;
     });
 
-    /* ── 5) DDL 탭 편집 ── */
-    const onSelectTab = (i) => { uiState.activeTabIdx = i; };
+    /* cfTreeFlat — cfTree 를 화면에 그리기 좋은 평탄 배열로 펼친다(깊이 정보 포함, DFS 전위순회).
+       실제 재귀 컴포넌트를 새로 안 만들고 v-for 한 번으로 트리를 그리기 위한 표준 패턴
+       (BoGridCrud 의 flatRows 트리 모드와 동일 발상). 접힌(treeCollapsed) 폴더는 자식을 건너뛴다. */
+    const cfTreeFlat = computed(() => {
+      const out = [];
+      const walk = (node, depth) => {
+        node.children.forEach(child => {
+          out.push({ kind: 'folder', depth, path: child.path, name: child.name });
+          if (!uiState.treeCollapsed[child.path]) walk(child, depth + 1);
+        });
+        node.tabs.forEach(t => out.push({ kind: 'tab', depth, tab: t }));
+      };
+      walk(cfTree.value, 0);
+      return out;
+    });
+
+    /* fnEnsureNotEmpty — tabs 가 0개가 되는 상황(전부 삭제)을 막는 안전장치 — 항상 최소 1개 유지 */
+    const fnEnsureNotEmpty = () => {
+      if (!tabs.length) tabs.push(fnNewTab());
+      if (!tabs.some(t => t.tabId === uiState.activeTabId)) uiState.activeTabId = tabs[0].tabId;
+    };
+
+    /* onAddTab — 폴더(path) 아래에 새 빈 테이블(탭) 1개 추가 후 선택 */
+    const onAddTab = (parentPath) => {
+      const t = fnNewTab({ subPackage: parentPath || '' });
+      tabs.push(t);
+      uiState.activeTabId = t.tabId;
+    };
+    /* onDeleteTab — 탭(테이블) 1개 삭제 */
+    const onDeleteTab = async (tabId) => {
+      const t = tabs.find(x => x.tabId === tabId);
+      if (!t) return;
+      if ((t.ddlText || '').trim() && !await props.showConfirm('테이블 삭제', `[${t.tableNm || '이 테이블'}] 을 목록에서 삭제하시겠습니까?`)) return;
+      const idx = tabs.indexOf(t);
+      if (idx >= 0) tabs.splice(idx, 1);
+      fnEnsureNotEmpty();
+    };
     const onClearTab = async () => {
-      if (!await props.showConfirm('현재 탭 초기화', `탭 ${uiState.activeTabIdx + 1} 의 DDL 을 지우시겠습니까?`)) return;
-      Object.assign(cfCurTab.value, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' });
+      const t = cfCurTab.value;
+      if (!await props.showConfirm('현재 테이블 초기화', `[${t.tableNm || '현재 테이블'}] 의 DDL 을 지우시겠습니까?`)) return;
+      Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', files: {}, error: '', generatedAt: '' });
     };
     const onClearAllTabs = async () => {
       if (!await props.showConfirm('전체 초기화', '모든 DDL 탭과 생성 결과를 지우시겠습니까?')) return;
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
+      tabs.splice(0, tabs.length, fnNewTab());
+      uiState.activeTabId = tabs[0].tabId;
       uiState.activeFile = '';
     };
-    const fnHasData = (i) => !!(tabs[i].ddlText || '').trim();
+
+    /* ── 트리 폴더(=subPackage 경로) 관리: 생성/이름변경(레벨 추가·제거)/삭제 ── */
+    const onTreeToggle = (path) => { uiState.treeCollapsed[path] = !uiState.treeCollapsed[path]; };
+    const onAddFolderStart = (parentPath) => { uiState.treeNewFolderParent = parentPath; uiState.treeNewFolderText = ''; };
+    const onAddFolderCancel = () => { uiState.treeNewFolderParent = null; uiState.treeNewFolderText = ''; };
+    /* onAddFolderConfirm — 입력값에 "."을 포함하면 그만큼 depth 가 한 번에 생긴다(예: "ec.mb" 입력 → 2단계) */
+    const onAddFolderConfirm = () => {
+      const name = (uiState.treeNewFolderText || '').trim();
+      if (!name) { props.showToast('폴더명을 입력해주세요.', 'error'); return; }
+      const parent = uiState.treeNewFolderParent;
+      const newPath = parent ? `${parent}.${name}` : name;
+      onAddTab(newPath);
+      uiState.treeNewFolderParent = null; uiState.treeNewFolderText = '';
+    };
+    const onRenameNodeStart = (path) => { uiState.treeRenamePath = path; uiState.treeRenameText = path.split('.').pop(); };
+    const onRenameNodeCancel = () => { uiState.treeRenamePath = null; uiState.treeRenameText = ''; };
+    /* onRenameNodeConfirm — 노드 이름(경로 마지막 조각)을 바꾼다. 새 이름에 "."을 넣으면 그만큼 하위
+       레벨이 새로 생기고(깊이 추가), 부모 경로만 남기고 지우면 레벨이 하나 줄어든다(깊이 제거) —
+       별도 "레벨 추가/제거" 버튼 없이 이름변경 하나로 다 처리(전체가 문자열 경로 편집이라 동일). */
+    const onRenameNodeConfirm = () => {
+      const oldPath = uiState.treeRenamePath;
+      const name = (uiState.treeRenameText || '').trim();
+      if (!name) { props.showToast('이름을 입력해주세요.', 'error'); return; }
+      const parentPath = oldPath.includes('.') ? oldPath.slice(0, oldPath.lastIndexOf('.')) : '';
+      const newPath = parentPath ? `${parentPath}.${name}` : name;
+      if (newPath !== oldPath) {
+        tabs.forEach(t => {
+          const p = t.subPackage || '';
+          if (p === oldPath) t.subPackage = newPath;
+          else if (p.startsWith(oldPath + '.')) t.subPackage = newPath + p.slice(oldPath.length);
+        });
+      }
+      uiState.treeRenamePath = null; uiState.treeRenameText = '';
+    };
+    const onDeleteFolder = async (path) => {
+      const affected = tabs.filter(t => t.subPackage === path || (t.subPackage || '').startsWith(path + '.'));
+      if (!await props.showConfirm('폴더 삭제', `[${path}] 폴더와 그 안의 테이블 ${affected.length}개를 모두 삭제하시겠습니까?`)) return;
+      affected.forEach(t => { const i = tabs.indexOf(t); if (i >= 0) tabs.splice(i, 1); });
+      fnEnsureNotEmpty();
+    };
+
+    /* ── 드래그 이동: 탭(테이블)을 다른 폴더로 옮기거나, 폴더째 다른 폴더 밑으로 옮긴다 ── */
+    const onDragStartTab = (tabId) => { uiState.treeDragKind = 'tab'; uiState.treeDragTabId = tabId; uiState.treeDragFolderPath = null; };
+    const onDragStartFolder = (path) => { uiState.treeDragKind = 'folder'; uiState.treeDragFolderPath = path; uiState.treeDragTabId = null; };
+    const onDragEnd = () => { uiState.treeDragKind = null; uiState.treeDragTabId = null; uiState.treeDragFolderPath = null; };
+    /* onDropOnFolder — targetPath === '' 이면 최상위(루트)로 이동 */
+    const onDropOnFolder = (targetPath) => {
+      if (uiState.treeDragKind === 'tab') {
+        const t = tabs.find(x => x.tabId === uiState.treeDragTabId);
+        if (t) t.subPackage = targetPath;
+      } else if (uiState.treeDragKind === 'folder') {
+        const srcPath = uiState.treeDragFolderPath;
+        if (srcPath && srcPath !== targetPath && targetPath !== srcPath && !targetPath.startsWith(srcPath + '.')) {
+          const name = srcPath.split('.').pop();
+          const newPath = targetPath ? `${targetPath}.${name}` : name;
+          tabs.forEach(t => {
+            const p = t.subPackage || '';
+            if (p === srcPath) t.subPackage = newPath;
+            else if (p.startsWith(srcPath + '.')) t.subPackage = newPath + p.slice(srcPath.length);
+          });
+        }
+      }
+      onDragEnd();
+    };
 
     /* ── 6) 소스 생성 — 브라우저에서 전 탭 일괄 생성 ──
        [소스 생성] 버튼은 바로 생성하지 않고 언어/스택 선택 팝오버를 먼저 띄운다(2026-08-26).
@@ -738,10 +1031,10 @@ window.MdSgSourcegenPage = {
           }
         });
         /* 결과 뷰어를 첫 성공 탭 + 첫 파일로 맞춘다 */
-        const first = cfResultTabIndices.value[0];
-        if (first !== undefined) {
-          uiState.resultTabIdx = first;
-          const keys = Object.keys(tabs[first].files);
+        const first = cfResultTabs.value[0];
+        if (first) {
+          uiState.resultTabId = first.tabId;
+          const keys = Object.keys(first.files);
           uiState.activeFile = keys[0] || '';
           fnHighlight();
         }
@@ -758,10 +1051,10 @@ window.MdSgSourcegenPage = {
     };
 
     /* ── 7) 결과 뷰어 ── */
-    const onSelectResultTab = (i) => {
-      uiState.resultTabIdx = i;
-      const keys = Object.keys(tabs[i].files);
-      uiState.activeFile = keys[0] || '';
+    const onSelectResultTab = (tabId) => {
+      uiState.resultTabId = tabId;
+      const t = tabs.find(x => x.tabId === tabId);
+      uiState.activeFile = t ? (Object.keys(t.files)[0] || '') : '';
       fnHighlight();
     };
     const onSelectFile = (fn) => { uiState.activeFile = fn; fnHighlight(); };
@@ -887,18 +1180,14 @@ window.MdSgSourcegenPage = {
       try { snap = JSON.parse(row.ddlSnapshotJson); } catch (e) { props.showToast('스냅샷 데이터를 읽을 수 없습니다.', 'error'); return; }
       if (!await props.showConfirm('생성결과 불러오기',
         `${coUtil.cofYmdHm(row.genDate) || ''} 생성 시점의 DDL 탭 입력값으로 되돌리시겠습니까?\n(현재 편집 중인 DDL 탭 내용은 덮어써집니다 — 다시 생성하려면 [소스 생성]을 눌러주세요)`)) return;
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
       if (snap.basePackage) form.basePackage = snap.basePackage;
       if (snap.dbTypeCd) form.dbTypeCd = snap.dbTypeCd;
-      (snap.tabs || []).forEach(s => {
-        const idx = (s.tabNo || 1) - 1;
-        if (idx < 0 || idx >= SG_TAB_COUNT) return;
-        Object.assign(tabs[idx], {
-          ddlText: s.ddlText || '', schemaNm: s.schemaNm || '', tableNm: s.tableNm || '',
-          classNm: s.classNm || '', endpoint: s.endpoint || '', swaggerTag: s.swaggerTag || '', subPackage: s.subPackage || '',
-        });
-      });
-      uiState.activeTabIdx = 0;
+      const restored = (snap.tabs || []).map(s => fnNewTab({
+        tabNo: s.tabNo || 0, ddlText: s.ddlText || '', schemaNm: s.schemaNm || '', tableNm: s.tableNm || '',
+        classNm: s.classNm || '', endpoint: s.endpoint || '', swaggerTag: s.swaggerTag || '', subPackage: s.subPackage || '',
+      }));
+      tabs.splice(0, tabs.length, ...(restored.length ? restored : [fnNewTab()]));
+      uiState.activeTabId = tabs[0].tabId;
       uiState.activeFile = '';
       if (cfReadonly.value) uiState.dtlMode = 'edit';
       props.showToast('DDL 탭을 불러왔습니다. [소스 생성]을 눌러 다시 생성해주세요.', 'success');
@@ -958,7 +1247,7 @@ window.MdSgSourcegenPage = {
         }
         /* DDL 탭 — 입력된 탭만 전체 교체 저장 */
         const rows = cfFilledTabs.value.map((t, i) => ({
-          tabNo: t.tabNo, ddlText: t.ddlText, schemaNm: t.schemaNm, tableNm: t.tableNm,
+          tabNo: i + 1, ddlText: t.ddlText, schemaNm: t.schemaNm, tableNm: t.tableNm,
           classNm: t.classNm, endpoint: t.endpoint, swaggerTag: t.swaggerTag, subPackage: t.subPackage || null,
           sortOrd: i, useYn: 'Y',
         }));
@@ -1009,13 +1298,18 @@ window.MdSgSourcegenPage = {
     return {
       uiState, form, tabs, genHists, genHistGridColumns,
       cfReadonly, cfIsNew, cfCurTab, cfResultTab, cfTotalFileCount, cfFilledTabs,
-      cfResultTabIndices, cfGroupedFiles,
-      fnHasData, fnLangOf,
+      cfResultTabs, cfGroupedFiles, cfTree, cfTreeFlat,
+      fnLangOf,
       SG_SAMPLE_GROUPS, onLoadSample, codeBoxRef, thumbInputRef,
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
       onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
-      cfTemplateItems, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onTemplateItemClick, onProjectUpload,
+      SG_TEMPLATE_DOMAINS, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onDownloadTemplate,
+      onProjectUploadStart, onProjectUploadDbPick, onProjectUploadFile, onOpenUploadPicker, uploadFileInputRef,
       onSelectTab, onClearTab, onClearAllTabs, onGenerate,
+      onAddTab, onDeleteTab, onTreeToggle,
+      onAddFolderStart, onAddFolderCancel, onAddFolderConfirm,
+      onRenameNodeStart, onRenameNodeCancel, onRenameNodeConfirm, onDeleteFolder,
+      onDragStartTab, onDragStartFolder, onDragEnd, onDropOnFolder,
       SG_STACK_SECTIONS, selectedStacks, onOpenStackPop, onCloseStackPop, onToggleStack, onGenerateConfirmed,
       SG_STACK_VERSION_OPTIONS, stackVersions, fnStackVersion, onChangeVersion,
       onSelectResultTab, onSelectFile, onCopyCode, onDownloadFile, onDownloadZip,
@@ -1075,26 +1369,78 @@ window.MdSgSourcegenPage = {
 
   <!-- ═══ DDL 탭 ═══ -->
   <div class="sg-panel">
-    <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(탭 하나 = 테이블 하나. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
+    <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(좌측 트리에서 테이블 선택. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
       <span style="margin-left:auto;display:flex;gap:6px;">
         <button type="button" class="sg-btn sg-btn-accent" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
-        <button type="button" class="sg-btn sg-btn-accent" @click="onProjectUpload">📤 프로젝트업로드</button>
+        <button type="button" class="sg-btn sg-btn-accent" @click="onProjectUploadStart">📤 프로젝트업로드</button>
       </span>
     </div>
-    <div class="sg-ddl-tabs">
-      <button v-for="(t, i) in tabs" :key="t.tabNo" class="sg-ddl-tab"
-        :class="{ active: uiState.activeTabIdx===i, 'has-data': fnHasData(i) }"
-        @click="onSelectTab(i)">
-        탭 {{ t.tabNo }}<span v-if="fnHasData(i)" class="sg-ddl-dot"></span>
-      </button>
-    </div>
 
+    <div class="sg-ddl-layout">
+      <!-- ═══ 좌측: subPackage 기준 트리 (폴더=subPackage 경로, 리프=테이블) ═══ -->
+      <div class="sg-ddl-tree">
+        <div class="sg-ddl-tree-toolbar">
+          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddFolderStart('')">+ 폴더</button>
+          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddTab('')">+ 테이블</button>
+        </div>
+        <div v-if="uiState.treeNewFolderParent !== null" class="sg-tree-new-folder">
+          <div class="sg-tree-new-folder-parent">{{ uiState.treeNewFolderParent || '최상위' }} 아래에</div>
+          <input v-model="uiState.treeNewFolderText" class="sg-mono" placeholder="예: ec.mb (점으로 여러 단계 한번에)"
+            @keyup.enter="onAddFolderConfirm" @keyup.esc="onAddFolderCancel" />
+          <div class="sg-tree-new-folder-actions">
+            <button type="button" class="sg-btn sg-btn-dark sg-btn-xs" @click="onAddFolderConfirm">확인</button>
+            <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" @click="onAddFolderCancel">취소</button>
+          </div>
+        </div>
+        <div class="sg-ddl-tree-list" @dragover.prevent @drop="onDropOnFolder('')">
+          <div v-if="!cfTreeFlat.length" class="sg-tree-empty">테이블이 없습니다. [+ 테이블] 로 추가해주세요.</div>
+          <div v-for="row in cfTreeFlat" :key="row.kind + ':' + (row.kind==='folder' ? row.path : row.tab.tabId)"
+            class="sg-tree-row" :class="[row.kind==='folder' ? 'sg-tree-row-folder' : 'sg-tree-row-tab',
+              { active: row.kind==='tab' && row.tab.tabId===uiState.activeTabId }]"
+            :style="{ paddingLeft: (row.depth*16+8) + 'px' }"
+            :draggable="!cfReadonly"
+            @dragstart.stop="row.kind==='tab' ? onDragStartTab(row.tab.tabId) : onDragStartFolder(row.path)"
+            @dragend="onDragEnd"
+            @dragover.prevent
+            @drop.stop="row.kind==='folder' ? onDropOnFolder(row.path) : null"
+            @click="row.kind==='folder' ? onTreeToggle(row.path) : onSelectTab(row.tab.tabId)">
+            <template v-if="row.kind==='folder'">
+              <span class="sg-tree-toggle">{{ uiState.treeCollapsed[row.path] ? '▸' : '▾' }}</span>
+              <span class="sg-tree-icon">📁</span>
+              <template v-if="uiState.treeRenamePath===row.path">
+                <input v-model="uiState.treeRenameText" class="sg-mono sg-tree-rename-input" @click.stop
+                  @keyup.enter="onRenameNodeConfirm" @keyup.esc="onRenameNodeCancel" />
+                <button type="button" class="sg-tree-mini-btn" title="확인" @click.stop="onRenameNodeConfirm">✓</button>
+                <button type="button" class="sg-tree-mini-btn" title="취소" @click.stop="onRenameNodeCancel">✕</button>
+              </template>
+              <template v-else>
+                <span class="sg-tree-label">{{ row.name }}</span>
+                <span v-if="!cfReadonly" class="sg-tree-actions">
+                  <button type="button" class="sg-tree-mini-btn" title="이 폴더에 테이블 추가" @click.stop="onAddTab(row.path)">＋</button>
+                  <button type="button" class="sg-tree-mini-btn" title="이름변경(점으로 깊이 조절)" @click.stop="onRenameNodeStart(row.path)">✎</button>
+                  <button type="button" class="sg-tree-mini-btn" title="폴더 삭제" @click.stop="onDeleteFolder(row.path)">🗑</button>
+                </span>
+              </template>
+            </template>
+            <template v-else>
+              <span class="sg-tree-icon">{{ (row.tab.ddlText||'').trim() ? '📄' : '📃' }}</span>
+              <span class="sg-tree-label">{{ row.tab.tableNm || '(새 테이블)' }}</span>
+              <span v-if="!cfReadonly" class="sg-tree-actions">
+                <button type="button" class="sg-tree-mini-btn" title="삭제" @click.stop="onDeleteTab(row.tab.tabId)">🗑</button>
+              </span>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ 우측: 선택된 테이블 편집 영역 ═══ -->
+      <div class="sg-ddl-editor">
     <div class="sg-opts">
       <div class="sg-opt-row"><label>Schema</label><input v-model="cfCurTab.schemaNm" :readonly="cfReadonly" placeholder="(DDL에서 자동)" /></div>
       <div class="sg-opt-row"><label>Table</label><input v-model="cfCurTab.tableNm" readonly placeholder="(DDL에서 자동)" /></div>
       <div class="sg-opt-row"><label>Sub Package</label>
         <input v-model="cfCurTab.subPackage" :readonly="cfReadonly" placeholder="(테이블명 접두어 자동)"
-          title="Base Package 하위 폴더. 예: 테이블 zz_exam1 -> zz" class="sg-mono" /></div>
+          title="Base Package 하위 폴더 = 좌측 트리 경로. 예: ec.mb" class="sg-mono" /></div>
       <div class="sg-opt-row"><label>Class Name</label><input v-model="cfCurTab.classNm" :readonly="cfReadonly" placeholder="(테이블명에서 자동)" /></div>
       <div class="sg-opt-row"><label>Endpoint</label><input v-model="cfCurTab.endpoint" :readonly="cfReadonly" placeholder="(테이블명에서 자동)" /></div>
       <div class="sg-opt-row"><label>Swagger Tag</label><input v-model="cfCurTab.swaggerTag" :readonly="cfReadonly" placeholder="(Class Name 과 동일)" /></div>
@@ -1162,20 +1508,23 @@ window.MdSgSourcegenPage = {
         </button>
       </div>
     </div>
+      </div>
+      <!-- ═══ □ 우측: 편집 영역 ═══ -->
+    </div>
   </div>
 
   <!-- ═══ 생성 결과 뷰어 ═══ -->
   <div class="sg-panel" v-if="cfTotalFileCount">
     <div class="sg-panel-title">
-      생성 결과 — 탭 {{ uiState.resultTabIdx + 1 }}
+      생성 결과 — {{ cfResultTab.tableNm || '테이블' }}
       <span class="sg-panel-sub">({{ Object.keys(cfResultTab.files).length }}개 파일 / 전체 {{ cfTotalFileCount }}개)</span>
       <span v-if="cfResultTab.generatedAt" class="sg-gen-at">생성: {{ cfResultTab.generatedAt }}</span>
     </div>
 
-    <div class="sg-ddl-tabs" v-if="cfResultTabIndices.length > 1">
-      <button v-for="i in cfResultTabIndices" :key="'r'+i" class="sg-ddl-tab"
-        :class="{ active: uiState.resultTabIdx===i }" @click="onSelectResultTab(i)">
-        탭 {{ i+1 }} ({{ Object.keys(tabs[i].files).length }})
+    <div class="sg-ddl-tabs" v-if="cfResultTabs.length > 1">
+      <button v-for="t in cfResultTabs" :key="t.tabId" class="sg-ddl-tab"
+        :class="{ active: uiState.resultTabId===t.tabId }" @click="onSelectResultTab(t.tabId)">
+        {{ t.tableNm || '테이블' }} ({{ Object.keys(t.files).length }})
       </button>
     </div>
 
@@ -1197,7 +1546,7 @@ window.MdSgSourcegenPage = {
             <button class="btn btn-sm btn-secondary" @click="onDownloadFile">다운로드</button>
           </div>
         </div>
-        <pre v-if="uiState.activeFile" ref="codeBoxRef" :key="uiState.resultTabIdx + '|' + uiState.activeFile"
+        <pre v-if="uiState.activeFile" ref="codeBoxRef" :key="uiState.resultTabId + '|' + uiState.activeFile"
           class="sg-code line-numbers" :class="'language-' + fnLangOf(uiState.activeFile)"><code
           :class="'language-' + fnLangOf(uiState.activeFile)">{{ cfResultTab.files[uiState.activeFile] }}</code></pre>
         <div v-else class="sg-empty-hint">좌측에서 파일을 선택하세요</div>
@@ -1229,19 +1578,45 @@ window.MdSgSourcegenPage = {
     </template>
   </div>
 
-  <!-- ═══ 프로젝트 템플릿 다운로드 모달 (미구현 — 항목 클릭 시 준비중 안내만) ═══ -->
-  <fo-modal :show="uiState.templateModalOpen" title="프로젝트 템플릿 다운로드" width="480px"
+  <!-- ═══ 프로젝트 템플릿 다운로드 모달 — 실제 DDL(_doc/ddl_pgsql/)을 업무구분별로 묶어 ZIP 다운로드 ═══ -->
+  <fo-modal :show="uiState.templateModalOpen" title="프로젝트 템플릿 다운로드" width="520px"
     box-pad="20px" @close="onTemplateModalClose">
-    <div class="sg-view-toggle" style="margin-bottom:14px;">
+    <div class="sg-view-toggle" style="margin-bottom:6px;">
       <button type="button" :class="{ active: uiState.templateDbTab==='ORACLE' }" @click="onTemplateDbTab('ORACLE')">Oracle</button>
       <button type="button" :class="{ active: uiState.templateDbTab==='POSTGRESQL' }" @click="onTemplateDbTab('POSTGRESQL')">PostgreSQL</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <button v-for="t in cfTemplateItems" :key="t.key" type="button" class="sg-sample-btn"
-        style="width:100%;justify-content:space-between;" @click="onTemplateItemClick">
-        {{ t.label }}<span class="sg-sample-desc">{{ t.desc }}</span>
-      </button>
+    <div v-if="uiState.templateDbTab==='ORACLE'" style="font-size:11px;color:var(--text-muted,#999);margin-bottom:10px;">
+      ※ 원본은 PostgreSQL DDL 이며, 다운로드 시 Oracle 문법으로 자동 변환합니다(타입/인덱스 구문 위주 — 참고용, 배포 전 검토 필요)
     </div>
+    <div v-else style="margin-bottom:10px;"></div>
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;">
+      <div v-for="d in SG_TEMPLATE_DOMAINS" :key="d.key" class="sg-sample-btn"
+        style="width:100%;justify-content:space-between;cursor:default;">
+        <span>{{ d.label }}<span class="sg-sample-desc">{{ d.files.length }}개 테이블</span></span>
+        <button type="button" class="sg-btn sg-btn-dark" style="flex:0 0 auto;"
+          :disabled="!!uiState.templateDownloadingKey" @click="onDownloadTemplate(d)">
+          {{ uiState.templateDownloadingKey===d.key ? '내려받는 중…' : '⬇ 다운로드' }}
+        </button>
+      </div>
+    </div>
+  </fo-modal>
+
+  <!-- ═══ 프로젝트업로드 모달 — DB 유형 사전선택 + txt/sql/zip 업로드 ═══ -->
+  <fo-modal :show="uiState.uploadModalOpen" title="프로젝트 업로드" width="440px"
+    box-pad="20px" @close="uiState.uploadModalOpen = false">
+    <div class="sg-view-toggle" style="margin-bottom:10px;">
+      <button type="button" :class="{ active: uiState.uploadDbType==='ORACLE' }" @click="onProjectUploadDbPick('ORACLE')">Oracle</button>
+      <button type="button" :class="{ active: uiState.uploadDbType==='POSTGRESQL' }" @click="onProjectUploadDbPick('POSTGRESQL')">PostgreSQL</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:14px;">
+      업로드할 파일의 DDL 방언을 먼저 선택해주세요(파싱 기준). txt / sql / zip(txt·sql 포함) 파일만 가능하며,
+      한 파일에 CREATE TABLE 이 여러 개 있어도 테이블 단위로 나눠 좌측 트리에 추가됩니다.
+    </div>
+    <input ref="uploadFileInputRef" type="file" accept=".txt,.sql,.zip" style="display:none" @change="onProjectUploadFile" />
+    <button type="button" class="sg-btn sg-btn-dark" style="width:100%;justify-content:center;"
+      :disabled="uiState.uploading" @click="onOpenUploadPicker">
+      {{ uiState.uploading ? '처리 중…' : '📁 파일 선택' }}
+    </button>
   </fo-modal>
 </div>
 `,

@@ -137,10 +137,39 @@
 .sg-ddl-tab:hover { border-color:var(--accent,#c9a96e); color:var(--accent,#c9a96e); background:#fff; }
 .sg-ddl-tab.active { background:var(--accent,#c9a96e); border-color:var(--accent,#c9a96e); color:#fff;
   box-shadow:0 2px 6px rgba(201,169,110,0.3); }
-.sg-ddl-tab.has-data:not(.active) { border-color:rgba(201,169,110,0.5); color:var(--text-primary,#333); }
-.sg-ddl-dot { display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--accent,#c9a96e);
-  margin-left:5px; vertical-align:middle; }
-.sg-ddl-tab.active .sg-ddl-dot { background:#fff; }
+
+/* ── 상세: 좌측 DDL 트리 (2026-08-26 — 상단 "탭1~탭10" 가로탭 폐기, subPackage 계층 트리로 교체) ── */
+.sg-ddl-layout { display:flex; gap:14px; align-items:flex-start; margin-bottom:12px; }
+.sg-ddl-tree { flex:0 0 240px; min-width:0; border:1px solid var(--border,#eaeaea); border-radius:10px;
+  background:#fafafa; max-height:660px; overflow-y:auto; display:flex; flex-direction:column; }
+.sg-ddl-editor { flex:1; min-width:0; }
+.sg-ddl-tree-toolbar { display:flex; gap:5px; padding:8px; border-bottom:1px solid var(--border,#eee);
+  position:sticky; top:0; background:#fafafa; z-index:2; }
+.sg-btn-xs { height:24px; padding:0 8px; font-size:11px; }
+.sg-tree-new-folder { padding:8px; border-bottom:1px solid var(--border,#eee); display:flex;
+  flex-direction:column; gap:6px; background:rgba(201,169,110,0.06); }
+.sg-tree-new-folder-parent { font-size:10px; color:var(--text-muted,#999); }
+.sg-tree-new-folder input { height:26px; padding:2px 7px; font-size:11.5px;
+  border:1px solid var(--border,#ddd); border-radius:5px; box-sizing:border-box; }
+.sg-tree-new-folder-actions { display:flex; gap:4px; justify-content:flex-end; }
+.sg-ddl-tree-list { flex:1; padding:4px; min-height:80px; }
+.sg-tree-empty { padding:18px 8px; font-size:11.5px; color:var(--text-muted,#999); text-align:center; }
+.sg-tree-row { display:flex; align-items:center; gap:4px; padding:5px 6px; border-radius:6px;
+  cursor:pointer; font-size:12px; white-space:nowrap; user-select:none; }
+.sg-tree-row:hover { background:rgba(201,169,110,0.12); }
+.sg-tree-row.active { background:var(--accent,#c9a96e); color:#fff; font-weight:700; }
+.sg-tree-row.active .sg-tree-mini-btn { color:#fff; }
+.sg-tree-row-folder { font-weight:600; color:var(--text-primary,#444); }
+.sg-tree-toggle { flex:0 0 auto; width:11px; color:#999; font-size:9px; }
+.sg-tree-icon { flex:0 0 auto; font-size:12px; }
+.sg-tree-label { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.sg-tree-actions { flex:0 0 auto; display:none; gap:2px; }
+.sg-tree-row:hover .sg-tree-actions { display:flex; }
+.sg-tree-mini-btn { border:none; background:transparent; cursor:pointer; font-size:11px;
+  padding:1px 4px; border-radius:3px; color:#999; line-height:1.5; }
+.sg-tree-mini-btn:hover { background:rgba(0,0,0,0.1); }
+.sg-tree-rename-input { width:110px; height:22px; padding:1px 5px; font-size:11px;
+  border:1px solid var(--accent,#c9a96e); border-radius:4px; box-sizing:border-box; }
 
 .sg-opts { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
 .sg-opt-row { display:flex; flex-direction:column; gap:5px; }
@@ -263,6 +292,7 @@
 /* 파일 트리에 전체경로를 그대로 노출(2026-08-26)하면서 300px 고정폭은 너무 좁아 1fr 1fr 반반으로 */
 .sg-result-body { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
 @media (max-width:900px) { .sg-result-body { grid-template-columns:1fr; } }
+@media (max-width:760px) { .sg-ddl-layout { flex-direction:column; } .sg-ddl-tree { flex:1 1 auto; max-height:280px; width:100%; } }
 .sg-files { max-height:560px; overflow-y:auto; border:1px solid var(--border,#eaeaea); border-radius:10px;
   background:#fafafa; padding:7px; }
 /* 구분자 — 언어/스택 그룹 경계를 뚜렷하게(2026-08-26: 점선→실선 2px + 진한 색, 글자도 더 굵고 크게) */

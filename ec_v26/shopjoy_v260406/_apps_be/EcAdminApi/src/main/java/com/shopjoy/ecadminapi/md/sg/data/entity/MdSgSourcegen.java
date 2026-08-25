@@ -35,7 +35,7 @@ public class MdSgSourcegen extends BaseEntity {
     @Size(max = 21, message = "projectId 는 21자 이내여야 합니다.")
     private String projectId;
 
-    @Comment("탭 번호 (1~10)")
+    @Comment("표시 순서 (2026-08-26부터 10개 고정 제한 폐지 — 저장 시 화면 순서로 재부여되는 정렬용 번호)")
     @Column(name = "tab_no", nullable = false)
     private Integer tabNo;
 
