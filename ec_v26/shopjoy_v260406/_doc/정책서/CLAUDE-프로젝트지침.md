@@ -1499,6 +1499,14 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - 구현: `components/comp/BoAreaComp.js`의 `BoGridCrud` `cfPinLeftSegs` computed가 표시 여부에 따라 누적 오프셋을 계산(전체공통 — 화면별 대응 불필요, 이 컴포넌트를 쓰는 모든 CRUD 그리드에 자동 적용됨)
 - `showRowId`(기본 true)로 ID 컬럼 노출 여부만 화면에서 제어. 필요 없으면 `:show-row-id="false"`
 
+**`<bo-row-cancel-delete>`(`<fo-row-cancel-delete>`) 취소/삭제 노출 조건 표준** ⭐ (2026-08-26):
+- 취소: `row._row_status ∈ ['U','I','D']` (수정/신규/삭제 상태에서 되돌리기)
+- **삭제: `row._row_status === 'N'`(정상 상태)에서만 노출** — 수정(U) 중인 행은 **[취소]만** 노출하고 [삭제]는 숨긴다
+  - 이유: 수정 중인 행에 [취소]와 [삭제]가 같이 뜨면 "취소=되돌리기"와 "삭제=아예 없애기"가 헷갈린다는 피드백
+  - 구현: `components/comp/BoAreaComp.js`/`FoAreaComp.js`의 `cfShowDelete` computed (전체공통 — 이 컴포넌트를 쓰는 모든 CRUD 그리드에 자동 적용)
+  - 예외: `allowDeleteNull=true`(SyDeptMng 패턴)는 `row._row_status == null` 인 행도 삭제 허용을 추가로 더한 것뿐, U 제외 원칙은 동일
+  - `<bo-row-cancel-delete>`를 쓰지 않고 독자 패턴(예: [삭제]/[복원] 버튼 조합)을 쓰는 화면은 이 표준 대상이 아님 — 신규 화면은 처음부터 `<bo-row-cancel-delete>` 사용 권장
+
 **BoGrid 컬럼 속성화 표준 (AG-Grid colDef 식)** ⭐:
 단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 컬럼 객체
 속성으로 선언. 신규 화면은 처음부터 columns 속성 우선.

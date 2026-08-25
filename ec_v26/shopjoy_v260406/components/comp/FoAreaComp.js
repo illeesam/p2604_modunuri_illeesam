@@ -1358,9 +1358,9 @@ window.FoModal = {
  *     <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
  *   </template>
  *
- * 버튼 표시 조건 (BoRowCancelDelete 와 동일):
+ * 버튼 표시 조건 (BoRowCancelDelete 와 동일, 2026-08-26 개정):
  *   취소: row._row_status ∈ ['U','I','D']
- *   삭제: row._row_status ∈ ['N','U']
+ *   삭제: row._row_status === 'N'  (수정(U) 행은 [취소]만 — 삭제까지 뜨면 의미가 헷갈림, 전체공통)
  *
  * 스타일은 FO 톤(인라인 작은 버튼). BO 컴포넌트는 .btn 클래스 기반 ─ 디자인 분기. */
 window.FoRowCancelDelete = {
@@ -1378,7 +1378,7 @@ window.FoRowCancelDelete = {
     const cfShowDelete = Vue.computed(() => {
       const s = props.row._row_status;
       if (props.allowDeleteNull && s == null) return true;
-      return ['N', 'U'].includes(s);
+      return s === 'N';
     });
 
     const handleBtnAction = (cmd, param = {}) => {

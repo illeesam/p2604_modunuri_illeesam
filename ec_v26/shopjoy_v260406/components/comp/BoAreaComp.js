@@ -2521,12 +2521,14 @@ window.BoRoleSelectModal = {
  *     <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
  *   </template>
  *
- * 버튼 표시 조건 (기본):
+ * 버튼 표시 조건 (기본, 2026-08-26 개정):
  *   취소: row._row_status ∈ ['U','I','D']  (수정/신규/삭제 상태에서 되돌리기)
- *   삭제: row._row_status ∈ ['N','U']      (정상/수정 상태에서 삭제 마킹)
+ *   삭제: row._row_status === 'N'          (정상 상태에서만) — 수정(U) 행은 [취소]만 노출.
+ *         변경 중인 행에 [삭제]까지 같이 뜨면 "취소하면 되돌아가는 건지 삭제하면 아예 없어지는 건지"
+ *         헷갈린다는 피드백으로 U 는 삭제 버튼을 뺐다(전체공통 — 화면별 대응 불필요).
  *
  * 변형:
- *   allowDeleteNull=true → 삭제: row._row_status == null 또는 ['N','U'] (SyDeptMng 패턴)
+ *   allowDeleteNull=true → 삭제: row._row_status == null 도 추가 허용 (SyDeptMng 패턴)
  *
  * 추가 버튼이 필요한 화면(즉시실행/설정/코드관리 등)은 같은 #row-actions 슬롯 안에
  * 본 컴포넌트와 함께 일반 button 을 병기. 컴포넌트가 마지막에 표준 cancel/delete 만 렌더 */
@@ -2542,10 +2544,12 @@ window.BoRowCancelDelete = {
   setup(props, { emit }) {
     /* ── ▼ row 영역 (CRUD 행 취소/삭제 버튼) ──────────────────────────────── */
     const cfShowCancel = Vue.computed(() => ['U', 'I', 'D'].includes(props.row._row_status));
+    /* cfShowDelete — 'N'(정상)만 삭제 가능. 'U'(수정중)는 [취소]만 노출(2026-08-26 — 삭제까지
+       같이 뜨면 취소/삭제 의미가 헷갈린다는 피드백으로 U 제외, 전체공통) */
     const cfShowDelete = Vue.computed(() => {
       const s = props.row._row_status;
       if (props.allowDeleteNull && s == null) return true;
-      return ['N', 'U'].includes(s);
+      return s === 'N';
     });
 
     const handleBtnAction = (cmd, param = {}) => {
