@@ -65,21 +65,22 @@ window.PmDiscntDtl = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmDiscntDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
+      // 탭별 분기 대상(4개 탭). 저장/삭제는 탭별로 별도 분기 준비, 취소/닫기/수정전환은 탭 무관 공통
+      // 동작이라 같은 탭 목록에서 cmd 접미어만 바꿔 파생시킨다(TAB_IDS 하나만 관리하면 됨).
+      const TAB_IDS = ['info', 'detail', 'target', 'preview'];
+      // 폼 저장/삭제 — 탭별 분기 자리(현재는 배열에 있는 탭 전부 handleSave()/handleDelete() 공용.
+      // 특정 탭만 다른 로직이 필요해지면 그 탭만 배열에서 빼고 별도 분기로 추가하면 됨)
+      if (TAB_IDS.map(t => t + '-form-save').includes(cmd)) {
         return handleSave();
-      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('__cancelEdit__');
-      // 폼 닫기 (2026-08-22 발견 — 버튼이 'form-cancel'을 잘못 호출하고 있어 별도 케이스가 없었음)
-      } else if (cmd === 'form-close') {
-        return props.navigate('__closeDtl__');
-      // 보기모드 → 수정모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 삭제 (2026-08-22 정책: 보기모드/편집모드 표준 버튼 = [수정][삭제][닫기] / [저장][삭제][취소][닫기])
-      } else if (cmd === 'form-delete') {
+      } else if (TAB_IDS.map(t => t + '-form-delete').includes(cmd)) {
         return handleDelete();
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요)
+      } else if (TAB_IDS.map(t => t + '-form-cancel').includes(cmd)) {
+        return props.navigate('__cancelEdit__');
+      } else if (TAB_IDS.map(t => t + '-form-close').includes(cmd)) {
+        return props.navigate('__closeDtl__');
+      } else if (TAB_IDS.map(t => t + '-form-edit').includes(cmd)) {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         uiState.tab = param;
@@ -511,11 +512,11 @@ window.PmDiscntDtl = {
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="!cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('info-form-edit')"
+        :save-click="() => handleBtnAction('info-form-save')"
+        :delete-click="() => handleBtnAction('info-form-delete')"
+        :cancel-click="() => handleBtnAction('info-form-cancel')"
+        :close-click="() => handleBtnAction('info-form-close')" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 상세정보 ================================================== -->
@@ -552,11 +553,11 @@ window.PmDiscntDtl = {
       </div>
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="!cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('detail-form-edit')"
+        :save-click="() => handleBtnAction('detail-form-save')"
+        :delete-click="() => handleBtnAction('detail-form-delete')"
+        :cancel-click="() => handleBtnAction('detail-form-cancel')"
+        :close-click="() => handleBtnAction('detail-form-close')" />
     </div>
     <!-- ===== □.□. 상세정보 ================================================== -->
     <!-- ===== ■.■. 적용대상 ================================================== -->
@@ -592,11 +593,11 @@ window.PmDiscntDtl = {
       </div>
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="!cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('target-form-edit')"
+        :save-click="() => handleBtnAction('target-form-save')"
+        :delete-click="() => handleBtnAction('target-form-delete')"
+        :cancel-click="() => handleBtnAction('target-form-cancel')"
+        :close-click="() => handleBtnAction('target-form-close')" />
     </div>
     <!-- ===== □.□. 적용대상 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
@@ -628,11 +629,11 @@ window.PmDiscntDtl = {
         <button class="btn btn-primary" @click="handleBtnAction('preview-confirm')">할인 확인</button>
       </div>
       <bo-form-actions v-if="active && cfDtlMode" :readonly="true" :show-delete="!cfIsNew"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('preview-form-edit')"
+        :save-click="() => handleBtnAction('preview-form-save')"
+        :delete-click="() => handleBtnAction('preview-form-delete')"
+        :cancel-click="() => handleBtnAction('preview-form-cancel')"
+        :close-click="() => handleBtnAction('preview-form-close')" />
     </div>
     <!-- ===== □.□. 미리보기 ================================================== -->
   </div>

@@ -59,21 +59,19 @@ window.PmEventDtl = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmEventDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
+      // 폼 저장/삭제 — 탭별 분기 자리(현재는 배열에 있는 탭 전부 handleSave()/handleDelete() 공용.
+      // 특정 탭만 다른 로직이 필요해지면 그 탭만 배열에서 빼고 별도 분기로 추가하면 됨)
+      if (['banner-form-save', 'info-form-save', 'content-form-save', 'products-form-save'].includes(cmd)) {
         return handleSave();
-      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('__cancelEdit__');
-      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
-      } else if (cmd === 'form-close') {
-        return props.navigate('__closeDtl__');
-      // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
-      } else if (cmd === 'form-delete') {
+      } else if (['banner-form-delete', 'info-form-delete', 'content-form-delete', 'products-form-delete'].includes(cmd)) {
         return handleDelete();
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요)
+      } else if (['banner-form-cancel', 'info-form-cancel', 'content-form-cancel', 'products-form-cancel'].includes(cmd)) {
+        return props.navigate('__cancelEdit__');
+      } else if (['banner-form-close', 'info-form-close', 'content-form-close', 'products-form-close'].includes(cmd)) {
+        return props.navigate('__closeDtl__');
+      } else if (['banner-form-edit', 'info-form-edit', 'content-form-edit', 'products-form-edit'].includes(cmd)) {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -509,11 +507,11 @@ window.PmEventDtl = {
       </div>
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('banner-form-edit')"
+        :save-click="() => handleBtnAction('banner-form-save')"
+        :delete-click="() => handleBtnAction('banner-form-delete')"
+        :cancel-click="() => handleBtnAction('banner-form-cancel')"
+        :close-click="() => handleBtnAction('banner-form-close')" />
     </div>
     <!-- ===== □.□. 배너이미지 ================================================= -->
     <!-- ===== ■.■. 기본정보 ================================================== -->
@@ -542,11 +540,11 @@ window.PmEventDtl = {
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('info-form-edit')"
+        :save-click="() => handleBtnAction('info-form-save')"
+        :delete-click="() => handleBtnAction('info-form-delete')"
+        :cancel-click="() => handleBtnAction('info-form-cancel')"
+        :close-click="() => handleBtnAction('info-form-close')" />
     </div>
     <!-- ===== □.□. 기본정보 ================================================== -->
     <!-- ===== ■.■. 이벤트 내용 (HTML 에디터) ===================================== -->
@@ -572,11 +570,11 @@ window.PmEventDtl = {
       </div>
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('content-form-edit')"
+        :save-click="() => handleBtnAction('content-form-save')"
+        :delete-click="() => handleBtnAction('content-form-delete')"
+        :cancel-click="() => handleBtnAction('content-form-cancel')"
+        :close-click="() => handleBtnAction('content-form-close')" />
     </div>
     <!-- ===== □.□. 이벤트 내용 (HTML 에디터) ===================================== -->
     <!-- ===== ■.■. 대상 상품 ================================================= -->
@@ -594,11 +592,11 @@ window.PmEventDtl = {
         empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => handleSelectAction('items-ref', {type, id})" />
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('products-form-edit')"
+        :save-click="() => handleBtnAction('products-form-save')"
+        :delete-click="() => handleBtnAction('products-form-delete')"
+        :cancel-click="() => handleBtnAction('products-form-cancel')"
+        :close-click="() => handleBtnAction('products-form-close')" />
     </div>
     <!-- ===== □.□. 대상 상품 ================================================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->

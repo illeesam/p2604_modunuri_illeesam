@@ -68,21 +68,22 @@ window.PmPlanDtl = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmPlanDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
+      // 탭별 분기 대상(5개 탭). 저장/삭제는 탭별로 별도 분기 준비, 취소/닫기/수정전환은 탭 무관 공통
+      // 동작이라 같은 탭 목록에서 cmd 접미어만 바꿔 파생시킨다(TAB_IDS 하나만 관리하면 됨).
+      const TAB_IDS = ['banner', 'info', 'content', 'products', 'preview'];
+      // 폼 저장/삭제 — 탭별 분기 자리(현재는 배열에 있는 탭 전부 handleSave()/handleDelete() 공용.
+      // 특정 탭만 다른 로직이 필요해지면 그 탭만 배열에서 빼고 별도 분기로 추가하면 됨)
+      if (TAB_IDS.map(t => t + '-form-save').includes(cmd)) {
         return handleSave();
-      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('__cancelEdit__');
-      // 보기모드 닫기
-      } else if (cmd === 'form-close') {
-        return props.navigate('__closeDtl__');
-      // 보기모드 → 수정모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
-      } else if (cmd === 'form-delete') {
+      } else if (TAB_IDS.map(t => t + '-form-delete').includes(cmd)) {
         return handleDelete();
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요)
+      } else if (TAB_IDS.map(t => t + '-form-cancel').includes(cmd)) {
+        return props.navigate('__cancelEdit__');
+      } else if (TAB_IDS.map(t => t + '-form-close').includes(cmd)) {
+        return props.navigate('__closeDtl__');
+      } else if (TAB_IDS.map(t => t + '-form-edit').includes(cmd)) {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -495,11 +496,11 @@ window.PmPlanDtl = {
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         save-label="💾 저장"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('banner-form-edit')"
+        :save-click="() => handleBtnAction('banner-form-save')"
+        :delete-click="() => handleBtnAction('banner-form-delete')"
+        :cancel-click="() => handleBtnAction('banner-form-cancel')"
+        :close-click="() => handleBtnAction('banner-form-close')" />
     </div>
     <!-- ===== □.□. 배너이미지 ================================================= -->
     <!-- ===== ■.■. 기본정보 ================================================== -->
@@ -527,11 +528,11 @@ window.PmPlanDtl = {
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         save-label="💾 저장"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('info-form-edit')"
+        :save-click="() => handleBtnAction('info-form-save')"
+        :delete-click="() => handleBtnAction('info-form-delete')"
+        :cancel-click="() => handleBtnAction('info-form-cancel')"
+        :close-click="() => handleBtnAction('info-form-close')" />
     </div>
     <!-- ===== □.□. 기본정보 ================================================== -->
     <!-- ===== ■.■. 내용입력 (HTML 에디터) ======================================= -->
@@ -556,11 +557,11 @@ window.PmPlanDtl = {
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         save-label="💾 저장"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('content-form-edit')"
+        :save-click="() => handleBtnAction('content-form-save')"
+        :delete-click="() => handleBtnAction('content-form-delete')"
+        :cancel-click="() => handleBtnAction('content-form-cancel')"
+        :close-click="() => handleBtnAction('content-form-close')" />
     </div>
     <!-- ===== □.□. 내용입력 (HTML 에디터) ======================================= -->
     <!-- ===== ■.■. 대상상품 ================================================== -->
@@ -590,11 +591,11 @@ window.PmPlanDtl = {
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         save-label="💾 저장"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('products-form-edit')"
+        :save-click="() => handleBtnAction('products-form-save')"
+        :delete-click="() => handleBtnAction('products-form-delete')"
+        :cancel-click="() => handleBtnAction('products-form-cancel')"
+        :close-click="() => handleBtnAction('products-form-close')" />
     </div>
     <!-- ===== □.□. 대상상품 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
@@ -655,11 +656,11 @@ window.PmPlanDtl = {
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
         save-label="💾 저장"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('preview-form-edit')"
+        :save-click="() => handleBtnAction('preview-form-save')"
+        :delete-click="() => handleBtnAction('preview-form-delete')"
+        :cancel-click="() => handleBtnAction('preview-form-cancel')"
+        :close-click="() => handleBtnAction('preview-form-close')" />
     </div>
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->

@@ -29,21 +29,21 @@ window.DpDispPanelDtl = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispPanelDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
+      // 폼 저장 — 'form-save' 는 상단 툴바 전역 저장 버튼(탭/아코디언·패널/행 구분 없이 항상 전체 저장).
+      // 'panel-form-save'/'row-form-save' 는 저장대상별 분기 자리(현재는 배열에 있는 대상 전부 handleSave()
+      // 공용. 패널정보와 행상세가 서로 다른 저장 로직이 필요해지면 배열에서 빼고 별도 분기로 추가하면 됨 —
+      // 탭모드/아코디언모드 렌더링 방식은 저장 로직과 무관하므로 같은 cmd 를 공유한다)
+      if (['form-save', 'panel-form-save', 'row-form-save'].includes(cmd)) {
         return handleSave();
-      // 폼 편집 모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 폼 편집 취소 → 보기모드로 되돌림
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('__cancelEdit__');
-      // 폼 닫기 → 모드 무관 무조건 닫기
-      } else if (cmd === 'form-close') {
-        return props.navigate('__closeDtl__');
-      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
-      } else if (cmd === 'form-delete') {
+      } else if (['panel-form-delete', 'row-form-delete'].includes(cmd)) {
         return handleDelete();
+      // 폼 편집/취소/닫기 — 저장대상 무관 공통 동작(순수 네비게이션이라 분기 불필요)
+      } else if (['form-edit', 'panel-form-edit', 'row-form-edit'].includes(cmd)) {
+        return props.navigate('__switchToEdit__');
+      } else if (['form-cancel', 'panel-form-cancel', 'row-form-cancel'].includes(cmd)) {
+        return props.navigate('__cancelEdit__');
+      } else if (['form-close', 'panel-form-close', 'row-form-close'].includes(cmd)) {
+        return props.navigate('__closeDtl__');
       // 전체 펼치기/탭 보기 토글
       } else if (cmd === 'form-toggleViewAll') {
         viewAll.value = !viewAll.value;
@@ -1352,11 +1352,11 @@ window.DpDispPanelDtl = {
               </div>
               <!-- ===== /내용 ======================================================== -->
               <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
-                :edit-click="() => handleBtnAction('form-edit')"
-                :save-click="() => handleBtnAction('form-save')"
-                :delete-click="() => handleBtnAction('form-delete')"
-                :cancel-click="() => handleBtnAction('form-cancel')"
-                :close-click="() => handleBtnAction('form-close')" />
+                :edit-click="() => handleBtnAction('panel-form-edit')"
+                :save-click="() => handleBtnAction('panel-form-save')"
+                :delete-click="() => handleBtnAction('panel-form-delete')"
+                :cancel-click="() => handleBtnAction('panel-form-cancel')"
+                :close-click="() => handleBtnAction('panel-form-close')" />
             </div>
             <!-- ===== ■.■.■.■.■.■. 1~5행 콘텐츠 ====================================== -->
             <div v-if="cfActiveRow">
@@ -1674,11 +1674,11 @@ window.DpDispPanelDtl = {
               </div>
               <!-- ===== /내용 영역 ===================================================== -->
               <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
-                :edit-click="() => handleBtnAction('form-edit')"
-                :save-click="() => handleBtnAction('form-save')"
-                :delete-click="() => handleBtnAction('form-delete')"
-                :cancel-click="() => handleBtnAction('form-cancel')"
-                :close-click="() => handleBtnAction('form-close')" />
+                :edit-click="() => handleBtnAction('row-form-edit')"
+                :save-click="() => handleBtnAction('row-form-save')"
+                :delete-click="() => handleBtnAction('row-form-delete')"
+                :cancel-click="() => handleBtnAction('row-form-cancel')"
+                :close-click="() => handleBtnAction('row-form-close')" />
             </div>
           </div>
           <!-- ===== /폼 영역 ====================================================== -->
@@ -1868,11 +1868,11 @@ window.DpDispPanelDtl = {
               <base-html-editor v-model="form.htmlDesc" height="280px" />
             </div>
             <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
-              :edit-click="() => handleBtnAction('form-edit')"
-              :save-click="() => handleBtnAction('form-save')"
-              :delete-click="() => handleBtnAction('form-delete')"
-              :cancel-click="() => handleBtnAction('form-cancel')"
-              :close-click="() => handleBtnAction('form-close')" />
+              :edit-click="() => handleBtnAction('panel-form-edit')"
+              :save-click="() => handleBtnAction('panel-form-save')"
+              :delete-click="() => handleBtnAction('panel-form-delete')"
+              :cancel-click="() => handleBtnAction('panel-form-cancel')"
+              :close-click="() => handleBtnAction('panel-form-close')" />
           </div>
           <!-- ===== ■.■.■.■.■. 위젯 1~5: 각 섹션이 독립 row 바인딩 ======================== -->
           <!-- ===== ■.■.■.■.■. v-else-if 와 v-for 를 분리 (같은 엘리먼트 동시 사용 금지 → _vei 크래시) === -->
@@ -2039,11 +2039,11 @@ window.DpDispPanelDtl = {
                 </tbody>
               </table>
               <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
-                :edit-click="() => handleBtnAction('form-edit')"
-                :save-click="() => handleBtnAction('form-save')"
-                :delete-click="() => handleBtnAction('form-delete')"
-                :cancel-click="() => handleBtnAction('form-cancel')"
-                :close-click="() => handleBtnAction('form-close')" />
+                :edit-click="() => handleBtnAction('row-form-edit')"
+                :save-click="() => handleBtnAction('row-form-save')"
+                :delete-click="() => handleBtnAction('row-form-delete')"
+                :cancel-click="() => handleBtnAction('row-form-cancel')"
+                :close-click="() => handleBtnAction('row-form-close')" />
             </template>
           </template>
         </div>

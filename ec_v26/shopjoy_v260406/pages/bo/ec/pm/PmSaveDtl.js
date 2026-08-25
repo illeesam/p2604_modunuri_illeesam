@@ -30,17 +30,16 @@ window.PmSaveDtl = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmSaveDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
+      // 폼 저장 — 탭별 분기 자리(현재는 배열에 있는 탭 전부 handleSave() 공용.
+      // 특정 탭만 다른 로직이 필요해지면 그 탭만 배열에서 빼고 별도 분기로 추가하면 됨)
+      if (['info-form-save', 'target-form-save', 'visibility-form-save'].includes(cmd)) {
         return handleSave();
-      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
-      } else if (cmd === 'form-cancel') {
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요)
+      } else if (['info-form-cancel', 'target-form-cancel', 'visibility-form-cancel'].includes(cmd)) {
         return props.navigate('__cancelEdit__');
-      // 폼 닫기 (2026-08-22 발견 — 기존에 핸들러 자체가 없어 버튼이 무반응이었음)
-      } else if (cmd === 'form-close') {
+      } else if (['info-form-close', 'target-form-close', 'visibility-form-close'].includes(cmd)) {
         return props.navigate('__closeDtl__');
-      // 보기모드 → 수정모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (['info-form-edit', 'target-form-edit', 'visibility-form-edit'].includes(cmd)) {
         return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -502,11 +501,11 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('info-form-edit')"
+        :save-click="() => handleBtnAction('info-form-save')"
+        :delete-click="() => handleBtnAction('info-form-delete')"
+        :cancel-click="() => handleBtnAction('info-form-cancel')"
+        :close-click="() => handleBtnAction('info-form-close')" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 발급대상 ================================================== -->
@@ -539,11 +538,11 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       </div>
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
         :save-disabled="cfSaveDisabled"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('target-form-edit')"
+        :save-click="() => handleBtnAction('target-form-save')"
+        :delete-click="() => handleBtnAction('target-form-delete')"
+        :cancel-click="() => handleBtnAction('target-form-cancel')"
+        :close-click="() => handleBtnAction('target-form-close')" />
     </div>
     <!-- ===== □.□. 발급대상 ================================================== -->
     <!-- ===== ■.■. 공개대상 ================================================== -->
@@ -555,11 +554,11 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         :disabled="cfDtlMode" min-width="320px" />
       <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
-        :edit-click="() => handleBtnAction('form-edit')"
-        :save-click="() => handleBtnAction('form-save')"
-        :delete-click="() => handleBtnAction('form-delete')"
-        :cancel-click="() => handleBtnAction('form-cancel')"
-        :close-click="() => handleBtnAction('form-close')" />
+        :edit-click="() => handleBtnAction('visibility-form-edit')"
+        :save-click="() => handleBtnAction('visibility-form-save')"
+        :delete-click="() => handleBtnAction('visibility-form-delete')"
+        :cancel-click="() => handleBtnAction('visibility-form-cancel')"
+        :close-click="() => handleBtnAction('visibility-form-close')" />
     </div>
     <!-- ===== □.□. 공개대상 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->

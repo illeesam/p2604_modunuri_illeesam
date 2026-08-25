@@ -60,34 +60,19 @@ window.PdProdDtl = {
      * 자식 컴포넌트 콜백 / SKU / 카테고리 매핑 / Quill 등 세부 액션은 기존 함수 유지 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장 — 탭별 분기(현재는 전부 handleSave() 공용 저장. 특정 탭만 다른 저장 로직이 필요해지면
-      // 그 탭의 분기만 별도 함수로 교체하면 됨 — 다른 탭에 영향 없음)
-      if (cmd === 'info-form-save') {
+      // 탭별 분기 대상(10개 탭). 저장은 탭별로 별도 분기 준비, 취소/닫기/수정전환은 탭 무관 공통 동작이라
+      // 같은 탭 목록에서 cmd 접미어만 바꿔 파생시킨다(TAB_IDS 하나만 관리하면 됨).
+      const TAB_IDS = ['info', 'option', 'content', 'detail', 'promo', 'image', 'related', 'price', 'bundle', 'setitems'];
+      // 폼 저장 — 탭별 분기 자리(현재는 배열에 있는 탭 전부 handleSave() 공용 저장.
+      // 특정 탭만 다른 저장 로직이 필요해지면 그 탭만 배열에서 빼고 별도 분기로 추가하면 됨)
+      if (TAB_IDS.map(t => t + '-form-save').includes(cmd)) {
         return handleSave();
-      } else if (cmd === 'option-form-save') {
-        return handleSave();
-      } else if (cmd === 'content-form-save') {
-        return handleSave();
-      } else if (cmd === 'detail-form-save') {
-        return handleSave();
-      } else if (cmd === 'promo-form-save') {
-        return handleSave();
-      } else if (cmd === 'image-form-save') {
-        return handleSave();
-      } else if (cmd === 'related-form-save') {
-        return handleSave();
-      } else if (cmd === 'price-form-save') {
-        return handleSave();
-      } else if (cmd === 'bundle-form-save') {
-        return handleSave();
-      } else if (cmd === 'setitems-form-save') {
-        return handleSave();
-      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요, 접미어로 일괄 처리)
-      } else if (cmd.endsWith('-form-cancel')) {
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요)
+      } else if (TAB_IDS.map(t => t + '-form-cancel').includes(cmd)) {
         return props.navigate('__cancelEdit__');
-      } else if (cmd.endsWith('-form-close')) {
+      } else if (TAB_IDS.map(t => t + '-form-close').includes(cmd)) {
         return props.navigate('__closeDtl__');
-      } else if (cmd.endsWith('-form-edit')) {
+      } else if (TAB_IDS.map(t => t + '-form-edit').includes(cmd)) {
         return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
