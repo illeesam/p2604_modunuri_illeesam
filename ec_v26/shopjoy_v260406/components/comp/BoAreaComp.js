@@ -873,10 +873,9 @@ window.BoGrid = {
     const onRowMouseLeave = () => { hoveredKey.value = null; };
     const fnPinBg = (row, idx) => {
       const isHovered  = props.rowKey && hoveredKey.value != null && row[props.rowKey] === hoveredKey.value;
-      const isSelected = props.selectedKey != null && props.rowKey && row[props.rowKey] === props.selectedKey;
-      if (isHovered && isSelected) return '#e0ecff';
+      /* 선택(selectedKey)은 배경을 바꾸지 않는다(2026-08-26) — 테두리(outline)만으로 표시.
+         hover 는 선택 여부와 무관하게 항상 동일한 hover색. */
       if (isHovered)  return '#e8effe';
-      if (isSelected) return '#eff6ff';
       /* 화면이 준 커스텀 행 배경(:row-style)이 줄무늬보다 우선한다.
          줄무늬를 먼저 반환하면 홀수 행의 고정셀(번호 등)만 커스텀색이 안 먹어
          선택행 번호칸 색이 한 줄 걸러 달라 보인다. */
@@ -1519,14 +1518,12 @@ window.BoGridCrud = {
       return cls;
     };
 
-    /* 좌/우 고정(pin) 셀 배경 — crud-row 는 상태색/포커스/선택을 tr 배경(!important 포함)으로 칠하므로
+    /* 좌/우 고정(pin) 셀 배경 — crud-row 는 상태색을 tr 배경(!important 포함)으로 칠하므로
        그 자식인 고정 td 는 배경을 물려받지 못한다(자식 자신의 배경이 없으면 가로스크롤 시 뒤 컬럼이 비쳐 보임).
-       기존 CSS 규칙과 동일한 우선순위(focused/selected > 상태색 > 기본흰색)로 그대로 인라인 재현. */
+       focused/selected 는 배경을 바꾸지 않는다(2026-08-26) — outline(테두리)만으로 표시,
+       상태색(I/U/D)만 그대로 유지. */
     const fnPinBg = (item, idx) => {
       const row = fnRow(item);
-      const isFocused  = !cfTreeMode.value && props.focusedIdx === idx;
-      const isSelected = props.selectedKey != null && row[props.rowKey] === props.selectedKey;
-      if (isFocused || isSelected) return '#eff6ff';
       if (row._row_status === 'I') return '#d9f7be';
       if (row._row_status === 'U') return '#fff1b8';
       if (row._row_status === 'D') return '#ffccc7';
@@ -1576,9 +1573,23 @@ window.BoGridCrud = {
       emit('scroll-end');
     };
 
-    /* ── ▼ 좌/우 고정(pin) — 드래그+번호+ID 좌측 고정(있는 것만 연속 누적), 관리(col-act) 우측 고정.
-       가로스크롤 없는 그리드는 시각적 변화 없음(안전). CSS 고정폭(.col-drag 28px/번호 36px)을 그대로 사용. */
-    const cfPinIdLeft = Vue.computed(() => (cfShowDrag.value ? 28 : 0) + (cfShowNo.value ? 36 : 0));
+    /* ── ▼ 좌/우 고정(pin) — 드래그+번호+상태+체크박스 좌측 고정(있는 것만 연속 누적), 관리(col-act) 우측 고정.
+       ID 는 고정열에서 제외 — 값만 참고하면 되는 열이라 가로스크롤 시 함께 흘러가도 무방하다
+       (2026-08-26 전체공통 정책: 번호/상태/체크박스만 좌측 고정, ID 는 일반 열).
+       가로스크롤 없는 그리드는 시각적 변화 없음(안전). CSS 고정폭(.col-drag 28px/번호 36px/상태 38px/체크 32px). */
+    const cfPinLeftSegs = Vue.computed(() => {
+      const segs = [
+        { show: cfShowDrag.value,    w: 28 },
+        { show: cfShowNo.value,      w: 36 },
+        { show: props.showRowStatus, w: 38 },
+        { show: props.showRowCheck,  w: 32 },
+      ];
+      const offsets = [];
+      let acc = 0;
+      segs.forEach(s => { offsets.push(acc); if (s.show) acc += s.w; });
+      const shown = segs.map(s => s.show);
+      return { offsets, lastShownIdx: shown.lastIndexOf(true) };
+    });
     /* 선택행 outline 이 고정(pin) 셀 아래로 가려지는 문제 방지 — BoGrid 와 동일한 inset box-shadow 보강 */
     const fnRowSelected = (row) => props.selectedKey != null && row[props.rowKey] === props.selectedKey;
     const pinLeftStyle  = (px, z, edge, selected) => {
@@ -1604,7 +1615,7 @@ window.BoGridCrud = {
 
     return { fnColLabel, fnColNm, U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
              sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls, fnPinBg,
-             cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, cfTreeNoList, pinLeftStyle, pinRightStyle, fnRowSelected, handleBtnAction, handleSelectAction };
+             cfShowDrag, cfShowNo, cfShowId, cfPinLeftSegs, cfTreeNoList, pinLeftStyle, pinRightStyle, fnRowSelected, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card">
@@ -1640,19 +1651,19 @@ window.BoGridCrud = {
     <table class="bo-table crud-grid">
       <thead>
         <tr>
-          <th v-if="cfShowDrag" class="col-drag" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(0, 6)">
+          <th v-if="cfShowDrag" class="col-drag" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[0], 6, cfPinLeftSegs.lastShownIdx===0)">
           </th>
-          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfShowDrag ? 28 : 0, 6)">
+          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[1], 6, cfPinLeftSegs.lastShownIdx===1)">
             번호
           </th>
-          <th v-if="cfShowId" class="col-id" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinIdLeft, 6, true)">
-            ID
-          </th>
-          <th v-if="showRowStatus" class="col-status">
+          <th v-if="showRowStatus" class="col-status" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[2], 6, cfPinLeftSegs.lastShownIdx===2)">
             상태
           </th>
-          <th v-if="showRowCheck" class="col-check">
+          <th v-if="showRowCheck" class="col-check" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[3], 6, cfPinLeftSegs.lastShownIdx===3)">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
+          </th>
+          <th v-if="cfShowId" class="col-id">
+            ID
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
@@ -1679,24 +1690,24 @@ window.BoGridCrud = {
           </td>
         </tr>
         <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="fnRowCls(item, idx)" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx, row: fnRow(item) })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
-        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
+        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(cfPinLeftSegs.offsets[0], 4, cfPinLeftSegs.lastShownIdx===0, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           ⠿
         </td>
-        <td v-if="cfShowNo" :style="'text-align:' + (cfTreeMode ? 'left' : 'center') + ';font-size:11px;color:#999;cursor:pointer;white-space:nowrap;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'" title="보기"
+        <td v-if="cfShowNo" :style="'text-align:' + (cfTreeMode ? 'left' : 'center') + ';font-size:11px;color:#999;cursor:pointer;white-space:nowrap;' + pinLeftStyle(cfPinLeftSegs.offsets[1], 4, cfPinLeftSegs.lastShownIdx===1, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'" title="보기"
           @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx, event: $event })"
           @auxclick.stop="$event.button===1 ? handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx, event: $event }) : null">
           {{ cfTreeMode ? cfTreeNoList[idx] : (idx + 1) }}
         </td>
-        <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
-          {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}
-        </td>
-        <td v-if="showRowStatus" class="col-status-val">
+        <td v-if="showRowStatus" class="col-status-val" :style="pinLeftStyle(cfPinLeftSegs.offsets[2], 4, cfPinLeftSegs.lastShownIdx===2, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           <span class="badge badge-xs" :class="fnStatusClass(fnRow(item)._row_status)">
             {{ fnRow(item)._row_status }}
           </span>
         </td>
-        <td v-if="showRowCheck" class="col-check-val">
+        <td v-if="showRowCheck" class="col-check-val" :style="pinLeftStyle(cfPinLeftSegs.offsets[3], 4, cfPinLeftSegs.lastShownIdx===3, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           <input type="checkbox" v-model="fnRow(item)._row_check" />
+        </td>
+        <td v-if="cfShowId" class="col-id-val">
+          {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}
         </td>
         <template v-for="(col, ci) in columns" :key="col.key">
           <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">

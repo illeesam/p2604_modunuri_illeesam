@@ -96,8 +96,8 @@
 /* ── 상세: 기본정보 필드 — DDL 옵션(Schema/Table…) 행과 동일 규격으로 통일 ── */
 .sg-opt-grow { flex:1; min-width:240px; }
 .sg-opt-grow input { width:100%; }
-.sg-in-nm  { width:400px; }
-.sg-in-pkg { width:330px; }
+.sg-in-nm  { width:600px; }  /* 2026-08-26: 400px → 50% 확대 */
+.sg-in-pkg { width:495px; }  /* 2026-08-26: 330px → 50% 확대 */
 .sg-in-db  { width:150px; }
 /* 설명 — 기본정보 행 아래에 전체 폭으로 따로 배치 */
 .sg-desc-row { margin-top:2px; }
@@ -175,10 +175,52 @@
 .sg-ddl-actions-left { display:flex; gap:6px; flex-wrap:wrap; }
 .sg-ddl-actions-right { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 
-/* 액션 버튼 — 컴팩트 규격(입력 필드 높이와 맞춤). 전역 .btn 보다 작게 쓰기 위한 전용 클래스 */
+/* [소스 생성] 언어/스택 선택 팝오버(2026-08-26). 버튼 바로 위에 뜨는 카드형 — 클릭 밖 영역(투명
+   backdrop)을 누르면 닫힌다. Backend=1열/Frontend=2열/Fullstack=3열/모바일 앱=4열/기타=5열 — 구획
+   자체가 하나의 세로 열이 되도록 가로로 나열한다(2026-08-26 재조정 — 표에서 열=구획, 그 안은 1줄씩). */
+.sg-gen-wrap { position:relative; display:inline-block; }
+.sg-stack-backdrop { position:fixed; inset:0; z-index:60; background:transparent; }
+.sg-stack-pop { position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%);
+  z-index:61; width:max-content; max-width:min(920px, 94vw); background:var(--bg-card,#fff);
+  border:1px solid var(--border,#e4e4e4);
+  border-radius:14px; box-shadow:0 16px 40px rgba(0,0,0,0.22); padding:16px 16px 14px; }
+/* 버튼을 가리키는 작은 꼬리표(삼각형) — 팝오버가 "이 버튼에서 나왔다"는 걸 시각적으로 이어준다 */
+.sg-stack-pop::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  width:0; height:0; border:7px solid transparent; border-top-color:var(--bg-card,#fff); }
+.sg-stack-pop-title { font-size:13px; font-weight:800; color:var(--text-primary,#222); margin-bottom:12px;
+  display:flex; align-items:center; gap:6px; }
+.sg-stack-pop-title::before { content:'⚙️'; font-size:12px; }
+/* 구획(Backend/Frontend/...) 자체가 열 하나 — flex-wrap 으로 좁은 화면에서는 다음 줄로 자연스레 넘어간다 */
+.sg-stack-pop-list { display:flex; flex-direction:row; flex-wrap:wrap; align-items:flex-start;
+  gap:6px 20px; max-height:340px; overflow-y:auto; margin-bottom:12px; padding-right:2px; }
+.sg-stack-section { display:flex; flex-direction:column; min-width:132px; }
+.sg-stack-section-title { font-size:10.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;
+  color:var(--accent,#a9822f); margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--border,#eee); }
+/* 한 구획 = 한 열. 항목은 그 열 안에서 위아래로 한 줄씩만 쌓인다(줄바꿈 없음) */
+.sg-stack-section-grid { display:flex; flex-direction:column; gap:1px; }
+.sg-stack-item { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-secondary,#555);
+  cursor:pointer; user-select:none; padding:4px 6px; border-radius:6px; transition:background .12s,color .12s;
+  white-space:nowrap; }
+.sg-stack-item:hover { background:rgba(201,169,110,0.1); color:var(--text-primary,#333); }
+.sg-stack-item input[type="checkbox"] { width:14px; height:14px; cursor:pointer; flex:0 0 auto;
+  accent-color:var(--accent,#c9a96e); }
+.sg-stack-item-label { flex:1; }
+/* 항목별 버전 선택 — 체크 안 한 항목은 흐리게 비활성화(선택 자체는 유지·기억) */
+.sg-stack-version { flex:0 0 auto; height:19px; padding:0 3px; font-size:10px; font-weight:600;
+  color:var(--text-secondary,#777); background:var(--bg-card,#fff); border:1px solid var(--border,#ddd);
+  border-radius:4px; cursor:pointer; }
+.sg-stack-version:disabled { opacity:.4; cursor:not-allowed; }
+.sg-stack-version:not(:disabled):hover,
+.sg-stack-version:not(:disabled):focus { border-color:var(--accent,#c9a96e); outline:none; }
+.sg-stack-pop-actions { display:flex; gap:8px; justify-content:flex-end; padding-top:10px;
+  border-top:1px solid var(--border,#eee); }
+
+/* 액션 버튼 — 컴팩트 규격(입력 필드 높이와 맞춤). 전역 .btn 보다 작게 쓰기 위한 전용 클래스.
+   flex:0 0 auto — 부모(.sg-ddl-actions-*)가 flex 컨테이너일 때 늘어나 붙지 않고 항상 글자 너비만큼만
+   차지하게 고정(2026-08-26, "ZIP다운로드 버튼 너무 길어" 픽스). */
 .sg-btn { height:34px; padding:0 15px; font-size:12.5px; font-weight:700; border-radius:8px;
   border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:5px;
-  transition:var(--transition,all .15s); white-space:nowrap; }
+  flex:0 0 auto; transition:var(--transition,all .15s); white-space:nowrap; }
 .sg-btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; }
 .sg-btn-dark  { background:var(--text-primary,#222); color:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.16); }
 .sg-btn-dark:not(:disabled):hover  { filter:brightness(1.25); }
@@ -217,22 +259,15 @@
   padding:1px 5px; border-radius:9px; background:rgba(0,0,0,0.05); }
 .sg-sample-btn:hover .sg-sample-desc { color:var(--accent,#c9a96e); background:rgba(201,169,110,0.14); }
 
-/* ── 파일 트리 라벨 ([BE]/[FE]/[FULL] + 스택) ── */
-.sg-lab { display:inline-block; font-size:9px; font-weight:800; padding:0 3px; border-radius:3px;
-  margin-right:3px; vertical-align:middle; letter-spacing:-0.01em; }
-.sg-lab-be  { background:rgba(56,110,190,0.15);  color:#3f6fbc; }
-.sg-lab-fe  { background:rgba(38,150,110,0.15);  color:#268a62; }
-.sg-lab-fw  { background:rgba(150,110,190,0.15); color:#8a63b8; }
-.sg-lab-jpa { background:rgba(200,140,50,0.15);  color:#b8811f; }
-.sg-file-btn.active .sg-lab { background:rgba(255,255,255,0.25); color:#fff; }
-
 /* ── 상세: 생성 결과 뷰어 ── */
-.sg-result-body { display:grid; grid-template-columns:300px 1fr; gap:12px; align-items:start; }
+/* 파일 트리에 전체경로를 그대로 노출(2026-08-26)하면서 300px 고정폭은 너무 좁아 1fr 1fr 반반으로 */
+.sg-result-body { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
 @media (max-width:900px) { .sg-result-body { grid-template-columns:1fr; } }
 .sg-files { max-height:560px; overflow-y:auto; border:1px solid var(--border,#eaeaea); border-radius:10px;
   background:#fafafa; padding:7px; }
-.sg-file-grp { font-size:10.5px; font-weight:800; color:var(--text-muted,#999); text-transform:uppercase;
-  letter-spacing:.04em; padding:9px 8px 5px; border-top:1px dashed var(--border,#e5e5e5); margin-top:4px; }
+/* 구분자 — 언어/스택 그룹 경계를 뚜렷하게(2026-08-26: 점선→실선 2px + 진한 색, 글자도 더 굵고 크게) */
+.sg-file-grp { font-size:11.5px; font-weight:900; color:var(--text-primary,#333); text-transform:uppercase;
+  letter-spacing:.03em; padding:10px 8px 6px; border-top:2px solid var(--accent,#c9a96e); margin-top:8px; }
 .sg-file-grp:first-child { border-top:none; margin-top:0; padding-top:4px; }
 .sg-file-btn { display:block; width:100%; text-align:left; padding:5px 8px; font-size:11.5px;
   font-family:monospace; border:none; background:transparent; color:var(--text-secondary,#666);
@@ -248,10 +283,13 @@
 .sg-file-actions { margin-left:auto; display:flex; gap:6px; align-items:center; flex-shrink:0; }
 .sg-copied { font-size:11px; color:#2e7d32; font-weight:700; }
 /* 코드 뷰어 — Prism tomorrow(다크) 테마가 색/배경을 담당하고, 여기서는 크기·스크롤만 덮어쓴다.
-   padding 은 line-numbers 플러그인이 줄번호 열 확보를 위해 padding-left 를 잡으므로 건드리지 않는다. */
+   padding 은 line-numbers 플러그인이 줄번호 열 확보를 위해 padding-left 를 잡으므로 건드리지 않는다.
+   font-size 는 !important 로 고정(2026-08-26) — 파일마다 :key 로 <pre> 를 통째로 새로 그리는데,
+   Prism 기본 테마가 pre[class*="language-"] 에 자체 font-size(1em 상대값)를 얹어서 파일 바꿀 때마다
+   글자 크기가 미세하게 달라 보이는 현상이 있었다. */
 .sg-code-pane pre.sg-code { margin:0; max-height:520px; overflow:auto;
-  border-radius:0; font-size:12px; line-height:1.6; tab-size:4; }
-.sg-code-pane pre.sg-code code { font-family:'Consolas','Monaco','D2Coding',monospace; font-size:12px; }
+  border-radius:0; font-size:12px !important; line-height:1.6; tab-size:4; }
+.sg-code-pane pre.sg-code code { font-family:'Consolas','Monaco','D2Coding',monospace; font-size:12px !important; }
 /* Prism 미로드(파일 누락 등) 시에도 최소한 읽히도록 한 폴백 — 테마가 붙으면 위 규칙이 이긴다 */
 .sg-code-pane pre.sg-code:not([class*="language-"]) { padding:14px; white-space:pre;
   color:var(--text-primary,#333); background:var(--bg-card,#fff); font-family:monospace; }

@@ -13,6 +13,7 @@ CREATE TABLE shopjoy_2604.md_sg_sourcegen (
     class_nm     VARCHAR(100),
     endpoint     VARCHAR(100),
     swagger_tag  VARCHAR(100),
+    sub_package  VARCHAR(50),
     sort_ord     INTEGER      DEFAULT 0,
     use_yn       VARCHAR(1)   DEFAULT 'Y',
     reg_by       VARCHAR(30),
@@ -33,6 +34,7 @@ COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.table_nm IS '테이블명 (DDL �
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.class_nm IS '생성 클래스명 (테이블명 PascalCase 자동)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.endpoint IS 'REST 엔드포인트 경로 (테이블명 접두어 제거 자동)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.swagger_tag IS 'Swagger 태그 (미입력 시 class_nm 사용)';
+COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.sub_package IS '서브 패키지 (basePackage 하위 폴더 — 테이블명 접두어 자동, 예: zz_exam1 -> zz)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen.reg_by IS '등록자';

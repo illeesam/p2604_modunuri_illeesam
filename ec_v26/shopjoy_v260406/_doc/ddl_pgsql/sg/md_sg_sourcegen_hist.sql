@@ -14,6 +14,7 @@ CREATE TABLE shopjoy_2604.md_sg_sourcegen_hist (
     zip_file_size BIGINT,
     zip_url       VARCHAR(500),
     gen_memo      VARCHAR(500),
+    ddl_snapshot_json TEXT,
     use_yn        VARCHAR(1)   DEFAULT 'Y',
     reg_by        VARCHAR(30),
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -34,6 +35,7 @@ COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.zip_file_nm IS 'ZIP 파일�
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.zip_file_size IS 'ZIP 파일 크기(byte)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.zip_url IS 'ZIP 다운로드 URL (sy_attach.cdn_img_url 사본)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.gen_memo IS '생성 메모';
+COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.ddl_snapshot_json IS 'DDL 탭 스냅샷(JSON) — 이 생성 시점의 basePackage/dbTypeCd + 탭별 ddlText 등. [불러오기] 시 에디터에 복원 후 재생성하는 용도(생성된 소스 자체는 저장 안 함)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.md_sg_sourcegen_hist.reg_date IS '등록일';

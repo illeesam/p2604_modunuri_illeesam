@@ -50,6 +50,8 @@ window.boRegisterComponents = function (app) {
     .component('MdCbPatternMng', window.MdCbPatternMng)
     .component('MdSgProjectMng', window.MdSgProjectMng)
     .component('MdSgGenHistMng', window.MdSgGenHistMng)
+    .component('MdSgDownloadHistMng', window.MdSgDownloadHistMng)
+    .component('MdSgStackMng', window.MdSgStackMng)
     /* ── pages/co/ec/ — 주문 칸반 ── */
     .component('OdOrderKanban', window.OdOrderKanban)
     /* ── pages/bo/ec/ — 주문 ── */

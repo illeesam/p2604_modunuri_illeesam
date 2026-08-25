@@ -43,6 +43,7 @@ public class MdSgSourcegenService {
                 item.setClassNm(e.getClassNm());
                 item.setEndpoint(e.getEndpoint());
                 item.setSwaggerTag(e.getSwaggerTag());
+                item.setSubPackage(e.getSubPackage());
                 item.setSortOrd(e.getSortOrd());
                 item.setUseYn(e.getUseYn());
                 return item;

@@ -115,28 +115,29 @@
 
   <!-- ■ B3.5: 소스젠 생성 엔진 (p2605_sourcegen 이식 — 전역 gnParseDdl/gnGenerate 노출) ■
        sourcegen.js 가 진입점(gnGenerate)이고 나머지는 스택별 생성 함수를 전역에 얹는다.
-       브라우저 전역 스코프 공유 방식이라 순서는 sourcegen.js 가 먼저여도 무방(호출 시점에 이미 전부 로드됨). -->
+       브라우저 전역 스코프 공유 방식이라 순서는 sourcegen.js 가 먼저여도 무방(호출 시점에 이미 전부 로드됨).
+       스택별 파일은 backend/frontend/fullstack 폴더 + {스택}_v1.js 로 정리(2026-08-26). -->
   <script src="assets/md/sg/sourcegen/sourcegen.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_jpa.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_mybatis.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_python.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_csharp_efcore.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_csharp_dapper.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_nestjs10.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_be_expressjs4.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_vue3.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_vue3_cdn.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_react.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_react_cdn.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_svelte.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_svelte_cdn.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_pyscript_cdn.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_flutter.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_react_native.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_android_compose.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_fe_ios_swiftui.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_full_nuxt4.js"></script>
-  <script src="assets/md/sg/sourcegen/sourcegen_full_nextjs15.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/jpa_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/mybatis_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/python_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/csharp_efcore_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/csharp_dapper_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/nestjs10_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/backend/expressjs4_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/vue3_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/vue3_cdn_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/react_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/react_cdn_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/svelte_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/svelte_cdn_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/pyscript_cdn_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/flutter_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/react_native_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/android_compose_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/frontend/ios_swiftui_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/fullstack/nuxt4_v1.js"></script>
+  <script src="assets/md/sg/sourcegen/fullstack/nextjs15_v1.js"></script>
 
   <!-- ■ B4.1: 이 모듈의 콘텐츠 컴포넌트 (pages/md/sg/) — 목록/상세 분리 ■ -->
   <script src="pages/md/sg/MdSgProjectListPage.js"></script>

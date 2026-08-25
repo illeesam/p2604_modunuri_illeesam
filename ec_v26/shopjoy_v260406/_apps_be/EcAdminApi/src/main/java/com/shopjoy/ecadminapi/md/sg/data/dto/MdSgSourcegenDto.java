@@ -17,6 +17,7 @@ public class MdSgSourcegenDto {
         private String classNm;      // 생성 클래스명
         private String endpoint;     // REST 엔드포인트 경로
         private String swaggerTag;   // Swagger 태그
+        private String subPackage;   // 서브 패키지 (basePackage 하위 폴더)
         private Integer sortOrd;     // 정렬순서
         private String useYn;        // 사용여부 Y/N
     }

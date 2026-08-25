@@ -73,6 +73,10 @@ public class MdSgSourcegenHist extends BaseEntity {
     @Size(max = 500, message = "genMemo 는 500자 이내여야 합니다.")
     private String genMemo;
 
+    @Comment("DDL 탭 스냅샷(JSON) — 이 생성 시점의 basePackage/dbTypeCd + 탭별 ddlText 등. [불러오기] 시 에디터에 복원 후 재생성하는 용도")
+    @Column(name = "ddl_snapshot_json", columnDefinition = "TEXT")
+    private String ddlSnapshotJson;
+
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
     @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")

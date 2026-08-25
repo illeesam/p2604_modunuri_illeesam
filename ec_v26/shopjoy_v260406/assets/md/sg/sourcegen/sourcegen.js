@@ -1,10 +1,12 @@
 /* ===== Source Generator : Main =====
  * 진입점 gnGenerate() + DDL 파서 + 공통 헬퍼(gnAuditFields/cap) + gnApiJsSource(공유)
- * 분리 파일 (브라우저는 단순 글로벌 스코프 공유):
- *  - sourcegen_be_jpa.js
- *  - sourcegen_be_mybatis.js
- *  - sourcegen_fe_vue3.js
- *  - sourcegen_fe_react.js
+ * 분리 파일 (브라우저는 단순 글로벌 스코프 공유) — backend/frontend/fullstack 폴더 + {스택}_v1.js
+ * 명명 규칙(2026-08-26). 전체 목록은 fo-md-sg-sourcegen.html 의 script 태그 참조:
+ *  - backend/jpa_v1.js
+ *  - backend/mybatis_v1.js
+ *  - frontend/vue3_v1.js
+ *  - frontend/react_v1.js
+ *  - ... (나머지는 fo-md-sg-sourcegen.html 참조)
  */
 
 function gnParseDdl(ddl, dbType /* 'oracle' | 'postgresql' */) {

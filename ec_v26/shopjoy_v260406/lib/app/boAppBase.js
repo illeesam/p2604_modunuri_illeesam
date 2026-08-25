@@ -2810,6 +2810,8 @@
             <md-cb-pattern-mng  v-else-if="page==='mdCbPatternMng'"  :navigate="navigate" />
             <md-sg-project-mng  v-else-if="page==='mdSgProjectMng'"  :navigate="navigate" />
             <md-sg-gen-hist-mng  v-else-if="page==='mdSgGenHistMng'"  :navigate="navigate"  :project-id="dtlId" />
+            <md-sg-download-hist-mng  v-else-if="page==='mdSgDownloadHistMng'"  :navigate="navigate" />
+            <md-sg-stack-mng  v-else-if="page==='mdSgStackMng'"  :navigate="navigate" />
             <sy-attach-mng  v-else-if="page==='syAttachMng'"  :navigate="navigate" />
             <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" :open-new-window="openNewWindow" />
             <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" :dtl-mode="standaloneDtlMode" />

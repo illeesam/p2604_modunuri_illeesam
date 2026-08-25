@@ -89,12 +89,15 @@ DDL 여러 개를 묶는 단위. `base_package` 와 `db_type_cd` 는 **전체 DD
 
 `p2605_sourcegen` 프로젝트의 21개 JS 를 **그대로 이식**했다(브라우저 전역 스코프 공유 방식).
 
+스택별 파일은 `backend/` / `frontend/` / `fullstack/` 폴더 + `{스택}_v1.js` 명명 규칙으로 정리했다
+(2026-08-26 — 향후 스택별 버전 분기가 필요해지면 `{스택}_v2.js` 를 같은 폴더에 나란히 추가하는 방식 전제).
+
 | 파일 | 역할 |
 |---|---|
 | `sourcegen.js` | 진입점 — `gnParseDdl(ddl, dbType)` / `gnGenerate(meta, opts)` |
-| `sourcegen_be_*.js` | JPA / MyBatis / Python / C# EFCore / C# Dapper / NestJS / Express |
-| `sourcegen_fe_*.js` | Vue3 / React / Svelte(+CDN판) / PyScript / Flutter / RN / Android / iOS |
-| `sourcegen_full_*.js` | Nuxt 4 / Next.js 15 (풀스택 + Prisma) |
+| `backend/{jpa,mybatis,python,csharp_efcore,csharp_dapper,nestjs10,expressjs4}_v1.js` | JPA / MyBatis / Python / C# EFCore / C# Dapper / NestJS / Express |
+| `frontend/{vue3,vue3_cdn,react,react_cdn,svelte,svelte_cdn,pyscript_cdn,flutter,react_native,android_compose,ios_swiftui}_v1.js` | Vue3 / React / Svelte(+CDN판) / PyScript / Flutter / RN / Android / iOS |
+| `fullstack/{nuxt4,nextjs15}_v1.js` | Nuxt 4 / Next.js 15 (풀스택 + Prisma) |
 
 DDL 1개당 **약 133개 파일**이 생성된다(복합키면 `*Id.java` 가 추가돼 134개).
 

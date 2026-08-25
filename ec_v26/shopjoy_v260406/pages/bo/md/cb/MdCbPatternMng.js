@@ -136,7 +136,7 @@ window.MdCbPatternMng = {
   </bo-container>
   <bo-container bare :count-text="baseGridPager.pageTotalCount + '건'">
     <bo-grid :columns="columns.baseGrid" :rows="patterns" row-key="patternId" :loading="uiState.loading"
-      list-title="도안목록" empty-text="등록된 도안이 없습니다." />
+      max-height="calc(100vh - 320px)" list-title="도안목록" empty-text="등록된 도안이 없습니다." />
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('patternList-pager-setPage', n)" :on-size-change="() => handleSelectAction('patternList-pager-sizeChange')" />
   </bo-container>
 </bo-page>

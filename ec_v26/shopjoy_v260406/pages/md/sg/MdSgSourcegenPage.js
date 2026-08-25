@@ -6,15 +6,18 @@
 
 const SG_TAB_COUNT = 10;   // DDL 탭 최대 개수 (원본 소스젠과 동일)
 
-/* SG_FILE_GROUPS — 생성 결과 파일을 좌측 트리에서 묶는 기준(원본 sourcegen_postgresql.html 의 groupedFiles 이식) */
+/* SG_FILE_GROUPS — 생성 결과 파일을 좌측 트리에서 묶는 기준(원본 sourcegen_postgresql.html 의 groupedFiles 이식).
+   `short` — [소스 생성] 팝오버 체크리스트 전용 축약 라벨(2026-08-26). 팝오버는 이미 "BACKEND" 구획
+   헤더 아래 나열되므로 항목마다 "Backend (...)" 를 반복할 필요가 없다. `title` 은 결과 뷰어(파일트리
+   구분자, 구획 헤더 없이 단독 노출)용으로 그대로 유지 — 두 화면의 맥락이 달라 라벨을 분리했다. */
 const SG_FILE_GROUPS = [
-  { title: 'Backend (JPA)',            prefix: 'backend_jpa/' },
-  { title: 'Backend (MyBatis)',        prefix: 'backend_mybatis/' },
-  { title: 'Backend (Python)',         prefix: 'backend_python/' },
-  { title: 'Backend (C# EF Core)',     prefix: 'backend_csharp_efcore/' },
-  { title: 'Backend (C# Dapper)',      prefix: 'backend_csharp_dapper/' },
-  { title: 'Backend (NestJS 10)',      prefix: 'backend_nestjs/' },
-  { title: 'Backend (Express 4)',      prefix: 'backend_expressjs/' },
+  { title: 'Backend (JPA)',            short: 'JPA',        prefix: 'backend_jpa/' },
+  { title: 'Backend (MyBatis)',        short: 'MyBatis',     prefix: 'backend_mybatis/' },
+  { title: 'Backend (Python)',         short: 'Python',      prefix: 'backend_python/' },
+  { title: 'Backend (C# EF Core)',     short: 'C# EF Core',  prefix: 'backend_csharp_efcore/' },
+  { title: 'Backend (C# Dapper)',      short: 'C# Dapper',   prefix: 'backend_csharp_dapper/' },
+  { title: 'Backend (NestJS 10)',      short: 'NestJS 10',   prefix: 'backend_nestjs/' },
+  { title: 'Backend (Express 4)',      short: 'Express 4',   prefix: 'backend_expressjs/' },
   { title: 'Vue3 CDN (with common)',   prefix: 'frontend_vue3cdn_with_common/' },
   { title: 'Vue3 CDN (standalone)',    prefix: 'frontend_vue3cdn_standalone/' },
   { title: 'Vue3 SFC',                 prefix: 'frontend_vue3/' },
@@ -31,6 +34,56 @@ const SG_FILE_GROUPS = [
   { title: 'Next.js 15 + Prisma',      prefix: 'fullstack_nextjs/' },
   { title: 'DDL',                      prefix: 'ddl/' },
 ];
+
+/* SG_STACK_SECTIONS — [소스 생성] 팝오버 체크리스트를 5개 구획(Backend/Frontend/Fullstack/모바일 앱/기타)
+   으로 묶어 보여준다(2026-08-26). SG_FILE_GROUPS 를 유일한 기준으로 삼아 prefix 로만 재분류 — 목록
+   자체(제목/개수)가 바뀌어도 이 매핑만 따라가면 된다. */
+const SG_MOBILE_PREFIXES = ['frontend_flutter/', 'frontend_react_native/', 'frontend_android/', 'frontend_ios/'];
+const SG_STACK_SECTIONS = [
+  { label: 'Backend',  items: SG_FILE_GROUPS.filter(g => g.prefix.startsWith('backend_')) },
+  { label: 'Frontend', items: SG_FILE_GROUPS.filter(g => g.prefix.startsWith('frontend_') && !SG_MOBILE_PREFIXES.includes(g.prefix)) },
+  { label: 'Fullstack', items: SG_FILE_GROUPS.filter(g => g.prefix.startsWith('fullstack_')) },
+  { label: '모바일 앱', items: SG_FILE_GROUPS.filter(g => SG_MOBILE_PREFIXES.includes(g.prefix)) },
+  { label: '기타',      items: SG_FILE_GROUPS.filter(g => g.prefix === 'ddl/') },
+];
+
+/* fnCategoryLabel — 결과 뷰어 파일트리 구분자에 붙일 영문 구획 라벨(2026-08-26).
+   SG_STACK_SECTIONS 와 동일 분류 기준(prefix)을 재사용 — 팝오버 구획과 항상 일치시킨다. */
+function fnCategoryLabel(prefix) {
+  if (prefix.startsWith('backend_')) return 'Backend';
+  if (SG_MOBILE_PREFIXES.includes(prefix)) return 'Mobile';
+  if (prefix.startsWith('frontend_')) return 'Frontend';
+  if (prefix.startsWith('fullstack_')) return 'Fullstack';
+  return 'Etc';
+}
+
+/* SG_STACK_STORAGE_KEY / fnLoadSelectedStacks — [소스 생성] 팝오버의 언어/스택 체크 상태를
+   브라우저에 기억한다(2026-08-26). 기본값은 Backend(JPA) + React 만 체크 — 전체 스택을 다 켜두면
+   테이블 1개에도 130개 넘는 파일이 쏟아져 실제 안 쓰는 스택까지 매번 뒤져야 하는 부담이 커진다. */
+const SG_STACK_STORAGE_KEY = 'modu-md-sg-selected-stacks';
+const SG_DEFAULT_STACKS = ['backend_jpa/', 'frontend_react/'];
+function fnLoadSelectedStacks() {
+  try {
+    const raw = localStorage.getItem(SG_STACK_STORAGE_KEY);
+    if (!raw) return [...SG_DEFAULT_STACKS];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || !arr.length) return [...SG_DEFAULT_STACKS];
+    const valid = arr.filter(p => SG_FILE_GROUPS.some(g => g.prefix === p));
+    return valid.length ? valid : [...SG_DEFAULT_STACKS];
+  } catch (e) { return [...SG_DEFAULT_STACKS]; }
+}
+
+/* SG_STACK_VERSION_STORAGE_KEY / SG_STACK_VERSION_OPTIONS / fnLoadStackVersions — 스택별 버전 선택도
+   체크 상태와 별개로 브라우저에 기억한다(2026-08-26). 기본값은 전부 'v1'. */
+const SG_STACK_VERSION_STORAGE_KEY = 'modu-md-sg-stack-versions';
+const SG_STACK_VERSION_OPTIONS = ['v1', 'v2', 'v3'];
+function fnLoadStackVersions() {
+  try {
+    const raw = localStorage.getItem(SG_STACK_VERSION_STORAGE_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    return (obj && typeof obj === 'object' && !Array.isArray(obj)) ? obj : {};
+  } catch (e) { return {}; }
+}
 
 /* SG_ZIP_PATHS — 파일맵 키 → ZIP 안의 실제 경로 (원본 bdZipPath 이식).
    각 스택을 모듈 폴더로 한 단계 더 감싸 JPA/MyBatis 등이 서로 덮어쓰지 않게 한다.
@@ -74,27 +127,31 @@ function fnZipPath(fn, pkgPath) {
   return `_misc/${fn}`;                                       // 분류 안 된 파일 (fallback)
 }
 
-/* fnExtractOpts — DDL 문자열에서 schema/table/className/endpoint 를 자동 추출(원본 이식) */
+/* fnEffectivePkg — Base Package + 탭별 Sub Package 를 합친 실제 생성 패키지.
+   com.exam.app + zz -> com.exam.app.zz (Sub Package 비우면 Base Package 그대로, 2026-08-26) */
+function fnEffectivePkg(basePackage, subPackage) {
+  const base = basePackage || 'com.exam.app';
+  return subPackage ? base + '.' + subPackage : base;
+}
+
+/* fnExtractOpts — DDL 문자열에서 schema/table/className/endpoint 를 자동 추출(원본 이식).
+   subPackage — 테이블명 접두어(endpoint 를 만들 때 떼어내는 것과 동일한 조각)를 basePackage 하위
+   폴더명으로 그대로 재사용한다. 예: zz_exam1 -> endpoint 'exam1' / subPackage 'zz' (2026-08-26) */
 function fnExtractOpts(ddlText) {
   const m = (ddlText || '').match(/CREATE\s+TABLE\s+(?:(\w+)\.)?(\w+)/i);
   if (!m) return null;
   const table = m[2];
   const className = table.toLowerCase().split('_')
     .map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  const prefixM = table.match(/^([a-z]+)_/i);
   return {
     schemaNm: m[1] || '',
     tableNm: table,
     classNm: className,
     endpoint: table.replace(/^[a-z]+_/, ''),
     swaggerTag: className,
+    subPackage: prefixM ? prefixM[1].toLowerCase() : '',
   };
-}
-
-/* fnShortName — 좌측 파일 트리 표시용. 첫 세그먼트(스택 prefix)를 떼고 나머지 경로만 보여준다
-   예: 'backend_jpa/repository/impl/X.java' → 'repository/impl/X.java' */
-function fnShortName(fn) {
-  const idx = fn.indexOf('/');
-  return idx < 0 ? fn : fn.substring(idx + 1);
 }
 
 /* fnLangOf — 파일 확장자 → Prism 언어 클래스 (원본 sourcegen_postgresql.html 의 fmLangOf 이식) */
@@ -118,40 +175,6 @@ function fnLangOf(fn) {
   if (n.endsWith('.gradle'))                     return 'groovy';
   if (n.endsWith('.prisma') || n.endsWith('.env') || n.endsWith('.example')) return 'none';
   return 'none';
-}
-
-/* fnFileLabels — 파일 트리 항목 앞에 붙는 [BE]/[FE]/[FULL] + 스택 뱃지
-   (원본 fmLabelsOf 이식 — 긴 prefix 를 먼저 검사해야 CDN 판이 일반판에 먹히지 않는다) */
-const SG_LABEL_RULES = [
-  { p: 'ddl/',                             labs: [] },
-  { p: 'frontend_vue3cdn_with_common/',    labs: [['FE','fe'], ['vue3cdn','fw']] },
-  { p: 'frontend_vue3cdn_standalone/',     labs: [['FE','fe'], ['vue3cdn','fw']] },
-  { p: 'frontend_vue3/',                   labs: [['FE','fe'], ['vue3','fw']] },
-  { p: 'frontend_pyscript_cdn_standalone/',labs: [['FE','fe'], ['pyscript','fw']] },
-  { p: 'frontend_flutter/',                labs: [['FE','fe'], ['flutter','fw']] },
-  { p: 'frontend_react_native/',           labs: [['FE','fe'], ['rn','fw']] },
-  { p: 'frontend_android/',                labs: [['FE','fe'], ['android','fw']] },
-  { p: 'frontend_ios/',                    labs: [['FE','fe'], ['ios','fw']] },
-  { p: 'frontend_react_cdn_standalone/',   labs: [['FE','fe'], ['reactcdn','fw']] },
-  { p: 'frontend_react/',                  labs: [['FE','fe'], ['react','fw']] },
-  { p: 'frontend_svelte_cdn_standalone/',  labs: [['FE','fe'], ['sveltecdn','fw']] },
-  { p: 'frontend_svelte/',                 labs: [['FE','fe'], ['svelte','fw']] },
-  { p: 'fullstack_nuxt/',                  labs: [['FULL','be'], ['nuxt4 + prisma','fw']] },
-  { p: 'fullstack_nextjs/',                labs: [['FULL','be'], ['nextjs15 + prisma','fw']] },
-  { p: 'backend_jpa/repository/',          labs: [['BE','be'], ['jpa','jpa']] },
-  { p: 'backend_jpa/',                     labs: [['BE','be']] },
-  { p: 'backend_mybatis/mapper/',          labs: [['BE','be'], ['mybatis','jpa']] },
-  { p: 'backend_mybatis/',                 labs: [['BE','be']] },
-  { p: 'backend_python/',                  labs: [['BE','be'], ['py','jpa']] },
-  { p: 'backend_csharp_efcore/',           labs: [['BE','be'], ['c# efcore','jpa']] },
-  { p: 'backend_csharp_dapper/',           labs: [['BE','be'], ['c# dapper','jpa']] },
-  { p: 'backend_nestjs/',                  labs: [['BE','be'], ['nestjs10','jpa']] },
-  { p: 'backend_expressjs/',               labs: [['BE','be'], ['express4','jpa']] },
-];
-function fnFileLabels(fn) {
-  const hit = SG_LABEL_RULES.find(r => fn.startsWith(r.p));
-  const labs = hit ? hit.labs : [['BE', 'be']];
-  return labs.map(([text, cls]) => ({ text: '[' + text + ']', cls: 'sg-lab-' + cls }));
 }
 
 /* fnTsSuffix — 자동 생성 이름 접미어 "_YYYYMMDD_hhmm".
@@ -421,7 +444,13 @@ window.MdSgSourcegenPage = {
       genMemo: '',
       templateModalOpen: false,  // 프로젝트 템플릿 다운로드 모달 표시 여부
       templateDbTab: 'POSTGRESQL', // 템플릿 모달 안 DB 탭 선택('ORACLE' | 'POSTGRESQL')
+      stackPopOpen: false,       // [소스 생성] 언어/스택 선택 팝오버 표시 여부
     });
+
+    /* selectedStacks — [소스 생성] 팝오버 체크 상태(SG_FILE_GROUPS.prefix 배열). localStorage 영속화 */
+    const selectedStacks = reactive(fnLoadSelectedStacks());
+    /* stackVersions — 스택별 버전 선택 { prefix: 'v1'|'v2'|'v3' }. localStorage 영속화 */
+    const stackVersions = reactive(fnLoadStackVersions());
 
     const form = reactive({
       projectId: null, projectNm: '', projectDesc: '',
@@ -433,7 +462,7 @@ window.MdSgSourcegenPage = {
     /* tabs — DDL 탭 10개. files 는 생성 결과(파일경로 → 소스문자열) */
     const tabs = reactive(
       Array.from({ length: SG_TAB_COUNT }, (_, i) => ({
-        tabNo: i + 1, ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '',
+        tabNo: i + 1, ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '',
         files: {}, error: '', generatedAt: '',
       }))
     );
@@ -456,6 +485,7 @@ window.MdSgSourcegenPage = {
        (#row-actions 슬롯 대체, 2026-08-25). cfReadonly 선언 직후에 둔다 — 삭제 버튼이 그 값을 읽는다. */
     genHistGridColumns.push({ type: 'actions', actions: [
       { label: '다운로드', cls: 'btn btn-sm btn-secondary', href: (row) => row.zipUrl, visible: (row) => !!row.zipUrl },
+      { label: '불러오기', cls: 'btn btn-sm btn_detail', onClick: (row) => onLoadSnapshot(row), visible: (row) => !!row.ddlSnapshotJson },
       { label: '삭제',     cls: 'btn btn-sm btn_row_delete', onClick: (row) => onDeleteGenHist(row), visible: () => !cfReadonly.value },
     ] });
     const cfIsNew = computed(() => !form.projectId);
@@ -468,11 +498,13 @@ window.MdSgSourcegenPage = {
     const cfResultTabIndices = computed(() =>
       tabs.map((t, i) => (Object.keys(t.files).length ? i : -1)).filter(i => i >= 0));
 
-    /* cfGroupedFiles — 결과 뷰어 좌측 트리 (그룹 → 파일 목록) */
+    /* cfGroupedFiles — 결과 뷰어 좌측 트리 (그룹 → 파일 목록).
+       구분자 제목은 "{구획} - {스택}" 형식(예: "Backend - JPA", "Frontend - Vue3 CDN (with common)")
+       — 팝오버 구획 헤더 없이 단독 노출되는 자리라 구획 정보를 제목에 직접 포함시킨다(2026-08-26). */
     const cfGroupedFiles = computed(() => {
       const all = Object.keys(cfResultTab.value.files);
       return SG_FILE_GROUPS
-        .map(g => ({ title: g.title, files: all.filter(n => n.startsWith(g.prefix)) }))
+        .map(g => ({ title: fnCategoryLabel(g.prefix) + ' - ' + (g.short || g.title), files: all.filter(n => n.startsWith(g.prefix)) }))
         .filter(g => g.files.length > 0);
     });
 
@@ -586,7 +618,7 @@ window.MdSgSourcegenPage = {
       });
 
       /* DDL 탭 복원 — 저장된 tabNo 자리에 그대로 채우고 나머지는 빈 탭 유지 */
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', files: {}, error: '', generatedAt: '' }));
+      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
       const ddlRes = await mdSgApiSvc.ddl.getList(p.projectId, '소스젠', 'DDL조회');
       (ddlRes.data?.data || []).forEach(d => {
         const idx = (d.tabNo || 1) - 1;
@@ -594,6 +626,7 @@ window.MdSgSourcegenPage = {
         Object.assign(tabs[idx], {
           ddlText: d.ddlText || '', schemaNm: d.schemaNm || '', tableNm: d.tableNm || '',
           classNm: d.classNm || '', endpoint: d.endpoint || '', swaggerTag: d.swaggerTag || '',
+          subPackage: d.subPackage || '',
         });
       });
 
@@ -612,7 +645,7 @@ window.MdSgSourcegenPage = {
     const onNewProject = () => {
       Object.assign(form, { projectId: null, projectNm: '', projectDesc: '', basePackage: 'com.exam.app',
         dbTypeCd: 'POSTGRESQL', thumbnailUrl: '', thumbnailAttachId: null });
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', files: {}, error: '', generatedAt: '' }));
+      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
       genHists.splice(0, genHists.length);
       uiState.dtlMode = 'edit';
       uiState.activeTabIdx = 0;
@@ -642,22 +675,39 @@ window.MdSgSourcegenPage = {
     const onSelectTab = (i) => { uiState.activeTabIdx = i; };
     const onClearTab = async () => {
       if (!await props.showConfirm('현재 탭 초기화', `탭 ${uiState.activeTabIdx + 1} 의 DDL 을 지우시겠습니까?`)) return;
-      Object.assign(cfCurTab.value, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', files: {}, error: '', generatedAt: '' });
+      Object.assign(cfCurTab.value, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' });
     };
     const onClearAllTabs = async () => {
       if (!await props.showConfirm('전체 초기화', '모든 DDL 탭과 생성 결과를 지우시겠습니까?')) return;
-      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', files: {}, error: '', generatedAt: '' }));
+      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
       uiState.activeFile = '';
     };
     const fnHasData = (i) => !!(tabs[i].ddlText || '').trim();
 
-    /* ── 6) 소스 생성 — 브라우저에서 전 탭 일괄 생성 ── */
+    /* ── 6) 소스 생성 — 브라우저에서 전 탭 일괄 생성 ──
+       [소스 생성] 버튼은 바로 생성하지 않고 언어/스택 선택 팝오버를 먼저 띄운다(2026-08-26).
+       체크한 스택 prefix 로 gnGenerate 결과를 걸러내 정말 필요한 파일만 남긴다. */
+    const onOpenStackPop = () => { uiState.stackPopOpen = true; };
+    const onCloseStackPop = () => { uiState.stackPopOpen = false; };
+    const onToggleStack = (prefix) => {
+      const i = selectedStacks.indexOf(prefix);
+      if (i >= 0) selectedStacks.splice(i, 1); else selectedStacks.push(prefix);
+      try { localStorage.setItem(SG_STACK_STORAGE_KEY, JSON.stringify(selectedStacks)); } catch (e) { /* 저장 실패 무시 */ }
+    };
+    const fnStackVersion = (prefix) => stackVersions[prefix] || 'v1';
+    const onChangeVersion = (prefix, version) => {
+      stackVersions[prefix] = version;
+      try { localStorage.setItem(SG_STACK_VERSION_STORAGE_KEY, JSON.stringify(stackVersions)); } catch (e) { /* 저장 실패 무시 */ }
+    };
+    const onGenerateConfirmed = () => { uiState.stackPopOpen = false; onGenerate(); };
+
     const onGenerate = async () => {
       if (typeof gnParseDdl !== 'function' || typeof gnGenerate !== 'function') {
         props.showToast('생성 엔진(assets/md/sg/sourcegen/*.js)이 로드되지 않았습니다.', 'error', 0);
         return;
       }
       if (!cfFilledTabs.value.length) { props.showToast('DDL 을 먼저 입력해주세요.', 'error'); return; }
+      if (!selectedStacks.length) { props.showToast('생성할 언어/스택을 하나 이상 선택해주세요.', 'error'); return; }
       uiState.generating = true;
       try {
         const dbType = form.dbTypeCd === 'ORACLE' ? 'oracle' : 'postgresql';
@@ -669,13 +719,17 @@ window.MdSgSourcegenPage = {
           try {
             const meta = gnParseDdl(raw, dbType);
             const opts = {
-              basePackage: form.basePackage || 'com.exam.app',
+              basePackage: fnEffectivePkg(form.basePackage, t.subPackage),
               className: t.classNm || undefined,
               endpoint: t.endpoint || undefined,
               tag: t.swaggerTag || undefined,
               rawDdl: raw,
             };
-            t.files = gnGenerate(meta, opts);
+            const generated = gnGenerate(meta, opts);
+            /* 선택한 스택 prefix 로만 필터링 — 체크 안 한 언어/프레임워크 파일은 결과에서 제외 */
+            t.files = Object.fromEntries(
+              Object.entries(generated).filter(([fn]) => selectedStacks.some(p => fn.startsWith(p)))
+            );
             t.generatedAt = new Date().toLocaleString('ko-KR');
             okCount++;
           } catch (e) {
@@ -732,12 +786,13 @@ window.MdSgSourcegenPage = {
       URL.revokeObjectURL(url);
     };
 
-    /* fnBuildZipBlob — 전 탭 생성 결과를 ZIP Blob 으로 묶는다(다운로드/DB첨부 공용) */
+    /* fnBuildZipBlob — 전 탭 생성 결과를 ZIP Blob 으로 묶는다(다운로드/DB첨부 공용).
+       탭마다 Sub Package 가 다를 수 있어 pkgPath 도 탭별로 계산한다(2026-08-26). */
     const fnBuildZipBlob = async () => {
       if (typeof JSZip !== 'function') throw new Error('JSZip 이 로드되지 않았습니다.');
       const zip = new JSZip();
-      const pkgPath = (form.basePackage || 'com.exam.app').replace(/\./g, '/');
       tabs.forEach(t => {
+        const pkgPath = fnEffectivePkg(form.basePackage, t.subPackage).replace(/\./g, '/');
         Object.entries(t.files).forEach(([fn, content]) => {
           zip.file(fnZipPath(fn, pkgPath), content);
         });
@@ -758,19 +813,47 @@ window.MdSgSourcegenPage = {
       if (!cfTotalFileCount.value) { props.showToast('먼저 [생성] 을 실행해주세요.', 'error'); return; }
       try {
         const blob = await fnBuildZipBlob();
+        const zipName = fnZipName();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = fnZipName();
+        a.href = url; a.download = zipName;
         a.click();
         URL.revokeObjectURL(url);
+        fnLogDownload(zipName);
       } catch (err) {
         props.showToast(err.message || 'ZIP 생성 중 오류가 발생했습니다.', 'error', 0);
       }
     };
 
+    /* fnLogDownload — [⬇ ZIP 다운로드] 클릭 기록(다운로드이력관리 화면용, 2026-08-26).
+       로그성 호출 — 실패해도 방금 끝난 다운로드 자체에는 영향 주지 않는다(await 없이 fire-and-forget). */
+    const fnLogDownload = (zipName) => {
+      mdSgApiSvc.downloadHist.create({
+        projectId: form.projectId || null,
+        projectNm: form.projectNm || null,
+        basePackage: form.basePackage || null,
+        zipFileNm: zipName,
+        ddlCount: cfFilledTabs.value.length,
+        fileCount: cfTotalFileCount.value,
+      }, '소스젠', 'ZIP다운로드').catch(() => { /* 로그 실패는 무시 — 다운로드 자체는 이미 완료됨 */ });
+    };
+
     /* ── 8) 생성 결과를 DB 에 첨부로 보관 ──
        ZIP 을 공통 업로드 API(/co/cm/upload/multi)로 올려 sy_attach 에 적재하고,
        받은 attachId/URL 을 md_sg_sourcegen_hist 에 이력으로 남긴다. */
+    /* fnBuildDdlSnapshot — 이 생성 시점의 DDL 탭 입력값(JSON)을 만든다. 생성된 소스 자체(파일 텍스트)는
+       탭 경계가 사라진 ZIP 하나로만 합쳐져 있어 그대로 복원할 수 없다 — 대신 "재생성 가능한 입력값"만
+       스냅샷으로 남기고, [불러오기] 는 에디터에 이 입력을 되돌린 뒤 사용자가 다시 [소스 생성] 하는 방식
+       (엔진이 최신화돼도 항상 최신 규칙으로 재생성됨, 2026-08-26). */
+    const fnBuildDdlSnapshot = () => JSON.stringify({
+      basePackage: form.basePackage || '',
+      dbTypeCd: form.dbTypeCd || '',
+      tabs: cfFilledTabs.value.map(t => ({
+        tabNo: t.tabNo, ddlText: t.ddlText, schemaNm: t.schemaNm, tableNm: t.tableNm,
+        classNm: t.classNm, endpoint: t.endpoint, swaggerTag: t.swaggerTag, subPackage: t.subPackage,
+      })),
+    });
+
     /* fnArchiveZip — 생성 결과를 ZIP 으로 묶어 업로드하고 이력 1건을 남긴다.
        [저장] 시 자동 보관과 [생성결과 보관] 버튼이 함께 쓴다. 실패하면 throw 한다(호출부에서 처리). */
     const fnArchiveZip = async (projectId, memo) => {
@@ -791,7 +874,34 @@ window.MdSgSourcegenPage = {
         zipFileSize: blob.size,
         zipUrl: uploaded.cdnImgUrl || uploaded.attachUrl || null,
         genMemo: memo || null,
+        ddlSnapshotJson: fnBuildDdlSnapshot(),
       }, '소스젠', '생성이력등록');
+    };
+
+    /* onLoadSnapshot — [생성결과 보관 이력]의 [불러오기]. 그 시점의 DDL 탭 입력값을 에디터로 복원한다
+       (생성된 소스 자체가 아니라 "다시 생성할 수 있는 재료"를 되돌리는 것 — 복원 후 [소스 생성]을 다시
+       눌러야 실제 파일이 나온다). 현재 편집 중인 탭 내용을 덮어쓰므로 확인을 받는다. */
+    const onLoadSnapshot = async (row) => {
+      if (!row.ddlSnapshotJson) { props.showToast('이 이력에는 불러올 DDL 스냅샷이 없습니다.', 'error'); return; }
+      let snap;
+      try { snap = JSON.parse(row.ddlSnapshotJson); } catch (e) { props.showToast('스냅샷 데이터를 읽을 수 없습니다.', 'error'); return; }
+      if (!await props.showConfirm('생성결과 불러오기',
+        `${coUtil.cofYmdHm(row.genDate) || ''} 생성 시점의 DDL 탭 입력값으로 되돌리시겠습니까?\n(현재 편집 중인 DDL 탭 내용은 덮어써집니다 — 다시 생성하려면 [소스 생성]을 눌러주세요)`)) return;
+      tabs.forEach(t => Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', subPackage: '', files: {}, error: '', generatedAt: '' }));
+      if (snap.basePackage) form.basePackage = snap.basePackage;
+      if (snap.dbTypeCd) form.dbTypeCd = snap.dbTypeCd;
+      (snap.tabs || []).forEach(s => {
+        const idx = (s.tabNo || 1) - 1;
+        if (idx < 0 || idx >= SG_TAB_COUNT) return;
+        Object.assign(tabs[idx], {
+          ddlText: s.ddlText || '', schemaNm: s.schemaNm || '', tableNm: s.tableNm || '',
+          classNm: s.classNm || '', endpoint: s.endpoint || '', swaggerTag: s.swaggerTag || '', subPackage: s.subPackage || '',
+        });
+      });
+      uiState.activeTabIdx = 0;
+      uiState.activeFile = '';
+      if (cfReadonly.value) uiState.dtlMode = 'edit';
+      props.showToast('DDL 탭을 불러왔습니다. [소스 생성]을 눌러 다시 생성해주세요.', 'success');
     };
 
     const onSaveZipToDb = async () => {
@@ -849,7 +959,8 @@ window.MdSgSourcegenPage = {
         /* DDL 탭 — 입력된 탭만 전체 교체 저장 */
         const rows = cfFilledTabs.value.map((t, i) => ({
           tabNo: t.tabNo, ddlText: t.ddlText, schemaNm: t.schemaNm, tableNm: t.tableNm,
-          classNm: t.classNm, endpoint: t.endpoint, swaggerTag: t.swaggerTag, sortOrd: i, useYn: 'Y',
+          classNm: t.classNm, endpoint: t.endpoint, swaggerTag: t.swaggerTag, subPackage: t.subPackage || null,
+          sortOrd: i, useYn: 'Y',
         }));
         await mdSgApiSvc.ddl.saveList(projectId, rows, '소스젠', 'DDL저장');
 
@@ -899,12 +1010,14 @@ window.MdSgSourcegenPage = {
       uiState, form, tabs, genHists, genHistGridColumns,
       cfReadonly, cfIsNew, cfCurTab, cfResultTab, cfTotalFileCount, cfFilledTabs,
       cfResultTabIndices, cfGroupedFiles,
-      fnHasData, fnShortName, fnLangOf, fnFileLabels,
+      fnHasData, fnLangOf,
       SG_SAMPLE_GROUPS, onLoadSample, codeBoxRef, thumbInputRef,
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
       onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
       cfTemplateItems, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onTemplateItemClick, onProjectUpload,
       onSelectTab, onClearTab, onClearAllTabs, onGenerate,
+      SG_STACK_SECTIONS, selectedStacks, onOpenStackPop, onCloseStackPop, onToggleStack, onGenerateConfirmed,
+      SG_STACK_VERSION_OPTIONS, stackVersions, fnStackVersion, onChangeVersion,
       onSelectResultTab, onSelectFile, onCopyCode, onDownloadFile, onDownloadZip,
       onSaveZipToDb, onDeleteGenHist, onSave, onDeleteProject,
     };
@@ -964,8 +1077,8 @@ window.MdSgSourcegenPage = {
   <div class="sg-panel">
     <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(탭 하나 = 테이블 하나. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
       <span style="margin-left:auto;display:flex;gap:6px;">
-        <button type="button" class="sg-btn sg-btn-ghost" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
-        <button type="button" class="sg-btn sg-btn-ghost" @click="onProjectUpload">📤 프로젝트업로드</button>
+        <button type="button" class="sg-btn sg-btn-accent" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
+        <button type="button" class="sg-btn sg-btn-accent" @click="onProjectUpload">📤 프로젝트업로드</button>
       </span>
     </div>
     <div class="sg-ddl-tabs">
@@ -979,6 +1092,9 @@ window.MdSgSourcegenPage = {
     <div class="sg-opts">
       <div class="sg-opt-row"><label>Schema</label><input v-model="cfCurTab.schemaNm" :readonly="cfReadonly" placeholder="(DDL에서 자동)" /></div>
       <div class="sg-opt-row"><label>Table</label><input v-model="cfCurTab.tableNm" readonly placeholder="(DDL에서 자동)" /></div>
+      <div class="sg-opt-row"><label>Sub Package</label>
+        <input v-model="cfCurTab.subPackage" :readonly="cfReadonly" placeholder="(테이블명 접두어 자동)"
+          title="Base Package 하위 폴더. 예: 테이블 zz_exam1 -> zz" class="sg-mono" /></div>
       <div class="sg-opt-row"><label>Class Name</label><input v-model="cfCurTab.classNm" :readonly="cfReadonly" placeholder="(테이블명에서 자동)" /></div>
       <div class="sg-opt-row"><label>Endpoint</label><input v-model="cfCurTab.endpoint" :readonly="cfReadonly" placeholder="(테이블명에서 자동)" /></div>
       <div class="sg-opt-row"><label>Swagger Tag</label><input v-model="cfCurTab.swaggerTag" :readonly="cfReadonly" placeholder="(Class Name 과 동일)" /></div>
@@ -1001,19 +1117,50 @@ window.MdSgSourcegenPage = {
     </div>
 
     <div class="sg-ddl-actions">
-      <template v-if="!cfReadonly">
-        <button class="sg-btn sg-btn-ghost" @click="onClearTab">현재탭 초기화</button>
-        <button class="sg-btn sg-btn-ghost" @click="onClearAllTabs">전체 초기화</button>
-      </template>
-      <span style="flex:1;"></span>
-      <button class="sg-btn sg-btn-dark" @click="onGenerate" :disabled="uiState.generating">
-        {{ uiState.generating ? '생성 중…' : '⚙️ 소스 생성 (전체 탭)' }}
-      </button>
-      <button class="sg-btn sg-btn-green" @click="onDownloadZip" :disabled="!cfTotalFileCount">⬇ ZIP 다운로드</button>
-      <button v-if="!cfReadonly" class="sg-btn sg-btn-dark" @click="onSaveZipToDb"
-        :disabled="!cfTotalFileCount || uiState.saving">
-        {{ uiState.saving ? '보관 중…' : '📎 생성결과 보관' }}
-      </button>
+      <div class="sg-ddl-actions-left">
+        <template v-if="!cfReadonly">
+          <button class="sg-btn sg-btn-ghost" @click="onClearTab">현재탭 초기화</button>
+          <button class="sg-btn sg-btn-ghost" @click="onClearAllTabs">전체 초기화</button>
+        </template>
+      </div>
+      <div class="sg-gen-wrap">
+        <button class="sg-btn sg-btn-dark" @click="onOpenStackPop" :disabled="uiState.generating">
+          {{ uiState.generating ? '생성 중…' : '⚙️ 소스 생성 (전체 탭)' }}
+        </button>
+        <template v-if="uiState.stackPopOpen">
+          <div class="sg-stack-backdrop" @click="onCloseStackPop"></div>
+          <div class="sg-stack-pop">
+            <div class="sg-stack-pop-title">생성할 언어/스택 선택</div>
+            <div class="sg-stack-pop-list">
+              <div v-for="sec in SG_STACK_SECTIONS" :key="sec.label" class="sg-stack-section">
+                <div class="sg-stack-section-title">{{ sec.label }}</div>
+                <div class="sg-stack-section-grid">
+                  <label v-for="g in sec.items" :key="g.prefix" class="sg-stack-item">
+                    <input type="checkbox" :checked="selectedStacks.includes(g.prefix)" @change="onToggleStack(g.prefix)" />
+                    <span class="sg-stack-item-label">{{ g.short || g.title }}</span>
+                    <select class="sg-stack-version" :value="fnStackVersion(g.prefix)"
+                      :disabled="!selectedStacks.includes(g.prefix)" @click.stop
+                      @change="onChangeVersion(g.prefix, $event.target.value)">
+                      <option v-for="v in SG_STACK_VERSION_OPTIONS" :key="v" :value="v">{{ v }}</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="sg-stack-pop-actions">
+              <button type="button" class="sg-btn sg-btn-ghost" @click="onCloseStackPop">취소</button>
+              <button type="button" class="sg-btn sg-btn-dark" @click="onGenerateConfirmed" :disabled="!selectedStacks.length">생성 시작</button>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="sg-ddl-actions-right">
+        <button class="sg-btn sg-btn-green" @click="onDownloadZip" :disabled="!cfTotalFileCount">⬇ ZIP 다운로드</button>
+        <button v-if="!cfReadonly" class="sg-btn sg-btn-dark" @click="onSaveZipToDb"
+          :disabled="!cfTotalFileCount || uiState.saving">
+          {{ uiState.saving ? '보관 중…' : '📎 생성결과 보관' }}
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1038,8 +1185,7 @@ window.MdSgSourcegenPage = {
           <div class="sg-file-grp">{{ grp.title }}</div>
           <button class="sg-file-btn" v-for="fn in grp.files" :key="fn"
             :class="{ active: uiState.activeFile===fn }" @click="onSelectFile(fn)"
-            :title="fn"><span v-for="lab in fnFileLabels(fn)" :key="lab.text"
-              class="sg-lab" :class="lab.cls">{{ lab.text }}</span>{{ fnShortName(fn) }}</button>
+            :title="fn">{{ fn }}</button>
         </template>
       </div>
       <div class="sg-code-pane">

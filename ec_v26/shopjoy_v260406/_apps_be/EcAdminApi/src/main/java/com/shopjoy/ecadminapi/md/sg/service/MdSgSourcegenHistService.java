@@ -52,6 +52,7 @@ public class MdSgSourcegenHistService {
                 item.setZipFileSize(e.getZipFileSize());
                 item.setZipUrl(e.getZipUrl());
                 item.setGenMemo(e.getGenMemo());
+                item.setDdlSnapshotJson(e.getDdlSnapshotJson());
                 item.setUseYn(e.getUseYn());
                 item.setRegBy(e.getRegBy());
                 item.setRegDate(e.getRegDate());

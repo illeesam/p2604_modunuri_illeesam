@@ -68,6 +68,11 @@ public class MdSgSourcegen extends BaseEntity {
     @Size(max = 100, message = "swaggerTag 는 100자 이내여야 합니다.")
     private String swaggerTag;
 
+    @Comment("서브 패키지 (basePackage 하위 폴더 — 테이블명 접두어 자동, 예: zz_exam1 -> zz)")
+    @Column(name = "sub_package", length = 50)
+    @Size(max = 50, message = "subPackage 는 50자 이내여야 합니다.")
+    private String subPackage;
+
     @Comment("정렬순서")
     @Column(name = "sort_ord")
     private Integer sortOrd;

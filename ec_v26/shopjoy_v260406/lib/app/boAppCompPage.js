@@ -103,6 +103,8 @@
     mdCbPatternMng: 'md-cb-pattern-mng',
     mdSgProjectMng: 'md-sg-project-mng',
     mdSgGenHistMng: 'md-sg-gen-hist-mng',
+    mdSgDownloadHistMng: 'md-sg-download-hist-mng',
+    mdSgStackMng: 'md-sg-stack-mng',
     syUserMng: 'sy-user-mng',
     syUserDtl: 'sy-user-dtl',
     syBatchMng: 'sy-batch-mng',

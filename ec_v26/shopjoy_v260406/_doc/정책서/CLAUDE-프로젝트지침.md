@@ -1493,6 +1493,12 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - 테이블을 `<div style="max-height:480px;overflow-y:auto;">` 로 감쌈
 - 빈 행의 colspan은 실제 컬럼 수와 일치 유지
 
+**`<bo-grid-crud>` 좌측 고정열(pin) 표준** ⭐ (2026-08-26):
+- 가로 스크롤 시 **번호 / 상태(N·I·U·D) / 체크박스**는 좌측에 고정(sticky)되어 항상 보인다
+- **ID 컬럼은 고정열에서 제외** — 값만 참고하면 되는 열이라 가로스크롤 시 다른 데이터 컬럼과 함께 흘러가도 무방. 렌더 순서도 고정열 그룹(드래그·번호·상태·체크박스) 바로 다음, 일반 데이터 컬럼 앞에 위치
+- 구현: `components/comp/BoAreaComp.js`의 `BoGridCrud` `cfPinLeftSegs` computed가 표시 여부에 따라 누적 오프셋을 계산(전체공통 — 화면별 대응 불필요, 이 컴포넌트를 쓰는 모든 CRUD 그리드에 자동 적용됨)
+- `showRowId`(기본 true)로 ID 컬럼 노출 여부만 화면에서 제어. 필요 없으면 `:show-row-id="false"`
+
 **BoGrid 컬럼 속성화 표준 (AG-Grid colDef 식)** ⭐:
 단순 셀(텍스트·배지·조건부색상·포맷)은 `#cell-{key}` 슬롯 대신 컬럼 객체
 속성으로 선언. 신규 화면은 처음부터 columns 속성 우선.

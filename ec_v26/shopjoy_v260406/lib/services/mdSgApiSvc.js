@@ -50,5 +50,24 @@
     remove(_id, uiNm, cmdNm)             { return chkId(_id, uiNm, cmdNm) || client().delete(`/md/sg/project/gen-hists/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── downloadHist: FO [⬇ ZIP 다운로드] 클릭 기록 (파일 재보관 없이 로그만) ─ */
+  mdSgApiSvc.downloadHist = {
+    getPage(params, uiNm, cmdNm) { return client().get('/md/sg/download-hist/page', { params, ...hdr(uiNm, cmdNm) }); },
+    /* create — 로그성 호출. 실패해도 다운로드 자체를 막으면 안 되므로 호출부에서 catch 로 무시 */
+    create(body, uiNm, cmdNm)    { return client().post('/md/sg/download-hist', body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || client().delete(`/md/sg/download-hist/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── stack: [소스 생성] 팝오버 언어/스택 카탈로그 (BO 관리, FO 팝오버 조회) ─ */
+  mdSgApiSvc.stack = {
+    getList(params, uiNm, cmdNm)   { return client().get('/md/sg/stack', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm)   { return client().get('/md/sg/stack/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || client().get(`/md/sg/stack/${_id}`, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)      { return client().post('/md/sg/stack', body, hdr(uiNm, cmdNm)); },
+    update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || client().put(`/md/sg/stack/${_id}`, body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || client().delete(`/md/sg/stack/${_id}`, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm) { return client().post(`/md/sg/stack/save-list/${cmd}`, rows, hdr(uiNm, cmdNm)); },
+  };
+
   global.mdSgApiSvc = mdSgApiSvc;
 })(window);

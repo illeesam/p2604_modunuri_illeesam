@@ -258,6 +258,8 @@
       { group: '소스젠' },
       { id: 'mdSgProjectMng', label: '프로젝트관리' },
       { id: 'mdSgGenHistMng', label: '생성이력관리' },
+      { id: 'mdSgDownloadHistMng', label: '다운로드이력관리' },
+      { id: 'mdSgStackMng', label: '언어/스택관리' },
     ],
   };
 
