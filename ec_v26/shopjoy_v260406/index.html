@@ -118,7 +118,7 @@
       } catch(e) { window.FO_SITE_NO = DEFAULT_FO_SITE_NO; }
       /* BO_SITE_NO는 bo.html에서 전적으로 관리 — FO에서 접근 금지 */
     })();
-    document.write('<link rel="stylesheet" href="assets/css/foGlobalStyle' + window.FO_SITE_NO + '.css">');
+    document.write('<link rel="stylesheet" href="assets/css/fo-global-style' + window.FO_SITE_NO + '.css">');
     /* 다른 탭에서 SITE_NO 변경 시에만 1회 반영. 현재 사이트와 같은 값/빈 값이면 무시(무한 reload 방지) */
     window.addEventListener('storage', function(e){
       if (e.key !== 'modu-fo-sy-siteNo') return;

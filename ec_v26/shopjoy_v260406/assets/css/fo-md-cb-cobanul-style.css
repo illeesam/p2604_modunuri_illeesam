@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
  * mdCbCobanulStyle.css — 코바늘 도안 제작 화면(fo-md-cb-cobanul.html) 전용 스타일
  *
- * fo-md-cb-cobanul.html 인라인 <style> 블록을 분리(2026-08-25). mdModuleStyle.css
+ * fo-md-cb-cobanul.html 인라인 <style> 블록을 분리(2026-08-25). fo-md-module-style.css
  * (공통 버튼 톤 + 부팅 스피너) **다음에** 로드한다. 전부 .cb-page 컨테이너 안에서만
  * 의미 있는 클래스라 index.html/bo.html 쪽에는 영향 없다.
  * ═══════════════════════════════════════════════════════════════════════════ */

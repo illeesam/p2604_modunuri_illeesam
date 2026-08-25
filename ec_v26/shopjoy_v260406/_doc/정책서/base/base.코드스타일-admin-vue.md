@@ -1995,7 +1995,7 @@ setup(props, { emit }) {
 ### 16.3 모달 디자인 CSS 분리 (2026-05-28)
 
 이전에 [BoModals.js](../../../components/modals/BoModals.js) 상단에서 JS 로 주입하던
-`__shopjoy_modal_enh_style__` CSS 블록은 [boGlobalStyle{01,02,03}.css](../../../assets/css/boGlobalStyle01.css)
+`__shopjoy_modal_enh_style__` CSS 블록은 [bo-global-style{01,02,03}.css](../../../assets/css/bo-global-style01.css)
 세 파일 끝으로 이전 완료.
 
 - BoModals.js 에는 ESC 키 핸들러(JS) 만 남김
@@ -2005,7 +2005,7 @@ setup(props, { emit }) {
 ### 16.4 적용 진행 현황
 
 #### 2026-05-28 1차 작업
-- **CSS 분리 완료** — `__shopjoy_modal_enh_style__` 블록을 `boGlobalStyle{01,02,03}.css` 끝으로 이동. BoModals.js 에는 ESC 키 핸들러(JS) 만 남김
+- **CSS 분리 완료** — `__shopjoy_modal_enh_style__` 블록을 `bo-global-style{01,02,03}.css` 끝으로 이동. BoModals.js 에는 ESC 키 핸들러(JS) 만 남김
 
 #### 2026-05-28 2차 작업 (그리드 picker 모달 페이징)
 - **`pages/bo` 인라인 오버레이 → `<bo-modal>` 루트 + `<bo-grid :pager>` 변환 완료 (3건)**:

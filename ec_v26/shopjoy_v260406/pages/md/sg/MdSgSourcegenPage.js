@@ -385,6 +385,21 @@ COMMENT ON COLUMN shopjoy_2604.md_sg_project.project_nm   IS '프로젝트명';
   ] },
 ];
 
+/* SG_PROJECT_TEMPLATES — [프로젝트템플릿다운로드] 모달에 보여줄 목록(DB 유형별 3개씩).
+   전부 준비중(미구현) 항목이라 실제 다운로드 URL 없이 label/desc 만 갖는다 — 클릭 시 토스트만 안내. */
+const SG_PROJECT_TEMPLATES = [
+  { db: 'ORACLE', dbLabel: 'Oracle', items: [
+    { key: 'ora-tpl1', label: '회원관리 템플릿',  desc: '회원/등급/주소 CRUD 기본형' },
+    { key: 'ora-tpl2', label: '게시판 템플릿',    desc: '게시판/댓글/첨부 CRUD 기본형' },
+    { key: 'ora-tpl3', label: '주문관리 템플릿',  desc: '주문/주문상품 CRUD 기본형' },
+  ] },
+  { db: 'POSTGRESQL', dbLabel: 'PostgreSQL', items: [
+    { key: 'pg-tpl1', label: '회원관리 템플릿',  desc: '회원/등급/주소 CRUD 기본형' },
+    { key: 'pg-tpl2', label: '게시판 템플릿',    desc: '게시판/댓글/첨부 CRUD 기본형' },
+    { key: 'pg-tpl3', label: '주문관리 템플릿',  desc: '주문/주문상품 CRUD 기본형' },
+  ] },
+];
+
 window.MdSgSourcegenPage = {
   name: 'MdSgSourcegenPage',
   props: {
@@ -404,6 +419,8 @@ window.MdSgSourcegenPage = {
       resultTabIdx: 0,        // 결과 뷰어에서 보고 있는 탭
       copied: false,
       genMemo: '',
+      templateModalOpen: false,  // 프로젝트 템플릿 다운로드 모달 표시 여부
+      templateDbTab: 'POSTGRESQL', // 템플릿 모달 안 DB 탭 선택('ORACLE' | 'POSTGRESQL')
     });
 
     const form = reactive({
@@ -607,6 +624,19 @@ window.MdSgSourcegenPage = {
       if (form.projectId) await fnLoadProject(form.projectId);
       uiState.dtlMode = 'view';
     };
+
+    /* ── 4b) 프로젝트 템플릿 다운로드 / 프로젝트 업로드 (둘 다 미구현 — 준비중 안내만) ── */
+    const onTemplateModalOpen = () => { uiState.templateModalOpen = true; };
+    const onTemplateModalClose = () => { uiState.templateModalOpen = false; };
+    const onTemplateDbTab = (db) => { uiState.templateDbTab = db; };
+    /* onTemplateItemClick — 템플릿 항목 클릭. 실제 다운로드는 미구현이라 안내만(2026-08-25) */
+    const onTemplateItemClick = () => { props.showToast('준비중입니다.', 'info'); };
+    /* onProjectUpload — 프로젝트 업로드 버튼. 미구현이라 안내만(2026-08-25) */
+    const onProjectUpload = () => { props.showToast('준비중입니다.', 'info'); };
+    const cfTemplateItems = computed(() => {
+      const grp = SG_PROJECT_TEMPLATES.find(g => g.db === uiState.templateDbTab);
+      return grp ? grp.items : [];
+    });
 
     /* ── 5) DDL 탭 편집 ── */
     const onSelectTab = (i) => { uiState.activeTabIdx = i; };
@@ -873,6 +903,7 @@ window.MdSgSourcegenPage = {
       SG_SAMPLE_GROUPS, onLoadSample, codeBoxRef, thumbInputRef,
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
       onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
+      cfTemplateItems, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onTemplateItemClick, onProjectUpload,
       onSelectTab, onClearTab, onClearAllTabs, onGenerate,
       onSelectResultTab, onSelectFile, onCopyCode, onDownloadFile, onDownloadZip,
       onSaveZipToDb, onDeleteGenHist, onSave, onDeleteProject,
@@ -931,7 +962,12 @@ window.MdSgSourcegenPage = {
 
   <!-- ═══ DDL 탭 ═══ -->
   <div class="sg-panel">
-    <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(탭 하나 = 테이블 하나. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span></div>
+    <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(탭 하나 = 테이블 하나. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
+      <span style="margin-left:auto;display:flex;gap:6px;">
+        <button type="button" class="sg-btn sg-btn-ghost" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
+        <button type="button" class="sg-btn sg-btn-ghost" @click="onProjectUpload">📤 프로젝트업로드</button>
+      </span>
+    </div>
     <div class="sg-ddl-tabs">
       <button v-for="(t, i) in tabs" :key="t.tabNo" class="sg-ddl-tab"
         :class="{ active: uiState.activeTabIdx===i, 'has-data': fnHasData(i) }"
@@ -1046,6 +1082,21 @@ window.MdSgSourcegenPage = {
       <button v-if="form.projectId" class="btn btn_cancel" @click="onCancelEdit">취소</button>
     </template>
   </div>
+
+  <!-- ═══ 프로젝트 템플릿 다운로드 모달 (미구현 — 항목 클릭 시 준비중 안내만) ═══ -->
+  <fo-modal :show="uiState.templateModalOpen" title="프로젝트 템플릿 다운로드" width="480px"
+    box-pad="20px" @close="onTemplateModalClose">
+    <div class="sg-view-toggle" style="margin-bottom:14px;">
+      <button type="button" :class="{ active: uiState.templateDbTab==='ORACLE' }" @click="onTemplateDbTab('ORACLE')">Oracle</button>
+      <button type="button" :class="{ active: uiState.templateDbTab==='POSTGRESQL' }" @click="onTemplateDbTab('POSTGRESQL')">PostgreSQL</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button v-for="t in cfTemplateItems" :key="t.key" type="button" class="sg-sample-btn"
+        style="width:100%;justify-content:space-between;" @click="onTemplateItemClick">
+        {{ t.label }}<span class="sg-sample-desc">{{ t.desc }}</span>
+      </button>
+    </div>
+  </fo-modal>
 </div>
 `,
 };

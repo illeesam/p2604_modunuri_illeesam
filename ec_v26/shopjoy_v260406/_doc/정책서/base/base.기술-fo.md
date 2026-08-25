@@ -45,7 +45,7 @@ index.html
 
 | 대상 | 동작 |
 |---|---|
-| CSS | `foGlobalStyle{NO}.css` 자동 로드 |
+| CSS | `fo-global-style{NO}.css` 자동 로드 |
 | 스크립트 | `Home{NO}.js`, `Prod{NO}List.js`, `Prod{NO}View.js` document.write 동적 삽입 |
 | 컴포넌트 등록 | `app.component('Home'+NO, window['Home'+NO])` |
 | 런타임 렌더 | `<component :is="foHomeComp">` (window['Home'+NO] 참조) |
@@ -55,13 +55,13 @@ index.html
 ### 사이트별 CSS 변수 (테마)
 
 ```css
-/* foGlobalStyle01.css — 베이지/카키 */
+/* fo-global-style01.css — 베이지/카키 */
 --accent: #c9a96e;
 
-/* foGlobalStyle02.css — 민트/세이지 */
+/* fo-global-style02.css — 민트/세이지 */
 --accent: #4a9b7e;
 
-/* foGlobalStyle03.css — 로얄 퍼플 */
+/* fo-global-style03.css — 로얄 퍼플 */
 --accent: #7c3aed;
 ```
 
@@ -301,7 +301,7 @@ const html = marked.parse(markdownText);
 
 ```
 fo-disp-ui-pop.html
-├─ Vue, axios, yup, boGlobalStyle0N.css
+├─ Vue, axios, yup, bo-global-style0N.css
 ├─ lib/utils/boUtil.js (visibilityUtil 등) + 실 API(boApiSvc)
 ├─ components/comp/BaseComp.js
 ├─ components/disp/DispX01Ui.js ~ DispX04Widget.js

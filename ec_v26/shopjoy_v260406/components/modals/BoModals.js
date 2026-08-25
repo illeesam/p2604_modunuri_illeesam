@@ -81,7 +81,7 @@
 */
 
 /* ── 공통 모달 ESC 키 핸들러 ───────────────────────────────────
- * 모달 디자인 CSS 는 assets/css/boGlobalStyle{01,02,03}.css 로 이동(2026-05-28).
+ * 모달 디자인 CSS 는 assets/css/bo-global-style{01,02,03}.css 로 이동(2026-05-28).
  * 이 블록에는 키 이벤트(JS) 만 남긴다. */
 (() => {
   if (window.__shopjoy_modal_esc_attached__) return;

@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
- * mdModuleStyle.css — 독립 FO 모듈(md/*) 공통 스타일
+ * fo-md-module-style.css — 독립 FO 모듈(md/*) 공통 스타일
  *
- * 대상: mdCbCobanul.html(코바늘) / mdSgSourcegen.html(소스젠) 등 "모듈" 메뉴 아래 화면 전부.
- * foGlobalStyle0N.css **다음에** 로드해서 전역 버튼 톤만 모듈용으로 덮어쓴다.
+ * 대상: fo-md-cb-cobanul.html(코바늘) / fo-md-sg-sourcegen.html(소스젠) 등 "모듈" 메뉴 아래 화면 전부.
+ * fo-global-style0N.css **다음에** 로드해서 전역 버튼 톤만 모듈용으로 덮어쓴다.
  *
  * 왜 별도 파일인가: 모듈 화면들끼리 톤이 같아야 하는데, index.html 쪽 화면까지 바뀌면 안 된다.
  *   → 모든 규칙을 .cb-page / .sg-page 컨테이너 안으로 한정한다(전역 오염 없음).
@@ -13,6 +13,19 @@
  *   삭제       = 적색 아웃라인 … 파괴적이지만 주 액션은 아니다. 솔리드로 두면 [수정]과 싸운다
  *   조회·목록·상세보기·취소 = 흰색 아웃라인 … 중립 이동/보조
  * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 0) 부팅 로딩 스피너 — 모든 독립 FO 모듈 진입점(fo-md-*.html)이 body 최상단에
+ *   동일하게 두는 #_boot_loading 오버레이. 파일마다 따로 갖고 있던 걸 여기 하나로 모았다
+ *   (2026-08-25, 신규 모듈 추가 시 이 블록은 복사할 필요 없이 fo-md-module-style.css 만 링크하면 됨). ── */
+#_boot_loading { position:fixed; inset:0; z-index:99999;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+#_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+  border:3px solid rgba(255,255,255,0.12); border-top-color:#c9a96e;
+  animation:_bootspin .8s linear infinite; }
+#_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+@keyframes _bootspin { to { transform: rotate(360deg); } }
+#_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
 
 /* ── 1) 저장/수정/적용 — 분홍(로즈) 그라데이션 ─────────────────────────────
  *   "지금 내가 만드는 것을 확정하는" 액션만 분홍. 조회/신규와 색으로 구분된다. */

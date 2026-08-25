@@ -1,0 +1,20 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+ * fo-disp-ui-pop-style.css — 전시 UI 미리보기(사용자, fo-disp-ui-pop.html) 전용 스타일
+ *
+ * fo-disp-ui-pop.html 인라인 <style> 블록을 분리(2026-08-25). fo-global-style0N.css
+ * **다음에** 로드한다. 독립 팝업 화면이라 body 리셋 + 부팅 스피너만 있고 별도 컨테이너
+ * 클래스는 없다(index.html 라우팅 밖 — 전역 오염 걱정 없이 body 전체를 리셋해도 된다).
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
+
+#_boot_loading { position:fixed; inset:0; z-index:99999;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+#_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+  border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+  animation:_bootspin .8s linear infinite; }
+#_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+@keyframes _bootspin { to { transform: rotate(360deg); } }
+#_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }

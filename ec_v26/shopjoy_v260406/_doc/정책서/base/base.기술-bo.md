@@ -25,7 +25,7 @@
 
 ```
 bo.html
-├─ head: Vue, Yup, Quill, boGlobalStyle0N.css
+├─ head: Vue, Yup, Quill, bo-global-style0N.css
 ├─ (목업) window.adminData (폐기됨 — 실 API boApiSvc 기반으로 전환)
 ├─ lib/utils/boApiAxios.js         (window.boApi — BO axios 래퍼)
 ├─ lib/utils/boUtil.js             (window.boUtil)

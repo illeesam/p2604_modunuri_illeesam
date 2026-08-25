@@ -205,7 +205,7 @@
 Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-width 제한 해제:
 
 ```css
-/* boGlobalStyle0N.css */
+/* bo-global-style0N.css */
 .admin-wrap:has(.dtl-tab-grid.cols-3),
 .admin-wrap:has(.dtl-tab-grid.cols-4) { max-width: none; }
 ```
@@ -252,7 +252,7 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 넉넉한 `20px` 패딩은 폐기 — 표시경로(트리) 카드 수준(`12px`)으로 슬림하게 맞춘다.
 
 ```css
-/* boGlobalStyle01/02/03.css — 3개 파일 동일 (전역 공통) */
+/* bo-global-style01/02/03.css — 3개 파일 동일 (전역 공통) */
 .card { ... padding: 12px; margin-bottom: 12px; }   /* 이전 padding:20px / margin-bottom:16px */
 ```
 
@@ -302,7 +302,7 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 
 > 코드: [pages/bo/sy/SySiteMng.js](../../../pages/bo/sy/SySiteMng.js) (트리+목록+상세, 상세=grid 자식),
 > [pages/bo/sy/SyUserMng.js](../../../pages/bo/sy/SyUserMng.js) (상세=grid 밖 형제 → margin-top 제거),
-> CSS: [assets/css/boGlobalStyle01/02/03.css](../../../assets/css/) `.card`.
+> CSS: [assets/css/bo-global-style01/02/03.css](../../../assets/css/) `.card`.
 > 연관: §10.12(트리 선택 시 목록·상세 초기화), §11.2(페이저 카드 내부), §12.1(임베드 Dtl 제목 list-title).
 
 ### 6.7 제목 ● 아이콘 / 슬림화 / 트리 루트 강조 표준 ⭐ (2026-06-04)
@@ -681,7 +681,7 @@ Mng 안에 임베드되는 **Dtl/Hist 컴포넌트는 독립 페이지가 아니
 - FO **35개** fo-page(배너 흡수 또는 bare) / fo-container **8개**(본문 card 보유 화면).
 - 검증: node/div/태그 균형 **173개 전 페이지 통과** + bare grid `#toolbar-actions` 잔존 0 + `#footer` 페이저 잔존 0.
 
-> 코드: [BoAreaComp.js](../../../components/comp/BoAreaComp.js)(BoPage/BoContainer), [FoAreaComp.js](../../../components/comp/FoAreaComp.js)(FoPage/FoContainer), CSS `.bo-2col`(boGlobalStyle0N.css) / `.fo-2col`·`.fo-card`·`.fo-page-*`(foGlobalStyle0N.css).
+> 코드: [BoAreaComp.js](../../../components/comp/BoAreaComp.js)(BoPage/BoContainer), [FoAreaComp.js](../../../components/comp/FoAreaComp.js)(FoPage/FoContainer), CSS `.bo-2col`(bo-global-style0N.css) / `.fo-2col`·`.fo-card`·`.fo-page-*`(fo-global-style0N.css).
 > 점검: ① 미적용 = `<bo-page[ >]`/`<fo-page[ >]` 여는태그 부재 페이지 컴포넌트 스캔(page-title 유무 무관 — page-title 없는 단일그리드/동적클래스/모달도 누락 금지). ② `<bo-grid bare>` + `#toolbar-actions` 잔존 0. ③ `#footer` 페이저 잔존 0.
 
 ---
@@ -983,7 +983,7 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - ⚠️ **돈 토큰 단어경계 매칭**(2026-06-06 버그수정): money 토큰(`cnt|count|qty|...`)은 `(^|_)token(_|$)` 또는 `token$` 로만 매칭. 이전 부분일치 정규식이 `dis**cnt**`(할인) 의 `cnt` 를 count 로 오탐 → 할인명/유형/상태 컬럼이 잘못 우측정렬되던 버그. 신규 토큰 추가 시 부분일치 금지.
 - **조회수(viewCnt/hitCnt)는 가운데**(돈 cnt 보다 먼저 판정). 집계 카운트와 금액성 카운트 구분.
 - **헤더(`<th>`)는 셀 정렬과 무관하게 전체공통 가운데 정렬** + **헤더 항목 간 구분선**(`border-right`). thStyle 인라인 `text-align:center` + CSS `.bo-table th`/`.fo-grid-table th` `border-right`(마지막 th 제외).
-- 코드: [BoAreaComp.js](../../../components/comp/BoAreaComp.js) / [FoAreaComp.js](../../../components/comp/FoAreaComp.js) `U.autoAlign(col)` + `U.thStyle(col)`(center 고정), CSS `.bo-table th`(boGlobalStyle0N) / `.fo-grid-table th`(foGlobalStyle0N).
+- 코드: [BoAreaComp.js](../../../components/comp/BoAreaComp.js) / [FoAreaComp.js](../../../components/comp/FoAreaComp.js) `U.autoAlign(col)` + `U.thStyle(col)`(center 고정), CSS `.bo-table th`(bo-global-style0N) / `.fo-grid-table th`(fo-global-style0N).
 
 ### 10.3 숫자 표시
 
@@ -1053,7 +1053,7 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
   초기화=`btn btn-secondary btn-sm`** 를 쓴다. `height:36px` 등 인라인 고정 높이 금지.
 
 ```css
-/* assets/css/boGlobalStyle0{1,2,3}.css — 3개 파일 동일 */
+/* assets/css/bo-global-style0{1,2,3}.css — 3개 파일 동일 */
 .bo-table th { padding: 6px 12px; ... }
 .bo-table td { padding: 4px 12px; ... }
 .search-bar input, .search-bar select, .search-bar .form-control { padding: 4px 10px; ... }
@@ -1070,7 +1070,7 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - `font-size`(td 13px / th 12px)는 변경하지 않는다 — 높이 조정은 패딩으로만.
 
 > 2026-06-01 표준화: 그리드 `td` `10px→4px`, 검색 필드 `7~8px→4px`, 검색 버튼 `btn-sm`.
-> 적용: `boGlobalStyle01/02/03.css` 3개 + `BoSearchArea`/`BoGrid`/`BoFormArea` 공통 컴포넌트.
+> 적용: `bo-global-style01/02/03.css` 3개 + `BoSearchArea`/`BoGrid`/`BoFormArea` 공통 컴포넌트.
 > 비표준 직접작성 2건(DpDispWidgetMng·DpDispWidgetLibMng 조회 버튼) 표준 클래스로 일괄 수정.
 
 ### 10.8 우측 행 액션 버튼은 한 줄 ⭐ (2026-06-01)
@@ -1176,7 +1176,7 @@ position:relative; z-index:1;  /* 인접 행/노드 경계선 위로 외곽선 �
 - 노드 컴포넌트의 `selected === id` 분기 style 에 위 outline 표준 적용. 공통 컴포넌트 한 곳만 고치면 전 화면 일관 적용.
 - 적용: `BoPathTreeNode`(표시경로·메뉴 공용)·`BoPropTreeNode`·`BoDeptTreeNode`·`BoCategoryTree`(패널+picker)·`PathPickTreeNode`(모달). `BoCodeGrpTreeNode` 의 `border-left` 는 codeLevel 깊이표시(선택 아님)라 제외.
 
-> CSS: [assets/css/boGlobalStyle01/02/03.css](../../../assets/css/) — `.bo-table tr.bo-row-selected` / `.crud-row.focused`
+> CSS: [assets/css/bo-global-style01/02/03.css](../../../assets/css/) — `.bo-table tr.bo-row-selected` / `.crud-row.focused`
 > 는 td별 inset box-shadow → **tr 단일 outline** 으로 변경(셀 경계 이중겹침 제거).
 > 코드: [components/comp/BoComp.js](../../../components/comp/BoComp.js) 트리 노드, [BoAreaComp.js](../../../components/comp/BoAreaComp.js) BoGrid/BoGridCrud.
 
@@ -1279,7 +1279,7 @@ pager.total = d?.totalCount ?? d?.total ?? 0;   // ❌ totalCount, total 없음
   - `margin-top 14px→8px` → 그리드 바로 아래 붙음
 
 > 코드: [components/comp/BoComp.js](../../../components/comp/BoComp.js) `BoPager` (`cfPageNums` 10칸 윈도우).
-> CSS: `boGlobalStyle0{1,2,3}.css` `.pagination` / `.pager button`.
+> CSS: `bo-global-style0{1,2,3}.css` `.pagination` / `.pager button`.
 
 ---
 
@@ -1435,7 +1435,7 @@ props: { ..., active: { type: Boolean, default: true } }
 ```
 
 - `.section-title` 은 원래 `BoFormArea` 의 `{ type: 'group', label: '...' }` (§4.7, 폼 필드 묶음용)가
-  쓰는 클래스와 **같은 CSS**(`assets/css/boGlobalStyle0N.css`) — 핑크 불릿(`::before{content:"●"}`)
+  쓰는 클래스와 **같은 CSS**(`assets/css/bo-global-style0N.css`) — 핑크 불릿(`::before{content:"●"}`)
   + 하단 핑크 밑줄(`border-bottom`)이 자동 적용된다. 폼 필드 그룹이든 그리드/섹션 그룹이든 "탭 안에서
   더 작은 의미 단위로 나눈다"는 목적이 같으므로 시각적으로 동일하게 취급한다.
 - 탭 맨 첫 그룹은 `style="margin-top:0;"` 를 덧붙여 상단 여백을 없앤다(그 외에는 기본 `margin:18px 0 10px`

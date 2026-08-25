@@ -11,7 +11,7 @@
        ■ HEAD 섹션 (CDN 및 초기 리소스)
          H1.1: CDN Core Runtime (Vue)
          H1.2: CDN Libraries (marked, axios, yup)
-         H1.3: Fonts & CSS (Google Fonts, foGlobalStyle)
+         H1.3: Fonts & CSS (Google Fonts, fo-global-style)
 
        ■ BODY 섹션 - B2.x: 공통부 (필수 기초)
          B2.1: Axios & 유틸 래퍼
@@ -39,8 +39,10 @@
   <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
 
   <!-- ■ H1.3: Fonts & CSS ■ -->
-  <link rel="stylesheet" href="assets/css/foGlobalStyle01.css">
+  <link rel="stylesheet" href="assets/css/fo-global-style01.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <!-- 이 화면 전용 스타일 — 인라인이던 것을 분리(2026-08-25) -->
+  <link rel="stylesheet" href="assets/css/fo-disp-ui-pop-style.css">
 
   <!-- ■ H2.1: Site Config & Init Scripts ■ -->
   <script>
@@ -56,21 +58,6 @@
       }
     });
   </script>
-
-  <!-- ■ H3.1: Loading Indicator Styles ■ -->
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
-    #_boot_loading { position:fixed; inset:0; z-index:99999;
-      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
-      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
-    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
-      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
-      animation:_bootspin .8s linear infinite; }
-    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
-    @keyframes _bootspin { to { transform: rotate(360deg); } }
-    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
-  </style>
 </head>
 <body>
   <div id="_boot_loading" role="status" aria-busy="true">

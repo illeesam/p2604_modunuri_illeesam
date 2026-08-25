@@ -34,7 +34,7 @@
         } catch(_){}
       } catch(e) { window.BO_SITE_NO = DEFAULT_BO_SITE_NO; }
       /* BO_SITE_NO 기준 CSS 로드 */
-      document.write('<link rel="stylesheet" href="assets/css/boGlobalStyle' + window.BO_SITE_NO + '.css">');
+      document.write('<link rel="stylesheet" href="assets/css/bo-global-style' + window.BO_SITE_NO + '.css">');
     })();
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영.
      * ⚠️ 무한 리로드 방지: 실제로 "다른 값"으로 바뀌었고, 현재 탭의 BO_SITE_NO 와도 다를 때만 reload.

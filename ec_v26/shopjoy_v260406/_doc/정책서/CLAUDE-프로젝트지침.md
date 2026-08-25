@@ -59,9 +59,9 @@ VS Code Live Server로 index.html 열기 → `http://127.0.0.1:5501/`
 
 | 진입점 | 용도 | 주 CSS | 주 데이터 소스 |
 |---|---|---|---|
-| `index.html` | **사용자 페이스** (front office) | `assets/css/foGlobalStyle0N.css` | `lib/app/foAppConfig.js` + 실 API(`foApiSvc`) |
-| `bo.html` | **관리자 페이스** (back office) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) |
-| `fo-disp-ui-pop.html` / `bo-disp-ui-pop.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) + `api/xs/*` |
+| `index.html` | **사용자 페이스** (front office) | `assets/css/fo-global-style0N.css` | `lib/app/foAppConfig.js` + 실 API(`foApiSvc`) |
+| `bo.html` | **관리자 페이스** (back office) | `assets/css/bo-global-style0N.css` | 실 API(`boApiSvc`) |
+| `fo-disp-ui-pop.html` / `bo-disp-ui-pop.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/bo-global-style0N.css` | 실 API(`boApiSvc`) + `api/xs/*` |
 
 테스트 프레임워크 없음. 브라우저 콘솔에서 직접 검증.
 
@@ -95,6 +95,24 @@ grep -rn "대상파일.html" --include=*.js --include=*.html --include=*.md .
 
 **적용 시점**: 신규로 독립 HTML 파일을 만들 때는 처음부터 `bo-`/`fo-` 접두어(+ 팝업 전용이면 `-pop`)를 붙인다. 기존 파일을 rename할 때는 해당 파일을 참조하는 모든 곳(`window.open()`, `<iframe src>`, `window.pageUrl()` 호출부, 정책서 문서, `assets/cdn/pkg/README.md`)을 함께 수정한다.
 
+### 독립 HTML 파일 전용 CSS 명명 규칙 ⭐ (2026-08-25)
+
+독립 HTML 진입점(위 규칙으로 이름 붙인 `bo-*.html`/`fo-*.html`)이 자기 화면 전용으로 `<style>` 인라인 블록을 갖는 것을 금지한다 — **반드시 `assets/css/{파일명(확장자 제외)}-style.css` 로 분리**해서 `<link rel="stylesheet">` 로 로드한다.
+
+```
+✅ fo-md-cb-cobanul.html    → assets/css/fo-md-cb-cobanul-style.css
+✅ fo-md-sg-sourcegen.html  → assets/css/fo-md-sg-sourcegen-style.css
+✅ fo-disp-ui-pop.html      → assets/css/fo-disp-ui-pop-style.css
+
+❌ fo-disp-ui-pop.html 안에 <style>...</style> 270줄 인라인 (구 패턴, 2026-08-25 전부 분리)
+```
+
+**로드 순서**: `bo-global-style0N.css`/`fo-global-style0N.css`(전역) → 그룹 공통 CSS(있으면, 예: `fo-md-module-style.css`) → 이 화면 전용 `-style.css`(마지막 — 앞선 것들을 필요시 덮어쓸 수 있어야 함).
+
+**여러 독립 HTML 파일이 완전히 동일한 스타일을 공유하는 경우**(예: 모든 `fo-md-*.html` 이 똑같이 갖던 `#_boot_loading` 부팅 스피너)는 각자의 `-style.css` 에 중복 기입하지 말고, 그 그룹의 공통 CSS(`fo-md-module-style.css` 같은)에 한 번만 둔다. "이 화면에서만 쓰는 것"과 "이 그룹 전체가 같이 쓰는 것"을 섞지 않는 것이 핵심 — 섞이면 다음 모듈 추가 때 또 인라인으로 복사하게 된다.
+
+**적용 시점**: 신규 독립 HTML 파일을 만들 때는 처음부터 스타일을 `-style.css` 로 분리해서 시작한다. 기존 인라인 `<style>` 을 발견하면 발견 즉시 분리한다(굳이 그 파일을 다른 이유로 손볼 때까지 미루지 않는다).
+
 ## 기술 스택 (로컬 로드 중심)
 
 | 기술 | 버전 | 로컬 경로 | 용도 |
@@ -120,7 +138,7 @@ grep -rn "대상파일.html" --include=*.js --include=*.html --include=*.md .
 구조 (실제 `index.html` script 로드 순서 기준):
 ```
 index.html
-├─ head: FO_SITE_NO 결정 + foGlobalStyle{NO}.css 동적 로드 (document.write)
+├─ head: FO_SITE_NO 결정 + fo-global-style{NO}.css 동적 로드 (document.write)
 ├─ lib/utils/perfUtil.js + safeUtil.js
 ├─ lib/license/licenseFo.js
 ├─ lib/utils/foApiAxios.js + coUtil.js + foUtil.js + lib/env/foEnvConsts.js + coExtSdk.js + coAuth.js
@@ -156,7 +174,7 @@ index.html
 구조 (실제 `bo.html` script 로드 순서 기준):
 ```
 bo.html
-├─ head: Vue, Yup, Quill, boGlobalStyle0N.css
+├─ head: Vue, Yup, Quill, bo-global-style0N.css
 ├─ lib/utils/safeUtil.js + lib/license/licenseBo.js
 ├─ lib/utils/boApiAxios.js (window.boApi) + coUtil.js + boUtil.js + lib/env/boEnvConsts.js + coExtSdk.js + coAuth.js
 ├─ lib/services/coApiSvc.js + boApiSvc.js
@@ -214,7 +232,7 @@ template: `
 구조:
 ```
 bo-disp-ui-pop.html (관리자 컨텍스트)  |  fo-disp-ui-pop.html (사용자 컨텍스트)
-├─ head: Vue, axios, yup, boGlobalStyle0N.css
+├─ head: Vue, axios, yup, bo-global-style0N.css
 ├─ lib/license/license{Bo,Fo}.js + lib/utils/{bo,fo}ApiAxios.js + {bo,fo}Util.js
 ├─ components/comp/BaseComp.js + CoWidgetComp.js + pages/base/{bo,fo}Error404.js
 ├─ components/disp/DispX01Ui.js ~ DispX04Widget.js  (계층별 렌더러)
@@ -903,7 +921,7 @@ const tabs = reactive([
 
 ## CSS 규칙
 
-### 관리자 (`assets/css/boGlobalStyle0N.css`)
+### 관리자 (`assets/css/bo-global-style0N.css`)
 
 | 클래스 | 용도 |
 |---|---|
@@ -952,7 +970,7 @@ const tabs = reactive([
 | `bo-main` 스크롤이 아닌 `body` 전체 스크롤 | `.bo-main` 에 `height` + `overflow-y:auto` 미적용 | CSS `.bo-main` 확인 |
 | `tableMaxHeight` 내부에서도 안 됨 | wrapper div `position:relative` 가 stacking context 형성 | BoAreaComp.js wrapper 확인 |
 
-### 사용자 (`assets/css/foGlobalStyle{01|02|03}.css`)
+### 사용자 (`assets/css/fo-global-style{01|02|03}.css`)
 
 CSS 변수 기반 테마 전환:
 - `--accent`, `--text-primary`, `--bg-base`, `--bg-card`, `--border`, `--shadow` 등
@@ -966,7 +984,7 @@ CSS 변수 기반 테마 전환:
 
 | 대상 | 동작 |
 |---|---|
-| CSS | `foGlobalStyle{NO}.css` 자동 로드 |
+| CSS | `fo-global-style{NO}.css` 자동 로드 |
 | 스크립트 | `pages/fo/Home{NO}.js`, `Prod{NO}List.js`, `Prod{NO}View.js` document.write로 동적 삽입 |
 | 컴포넌트 등록 | `app.component('Home'+NO, window['Home'+NO])` |
 | 런타임 렌더 | `<component :is="foHomeComp">` (window['Home'+NO] 참조) |
@@ -974,9 +992,9 @@ CSS 변수 기반 테마 전환:
 | 헤더 배지 | foAppHeader 로고 옆 `01/02/03` 작은 뱃지 (hover 시 툴팁) |
 
 **사이트 테마 프리셋**:
-- **01** — 기본 모듈 (베이지/카키, `foGlobalStyle01.css`)
-- **02** — Mint Edition (민트/세이지 그린, `foGlobalStyle02.css`, 상단에 🌿 리본)
-- **03** — Luxe Edition (로얄 퍼플, `foGlobalStyle03.css`, 상단에 👑 리본)
+- **01** — 기본 모듈 (베이지/카키, `fo-global-style01.css`)
+- **02** — Mint Edition (민트/세이지 그린, `fo-global-style02.css`, 상단에 🌿 리본)
+- **03** — Luxe Edition (로얄 퍼플, `fo-global-style03.css`, 상단에 👑 리본)
 
 **URL 단축**: `/index.html` → `/` (history.replaceState로 자동), 해시/쿼리 유지.
 
