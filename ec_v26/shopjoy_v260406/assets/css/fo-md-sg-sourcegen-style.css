@@ -289,10 +289,18 @@
 .sg-sample-btn:hover .sg-sample-desc { color:var(--accent,#c9a96e); background:rgba(201,169,110,0.14); }
 
 /* ── 상세: 생성 결과 뷰어 ── */
-/* 파일 트리에 전체경로를 그대로 노출(2026-08-26)하면서 300px 고정폭은 너무 좁아 1fr 1fr 반반으로 */
-.sg-result-body { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
-@media (max-width:900px) { .sg-result-body { grid-template-columns:1fr; } }
-@media (max-width:760px) { .sg-ddl-layout { flex-direction:column; } .sg-ddl-tree { flex:1 1 auto; max-height:280px; width:100%; } }
+/* 3단 구성(2026-08-26) — 테이블목록(트리) 1 : 소스목록(파일) 2 : 소스정보(코드뷰어) 2 비율.
+   이전엔 트리+파일목록이 왼쪽 한 칸(sg-files-col)에 세로로 겹쳐 있었는데, 트리를 별도 칸으로
+   완전히 분리해 3열로 나란히 배치한다. */
+.sg-result-body { display:grid; grid-template-columns:1fr 2fr 2fr; gap:12px; align-items:start; }
+@media (max-width:1100px) { .sg-result-body { grid-template-columns:1fr 1fr; } .sg-code-pane { grid-column:1/-1; } }
+@media (max-width:760px) { .sg-result-body { grid-template-columns:1fr; } .sg-code-pane { grid-column:auto; }
+  .sg-ddl-layout { flex-direction:column; } .sg-ddl-tree { flex:1 1 auto; max-height:280px; width:100%; } }
+.sg-result-col-title { font-size:11px; font-weight:800; color:var(--text-secondary,#777);
+  margin-bottom:6px; letter-spacing:.02em; }
+.sg-result-tree-col, .sg-files-col { display:flex; flex-direction:column; min-width:0; }
+.sg-result-tree { max-height:560px; overflow-y:auto; border:1px solid var(--border,#eaeaea);
+  border-radius:10px; background:#fafafa; padding:7px; }
 .sg-files { max-height:560px; overflow-y:auto; border:1px solid var(--border,#eaeaea); border-radius:10px;
   background:#fafafa; padding:7px; }
 /* 구분자 — 언어/스택 그룹 경계를 뚜렷하게(2026-08-26: 점선→실선 2px + 진한 색, 글자도 더 굵고 크게) */
@@ -303,7 +311,9 @@
   font-family:monospace; border:none; background:transparent; color:var(--text-secondary,#666);
   cursor:pointer; border-radius:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sg-file-btn:hover { background:rgba(201,169,110,0.1); color:var(--text-primary,#333); }
-.sg-file-btn.active { background:var(--accent,#c9a96e); color:#fff; font-weight:700; }
+/* font-weight 를 굵게 바꾸지 않는다(2026-08-26) — 고정폭(monospace) 글꼴에서 굵기가 바뀌면 글자
+   폭이 늘어나 보여 선택할 때마다 "커졌다 작아졌다" 하는 것처럼 보였다. 배경색만으로 선택 표시. */
+.sg-file-btn.active { background:var(--accent,#c9a96e); color:#fff; }
 
 .sg-code-pane { border:1px solid var(--border,#eaeaea); border-radius:10px; overflow:hidden; background:var(--bg-card,#fff); }
 .sg-file-info { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--bg-base,#faf9f7);
@@ -335,6 +345,12 @@
 .sg-hist-table tbody tr:last-child td { border-bottom:none; }
 .sg-hist-table tbody tr:hover { background:#fbfaf8; }
 .sg-hist-table .btn { margin:0 2px; }
+
+/* ── 프로젝트 템플릿 다운로드 모달 하단: 다운로드 이력(2026-08-26) ── */
+.sg-dlhist-title { font-size:12px; font-weight:800; color:var(--text-primary,#333);
+  margin:14px 0 6px; padding-top:12px; border-top:1px solid var(--border,#eee); }
+.sg-hist-table-wrap { max-height:180px; overflow-y:auto; }
+.sg-hist-table-wrap .sg-hist-table thead th { position:sticky; top:0; }
 
 .sg-detail-bottom-actions { display:flex; gap:8px; justify-content:center; margin:22px 0 8px;
   padding-top:20px; border-top:1px solid var(--border,#e8e8e8); }
