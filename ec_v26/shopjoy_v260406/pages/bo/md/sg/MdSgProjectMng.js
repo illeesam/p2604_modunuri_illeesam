@@ -131,8 +131,8 @@ window.MdSgProjectMng = {
       { key: 'regDate',          label: '등록일', align: 'center', fmt: v => coUtil.cofYmd(v) || '-' },
       /* type:'actions' — 관리 버튼모음도 별도 배열로 분리하지 않고 baseGrid 항목 하나로 선언(#row-actions 슬롯 대체, 2026-08-25) */
       { type: 'actions', actions: [
-        { label: '열기', cls: 'btn btn_detail btn-xs', onClick: (row) => handleSelectAction('project-open', row.projectId) },
-        { label: '이력', cls: 'btn btn_detail btn-xs', onClick: (row) => handleSelectAction('project-hist', row.projectId) },
+        { label: '열기', cls: 'btn btn_row_open', onClick: (row) => handleSelectAction('project-open', row.projectId) },
+        { label: '이력', cls: 'btn btn_row_hist', onClick: (row) => handleSelectAction('project-hist', row.projectId) },
         { label: '삭제', cls: 'btn btn_row_delete',    onClick: (row) => handleSelectAction('project-delete', row) },
       ] },
     ];

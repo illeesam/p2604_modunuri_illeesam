@@ -107,6 +107,10 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_row_hist:hover:not(:disabled)  { background: #e2e7ef; border-color: #c2cad6; }
 .btn_row_download { background: linear-gradient(135deg, #52c41a, #389e0d); color: #fff; box-shadow: 0 2px 6px rgba(82,196,26,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
 .btn_row_download:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(82,196,26,.35); }
+/* 행 [열기] — 상세/카드로 진입하는 행 액션(2026-08-26). btn_detail(회색 flat) 대신 톤을 넣어
+   btn_row_edit/btn_row_delete 와 나란히 둬도 존재감이 있게. 청록색으로 edit(파랑)/delete(빨강) 와 구분. */
+.btn_row_open  { background: linear-gradient(135deg, #13c2c2, #08979c); color: #fff; box-shadow: 0 2px 6px rgba(19,194,194,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
+.btn_row_open:hover:not(:disabled)  { box-shadow: 0 4px 12px rgba(19,194,194,.35); }
 
 .bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
 /* 좁은 선택 목록(.bo-2col 좌측 등) — 720px 하한을 풀어 가로 스크롤 없이 폭에 맞춘다 */

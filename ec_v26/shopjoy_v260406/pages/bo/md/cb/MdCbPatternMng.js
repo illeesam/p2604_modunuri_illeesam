@@ -119,7 +119,7 @@ window.MdCbPatternMng = {
       { key: 'patternStatusCd', label: '상태', align: 'center', badge: (r) => fnStatusBadge(r.patternStatusCd), fmt: (v, r) => r.patternStatusCdNm || v || '-' },
       { key: 'regDate',         label: '등록일', align: 'center', fmt: v => coUtil.cofYmd(v) || '-' },
       { type: 'actions', actions: [
-        { label: '열기', cls: 'btn btn_detail btn-xs', onClick: (row) => handleSelectAction('pattern-open', row.patternId) },
+        { label: '열기', cls: 'btn btn_row_open', onClick: (row) => handleSelectAction('pattern-open', row.patternId) },
         { label: '삭제', cls: 'btn btn_row_delete',    onClick: (row) => handleSelectAction('pattern-delete', row) },
       ] },
     ];

@@ -990,7 +990,7 @@ window.MdSgSourcegenPage = {
     const templateDlHist = ref([]);
     const fnLoadTemplateDlHist = async () => {
       try {
-        const res = await mdSgApiSvc.downloadHist.getPage({ pageNo: 1, pageSize: 10 });
+        const res = await mdSgApiSvc.downloadHist.getPage({ pageNo: 1, pageSize: 10 }, '소스젠', '다운로드이력조회');
         templateDlHist.value = res.data?.data?.pageList || [];
       } catch (err) { /* 조회 실패는 조용히 무시 — 목록이 비어 보일 뿐 모달 사용에 지장 없음 */ }
     };
