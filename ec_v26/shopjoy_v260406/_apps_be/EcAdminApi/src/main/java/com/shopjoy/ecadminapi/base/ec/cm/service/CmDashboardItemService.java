@@ -34,13 +34,13 @@ public class CmDashboardItemService {
 
     /** getById — 단건조회. 없으면 CmBizException */
     public CmDashboardItem getById(String id) {
-        return cmDashboardItemRepository.findById(id)
+        return cmDashboardItemRepository.selectById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** getByIdOptional — 단건조회 (Optional 반환) */
     public Optional<CmDashboardItem> getByIdOptional(String id) {
-        return cmDashboardItemRepository.findById(id);
+        return cmDashboardItemRepository.selectById(id);
     }
 
     /**
@@ -50,16 +50,11 @@ public class CmDashboardItemService {
      */
     public List<CmDashboardItem> getList(Map<String, Object> p) {
         String dashboardId = (String) p.get("dashboardId");
-        String siteId      = (String) p.get("siteId");
         String useYn       = (String) p.get("useYn");
-
-        if (dashboardId != null && useYn != null) {
-            return cmDashboardItemRepository.findByDashboardIdAndUseYnOrderBySortOrdAsc(dashboardId, useYn);
-        }
-        if (dashboardId != null) {
-            return cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
-        }
-        return cmDashboardItemRepository.findAllByOrderBySortOrdAsc();
+        return cmDashboardItemRepository.selectList(Map.of(
+            "dashboardId", dashboardId == null ? "" : dashboardId,
+            "useYn", useYn == null ? "" : useYn
+        ));
     }
 
     /* ── 변경 ──────────────────────────────────────────────────── */

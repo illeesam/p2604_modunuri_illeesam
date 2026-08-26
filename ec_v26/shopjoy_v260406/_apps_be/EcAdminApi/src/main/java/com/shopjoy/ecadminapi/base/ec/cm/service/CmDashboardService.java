@@ -88,9 +88,8 @@ public class CmDashboardService {
                 if (dash != null) dashboardId = dash.getDashboardId();
             }
 
-            List<CmDashboardItem> itemList = dashboardId != null
-                ? cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId)
-                : cmDashboardItemRepository.findAllByOrderBySortOrdAsc();
+            List<CmDashboardItem> itemList = cmDashboardItemRepository.selectList(
+                dashboardId != null ? Map.of("dashboardId", dashboardId) : Map.of());
 
             panel = itemList.stream()
                 .filter(i -> compId.equals(i.getItemKey()))

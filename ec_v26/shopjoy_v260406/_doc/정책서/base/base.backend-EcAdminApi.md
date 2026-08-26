@@ -626,6 +626,37 @@ QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv), // 노출환경 필터
 - DTO 에 해당 필드 주석이 없으면 새로 작성 — 이 경우 반대로 DTO 쪽에도 같은 문구를 추가해 두 곳이 항상 같은 설명을 갖도록 한다
 - 신규 컬럼/필터를 추가할 때도 처음부터 이 규칙을 지킨다(나중에 몰아서 붙이지 말 것)
 
+### 14.6.8 기본 메서드 3종 원칙 — `selectList` / `selectPageData` / `updateSelective` ⭐ (2026-08-26)
+
+`Q*RepositoryImpl` 하나를 새로 만들 때 처음부터 메서드를 여러 개 늘어놓지 않는다. **기본은 3개**로
+시작해서 웬만한 화면은 다 소화하고, 그 외에 실제로 필요한 것만 그때그때 추가한다.
+
+| 메서드 | 역할 |
+|---|---|
+| `selectList(Dto.Request search)` | 조건 검색 — 페이징 없이 전체(또는 상한선) 목록 |
+| `selectPageData(Dto.Request search)` | 조건 검색 + 페이징(`BasePage<Dto.Item>` 반환) |
+| `updateSelective(Entity entity)` | null 아닌 필드만 SET 하는 부분수정 |
+
+`QCmBlogGoodRepositoryImpl`([참고](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/ec/cm/repository/qrydsl/impl/QCmBlogGoodRepositoryImpl.java))가 이 3개만으로 구성된 표준 예시다. §14.6.1 의 `QSyUserRepositoryImpl` 템플릿에 있는 `selectById`/`selectCount`
+는 "이 3개 밖에 실제로 더 필요했던" 경우이지 항상 같이 만들어야 하는 필수 세트가 아니다.
+
+**"그 외 필요한 것만 별도로"의 기준** — 아래 셋 중 하나에 해당하면 전용 메서드를 추가한다. 그
+렇지 않다면(단순 조건검색/페이징/부분수정으로 충분하면) 위 3개 안에서 해결한다.
+
+1. **UNIQUE 좌표로 단건을 찾는다** — 검색조건 DTO 형태가 아니라 `(item_key, data_opts, data_opt2s)`
+   같은 복합키 그대로 받는 조회. 예: `QCmDashboardDataRepository.selectByCoordinate(itemKey, dataOpts, dataOpt2s)`
+2. **화면 전용 필터/서브쿼리가 얽혀 있다** — 트리 구조 조상·자손 EXISTS 서브쿼리, 여러 대시보드
+   ID 를 넘나드는 조회처럼 범용 `Dto.Request` 로 표현하기 어려운 형태. 예:
+   `QCmDashboardItemRepository.selectChartPage(Map<String,Object> p)`
+3. **일반 SET 이 아닌 계산식 UPDATE** — `updateSelective` 는 "온 필드만 그대로 SET" 전제라, 값 자체를
+   식(`split_part` 등)으로 계산해 넣어야 하는 갱신은 별도 메서드로 뺀다. 예:
+   `QCmDashboardDataRepository.updateItemKey(oldKey, newKey)` — item_key 변경 시 item1/2/3_key 를
+   `function('split_part', ...)` 로 재계산해 같이 SET
+
+이 기준에 안 걸리면 이름부터 `selectList`/`selectPageData`/`updateSelective` 로 시작한다 —
+`selectXxxList`/`selectXxxPage` 처럼 매번 다른 이름을 짓지 않는다(레포마다 이름이 달라지면
+호출부에서 "이 레포는 뭐라고 불렀더라"를 매번 찾아봐야 한다).
+
 ---
 
 ## 14.7 Service `save` / `saveList` 표준 패턴

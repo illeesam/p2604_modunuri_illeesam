@@ -77,7 +77,7 @@ public class CmDashboardDataGridService {
      * 각 노드는 {@code lvl}(1|2|3) 과 {@code itemKey} 를 갖는다.</p>
      */
     public List<Map<String, Object>> getItemTree(String dashboardId) {
-        List<CmDashboardItem> all = itemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
+        List<CmDashboardItem> all = itemRepository.selectList(Map.of("dashboardId", dashboardId));
 
         Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
         List<CmDashboardItem> charts = new ArrayList<>();
@@ -130,12 +130,12 @@ public class CmDashboardDataGridService {
     /**
      * 항목관리 화면 "대시보드 위젯항목 목록" 서버사이드 페이징 — 차트(1레벨) 단위.
      *
-     * <p>{@code selectChartPage} 가 돌려준 이번 페이지 차트들에 한해서만 시리즈·항목을
+     * <p>{@code selectPageData} 가 돌려준 이번 페이지 차트들에 한해서만 시리즈·항목을
      * 채워({@code attachChildren}) 반환한다 — 페이지에 없는 차트의 하위행까지 매번 다 읽어올
      * 필요가 없다(기존 "전체 로드 후 클라이언트 슬라이스" 방식의 성능 문제를 해소하는 게 목적).</p>
      */
     public BasePage<CmDashboardItem> getChartPage(Map<String, Object> p) {
-        BasePage<CmDashboardItem> page = itemRepository.selectChartPage(p);
+        BasePage<CmDashboardItem> page = itemRepository.selectPageData(p);
         List<CmDashboardItem> charts = page.getPageList();
         List<String> chartIds = charts.stream().map(CmDashboardItem::getDashboardItemId).toList();
         Map<String, List<CmDashboardItem>> byParent = fetchDescendantsByParent(chartIds);
@@ -169,7 +169,7 @@ public class CmDashboardDataGridService {
      * 왕복은 1번으로 줄인다.</p>
      */
     public Map<String, Object> getChartPageWithTree(Map<String, Object> p) {
-        BasePage<CmDashboardItem> page = itemRepository.selectChartPage(p);
+        BasePage<CmDashboardItem> page = itemRepository.selectPageData(p);
         List<CmDashboardItem> charts = page.getPageList();
         List<String> chartIds = charts.stream().map(CmDashboardItem::getDashboardItemId).toList();
         Map<String, List<CmDashboardItem>> byParent = fetchDescendantsByParent(chartIds);
@@ -194,11 +194,11 @@ public class CmDashboardDataGridService {
     private Map<String, List<CmDashboardItem>> fetchDescendantsByParent(List<String> chartIds) {
         Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
         if (chartIds == null || chartIds.isEmpty()) return byParent;
-        List<CmDashboardItem> sers = itemRepository.findByParentDashboardItemIdIn(chartIds);
+        List<CmDashboardItem> sers = itemRepository.selectList(Map.of("parentDashboardItemIds", chartIds));
         sers.forEach(s -> byParent.computeIfAbsent(s.getParentDashboardItemId(), k -> new ArrayList<>()).add(s));
         List<String> seriesIds = sers.stream().map(CmDashboardItem::getDashboardItemId).toList();
         if (!seriesIds.isEmpty()) {
-            List<CmDashboardItem> items = itemRepository.findByParentDashboardItemIdIn(seriesIds);
+            List<CmDashboardItem> items = itemRepository.selectList(Map.of("parentDashboardItemIds", seriesIds));
             items.forEach(it -> byParent.computeIfAbsent(it.getParentDashboardItemId(), k -> new ArrayList<>()).add(it));
         }
         Comparator<CmDashboardItem> bySort = Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
@@ -495,18 +495,18 @@ public class CmDashboardDataGridService {
     }
 
     /**
-     * 쿼리방식 실행 전체가 공유할 (yyyymmdd, periodTypeCd) 를 차트의 input_opts 기간 토큰과
-     * 기준일자(refYmd) 로 정한다. {@code cm_dashboard_data.yyyymmdd} 는 NOT NULL 이므로 항상
-     * 8자리 값을 채워야 한다(D=YYYYMMDD/M=YYYYMM00/Y=YYYY0000 — 프로젝트 공통 관례).
-     * 기간 토큰이 없는 차트(상품/업체별 등)는 기준일자를 "as of" 스냅샷으로 그대로 채우고
-     * periodTypeCd 는 null 로 둔다. 항목코드별로 따로 계산하지 않는다 — 한 실행 결과는
-     * 통째로 하나의 스냅샷이다(위 호출부 주석 참고).
+     * 쿼리방식 실행 전체가 공유할 (yyyymmdd, dateTypeCd) 를 차트의 input_opts 기간 토큰과
+     * 기준일자(refYmd) 로 정한다. {@code cm_dashboard_data.yyyymmdd} 는 NOT NULL 이지만
+     * dateTypeCd 에 맞는 실제 자리수만 채운다(d=8자리 YYYYMMDD / m=6자리 YYYYMM / y=4자리 YYYY —
+     * 2026-08-26 개편, 이전엔 항상 8자리로 0-패딩했다). 기간 토큰이 없는 차트(상품/업체별 등)는
+     * 기준일자를 "as of" 스냅샷으로 그대로 채우고 dateTypeCd 는 null 로 둔다. 항목코드별로 따로
+     * 계산하지 않는다 — 한 실행 결과는 통째로 하나의 스냅샷이다(위 호출부 주석 참고).
      */
     private String[] deriveRunPeriodFromInputOpts(String inputOpts, String refYmd) {
         Set<String> tokens = new LinkedHashSet<>(List.of(inputOpts.split(",")));
-        if (tokens.contains("yyyymmdd")) return new String[]{refYmd, "D"};
-        if (tokens.contains("yyyymm"))   return new String[]{refYmd.substring(0, 6) + "00", "M"};
-        if (tokens.contains("yyyy"))     return new String[]{refYmd.substring(0, 4) + "0000", "Y"};
+        if (tokens.contains("yyyymmdd")) return new String[]{refYmd, "d"};
+        if (tokens.contains("yyyymm"))   return new String[]{refYmd.substring(0, 6), "m"};
+        if (tokens.contains("yyyy"))     return new String[]{refYmd.substring(0, 4), "y"};
         return new String[]{refYmd, null};
     }
 
@@ -519,11 +519,11 @@ public class CmDashboardDataGridService {
      * dashboardId 로 갱신한다.
      */
     private List<CmDashboardItem> descendantsOf(CmDashboardItem ch) {
-        List<CmDashboardItem> sers = itemRepository.findByParentDashboardItemId(ch.getDashboardItemId());
+        List<CmDashboardItem> sers = itemRepository.selectList(Map.of("parentDashboardItemId", ch.getDashboardItemId()));
         List<CmDashboardItem> out = new ArrayList<>();
         for (CmDashboardItem se : sers) {
             out.add(se);
-            out.addAll(itemRepository.findByParentDashboardItemId(se.getDashboardItemId()));
+            out.addAll(itemRepository.selectList(Map.of("parentDashboardItemId", se.getDashboardItemId())));
         }
         return out;
     }
@@ -642,7 +642,12 @@ public class CmDashboardDataGridService {
         m.put("dashboardItemId", it.getDashboardItemId());
         m.put("parentDashboardItemId", it.getParentDashboardItemId());
         m.put("itemKey", it.getItemKey());
-        m.put("itemCd", lastSeg(it.getItemKey()));
+        /* item1Key/item2Key/item3Key(2026-08-26) — 화면이 조상 차트/시리즈 코드를 알아야 할 때
+           (검색 필터, 페이지 필터 등) itemKey 를 "-" 로 split 하지 않고 바로 쓰도록 실어준다. */
+        m.put("item1Key", it.getItem1Key());
+        m.put("item2Key", it.getItem2Key());
+        m.put("item3Key", it.getItem3Key());
+        m.put("itemCd", it.ownKey());
         m.put("itemNm", it.getItemNm());
         m.put("lvl2Color", it.getLvl2Color());
         m.put("lvl3Color", it.getLvl3Color());
@@ -669,28 +674,36 @@ public class CmDashboardDataGridService {
         return m;
     }
 
-    /** 조립코드의 마지막 조각 (chart001-series01-item01 → item01) */
-    private static String lastSeg(String code) {
-        String c = nvlStr(code, "");
-        int i = c.lastIndexOf('-');
-        return i < 0 ? c : c.substring(i + 1);
-    }
-
     /**
-     * 데이터 좌표 키 — 값이 있는 차원만 key:value 로 만들어 key 오름차순으로 잇는다.
-     *
-     * <p>차원이 늘어도 컬럼을 새로 만들 필요가 없고, {@code (item_key, data_opts)} 가
-     * UNIQUE 라 같은 좌표가 다시 들어오면 새 행 대신 그 행을 갱신하면 된다.</p>
+     * 데이터 좌표 키(핵심) — site_id,yyyymmdd 두 차원만 key:value 로 만들어 key 오름차순으로 잇는다.
+     * 화면·배치가 항상 다루는 필수 조건이라 data_opts 에 그대로 둔다(2026-08-26, 나머지는
+     * {@link #buildOptions2}). {@code (item_key, data_opts, data_opt2s)} 가 UNIQUE 라
+     * 같은 좌표가 다시 들어오면 새 행 대신 그 행을 갱신하면 된다.
      */
     public static String buildOptions(CmDashboardData d) {
         Map<String, String> dim = new TreeMap<>();   /* TreeMap = key 오름차순 자동 */
-        putDim(dim, "dept_id",        d.getDeptId());
-        putDim(dim, "period_type_cd", d.getPeriodTypeCd());
-        putDim(dim, "prod_id",        d.getProdId());
-        putDim(dim, "site_id",        d.getSiteId());
-        putDim(dim, "user_id",        d.getUserId());
-        putDim(dim, "vendor_id",      d.getVendorId());
-        putDim(dim, "yyyymmdd",       d.getYyyymmdd());
+        putDim(dim, "site_id",  d.getSiteId());
+        putDim(dim, "yyyymmdd", d.getYyyymmdd());
+        return joinDims(dim);
+    }
+
+    /**
+     * 데이터 좌표 키(부가) — data_opts(site_id,yyyymmdd) 를 뺀 나머지 선택 차원(2026-08-26 신설).
+     * date_type_cd 는 여기 넣지 않는다(2026-08-26 2차 수정) — yyyymmdd 값 자체가 date_type_cd
+     * 별로 자리수가 다르게 저장되므로(y=4/m=6/d=8) 값의 길이만으로 이미 구분되고, 같은
+     * site_id+yyyymmdd 조합에 date_type_cd 만 다른 두 행이 생길 수 없다 — 굳이 UNIQUE 키에
+     * 중복으로 넣을 필요가 없다.
+     */
+    public static String buildOptions2(CmDashboardData d) {
+        Map<String, String> dim = new TreeMap<>();   /* TreeMap = key 오름차순 자동 */
+        putDim(dim, "dept_id",      d.getDeptId());
+        putDim(dim, "prod_id",      d.getProdId());
+        putDim(dim, "user_id",      d.getUserId());
+        putDim(dim, "vendor_id",    d.getVendorId());
+        return joinDims(dim);
+    }
+
+    private static String joinDims(Map<String, String> dim) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> e : dim.entrySet()) {
             if (sb.length() > 0) sb.append(',');
@@ -710,7 +723,7 @@ public class CmDashboardDataGridService {
      *
      * @param dashboardId 대상 대시보드 (이 안의 CHART 항목들만 그리드로 만든다)
      * @param siteId      사이트ID (필수)
-     * @param yyyymmdd    기간 키 — 컬럼 자체는 항상 8자리. D=YYYYMMDD / M=YYYYMM00 / Y=YYYY0000 로 0-패딩(필수)
+     * @param yyyymmdd    기간 키 — dateTypeCd 에 맞는 실제 자리수(d=8자리 YYYYMMDD / m=6자리 YYYYMM / y=4자리 YYYY, 0-패딩 없음)
      * @param prodId      상품ID (선택, null 이면 상품 미지정 행)
      * @param vendorId    업체ID (선택, null 이면 업체 미지정 행)
      * @return charts: [{dashboardItemId, itemNm, chartTypeCd, colNms[], rows:[{seriesNm, vals[]}]}]
@@ -718,7 +731,7 @@ public class CmDashboardDataGridService {
     public Map<String, Object> getGrids(String dashboardId, String siteId, String yyyymmdd,
                                         String prodId, String vendorId) {
         requireCond(siteId, yyyymmdd);
-        List<CmDashboardItem> all = itemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
+        List<CmDashboardItem> all = itemRepository.selectList(Map.of("dashboardId", dashboardId));
         Comparator<CmDashboardItem> bySort = Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
         List<CmDashboardItem> charts0 = all.stream()
             .filter(it -> "chart".equals(it.getItemTypeCd()) && !"N".equals(it.getUseYn()))
@@ -754,7 +767,7 @@ public class CmDashboardDataGridService {
         Set<String> dashboardIds = new LinkedHashSet<>();
         charts0.forEach(ch -> dashboardIds.add(ch.getDashboardId()));
         List<CmDashboardItem> all = new ArrayList<>();
-        for (String did : dashboardIds) all.addAll(itemRepository.findByDashboardIdOrderBySortOrdAsc(did));
+        for (String did : dashboardIds) all.addAll(itemRepository.selectList(Map.of("dashboardId", did)));
 
         return buildGridResult(all, charts0, siteId, yyyymmdd, prodId, vendorId);
     }
@@ -799,7 +812,7 @@ public class CmDashboardDataGridService {
             String[] colCds = new String[MAX_COLS];
             for (int i2 = 0; i2 < Math.min(colDefs.size(), MAX_COLS); i2++) {
                 colNms[i2] = colDefs.get(i2).getItemNm();
-                colCds[i2] = lastSeg(colDefs.get(i2).getItemKey());
+                colCds[i2] = colDefs.get(i2).ownKey();
             }
 
             /* 시리즈별 항목(3레벨) 목록을 미리 모아둔다 — 방향과 무관하게 "셀 = (시리즈, 항목) leaf"
@@ -815,7 +828,7 @@ public class CmDashboardDataGridService {
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("dashboardItemId", rowDef.getDashboardItemId());
                 row.put("seriesNm", rowDef.getItemNm());
-                row.put("seriesCd", lastSeg(rowDef.getItemKey()));
+                row.put("seriesCd", rowDef.ownKey());
                 row.put("itemKey", rowDef.getItemKey());
 
                 /* 셀 하나 = 항목(3레벨)행 하나 — 값은 그 행의 data_val.
@@ -894,17 +907,17 @@ public class CmDashboardDataGridService {
      * @return 저장된 행 수
      */
     @Transactional
-    public int saveGrids(String siteId, String yyyymmdd, String periodTypeCd,
+    public int saveGrids(String siteId, String yyyymmdd, String dateTypeCd,
                          String prodId, String vendorId, List<Map<String, Object>> charts) {
         requireCond(siteId, yyyymmdd);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
         String pId = blankToNull(prodId);
         String vId = blankToNull(vendorId);
-        /* period_type_cd 는 data_opts(UNIQUE 키)에 그대로 들어가므로 여기서 잘못 좁히면
-           같은 좌표인데 다른 data_opts 로 저장되는 사고가 난다 — D/M/Y 를 그대로 통과시키고
-           그 외(공백 등)만 D 로 보정한다 (2026-08-21, 연도별 그룹 지원 추가) */
-        String per = ("M".equals(periodTypeCd) || "Y".equals(periodTypeCd)) ? periodTypeCd : "D";
+        /* date_type_cd 는 data_opts(UNIQUE 키)에 그대로 들어가므로 여기서 잘못 좁히면
+           같은 좌표인데 다른 data_opts 로 저장되는 사고가 난다 — m/y 를 그대로 통과시키고
+           그 외(공백 등)만 d 로 보정한다 (2026-08-21 연도별 그룹 지원 / 2026-08-26 값 표기 y/m/d 개편) */
+        String per = ("m".equals(dateTypeCd) || "y".equals(dateTypeCd)) ? dateTypeCd : "d";
 
         int saved = 0;
         for (Map<String, Object> chart : charts == null ? List.<Map<String, Object>>of() : charts) {
@@ -948,12 +961,15 @@ public class CmDashboardDataGridService {
         CmDashboardData probe = new CmDashboardData();
         probe.setSiteId(siteId);
         probe.setYyyymmdd(yyyymmdd);
-        probe.setPeriodTypeCd(per);
+        probe.setDateTypeCd(per);
         probe.setProdId(pId);
         probe.setVendorId(vId);
-        String dataOpts = buildOptions(probe);
+        String dataOpts  = buildOptions(probe);
+        String dataOpt2s = buildOptions2(probe);
 
-        /* item_key = 값이 붙는 3레벨 정의행의 조립코드. (item_key, data_opts) 가 UNIQUE 라 이 둘로 찾는다 */
+        /* item_key = 값이 붙는 3레벨 정의행의 조립코드. (item_key, data_opts, data_opt2s) 가
+           UNIQUE 라 이 셋으로 찾는다(2026-08-26, data_opts 를 site_id+yyyymmdd 로만 좁히고
+           나머지 차원을 data_opt2s 로 분리) */
         CmDashboardItem leaf = itemRepository.findById(defItemId)
             .orElseThrow(() -> new CmBizException("존재하지 않는 정의행입니다: " + defItemId));
         if (!Integer.valueOf(3).equals(leaf.getKeyLevel()))
@@ -961,7 +977,7 @@ public class CmDashboardDataGridService {
         String itemKey = leaf.getItemKey();
 
         CmDashboardData e = dataRepository
-            .findByItemKeyAndDataOpts(itemKey, dataOpts)
+            .selectByCoordinate(itemKey, dataOpts, dataOpt2s)
             .orElseGet(() -> {
                 CmDashboardData n = new CmDashboardData();
                 n.setDashboardDataId(CmUtil.generateId("cm_dashboard_data"));
@@ -969,13 +985,16 @@ public class CmDashboardDataGridService {
                 n.setRegDate(now);
                 return n;
             });
+        /* item1Key/item2Key/item3Key 는 CmDashboardData.deriveItemLevelKeys()(@PrePersist/
+           @PreUpdate)가 itemKey 로 저장 직전 자동 재계산한다 — 여기서 따로 계산해 넣지 않는다. */
         e.setDashboardItemId(defItemId);
         e.setDashboardId(ch.getDashboardId());
         e.setDataOpts(dataOpts);
+        e.setDataOpt2s(dataOpt2s);
         e.setItemKey(itemKey);
         e.setSiteId(siteId);
         e.setYyyymmdd(yyyymmdd);
-        e.setPeriodTypeCd(per);
+        e.setDateTypeCd(per);
         e.setProdId(pId);
         e.setVendorId(vId);
         e.setUpdBy(authId);
@@ -998,7 +1017,7 @@ public class CmDashboardDataGridService {
      * 저장은 사용자가 [저장]을 눌러야 일어난다(시뮬레이션 자체는 DB를 건드리지 않는다).</p>
      */
     public Map<String, Object> simulate(String dashboardId, String siteId, String yyyymmdd,
-                                        String periodTypeCd, String prodId, String vendorId) {
+                                        String dateTypeCd, String prodId, String vendorId) {
         Map<String, Object> grids = getGrids(dashboardId, siteId, yyyymmdd, prodId, vendorId);
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> charts = (List<Map<String, Object>>) grids.get("charts");
@@ -1084,18 +1103,24 @@ public class CmDashboardDataGridService {
         }
         if (leafByPk.isEmpty()) return List.of();
 
-        /* 2) t02 데이터 — t01 에서 얻은 항목(leaf) PK 목록으로 값만 좁혀 읽는다 */
+        /* 2) t02 데이터 — t01 에서 얻은 항목(leaf) PK 목록으로 값만 좁혀 읽는다.
+           ⚠️ d.yyyymmdd 는 2026-08-26부터 dateTypeCd 별 실제 자리수만 담는다(y=4/m=6/d=8, 0-패딩
+           없음) — startYmd/endYmd 는 항상 8자리라, 짧은 값과 그대로 사전식 비교하면 예를 들어
+           연도행 "2026" 은 "20260101" 보다 사전식으로 항상 작게 취급돼(문자열 길이 차이) 날짜범위
+           필터에 걸리는 순간 조용히 빠져버린다. RPAD 로 8자리를 맞춰서 비교/정렬해야 여러
+           dateTypeCd 가 섞인 데이터도 날짜범위 필터·정렬이 올바르게 동작한다. */
         List<Object[]> t02 = em.createNativeQuery(
                 "WITH t02 AS (" +
-                "  SELECT d.dashboard_item_id, d.yyyymmdd, d.data_val" +
+                "  SELECT d.dashboard_item_id, d.yyyymmdd, d.data_val," +
+                "         RPAD(d.yyyymmdd, 8, '0') AS ymd8" +
                 "  FROM shopjoy_2604.cm_dashboard_data d" +
                 "  WHERE d.dashboard_item_id IN (:leafIds)" +
                 /* PostgreSQL 은 NULL 비교에만 쓰이는 바인드 파라미터의 타입을 추론하지 못한다
                    ("could not determine data type of parameter") — CAST 로 타입을 명시한다 */
                 "    AND (CAST(:siteId AS varchar) IS NULL OR d.site_id = :siteId)" +
-                "    AND (CAST(:startYmd AS varchar) IS NULL OR d.yyyymmdd >= :startYmd)" +
-                "    AND (CAST(:endYmd AS varchar) IS NULL OR d.yyyymmdd <= :endYmd)" +
-                ") SELECT dashboard_item_id, yyyymmdd, data_val FROM t02 ORDER BY yyyymmdd")
+                "    AND (CAST(:startYmd AS varchar) IS NULL OR RPAD(d.yyyymmdd, 8, '0') >= :startYmd)" +
+                "    AND (CAST(:endYmd AS varchar) IS NULL OR RPAD(d.yyyymmdd, 8, '0') <= :endYmd)" +
+                ") SELECT dashboard_item_id, yyyymmdd, data_val FROM t02 ORDER BY ymd8")
             .setParameter("leafIds", leafByPk.keySet())
             .setParameter("siteId", siteId)
             .setParameter("startYmd", startYmd)
@@ -1154,8 +1179,7 @@ public class CmDashboardDataGridService {
         String pId = blankToNull(prodId);
         String vId = blankToNull(vendorId);
         return dataRepository
-            .findBySiteIdAndYyyymmddAndDashboardItemIdInOrderByDashboardItemIdAscItemKeyAsc(
-                siteId, yyyymmdd, itemIds)
+            .selectList(Map.of("siteId", siteId, "yyyymmdd", yyyymmdd, "dashboardItemIds", itemIds))
             .stream()
             .filter(d -> java.util.Objects.equals(blankToNull(d.getProdId()), pId))
             .filter(d -> java.util.Objects.equals(blankToNull(d.getVendorId()), vId))

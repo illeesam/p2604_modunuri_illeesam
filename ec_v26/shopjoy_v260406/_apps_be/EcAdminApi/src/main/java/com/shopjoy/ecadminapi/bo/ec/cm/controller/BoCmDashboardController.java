@@ -408,12 +408,12 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<Integer>> dataGridSave(
             @RequestParam String siteId,
             @RequestParam String yyyymmdd,
-            @RequestParam(required = false) String periodTypeCd,
+            @RequestParam(required = false) String dateTypeCd,
             @RequestParam(required = false) String prodId,
             @RequestParam(required = false) String vendorId,
             @RequestBody List<Map<String, Object>> charts) {
         int n = cmDashboardDataGridService.saveGrids(
-            siteId, yyyymmdd, periodTypeCd, prodId, vendorId, charts);
+            siteId, yyyymmdd, dateTypeCd, prodId, vendorId, charts);
         return ResponseEntity.ok(ApiResponse.ok(n, "저장되었습니다. (" + n + "건)"));
     }
 
@@ -423,11 +423,11 @@ public class BoCmDashboardController {
             @RequestParam String dashboardId,
             @RequestParam String siteId,
             @RequestParam String yyyymmdd,
-            @RequestParam(required = false) String periodTypeCd,
+            @RequestParam(required = false) String dateTypeCd,
             @RequestParam(required = false) String prodId,
             @RequestParam(required = false) String vendorId) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.simulate(
-            dashboardId, siteId, yyyymmdd, periodTypeCd, prodId, vendorId)));
+            dashboardId, siteId, yyyymmdd, dateTypeCd, prodId, vendorId)));
     }
     /* ── 좌측메뉴 트리 ─────────────────────────────────────────
      * 폴더 + 대시보드 아이템으로 구성. 노드가 하나도 없으면 프론트가

@@ -65,35 +65,45 @@ public class CmDashboardDataService {
         return cmDashboardDataSourceRegistry.run(item.getDataSourceCd(), siteId);
     }
 
-    /** 값 1행 직접 upsert — 데이터관리 화면 밖에서 단건으로 값을 넣을 때 쓴다 */
+    /**
+     * 값 1행 직접 upsert — 데이터관리 화면 밖에서 단건으로 값을 넣을 때 쓴다.
+     *
+     * <p>기존 행이면 QueryDSL {@code updateSelective} 로 넘어온 필드(dept_id/user_id/data_val)만
+     * SET 한다(예전엔 fetch 해서 필드 몇 개만 수동 복사(copyFields) 후 전체 save() 했는데,
+     * 표준 3종 메서드(selectList/selectPageData/updateSelective) 로 통일하며 정리했다, 2026-08-27).
+     * bulk UPDATE 는 영속성 컨텍스트를 거치지 않으므로 flush+clear 후 다시 읽어 반환한다
+     * (CmDashboardItemService.save() 의 "U" 분기와 동일 패턴).</p>
+     */
     @Transactional
     public CmDashboardData upsert(CmDashboardData body) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
+        String existingId = null;
         if (body.getDashboardDataId() != null && !body.getDashboardDataId().isBlank()) {
-            Optional<CmDashboardData> existing = cmDashboardDataRepository.findById(body.getDashboardDataId());
-            if (existing.isPresent()) {
-                CmDashboardData entity = existing.get();
-                copyFields(body, entity);
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                CmDashboardData saved = cmDashboardDataRepository.save(entity);
-                em.flush();
-                return saved;
+            if (cmDashboardDataRepository.selectById(body.getDashboardDataId()).isPresent()) {
+                existingId = body.getDashboardDataId();
             }
         }
-
-        if (body.getItemKey() != null && body.getDataOpts() != null) {
+        if (existingId == null && body.getItemKey() != null && body.getDataOpts() != null) {
+            /* 2026-08-26: UNIQUE 가 (item_key, data_opts, data_opt2s) 세 컬럼으로 늘었다 —
+               dataOpt2s 는 nullable(선택 차원이 없으면 비어있는 게 정상)이라 body 에 없어도
+               null 그대로 넘긴다(빈 문자열로 임의 보정하지 않는다) */
             Optional<CmDashboardData> existing = cmDashboardDataRepository
-                .findByItemKeyAndDataOpts(body.getItemKey(), body.getDataOpts());
-            if (existing.isPresent()) {
-                CmDashboardData entity = existing.get();
-                copyFields(body, entity);
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                CmDashboardData saved = cmDashboardDataRepository.save(entity);
-                em.flush();
-                return saved;
-            }
+                .selectByCoordinate(body.getItemKey(), body.getDataOpts(), body.getDataOpt2s());
+            if (existing.isPresent()) existingId = existing.get().getDashboardDataId();
+        }
+
+        if (existingId != null) {
+            final String targetId = existingId;
+            body.setDashboardDataId(targetId);
+            body.setUpdBy(authId);
+            int affected = cmDashboardDataRepository.updateSelective(body);
+            if (affected == 0) throw new CmBizException("데이터 수정에 실패했습니다: " + targetId + "::" + CmUtil.svcCallerInfo(this));
+            em.flush();
+            em.clear();   // updateSelective 는 벌크 UPDATE 라 영속성 컨텍스트가 옛 값을 들고 있다 — 다시 읽기 전에 비운다
+            return cmDashboardDataRepository.selectById(targetId)
+                .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + targetId + "::" + CmUtil.svcCallerInfo(this)));
         }
 
         body.setDashboardDataId(CmUtil.generateId("cm_dashboard_data"));
@@ -109,11 +119,5 @@ public class CmDashboardDataService {
     public void deleteByItemAndDate(String dashboardItemId, String yyyymmdd) {
         cmDashboardDataRepository.deleteByDashboardItemIdAndYyyymmdd(dashboardItemId, yyyymmdd);
         em.flush();
-    }
-
-    private void copyFields(CmDashboardData src, CmDashboardData dst) {
-        if (src.getDeptId() != null)   dst.setDeptId(src.getDeptId());
-        if (src.getUserId() != null)   dst.setUserId(src.getUserId());
-        if (src.getDataVal() != null) dst.setDataVal(src.getDataVal());
     }
 }

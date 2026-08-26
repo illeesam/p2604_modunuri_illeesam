@@ -9,7 +9,7 @@
  *
  *  사람이 직접 입력하는 화면이며, [시뮬레이션]은 값만 자동으로 채워준다(저장은 별도).
  *  구조(시리즈·항목)는 '대시보드 항목관리' 에서 정의한 "행" 에서 온다.
- *  값은 (정의행 + data_opts) 좌표 하나에 하나씩 저장된다.
+ *  값은 (정의행 + data_opts + data_opt2s) 좌표 하나에 하나씩 저장된다.
  */
 window.CmDashboardDataMng = {
   name: 'CmDashboardDataMng',
@@ -84,24 +84,31 @@ window.CmDashboardDataMng = {
        같은 별도 토큰이 있었는데, yyyymmdd 라는 토큰명은 그대로 두고 값만 M 으로 바꾸는 식이라
        "토큰명은 일자인데 실제론 월별" 처럼 헷갈렸다. 지금은 site_id,yyyymmdd(일별) /
        site_id,yyyymm(월별) / site_id,yyyy(연도별) 로 토큰명 자체가 의미를 그대로 드러낸다
-       (2026-08-21 개편). */
+       (2026-08-21 개편). cm_dashboard_data 저장 컬럼도 같은 표기로 통일했다 — period_type_cd
+       (D/M/Y 약어) → date_type_cd(yyyy/yyyymm/yyyymmdd 토큰 그대로, 2026-08-26). */
     const DEFAULT_INPUT_OPTS = 'site_id,yyyymm';
 
     /* fnParseInputOpts — "site_id,yyyymm,prod_id" 같은 문자열을 화면이 쓰기 좋은 형태로 해석.
-       날짜 토큰(yyyy/yyyymm/yyyymmdd) 중 하나로 기간구분(Y/M/D)을 판별 — 어떤 조회조건
+       날짜 토큰(yyyy/yyyymm/yyyymmdd) 중 하나로 dateTypeCd(y/m/d)를 판별 — 어떤 조회조건
        입력칸을 보여줄지 이 결과로 가른다 */
     const fnParseInputOpts = (str) => {
-      const dims = { periodTypeCd: 'M', hasSiteId: false, hasProdId: false, hasVendorId: false };
+      const dims = { dateTypeCd: 'm', hasSiteId: false, hasProdId: false, hasVendorId: false };
       String(str || DEFAULT_INPUT_OPTS).split(',').map(s => s.trim()).filter(Boolean).forEach(tok => {
-        if (tok === 'yyyymmdd')    dims.periodTypeCd = 'D';
-        else if (tok === 'yyyymm') dims.periodTypeCd = 'M';
-        else if (tok === 'yyyy')   dims.periodTypeCd = 'Y';
+        if (tok === 'yyyymmdd')    dims.dateTypeCd = 'd';
+        else if (tok === 'yyyymm') dims.dateTypeCd = 'm';
+        else if (tok === 'yyyy')   dims.dateTypeCd = 'y';
         else if (tok === 'site_id')   dims.hasSiteId = true;
         else if (tok === 'prod_id')   dims.hasProdId = true;
         else if (tok === 'vendor_id') dims.hasVendorId = true;
       });
       return dims;
     };
+
+    /* fnDateTypeLen — dateTypeCd(y/m/d)별 yyyymmdd 값의 정상 자리수. y=4(연도) / m=6(년월) /
+       d=8(년월일) — 2026-08-26 개편으로 값 자체를 8자리로 0-패딩하지 않고 실제 자리수만
+       채운다("2026"/"202608"/"20260821"). fnGroupReady/fnGroupCond 양쪽이 같은 기준을 쓰도록
+       공용 함수로 뺐다. */
+    const fnDateTypeLen = (dateTypeCd) => (dateTypeCd === 'y' ? 4 : (dateTypeCd === 'm' ? 6 : 8));
 
     /* groupParams/groupState — input_opts 원문(key) 별 조회조건·진행상태. 그룹이 처음
        나타날 때(fnEnsureGroup) input_opts 가 정한 기본 기간구분 + 현재 사이트로 채운다.
@@ -111,7 +118,7 @@ window.CmDashboardDataMng = {
     const fnEnsureGroup = (key, dims) => {
       if (!groupParams[key]) {
         groupParams[key] = {
-          periodTypeCd: dims.periodTypeCd,
+          dateTypeCd: dims.dateTypeCd,
           ymd: _today, ym: String(_today).slice(0, 7), yyyy: String(_today).slice(0, 4),
           siteId: searchParam.siteId,
           prodId: '', prodNm: '', vendorId: '',
@@ -122,7 +129,7 @@ window.CmDashboardDataMng = {
     /* fnGroupReady — 이 그룹의 필수 조건(사이트·기간)이 다 채워졌는지. [조회] 버튼 활성화 기준 */
     const fnGroupReady = (key) => {
       const gp = groupParams[key];
-      return !!gp && !!gp.siteId && fnGroupPeriodKey(key).length === 8;
+      return !!gp && !!gp.siteId && fnGroupPeriodKey(key).length === fnDateTypeLen(gp.dateTypeCd);
     };
     /* fnEnsureGroupsFor — 위젯항목목록(dashItems) 이 새로 들어올 때마다 그 안에 있는 모든
        input_opts 그룹의 기본값을 한 번에 채워둔다(cfGroups computed 는 순수 파생만 하도록) */
@@ -132,13 +139,13 @@ window.CmDashboardDataMng = {
         fnEnsureGroup(key, fnParseInputOpts(key));
       });
     };
-    /* fnGroupPeriodKey — 그룹의 서버 전송용 기간 키. 컬럼 자체는 항상 8자리로 0-패딩한다.
-       D=YYYYMMDD / M=YYYYMM00 / Y=YYYY0000 */
+    /* fnGroupPeriodKey — 그룹의 서버 전송용 기간 키. dateTypeCd(y/m/d)에 맞는 자리수만 채운다
+       (2026-08-26 개편, 이전엔 항상 8자리로 0-패딩했었다) — y=YYYY / m=YYYYMM / d=YYYYMMDD */
     const fnGroupPeriodKey = (key) => {
       const gp = groupParams[key];
       if (!gp) return '';
-      if (gp.periodTypeCd === 'Y') return String(gp.yyyy || '').trim() + '0000';
-      if (gp.periodTypeCd === 'M') return String(gp.ym || '').replace('-', '') + '00';
+      if (gp.dateTypeCd === 'y') return String(gp.yyyy || '').trim();
+      if (gp.dateTypeCd === 'm') return String(gp.ym || '').replace('-', '');
       return String(gp.ymd || '').replace(/-/g, '');
     };
 
@@ -281,18 +288,20 @@ window.CmDashboardDataMng = {
       const gp = groupParams[key];
       if (!gp || !gp.siteId) { showToast('사이트는 필수 조건입니다.', 'error'); return null; }
       const periodKey = fnGroupPeriodKey(key);
-      if (!periodKey || periodKey.length !== 8) {
-        showToast(gp.periodTypeCd === 'D' ? '일자는 필수 조건입니다.' : '월은 필수 조건입니다.', 'error');
+      if (!periodKey || periodKey.length !== fnDateTypeLen(gp.dateTypeCd)) {
+        const msg = gp.dateTypeCd === 'y' ? '연도는 필수 조건입니다.'
+          : (gp.dateTypeCd === 'm' ? '월은 필수 조건입니다.' : '일자는 필수 조건입니다.');
+        showToast(msg, 'error');
         return null;
       }
       const group = cfGroups.value.find(g => g.key === key);
       const chartIds = (group ? group.charts : []).map(c => c.dashboardItemId).filter(Boolean);
       if (!chartIds.length) { showToast('이 그룹에 표시할 위젯이 없습니다.', 'error'); return null; }
       return {
-        chartIds:     chartIds.join(','),
-        siteId:       gp.siteId,
-        yyyymmdd:     periodKey,
-        periodTypeCd: gp.periodTypeCd,
+        chartIds:    chartIds.join(','),
+        siteId:      gp.siteId,
+        yyyymmdd:    periodKey,
+        dateTypeCd:  gp.dateTypeCd,
         ...coUtil.cofOmitEmpty({ prodId: gp.prodId, vendorId: gp.vendorId }),
       };
     };
@@ -577,13 +586,13 @@ window.CmDashboardDataMng = {
           chart._colCnt = sers.length ? (byParent[sers[0].dashboardItemId] || []).length : 0;
         });
         /* 위젯항목명 검색 — 차트·시리즈·항목 어느 레벨의 이름이든 걸리면 그 차트를 보여준다.
-           item_key 는 항상 chartCd-seriesCd-itemCd 형식(codeOf 가 '-' 를 '_' 로 치환해 세그먼트가
-           안전)이라 첫 조각만 잘라내면 소속 차트를 바로 알 수 있다 */
+           item1Key(2026-08-26 신설, cm_dashboard_item 컬럼)가 이미 소속 차트 코드를 담고
+           있어 itemKey 를 '-' 로 split 할 필요가 없다 */
         const kw2 = (searchParam.itemNm || '').trim().toLowerCase();
         if (kw2) {
           const matchedChartKeys = new Set(
             all.filter(i => (i.itemNm || '').toLowerCase().includes(kw2))
-               .map(i => (i.itemKey || '').split('-')[0]));
+               .map(i => i.item1Key));
           list = list.filter(c => matchedChartKeys.has(c.itemKey));
         }
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
@@ -1175,8 +1184,8 @@ window.CmDashboardDataMng = {
     const fnGroupPeriodLabel = (key) => {
       const gp = groupParams[key];
       if (!gp) return '-';
-      if (gp.periodTypeCd === 'Y') return (gp.yyyy || '-') + ' (연도)';
-      if (gp.periodTypeCd === 'M') return (gp.ym || '-') + ' (월)';
+      if (gp.dateTypeCd === 'y') return (gp.yyyy || '-') + ' (연도)';
+      if (gp.dateTypeCd === 'm') return (gp.ym || '-') + ' (월)';
       return (gp.ymd || '-') + ' (일자)';
     };
 
@@ -1318,13 +1327,13 @@ window.CmDashboardDataMng = {
         </div>
         <div style="padding:8px 10px;background:#f0f6ff;border-bottom:1px solid #dbeafe;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:11px;color:#64748b;">
-            {{ group.dims.periodTypeCd === 'Y' ? '연도별' : (group.dims.periodTypeCd === 'M' ? '월별' : '일별') }}</span>
+            {{ group.dims.dateTypeCd === 'y' ? '연도별' : (group.dims.dateTypeCd === 'm' ? '월별' : '일별') }}</span>
           <select v-if="group.dims.hasSiteId" class="form-control" v-model="groupParams[group.key].siteId" style="width:150px;">
             <option v-for="o in siteOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
-          <input v-if="group.dims.periodTypeCd === 'D'" type="date" class="form-control"
+          <input v-if="group.dims.dateTypeCd === 'd'" type="date" class="form-control"
             v-model="groupParams[group.key].ymd" style="width:140px;" />
-          <input v-else-if="group.dims.periodTypeCd === 'M'" type="month" class="form-control"
+          <input v-else-if="group.dims.dateTypeCd === 'm'" type="month" class="form-control"
             v-model="groupParams[group.key].ym" style="width:130px;" />
           <input v-else type="number" class="form-control" min="2000" max="2999"
             v-model="groupParams[group.key].yyyy" placeholder="연도(YYYY)" style="width:100px;" />

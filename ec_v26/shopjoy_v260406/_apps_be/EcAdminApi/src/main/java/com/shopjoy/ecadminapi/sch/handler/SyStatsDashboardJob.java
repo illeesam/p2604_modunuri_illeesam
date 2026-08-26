@@ -65,22 +65,24 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
         LocalDateTime monthStart = today.withDayOfMonth(1).atStartOfDay();
         LocalDateTime monthEnd   = today.atTime(23, 59, 59);
         String monthKey = String.format("m%02d", today.getMonthValue());
-        String yyyymm00 = String.format("%d%02d00", today.getYear(), today.getMonthValue());
+        /* 2026-08-26: yyyymmdd 컬럼은 dateTypeCd 에 맞는 실제 자리수만 담는다 — 월 데이터는
+           6자리(YYYYMM), 예전처럼 뒤에 "00" 을 붙여 8자리로 0-패딩하지 않는다. */
+        String yyyymm = String.format("%d%02d", today.getYear(), today.getMonthValue());
 
-        log.info("[{}] 대시보드 자동수집 시작 — 대상월: {}", batchCode(), yyyymm00);
+        log.info("[{}] 대시보드 자동수집 시작 — 대상월: {}", batchCode(), yyyymm);
 
         int saved = 0;
-        try { saved += upsertMonthlySales(siteId, yyyymm00, monthKey, monthStart, monthEnd); }
+        try { saved += upsertMonthlySales(siteId, yyyymm, monthKey, monthStart, monthEnd); }
         catch (Exception e) { log.error("[{}] chart036 월별매출 실패: {}", batchCode(), e.getMessage(), e); }
 
-        try { saved += upsertMonthlyOrderCount(siteId, yyyymm00, monthKey, monthStart, monthEnd); }
+        try { saved += upsertMonthlyOrderCount(siteId, yyyymm, monthKey, monthStart, monthEnd); }
         catch (Exception e) { log.error("[{}] chart041 주문완료현황 실패: {}", batchCode(), e.getMessage(), e); }
 
         log.info("[{}] 자동수집 완료 — {}건 upsert", batchCode(), saved);
     }
 
     /* ── chart036: 월별 매출현황 (이번 달 결제완료 매출 합계) ────────────────── */
-    private int upsertMonthlySales(String siteId, String yyyymm00, String monthKey,
+    private int upsertMonthlySales(String siteId, String yyyymm, String monthKey,
                                    LocalDateTime start, LocalDateTime end) {
         Number sum = (Number) em.createNativeQuery("""
                 SELECT /* sch :: StatsDashboardJob :: upsertMonthlySales */
@@ -91,11 +93,11 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
                   AND o.simul_yn = 'N'
                 """.formatted(SCHEMA))
             .setParameter("s", start).setParameter("e", end).getSingleResult();
-        return upsertLeaf("chart036-series01-" + monthKey, siteId, yyyymm00, sum.doubleValue());
+        return upsertLeaf("chart036-series01-" + monthKey, siteId, yyyymm, sum.doubleValue());
     }
 
     /* ── chart041: 주문완료 현황 (이번 달 주문완료 건수) ─────────────────────── */
-    private int upsertMonthlyOrderCount(String siteId, String yyyymm00, String monthKey,
+    private int upsertMonthlyOrderCount(String siteId, String yyyymm, String monthKey,
                                         LocalDateTime start, LocalDateTime end) {
         Number cnt = (Number) em.createNativeQuery("""
                 SELECT /* sch :: StatsDashboardJob :: upsertMonthlyOrderCount */
@@ -106,38 +108,42 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
                   AND o.simul_yn = 'N'
                 """.formatted(SCHEMA))
             .setParameter("s", start).setParameter("e", end).getSingleResult();
-        return upsertLeaf("chart041-series01-" + monthKey, siteId, yyyymm00, cnt.doubleValue());
+        return upsertLeaf("chart041-series01-" + monthKey, siteId, yyyymm, cnt.doubleValue());
     }
 
     /**
      * item_key(항상 3레벨) + (사이트,월) 좌표로 upsert. 정의행이 없으면(아직 마이그레이션 안 된
      * 환경, 항목관리에서 지운 경우 등) 조용히 건너뛴다 — 배치 한 항목 실패로 나머지가 죽으면 안 된다.
      */
-    private int upsertLeaf(String itemKey, String siteId, String yyyymm00, Double val) {
+    private int upsertLeaf(String itemKey, String siteId, String yyyymm, Double val) {
         CmDashboardItem leaf = itemRepository.findByItemKey(itemKey).orElse(null);
         if (leaf == null) { log.warn("[{}] 정의행 없음 — 건너뜀: {}", batchCode(), itemKey); return 0; }
 
         CmDashboardData probe = new CmDashboardData();
         probe.setSiteId(siteId);
-        probe.setYyyymmdd(yyyymm00);
-        probe.setPeriodTypeCd("M");
-        String dataOpts = CmDashboardDataGridService.buildOptions(probe);
+        probe.setYyyymmdd(yyyymm);
+        probe.setDateTypeCd("m");
+        String dataOpts  = CmDashboardDataGridService.buildOptions(probe);
+        String dataOpt2s = CmDashboardDataGridService.buildOptions2(probe);
 
         LocalDateTime now = LocalDateTime.now();
-        CmDashboardData row = dataRepository.findByItemKeyAndDataOpts(itemKey, dataOpts)
+        CmDashboardData row = dataRepository.selectByCoordinate(itemKey, dataOpts, dataOpt2s)
             .orElseGet(() -> {
                 CmDashboardData n = new CmDashboardData();
                 n.setDashboardDataId(CmUtil.generateId("cm_dashboard_data"));
                 n.setRegBy("BATCH"); n.setRegDate(now);
                 return n;
             });
+        /* item1Key/item2Key/item3Key 는 CmDashboardData.deriveItemLevelKeys()(@PrePersist/
+           @PreUpdate)가 itemKey 로 저장 직전 자동 재계산한다 — 여기서 따로 계산해 넣지 않는다. */
         row.setDashboardItemId(leaf.getDashboardItemId());
         row.setDashboardId(leaf.getDashboardId());
         row.setItemKey(itemKey);
         row.setDataOpts(dataOpts);
+        row.setDataOpt2s(dataOpt2s);
         row.setSiteId(siteId);
-        row.setYyyymmdd(yyyymm00);
-        row.setPeriodTypeCd("M");
+        row.setYyyymmdd(yyyymm);
+        row.setDateTypeCd("m");
         row.setDataVal(val);
         row.setUpdBy("BATCH"); row.setUpdDate(now);
         dataRepository.save(row);

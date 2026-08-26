@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** CmDashboardItem(대시보드 차트 패널 정의) QueryDSL Custom 구현체 */
 @Slf4j
@@ -95,16 +96,51 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
         return (int) affected;
     }
 
+    /** 단건 조회 — hibernate.comment 힌트가 붙는 QueryDSL 진입점 */
+    @Override
+    public Optional<CmDashboardItem> selectById(String dashboardItemId) {
+        if (dashboardItemId == null) return Optional.empty();
+        CmDashboardItem row = queryFactory.selectFrom(cmDashboardItem)
+            .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+            .where(cmDashboardItem.dashboardItemId.eq(dashboardItemId))
+            .fetchOne();
+        return Optional.ofNullable(row);
+    }
+
+    /**
+     * 조건 목록 조회 — dashboardId(단일) / useYn / parentDashboardItemId(단일) /
+     * parentDashboardItemIds(목록) 을 옵션으로 조합한다. 아무 것도 없으면 전체. sortOrd 오름차순.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<CmDashboardItem> selectList(Map<String, Object> p) {
+        String dashboardId = (String) p.get("dashboardId");
+        String useYn = (String) p.get("useYn");
+        String parentDashboardItemId = (String) p.get("parentDashboardItemId");
+        List<String> parentDashboardItemIds = (List<String>) p.get("parentDashboardItemIds");
+
+        return queryFactory.selectFrom(cmDashboardItem)
+            .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+            .where(
+                dashboardId != null && !dashboardId.isBlank() ? cmDashboardItem.dashboardId.eq(dashboardId) : null,
+                useYn != null && !useYn.isBlank() ? cmDashboardItem.useYn.eq(useYn) : null,
+                parentDashboardItemId != null && !parentDashboardItemId.isBlank() ? cmDashboardItem.parentDashboardItemId.eq(parentDashboardItemId) : null,
+                parentDashboardItemIds != null && !parentDashboardItemIds.isEmpty() ? cmDashboardItem.parentDashboardItemId.in(parentDashboardItemIds) : null
+            )
+            .orderBy(cmDashboardItem.sortOrd.asc())
+            .fetch();
+    }
+
     /**
      * 차트(keyLevel=1) 서버사이드 페이징 조회.
      *
      * <p>itemNm 검색은 차트 자신의 이름뿐 아니라 그 아래 시리즈·항목까지 대상으로 한다 —
-     * item_key 조립 규칙({@code chartCd-seriesCd-itemCd})을 이용해, 자기 item_key 로 시작하는
-     * (자신 제외) 행 중에 이름이 일치하는 게 하나라도 있으면 그 차트를 포함시킨다(상관 서브쿼리
+     * item1_key 컬럼(2026-08-26 신설, item_key 의 첫 "-" 조각)이 자기 itemKey 와 같은 행이면
+     * 자손이라는 뜻이라, 이름이 일치하는 게 하나라도 있으면 그 차트를 포함시킨다(상관 서브쿼리
      * EXISTS). 시리즈·항목을 굳이 join 해 오지 않아도 되어 쿼리가 단순하다.</p>
      */
     @Override
-    public BasePage<CmDashboardItem> selectChartPage(Map<String, Object> p) {
+    public BasePage<CmDashboardItem> selectPageData(Map<String, Object> p) {
         int pageNo = parseInt(p.get("pageNo"), 1);
         int pageSize = parseInt(p.get("pageSize"), 30);
         int offset = (pageNo - 1) * pageSize;
@@ -127,10 +163,18 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
             cond.and(cmDashboardItem.useYn.eq(useYn));
         }
         if (itemNm != null && !itemNm.isBlank()) {
+            /* 여기 cmDashboardItem 은 항상 keyLevel=1(차트) 행이라 itemKey 자체가 곧 item1Key다
+               (chart091 같은 단일 조각) — 그래서 자손 판정이 item1_key 컬럼(2026-08-26 신설) 값과
+               단순 동등비교로 끝난다. 예전엔 descendant.itemKey LIKE cmDashboardItem.itemKey || '-%'
+               로 문자열 접두어 매칭을 했는데, 같은 값을 이미 쪼개 담아둔 컬럼이 있으니 그걸 직접
+               비교하는 게 더 명확하고 item1_key 인덱스를 그대로 탄다. keyLevel.ne(1) 은 차트 자기
+               자신은 "자손"이 아니므로 제외하는 것 — 어차피 자기 이름은 첫 번째 OR 절이 이미
+               검사하므로 없어도 결과는 같지만(중복될 뿐), 의도를 명확히 하려고 남겨둔다. */
             QCmDashboardItem descendant = new QCmDashboardItem("descendant");
             cond.and(cmDashboardItem.itemNm.containsIgnoreCase(itemNm)
                 .or(JPAExpressions.selectOne().from(descendant)
-                    .where(descendant.itemKey.like(cmDashboardItem.itemKey.concat("-%"))
+                    .where(descendant.item1Key.eq(cmDashboardItem.itemKey)
+                        .and(descendant.keyLevel.ne(1))
                         .and(descendant.itemNm.containsIgnoreCase(itemNm)))
                     .exists()));
         }
@@ -138,13 +182,13 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
         JPAQuery<CmDashboardItem> baseQuery = queryFactory.selectFrom(cmDashboardItem).where(cond);
 
         List<CmDashboardItem> pageList = baseQuery.clone()
-            .setHint("org.hibernate.comment", QRY_SRC + " :: selectChartPage() :: list")
+            .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
             .orderBy(cmDashboardItem.dashboardId.asc(), cmDashboardItem.sortOrd.asc(), cmDashboardItem.dashboardItemId.asc())
             .offset(offset).limit(pageSize)
             .fetch();
 
         Long total = baseQuery.clone()
-            .setHint("org.hibernate.comment", QRY_SRC + " :: selectChartPage() :: cnt")
+            .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
             .select(cmDashboardItem.count())
             .fetchOne();
 

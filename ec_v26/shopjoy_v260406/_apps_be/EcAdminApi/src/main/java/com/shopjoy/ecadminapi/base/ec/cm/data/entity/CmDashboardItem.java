@@ -50,6 +50,29 @@ public class CmDashboardItem extends BaseEntity {
     @Size(max = 150, message = "itemKey 는 150자 이내여야 합니다.")
     private String itemKey;
 
+    /* item1_key/item2_key/item3_key — 2026-08-26 신설: item_key("chart091-series01-item02")를
+       "-" 로 나눈 각 조각을 그대로 담는다(누적 경로 아님) — 예) item_key="chart091-series01-item02"
+       라면 item1_key="chart091" / item2_key="series01" / item3_key="item02". 이 행 자신의
+       레벨(key_level)에 없는 조각은 자연히 NULL — 1레벨(chart) 행은 item2_key/item3_key 가
+       NULL, 2레벨(series) 행은 item3_key 가 NULL. cm_dashboard_data 의 같은 이름 컬럼과 값
+       규칙이 동일하다. deriveItemLevelKeys()(@PrePersist/@PreUpdate)가 itemKey 로 매번 자동
+       재계산하므로 putRow()/renameByCode()/BO 직접저장 등 어떤 경로로 저장돼도 항상 최신값을
+       유지한다. */
+    @Comment("1레벨(차트) 조각 — item_key 의 1번째 '-' 구분 조각 (예: chart091)")
+    @Column(name = "item1_key", length = 150)
+    @Size(max = 150, message = "item1Key 는 150자 이내여야 합니다.")
+    private String item1Key;
+
+    @Comment("2레벨(시리즈) 조각 — item_key 의 2번째 '-' 구분 조각 (예: series01). 차트(1레벨) 행은 NULL")
+    @Column(name = "item2_key", length = 150)
+    @Size(max = 150, message = "item2Key 는 150자 이내여야 합니다.")
+    private String item2Key;
+
+    @Comment("3레벨(항목) 조각 — item_key 의 3번째 '-' 구분 조각 (예: item02). 차트·시리즈(1·2레벨) 행은 NULL")
+    @Column(name = "item3_key", length = 150)
+    @Size(max = 150, message = "item3Key 는 150자 이내여야 합니다.")
+    private String item3Key;
+
     @Comment("패널명 (화면 표시용)")
     @Column(name = "item_nm", length = 100, nullable = false)
     @Size(max = 100, message = "itemNm 는 100자 이내여야 합니다.")
@@ -221,4 +244,36 @@ public class CmDashboardItem extends BaseEntity {
 
     @jakarta.persistence.Transient
     private java.util.List<java.util.Map<String, Object>> cols;
+
+    /**
+     * item1_key/item2_key/item3_key 자동 재계산(2026-08-26) — INSERT/UPDATE 직전마다 itemKey +
+     * keyLevel 기준으로 다시 채운다. 엔티티 자체에 두는 이유: putRow()(항목관리 저장/쿼리방식
+     * 자동생성), renameByCode()(코드 변경 연쇄), BO 직접저장(CmDashboardItemService) 등 저장
+     * 경로가 여러 곳인데, 어느 경로로 들어오든 저장 직전에 한 번만 통과하는 지점이 JPA
+     * 라이프사이클뿐이라 여기서 한 번만 구현하면 전부 커버된다.
+     * (item_key 세그먼트 안의 "-" 는 저장 시점에 이미 "_" 로 치환되어 들어오므로 "-" 로만
+     * 나눠도 안전 — CmDashboardDataGridService.codeOf() 참고)
+     */
+    @jakarta.persistence.PrePersist
+    @jakarta.persistence.PreUpdate
+    private void deriveItemLevelKeys() {
+        if (itemKey == null || itemKey.isBlank()) return;
+        String[] seg = itemKey.split("-");
+        item1Key = seg.length > 0 ? seg[0] : null;
+        item2Key = seg.length > 1 ? seg[1] : null;
+        item3Key = seg.length > 2 ? seg[2] : null;
+    }
+
+    /**
+     * 이 행 자신의 조립코드 조각(2026-08-26 신설) — item1/2/3Key 중 채워진 가장 깊은 값을
+     * 돌려준다. 예전엔 {@code item_key} 문자열에서 마지막 "-" 뒤를 잘라 매번 다시 계산했는데
+     * (구 {@code CmDashboardDataGridService.lastSeg()}), 저장 시점에 이미 쪼개 둔 값을
+     * 그대로 읽으면 되므로 문자열 파싱이 필요 없다. keyLevel 을 몰라도 안전(item3→item2→item1
+     * 순으로 존재하는 값을 쓴다 — 3레벨 행은 item3Key, 2레벨은 item2Key, 1레벨은 item1Key).
+     */
+    public String ownKey() {
+        if (item3Key != null) return item3Key;
+        if (item2Key != null) return item2Key;
+        return item1Key;
+    }
 }

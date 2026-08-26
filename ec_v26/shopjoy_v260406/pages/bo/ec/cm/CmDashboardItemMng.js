@@ -1497,7 +1497,7 @@ window.CmDashboardItemMng = {
 
     /* cfTreeVisible — 접힘 상태 + "2번째 시리즈부터는 항목 생략" 규칙 + 이번 페이지 차트만 반영 */
     const cfTreeVisible = computed(() => treeRows.filter((n) => {
-      if (!cfPagedChartKeys.value.has(String(n.itemKey || '').split('-')[0])) return false;
+      if (!cfPagedChartKeys.value.has(n.item1Key)) return false;
       if (n.lvl === 1) return true;
       if (n.lvl === 3 && !cfFirstSeriesKeys.value.has(fnParentCode(n.itemKey))) return false;
       /* 조상 코드를 하나씩 거슬러 올라가며 접힌 게 있으면 숨김 */
