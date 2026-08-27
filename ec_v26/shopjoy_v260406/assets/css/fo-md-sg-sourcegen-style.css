@@ -346,12 +346,6 @@
 .sg-hist-table tbody tr:hover { background:#fbfaf8; }
 .sg-hist-table .btn { margin:0 2px; }
 
-/* ── 프로젝트 템플릿 다운로드 모달 하단: 다운로드 이력(2026-08-26) ── */
-.sg-dlhist-title { font-size:12px; font-weight:800; color:var(--text-primary,#333);
-  margin:14px 0 6px; padding-top:12px; border-top:1px solid var(--border,#eee); }
-.sg-hist-table-wrap { max-height:180px; overflow-y:auto; }
-.sg-hist-table-wrap .sg-hist-table thead th { position:sticky; top:0; }
-
 .sg-detail-bottom-actions { display:flex; gap:8px; justify-content:center; margin:22px 0 8px;
   padding-top:20px; border-top:1px solid var(--border,#e8e8e8); }
 

@@ -297,6 +297,96 @@ function fnSvgToPngBlob(svgString, w, h) {
    DDL 스타일(컬럼 레벨 인라인 PK)이다 — 두 PK 표기가 모두 되는지 화면에서 바로 확인할 수 있게 함께 둔다.
    PostgreSQL 은 VARCHAR, Oracle 은 VARCHAR2/NUMBER 를 쓴다(원본 sourcegen_oracle.html 과 동일).
    샘플을 누르면 그 샘플의 DB 유형으로 상단 [DB 유형] 도 함께 맞춰준다(생성 결과가 DB 별로 다름). */
+/* SG_DDL_SY_CODE_GRP / SG_DDL_SY_CODE / SG_DDL_SY_NOTICE — 실제 프로젝트 DDL(_doc/ddl_pgsql/sy/)에서
+   그대로 가져온 예제 3종(2026-08-28 추가, zz_exam 시리즈에 이어 "진짜 업무 테이블" 예제로 보강).
+   CREATE TABLE + COMMENT 만 남기고 VIEW/INDEX 구문은 샘플 취지에 안 맞아 제외했다. Oracle 버전은
+   중복 관리를 피하려고 fnPgDdlToOracle() 로 그 자리에서 변환해 쓴다(아래 SG_SAMPLE_GROUPS 참조). */
+const SG_DDL_SY_CODE_GRP = `CREATE TABLE shopjoy_2604.sy_code_grp (
+    code_grp_id   VARCHAR(21)  NOT NULL CONSTRAINT sy_code_grp_pk_code_grp_id PRIMARY KEY,
+    reg_site_id   VARCHAR(21)  NOT NULL,
+    code_grp      VARCHAR(50)  NOT NULL,
+    grp_nm        VARCHAR(100) NOT NULL,
+    path_id       VARCHAR(21) ,
+    code_grp_desc VARCHAR(300),
+    use_yn        VARCHAR(1)   DEFAULT 'Y',
+    reg_by        VARCHAR(30) ,
+    reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    upd_by        VARCHAR(30) ,
+    upd_date      TIMESTAMP
+);
+COMMENT ON TABLE  shopjoy_2604.sy_code_grp                IS '공통코드 그룹';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.code_grp_id    IS '코드그룹ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.reg_site_id    IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.code_grp       IS '코드그룹코드 (예: MEMBER_GRADE)';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.grp_nm         IS '그룹명';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.path_id        IS '점(.) 구분 표시경로 (트리 빌드용)';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.code_grp_desc  IS '코드그룹설명';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.use_yn         IS '사용여부 Y/N';
+`;
+
+const SG_DDL_SY_CODE = `CREATE TABLE shopjoy_2604.sy_code (
+    code_id           VARCHAR(21)  NOT NULL CONSTRAINT sy_code_pk_code_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
+    code_grp_id       VARCHAR(50)  NOT NULL,
+    code_value        VARCHAR(50)  NOT NULL,
+    code_label        VARCHAR(100) NOT NULL,
+    sort_ord          INTEGER      DEFAULT 0,
+    use_yn            VARCHAR(1)   DEFAULT 'Y',
+    parent_code_value VARCHAR(50) ,
+    child_code_values VARCHAR(500),
+    code_remark       VARCHAR(300),
+    reg_by            VARCHAR(30) ,
+    reg_date          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    upd_by            VARCHAR(30) ,
+    upd_date          TIMESTAMP   ,
+    code_level        INTEGER     ,
+    code_opt1         VARCHAR(200),
+    CONSTRAINT sy_code_fk_code_grp_id FOREIGN KEY (code_grp_id) REFERENCES shopjoy_2604.sy_code_grp(code_grp_id)
+);
+COMMENT ON TABLE  shopjoy_2604.sy_code                    IS '공통코드';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_id            IS '코드ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.reg_site_id        IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_grp_id        IS '코드그룹ID (sy_code_grp.code_grp_id FK)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_value         IS '코드값 (저장값)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_label         IS '코드라벨 (표시명)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.sort_ord           IS '정렬순서';
+COMMENT ON COLUMN shopjoy_2604.sy_code.use_yn             IS '사용여부 Y/N';
+COMMENT ON COLUMN shopjoy_2604.sy_code.parent_code_value  IS '부모 코드값 (트리 구조 시 상위 code_value)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.child_code_values  IS '허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_remark        IS '비고';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_level         IS '코드 트리 레벨 (1=루트, 2=중간, 3=리프 등)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.code_opt1          IS '코드별 부가 옵션 1 (색상 hex, 아이콘 클래스 등)';
+`;
+
+const SG_DDL_SY_NOTICE = `CREATE TABLE shopjoy_2604.sy_notice (
+    notice_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_notice_pk_notice_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
+    notice_title     VARCHAR(200) NOT NULL,
+    notice_type_cd   VARCHAR(30) ,
+    is_fixed         VARCHAR(1)   DEFAULT 'N',
+    content_html     TEXT        ,
+    start_date       TIMESTAMP   ,
+    end_date         TIMESTAMP   ,
+    notice_status_cd VARCHAR(20)  DEFAULT 'ACTIVE',
+    view_count       INTEGER      DEFAULT 0,
+    reg_by           VARCHAR(30) ,
+    reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    upd_by           VARCHAR(30) ,
+    upd_date         TIMESTAMP
+);
+COMMENT ON TABLE  shopjoy_2604.sy_notice                  IS '공지사항';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_id        IS '공지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.reg_site_id      IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_title     IS '제목';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_type_cd   IS '공지유형 (코드: NOTICE_TYPE)';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.is_fixed         IS '상단고정 Y/N';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.content_html     IS '내용 (HTML)';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.start_date       IS '노출시작일';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.end_date         IS '노출종료일';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_status_cd IS '상태 (ACTIVE/INACTIVE)';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.view_count       IS '조회수';
+`;
+
 const SG_SAMPLE_GROUPS = [
   { db: 'POSTGRESQL', dbLabel: 'PostgreSQL', items: [
     { key: 'pg1', label: 'zz_exam1', desc: '단일 PK',     text: `CREATE TABLE shopjoy_2604.zz_exam1 (
@@ -350,6 +440,9 @@ COMMENT ON COLUMN shopjoy_2604.zz_exam3.exam1_id   IS 'PK (zz_exam1 참조)';
 COMMENT ON COLUMN shopjoy_2604.zz_exam3.exam2_id   IS 'PK';
 COMMENT ON COLUMN shopjoy_2604.zz_exam3.exam3_nm   IS '이름';
 ` },
+    { key: 'pgcg', label: 'sy_code_grp', desc: '공통코드 그룹', text: SG_DDL_SY_CODE_GRP },
+    { key: 'pgc',  label: 'sy_code', desc: 'FK 참조(코드)', text: SG_DDL_SY_CODE },
+    { key: 'pgn',  label: 'sy_notice', desc: '공지사항', text: SG_DDL_SY_NOTICE },
     { key: 'pgs', label: 'ShopJoy 스타일', desc: '인라인 PK', text: `CREATE TABLE shopjoy_2604.md_sg_project (
     project_id        VARCHAR(21)  NOT NULL CONSTRAINT md_sg_project_pk_project_id PRIMARY KEY,
     site_id           VARCHAR(21)  NOT NULL,
@@ -424,6 +517,9 @@ COMMENT ON COLUMN shopjoy_2604.zz_exam3.exam1_id   IS 'PK (zz_exam1 참조)';
 COMMENT ON COLUMN shopjoy_2604.zz_exam3.exam2_id   IS 'PK';
 COMMENT ON COLUMN shopjoy_2604.zz_exam3.exam3_nm   IS '이름';
 ` },
+    { key: 'orcg', label: 'sy_code_grp', desc: '공통코드 그룹', text: fnPgDdlToOracle(SG_DDL_SY_CODE_GRP) },
+    { key: 'orc',  label: 'sy_code', desc: 'FK 참조(코드)', text: fnPgDdlToOracle(SG_DDL_SY_CODE) },
+    { key: 'orn',  label: 'sy_notice', desc: '공지사항', text: fnPgDdlToOracle(SG_DDL_SY_NOTICE) },
     { key: 'ors', label: 'ShopJoy 스타일', desc: '인라인 PK', text: `CREATE TABLE shopjoy_2604.md_sg_project (
     project_id        VARCHAR2(21)  NOT NULL CONSTRAINT md_sg_project_pk_project_id PRIMARY KEY,
     site_id           VARCHAR2(21)  NOT NULL,
@@ -595,6 +691,9 @@ window.MdSgSourcegenPage = {
       uploadModalOpen: false,    // 프로젝트업로드 모달 표시 여부
       uploadDbType: 'POSTGRESQL', // 업로드 파일의 DDL 방언(파싱 기준 사전선택) 'ORACLE' | 'POSTGRESQL'
       uploading: false,          // 업로드 파일 처리중
+      autoFolderByPrefix: true,  // 테이블약어로 폴더생성하기 — 기본 ON(현재 동작). 끄면 새 탭은
+                                 // subPackage 미지정(루트)으로만 추가되고 폴더 배치는 드래그로 직접 한다(2026-08-28).
+      histTab: 'gen',            // 화면 하단 [이력] 탭 — 'gen'(생성 이력) | 'download'(생성결과 다운로드 이력)
     });
 
     /* selectedStacks — [소스 생성] 팝오버 체크 상태(SG_FILE_GROUPS.prefix 배열). localStorage 영속화 */
@@ -624,6 +723,16 @@ window.MdSgSourcegenPage = {
     const tabs = reactive([fnNewTab()]);   // 신규 프로젝트는 빈 탭 1개로 시작
 
     const genHists = reactive([]);   // 생성 이력(첨부 ZIP) 목록
+    /* templateDlHistGridColumns — [다운로드 이력](화면 최하단, 프로젝트 무관 전역 로그) 컬럼 정의.
+       genHistGridColumns 와 동일한 fo-grid 패턴. projectNm 에 소스생성/템플릿 구분이 섞여 온다
+       (템플릿 다운로드는 "[템플릿] " 접두어 — fnLogTemplateDownload 참조). */
+    const templateDlHistGridColumns = [
+      { key: 'regDate',    label: '일시', width: '150px', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
+      { key: 'projectNm',  label: '구분', width: '160px', fmt: (v) => v || '(제목없음)' },
+      { key: 'zipFileNm',  label: '파일명', cellClass: 'sg-list-mono' },
+      { key: 'fileCount',  label: '건수', width: '80px', align: 'center', fmt: (v) => v || 0 },
+    ];
+
     /* genHistGridColumns — fo-grid 전환(2026-08-25). 번호는 idx+1(페이저 없는 로컬 배열이라
        그대로), 일시/크기는 coUtil 공통 헬퍼(cofYmdHm/cofFileSize) 사용. */
     const genHistGridColumns = [
@@ -712,10 +821,22 @@ window.MdSgSourcegenPage = {
       return t ? t.generatedAt : '';
     });
 
+    /* fnGateAutoSubPackage — fnExtractOpts() 결과에서 subPackage(테이블약어 폴더 자동배치)를
+       [테이블약어로 폴더생성하기] 체크 여부에 따라 걸러낸다. 꺼져 있으면 subPackage 키 자체를
+       빼서 반환한다 — 새 탭(fnNewTab 기본값 '')은 자연히 루트에 남고, 기존 탭을 덮어쓸 때도
+       (예: 샘플 중복 클릭 시 덮어쓰기) 사용자가 드래그로 이미 옮겨둔 폴더 위치를 건드리지
+       않는다(2026-08-28). */
+    const fnGateAutoSubPackage = (opts) => {
+      if (!opts) return opts;
+      if (uiState.autoFolderByPrefix) return opts;
+      const { subPackage, ...rest } = opts;
+      return rest;
+    };
+
     /* ── 2) DDL 입력 → 옵션 자동 추출 (watch 대신 입력 핸들러에서 직접 호출) ── */
     const onDdlInput = () => {
       const t = cfCurTab.value;
-      const opts = fnExtractOpts(t.ddlText);
+      const opts = fnGateAutoSubPackage(fnExtractOpts(t.ddlText));
       if (opts) Object.assign(t, opts);
       fnFillAutoName();
     };
@@ -730,16 +851,28 @@ window.MdSgSourcegenPage = {
       form.projectNm = first.tableNm + fnTsSuffix();
     };
 
-    /* onLoadSample — [샘플] 버튼: 현재 탭에 예제 DDL 을 채우고 옵션까지 자동 추출.
-       생성 결과가 DB 별로 달라지므로 샘플이 속한 DB 유형으로 상단 [DB 유형] 도 함께 맞춘다. */
+    /* onLoadSample — [샘플] 버튼: 기본은 기존 탭들에 새 탭을 "추가"한다(잘못 넣었으면 그 탭에서
+       [삭제]하면 되므로 확인창 없음). 현재 탭이 아직 빈 탭이면 그 자리를 그대로 채워 불필요한
+       빈 탭이 남지 않게 한다. 단, 같은 테이블명의 탭이 이미 있으면(같은 샘플 중복 클릭 등) 새로
+       추가하지 않고 그 기존 탭을 덮어쓸지 확인창으로 물은 뒤 처리한다(2026-08-28 — 중복 탭이
+       쌓이던 문제 보완). 생성 결과가 DB 별로 달라지므로 샘플이 속한 DB 유형으로 상단 [DB 유형]
+       도 함께 맞춘다. */
     const onLoadSample = async (s, dbTypeCd) => {
-      const t = cfCurTab.value;
-      if ((t.ddlText || '').trim() &&
-          !await props.showConfirm('샘플 넣기', `[${t.tableNm || '현재 탭'}] 의 DDL 을 샘플로 덮어쓰시겠습니까?`)) return;
       if (dbTypeCd) form.dbTypeCd = dbTypeCd;
+      const opts = fnExtractOpts(s.text);
+      const dupe = opts && tabs.find(x => x.tableNm === opts.tableNm && (x.ddlText || '').trim());
+      if (dupe) {
+        if (!await props.showConfirm('샘플 넣기', `[${dupe.tableNm}] 테이블이 이미 있습니다. 덮어쓰시겠습니까?`)) return;
+        uiState.activeTabId = dupe.tabId;
+        Object.assign(dupe, fnGateAutoSubPackage(opts), { ddlText: s.text, files: {}, error: '', generatedAt: '' });
+        fnFillAutoName();
+        return;
+      }
+      const cur = cfCurTab.value;
+      const t = (cur && !(cur.ddlText || '').trim()) ? cur : fnNewTab();
+      if (t !== cur) { tabs.push(t); uiState.activeTabId = t.tabId; }
       t.ddlText = s.text;
-      const opts = fnExtractOpts(t.ddlText);
-      if (opts) Object.assign(t, opts);
+      if (opts) Object.assign(t, fnGateAutoSubPackage(opts));
       t.files = {}; t.error = ''; t.generatedAt = '';
       fnFillAutoName();
     };
@@ -860,7 +993,7 @@ window.MdSgSourcegenPage = {
     };
 
     /* ── 4b) 프로젝트 템플릿 다운로드 / 프로젝트 업로드 ── */
-    const onTemplateModalOpen = () => { uiState.templateModalOpen = true; fnLoadTemplateDlHist(); };
+    const onTemplateModalOpen = () => { uiState.templateModalOpen = true; };
     const onTemplateModalClose = () => { uiState.templateModalOpen = false; };
     const onTemplateDbTab = (db) => { uiState.templateDbTab = db; };
 
@@ -913,7 +1046,7 @@ window.MdSgSourcegenPage = {
             if (!opts) return;
             /* 실제 파싱 가능한지도 확인 — 파싱 실패하는 조각은 건너뛰고 나머지는 계속 진행 */
             try { gnParseDdl(stmt, dbType); } catch (e) { return; }
-            newTabs.push(fnNewTab({ ddlText: stmt, ...opts }));
+            newTabs.push(fnNewTab({ ddlText: stmt, ...fnGateAutoSubPackage(opts) }));
           });
         });
         if (!newTabs.length) throw new Error('CREATE TABLE 구문을 찾지 못했습니다.');
@@ -984,9 +1117,10 @@ window.MdSgSourcegenPage = {
       }, '소스젠', 'ZIP다운로드').then(fnLoadTemplateDlHist).catch(() => { /* 로그 실패는 무시 */ });
     };
 
-    /* templateDlHist — [프로젝트 템플릿 다운로드] 모달 하단에 보여줄 최근 다운로드 이력(공용 로그 최근 N건).
-       소스 생성 결과 ZIP 다운로드(fnLogDownload)와 템플릿 ZIP 다운로드(fnLogTemplateDownload)가 같은
-       md_sg_download_hist 테이블을 쓰므로 둘 다 여기 섞여 보인다 — projectNm 에 "[템플릿] " 접두어로 구분. */
+    /* templateDlHist — 화면 최하단 [다운로드 이력] 패널에 보여줄 최근 다운로드 이력(공용 로그 최근 N건).
+       프로젝트 열람 여부와 무관하게 페이지 진입 시 한 번 로드(onMounted). 소스 생성 결과 ZIP
+       다운로드(fnLogDownload)와 템플릿 ZIP 다운로드(fnLogTemplateDownload)가 같은 md_sg_download_hist
+       테이블을 쓰므로 둘 다 여기 섞여 보인다 — projectNm 에 "[템플릿] " 접두어로 구분. */
     const templateDlHist = ref([]);
     const fnLoadTemplateDlHist = async () => {
       try {
@@ -994,6 +1128,13 @@ window.MdSgSourcegenPage = {
         templateDlHist.value = res.data?.data?.pageList || [];
       } catch (err) { /* 조회 실패는 조용히 무시 — 목록이 비어 보일 뿐 모달 사용에 지장 없음 */ }
     };
+
+    /* histTabs — 화면 하단 [이력] 탭 정의 (생성 이력 / 생성결과 다운로드 이력 통합, 2026-08-28).
+       탭 정의는 computed 금지 → reactive + getter 카운트 표준 패턴. */
+    const histTabs = reactive([
+      { id: 'gen',      label: '생성 이력', icon: '📎', get count() { return genHists.length; } },
+      { id: 'download', label: '생성결과 다운로드 이력', icon: '⬇', get count() { return templateDlHist.value.length; } },
+    ]);
 
     /* ── 5) DDL 탭 편집 + 좌측 트리(subPackage 계층) ──
        2026-08-26: 상단 "탭1~탭10" 가로 탭을 폐기하고 좌측 트리로 바꿨다. 트리 레벨은 subPackage 를
@@ -1166,9 +1307,25 @@ window.MdSgSourcegenPage = {
         uiState.activeFile = firstEntry ? firstEntry.key : '';
         fnHighlight();
         const failed = tabs.filter(t => t.error).length;
+
+        /* 정상 생성(okCount>0) 시 결과를 [생성 이력]에 자동 보관 — 이미 저장된 프로젝트일 때만
+           가능(첨부는 projectId 에 매달림). 신규(미저장) 프로젝트는 [저장] 시 보관된다(onSave 참조).
+           보관 자체가 실패해도 생성은 이미 끝났으므로 되돌리지 않고 안내만 한다. */
+        let archived = false;
+        if (okCount && form.projectId) {
+          try {
+            await fnArchiveZip(form.projectId, uiState.genMemo);
+            uiState.genMemo = '';
+            await fnLoadGenHists(form.projectId);
+            archived = true;
+          } catch (e) {
+            props.showToast('생성은 완료됐지만 이력 보관에 실패했습니다: ' + coUtil.cofErrMsg(e, ''), 'error', 0);
+          }
+        }
+
         props.showToast(
           failed ? `${okCount}개 탭 생성 완료 (실패 ${failed}개 — 탭별 오류 메시지 확인)`
-                 : `${okCount}개 탭, 총 ${cfTotalFileCount.value}개 파일을 생성했습니다.`,
+                 : `${okCount}개 탭, 총 ${cfTotalFileCount.value}개 파일을 생성했습니다.` + (archived ? ' (이력에 보관됨)' : ''),
           failed ? 'info' : 'success');
       } catch (err) {
         props.showToast(err.message || '소스 생성 중 오류가 발생했습니다.', 'error', 0);
@@ -1423,6 +1580,7 @@ window.MdSgSourcegenPage = {
       const qs = new URLSearchParams(location.search);
       const openId = qs.get('projectId');
       if (openId) await fnLoadProject(openId);
+      fnLoadTemplateDlHist();  // 화면 최하단 [다운로드 이력] — 프로젝트 무관 전역 로그
     });
 
     return {
@@ -1435,7 +1593,7 @@ window.MdSgSourcegenPage = {
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
       onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
       SG_TEMPLATE_DOMAINS, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onDownloadTemplate,
-      templateDlHist,
+      templateDlHist, templateDlHistGridColumns, histTabs,
       onProjectUploadStart, onProjectUploadDbPick, onProjectUploadFile, onOpenUploadPicker, uploadFileInputRef,
       onSelectTab, onClearTab, onClearAllTabs, onGenerate,
       onAddTab, onDeleteTab, onTreeToggle,
@@ -1514,6 +1672,10 @@ window.MdSgSourcegenPage = {
         <div class="sg-ddl-tree-toolbar">
           <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddFolderStart('')">+ 폴더</button>
           <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddTab('')">+ 테이블</button>
+          <label class="sg-thumb-chk" style="margin-left:8px;"
+            title="켜두면 새/샘플 테이블이 테이블명 접두어(예: sy_code -> sy)로 자동 폴더 배치됩니다. 끄면 루트에 추가되며, 폴더 배치는 드래그로 직접 합니다">
+            <input type="checkbox" v-model="uiState.autoFolderByPrefix" :disabled="cfReadonly" /> 테이블약어로 폴더생성하기
+          </label>
         </div>
         <div v-if="uiState.treeNewFolderParent !== null" class="sg-tree-new-folder">
           <div class="sg-tree-new-folder-parent">{{ uiState.treeNewFolderParent || '최상위' }} 아래에</div>
@@ -1583,12 +1745,12 @@ window.MdSgSourcegenPage = {
     <div v-if="cfCurTab.error" class="sg-msg-error">{{ cfCurTab.error }}</div>
 
     <div v-if="!cfReadonly" class="sg-samples">
-      <div class="sg-samples-cap">예제 DDL <span>— 클릭하면 현재 탭에 채워지고 DB 유형도 함께 맞춰집니다</span></div>
+      <div class="sg-samples-cap">예제 DDL <span>— 클릭하면 새 탭이 추가되고(빈 탭이면 그 자리를 채움) DB 유형도 함께 맞춰집니다</span></div>
       <div v-for="grp in SG_SAMPLE_GROUPS" :key="grp.db" class="sg-sample-row">
         <span class="sg-sample-label" :class="'sg-db-' + grp.db.toLowerCase()">{{ grp.dbLabel }}</span>
         <button v-for="s in grp.items" :key="s.key" class="sg-sample-btn"
           :class="{ 'sg-sample-on': form.dbTypeCd === grp.db }"
-          :title="grp.dbLabel + ' · ' + s.desc + ' — 현재 탭에 넣기'" @click="onLoadSample(s, grp.db)">
+          :title="grp.dbLabel + ' · ' + s.desc + ' — 새 탭으로 추가'" @click="onLoadSample(s, grp.db)">
           {{ s.label }}<span class="sg-sample-desc">{{ s.desc }}</span>
         </button>
       </div>
@@ -1707,17 +1869,6 @@ window.MdSgSourcegenPage = {
     </div>
   </div>
 
-  <!-- ═══ 생성결과 보관 이력 (DB 첨부) ═══ -->
-  <div class="sg-panel" v-if="form.projectId">
-    <div class="sg-panel-title">📎 생성결과 보관 이력 <span class="sg-panel-sub">(생성된 소스 ZIP 을 첨부로 DB 에 보관 — [저장] 할 때마다 자동으로 한 건 쌓입니다)</span></div>
-    <div v-if="!cfReadonly" class="sg-memo-row">
-      <input v-model="uiState.genMemo" class="form-control" placeholder="보관 메모(선택) — 예: v1 초안, 리뷰 반영본" />
-    </div>
-    <!-- fo-grid 전환(2026-08-25). 로컬 배열이라 pager 없음 — 번호는 show-row-no 기본값(idx+1)과 동일. -->
-    <fo-grid :columns="genHistGridColumns" :rows="genHists" row-key="sourcegenHistId" bare
-      empty-text="보관된 생성결과가 없습니다. [생성] 후 [생성결과 보관] 을 눌러주세요." />
-  </div>
-
   <!-- ═══ 하단 액션 ═══ -->
   <div class="sg-detail-bottom-actions">
     <template v-if="cfReadonly">
@@ -1728,6 +1879,25 @@ window.MdSgSourcegenPage = {
       <button class="btn btn_save" @click="onSave" :disabled="uiState.loading">저장</button>
       <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
       <button v-if="form.projectId" class="btn btn_cancel" @click="onCancelEdit">취소</button>
+    </template>
+  </div>
+
+  <!-- ═══ 이력 탭 — 생성 이력(DB 첨부) / 생성결과 다운로드 이력(클릭 로그) 통합, 2026-08-28 ═══ -->
+  <div class="sg-panel">
+    <div class="sg-panel-title">🕒 이력</div>
+    <fo-tab-bar :tabs="histTabs" :tab="uiState.histTab"
+      @tab-select="id => uiState.histTab = id" />
+    <template v-if="uiState.histTab==='gen'">
+      <div v-if="!cfReadonly" class="sg-memo-row">
+        <input v-model="uiState.genMemo" class="form-control" placeholder="보관 메모(선택) — 예: v1 초안, 리뷰 반영본" />
+      </div>
+      <!-- fo-grid 전환(2026-08-25). 로컬 배열이라 pager 없음 — 번호는 show-row-no 기본값(idx+1)과 동일. -->
+      <fo-grid :columns="genHistGridColumns" :rows="genHists" row-key="sourcegenHistId" bare
+        empty-text="보관된 생성결과가 없습니다. [생성] 후 [생성결과 보관] 을 눌러주세요." />
+    </template>
+    <template v-else>
+      <fo-grid :columns="templateDlHistGridColumns" :rows="templateDlHist" row-key="downloadHistId" bare
+        empty-text="다운로드 이력이 없습니다." />
     </template>
   </div>
 
@@ -1751,23 +1921,6 @@ window.MdSgSourcegenPage = {
           {{ uiState.templateDownloadingKey===d.key ? '내려받는 중…' : '⬇ 다운로드' }}
         </button>
       </div>
-    </div>
-
-    <!-- ═══ 다운로드 이력 — 템플릿/생성결과 ZIP 클릭 로그 최근 10건(md_sg_download_hist) ═══ -->
-    <div class="sg-dlhist-title">다운로드 이력</div>
-    <div class="sg-hist-table-wrap">
-      <table class="sg-hist-table">
-        <thead><tr><th>일시</th><th>구분</th><th>파일명</th><th>건수</th></tr></thead>
-        <tbody>
-          <tr v-for="row in templateDlHist" :key="row.downloadHistId">
-            <td>{{ row.regDate }}</td>
-            <td>{{ row.projectNm || '(제목없음)' }}</td>
-            <td>{{ row.zipFileNm }}</td>
-            <td>{{ row.fileCount }}</td>
-          </tr>
-          <tr v-if="!templateDlHist.length"><td colspan="4" style="text-align:center;color:var(--text-muted,#999);">다운로드 이력이 없습니다.</td></tr>
-        </tbody>
-      </table>
     </div>
   </fo-modal>
 
