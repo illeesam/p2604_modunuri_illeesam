@@ -30,6 +30,7 @@ public class SyBatchService {
 
     /* 배치 키조회 */
     public SyBatchDto.Item getById(String id) {
+        // [QueryDSL] 배치 작업 단건 조회
         SyBatchDto.Item dto = syBatchRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyBatchService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyBatchDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 배치 작업 단건 조회
         return syBatchRepository.selectById(id).orElse(null);
     }
 
     /* 배치 상세조회 */
     public SyBatch findById(String id) {
+        // [쿼리 메서드] 배치 작업 단건 조회
         return syBatchRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyBatch findByIdOrNull(String id) {
+        // [쿼리 메서드] 배치 작업 단건 조회
         return syBatchRepository.findById(id).orElse(null);
     }
 
     /* 배치 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 배치 작업 존재 여부 확인
         return syBatchRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 배치 작업 존재 여부 확인
         if (!syBatchRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 배치 목록조회 */
     public List<SyBatchDto.Item> getList(SyBatchDto.Request req) {
+        // [QueryDSL] 배치 작업 목록 조회
         return syBatchRepository.selectList(req);
     }
 
     /* 배치 페이지조회 */
     public BasePage<SyBatchDto.Item> getPageData(SyBatchDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 배치 작업 페이지 조회
         return syBatchRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyBatchService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배치 작업 저장
         SyBatch saved = syBatchRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyBatchService {
         VoUtil.voCopyExclude(body, entity, "batchId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배치 작업 저장
         SyBatch saved = syBatchRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyBatchService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBatchId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 배치 작업 선택적 필드 수정
         int affected = syBatchRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyBatchService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyBatch entity = findById(id);
+        // [쿼리 메서드] 배치 작업 삭제
         syBatchRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyBatchService {
         if ("D".equals(rowStatus)) {
             if (entity.getBatchId() == null)
                 throw new CmBizException("삭제 대상 batchId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 배치 작업 존재 여부 확인
             if (!syBatchRepository.existsById(entity.getBatchId()))
                 throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 배치 작업 ID 기준 삭제
             syBatchRepository.deleteById(entity.getBatchId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setBatchId(CmUtil.generateId("sy_batch"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 배치 작업 저장
             SyBatch saved = syBatchRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyBatchService {
             if (entity.getBatchId() == null)
                 throw new CmBizException("수정 대상 batchId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 배치 작업 선택적 필드 수정
             int affected = syBatchRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyBatch입니다: " + entity.getBatchId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyBatchService {
             .map(SyBatch::getBatchId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 배치 작업 조건별 삭제
             syBatchRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyBatchService {
             .toList();
         for (SyBatch row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 배치 작업 선택적 필드 수정
             int affected = syBatchRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBatchId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyBatchService {
             row.setBatchId(CmUtil.generateId("sy_batch"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 배치 작업 저장
             syBatchRepository.save(row);
         }
 
@@ -228,6 +247,7 @@ public class SyBatchService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBatchDto.Request req) {
+        // [QueryDSL] 배치 작업 조회
         return syBatchRepository.selectPathTreeBatchCnts(req);
     }
 }

@@ -30,6 +30,7 @@ public class MbMemberGradeService {
 
     /* 회원 등급 키조회 */
     public MbMemberGradeDto.Item getById(String id) {
+        // [QueryDSL] 회원등급 단건 조회
         MbMemberGradeDto.Item dto = mbMemberGradeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbMemberGradeService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberGradeDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 회원등급 단건 조회
         return mbMemberGradeRepository.selectById(id).orElse(null);
     }
 
     /* 회원 등급 상세조회 */
     public MbMemberGrade findById(String id) {
+        // [쿼리 메서드] 회원등급 단건 조회
         return mbMemberGradeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberGrade findByIdOrNull(String id) {
+        // [쿼리 메서드] 회원등급 단건 조회
         return mbMemberGradeRepository.findById(id).orElse(null);
     }
 
     /* 회원 등급 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 회원등급 존재 여부 확인
         return mbMemberGradeRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 회원등급 존재 여부 확인
         if (!mbMemberGradeRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 회원 등급 목록조회 */
     public List<MbMemberGradeDto.Item> getList(MbMemberGradeDto.Request req) {
+        // [QueryDSL] 회원등급 목록 조회
         return mbMemberGradeRepository.selectList(req);
     }
 
     /* 회원 등급 페이지조회 */
     public BasePage<MbMemberGradeDto.Item> getPageData(MbMemberGradeDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 회원등급 페이지 조회
         return mbMemberGradeRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbMemberGradeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원등급 저장
         MbMemberGrade saved = mbMemberGradeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbMemberGradeService {
         VoUtil.voCopyExclude(body, entity, "memberGradeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원등급 저장
         MbMemberGrade saved = mbMemberGradeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbMemberGradeService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 회원등급 선택적 필드 수정
         int affected = mbMemberGradeRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbMemberGradeService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbMemberGrade entity = findById(id);
+        // [쿼리 메서드] 회원등급 삭제
         mbMemberGradeRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbMemberGradeService {
         if ("D".equals(rowStatus)) {
             if (entity.getMemberGradeId() == null)
                 throw new CmBizException("삭제 대상 memberGradeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원등급 존재 여부 확인
             if (!mbMemberGradeRepository.existsById(entity.getMemberGradeId()))
                 throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원등급 ID 기준 삭제
             mbMemberGradeRepository.deleteById(entity.getMemberGradeId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 회원등급 저장
             MbMemberGrade saved = mbMemberGradeRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbMemberGradeService {
             if (entity.getMemberGradeId() == null)
                 throw new CmBizException("수정 대상 memberGradeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 회원등급 선택적 필드 수정
             int affected = mbMemberGradeRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbMemberGradeService {
             .map(MbMemberGrade::getMemberGradeId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 회원등급 조건별 삭제
             mbMemberGradeRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbMemberGradeService {
             .toList();
         for (MbMemberGrade row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 회원등급 선택적 필드 수정
             int affected = mbMemberGradeRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbMemberGradeService {
             row.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 회원등급 저장
             mbMemberGradeRepository.save(row);
         }
 

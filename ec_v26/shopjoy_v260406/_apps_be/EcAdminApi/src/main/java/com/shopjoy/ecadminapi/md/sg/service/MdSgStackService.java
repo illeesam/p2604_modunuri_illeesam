@@ -32,25 +32,30 @@ public class MdSgStackService {
     private EntityManager em;
 
     public MdSgStackDto.Item getById(String id) {
+        // [QueryDSL] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 단건 조회
         MdSgStackDto.Item dto = mdSgStackRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     public MdSgStack findById(String id) {
+        // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 단건 조회
         return mdSgStackRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     public boolean existsById(String id) {
+        // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 존재 여부 확인
         return mdSgStackRepository.existsById(id);
     }
 
     public List<MdSgStackDto.Item> getList(MdSgStackDto.Request req) {
+        // [QueryDSL] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 목록 조회
         return mdSgStackRepository.selectList(req);
     }
 
     public BasePage<MdSgStackDto.Item> getPageData(MdSgStackDto.Request req) {
+        // [QueryDSL] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 페이지 조회
         return mdSgStackRepository.selectPageData(req);
     }
 
@@ -65,6 +70,7 @@ public class MdSgStackService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 저장
         MdSgStack saved = mdSgStackRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -78,6 +84,7 @@ public class MdSgStackService {
         VoUtil.voCopyExclude(body, entity, "stackId^siteId^regSiteId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 저장
         MdSgStack saved = mdSgStackRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -88,6 +95,7 @@ public class MdSgStackService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MdSgStack entity = findById(id);
+        // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 삭제
         mdSgStackRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -116,6 +124,7 @@ public class MdSgStackService {
             .map(MdSgStack::getStackId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 조건별 삭제
             mdSgStackRepository.deleteAllById(deleteIds);
         }
 
@@ -125,6 +134,7 @@ public class MdSgStackService {
             .toList();
         for (MdSgStack row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 선택적 필드 수정
             int affected = mdSgStackRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getStackId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -141,6 +151,7 @@ public class MdSgStackService {
             if (row.getUseYn() == null) row.setUseYn("Y");
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 소스젠 언어/스택 카탈로그 — [소스 생성] 팝오버 체크리스트의 데이터 소스 저장
             mdSgStackRepository.save(row);
         }
 

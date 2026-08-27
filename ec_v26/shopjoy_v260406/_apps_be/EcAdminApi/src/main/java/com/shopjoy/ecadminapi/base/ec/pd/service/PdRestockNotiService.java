@@ -30,6 +30,7 @@ public class PdRestockNotiService {
 
     /* 재입고 알림 키조회 */
     public PdRestockNotiDto.Item getById(String id) {
+        // [QueryDSL] 재입고알림 신청 단건 조회
         PdRestockNotiDto.Item dto = pdRestockNotiRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdRestockNotiService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdRestockNotiDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 재입고알림 신청 단건 조회
         return pdRestockNotiRepository.selectById(id).orElse(null);
     }
 
     /* 재입고 알림 상세조회 */
     public PdRestockNoti findById(String id) {
+        // [쿼리 메서드] 재입고알림 신청 단건 조회
         return pdRestockNotiRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdRestockNoti findByIdOrNull(String id) {
+        // [쿼리 메서드] 재입고알림 신청 단건 조회
         return pdRestockNotiRepository.findById(id).orElse(null);
     }
 
     /* 재입고 알림 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 재입고알림 신청 존재 여부 확인
         return pdRestockNotiRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 재입고알림 신청 존재 여부 확인
         if (!pdRestockNotiRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 재입고 알림 목록조회 */
     public List<PdRestockNotiDto.Item> getList(PdRestockNotiDto.Request req) {
+        // [QueryDSL] 재입고알림 신청 목록 조회
         return pdRestockNotiRepository.selectList(req);
     }
 
     /* 재입고 알림 페이지조회 */
     public BasePage<PdRestockNotiDto.Item> getPageData(PdRestockNotiDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 재입고알림 신청 페이지 조회
         return pdRestockNotiRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdRestockNotiService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 재입고알림 신청 저장
         PdRestockNoti saved = pdRestockNotiRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdRestockNotiService {
         VoUtil.voCopyExclude(body, entity, "restockNotiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 재입고알림 신청 저장
         PdRestockNoti saved = pdRestockNotiRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdRestockNotiService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRestockNotiId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 재입고알림 신청 선택적 필드 수정
         int affected = pdRestockNotiRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdRestockNotiService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdRestockNoti entity = findById(id);
+        // [쿼리 메서드] 재입고알림 신청 삭제
         pdRestockNotiRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdRestockNotiService {
         if ("D".equals(rowStatus)) {
             if (entity.getRestockNotiId() == null)
                 throw new CmBizException("삭제 대상 restockNotiId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 재입고알림 신청 존재 여부 확인
             if (!pdRestockNotiRepository.existsById(entity.getRestockNotiId()))
                 throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 재입고알림 신청 ID 기준 삭제
             pdRestockNotiRepository.deleteById(entity.getRestockNotiId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setRestockNotiId(CmUtil.generateId("pd_restock_noti"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 재입고알림 신청 저장
             PdRestockNoti saved = pdRestockNotiRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdRestockNotiService {
             if (entity.getRestockNotiId() == null)
                 throw new CmBizException("수정 대상 restockNotiId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 재입고알림 신청 선택적 필드 수정
             int affected = pdRestockNotiRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdRestockNoti입니다: " + entity.getRestockNotiId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdRestockNotiService {
             .map(PdRestockNoti::getRestockNotiId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 재입고알림 신청 조건별 삭제
             pdRestockNotiRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdRestockNotiService {
             .toList();
         for (PdRestockNoti row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 재입고알림 신청 선택적 필드 수정
             int affected = pdRestockNotiRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getRestockNotiId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdRestockNotiService {
             row.setRestockNotiId(CmUtil.generateId("pd_restock_noti"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 재입고알림 신청 저장
             pdRestockNotiRepository.save(row);
         }
 

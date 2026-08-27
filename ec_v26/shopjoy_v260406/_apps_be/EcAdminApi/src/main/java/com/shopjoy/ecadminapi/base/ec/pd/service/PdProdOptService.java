@@ -30,6 +30,7 @@ public class PdProdOptService {
 
     /* 상품 옵션 키조회 */
     public PdProdOptDto.Item getById(String id) {
+        // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 단건 조회
         PdProdOptDto.Item dto = pdProdOptRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,27 +38,32 @@ public class PdProdOptService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdOptDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 단건 조회
         return pdProdOptRepository.selectById(id).orElse(null);
     }
 
     /* 상품 옵션 상세조회 */
     public PdProdOpt findById(String id) {
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 단건 조회
         return pdProdOptRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdOpt findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 단건 조회
         return pdProdOptRepository.findById(id).orElse(null);
     }
 
     /* 상품 옵션 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 존재 여부 확인
         return pdProdOptRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 존재 여부 확인
         if (!pdProdOptRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
@@ -65,12 +71,14 @@ public class PdProdOptService {
     /* 상품 옵션 목록조회 */
     public List<PdProdOptDto.Item> getList(PdProdOptDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 목록 조회
         return pdProdOptRepository.selectList(req);
     }
 
     /* 상품 옵션 페이지조회 */
     public BasePage<PdProdOptDto.Item> getPageData(PdProdOptDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 페이지 조회
         return pdProdOptRepository.selectPageData(req);
     }
 
@@ -82,6 +90,7 @@ public class PdProdOptService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 저장
         PdProdOpt saved = pdProdOptRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -98,6 +107,7 @@ public class PdProdOptService {
         VoUtil.voCopyExclude(body, entity, "prodOptId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 저장
         PdProdOpt saved = pdProdOptRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -112,6 +122,7 @@ public class PdProdOptService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 선택적 필드 수정
         int affected = pdProdOptRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -124,6 +135,7 @@ public class PdProdOptService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdOpt entity = findById(id);
+        // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 삭제
         pdProdOptRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -145,14 +157,17 @@ public class PdProdOptService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdOptId() == null)
                 throw new CmBizException("삭제 대상 prodOptId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 존재 여부 확인
             if (!pdProdOptRepository.existsById(entity.getProdOptId()))
                 throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) ID 기준 삭제
             pdProdOptRepository.deleteById(entity.getProdOptId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdOptId(CmUtil.generateId("pd_prod_opt"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 저장
             PdProdOpt saved = pdProdOptRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -160,6 +175,7 @@ public class PdProdOptService {
             if (entity.getProdOptId() == null)
                 throw new CmBizException("수정 대상 prodOptId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 선택적 필드 수정
             int affected = pdProdOptRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
@@ -195,6 +211,7 @@ public class PdProdOptService {
             .map(PdProdOpt::getProdOptId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 조건별 삭제
             pdProdOptRepository.deleteAllById(deleteIds);
         }
 
@@ -204,6 +221,7 @@ public class PdProdOptService {
             .toList();
         for (PdProdOpt row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품 옵션값 (실제 선택지 — 빨강, M 등) 선택적 필드 수정
             int affected = pdProdOptRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -216,6 +234,7 @@ public class PdProdOptService {
             row.setProdOptId(CmUtil.generateId("pd_prod_opt"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품 옵션값 (실제 선택지 — 빨강, M 등) 저장
             pdProdOptRepository.save(row);
         }
 

@@ -37,6 +37,7 @@ public class SyDeptService {
 
     /** getById — 단건조회 */
     public SyDeptDto.Item getById(String id) {
+        // [QueryDSL] 부서 단건 조회
         SyDeptDto.Item dto = syDeptRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -44,39 +45,46 @@ public class SyDeptService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyDeptDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 부서 단건 조회
         return syDeptRepository.selectById(id).orElse(null);
     }
 
     /** findById — 단건조회 (JPA) */
     public SyDept findById(String id) {
+        // [쿼리 메서드] 부서 단건 조회
         return syDeptRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyDept findByIdOrNull(String id) {
+        // [쿼리 메서드] 부서 단건 조회
         return syDeptRepository.findById(id).orElse(null);
     }
 
     /** existsById — 존재 여부 확인 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 부서 존재 여부 확인
         return syDeptRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 부서 존재 여부 확인
         if (!syDeptRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /** getList — 목록조회 */
     public List<SyDeptDto.Item> getList(SyDeptDto.Request req) {
+        // [QueryDSL] 부서 목록 조회
         return syDeptRepository.selectList(req);
     }
 
     /** getPageData — 페이징조회 */
     public BasePage<SyDeptDto.Item> getPageData(SyDeptDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 부서 페이지 조회
         return syDeptRepository.selectPageData(req);
     }
 
@@ -88,6 +96,7 @@ public class SyDeptService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 부서 저장
         SyDept saved = syDeptRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -104,6 +113,7 @@ public class SyDeptService {
         VoUtil.voCopyExclude(body, entity, "deptId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 부서 저장
         SyDept saved = syDeptRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -118,6 +128,7 @@ public class SyDeptService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeptId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 부서 선택적 필드 수정
         int affected = syDeptRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -130,6 +141,7 @@ public class SyDeptService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyDept entity = findById(id);
+        // [쿼리 메서드] 부서 삭제
         syDeptRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -151,14 +163,17 @@ public class SyDeptService {
         if ("D".equals(rowStatus)) {
             if (entity.getDeptId() == null)
                 throw new CmBizException("삭제 대상 deptId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 부서 존재 여부 확인
             if (!syDeptRepository.existsById(entity.getDeptId()))
                 throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 부서 ID 기준 삭제
             syDeptRepository.deleteById(entity.getDeptId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDeptId(CmUtil.generateId("sy_dept"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 부서 저장
             SyDept saved = syDeptRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -166,6 +181,7 @@ public class SyDeptService {
             if (entity.getDeptId() == null)
                 throw new CmBizException("수정 대상 deptId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 부서 선택적 필드 수정
             int affected = syDeptRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyDept입니다: " + entity.getDeptId() + "::" + CmUtil.svcCallerInfo(this));
@@ -201,6 +217,7 @@ public class SyDeptService {
             .map(SyDept::getDeptId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 부서 조건별 삭제
             syDeptRepository.deleteAllById(deleteIds);
         }
 
@@ -210,6 +227,7 @@ public class SyDeptService {
             .toList();
         for (SyDept row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 부서 선택적 필드 수정
             int affected = syDeptRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDeptId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -222,6 +240,7 @@ public class SyDeptService {
             row.setDeptId(CmUtil.generateId("sy_dept"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 부서 저장
             syDeptRepository.save(row);
         }
 

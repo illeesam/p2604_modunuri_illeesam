@@ -29,26 +29,31 @@ public class MdCbPatternService {
     private EntityManager em;
 
     public MdCbPatternDto.Item getById(String id) {
+        // [QueryDSL] 코바늘 도안 마스터 단건 조회
         MdCbPatternDto.Item dto = mdCbPatternRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     public MdCbPattern findById(String id) {
+        // [쿼리 메서드] 코바늘 도안 마스터 단건 조회
         return mdCbPatternRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     public boolean existsById(String id) {
+        // [쿼리 메서드] 코바늘 도안 마스터 존재 여부 확인
         return mdCbPatternRepository.existsById(id);
     }
 
     public List<MdCbPatternDto.Item> getList(MdCbPatternDto.Request req) {
+        // [QueryDSL] 코바늘 도안 마스터 목록 조회
         return mdCbPatternRepository.selectList(req);
     }
 
     public BasePage<MdCbPatternDto.Item> getPageData(MdCbPatternDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 코바늘 도안 마스터 페이지 조회
         return mdCbPatternRepository.selectPageData(req);
     }
 
@@ -61,6 +66,7 @@ public class MdCbPatternService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 코바늘 도안 마스터 저장
         MdCbPattern saved = mdCbPatternRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -74,6 +80,7 @@ public class MdCbPatternService {
         VoUtil.voCopyExclude(body, entity, "patternId^memberId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 코바늘 도안 마스터 저장
         MdCbPattern saved = mdCbPatternRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -84,6 +91,7 @@ public class MdCbPatternService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MdCbPattern entity = findById(id);
+        // [쿼리 메서드] 코바늘 도안 마스터 삭제
         mdCbPatternRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));

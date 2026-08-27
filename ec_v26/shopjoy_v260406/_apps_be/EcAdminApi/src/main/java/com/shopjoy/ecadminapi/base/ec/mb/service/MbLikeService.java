@@ -30,6 +30,7 @@ public class MbLikeService {
 
     /* 좋아요(찜) 키조회 */
     public MbLikeDto.Item getById(String id) {
+        // [QueryDSL] 좋아요 (위시리스트) 단건 조회
         MbLikeDto.Item dto = mbLikeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbLikeService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbLikeDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 좋아요 (위시리스트) 단건 조회
         return mbLikeRepository.selectById(id).orElse(null);
     }
 
     /* 좋아요(찜) 상세조회 */
     public MbLike findById(String id) {
+        // [쿼리 메서드] 좋아요 (위시리스트) 단건 조회
         return mbLikeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbLike findByIdOrNull(String id) {
+        // [쿼리 메서드] 좋아요 (위시리스트) 단건 조회
         return mbLikeRepository.findById(id).orElse(null);
     }
 
     /* 좋아요(찜) 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 좋아요 (위시리스트) 존재 여부 확인
         return mbLikeRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 좋아요 (위시리스트) 존재 여부 확인
         if (!mbLikeRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 좋아요(찜) 목록조회 */
     public List<MbLikeDto.Item> getList(MbLikeDto.Request req) {
+        // [QueryDSL] 좋아요 (위시리스트) 목록 조회
         return mbLikeRepository.selectList(req);
     }
 
     /* 좋아요(찜) 페이지조회 */
     public BasePage<MbLikeDto.Item> getPageData(MbLikeDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 좋아요 (위시리스트) 페이지 조회
         return mbLikeRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbLikeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 좋아요 (위시리스트) 저장
         MbLike saved = mbLikeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbLikeService {
         VoUtil.voCopyExclude(body, entity, "likeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 좋아요 (위시리스트) 저장
         MbLike saved = mbLikeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbLikeService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 좋아요 (위시리스트) 선택적 필드 수정
         int affected = mbLikeRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbLikeService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbLike entity = findById(id);
+        // [쿼리 메서드] 좋아요 (위시리스트) 삭제
         mbLikeRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbLikeService {
         if ("D".equals(rowStatus)) {
             if (entity.getLikeId() == null)
                 throw new CmBizException("삭제 대상 likeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 좋아요 (위시리스트) 존재 여부 확인
             if (!mbLikeRepository.existsById(entity.getLikeId()))
                 throw new CmBizException("존재하지 않는 MbLike입니다: " + entity.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 좋아요 (위시리스트) ID 기준 삭제
             mbLikeRepository.deleteById(entity.getLikeId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setLikeId(CmUtil.generateId("mb_like"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 좋아요 (위시리스트) 저장
             MbLike saved = mbLikeRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbLikeService {
             if (entity.getLikeId() == null)
                 throw new CmBizException("수정 대상 likeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 좋아요 (위시리스트) 선택적 필드 수정
             int affected = mbLikeRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbLike입니다: " + entity.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbLikeService {
             .map(MbLike::getLikeId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 좋아요 (위시리스트) 조건별 삭제
             mbLikeRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbLikeService {
             .toList();
         for (MbLike row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 좋아요 (위시리스트) 선택적 필드 수정
             int affected = mbLikeRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbLikeService {
             row.setLikeId(CmUtil.generateId("mb_like"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 좋아요 (위시리스트) 저장
             mbLikeRepository.save(row);
         }
 

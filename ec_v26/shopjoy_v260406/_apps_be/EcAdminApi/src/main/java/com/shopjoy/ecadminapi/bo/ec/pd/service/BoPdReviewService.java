@@ -117,12 +117,14 @@ public class BoPdReviewService {
     /** changeStatus — reviewStatusCd 변경 (이력 보존) */
     @Transactional
     public PdReviewDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 상품 리뷰 단건 조회
         PdReview entity = pdReviewRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setReviewStatusCdBefore(entity.getReviewStatusCd());
         entity.setReviewStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 리뷰 저장
         PdReview saved = pdReviewRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

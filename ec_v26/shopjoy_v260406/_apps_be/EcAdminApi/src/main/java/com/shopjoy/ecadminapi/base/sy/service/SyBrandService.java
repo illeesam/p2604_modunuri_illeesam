@@ -30,6 +30,7 @@ public class SyBrandService {
 
     /* 브랜드 키조회 */
     public SyBrandDto.Item getById(String id) {
+        // [QueryDSL] 브랜드 단건 조회
         SyBrandDto.Item dto = syBrandRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyBrandService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyBrandDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 브랜드 단건 조회
         return syBrandRepository.selectById(id).orElse(null);
     }
 
     /* 브랜드 상세조회 */
     public SyBrand findById(String id) {
+        // [쿼리 메서드] 브랜드 단건 조회
         return syBrandRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyBrand findByIdOrNull(String id) {
+        // [쿼리 메서드] 브랜드 단건 조회
         return syBrandRepository.findById(id).orElse(null);
     }
 
     /* 브랜드 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 브랜드 존재 여부 확인
         return syBrandRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 브랜드 존재 여부 확인
         if (!syBrandRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 브랜드 목록조회 */
     public List<SyBrandDto.Item> getList(SyBrandDto.Request req) {
+        // [QueryDSL] 브랜드 목록 조회
         return syBrandRepository.selectList(req);
     }
 
     /* 브랜드 페이지조회 */
     public BasePage<SyBrandDto.Item> getPageData(SyBrandDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 브랜드 페이지 조회
         return syBrandRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyBrandService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 브랜드 저장
         SyBrand saved = syBrandRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyBrandService {
         VoUtil.voCopyExclude(body, entity, "brandId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 브랜드 저장
         SyBrand saved = syBrandRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyBrandService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 브랜드 선택적 필드 수정
         int affected = syBrandRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyBrandService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyBrand entity = findById(id);
+        // [쿼리 메서드] 브랜드 삭제
         syBrandRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyBrandService {
         if ("D".equals(rowStatus)) {
             if (entity.getBrandId() == null)
                 throw new CmBizException("삭제 대상 brandId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 브랜드 존재 여부 확인
             if (!syBrandRepository.existsById(entity.getBrandId()))
                 throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 브랜드 ID 기준 삭제
             syBrandRepository.deleteById(entity.getBrandId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setBrandId(CmUtil.generateId("sy_brand"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 브랜드 저장
             SyBrand saved = syBrandRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyBrandService {
             if (entity.getBrandId() == null)
                 throw new CmBizException("수정 대상 brandId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 브랜드 선택적 필드 수정
             int affected = syBrandRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyBrandService {
             .map(SyBrand::getBrandId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 브랜드 조건별 삭제
             syBrandRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyBrandService {
             .toList();
         for (SyBrand row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 브랜드 선택적 필드 수정
             int affected = syBrandRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyBrandService {
             row.setBrandId(CmUtil.generateId("sy_brand"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 브랜드 저장
             syBrandRepository.save(row);
         }
 
@@ -228,6 +247,7 @@ public class SyBrandService {
      *   검색조건 (vendorId / searchValue / dateRangeStart / dateRangeEnd) 이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBrandDto.Request req) {
+        // [QueryDSL] 브랜드 조회
         return syBrandRepository.selectPathTreeBrandCnts(req);
     }
 }

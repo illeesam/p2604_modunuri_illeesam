@@ -43,6 +43,7 @@ public class FoCmContactService {
 
     /** getById — 조회 */
     public CmBlogDto.Item getById(String id) {
+        // [QueryDSL] 블로그 게시글 단건 조회
         CmBlogDto.Item dto = cmBlogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 문의입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         _itemFillRelations(dto);
@@ -82,6 +83,7 @@ public class FoCmContactService {
             .regBy(authId)
             .updBy(authId)
             .build();
+        // [쿼리 메서드] 고객문의 저장
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(req.getAttachFiles(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());

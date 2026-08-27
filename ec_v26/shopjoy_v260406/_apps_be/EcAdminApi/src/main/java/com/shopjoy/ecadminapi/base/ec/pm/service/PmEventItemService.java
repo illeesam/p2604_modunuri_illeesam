@@ -30,6 +30,7 @@ public class PmEventItemService {
 
     /* 이벤트 대상 상품 키조회 */
     public PmEventItemDto.Item getById(String id) {
+        // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 단건 조회
         PmEventItemDto.Item dto = pmEventItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmEventItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmEventItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 단건 조회
         return pmEventItemRepository.selectById(id).orElse(null);
     }
 
     /* 이벤트 대상 상품 상세조회 */
     public PmEventItem findById(String id) {
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 단건 조회
         return pmEventItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmEventItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 단건 조회
         return pmEventItemRepository.findById(id).orElse(null);
     }
 
     /* 이벤트 대상 상품 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 존재 여부 확인
         return pmEventItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 존재 여부 확인
         if (!pmEventItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 이벤트 대상 상품 목록조회 */
     public List<PmEventItemDto.Item> getList(PmEventItemDto.Request req) {
+        // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 목록 조회
         return pmEventItemRepository.selectList(req);
     }
 
     /* 이벤트 대상 상품 페이지조회 */
     public BasePage<PmEventItemDto.Item> getPageData(PmEventItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 페이지 조회
         return pmEventItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmEventItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 저장
         PmEventItem saved = pmEventItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmEventItemService {
         VoUtil.voCopyExclude(body, entity, "eventItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 저장
         PmEventItem saved = pmEventItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmEventItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getEventItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 선택적 필드 수정
         int affected = pmEventItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmEventItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmEventItem entity = findById(id);
+        // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 삭제
         pmEventItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmEventItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getEventItemId() == null)
                 throw new CmBizException("삭제 대상 eventItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 존재 여부 확인
             if (!pmEventItemRepository.existsById(entity.getEventItemId()))
                 throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) ID 기준 삭제
             pmEventItemRepository.deleteById(entity.getEventItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setEventItemId(CmUtil.generateId("pm_event_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 저장
             PmEventItem saved = pmEventItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmEventItemService {
             if (entity.getEventItemId() == null)
                 throw new CmBizException("수정 대상 eventItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 선택적 필드 수정
             int affected = pmEventItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmEventItem입니다: " + entity.getEventItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmEventItemService {
             .map(PmEventItem::getEventItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 조건별 삭제
             pmEventItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmEventItemService {
             .toList();
         for (PmEventItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 선택적 필드 수정
             int affected = pmEventItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getEventItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmEventItemService {
             row.setEventItemId(CmUtil.generateId("pm_event_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드) 저장
             pmEventItemRepository.save(row);
         }
 

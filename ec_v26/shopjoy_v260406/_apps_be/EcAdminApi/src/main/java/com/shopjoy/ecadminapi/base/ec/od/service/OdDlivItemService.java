@@ -30,6 +30,7 @@ public class OdDlivItemService {
 
     /* 배송 아이템 키조회 */
     public OdDlivItemDto.Item getById(String id) {
+        // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 단건 조회
         OdDlivItemDto.Item dto = odDlivItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdDlivItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdDlivItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 단건 조회
         return odDlivItemRepository.selectById(id).orElse(null);
     }
 
     /* 배송 아이템 상세조회 */
     public OdDlivItem findById(String id) {
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 단건 조회
         return odDlivItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdDlivItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 단건 조회
         return odDlivItemRepository.findById(id).orElse(null);
     }
 
     /* 배송 아이템 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 존재 여부 확인
         return odDlivItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 존재 여부 확인
         if (!odDlivItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 배송 아이템 목록조회 */
     public List<OdDlivItemDto.Item> getList(OdDlivItemDto.Request req) {
+        // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 목록 조회
         return odDlivItemRepository.selectList(req);
     }
 
     /* 배송 아이템 페이지조회 */
     public BasePage<OdDlivItemDto.Item> getPageData(OdDlivItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 페이지 조회
         return odDlivItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdDlivItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 저장
         OdDlivItem saved = odDlivItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdDlivItemService {
         VoUtil.voCopyExclude(body, entity, "dlivItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 저장
         OdDlivItem saved = odDlivItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdDlivItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 선택적 필드 수정
         int affected = odDlivItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdDlivItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdDlivItem entity = findById(id);
+        // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 삭제
         odDlivItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdDlivItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getDlivItemId() == null)
                 throw new CmBizException("삭제 대상 dlivItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 존재 여부 확인
             if (!odDlivItemRepository.existsById(entity.getDlivItemId()))
                 throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) ID 기준 삭제
             odDlivItemRepository.deleteById(entity.getDlivItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDlivItemId(CmUtil.generateId("od_dliv_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 저장
             OdDlivItem saved = odDlivItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdDlivItemService {
             if (entity.getDlivItemId() == null)
                 throw new CmBizException("수정 대상 dlivItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 선택적 필드 수정
             int affected = odDlivItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdDlivItemService {
             .map(OdDlivItem::getDlivItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 조건별 삭제
             odDlivItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdDlivItemService {
             .toList();
         for (OdDlivItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 배송 항목 (배송에 포함된 주문상품 명세) 선택적 필드 수정
             int affected = odDlivItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdDlivItemService {
             row.setDlivItemId(CmUtil.generateId("od_dliv_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 배송 항목 (배송에 포함된 주문상품 명세) 저장
             odDlivItemRepository.save(row);
         }
 

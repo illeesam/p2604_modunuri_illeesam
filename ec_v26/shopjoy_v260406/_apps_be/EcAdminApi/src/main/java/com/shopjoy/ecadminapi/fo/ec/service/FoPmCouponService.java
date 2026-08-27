@@ -39,11 +39,13 @@ public class FoPmCouponService {
         // prodId 가 있으면 해당 상품에 적용 가능한 쿠폰 ID 만 사전 필터
         String prodId = req.getProdId();
         if (StringUtils.hasText(prodId)) {
+            // [QueryDSL] 쿠폰 적용 상품 전개 (배치 생성) 조회
             List<String> couponIds = pmCouponProdRepository.selectCouponIdsByProdId(prodId);
             if (couponIds.isEmpty()) return List.of();  // 적용 쿠폰 없음
             req.setCouponIds(couponIds);
         }
 
+        // [QueryDSL] 쿠폰 발급 목록 조회
         List<PmCouponIssueDto.Item> list = pmCouponIssueRepository.selectList(req);
         _listFillRelations(list);
         return list;

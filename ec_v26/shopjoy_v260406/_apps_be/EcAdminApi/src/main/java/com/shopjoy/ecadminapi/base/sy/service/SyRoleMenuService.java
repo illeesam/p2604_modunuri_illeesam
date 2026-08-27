@@ -32,6 +32,7 @@ public class SyRoleMenuService {
 
     /* 역할별 메뉴 권한 키조회 */
     public SyRoleMenuDto.Item getById(String id) {
+        // [QueryDSL] 역할-메뉴 권한 매핑 단건 조회
         SyRoleMenuDto.Item dto = syRoleMenuRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -39,39 +40,46 @@ public class SyRoleMenuService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyRoleMenuDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 역할-메뉴 권한 매핑 단건 조회
         return syRoleMenuRepository.selectById(id).orElse(null);
     }
 
     /* 역할별 메뉴 권한 상세조회 */
     public SyRoleMenu findById(String id) {
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 단건 조회
         return syRoleMenuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyRoleMenu findByIdOrNull(String id) {
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 단건 조회
         return syRoleMenuRepository.findById(id).orElse(null);
     }
 
     /* 역할별 메뉴 권한 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 존재 여부 확인
         return syRoleMenuRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 존재 여부 확인
         if (!syRoleMenuRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 역할별 메뉴 권한 목록조회 */
     public List<SyRoleMenuDto.Item> getList(SyRoleMenuDto.Request req) {
+        // [QueryDSL] 역할-메뉴 권한 매핑 목록 조회
         return syRoleMenuRepository.selectList(req);
     }
 
     /* 역할별 메뉴 권한 페이지조회 */
     public BasePage<SyRoleMenuDto.Item> getPageData(SyRoleMenuDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 역할-메뉴 권한 매핑 페이지 조회
         return syRoleMenuRepository.selectPageData(req);
     }
 
@@ -83,6 +91,7 @@ public class SyRoleMenuService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 저장
         SyRoleMenu saved = syRoleMenuRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -100,6 +109,7 @@ public class SyRoleMenuService {
         VoUtil.voCopyExclude(body, entity, "roleMenuId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 저장
         SyRoleMenu saved = syRoleMenuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -115,6 +125,7 @@ public class SyRoleMenuService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRoleMenuId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 역할-메뉴 권한 매핑 선택적 필드 수정
         int affected = syRoleMenuRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -129,6 +140,7 @@ public class SyRoleMenuService {
         CmUtil.requireId(id, "id", this);
         SyRoleMenu entity = findById(id);
         String roleId = entity.getRoleId();
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 삭제
         syRoleMenuRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -151,14 +163,17 @@ public class SyRoleMenuService {
         if ("D".equals(rowStatus)) {
             if (entity.getRoleMenuId() == null)
                 throw new CmBizException("삭제 대상 roleMenuId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 역할-메뉴 권한 매핑 존재 여부 확인
             if (!syRoleMenuRepository.existsById(entity.getRoleMenuId()))
                 throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + entity.getRoleMenuId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 역할-메뉴 권한 매핑 ID 기준 삭제
             syRoleMenuRepository.deleteById(entity.getRoleMenuId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 역할-메뉴 권한 매핑 저장
             SyRoleMenu saved = syRoleMenuRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -166,6 +181,7 @@ public class SyRoleMenuService {
             if (entity.getRoleMenuId() == null)
                 throw new CmBizException("수정 대상 roleMenuId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 역할-메뉴 권한 매핑 선택적 필드 수정
             int affected = syRoleMenuRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyRoleMenu입니다: " + entity.getRoleMenuId() + "::" + CmUtil.svcCallerInfo(this));
@@ -201,6 +217,7 @@ public class SyRoleMenuService {
             .map(SyRoleMenu::getRoleMenuId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 역할-메뉴 권한 매핑 조건별 삭제
             syRoleMenuRepository.deleteAllById(deleteIds);
             /* DELETE 를 DB 에 즉시 반영하여 동일 트랜잭션 내 INSERT 시 unique 충돌 회피 */
             em.flush();
@@ -213,6 +230,7 @@ public class SyRoleMenuService {
             .toList();
         for (SyRoleMenu row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 역할-메뉴 권한 매핑 선택적 필드 수정
             int affected = syRoleMenuRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleMenuId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -225,6 +243,7 @@ public class SyRoleMenuService {
             row.setRoleMenuId(CmUtil.generateId("sy_role_menu"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 역할-메뉴 권한 매핑 저장
             syRoleMenuRepository.save(row);
         }
 

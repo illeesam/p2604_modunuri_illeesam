@@ -30,6 +30,7 @@ public class CmPathService {
 
     /* 경로(메뉴/URL) 키조회 */
     public CmPathDto.Item getById(String id) {
+        // [QueryDSL] 경로 (업무별 트리) 단건 조회
         CmPathDto.Item dto = cmPathRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class CmPathService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmPathDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 경로 (업무별 트리) 단건 조회
         return cmPathRepository.selectById(id).orElse(null);
     }
 
     /* 경로(메뉴/URL) 상세조회 */
     public CmPath findById(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 단건 조회
         return cmPathRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmPath findByIdOrNull(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 단건 조회
         return cmPathRepository.findById(id).orElse(null);
     }
 
     /* 경로(메뉴/URL) 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 존재 여부 확인
         return cmPathRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 존재 여부 확인
         if (!cmPathRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 경로(메뉴/URL) 목록조회 */
     public List<CmPathDto.Item> getList(CmPathDto.Request req) {
+        // [QueryDSL] 경로 (업무별 트리) 목록 조회
         return cmPathRepository.selectList(req);
     }
 
     /* 경로(메뉴/URL) 페이지조회 */
     public BasePage<CmPathDto.Item> getPageData(CmPathDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 경로 (업무별 트리) 페이지 조회
         return cmPathRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class CmPathService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 경로 (업무별 트리) 저장
         CmPath saved = cmPathRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -94,6 +103,7 @@ public class CmPathService {
             throw new CmBizException("존재하지 않는 CmPath입니다: " + entity.getBizCd() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 경로 (업무별 트리) 저장
         CmPath saved = cmPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -108,6 +118,7 @@ public class CmPathService {
         VoUtil.voCopyExclude(body, entity, "bizCd^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 경로 (업무별 트리) 저장
         CmPath saved = cmPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -122,6 +133,7 @@ public class CmPathService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBizCd() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 경로 (업무별 트리) 선택적 필드 수정
         int affected = cmPathRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -134,6 +146,7 @@ public class CmPathService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmPath entity = findById(id);
+        // [쿼리 메서드] 경로 (업무별 트리) 삭제
         cmPathRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -150,6 +163,7 @@ public class CmPathService {
             .map(CmPath::getBizCd)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 경로 (업무별 트리) 조건별 삭제
             cmPathRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
@@ -161,6 +175,7 @@ public class CmPathService {
             CmPath entity = findById(row.getBizCd());
             VoUtil.voCopyExclude(row, entity, "bizCd^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 경로 (업무별 트리) 저장
             cmPathRepository.save(entity);
         }
         em.flush();
@@ -172,6 +187,7 @@ public class CmPathService {
             if (row.getBizCd() == null) throw new CmBizException("bizCd 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 경로 (업무별 트리) 저장
             cmPathRepository.save(row);
         }
         em.flush();

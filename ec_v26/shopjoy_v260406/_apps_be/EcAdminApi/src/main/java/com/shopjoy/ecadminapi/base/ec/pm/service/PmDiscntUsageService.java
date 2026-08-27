@@ -30,6 +30,7 @@ public class PmDiscntUsageService {
 
     /* 할인 사용 이력 키조회 */
     public PmDiscntUsageDto.Item getById(String id) {
+        // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 단건 조회
         PmDiscntUsageDto.Item dto = pmDiscntUsageRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmDiscntUsageService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmDiscntUsageDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 단건 조회
         return pmDiscntUsageRepository.selectById(id).orElse(null);
     }
 
     /* 할인 사용 이력 상세조회 */
     public PmDiscntUsage findById(String id) {
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 단건 조회
         return pmDiscntUsageRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmDiscntUsage findByIdOrNull(String id) {
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 단건 조회
         return pmDiscntUsageRepository.findById(id).orElse(null);
     }
 
     /* 할인 사용 이력 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 존재 여부 확인
         return pmDiscntUsageRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 존재 여부 확인
         if (!pmDiscntUsageRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 할인 사용 이력 목록조회 */
     public List<PmDiscntUsageDto.Item> getList(PmDiscntUsageDto.Request req) {
+        // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 목록 조회
         return pmDiscntUsageRepository.selectList(req);
     }
 
     /* 할인 사용 이력 페이지조회 */
     public BasePage<PmDiscntUsageDto.Item> getPageData(PmDiscntUsageDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 페이지 조회
         return pmDiscntUsageRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmDiscntUsageService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 저장
         PmDiscntUsage saved = pmDiscntUsageRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmDiscntUsageService {
         VoUtil.voCopyExclude(body, entity, "discntUsageId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 저장
         PmDiscntUsage saved = pmDiscntUsageRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmDiscntUsageService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDiscntUsageId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 선택적 필드 수정
         int affected = pmDiscntUsageRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmDiscntUsageService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmDiscntUsage entity = findById(id);
+        // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 삭제
         pmDiscntUsageRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmDiscntUsageService {
         if ("D".equals(rowStatus)) {
             if (entity.getDiscntUsageId() == null)
                 throw new CmBizException("삭제 대상 discntUsageId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 존재 여부 확인
             if (!pmDiscntUsageRepository.existsById(entity.getDiscntUsageId()))
                 throw new CmBizException("존재하지 않는 PmDiscntUsage입니다: " + entity.getDiscntUsageId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) ID 기준 삭제
             pmDiscntUsageRepository.deleteById(entity.getDiscntUsageId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDiscntUsageId(CmUtil.generateId("pm_discnt_usage"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 저장
             PmDiscntUsage saved = pmDiscntUsageRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmDiscntUsageService {
             if (entity.getDiscntUsageId() == null)
                 throw new CmBizException("수정 대상 discntUsageId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 선택적 필드 수정
             int affected = pmDiscntUsageRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmDiscntUsage입니다: " + entity.getDiscntUsageId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmDiscntUsageService {
             .map(PmDiscntUsage::getDiscntUsageId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 조건별 삭제
             pmDiscntUsageRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmDiscntUsageService {
             .toList();
         for (PmDiscntUsage row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 선택적 필드 수정
             int affected = pmDiscntUsageRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDiscntUsageId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmDiscntUsageService {
             row.setDiscntUsageId(CmUtil.generateId("pm_discnt_usage"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록) 저장
             pmDiscntUsageRepository.save(row);
         }
 

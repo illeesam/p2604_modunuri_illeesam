@@ -74,6 +74,7 @@ public class FoPdProdService {
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
         req.setCurrentYn("Y");   // FO 강제 — 전시중(ACTIVE) + 전시기간 이내만 (아래 주석 참조)
+        // [QueryDSL] 상품 목록 조회
         List<PdProdDto.Item> list = pdProdRepository.selectList(req);
         list.forEach(FoPdProdService::_fillSaleStateCd);
         _listFillRelations(list);
@@ -160,6 +161,7 @@ public class FoPdProdService {
 
     /* getDetail */
     public PdProdDto.Item getDetail(String prodId) {
+        // [QueryDSL] 상품 단건 조회
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
         if (prod == null) throw new CmBizException("존재하지 않는 상품입니다: " + prodId + "::" + CmUtil.svcCallerInfo(this));
         _fillSaleStateCd(prod);
@@ -262,12 +264,17 @@ public class FoPdProdService {
      * 응답: { coupons, discnts, gifts, events }
      */
     public Map<String, Object> getPromotions(String prodId) {
+        // [QueryDSL] 상품 단건 조회
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
 
         // pm_*_prod 테이블에서 이 상품에 적용 가능한 ID 목록 조회
+        // [QueryDSL] 쿠폰 적용 상품 전개 (배치 생성) 조회
         List<String> couponIds = pmCouponProdRepository.selectCouponIdsByProdId(prodId);
+        // [QueryDSL] 할인 적용 상품 전개 (배치 생성) 조회
         List<String> discntIds = pmDiscntProdRepository.selectDiscntIdsByProdId(prodId);
+        // [QueryDSL] 이벤트 적용 상품 전개 (배치 생성) 조회
         List<String> eventIds  = pmEventProdRepository.selectEventIdsByProdId(prodId);
+        // [QueryDSL] 적립금 적용 상품 전개 (배치 생성) 조회
         List<String> saveIds   = pmSaveProdRepository.selectSaveIdsByProdId(prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();

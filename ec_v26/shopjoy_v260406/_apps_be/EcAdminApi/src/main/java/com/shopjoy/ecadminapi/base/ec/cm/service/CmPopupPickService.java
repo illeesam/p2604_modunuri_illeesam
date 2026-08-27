@@ -62,6 +62,7 @@ public class CmPopupPickService {
 
     /** 팝업 정의 조회 */
     public CmPopup getPopup(String popupCode, String siteId) {
+        // [쿼리 메서드] 공통 선택/조회 팝업 정의 조건별 조회
         return cmPopupRepository.findByPopupCodeAndUseYn(popupCode, "Y")
             .orElseThrow(() -> new CmBizException(
                 "등록되지 않은 팝업코드입니다: " + popupCode + "::" + CmUtil.svcCallerInfo(this)));
@@ -142,6 +143,7 @@ public class CmPopupPickService {
     );
 
     public List<CmPopupItem> getPopupItems(String popupId) {
+        // [쿼리 메서드] 공통 팝업 항목(필드) 속성 조건별 조회
         return cmPopupItemRepository.findByPopupIdAndUseYnOrderBySortOrdAsc(popupId, "Y");
     }
 
@@ -214,6 +216,7 @@ public class CmPopupPickService {
      * 런타임에 엔티티가 정해지는 {@link #getPage} 계열과 성격이 다르다.</p>
      */
     public BasePage<CmPopup> getPopupPage(CmPopupDto.Request search) {
+        // [QueryDSL] 공통 선택/조회 팝업 정의 페이지 조회
         return cmPopupRepository.selectPageData(search);
     }
 
@@ -239,6 +242,7 @@ public class CmPopupPickService {
         int pageNo   = paging ? intOf(p.get("pageNo"), 1) : 1;
         int pageSize = paging ? intOf(p.get("pageSize"), defSize) : Math.min(defSize, NO_PAGING_MAX);
 
+        // [JPQL] 팝업선택 동적 조회 — 런타임 동적 테이블/엔티티 (§14.6.9 예외③)
         PickRows res = cmPopupPickQueryRepository.selectPickPage(
             pop, items, p, sessionConds(pop, items), pageNo, pageSize);
 
@@ -283,6 +287,7 @@ public class CmPopupPickService {
         /* 교차 트리는 항목 메타가 목록 엔티티 기준이라 세션 조건도 적용할 수 없다 */
         List<ForcedCond> forced = cross ? List.of() : sessionConds(pop, items);
 
+        // [JPQL] 팝업선택 동적 조회 — 런타임 동적 테이블/엔티티 (§14.6.9 예외③)
         List<?> rows = cmPopupPickQueryRepository.selectTreeList(
             pop, items, p, forced, cross,
             cross ? pop.getTreeEntityNm() : pop.getEntityNm(), nmField);

@@ -30,6 +30,7 @@ public class StSettleConfigService {
 
     /* 정산 설정 키조회 */
     public StSettleConfigDto.Item getById(String id) {
+        // [QueryDSL] 정산기준 설정 단건 조회
         StSettleConfigDto.Item dto = stSettleConfigRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class StSettleConfigService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleConfigDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 정산기준 설정 단건 조회
         return stSettleConfigRepository.selectById(id).orElse(null);
     }
 
     /* 정산 설정 상세조회 */
     public StSettleConfig findById(String id) {
+        // [쿼리 메서드] 정산기준 설정 단건 조회
         return stSettleConfigRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleConfig findByIdOrNull(String id) {
+        // [쿼리 메서드] 정산기준 설정 단건 조회
         return stSettleConfigRepository.findById(id).orElse(null);
     }
 
     /* 정산 설정 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 정산기준 설정 존재 여부 확인
         return stSettleConfigRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 정산기준 설정 존재 여부 확인
         if (!stSettleConfigRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 정산 설정 목록조회 */
     public List<StSettleConfigDto.Item> getList(StSettleConfigDto.Request req) {
+        // [QueryDSL] 정산기준 설정 목록 조회
         return stSettleConfigRepository.selectList(req);
     }
 
     /* 정산 설정 페이지조회 */
     public BasePage<StSettleConfigDto.Item> getPageData(StSettleConfigDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 정산기준 설정 페이지 조회
         return stSettleConfigRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class StSettleConfigService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산기준 설정 저장
         StSettleConfig saved = stSettleConfigRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class StSettleConfigService {
         VoUtil.voCopyExclude(body, entity, "settleConfigId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산기준 설정 저장
         StSettleConfig saved = stSettleConfigRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class StSettleConfigService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleConfigId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 정산기준 설정 선택적 필드 수정
         int affected = stSettleConfigRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class StSettleConfigService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StSettleConfig entity = findById(id);
+        // [쿼리 메서드] 정산기준 설정 삭제
         stSettleConfigRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class StSettleConfigService {
         if ("D".equals(rowStatus)) {
             if (entity.getSettleConfigId() == null)
                 throw new CmBizException("삭제 대상 settleConfigId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산기준 설정 존재 여부 확인
             if (!stSettleConfigRepository.existsById(entity.getSettleConfigId()))
                 throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산기준 설정 ID 기준 삭제
             stSettleConfigRepository.deleteById(entity.getSettleConfigId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSettleConfigId(CmUtil.generateId("st_settle_config"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 정산기준 설정 저장
             StSettleConfig saved = stSettleConfigRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class StSettleConfigService {
             if (entity.getSettleConfigId() == null)
                 throw new CmBizException("수정 대상 settleConfigId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 정산기준 설정 선택적 필드 수정
             int affected = stSettleConfigRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StSettleConfig입니다: " + entity.getSettleConfigId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class StSettleConfigService {
             .map(StSettleConfig::getSettleConfigId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 정산기준 설정 조건별 삭제
             stSettleConfigRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class StSettleConfigService {
             .toList();
         for (StSettleConfig row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 정산기준 설정 선택적 필드 수정
             int affected = stSettleConfigRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSettleConfigId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class StSettleConfigService {
             row.setSettleConfigId(CmUtil.generateId("st_settle_config"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 정산기준 설정 저장
             stSettleConfigRepository.save(row);
         }
 

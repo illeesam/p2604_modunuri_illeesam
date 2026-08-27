@@ -30,6 +30,7 @@ public class PdProdBundleItemService {
 
     /* 묶음상품 구성 키조회 */
     public PdProdBundleItemDto.Item getById(String id) {
+        // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 단건 조회
         PdProdBundleItemDto.Item dto = pdProdBundleItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdProdBundleItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdBundleItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 단건 조회
         return pdProdBundleItemRepository.selectById(id).orElse(null);
     }
 
     /* 묶음상품 구성 상세조회 */
     public PdProdBundleItem findById(String id) {
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 단건 조회
         return pdProdBundleItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdBundleItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 단건 조회
         return pdProdBundleItemRepository.findById(id).orElse(null);
     }
 
     /* 묶음상품 구성 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 존재 여부 확인
         return pdProdBundleItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 존재 여부 확인
         if (!pdProdBundleItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 묶음상품 구성 목록조회 */
     public List<PdProdBundleItemDto.Item> getList(PdProdBundleItemDto.Request req) {
+        // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 목록 조회
         return pdProdBundleItemRepository.selectList(req);
     }
 
     /* 묶음상품 구성 페이지조회 */
     public BasePage<PdProdBundleItemDto.Item> getPageData(PdProdBundleItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 페이지 조회
         return pdProdBundleItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdProdBundleItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 저장
         PdProdBundleItem saved = pdProdBundleItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdProdBundleItemService {
         VoUtil.voCopyExclude(body, entity, "prodBundleItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 저장
         PdProdBundleItem saved = pdProdBundleItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdProdBundleItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 선택적 필드 수정
         int affected = pdProdBundleItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdProdBundleItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdBundleItem entity = findById(id);
+        // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 삭제
         pdProdBundleItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdProdBundleItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdBundleItemId() == null)
                 throw new CmBizException("삭제 대상 prodBundleItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 존재 여부 확인
             if (!pdProdBundleItemRepository.existsById(entity.getProdBundleItemId()))
                 throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) ID 기준 삭제
             pdProdBundleItemRepository.deleteById(entity.getProdBundleItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 저장
             PdProdBundleItem saved = pdProdBundleItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdProdBundleItemService {
             if (entity.getProdBundleItemId() == null)
                 throw new CmBizException("수정 대상 prodBundleItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 선택적 필드 수정
             int affected = pdProdBundleItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdProdBundleItemService {
             .map(PdProdBundleItem::getProdBundleItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 조건별 삭제
             pdProdBundleItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdProdBundleItemService {
             .toList();
         for (PdProdBundleItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 묶음상품 구성품 (prod_type_cd=BUNDLE) 선택적 필드 수정
             int affected = pdProdBundleItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdProdBundleItemService {
             row.setProdBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 묶음상품 구성품 (prod_type_cd=BUNDLE) 저장
             pdProdBundleItemRepository.save(row);
         }
 

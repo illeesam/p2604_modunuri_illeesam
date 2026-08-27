@@ -30,6 +30,7 @@ public class OdOrderItemService {
 
     /* 주문 아이템(상품) 키조회 */
     public OdOrderItemDto.Item getById(String id) {
+        // [QueryDSL] 주문상품 단건 조회
         OdOrderItemDto.Item dto = odOrderItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdOrderItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdOrderItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 주문상품 단건 조회
         return odOrderItemRepository.selectById(id).orElse(null);
     }
 
     /* 주문 아이템(상품) 상세조회 */
     public OdOrderItem findById(String id) {
+        // [쿼리 메서드] 주문상품 단건 조회
         return odOrderItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdOrderItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 주문상품 단건 조회
         return odOrderItemRepository.findById(id).orElse(null);
     }
 
     /* 주문 아이템(상품) 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 주문상품 존재 여부 확인
         return odOrderItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 주문상품 존재 여부 확인
         if (!odOrderItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 주문 아이템(상품) 목록조회 */
     public List<OdOrderItemDto.Item> getList(OdOrderItemDto.Request req) {
+        // [QueryDSL] 주문상품 목록 조회
         return odOrderItemRepository.selectList(req);
     }
 
     /* 주문 아이템(상품) 페이지조회 */
     public BasePage<OdOrderItemDto.Item> getPageData(OdOrderItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 주문상품 페이지 조회
         return odOrderItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdOrderItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문상품 저장
         OdOrderItem saved = odOrderItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdOrderItemService {
         VoUtil.voCopyExclude(body, entity, "orderItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문상품 저장
         OdOrderItem saved = odOrderItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdOrderItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 주문상품 선택적 필드 수정
         int affected = odOrderItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdOrderItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdOrderItem entity = findById(id);
+        // [쿼리 메서드] 주문상품 삭제
         odOrderItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdOrderItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getOrderItemId() == null)
                 throw new CmBizException("삭제 대상 orderItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 주문상품 존재 여부 확인
             if (!odOrderItemRepository.existsById(entity.getOrderItemId()))
                 throw new CmBizException("존재하지 않는 OdOrderItem입니다: " + entity.getOrderItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 주문상품 ID 기준 삭제
             odOrderItemRepository.deleteById(entity.getOrderItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setOrderItemId(CmUtil.generateId("od_order_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 주문상품 저장
             OdOrderItem saved = odOrderItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdOrderItemService {
             if (entity.getOrderItemId() == null)
                 throw new CmBizException("수정 대상 orderItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 주문상품 선택적 필드 수정
             int affected = odOrderItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdOrderItem입니다: " + entity.getOrderItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdOrderItemService {
             .map(OdOrderItem::getOrderItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 주문상품 조건별 삭제
             odOrderItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdOrderItemService {
             .toList();
         for (OdOrderItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 주문상품 선택적 필드 수정
             int affected = odOrderItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getOrderItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdOrderItemService {
             row.setOrderItemId(CmUtil.generateId("od_order_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 주문상품 저장
             odOrderItemRepository.save(row);
         }
 

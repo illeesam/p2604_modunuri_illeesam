@@ -46,6 +46,7 @@ public class BoStSettlePayService {
     /** pay — 결제 처리 */
     @Transactional
     public StSettlePayDto.Item pay(String id) {
+        // [쿼리 메서드] 정산지급 단건 조회
         StSettlePay entity = stSettlePayRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setPayStatusCdBefore(entity.getPayStatusCd());
@@ -53,6 +54,7 @@ public class BoStSettlePayService {
         entity.setPayDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산지급 저장
         StSettlePay saved = stSettlePayRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

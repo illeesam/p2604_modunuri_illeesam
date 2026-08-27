@@ -30,6 +30,7 @@ public class MbDeviceTokenService {
 
     /* 키조회 */
     public MbDeviceTokenDto.Item getById(String id) {
+        // [QueryDSL] 앱 디바이스 토큰 단건 조회
         MbDeviceTokenDto.Item dto = mbDeviceTokenRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbDeviceTokenService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbDeviceTokenDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 앱 디바이스 토큰 단건 조회
         return mbDeviceTokenRepository.selectById(id).orElse(null);
     }
 
     /* 상세조회 */
     public MbDeviceToken findById(String id) {
+        // [쿼리 메서드] 앱 디바이스 토큰 단건 조회
         return mbDeviceTokenRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbDeviceToken findByIdOrNull(String id) {
+        // [쿼리 메서드] 앱 디바이스 토큰 단건 조회
         return mbDeviceTokenRepository.findById(id).orElse(null);
     }
 
     /* 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 앱 디바이스 토큰 존재 여부 확인
         return mbDeviceTokenRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 앱 디바이스 토큰 존재 여부 확인
         if (!mbDeviceTokenRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 목록조회 */
     public List<MbDeviceTokenDto.Item> getList(MbDeviceTokenDto.Request req) {
+        // [QueryDSL] 앱 디바이스 토큰 목록 조회
         return mbDeviceTokenRepository.selectList(req);
     }
 
     /* 페이지조회 */
     public BasePage<MbDeviceTokenDto.Item> getPageData(MbDeviceTokenDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 앱 디바이스 토큰 페이지 조회
         return mbDeviceTokenRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbDeviceTokenService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 앱 디바이스 토큰 저장
         MbDeviceToken saved = mbDeviceTokenRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbDeviceTokenService {
         VoUtil.voCopyExclude(body, entity, "deviceTokenId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 앱 디바이스 토큰 저장
         MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbDeviceTokenService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDeviceTokenId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 앱 디바이스 토큰 선택적 필드 수정
         int affected = mbDeviceTokenRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbDeviceTokenService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbDeviceToken entity = findById(id);
+        // [쿼리 메서드] 앱 디바이스 토큰 삭제
         mbDeviceTokenRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbDeviceTokenService {
         if ("D".equals(rowStatus)) {
             if (entity.getDeviceTokenId() == null)
                 throw new CmBizException("삭제 대상 deviceTokenId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 앱 디바이스 토큰 존재 여부 확인
             if (!mbDeviceTokenRepository.existsById(entity.getDeviceTokenId()))
                 throw new CmBizException("존재하지 않는 MbDeviceToken입니다: " + entity.getDeviceTokenId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 앱 디바이스 토큰 ID 기준 삭제
             mbDeviceTokenRepository.deleteById(entity.getDeviceTokenId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 앱 디바이스 토큰 저장
             MbDeviceToken saved = mbDeviceTokenRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbDeviceTokenService {
             if (entity.getDeviceTokenId() == null)
                 throw new CmBizException("수정 대상 deviceTokenId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 앱 디바이스 토큰 선택적 필드 수정
             int affected = mbDeviceTokenRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbDeviceToken입니다: " + entity.getDeviceTokenId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbDeviceTokenService {
             .map(MbDeviceToken::getDeviceTokenId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 앱 디바이스 토큰 조건별 삭제
             mbDeviceTokenRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbDeviceTokenService {
             .toList();
         for (MbDeviceToken row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 앱 디바이스 토큰 선택적 필드 수정
             int affected = mbDeviceTokenRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDeviceTokenId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbDeviceTokenService {
             row.setDeviceTokenId(CmUtil.generateId("mb_device_token"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 앱 디바이스 토큰 저장
             mbDeviceTokenRepository.save(row);
         }
 

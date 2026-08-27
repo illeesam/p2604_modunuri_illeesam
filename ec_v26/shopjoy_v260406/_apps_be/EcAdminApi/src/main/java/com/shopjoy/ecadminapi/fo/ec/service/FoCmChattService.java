@@ -94,6 +94,7 @@ public class FoCmChattService {
     /** 메시지 전송 */
     @Transactional
     public CmChattMsg sendMsg(String chattId, CmChattMsgDto.SendRequest body) {
+        // [쿼리 메서드] 채팅 방 단건 조회
         CmChatt chatt = cmChattRepository.findById(chattId)
             .orElseThrow(() -> new CmBizException("존재하지 않는 채팅방: " + chattId + "::" + CmUtil.svcCallerInfo(this)));
         if ("CLOSED".equals(chatt.getChattStatusCd())) {
@@ -123,6 +124,7 @@ public class FoCmChattService {
         }
         chatt.setUpdBy(memberId);
         chatt.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 채팅 방 저장
         cmChattRepository.save(chatt);
 
         return saved;

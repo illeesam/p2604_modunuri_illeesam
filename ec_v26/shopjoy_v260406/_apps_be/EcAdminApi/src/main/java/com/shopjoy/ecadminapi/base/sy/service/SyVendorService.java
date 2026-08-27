@@ -30,6 +30,7 @@ public class SyVendorService {
 
     /* 업체(판매자) 키조회 */
     public SyVendorDto.Item getById(String id) {
+        // [QueryDSL] 판매/배송업체 (사업체/법인) 단건 조회
         SyVendorDto.Item dto = syVendorRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyVendorService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyVendorDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 판매/배송업체 (사업체/법인) 단건 조회
         return syVendorRepository.selectById(id).orElse(null);
     }
 
     /* 업체(판매자) 상세조회 */
     public SyVendor findById(String id) {
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 단건 조회
         return syVendorRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyVendor findByIdOrNull(String id) {
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 단건 조회
         return syVendorRepository.findById(id).orElse(null);
     }
 
     /* 업체(판매자) 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 존재 여부 확인
         return syVendorRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 존재 여부 확인
         if (!syVendorRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 업체(판매자) 목록조회 */
     public List<SyVendorDto.Item> getList(SyVendorDto.Request req) {
+        // [QueryDSL] 판매/배송업체 (사업체/법인) 목록 조회
         return syVendorRepository.selectList(req);
     }
 
     /* 업체(판매자) 페이지조회 */
     public BasePage<SyVendorDto.Item> getPageData(SyVendorDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 판매/배송업체 (사업체/법인) 페이지 조회
         return syVendorRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyVendorService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 저장
         SyVendor saved = syVendorRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyVendorService {
         VoUtil.voCopyExclude(body, entity, "vendorId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 저장
         SyVendor saved = syVendorRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyVendorService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getVendorId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 판매/배송업체 (사업체/법인) 선택적 필드 수정
         int affected = syVendorRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyVendorService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyVendor entity = findById(id);
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 삭제
         syVendorRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyVendorService {
         if ("D".equals(rowStatus)) {
             if (entity.getVendorId() == null)
                 throw new CmBizException("삭제 대상 vendorId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 판매/배송업체 (사업체/법인) 존재 여부 확인
             if (!syVendorRepository.existsById(entity.getVendorId()))
                 throw new CmBizException("존재하지 않는 SyVendor입니다: " + entity.getVendorId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 판매/배송업체 (사업체/법인) ID 기준 삭제
             syVendorRepository.deleteById(entity.getVendorId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setVendorId(CmUtil.generateId("sy_vendor"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 판매/배송업체 (사업체/법인) 저장
             SyVendor saved = syVendorRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyVendorService {
             if (entity.getVendorId() == null)
                 throw new CmBizException("수정 대상 vendorId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 판매/배송업체 (사업체/법인) 선택적 필드 수정
             int affected = syVendorRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyVendor입니다: " + entity.getVendorId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyVendorService {
             .map(SyVendor::getVendorId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 판매/배송업체 (사업체/법인) 조건별 삭제
             syVendorRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyVendorService {
             .toList();
         for (SyVendor row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 판매/배송업체 (사업체/법인) 선택적 필드 수정
             int affected = syVendorRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getVendorId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyVendorService {
             row.setVendorId(CmUtil.generateId("sy_vendor"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 판매/배송업체 (사업체/법인) 저장
             syVendorRepository.save(row);
         }
 
@@ -228,6 +247,7 @@ public class SyVendorService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyVendorDto.Request req) {
+        // [QueryDSL] 판매/배송업체 (사업체/법인) 조회
         return syVendorRepository.selectPathTreeVendorCnts(req);
     }
 }

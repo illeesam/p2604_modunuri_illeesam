@@ -30,6 +30,7 @@ public class OdPayService {
 
     /* 결제 키조회 */
     public OdPayDto.Item getById(String id) {
+        // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 단건 조회
         OdPayDto.Item dto = odPayRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdPayService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdPayDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 단건 조회
         return odPayRepository.selectById(id).orElse(null);
     }
 
     /* 결제 상세조회 */
     public OdPay findById(String id) {
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 단건 조회
         return odPayRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdPay findByIdOrNull(String id) {
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 단건 조회
         return odPayRepository.findById(id).orElse(null);
     }
 
     /* 결제 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 존재 여부 확인
         return odPayRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 존재 여부 확인
         if (!odPayRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 결제 목록조회 */
     public List<OdPayDto.Item> getList(OdPayDto.Request req) {
+        // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 목록 조회
         return odPayRepository.selectList(req);
     }
 
     /* 결제 페이지조회 */
     public BasePage<OdPayDto.Item> getPageData(OdPayDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 페이지 조회
         return odPayRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdPayService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 저장
         OdPay saved = odPayRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdPayService {
         VoUtil.voCopyExclude(body, entity, "payId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 저장
         OdPay saved = odPayRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdPayService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPayId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 선택적 필드 수정
         int affected = odPayRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdPayService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdPay entity = findById(id);
+        // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 삭제
         odPayRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdPayService {
         if ("D".equals(rowStatus)) {
             if (entity.getPayId() == null)
                 throw new CmBizException("삭제 대상 payId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 존재 여부 확인
             if (!odPayRepository.existsById(entity.getPayId()))
                 throw new CmBizException("존재하지 않는 OdPay입니다: " + entity.getPayId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) ID 기준 삭제
             odPayRepository.deleteById(entity.getPayId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPayId(CmUtil.generateId("od_pay"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 저장
             OdPay saved = odPayRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdPayService {
             if (entity.getPayId() == null)
                 throw new CmBizException("수정 대상 payId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 선택적 필드 수정
             int affected = odPayRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdPay입니다: " + entity.getPayId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdPayService {
             .map(OdPay::getPayId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 조건별 삭제
             odPayRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdPayService {
             .toList();
         for (OdPay row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 결제 (주문당 N건 결제 가능 — 분할결제) 선택적 필드 수정
             int affected = odPayRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPayId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdPayService {
             row.setPayId(CmUtil.generateId("od_pay"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 결제 (주문당 N건 결제 가능 — 분할결제) 저장
             odPayRepository.save(row);
         }
 

@@ -33,26 +33,31 @@ public class MdSgProjectService {
     private EntityManager em;
 
     public MdSgProjectDto.Item getById(String id) {
+        // [QueryDSL] 소스젠 프로젝트 마스터 — DDL 묶음 단위 단건 조회
         MdSgProjectDto.Item dto = mdSgProjectRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     public MdSgProject findById(String id) {
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 단건 조회
         return mdSgProjectRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     public boolean existsById(String id) {
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 존재 여부 확인
         return mdSgProjectRepository.existsById(id);
     }
 
     public List<MdSgProjectDto.Item> getList(MdSgProjectDto.Request req) {
+        // [QueryDSL] 소스젠 프로젝트 마스터 — DDL 묶음 단위 목록 조회
         return mdSgProjectRepository.selectList(req);
     }
 
     public BasePage<MdSgProjectDto.Item> getPageData(MdSgProjectDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 소스젠 프로젝트 마스터 — DDL 묶음 단위 페이지 조회
         return mdSgProjectRepository.selectPageData(req);
     }
 
@@ -67,6 +72,7 @@ public class MdSgProjectService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 저장
         MdSgProject saved = mdSgProjectRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -80,6 +86,7 @@ public class MdSgProjectService {
         VoUtil.voCopyExclude(body, entity, "projectId^memberId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 저장
         MdSgProject saved = mdSgProjectRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -95,6 +102,7 @@ public class MdSgProjectService {
         mdSgSourcegenRepository.deleteByProjectId(id);
         // [쿼리 메서드] 프로젝트 생성이력 전체 삭제
         mdSgSourcegenHistRepository.deleteByProjectId(id);
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 삭제
         mdSgProjectRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -105,9 +113,11 @@ public class MdSgProjectService {
     public void syncDdlCount(String projectId) {
         CmUtil.requireId(projectId, "projectId", this);
         MdSgProject entity = findById(projectId);
+        // [쿼리 메서드] 소스젠 DDL 정의 — 프로젝트당 여러 테이블 DDL 보관 건수 조회
         entity.setDdlCount((int) mdSgSourcegenRepository.countByProjectId(projectId));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 저장
         mdSgProjectRepository.save(entity);
         em.flush();
     }
@@ -122,6 +132,7 @@ public class MdSgProjectService {
         entity.setProjectStatusCd("DONE");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 프로젝트 마스터 — DDL 묶음 단위 저장
         mdSgProjectRepository.save(entity);
         em.flush();
     }

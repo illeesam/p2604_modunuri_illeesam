@@ -30,6 +30,7 @@ public class StSettleCloseService {
 
     /* 정산 마감 키조회 */
     public StSettleCloseDto.Item getById(String id) {
+        // [QueryDSL] 정산마감 이력 단건 조회
         StSettleCloseDto.Item dto = stSettleCloseRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class StSettleCloseService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleCloseDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 정산마감 이력 단건 조회
         return stSettleCloseRepository.selectById(id).orElse(null);
     }
 
     /* 정산 마감 상세조회 */
     public StSettleClose findById(String id) {
+        // [쿼리 메서드] 정산마감 이력 단건 조회
         return stSettleCloseRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleClose findByIdOrNull(String id) {
+        // [쿼리 메서드] 정산마감 이력 단건 조회
         return stSettleCloseRepository.findById(id).orElse(null);
     }
 
     /* 정산 마감 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 정산마감 이력 존재 여부 확인
         return stSettleCloseRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 정산마감 이력 존재 여부 확인
         if (!stSettleCloseRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 정산 마감 목록조회 */
     public List<StSettleCloseDto.Item> getList(StSettleCloseDto.Request req) {
+        // [QueryDSL] 정산마감 이력 목록 조회
         return stSettleCloseRepository.selectList(req);
     }
 
     /* 정산 마감 페이지조회 */
     public BasePage<StSettleCloseDto.Item> getPageData(StSettleCloseDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 정산마감 이력 페이지 조회
         return stSettleCloseRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class StSettleCloseService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산마감 이력 저장
         StSettleClose saved = stSettleCloseRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class StSettleCloseService {
         VoUtil.voCopyExclude(body, entity, "settleCloseId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산마감 이력 저장
         StSettleClose saved = stSettleCloseRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class StSettleCloseService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 정산마감 이력 선택적 필드 수정
         int affected = stSettleCloseRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class StSettleCloseService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StSettleClose entity = findById(id);
+        // [쿼리 메서드] 정산마감 이력 삭제
         stSettleCloseRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class StSettleCloseService {
         if ("D".equals(rowStatus)) {
             if (entity.getSettleCloseId() == null)
                 throw new CmBizException("삭제 대상 settleCloseId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산마감 이력 존재 여부 확인
             if (!stSettleCloseRepository.existsById(entity.getSettleCloseId()))
                 throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산마감 이력 ID 기준 삭제
             stSettleCloseRepository.deleteById(entity.getSettleCloseId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSettleCloseId(CmUtil.generateId("st_settle_close"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 정산마감 이력 저장
             StSettleClose saved = stSettleCloseRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class StSettleCloseService {
             if (entity.getSettleCloseId() == null)
                 throw new CmBizException("수정 대상 settleCloseId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 정산마감 이력 선택적 필드 수정
             int affected = stSettleCloseRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class StSettleCloseService {
             .map(StSettleClose::getSettleCloseId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 정산마감 이력 조건별 삭제
             stSettleCloseRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class StSettleCloseService {
             .toList();
         for (StSettleClose row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 정산마감 이력 선택적 필드 수정
             int affected = stSettleCloseRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class StSettleCloseService {
             row.setSettleCloseId(CmUtil.generateId("st_settle_close"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 정산마감 이력 저장
             stSettleCloseRepository.save(row);
         }
 

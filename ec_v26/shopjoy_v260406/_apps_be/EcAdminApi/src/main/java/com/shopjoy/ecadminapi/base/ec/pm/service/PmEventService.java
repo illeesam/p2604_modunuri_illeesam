@@ -30,6 +30,7 @@ public class PmEventService {
 
     /* 이벤트 키조회 */
     public PmEventDto.Item getById(String id) {
+        // [QueryDSL] 이벤트 단건 조회
         PmEventDto.Item dto = pmEventRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmEventService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmEventDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 이벤트 단건 조회
         return pmEventRepository.selectById(id).orElse(null);
     }
 
     /* 이벤트 상세조회 */
     public PmEvent findById(String id) {
+        // [쿼리 메서드] 이벤트 단건 조회
         return pmEventRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmEvent findByIdOrNull(String id) {
+        // [쿼리 메서드] 이벤트 단건 조회
         return pmEventRepository.findById(id).orElse(null);
     }
 
     /* 이벤트 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 이벤트 존재 여부 확인
         return pmEventRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 이벤트 존재 여부 확인
         if (!pmEventRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 이벤트 목록조회 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) {
+        // [QueryDSL] 이벤트 목록 조회
         return pmEventRepository.selectList(req);
     }
 
     /* 이벤트 페이지조회 */
     public BasePage<PmEventDto.Item> getPageData(PmEventDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 이벤트 페이지 조회
         return pmEventRepository.selectPageData(req);
     }
 
@@ -82,6 +90,7 @@ public class PmEventService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 이벤트 저장
         PmEvent saved = pmEventRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -99,6 +108,7 @@ public class PmEventService {
         CmUtil.requireText(entity.getEventTitle(), "이벤트 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 이벤트 저장
         PmEvent saved = pmEventRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -113,6 +123,7 @@ public class PmEventService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getEventId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 이벤트 선택적 필드 수정
         int affected = pmEventRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -125,6 +136,7 @@ public class PmEventService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmEvent entity = findById(id);
+        // [쿼리 메서드] 이벤트 삭제
         pmEventRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -146,14 +158,17 @@ public class PmEventService {
         if ("D".equals(rowStatus)) {
             if (entity.getEventId() == null)
                 throw new CmBizException("삭제 대상 eventId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 이벤트 존재 여부 확인
             if (!pmEventRepository.existsById(entity.getEventId()))
                 throw new CmBizException("존재하지 않는 PmEvent입니다: " + entity.getEventId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 이벤트 ID 기준 삭제
             pmEventRepository.deleteById(entity.getEventId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setEventId(CmUtil.generateId("pm_event"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 이벤트 저장
             PmEvent saved = pmEventRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -161,6 +176,7 @@ public class PmEventService {
             if (entity.getEventId() == null)
                 throw new CmBizException("수정 대상 eventId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 이벤트 선택적 필드 수정
             int affected = pmEventRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmEvent입니다: " + entity.getEventId() + "::" + CmUtil.svcCallerInfo(this));
@@ -196,6 +212,7 @@ public class PmEventService {
             .map(PmEvent::getEventId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 이벤트 조건별 삭제
             pmEventRepository.deleteAllById(deleteIds);
         }
 
@@ -205,6 +222,7 @@ public class PmEventService {
             .toList();
         for (PmEvent row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 이벤트 선택적 필드 수정
             int affected = pmEventRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getEventId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -217,6 +235,7 @@ public class PmEventService {
             row.setEventId(CmUtil.generateId("pm_event"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 이벤트 저장
             pmEventRepository.save(row);
         }
 

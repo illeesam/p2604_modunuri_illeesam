@@ -34,38 +34,45 @@ public class SyNotiService {
 
     /* 알림함 키조회 */
     public SyNotiDto.Item getById(String id) {
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 단건 조회
         SyNotiDto.Item dto = syNotiRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     public SyNotiDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 단건 조회
         return syNotiRepository.selectById(id).orElse(null);
     }
 
     public SyNoti findById(String id) {
+        // [쿼리 메서드] 알림함 (수신자별 알림 1건 = 1행) 단건 조회
         return syNotiRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     public boolean existsById(String id) {
+        // [쿼리 메서드] 알림함 (수신자별 알림 1건 = 1행) 존재 여부 확인
         return syNotiRepository.existsById(id);
     }
 
     /* 알림함 목록조회 */
     public List<SyNotiDto.Item> getList(SyNotiDto.Request req) {
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 목록 조회
         return syNotiRepository.selectList(req);
     }
 
     /* 알림함 페이지조회 */
     public BasePage<SyNotiDto.Item> getPageData(SyNotiDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 페이지 조회
         return syNotiRepository.selectPageData(req);
     }
 
     /* 안읽음 건수 — 종 아이콘 뱃지 */
     public long countUnread(String recvTypeCd, String recvId) {
         CmUtil.requireId(recvId, "recvId", this);
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 건수 조회
         return syNotiRepository.countUnread(recvTypeCd, recvId);
     }
 
@@ -79,6 +86,7 @@ public class SyNotiService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 알림함 (수신자별 알림 1건 = 1행) 저장
         SyNoti saved = syNotiRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -122,6 +130,7 @@ public class SyNotiService {
         if (rows.isEmpty()) {
             throw new CmBizException("유효한 수신자가 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
+        // [쿼리 메서드] 알림함 (수신자별 알림 1건 = 1행) 일괄 저장
         List<SyNoti> saved = syNotiRepository.saveAll(rows);
         em.flush();
         return saved;
@@ -133,6 +142,7 @@ public class SyNotiService {
         CmUtil.requireId(id, "id", this);
         body.setNotiId(id);
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 선택적 필드 수정
         int affected = syNotiRepository.updateSelective(body);
         if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -156,6 +166,7 @@ public class SyNotiService {
         entity.setReadDate(read ? LocalDateTime.now() : null);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 알림함 (수신자별 알림 1건 = 1행) 저장
         SyNoti saved = syNotiRepository.save(entity);
         em.flush();
         return saved;
@@ -165,6 +176,7 @@ public class SyNotiService {
     @Transactional
     public int markAllRead(String recvTypeCd, String recvId) {
         CmUtil.requireId(recvId, "recvId", this);
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 호출
         int n = syNotiRepository.markAllRead(recvTypeCd, recvId);
         em.flush(); em.clear();
         return n;
@@ -181,6 +193,7 @@ public class SyNotiService {
         if (recvTypeCd != null && !recvTypeCd.equals(entity.getRecvTypeCd())) {
             throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
+        // [쿼리 메서드] 알림함 (수신자별 알림 1건 = 1행) 삭제
         syNotiRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -190,6 +203,7 @@ public class SyNotiService {
     @Transactional
     public int deleteAllOf(String recvTypeCd, String recvId) {
         CmUtil.requireId(recvId, "recvId", this);
+        // [QueryDSL] 알림함 (수신자별 알림 1건 = 1행) 조건별 삭제
         int n = syNotiRepository.deleteAllOf(recvTypeCd, recvId);
         em.flush(); em.clear();
         return n;

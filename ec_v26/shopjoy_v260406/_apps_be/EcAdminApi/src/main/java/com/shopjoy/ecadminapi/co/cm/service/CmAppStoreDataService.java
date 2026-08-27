@@ -207,11 +207,13 @@ public class CmAppStoreDataService {
         if (authId == null) return java.util.Collections.emptyList();
 
         // sy_role :: select list :: useYn=Y
+        // [쿼리 메서드] 역할 (권한그룹) 전체/다건 조회
         Map<String, SyRole> roleMap = syRoleRepository.findAll().stream()
                 .filter(r -> "Y".equals(r.getUseYn()))
                 .collect(Collectors.toMap(SyRole::getRoleId, r -> r, (a, b) -> a));
 
         // sy_vendor :: select list ::
+        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 전체/다건 조회
         Map<String, String> vendorNmMap = syVendorRepository.findAll().stream()
                 .collect(Collectors.toMap(
                         v -> v.getVendorId(),
@@ -223,6 +225,7 @@ public class CmAppStoreDataService {
         // sy_user_role :: select list :: authId
         SyUserRoleDto.Request userRoleReq = new SyUserRoleDto.Request();
         userRoleReq.setUserId(authId);
+        // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 목록 조회
         syUserRoleRepository.selectList(userRoleReq).forEach(ur -> {
             SyRole role = roleMap.get(ur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
@@ -239,6 +242,7 @@ public class CmAppStoreDataService {
         // sy_vendor_user_role :: select list :: authId
         SyVendorUserRoleDto.Request vendorUserRoleReq = new SyVendorUserRoleDto.Request();
         vendorUserRoleReq.setUserId(authId);
+        // [QueryDSL] 업체 사용자 역할 연결 목록 조회
         syVendorUserRoleRepository.selectList(vendorUserRoleReq).forEach(vur -> {
             SyRole role = roleMap.get(vur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
@@ -264,6 +268,7 @@ public class CmAppStoreDataService {
         }
 
         // sy_user :: select one :: authId
+        // [쿼리 메서드] 관리자 사용자 단건 조회
         SyUser user = syUserRepository.findById(authUser.authId()).orElse(null);
         if (user == null) {
             return StoreUser.builder().build();
@@ -272,6 +277,7 @@ public class CmAppStoreDataService {
         String deptNm = "";
         if (user.getDeptId() != null) {
             // sy_dept :: select one :: deptId
+            // [쿼리 메서드] 부서 단건 조회
             SyDept dept = syDeptRepository.findById(user.getDeptId()).orElse(null);
             if (dept != null) {
                 deptNm = dept.getDeptNm();
@@ -281,6 +287,7 @@ public class CmAppStoreDataService {
         String roleNm = "";
         if (user.getRoleId() != null) {
             // sy_role :: select one :: roleId
+            // [쿼리 메서드] 역할 (권한그룹) 단건 조회
             SyRole role = syRoleRepository.findById(user.getRoleId()).orElse(null);
             if (role != null) {
                 roleNm = role.getRoleNm();
@@ -290,6 +297,7 @@ public class CmAppStoreDataService {
         String vendorNm = "";
         if (authUser.vendorId() != null) {
             // sy_vendor :: select one :: vendorId
+            // [쿼리 메서드] 판매/배송업체 (사업체/법인) 단건 조회
             SyVendor vendor = syVendorRepository.findById(authUser.vendorId()).orElse(null);
             if (vendor != null) {
                 vendorNm = CmUtil.nvlStr(vendor.getVendorNm());
@@ -329,6 +337,7 @@ public class CmAppStoreDataService {
         }
 
         // ec_member :: select one :: authId(memberId)
+        // [쿼리 메서드] Member 단건 조회
         MbMember member = memberRepository.findById(authUser.authId()).orElse(null);
         if (member == null) {
             return StoreMember.builder().build();
@@ -369,12 +378,14 @@ public class CmAppStoreDataService {
             // sy_user_role :: select list :: authId
             SyUserRoleDto.Request userRoleReq2 = new SyUserRoleDto.Request();
             userRoleReq2.setUserId(authUser.authId());
+            // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 목록 조회
             syUserRoleRepository.selectList(userRoleReq2).forEach(ur ->
                 roleVendorMap.put(ur.getRoleId(), null));
 
             // sy_vendor_user_role :: select list :: authId
             SyVendorUserRoleDto.Request vendorUserRoleReq2 = new SyVendorUserRoleDto.Request();
             vendorUserRoleReq2.setUserId(authUser.authId());
+            // [QueryDSL] 업체 사용자 역할 연결 목록 조회
             syVendorUserRoleRepository.selectList(vendorUserRoleReq2).forEach(vur ->
                 roleVendorMap.put(vur.getRoleId(), vur.getVendorId()));
         } else {
@@ -384,12 +395,14 @@ public class CmAppStoreDataService {
         return roleVendorMap.entrySet().stream()
                 .map(entry -> {
                     // sy_role :: select one :: roleId, useYn=Y
+                    // [쿼리 메서드] 역할 (권한그룹) 단건 조회
                     SyRole role = syRoleRepository.findById(entry.getKey()).orElse(null);
                     if (role == null || !"Y".equals(role.getUseYn())) return null;
 
                     String vendorNm = null;
                     if (entry.getValue() != null) {
                         // sy_vendor :: select one :: vendorId
+                        // [쿼리 메서드] 판매/배송업체 (사업체/법인) 단건 조회
                         SyVendor vendor = syVendorRepository.findById(entry.getValue()).orElse(null);
                         if (vendor != null) {
                             vendorNm = vendor.getVendorNm();
@@ -421,6 +434,7 @@ public class CmAppStoreDataService {
         }
 
         // sy_role_menu :: select list :: roleId
+        // [쿼리 메서드] 역할-메뉴 권한 매핑 전체/다건 조회
         List<SyRoleMenu> roleMenus = syRoleMenuRepository.findAll().stream()
                 .filter(rm -> rm.getRoleId().equals(authUser.roleId()))
                 .toList();
@@ -433,6 +447,7 @@ public class CmAppStoreDataService {
 
         // sy_menu :: select one :: menuId, useYn=Y (반복)
         return menuIds.stream()
+                // [쿼리 메서드] 메뉴 단건 조회
                 .map(menuId -> syMenuRepository.findById(menuId).orElse(null))
                 .filter(menu -> menu != null && "Y".equals(menu.getUseYn()))
                 .map(menu -> {
@@ -457,6 +472,7 @@ public class CmAppStoreDataService {
     /** addParentMenus — 추가 */
     private void addParentMenus(String menuId, java.util.Set<String> menuIds) {
         // sy_menu :: select one :: menuId (재귀)
+        // [쿼리 메서드] 메뉴 단건 조회
         SyMenu menu = syMenuRepository.findById(menuId).orElse(null);
         if (menu != null && menu.getParentMenuId() != null) {
             menuIds.add(menu.getParentMenuId());
@@ -470,6 +486,7 @@ public class CmAppStoreDataService {
         SyMenu parent = menu;
         while (parent.getParentMenuId() != null) {
             // sy_menu :: select one :: parentMenuId (재귀)
+            // [쿼리 메서드] 메뉴 단건 조회
             parent = syMenuRepository.findById(parent.getParentMenuId()).orElse(null);
             if (parent == null) break;
             level++;
@@ -486,6 +503,7 @@ public class CmAppStoreDataService {
         // sy_code :: select list :: useYn=Y (SyCodeDto.Item — codeGrp via JOIN)
         SyCodeDto.Request codeReq = new SyCodeDto.Request();
         codeReq.setUseYn("Y");
+        // [QueryDSL] 공통코드 목록 조회
         syCodeRepository.selectList(codeReq)
                 .forEach(code -> {
             StoreCode.CodeInfo codeInfo = StoreCode.CodeInfo.builder()
@@ -514,6 +532,7 @@ public class CmAppStoreDataService {
         String[] activeProfs = environment.getActiveProfiles();
         String activeProf = (activeProfs != null && activeProfs.length > 0) ? activeProfs[0] : "-";
         // sy_prop :: select list :: useYn=Y, prop_profile 매칭
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 전체/다건 조회
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
                 .filter(prop -> "Y".equals(prop.getUseYn())
                         && isPropProfileMatch(prop.getPropProfile(), activeProf))
@@ -542,6 +561,7 @@ public class CmAppStoreDataService {
         // propKey = yml 경로 그대로 (예: app.auth.social.google-client-id)
         // propProfile 매칭: ^local^dev^ / ^prod^ / ^local^dev^prod^ / null(전체)
         final String currentProfile = active;
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 전체/다건 조회
         Map<String, String> dbProps = syPropRepository.findAll().stream()
                 .filter(p -> "Y".equals(p.getUseYn())
                         && p.getPropKey() != null
@@ -672,6 +692,7 @@ public class CmAppStoreDataService {
      */
     private StoreDispStruct getDispStruc(AuthPrincipal authUser) {
         // dp_ui :: select list :: (filtered by siteId, useYn)
+        // [쿼리 메서드] 디스플레이 UI (최상위 화면 정의) 전체/다건 조회
         List<DpUi> uis = dpUiRepository.findAll().stream()
                 .filter(ui -> "Y".equals(ui.getUseYn()))
                 .toList();
@@ -679,6 +700,7 @@ public class CmAppStoreDataService {
         List<StoreDispStruct.UiInfo> uiInfos = uis.stream()
                 .map(ui -> {
                     // dp_area :: select list :: (filtered by uiId, useYn)
+                    // [쿼리 메서드] 디스플레이 영역 전체/다건 조회
                     List<DpArea> areas = dpAreaRepository.findAll().stream()
                             .filter(area -> area.getUiId().equals(ui.getUiId()) && "Y".equals(area.getUseYn()))
                             .toList();
@@ -686,6 +708,7 @@ public class CmAppStoreDataService {
                     List<StoreDispStruct.UiInfo.AreaInfo> areaInfos = areas.stream()
                             .map(area -> {
                                 // dp_panel :: select list :: (filtered by siteId, useYn)
+                                // [쿼리 메서드] 디스플레이 패널 전체/다건 조회
                                 List<DpPanel> panels = dpPanelRepository.findAll().stream()
                                         .filter(panel -> "Y".equals(panel.getUseYn()))
                                         .toList();
@@ -693,6 +716,7 @@ public class CmAppStoreDataService {
                                 List<StoreDispStruct.UiInfo.AreaInfo.PanelInfo> panelInfos = panels.stream()
                                         .map(panel -> {
                                             // dp_panel_item :: select list :: (filtered by panelId)
+                                            // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 전체/다건 조회
                                             List<DpPanelItem> items = dpPanelItemRepository.findAll().stream()
                                                     .filter(item -> item.getPanelId().equals(panel.getPanelId()))
                                                     .toList();
@@ -747,12 +771,14 @@ public class CmAppStoreDataService {
         Map<String, Object> dataByArea = new java.util.HashMap<>();
 
         // dp_ui :: select list :: (filtered by siteId, useYn)
+        // [쿼리 메서드] 디스플레이 UI (최상위 화면 정의) 전체/다건 조회
         List<DpUi> uis = dpUiRepository.findAll().stream()
                 .filter(ui -> "Y".equals(ui.getUseYn()))
                 .toList();
 
         for (DpUi ui : uis) {
             // dp_area :: select list :: (filtered by uiId, useYn)
+            // [쿼리 메서드] 디스플레이 영역 전체/다건 조회
             List<DpArea> areas = dpAreaRepository.findAll().stream()
                     .filter(area -> area.getUiId().equals(ui.getUiId()) && "Y".equals(area.getUseYn()))
                     .toList();
@@ -760,6 +786,7 @@ public class CmAppStoreDataService {
             for (DpArea area : areas) {
                 Map<String, Object> areaData = new java.util.HashMap<>();
                 // dp_panel :: select list :: (filtered by siteId, useYn)
+                // [쿼리 메서드] 디스플레이 패널 전체/다건 조회
                 List<DpPanel> panels = dpPanelRepository.findAll().stream()
                         .filter(panel -> "Y".equals(panel.getUseYn()))
                         .toList();
@@ -767,6 +794,7 @@ public class CmAppStoreDataService {
                 List<Map<String, Object>> panelDataList = new java.util.ArrayList<>();
                 for (DpPanel panel : panels) {
                     // dp_panel_item :: select list :: (filtered by panelId)
+                    // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 전체/다건 조회
                     List<DpPanelItem> items = dpPanelItemRepository.findAll().stream()
                             .filter(item -> item.getPanelId().equals(panel.getPanelId()))
                             .toList();
@@ -781,6 +809,7 @@ public class CmAppStoreDataService {
                         String content = CmUtil.nvlStr(item.getWidgetContent()); // 위젯컨텐츠
                         if ("Y".equals(item.getWidgetLibRefYn()) && item.getWidgetLibId() != null) {
                             // dp_widget_lib :: select one :: widgetLibId
+                            // [쿼리 메서드] 디스플레이 위젯 라이브러리 단건 조회
                             DpWidgetLib widgetLib = dpWidgetLibRepository.findById(item.getWidgetLibId()).orElse(null);
                             if (widgetLib != null) {
                                 content = CmUtil.nvlStr(widgetLib.getWidgetLibDesc()); // 라이브러리참조시 라이브러리컨텐츠
@@ -811,6 +840,7 @@ public class CmAppStoreDataService {
      * 표시경로 목록 조회 - sy_path (useYn=Y 전체)
      */
     private List<Map<String, Object>> getPaths() {
+        // [쿼리 메서드] 경로 (업무별 트리) 전체/다건 조회
         return syPathRepository.findAll().stream()
                 .filter(p -> "Y".equals(p.getUseYn()))
                 .sorted(java.util.Comparator.comparing(SyPath::getSortOrd, java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
@@ -833,6 +863,7 @@ public class CmAppStoreDataService {
      */
     private StoreDispWidgets getDispWidgets(AuthPrincipal authUser) {
         // dp_widget :: select list :: (filtered by useYn)
+        // [쿼리 메서드] 디스플레이 위젯 (라이브러리 참조 또는 직접 생성) 전체/다건 조회
         List<DpWidget> widgets = dpWidgetRepository.findAll().stream()
                 .filter(widget -> "Y".equals(widget.getUseYn()))
                 .toList();
@@ -843,6 +874,7 @@ public class CmAppStoreDataService {
                     // 참조형식(widgetLibRefYn='Y')이면 dp_widget_lib에서 content 조회
                     if ("Y".equals(widget.getWidgetLibRefYn()) && widget.getWidgetLibId() != null) {
                         // dp_widget_lib :: select one :: widgetLibId
+                        // [쿼리 메서드] 디스플레이 위젯 라이브러리 단건 조회
                         DpWidgetLib widgetLib = dpWidgetLibRepository.findById(widget.getWidgetLibId()).orElse(null);
                         if (widgetLib != null) {
                             content = CmUtil.nvlStr(widgetLib.getWidgetLibDesc()); // 라이브러리 content로 대체

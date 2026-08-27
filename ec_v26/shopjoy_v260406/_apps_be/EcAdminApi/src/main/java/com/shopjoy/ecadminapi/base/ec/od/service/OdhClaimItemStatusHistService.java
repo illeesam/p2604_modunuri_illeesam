@@ -30,6 +30,7 @@ public class OdhClaimItemStatusHistService {
 
     /* 클레임 아이템 상태 이력 키조회 */
     public OdhClaimItemStatusHistDto.Item getById(String id) {
+        // [QueryDSL] 클레임상품 상태 이력 단건 조회
         OdhClaimItemStatusHistDto.Item dto = odhClaimItemStatusHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdhClaimItemStatusHistService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdhClaimItemStatusHistDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 클레임상품 상태 이력 단건 조회
         return odhClaimItemStatusHistRepository.selectById(id).orElse(null);
     }
 
     /* 클레임 아이템 상태 이력 상세조회 */
     public OdhClaimItemStatusHist findById(String id) {
+        // [쿼리 메서드] 클레임상품 상태 이력 단건 조회
         return odhClaimItemStatusHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdhClaimItemStatusHist findByIdOrNull(String id) {
+        // [쿼리 메서드] 클레임상품 상태 이력 단건 조회
         return odhClaimItemStatusHistRepository.findById(id).orElse(null);
     }
 
     /* 클레임 아이템 상태 이력 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 클레임상품 상태 이력 존재 여부 확인
         return odhClaimItemStatusHistRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 클레임상품 상태 이력 존재 여부 확인
         if (!odhClaimItemStatusHistRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 클레임 아이템 상태 이력 목록조회 */
     public List<OdhClaimItemStatusHistDto.Item> getList(OdhClaimItemStatusHistDto.Request req) {
+        // [QueryDSL] 클레임상품 상태 이력 목록 조회
         return odhClaimItemStatusHistRepository.selectList(req);
     }
 
     /* 클레임 아이템 상태 이력 페이지조회 */
     public BasePage<OdhClaimItemStatusHistDto.Item> getPageData(OdhClaimItemStatusHistDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 클레임상품 상태 이력 페이지 조회
         return odhClaimItemStatusHistRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdhClaimItemStatusHistService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 클레임상품 상태 이력 저장
         OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdhClaimItemStatusHistService {
         VoUtil.voCopyExclude(body, entity, "claimItemStatusHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 클레임상품 상태 이력 저장
         OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdhClaimItemStatusHistService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getClaimItemStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 클레임상품 상태 이력 선택적 필드 수정
         int affected = odhClaimItemStatusHistRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdhClaimItemStatusHistService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdhClaimItemStatusHist entity = findById(id);
+        // [쿼리 메서드] 클레임상품 상태 이력 삭제
         odhClaimItemStatusHistRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdhClaimItemStatusHistService {
         if ("D".equals(rowStatus)) {
             if (entity.getClaimItemStatusHistId() == null)
                 throw new CmBizException("삭제 대상 claimItemStatusHistId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 클레임상품 상태 이력 존재 여부 확인
             if (!odhClaimItemStatusHistRepository.existsById(entity.getClaimItemStatusHistId()))
                 throw new CmBizException("존재하지 않는 OdhClaimItemStatusHist입니다: " + entity.getClaimItemStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 클레임상품 상태 이력 ID 기준 삭제
             odhClaimItemStatusHistRepository.deleteById(entity.getClaimItemStatusHistId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setClaimItemStatusHistId(CmUtil.generateId("odh_claim_item_status_hist"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 클레임상품 상태 이력 저장
             OdhClaimItemStatusHist saved = odhClaimItemStatusHistRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdhClaimItemStatusHistService {
             if (entity.getClaimItemStatusHistId() == null)
                 throw new CmBizException("수정 대상 claimItemStatusHistId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 클레임상품 상태 이력 선택적 필드 수정
             int affected = odhClaimItemStatusHistRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdhClaimItemStatusHist입니다: " + entity.getClaimItemStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdhClaimItemStatusHistService {
             .map(OdhClaimItemStatusHist::getClaimItemStatusHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 클레임상품 상태 이력 조건별 삭제
             odhClaimItemStatusHistRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdhClaimItemStatusHistService {
             .toList();
         for (OdhClaimItemStatusHist row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 클레임상품 상태 이력 선택적 필드 수정
             int affected = odhClaimItemStatusHistRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getClaimItemStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdhClaimItemStatusHistService {
             row.setClaimItemStatusHistId(CmUtil.generateId("odh_claim_item_status_hist"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 클레임상품 상태 이력 저장
             odhClaimItemStatusHistRepository.save(row);
         }
 

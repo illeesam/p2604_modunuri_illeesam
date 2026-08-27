@@ -49,6 +49,7 @@ public class BoPdCategoryService {
     @Transactional
     public void updateProds(String categoryId, String activeTypeCd, PdCategoryUpdateProdsDto.Request req) {
         if (req == null || req.getProds() == null) return;
+        // [쿼리 메서드] CategoryProd 조건별 삭제
         categoryProdRepository.deleteByCategoryIdAndCategoryProdTypeCd(categoryId, activeTypeCd);
         em.flush();
         int seq = 1;
@@ -66,6 +67,7 @@ public class BoPdCategoryService {
                 .sortOrd(row.getSortOrd() != null ? row.getSortOrd() : seq)
                 .dispYn(row.getDispYn() != null ? row.getDispYn() : "Y")
                 .build();
+            // [쿼리 메서드] CategoryProd 저장
             categoryProdRepository.save(cp);
             seq++;
         }

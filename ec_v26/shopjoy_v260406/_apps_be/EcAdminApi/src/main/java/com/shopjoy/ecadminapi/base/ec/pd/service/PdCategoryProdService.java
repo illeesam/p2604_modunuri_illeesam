@@ -30,6 +30,7 @@ public class PdCategoryProdService {
 
     /* 카테고리-상품 매핑 키조회 */
     public PdCategoryProdDto.Item getById(String id) {
+        // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 단건 조회
         PdCategoryProdDto.Item dto = pdCategoryProdRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdCategoryProdService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdCategoryProdDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 단건 조회
         return pdCategoryProdRepository.selectById(id).orElse(null);
     }
 
     /* 카테고리-상품 매핑 상세조회 */
     public PdCategoryProd findById(String id) {
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 단건 조회
         return pdCategoryProdRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdCategoryProd findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 단건 조회
         return pdCategoryProdRepository.findById(id).orElse(null);
     }
 
     /* 카테고리-상품 매핑 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 존재 여부 확인
         return pdCategoryProdRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 존재 여부 확인
         if (!pdCategoryProdRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 카테고리-상품 매핑 목록조회 */
     public List<PdCategoryProdDto.Item> getList(PdCategoryProdDto.Request req) {
+        // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 목록 조회
         return pdCategoryProdRepository.selectList(req);
     }
 
     /* 카테고리-상품 매핑 페이지조회 */
     public BasePage<PdCategoryProdDto.Item> getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 페이지 조회
         return pdCategoryProdRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdCategoryProdService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 저장
         PdCategoryProd saved = pdCategoryProdRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdCategoryProdService {
         VoUtil.voCopyExclude(body, entity, "categoryProdId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 저장
         PdCategoryProd saved = pdCategoryProdRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdCategoryProdService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCategoryProdId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 선택적 필드 수정
         int affected = pdCategoryProdRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdCategoryProdService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdCategoryProd entity = findById(id);
+        // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 삭제
         pdCategoryProdRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdCategoryProdService {
         if ("D".equals(rowStatus)) {
             if (entity.getCategoryProdId() == null)
                 throw new CmBizException("삭제 대상 categoryProdId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 존재 여부 확인
             if (!pdCategoryProdRepository.existsById(entity.getCategoryProdId()))
                 throw new CmBizException("존재하지 않는 PdCategoryProd입니다: " + entity.getCategoryProdId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) ID 기준 삭제
             pdCategoryProdRepository.deleteById(entity.getCategoryProdId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setCategoryProdId(CmUtil.generateId("pd_category_prod"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 저장
             PdCategoryProd saved = pdCategoryProdRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdCategoryProdService {
             if (entity.getCategoryProdId() == null)
                 throw new CmBizException("수정 대상 categoryProdId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 선택적 필드 수정
             int affected = pdCategoryProdRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdCategoryProd입니다: " + entity.getCategoryProdId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdCategoryProdService {
             .map(PdCategoryProd::getCategoryProdId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 조건별 삭제
             pdCategoryProdRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdCategoryProdService {
             .toList();
         for (PdCategoryProd row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 선택적 필드 수정
             int affected = pdCategoryProdRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCategoryProdId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdCategoryProdService {
             row.setCategoryProdId(CmUtil.generateId("pd_category_prod"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 저장
             pdCategoryProdRepository.save(row);
         }
 

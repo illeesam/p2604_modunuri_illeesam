@@ -81,6 +81,7 @@ public class CmMailSendService {
                 .refId(refId)
                 .build();
             stampReg(logRow);
+            // [쿼리 메서드] 이메일 발송 로그 저장
             syhSendEmailLogRepository.save(logRow);
         } catch (Exception e) {
             log.error("[CmMailSend] 메일 발송 이력 저장 실패 (toAddr={})", toAddr, e);
@@ -133,6 +134,7 @@ public class CmMailSendService {
 
     /** sy_prop 전체 로드 후 spring.mail.* / app.mail.* 값 추출. */
     private SmtpConfig loadSmtpConfig() {
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 전체/다건 조회
         List<SyProp> all = syPropRepository.findAll();
         SmtpConfig cfg = new SmtpConfig();
         for (SyProp p : all) {

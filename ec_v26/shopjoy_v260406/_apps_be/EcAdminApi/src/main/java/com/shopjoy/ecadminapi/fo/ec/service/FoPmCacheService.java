@@ -24,6 +24,7 @@ public class FoPmCacheService {
     public long getBalance(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [QueryDSL] 적립금 (캐시) 목록 조회
         List<PmCacheDto.Item> list = pmCacheRepository.selectList(req);
         return list.isEmpty() ? 0L : (list.get(0).getBalanceAmt() != null ? list.get(0).getBalanceAmt() : 0L);
     }

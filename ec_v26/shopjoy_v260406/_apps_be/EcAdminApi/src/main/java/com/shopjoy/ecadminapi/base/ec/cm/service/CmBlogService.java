@@ -38,6 +38,7 @@ public class CmBlogService {
 
     /* 게시물 키조회 (첨부 files[] 포함) */
     public CmBlogDto.Item getById(String id) {
+        // [QueryDSL] 블로그 게시글 단건 조회
         CmBlogDto.Item dto = cmBlogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         attachFiles(List.of(dto));
@@ -55,6 +56,7 @@ public class CmBlogService {
         if (blogIds.isEmpty()) return;
         CmBlogFileDto.Request fileReq = new CmBlogFileDto.Request();
         fileReq.setBlogIds(blogIds);
+        // [QueryDSL] 블로그 이미지 목록 조회
         List<CmBlogFileDto.Item> files = cmBlogFileRepository.selectList(fileReq);
         Map<String, List<CmBlogFileDto.Item>> byBlogId = files.stream()
                 .collect(Collectors.groupingBy(CmBlogFileDto.Item::getBlogId));
@@ -65,39 +67,46 @@ public class CmBlogService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmBlogDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 블로그 게시글 단건 조회
         return cmBlogRepository.selectById(id).orElse(null);
     }
 
     /* 게시물 상세조회 */
     public CmBlog findById(String id) {
+        // [쿼리 메서드] 블로그 게시글 단건 조회
         return cmBlogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmBlog findByIdOrNull(String id) {
+        // [쿼리 메서드] 블로그 게시글 단건 조회
         return cmBlogRepository.findById(id).orElse(null);
     }
 
     /* 게시물 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 블로그 게시글 존재 여부 확인
         return cmBlogRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 블로그 게시글 존재 여부 확인
         if (!cmBlogRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 게시물 목록조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
+        // [QueryDSL] 블로그 게시글 목록 조회
         return cmBlogRepository.selectList(req);
     }
 
     /* 게시물 페이지조회 (첨부 files[] 포함 — 그리드 썸네일용) */
     public BasePage<CmBlogDto.Item> getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 블로그 게시글 페이지 조회
         BasePage<CmBlogDto.Item> res = cmBlogRepository.selectPageData(req);
         if (res != null) attachFiles(res.getPageList());
         return res;
@@ -112,6 +121,7 @@ public class CmBlogService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 게시글 저장
         CmBlog saved = cmBlogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_BLOG, saved.getBlogId());
@@ -131,6 +141,7 @@ public class CmBlogService {
         CmUtil.requireText(entity.getBlogTitle(), "블로그 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 게시글 저장
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_BLOG, id);
@@ -147,6 +158,7 @@ public class CmBlogService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 블로그 게시글 선택적 필드 수정
         int affected = cmBlogRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -159,6 +171,7 @@ public class CmBlogService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmBlog entity = findById(id);
+        // [쿼리 메서드] 블로그 게시글 삭제
         cmBlogRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -180,14 +193,17 @@ public class CmBlogService {
         if ("D".equals(rowStatus)) {
             if (entity.getBlogId() == null)
                 throw new CmBizException("삭제 대상 blogId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 블로그 게시글 존재 여부 확인
             if (!cmBlogRepository.existsById(entity.getBlogId()))
                 throw new CmBizException("존재하지 않는 CmBlog입니다: " + entity.getBlogId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 블로그 게시글 ID 기준 삭제
             cmBlogRepository.deleteById(entity.getBlogId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setBlogId(CmUtil.generateId("cm_blog"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 블로그 게시글 저장
             CmBlog saved = cmBlogRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -195,6 +211,7 @@ public class CmBlogService {
             if (entity.getBlogId() == null)
                 throw new CmBizException("수정 대상 blogId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 블로그 게시글 선택적 필드 수정
             int affected = cmBlogRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 CmBlog입니다: " + entity.getBlogId() + "::" + CmUtil.svcCallerInfo(this));
@@ -230,6 +247,7 @@ public class CmBlogService {
             .map(CmBlog::getBlogId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 블로그 게시글 조건별 삭제
             cmBlogRepository.deleteAllById(deleteIds);
         }
 
@@ -239,6 +257,7 @@ public class CmBlogService {
             .toList();
         for (CmBlog row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 블로그 게시글 선택적 필드 수정
             int affected = cmBlogRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -251,6 +270,7 @@ public class CmBlogService {
             row.setBlogId(CmUtil.generateId("cm_blog"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 블로그 게시글 저장
             cmBlogRepository.save(row);
         }
 

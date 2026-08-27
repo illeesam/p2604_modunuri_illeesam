@@ -30,6 +30,7 @@ public class SyPropService {
 
     /* 시스템 속성 키조회 */
     public SyPropDto.Item getById(String id) {
+        // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 단건 조회
         SyPropDto.Item dto = syPropRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyPropService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyPropDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 단건 조회
         return syPropRepository.selectById(id).orElse(null);
     }
 
     /* 시스템 속성 상세조회 */
     public SyProp findById(String id) {
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 단건 조회
         return syPropRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyProp findByIdOrNull(String id) {
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 단건 조회
         return syPropRepository.findById(id).orElse(null);
     }
 
     /* 시스템 속성 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 존재 여부 확인
         return syPropRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 존재 여부 확인
         if (!syPropRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 시스템 속성 목록조회 */
     public List<SyPropDto.Item> getList(SyPropDto.Request req) {
+        // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 목록 조회
         return syPropRepository.selectList(req);
     }
 
     /* 시스템 속성 페이지조회 */
     public BasePage<SyPropDto.Item> getPageData(SyPropDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 페이지 조회
         return syPropRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyPropService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 저장
         SyProp saved = syPropRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyPropService {
         VoUtil.voCopyExclude(body, entity, "propId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 저장
         SyProp saved = syPropRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyPropService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPropId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 선택적 필드 수정
         int affected = syPropRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyPropService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyProp entity = findById(id);
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 삭제
         syPropRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyPropService {
         if ("D".equals(rowStatus)) {
             if (entity.getPropId() == null)
                 throw new CmBizException("삭제 대상 propId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 존재 여부 확인
             if (!syPropRepository.existsById(entity.getPropId()))
                 throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getPropId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) ID 기준 삭제
             syPropRepository.deleteById(entity.getPropId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPropId(CmUtil.generateId("sy_prop"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 저장
             SyProp saved = syPropRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyPropService {
             if (entity.getPropId() == null)
                 throw new CmBizException("수정 대상 propId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 선택적 필드 수정
             int affected = syPropRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyProp입니다: " + entity.getPropId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyPropService {
             .map(SyProp::getPropId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 조건별 삭제
             syPropRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyPropService {
             .toList();
         for (SyProp row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 선택적 필드 수정
             int affected = syPropRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPropId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyPropService {
             row.setPropId(CmUtil.generateId("sy_prop"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 저장
             syPropRepository.save(row);
         }
 
@@ -234,6 +253,7 @@ public class SyPropService {
             if (row.getPropKey() == null || row.getPropKey().isBlank()) continue;
             SyPropDto.Request search = new SyPropDto.Request();
             search.setPropKey(row.getPropKey());
+            // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 목록 조회
             List<SyPropDto.Item> existing = syPropRepository.selectList(search);
             if (!existing.isEmpty()) {
                 /* updBy 는 수동 세팅 — updateSelective(JPAUpdateClause) 는 @PreUpdate 리스너를 타지 않는다 */
@@ -242,12 +262,14 @@ public class SyPropService {
                     .propValue(row.getPropValue())
                     .updBy(authId)
                     .build();
+                // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 선택적 필드 수정
                 syPropRepository.updateSelective(upd);
             } else {
                 row.setPropId(CmUtil.generateId("sy_prop"));
                 row.setRegBy(authId); row.setRegDate(now);
                 row.setUpdBy(authId); row.setUpdDate(now);
                 if (row.getUseYn() == null) row.setUseYn("Y");
+                // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 저장
                 syPropRepository.save(row);
             }
         }
@@ -259,6 +281,7 @@ public class SyPropService {
      *   검색조건 (useYn / propType / searchValue) 이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyPropDto.Request req) {
+        // [QueryDSL] 프로퍼티 (환경설정/공통 파라미터) 조회
         return syPropRepository.selectPathTreePropCnts(req);
     }
 }

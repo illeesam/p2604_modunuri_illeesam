@@ -30,6 +30,7 @@ public class DpAreaService {
 
     /* 전시 영역 키조회 */
     public DpAreaDto.Item getById(String id) {
+        // [QueryDSL] 디스플레이 영역 단건 조회
         DpAreaDto.Item dto = dpAreaRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class DpAreaService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpAreaDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 디스플레이 영역 단건 조회
         return dpAreaRepository.selectById(id).orElse(null);
     }
 
     /* 전시 영역 상세조회 */
     public DpArea findById(String id) {
+        // [쿼리 메서드] 디스플레이 영역 단건 조회
         return dpAreaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpArea findByIdOrNull(String id) {
+        // [쿼리 메서드] 디스플레이 영역 단건 조회
         return dpAreaRepository.findById(id).orElse(null);
     }
 
     /* 전시 영역 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 디스플레이 영역 존재 여부 확인
         return dpAreaRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 디스플레이 영역 존재 여부 확인
         if (!dpAreaRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 전시 영역 목록조회 */
     public List<DpAreaDto.Item> getList(DpAreaDto.Request req) {
+        // [QueryDSL] 디스플레이 영역 목록 조회
         return dpAreaRepository.selectList(req);
     }
 
     /* 전시 영역 페이지조회 */
     public BasePage<DpAreaDto.Item> getPageData(DpAreaDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 디스플레이 영역 페이지 조회
         return dpAreaRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class DpAreaService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 영역 저장
         DpArea saved = dpAreaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class DpAreaService {
         VoUtil.voCopyExclude(body, entity, "areaId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 영역 저장
         DpArea saved = dpAreaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class DpAreaService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAreaId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 디스플레이 영역 선택적 필드 수정
         int affected = dpAreaRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class DpAreaService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         DpArea entity = findById(id);
+        // [쿼리 메서드] 디스플레이 영역 삭제
         dpAreaRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class DpAreaService {
         if ("D".equals(rowStatus)) {
             if (entity.getAreaId() == null)
                 throw new CmBizException("삭제 대상 areaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 영역 존재 여부 확인
             if (!dpAreaRepository.existsById(entity.getAreaId()))
                 throw new CmBizException("존재하지 않는 DpArea입니다: " + entity.getAreaId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 영역 ID 기준 삭제
             dpAreaRepository.deleteById(entity.getAreaId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setAreaId(CmUtil.generateId("dp_area"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 영역 저장
             DpArea saved = dpAreaRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class DpAreaService {
             if (entity.getAreaId() == null)
                 throw new CmBizException("수정 대상 areaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 영역 선택적 필드 수정
             int affected = dpAreaRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 DpArea입니다: " + entity.getAreaId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class DpAreaService {
             .map(DpArea::getAreaId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 디스플레이 영역 조건별 삭제
             dpAreaRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class DpAreaService {
             .toList();
         for (DpArea row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 영역 선택적 필드 수정
             int affected = dpAreaRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getAreaId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class DpAreaService {
             row.setAreaId(CmUtil.generateId("dp_area"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 영역 저장
             dpAreaRepository.save(row);
         }
 
@@ -228,6 +247,7 @@ public class DpAreaService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpAreaDto.Request req) {
+        // [QueryDSL] 디스플레이 영역 조회
         return dpAreaRepository.selectPathTreeAreaCnts(req);
     }
 }

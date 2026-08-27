@@ -31,6 +31,7 @@ public class MdCbPatternYarnService {
 
     public List<MdCbPatternYarnDto.Item> getByPatternId(String patternId) {
         CmUtil.requireId(patternId, "patternId", this);
+        // [쿼리 메서드] 도안-실 매핑 (도안별 사용 실 목록) 조건별 조회
         return mdCbPatternYarnRepository.findByPatternIdOrderByRegDateAsc(patternId).stream()
             .map(e -> {
                 MdCbPatternYarnDto.Item item = new MdCbPatternYarnDto.Item();
@@ -62,6 +63,7 @@ public class MdCbPatternYarnService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
         }
+        // [쿼리 메서드] 도안-실 매핑 (도안별 사용 실 목록) 일괄 저장
         mdCbPatternYarnRepository.saveAll(rows);
 
         em.flush();

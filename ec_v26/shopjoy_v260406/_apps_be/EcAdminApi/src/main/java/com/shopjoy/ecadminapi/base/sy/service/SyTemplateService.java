@@ -30,6 +30,7 @@ public class SyTemplateService {
 
     /* 템플릿 키조회 */
     public SyTemplateDto.Item getById(String id) {
+        // [QueryDSL] 발송 템플릿 단건 조회
         SyTemplateDto.Item dto = syTemplateRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyTemplateService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyTemplateDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 발송 템플릿 단건 조회
         return syTemplateRepository.selectById(id).orElse(null);
     }
 
     /* 템플릿 상세조회 */
     public SyTemplate findById(String id) {
+        // [쿼리 메서드] 발송 템플릿 단건 조회
         return syTemplateRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyTemplate findByIdOrNull(String id) {
+        // [쿼리 메서드] 발송 템플릿 단건 조회
         return syTemplateRepository.findById(id).orElse(null);
     }
 
     /* 템플릿 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 발송 템플릿 존재 여부 확인
         return syTemplateRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 발송 템플릿 존재 여부 확인
         if (!syTemplateRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 템플릿 목록조회 */
     public List<SyTemplateDto.Item> getList(SyTemplateDto.Request req) {
+        // [QueryDSL] 발송 템플릿 목록 조회
         return syTemplateRepository.selectList(req);
     }
 
     /* 템플릿 페이지조회 */
     public BasePage<SyTemplateDto.Item> getPageData(SyTemplateDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 발송 템플릿 페이지 조회
         return syTemplateRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyTemplateService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 발송 템플릿 저장
         SyTemplate saved = syTemplateRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyTemplateService {
         VoUtil.voCopyExclude(body, entity, "templateId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 발송 템플릿 저장
         SyTemplate saved = syTemplateRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyTemplateService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getTemplateId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 발송 템플릿 선택적 필드 수정
         int affected = syTemplateRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyTemplateService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyTemplate entity = findById(id);
+        // [쿼리 메서드] 발송 템플릿 삭제
         syTemplateRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyTemplateService {
         if ("D".equals(rowStatus)) {
             if (entity.getTemplateId() == null)
                 throw new CmBizException("삭제 대상 templateId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 발송 템플릿 존재 여부 확인
             if (!syTemplateRepository.existsById(entity.getTemplateId()))
                 throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 발송 템플릿 ID 기준 삭제
             syTemplateRepository.deleteById(entity.getTemplateId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setTemplateId(CmUtil.generateId("sy_template"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 발송 템플릿 저장
             SyTemplate saved = syTemplateRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyTemplateService {
             if (entity.getTemplateId() == null)
                 throw new CmBizException("수정 대상 templateId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 발송 템플릿 선택적 필드 수정
             int affected = syTemplateRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyTemplate입니다: " + entity.getTemplateId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyTemplateService {
             .map(SyTemplate::getTemplateId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 발송 템플릿 조건별 삭제
             syTemplateRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyTemplateService {
             .toList();
         for (SyTemplate row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 발송 템플릿 선택적 필드 수정
             int affected = syTemplateRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getTemplateId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyTemplateService {
             row.setTemplateId(CmUtil.generateId("sy_template"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 발송 템플릿 저장
             syTemplateRepository.save(row);
         }
 
@@ -228,6 +247,7 @@ public class SyTemplateService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyTemplateDto.Request req) {
+        // [QueryDSL] 발송 템플릿 조회
         return syTemplateRepository.selectPathTreeTemplateCnts(req);
     }
 }

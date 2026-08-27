@@ -30,6 +30,7 @@ public class CmBlogTagService {
 
     /* 게시물 태그 키조회 */
     public CmBlogTagDto.Item getById(String id) {
+        // [QueryDSL] 블로그 태그 단건 조회
         CmBlogTagDto.Item dto = cmBlogTagRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class CmBlogTagService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmBlogTagDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 블로그 태그 단건 조회
         return cmBlogTagRepository.selectById(id).orElse(null);
     }
 
     /* 게시물 태그 상세조회 */
     public CmBlogTag findById(String id) {
+        // [쿼리 메서드] 블로그 태그 단건 조회
         return cmBlogTagRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmBlogTag findByIdOrNull(String id) {
+        // [쿼리 메서드] 블로그 태그 단건 조회
         return cmBlogTagRepository.findById(id).orElse(null);
     }
 
     /* 게시물 태그 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 블로그 태그 존재 여부 확인
         return cmBlogTagRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 블로그 태그 존재 여부 확인
         if (!cmBlogTagRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 게시물 태그 목록조회 */
     public List<CmBlogTagDto.Item> getList(CmBlogTagDto.Request req) {
+        // [QueryDSL] 블로그 태그 목록 조회
         return cmBlogTagRepository.selectList(req);
     }
 
     /* 게시물 태그 페이지조회 */
     public BasePage<CmBlogTagDto.Item> getPageData(CmBlogTagDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 블로그 태그 페이지 조회
         return cmBlogTagRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class CmBlogTagService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 태그 저장
         CmBlogTag saved = cmBlogTagRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class CmBlogTagService {
         VoUtil.voCopyExclude(body, entity, "blogTagId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 태그 저장
         CmBlogTag saved = cmBlogTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class CmBlogTagService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 블로그 태그 선택적 필드 수정
         int affected = cmBlogTagRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class CmBlogTagService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmBlogTag entity = findById(id);
+        // [쿼리 메서드] 블로그 태그 삭제
         cmBlogTagRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class CmBlogTagService {
         if ("D".equals(rowStatus)) {
             if (entity.getBlogTagId() == null)
                 throw new CmBizException("삭제 대상 blogTagId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 블로그 태그 존재 여부 확인
             if (!cmBlogTagRepository.existsById(entity.getBlogTagId()))
                 throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 블로그 태그 ID 기준 삭제
             cmBlogTagRepository.deleteById(entity.getBlogTagId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 블로그 태그 저장
             CmBlogTag saved = cmBlogTagRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class CmBlogTagService {
             if (entity.getBlogTagId() == null)
                 throw new CmBizException("수정 대상 blogTagId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 블로그 태그 선택적 필드 수정
             int affected = cmBlogTagRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class CmBlogTagService {
             .map(CmBlogTag::getBlogTagId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 블로그 태그 조건별 삭제
             cmBlogTagRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class CmBlogTagService {
             .toList();
         for (CmBlogTag row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 블로그 태그 선택적 필드 수정
             int affected = cmBlogTagRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class CmBlogTagService {
             row.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 블로그 태그 저장
             cmBlogTagRepository.save(row);
         }
 

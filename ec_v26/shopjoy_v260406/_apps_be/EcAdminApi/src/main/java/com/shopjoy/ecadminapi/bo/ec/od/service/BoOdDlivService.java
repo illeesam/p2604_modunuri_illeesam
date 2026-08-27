@@ -106,12 +106,14 @@ public class BoOdDlivService {
     @Transactional
     public OdDlivDto.Item saveOneStatus(OdDliv row) {
         CmUtil.requireId(row == null ? null : row.getDlivId(), "dlivId", this);
+        // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 단건 조회
         OdDliv entity = odDlivRepository.findById(row.getDlivId())
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getDlivId() + "::" + CmUtil.svcCallerInfo(this)));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
         entity.setDlivStatusCd(row.getDlivStatusCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 저장
         OdDliv saved = odDlivRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -125,11 +127,13 @@ public class BoOdDlivService {
         CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdDliv row : rows) {
+            // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 단건 조회
             odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 e.setDlivStatusCdBefore(e.getDlivStatusCd());
                 e.setDlivStatusCd(row.getDlivStatusCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 저장
                 OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -143,11 +147,13 @@ public class BoOdDlivService {
         CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdDliv row : rows) {
+            // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 단건 조회
             odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 if (row.getOutboundCourierCd() != null) e.setOutboundCourierCd(row.getOutboundCourierCd());
                 if (row.getOutboundTrackingNo() != null) e.setOutboundTrackingNo(row.getOutboundTrackingNo());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 저장
                 OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -161,9 +167,11 @@ public class BoOdDlivService {
         CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdDliv row : rows) {
+            // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 단건 조회
             odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 저장
                 OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -177,9 +185,11 @@ public class BoOdDlivService {
         CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdDliv row : rows) {
+            // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 단건 조회
             odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송) 저장
                 OdDliv saved = odDlivRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });

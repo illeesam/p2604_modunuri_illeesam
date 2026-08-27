@@ -32,6 +32,7 @@ public class SyContactService {
 
     /* 문의 키조회 */
     public SyContactDto.Item getById(String id) {
+        // [QueryDSL] 고객문의 단건 조회
         SyContactDto.Item dto = syContactRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -39,39 +40,46 @@ public class SyContactService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyContactDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 고객문의 단건 조회
         return syContactRepository.selectById(id).orElse(null);
     }
 
     /* 문의 상세조회 */
     public SyContact findById(String id) {
+        // [쿼리 메서드] 고객문의 단건 조회
         return syContactRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyContact findByIdOrNull(String id) {
+        // [쿼리 메서드] 고객문의 단건 조회
         return syContactRepository.findById(id).orElse(null);
     }
 
     /* 문의 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 고객문의 존재 여부 확인
         return syContactRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 고객문의 존재 여부 확인
         if (!syContactRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 문의 목록조회 */
     public List<SyContactDto.Item> getList(SyContactDto.Request req) {
+        // [QueryDSL] 고객문의 목록 조회
         return syContactRepository.selectList(req);
     }
 
     /* 문의 페이지조회 */
     public BasePage<SyContactDto.Item> getPageData(SyContactDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 고객문의 페이지 조회
         return syContactRepository.selectPageData(req);
     }
 
@@ -84,6 +92,7 @@ public class SyContactService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 고객문의 저장
         SyContact saved = syContactRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());
@@ -105,6 +114,7 @@ public class SyContactService {
         CmUtil.requireText(entity.getContactTitle(), "문의 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 고객문의 저장
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.SY_CONTACT_CONTENT, id);
@@ -123,6 +133,7 @@ public class SyContactService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getContactId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 고객문의 선택적 필드 수정
         int affected = syContactRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -135,6 +146,7 @@ public class SyContactService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyContact entity = findById(id);
+        // [쿼리 메서드] 고객문의 삭제
         syContactRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -156,14 +168,17 @@ public class SyContactService {
         if ("D".equals(rowStatus)) {
             if (entity.getContactId() == null)
                 throw new CmBizException("삭제 대상 contactId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 고객문의 존재 여부 확인
             if (!syContactRepository.existsById(entity.getContactId()))
                 throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 고객문의 ID 기준 삭제
             syContactRepository.deleteById(entity.getContactId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setContactId(CmUtil.generateId("sy_contact"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 고객문의 저장
             SyContact saved = syContactRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -171,6 +186,7 @@ public class SyContactService {
             if (entity.getContactId() == null)
                 throw new CmBizException("수정 대상 contactId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 고객문의 선택적 필드 수정
             int affected = syContactRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyContact입니다: " + entity.getContactId() + "::" + CmUtil.svcCallerInfo(this));
@@ -206,6 +222,7 @@ public class SyContactService {
             .map(SyContact::getContactId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 고객문의 조건별 삭제
             syContactRepository.deleteAllById(deleteIds);
         }
 
@@ -215,6 +232,7 @@ public class SyContactService {
             .toList();
         for (SyContact row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 고객문의 선택적 필드 수정
             int affected = syContactRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getContactId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -227,6 +245,7 @@ public class SyContactService {
             row.setContactId(CmUtil.generateId("sy_contact"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 고객문의 저장
             syContactRepository.save(row);
         }
 

@@ -63,6 +63,7 @@ public class FoMyPageService {
     /** getMyInfo — 조회 */
     public MbMemberDto.Item getMyInfo() {
         String memberId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] Member 단건 조회
         MbMemberDto.Item dto = memberRepository.selectById(memberId).orElse(null);
         if (dto == null) throw new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         _itemFillRelations(dto);
@@ -76,6 +77,7 @@ public class FoMyPageService {
         // 하위 배송지 목록 조회 (memberId 기준)
         MbMemberAddrDto.Request addrReq = new MbMemberAddrDto.Request();
         addrReq.setMemberId(member.getMemberId());
+        // [쿼리 메서드] Addr 목록 조회
         member.setAddrs(addrRepository.selectList(addrReq)); // 배송지목록
     }
 
@@ -83,15 +85,18 @@ public class FoMyPageService {
     @Transactional
     public MbMemberDto.Item updateMyInfo(MbMember body) {
         String memberId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] Member 단건 조회
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
 
         VoUtil.voCopyInclude(body, member, "memberNm^memberPhone^memberGender^birthDate^memberZipCode^memberAddr^memberAddrDetail");
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] Member 저장
         MbMember saved = memberRepository.save(member);
         if (saved == null) throw new CmBizException("회원정보 수정에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
+        // [쿼리 메서드] Member 단건 조회
         return memberRepository.selectById(memberId).orElse(null);
     }
 
@@ -99,6 +104,7 @@ public class FoMyPageService {
     @Transactional
     public void changePassword(String currentPassword, String newPassword) {
         String memberId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] Member 단건 조회
         MbMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
 
@@ -108,6 +114,7 @@ public class FoMyPageService {
         member.setLoginPwdHash(passwordEncoder.encode(newPassword));
         member.setUpdBy(memberId);
         member.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] Member 저장
         MbMember saved = memberRepository.save(member);
         if (saved == null) throw new CmBizException("비밀번호 변경에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -118,6 +125,7 @@ public class FoMyPageService {
         String memberId = SecurityUtil.getAuthUser().authId();
         MbMemberAddrDto.Request req = new MbMemberAddrDto.Request();
         req.setMemberId(memberId);
+        // [쿼리 메서드] Addr 목록 조회
         return addrRepository.selectList(req);
     }
 
@@ -133,6 +141,7 @@ public class FoMyPageService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(memberId);
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] Addr 저장
         MbMemberAddr saved = addrRepository.save(body);
         if (saved == null) throw new CmBizException("주소 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -142,10 +151,12 @@ public class FoMyPageService {
     @Transactional
     public void deleteAddr(String addrId) {
         String memberId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] Addr 단건 조회
         MbMemberAddr addr = addrRepository.findById(addrId)
                 .orElseThrow(() -> new CmBizException("주소를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
         if (!memberId.equals(addr.getMemberId()))
             throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
+        // [쿼리 메서드] Addr 삭제
         addrRepository.delete(addr);
     }
 
@@ -153,6 +164,7 @@ public class FoMyPageService {
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Order 목록 조회
         List<OdOrderDto.Item> orders = orderRepository.selectList(req);
         _fillOrderItems(orders);
         return orders;
@@ -162,6 +174,7 @@ public class FoMyPageService {
     public BasePage<OdOrderDto.Item> getMyOrdersPage(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Order 페이지 조회
         BasePage<OdOrderDto.Item> page = orderRepository.selectPageData(req);
         _fillOrderItems(page.getPageList());
         return page;
@@ -175,6 +188,7 @@ public class FoMyPageService {
         if (orderIds.isEmpty()) return;
         OdOrderItemDto.Request itemReq = new OdOrderItemDto.Request();
         itemReq.setOrderIds(orderIds);
+        // [쿼리 메서드] OrderItem 목록 조회
         Map<String, List<OdOrderItemDto.Item>> itemMap = orderItemRepository.selectList(itemReq).stream()
             .collect(Collectors.groupingBy(OdOrderItemDto.Item::getOrderId));
         for (OdOrderDto.Item o : orders) {
@@ -186,6 +200,7 @@ public class FoMyPageService {
     public List<OdClaimDto.Item> getMyClaims(OdClaimDto.Request req) {
         if (req == null) req = new OdClaimDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Claim 목록 조회
         return claimRepository.selectList(req);
     }
 
@@ -193,6 +208,7 @@ public class FoMyPageService {
     public BasePage<OdClaimDto.Item> getMyClaimsPage(OdClaimDto.Request req) {
         if (req == null) req = new OdClaimDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Claim 페이지 조회
         return claimRepository.selectPageData(req);
     }
 
@@ -200,6 +216,7 @@ public class FoMyPageService {
     public List<PmCouponDto.Item> getMyCoupons(PmCouponDto.Request req) {
         if (req == null) req = new PmCouponDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Coupon 목록 조회
         return couponRepository.selectList(req);
     }
 
@@ -207,6 +224,7 @@ public class FoMyPageService {
     public BasePage<PmCouponDto.Item> getMyCouponsPage(PmCouponDto.Request req) {
         if (req == null) req = new PmCouponDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Coupon 페이지 조회
         return couponRepository.selectPageData(req);
     }
 
@@ -214,6 +232,7 @@ public class FoMyPageService {
     public List<PmCacheDto.Item> getMyCacheHistory(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Cache 목록 조회
         return cacheRepository.selectList(req);
     }
 
@@ -221,6 +240,7 @@ public class FoMyPageService {
     public BasePage<PmCacheDto.Item> getMyCacheHistoryPage(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Cache 페이지 조회
         return cacheRepository.selectPageData(req);
     }
 
@@ -228,6 +248,7 @@ public class FoMyPageService {
     public List<SyContactDto.Item> getMyInquiries(SyContactDto.Request req) {
         if (req == null) req = new SyContactDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Contact 목록 조회
         return contactRepository.selectList(req);
     }
 
@@ -235,6 +256,7 @@ public class FoMyPageService {
     public BasePage<SyContactDto.Item> getMyInquiriesPage(SyContactDto.Request req) {
         if (req == null) req = new SyContactDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Contact 페이지 조회
         return contactRepository.selectPageData(req);
     }
 
@@ -247,6 +269,7 @@ public class FoMyPageService {
     public List<CmChattDto.Item> getMyChats(CmChattDto.Request req) {
         if (req == null) req = new CmChattDto.Request();
         req.setRefId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Chatt 목록 조회
         return chattRepository.selectList(req);
     }
 
@@ -254,6 +277,7 @@ public class FoMyPageService {
     public BasePage<CmChattDto.Item> getMyChatsPage(CmChattDto.Request req) {
         if (req == null) req = new CmChattDto.Request();
         req.setRefId(SecurityUtil.getAuthUser().authId());
+        // [쿼리 메서드] Chatt 페이지 조회
         return chattRepository.selectPageData(req);
     }
 }

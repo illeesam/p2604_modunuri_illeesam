@@ -21,6 +21,7 @@ public class BoPdProdHistService {
     public List<PdProdHistDto.Item> getOrders(String prodId, PdProdHistDto.Request req) {
         if (req == null) req = new PdProdHistDto.Request();
         req.setProdId(prodId);
+        // [QueryDSL] 상품 변경이력 조회
         return pdProdHistQueryRepository.selectOrders(req);
     }
 
@@ -29,7 +30,9 @@ public class BoPdProdHistService {
         if (req == null) req = new PdProdHistDto.Request();
         req.setProdId(prodId);
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 변경이력 조회
         List<PdProdHistDto.Item> list = pdProdHistQueryRepository.selectStockHist(req);
+        // [QueryDSL] 상품 변경이력 건수 조회
         long total = pdProdHistQueryRepository.countStockHist(req);
         return PageResult.of(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
@@ -39,7 +42,9 @@ public class BoPdProdHistService {
         if (req == null) req = new PdProdHistDto.Request();
         req.setProdId(prodId);
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 변경이력 조회
         List<PdProdHistDto.Item> list = pdProdHistQueryRepository.selectPriceHist(req);
+        // [QueryDSL] 상품 변경이력 건수 조회
         long total = pdProdHistQueryRepository.countPriceHist(req);
         return PageResult.of(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
@@ -49,7 +54,9 @@ public class BoPdProdHistService {
         if (req == null) req = new PdProdHistDto.Request();
         req.setProdId(prodId);
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 변경이력 조회
         List<PdProdHistDto.Item> list = pdProdHistQueryRepository.selectStatusHist(req);
+        // [QueryDSL] 상품 변경이력 건수 조회
         long total = pdProdHistQueryRepository.countStatusHist(req);
         return PageResult.of(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
@@ -59,7 +66,9 @@ public class BoPdProdHistService {
         if (req == null) req = new PdProdHistDto.Request();
         req.setProdId(prodId);
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 변경이력 조회
         List<PdProdHistDto.Item> list = pdProdHistQueryRepository.selectChangeHist(req);
+        // [QueryDSL] 상품 변경이력 건수 조회
         long total = pdProdHistQueryRepository.countChangeHist(req);
         return PageResult.of(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }

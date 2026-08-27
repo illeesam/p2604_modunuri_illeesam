@@ -30,6 +30,7 @@ public class CmBlogReplyService {
 
     /* 게시물 댓글 키조회 */
     public CmBlogReplyDto.Item getById(String id) {
+        // [QueryDSL] 블로그 댓글 단건 조회
         CmBlogReplyDto.Item dto = cmBlogReplyRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class CmBlogReplyService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmBlogReplyDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 블로그 댓글 단건 조회
         return cmBlogReplyRepository.selectById(id).orElse(null);
     }
 
     /* 게시물 댓글 상세조회 */
     public CmBlogReply findById(String id) {
+        // [쿼리 메서드] 블로그 댓글 단건 조회
         return cmBlogReplyRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmBlogReply findByIdOrNull(String id) {
+        // [쿼리 메서드] 블로그 댓글 단건 조회
         return cmBlogReplyRepository.findById(id).orElse(null);
     }
 
     /* 게시물 댓글 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 블로그 댓글 존재 여부 확인
         return cmBlogReplyRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 블로그 댓글 존재 여부 확인
         if (!cmBlogReplyRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 게시물 댓글 목록조회 */
     public List<CmBlogReplyDto.Item> getList(CmBlogReplyDto.Request req) {
+        // [QueryDSL] 블로그 댓글 목록 조회
         return cmBlogReplyRepository.selectList(req);
     }
 
     /* 게시물 댓글 페이지조회 */
     public BasePage<CmBlogReplyDto.Item> getPageData(CmBlogReplyDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 블로그 댓글 페이지 조회
         return cmBlogReplyRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class CmBlogReplyService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 댓글 저장
         CmBlogReply saved = cmBlogReplyRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class CmBlogReplyService {
         VoUtil.voCopyExclude(body, entity, "blogReplyId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 댓글 저장
         CmBlogReply saved = cmBlogReplyRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class CmBlogReplyService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 블로그 댓글 선택적 필드 수정
         int affected = cmBlogReplyRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class CmBlogReplyService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmBlogReply entity = findById(id);
+        // [쿼리 메서드] 블로그 댓글 삭제
         cmBlogReplyRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class CmBlogReplyService {
         if ("D".equals(rowStatus)) {
             if (entity.getBlogReplyId() == null)
                 throw new CmBizException("삭제 대상 blogReplyId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 블로그 댓글 존재 여부 확인
             if (!cmBlogReplyRepository.existsById(entity.getBlogReplyId()))
                 throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 블로그 댓글 ID 기준 삭제
             cmBlogReplyRepository.deleteById(entity.getBlogReplyId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setBlogReplyId(CmUtil.generateId("cm_blog_reply"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 블로그 댓글 저장
             CmBlogReply saved = cmBlogReplyRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class CmBlogReplyService {
             if (entity.getBlogReplyId() == null)
                 throw new CmBizException("수정 대상 blogReplyId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 블로그 댓글 선택적 필드 수정
             int affected = cmBlogReplyRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class CmBlogReplyService {
             .map(CmBlogReply::getBlogReplyId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 블로그 댓글 조건별 삭제
             cmBlogReplyRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class CmBlogReplyService {
             .toList();
         for (CmBlogReply row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 블로그 댓글 선택적 필드 수정
             int affected = cmBlogReplyRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class CmBlogReplyService {
             row.setBlogReplyId(CmUtil.generateId("cm_blog_reply"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 블로그 댓글 저장
             cmBlogReplyRepository.save(row);
         }
 

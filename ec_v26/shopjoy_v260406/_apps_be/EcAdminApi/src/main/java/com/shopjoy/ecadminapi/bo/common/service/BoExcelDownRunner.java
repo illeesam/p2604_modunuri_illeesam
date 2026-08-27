@@ -270,6 +270,7 @@ public class BoExcelDownRunner {
             .physicalPath(out.getAbsolutePath())
             .attachUrl("/cdn/" + storageDir + "/" + fileNm)
             .build();
+        // [쿼리 메서드] 첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리 저장
         return syAttachRepository.save(attach);
     }
 
@@ -282,6 +283,7 @@ public class BoExcelDownRunner {
                 log.warn("[ExcelRun] 파일 삭제 실패 — {}", a.getPhysicalPath());
             }
             try {
+                // [쿼리 메서드] 첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리 ID 기준 삭제
                 syAttachRepository.deleteById(a.getAttachId());
             } catch (Exception e) {
                 log.warn("[ExcelRun] attach 삭제 실패 — {}", a.getAttachId());

@@ -19,6 +19,7 @@ public class SyUserPrefService {
 
     /** userId 기준 전체 개인화 설정을 Map<prefKey, prefValue> 로 반환 */
     public Map<String, String> getAll(String userId) {
+        // [쿼리 메서드] 관리자 사용자 개인화 설정 조건별 조회
         return syUserPrefRepository.findByUserIdOrderByPrefKeyAsc(userId).stream()
                 .collect(Collectors.toMap(
                         SyUserPref::getPrefKey,
@@ -31,6 +32,7 @@ public class SyUserPrefService {
      *  복합 PK → 대리키 전환으로 findById 대신 (userId, prefKey) 조회로 기존 행을 찾는다. */
     @Transactional
     public void upsert(String userId, String prefKey, String prefValue) {
+        // [쿼리 메서드] 관리자 사용자 개인화 설정 조건별 조회
         SyUserPref entity = syUserPrefRepository.findByUserIdAndPrefKey(userId, prefKey)
                 .orElseGet(() -> SyUserPref.builder()
                         .userPrefId(CmUtil.generateId("sy_user_pref"))
@@ -38,6 +40,7 @@ public class SyUserPrefService {
                         .prefKey(prefKey)
                         .build());
         entity.setPrefValue(prefValue);
+        // [쿼리 메서드] 관리자 사용자 개인화 설정 저장
         syUserPrefRepository.save(entity);
     }
 }

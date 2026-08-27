@@ -40,6 +40,7 @@ public class CmChattMsgService {
 
     /* 채팅 메시지 키조회 */
     public CmChattMsgDto.Item getById(String id) {
+        // [QueryDSL] 채팅 메시지 단건 조회
         CmChattMsgDto.Item dto = cmChattMsgRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         fnFillAttachFiles(List.of(dto));
@@ -48,6 +49,7 @@ public class CmChattMsgService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmChattMsgDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 채팅 메시지 단건 조회
         CmChattMsgDto.Item dto = cmChattMsgRepository.selectById(id).orElse(null);
         if (dto != null) fnFillAttachFiles(List.of(dto));
         return dto;
@@ -55,28 +57,33 @@ public class CmChattMsgService {
 
     /* 채팅 메시지 상세조회 */
     public CmChattMsg findById(String id) {
+        // [쿼리 메서드] 채팅 메시지 단건 조회
         return cmChattMsgRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmChattMsg findByIdOrNull(String id) {
+        // [쿼리 메서드] 채팅 메시지 단건 조회
         return cmChattMsgRepository.findById(id).orElse(null);
     }
 
     /* 채팅 메시지 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 채팅 메시지 존재 여부 확인
         return cmChattMsgRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 채팅 메시지 존재 여부 확인
         if (!cmChattMsgRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 채팅 메시지 목록조회 */
     public List<CmChattMsgDto.Item> getList(CmChattMsgDto.Request req) {
+        // [QueryDSL] 채팅 메시지 목록 조회
         List<CmChattMsgDto.Item> list = cmChattMsgRepository.selectList(req);
         fnFillAttachFiles(list);
         return list;
@@ -85,6 +92,7 @@ public class CmChattMsgService {
     /* 채팅 메시지 페이지조회 */
     public BasePage<CmChattMsgDto.Item> getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 채팅 메시지 페이지 조회
         BasePage<CmChattMsgDto.Item> res = cmChattMsgRepository.selectPageData(req);
         if (res != null) fnFillAttachFiles(res.getPageList());
         return res;
@@ -125,6 +133,7 @@ public class CmChattMsgService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 채팅 메시지 저장
         CmChattMsg saved = cmChattMsgRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -141,6 +150,7 @@ public class CmChattMsgService {
         VoUtil.voCopyExclude(body, entity, "chattMsgId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 채팅 메시지 저장
         CmChattMsg saved = cmChattMsgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -155,6 +165,7 @@ public class CmChattMsgService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getChattMsgId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 채팅 메시지 선택적 필드 수정
         int affected = cmChattMsgRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -167,6 +178,7 @@ public class CmChattMsgService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmChattMsg entity = findById(id);
+        // [쿼리 메서드] 채팅 메시지 삭제
         cmChattMsgRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -188,14 +200,17 @@ public class CmChattMsgService {
         if ("D".equals(rowStatus)) {
             if (entity.getChattMsgId() == null)
                 throw new CmBizException("삭제 대상 chattMsgId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 채팅 메시지 존재 여부 확인
             if (!cmChattMsgRepository.existsById(entity.getChattMsgId()))
                 throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 채팅 메시지 ID 기준 삭제
             cmChattMsgRepository.deleteById(entity.getChattMsgId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setChattMsgId(CmUtil.generateId("cm_chatt_msg"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 채팅 메시지 저장
             CmChattMsg saved = cmChattMsgRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -203,6 +218,7 @@ public class CmChattMsgService {
             if (entity.getChattMsgId() == null)
                 throw new CmBizException("수정 대상 chattMsgId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 채팅 메시지 선택적 필드 수정
             int affected = cmChattMsgRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 CmChattMsg입니다: " + entity.getChattMsgId() + "::" + CmUtil.svcCallerInfo(this));
@@ -238,6 +254,7 @@ public class CmChattMsgService {
             .map(CmChattMsg::getChattMsgId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 채팅 메시지 조건별 삭제
             cmChattMsgRepository.deleteAllById(deleteIds);
         }
 
@@ -247,6 +264,7 @@ public class CmChattMsgService {
             .toList();
         for (CmChattMsg row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 채팅 메시지 선택적 필드 수정
             int affected = cmChattMsgRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getChattMsgId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -259,6 +277,7 @@ public class CmChattMsgService {
             row.setChattMsgId(CmUtil.generateId("cm_chatt_msg"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 채팅 메시지 저장
             cmChattMsgRepository.save(row);
         }
 

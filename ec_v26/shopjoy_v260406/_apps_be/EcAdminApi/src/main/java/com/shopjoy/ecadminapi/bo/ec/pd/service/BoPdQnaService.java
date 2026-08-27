@@ -47,12 +47,14 @@ public class BoPdQnaService {
     /** saveAnswer — Q&A 답변 저장 */
     @Transactional
     public PdProdQnaDto.Item saveAnswer(String id, PdProdQnaAnswerDto.Request req) {
+        // [쿼리 메서드] 상품문의 단건 조회
         PdProdQna entity = pdProdQnaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setAnswContent(req.getAnswContent());
         entity.setAnswDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품문의 저장
         PdProdQna saved = pdProdQnaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

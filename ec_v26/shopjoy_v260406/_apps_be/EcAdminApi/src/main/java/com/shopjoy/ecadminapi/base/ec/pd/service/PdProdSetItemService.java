@@ -30,6 +30,7 @@ public class PdProdSetItemService {
 
     /* 세트상품 구성 키조회 */
     public PdProdSetItemDto.Item getById(String id) {
+        // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 단건 조회
         PdProdSetItemDto.Item dto = pdProdSetItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdProdSetItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdSetItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 단건 조회
         return pdProdSetItemRepository.selectById(id).orElse(null);
     }
 
     /* 세트상품 구성 상세조회 */
     public PdProdSetItem findById(String id) {
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 단건 조회
         return pdProdSetItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdSetItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 단건 조회
         return pdProdSetItemRepository.findById(id).orElse(null);
     }
 
     /* 세트상품 구성 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 존재 여부 확인
         return pdProdSetItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 존재 여부 확인
         if (!pdProdSetItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 세트상품 구성 목록조회 */
     public List<PdProdSetItemDto.Item> getList(PdProdSetItemDto.Request req) {
+        // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 목록 조회
         return pdProdSetItemRepository.selectList(req);
     }
 
     /* 세트상품 구성 페이지조회 */
     public BasePage<PdProdSetItemDto.Item> getPageData(PdProdSetItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 페이지 조회
         return pdProdSetItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdProdSetItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 저장
         PdProdSetItem saved = pdProdSetItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdProdSetItemService {
         VoUtil.voCopyExclude(body, entity, "prodSetItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 저장
         PdProdSetItem saved = pdProdSetItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdProdSetItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 선택적 필드 수정
         int affected = pdProdSetItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdProdSetItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdSetItem entity = findById(id);
+        // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 삭제
         pdProdSetItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdProdSetItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdSetItemId() == null)
                 throw new CmBizException("삭제 대상 prodSetItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 존재 여부 확인
             if (!pdProdSetItemRepository.existsById(entity.getProdSetItemId()))
                 throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) ID 기준 삭제
             pdProdSetItemRepository.deleteById(entity.getProdSetItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdSetItemId(CmUtil.generateId("pd_prod_set_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 저장
             PdProdSetItem saved = pdProdSetItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdProdSetItemService {
             if (entity.getProdSetItemId() == null)
                 throw new CmBizException("수정 대상 prodSetItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 선택적 필드 수정
             int affected = pdProdSetItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdProdSetItemService {
             .map(PdProdSetItem::getProdSetItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 조건별 삭제
             pdProdSetItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdProdSetItemService {
             .toList();
         for (PdProdSetItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 선택적 필드 수정
             int affected = pdProdSetItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdProdSetItemService {
             row.setProdSetItemId(CmUtil.generateId("pd_prod_set_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의) 저장
             pdProdSetItemRepository.save(row);
         }
 

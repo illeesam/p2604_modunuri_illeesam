@@ -30,6 +30,7 @@ public class StDlivFeePolicyService {
 
     /* 배송수수료정책 키조회 */
     public StDlivFeePolicyDto.Item getById(String id) {
+        // [QueryDSL] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 단건 조회
         StDlivFeePolicyDto.Item dto = stDlivFeePolicyRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,28 +38,33 @@ public class StDlivFeePolicyService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StDlivFeePolicyDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 단건 조회
         return stDlivFeePolicyRepository.selectById(id).orElse(null);
     }
 
     /* 배송수수료정책 상세조회 */
     public StDlivFeePolicy findById(String id) {
+        // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 단건 조회
         return stDlivFeePolicyRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /* 배송수수료정책 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 존재 여부 확인
         return stDlivFeePolicyRepository.existsById(id);
     }
 
     /* 배송수수료정책 목록조회 */
     public List<StDlivFeePolicyDto.Item> getList(StDlivFeePolicyDto.Request req) {
+        // [QueryDSL] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 목록 조회
         return stDlivFeePolicyRepository.selectList(req);
     }
 
     /* 배송수수료정책 페이지조회 */
     public BasePage<StDlivFeePolicyDto.Item> getPageData(StDlivFeePolicyDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 페이지 조회
         return stDlivFeePolicyRepository.selectPageData(req);
     }
 
@@ -71,6 +77,7 @@ public class StDlivFeePolicyService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 저장
         StDlivFeePolicy saved = stDlivFeePolicyRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -85,6 +92,7 @@ public class StDlivFeePolicyService {
         VoUtil.voCopyExclude(body, entity, "dlivFeePolicyId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 저장
         StDlivFeePolicy saved = stDlivFeePolicyRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -96,6 +104,7 @@ public class StDlivFeePolicyService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StDlivFeePolicy entity = findById(id);
+        // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 삭제
         stDlivFeePolicyRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -112,8 +121,10 @@ public class StDlivFeePolicyService {
         if ("D".equals(rowStatus)) {
             if (entity.getDlivFeePolicyId() == null)
                 throw new CmBizException("삭제 대상 dlivFeePolicyId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 존재 여부 확인
             if (!stDlivFeePolicyRepository.existsById(entity.getDlivFeePolicyId()))
                 throw new CmBizException("존재하지 않는 StDlivFeePolicy입니다: " + entity.getDlivFeePolicyId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 ID 기준 삭제
             stDlivFeePolicyRepository.deleteById(entity.getDlivFeePolicyId());
             return null;
         } else if ("I".equals(rowStatus)) {
@@ -121,6 +132,7 @@ public class StDlivFeePolicyService {
             if (entity.getSiteId() == null || entity.getSiteId().isBlank()) { entity.setSiteId(SecurityUtil.getSiteIdOrDefault()); }
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 저장
             StDlivFeePolicy saved = stDlivFeePolicyRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -128,6 +140,7 @@ public class StDlivFeePolicyService {
             if (entity.getDlivFeePolicyId() == null)
                 throw new CmBizException("수정 대상 dlivFeePolicyId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 선택적 필드 수정
             int affected = stDlivFeePolicyRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StDlivFeePolicy입니다: " + entity.getDlivFeePolicyId() + "::" + CmUtil.svcCallerInfo(this));
@@ -159,12 +172,14 @@ public class StDlivFeePolicyService {
             .map(StDlivFeePolicy::getDlivFeePolicyId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 조건별 삭제
             stDlivFeePolicyRepository.deleteAllById(deleteIds);
         }
 
         List<StDlivFeePolicy> updateRows = rows.stream().filter(r -> "U".equals(r.getRowStatus())).toList();
         for (StDlivFeePolicy row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 선택적 필드 수정
             int affected = stDlivFeePolicyRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDlivFeePolicyId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -175,6 +190,7 @@ public class StDlivFeePolicyService {
             if (row.getSiteId() == null || row.getSiteId().isBlank()) { row.setSiteId(SecurityUtil.getSiteIdOrDefault()); }
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액 저장
             stDlivFeePolicyRepository.save(row);
         }
 

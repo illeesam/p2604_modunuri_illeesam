@@ -46,12 +46,14 @@ public class BoPmGiftService {
     /** changeStatus — giftStatusCd 변경 (이력 보존) */
     @Transactional
     public PmGiftDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 사은품 단건 조회
         PmGift entity = pmGiftRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setGiftStatusCdBefore(entity.getGiftStatusCd());
         entity.setGiftStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 사은품 저장
         PmGift saved = pmGiftRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

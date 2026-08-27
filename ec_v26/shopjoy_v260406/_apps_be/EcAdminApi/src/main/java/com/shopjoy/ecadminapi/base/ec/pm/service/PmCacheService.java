@@ -30,6 +30,7 @@ public class PmCacheService {
 
     /* 캐시(충전금) 키조회 */
     public PmCacheDto.Item getById(String id) {
+        // [QueryDSL] 적립금 (캐시) 단건 조회
         PmCacheDto.Item dto = pmCacheRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmCacheService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmCacheDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 적립금 (캐시) 단건 조회
         return pmCacheRepository.selectById(id).orElse(null);
     }
 
     /* 캐시(충전금) 상세조회 */
     public PmCache findById(String id) {
+        // [쿼리 메서드] 적립금 (캐시) 단건 조회
         return pmCacheRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmCache findByIdOrNull(String id) {
+        // [쿼리 메서드] 적립금 (캐시) 단건 조회
         return pmCacheRepository.findById(id).orElse(null);
     }
 
     /* 캐시(충전금) 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 적립금 (캐시) 존재 여부 확인
         return pmCacheRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 적립금 (캐시) 존재 여부 확인
         if (!pmCacheRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 캐시(충전금) 목록조회 */
     public List<PmCacheDto.Item> getList(PmCacheDto.Request req) {
+        // [QueryDSL] 적립금 (캐시) 목록 조회
         return pmCacheRepository.selectList(req);
     }
 
     /* 캐시(충전금) 페이지조회 */
     public BasePage<PmCacheDto.Item> getPageData(PmCacheDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 적립금 (캐시) 페이지 조회
         return pmCacheRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmCacheService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 (캐시) 저장
         PmCache saved = pmCacheRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmCacheService {
         VoUtil.voCopyExclude(body, entity, "cacheId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 (캐시) 저장
         PmCache saved = pmCacheRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmCacheService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCacheId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 적립금 (캐시) 선택적 필드 수정
         int affected = pmCacheRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmCacheService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmCache entity = findById(id);
+        // [쿼리 메서드] 적립금 (캐시) 삭제
         pmCacheRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmCacheService {
         if ("D".equals(rowStatus)) {
             if (entity.getCacheId() == null)
                 throw new CmBizException("삭제 대상 cacheId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 적립금 (캐시) 존재 여부 확인
             if (!pmCacheRepository.existsById(entity.getCacheId()))
                 throw new CmBizException("존재하지 않는 PmCache입니다: " + entity.getCacheId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 적립금 (캐시) ID 기준 삭제
             pmCacheRepository.deleteById(entity.getCacheId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setCacheId(CmUtil.generateId("pm_cache"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 적립금 (캐시) 저장
             PmCache saved = pmCacheRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmCacheService {
             if (entity.getCacheId() == null)
                 throw new CmBizException("수정 대상 cacheId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 적립금 (캐시) 선택적 필드 수정
             int affected = pmCacheRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmCache입니다: " + entity.getCacheId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmCacheService {
             .map(PmCache::getCacheId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 적립금 (캐시) 조건별 삭제
             pmCacheRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmCacheService {
             .toList();
         for (PmCache row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 적립금 (캐시) 선택적 필드 수정
             int affected = pmCacheRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCacheId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmCacheService {
             row.setCacheId(CmUtil.generateId("pm_cache"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 적립금 (캐시) 저장
             pmCacheRepository.save(row);
         }
 

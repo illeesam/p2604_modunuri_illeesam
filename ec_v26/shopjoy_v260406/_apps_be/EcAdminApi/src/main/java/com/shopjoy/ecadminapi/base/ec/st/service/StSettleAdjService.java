@@ -30,6 +30,7 @@ public class StSettleAdjService {
 
     /* 정산 조정 키조회 */
     public StSettleAdjDto.Item getById(String id) {
+        // [QueryDSL] 정산조정 단건 조회
         StSettleAdjDto.Item dto = stSettleAdjRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class StSettleAdjService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleAdjDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 정산조정 단건 조회
         return stSettleAdjRepository.selectById(id).orElse(null);
     }
 
     /* 정산 조정 상세조회 */
     public StSettleAdj findById(String id) {
+        // [쿼리 메서드] 정산조정 단건 조회
         return stSettleAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleAdj findByIdOrNull(String id) {
+        // [쿼리 메서드] 정산조정 단건 조회
         return stSettleAdjRepository.findById(id).orElse(null);
     }
 
     /* 정산 조정 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 정산조정 존재 여부 확인
         return stSettleAdjRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 정산조정 존재 여부 확인
         if (!stSettleAdjRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 정산 조정 목록조회 */
     public List<StSettleAdjDto.Item> getList(StSettleAdjDto.Request req) {
+        // [QueryDSL] 정산조정 목록 조회
         return stSettleAdjRepository.selectList(req);
     }
 
     /* 정산 조정 페이지조회 */
     public BasePage<StSettleAdjDto.Item> getPageData(StSettleAdjDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 정산조정 페이지 조회
         return stSettleAdjRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class StSettleAdjService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산조정 저장
         StSettleAdj saved = stSettleAdjRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class StSettleAdjService {
         VoUtil.voCopyExclude(body, entity, "settleAdjId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산조정 저장
         StSettleAdj saved = stSettleAdjRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class StSettleAdjService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleAdjId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 정산조정 선택적 필드 수정
         int affected = stSettleAdjRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class StSettleAdjService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StSettleAdj entity = findById(id);
+        // [쿼리 메서드] 정산조정 삭제
         stSettleAdjRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class StSettleAdjService {
         if ("D".equals(rowStatus)) {
             if (entity.getSettleAdjId() == null)
                 throw new CmBizException("삭제 대상 settleAdjId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산조정 존재 여부 확인
             if (!stSettleAdjRepository.existsById(entity.getSettleAdjId()))
                 throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산조정 ID 기준 삭제
             stSettleAdjRepository.deleteById(entity.getSettleAdjId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSettleAdjId(CmUtil.generateId("st_settle_adj"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 정산조정 저장
             StSettleAdj saved = stSettleAdjRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class StSettleAdjService {
             if (entity.getSettleAdjId() == null)
                 throw new CmBizException("수정 대상 settleAdjId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 정산조정 선택적 필드 수정
             int affected = stSettleAdjRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StSettleAdj입니다: " + entity.getSettleAdjId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class StSettleAdjService {
             .map(StSettleAdj::getSettleAdjId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 정산조정 조건별 삭제
             stSettleAdjRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class StSettleAdjService {
             .toList();
         for (StSettleAdj row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 정산조정 선택적 필드 수정
             int affected = stSettleAdjRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSettleAdjId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class StSettleAdjService {
             row.setSettleAdjId(CmUtil.generateId("st_settle_adj"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 정산조정 저장
             stSettleAdjRepository.save(row);
         }
 

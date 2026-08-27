@@ -50,6 +50,7 @@ public class BoSyAlarmService {
             .map(SyAlarm::getAlarmId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 알림 조건별 삭제
             syAlarmRepository.deleteAllById(deleteIds);
             em.flush();
             em.clear();
@@ -62,6 +63,7 @@ public class BoSyAlarmService {
             SyAlarm entity = syAlarmService.findById(row.getAlarmId());
             VoUtil.voCopyExclude(row, entity, "alarmId^regBy^regDate^rowStatus");
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 알림 저장
             syAlarmRepository.save(entity);
         }
         em.flush();

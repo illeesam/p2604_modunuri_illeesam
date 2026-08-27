@@ -20,23 +20,27 @@ public class SyhUserTokenLogService {
 
     /** getById — 단건조회 */
     public SyhUserTokenLogDto.Item getById(String id) {
+        // [QueryDSL] 관리자 사용자 토큰 이력 단건 조회
         return syhUserTokenLogRepository.selectById(id).orElse(null);
     }
 
     /** getList — 목록조회 */
     public List<SyhUserTokenLogDto.Item> getList(SyhUserTokenLogDto.Request req) {
+        // [QueryDSL] 관리자 사용자 토큰 이력 목록 조회
         return syhUserTokenLogRepository.selectList(req);
     }
 
     /** getPageData — 페이징조회 */
     public BasePage<SyhUserTokenLogDto.Item> getPageData(SyhUserTokenLogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 관리자 사용자 토큰 이력 페이지 조회
         return syhUserTokenLogRepository.selectPageData(req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhUserTokenLog entity) {
+        // [QueryDSL] 관리자 사용자 토큰 이력 선택적 필드 수정
         return syhUserTokenLogRepository.updateSelective(entity);
     }
 

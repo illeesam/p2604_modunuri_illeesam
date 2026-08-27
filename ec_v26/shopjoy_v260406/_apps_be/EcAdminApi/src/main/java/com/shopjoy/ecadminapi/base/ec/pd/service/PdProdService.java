@@ -30,6 +30,7 @@ public class PdProdService {
 
     /* 상품 키조회 */
     public PdProdDto.Item getById(String id) {
+        // [QueryDSL] 상품 단건 조회
         PdProdDto.Item dto = pdProdRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdProdService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품 단건 조회
         return pdProdRepository.selectById(id).orElse(null);
     }
 
     /* 상품 상세조회 */
     public PdProd findById(String id) {
+        // [쿼리 메서드] 상품 단건 조회
         return pdProdRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProd findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품 단건 조회
         return pdProdRepository.findById(id).orElse(null);
     }
 
     /* 상품 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품 존재 여부 확인
         return pdProdRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품 존재 여부 확인
         if (!pdProdRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 상품 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
+        // [QueryDSL] 상품 목록 조회
         return pdProdRepository.selectList(req);
     }
 
     /* 상품 페이지조회 */
     public BasePage<PdProdDto.Item> getPageData(PdProdDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 페이지 조회
         return pdProdRepository.selectPageData(req);
     }
 
@@ -86,6 +94,7 @@ public class PdProdService {
            종료일(sale_end_date/disp_end_date)은 계속 NULL=무기한 허용(건드리지 않음). */
         if (body.getSaleStartDate() == null) body.setSaleStartDate(LocalDateTime.now());
         if (body.getDispStartDate() == null) body.setDispStartDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 저장
         PdProd saved = pdProdRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -102,6 +111,7 @@ public class PdProdService {
         VoUtil.voCopyExclude(body, entity, "prodId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 저장
         PdProd saved = pdProdRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -116,6 +126,7 @@ public class PdProdService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품 선택적 필드 수정
         int affected = pdProdRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -128,6 +139,7 @@ public class PdProdService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProd entity = findById(id);
+        // [쿼리 메서드] 상품 삭제
         pdProdRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -149,14 +161,17 @@ public class PdProdService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdId() == null)
                 throw new CmBizException("삭제 대상 prodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 존재 여부 확인
             if (!pdProdRepository.existsById(entity.getProdId()))
                 throw new CmBizException("존재하지 않는 PdProd입니다: " + entity.getProdId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 ID 기준 삭제
             pdProdRepository.deleteById(entity.getProdId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdId(CmUtil.generateId("pd_prod"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품 저장
             PdProd saved = pdProdRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -164,6 +179,7 @@ public class PdProdService {
             if (entity.getProdId() == null)
                 throw new CmBizException("수정 대상 prodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품 선택적 필드 수정
             int affected = pdProdRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProd입니다: " + entity.getProdId() + "::" + CmUtil.svcCallerInfo(this));
@@ -199,6 +215,7 @@ public class PdProdService {
             .map(PdProd::getProdId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품 조건별 삭제
             pdProdRepository.deleteAllById(deleteIds);
         }
 
@@ -208,6 +225,7 @@ public class PdProdService {
             .toList();
         for (PdProd row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품 선택적 필드 수정
             int affected = pdProdRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -220,6 +238,7 @@ public class PdProdService {
             row.setProdId(CmUtil.generateId("pd_prod"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품 저장
             pdProdRepository.save(row);
         }
 

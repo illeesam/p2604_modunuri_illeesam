@@ -38,6 +38,7 @@ public class FoOdCartService {
     public List<OdCartDto.Item> getMyCart(OdCartDto.Request req) {
         if (req == null) req = new OdCartDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [QueryDSL] 장바구니 목록 조회
         List<OdCartDto.Item> list = odCartRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -86,6 +87,7 @@ public class FoOdCartService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 장바구니 저장
         OdCart saved = odCartRepository.save(entity);
         if (saved == null) throw new CmBizException("장바구니 추가에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -94,6 +96,7 @@ public class FoOdCartService {
     /** updateQty — 수정 */
     @Transactional
     public OdCart updateQty(String cartId, int qty) {
+        // [쿼리 메서드] 장바구니 단건 조회
         OdCart cart = odCartRepository.findById(cartId)
                 .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId + "::" + CmUtil.svcCallerInfo(this)));
         if (!cart.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
@@ -101,6 +104,7 @@ public class FoOdCartService {
         cart.setOrderQty(qty);
         cart.setUpdBy(SecurityUtil.getAuthUser().authId());
         cart.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 장바구니 저장
         OdCart saved = odCartRepository.save(cart);
         if (saved == null) throw new CmBizException("수량 변경에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -109,10 +113,12 @@ public class FoOdCartService {
     /** removeFromCart — 삭제 */
     @Transactional
     public void removeFromCart(String cartId) {
+        // [쿼리 메서드] 장바구니 단건 조회
         OdCart cart = odCartRepository.findById(cartId)
                 .orElseThrow(() -> new CmBizException("장바구니 항목이 없습니다: " + cartId + "::" + CmUtil.svcCallerInfo(this)));
         if (!cart.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
             throw new CmBizException("접근 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
+        // [쿼리 메서드] 장바구니 ID 기준 삭제
         odCartRepository.deleteById(cartId);
     }
 

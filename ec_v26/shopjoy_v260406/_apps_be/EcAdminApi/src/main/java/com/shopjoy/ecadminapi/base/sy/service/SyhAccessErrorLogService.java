@@ -17,12 +17,14 @@ public class SyhAccessErrorLogService {
 
     /** getById — 단건 상세조회 (코드명/연관명 풀필드) */
     public SyhAccessErrorLogDto.Item getById(String id) {
+        // [QueryDSL] HTTP 요청 에러 로그 (비동기 수집) 단건 조회
         return syhAccessErrorLogRepository.selectById(id).orElse(null);
     }
 
     /** getPageData — 페이징조회 */
     public BasePage<SyhAccessErrorLogDto.Item> getPageData(SyhAccessErrorLogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] HTTP 요청 에러 로그 (비동기 수집) 페이지 조회
         return syhAccessErrorLogRepository.selectPageData(req);
     }
 

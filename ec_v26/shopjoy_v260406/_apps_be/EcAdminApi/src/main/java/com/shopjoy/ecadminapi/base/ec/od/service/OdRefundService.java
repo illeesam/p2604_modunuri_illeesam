@@ -30,6 +30,7 @@ public class OdRefundService {
 
     /* 환불 키조회 */
     public OdRefundDto.Item getById(String id) {
+        // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 단건 조회
         OdRefundDto.Item dto = odRefundRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdRefundService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdRefundDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 단건 조회
         return odRefundRepository.selectById(id).orElse(null);
     }
 
     /* 환불 상세조회 */
     public OdRefund findById(String id) {
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 단건 조회
         return odRefundRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdRefund findByIdOrNull(String id) {
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 단건 조회
         return odRefundRepository.findById(id).orElse(null);
     }
 
     /* 환불 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 존재 여부 확인
         return odRefundRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 존재 여부 확인
         if (!odRefundRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 환불 목록조회 */
     public List<OdRefundDto.Item> getList(OdRefundDto.Request req) {
+        // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 목록 조회
         return odRefundRepository.selectList(req);
     }
 
     /* 환불 페이지조회 */
     public BasePage<OdRefundDto.Item> getPageData(OdRefundDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 페이지 조회
         return odRefundRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdRefundService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 저장
         OdRefund saved = odRefundRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdRefundService {
         VoUtil.voCopyExclude(body, entity, "refundId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 저장
         OdRefund saved = odRefundRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdRefundService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRefundId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 선택적 필드 수정
         int affected = odRefundRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdRefundService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdRefund entity = findById(id);
+        // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 삭제
         odRefundRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdRefundService {
         if ("D".equals(rowStatus)) {
             if (entity.getRefundId() == null)
                 throw new CmBizException("삭제 대상 refundId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 존재 여부 확인
             if (!odRefundRepository.existsById(entity.getRefundId()))
                 throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) ID 기준 삭제
             odRefundRepository.deleteById(entity.getRefundId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setRefundId(CmUtil.generateId("od_refund"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 저장
             OdRefund saved = odRefundRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdRefundService {
             if (entity.getRefundId() == null)
                 throw new CmBizException("수정 대상 refundId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 선택적 필드 수정
             int affected = odRefundRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdRefund입니다: " + entity.getRefundId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdRefundService {
             .map(OdRefund::getRefundId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 조건별 삭제
             odRefundRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdRefundService {
             .toList();
         for (OdRefund row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 환불 마스터 (클레임 건별 환불 총괄) 선택적 필드 수정
             int affected = odRefundRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getRefundId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdRefundService {
             row.setRefundId(CmUtil.generateId("od_refund"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 환불 마스터 (클레임 건별 환불 총괄) 저장
             odRefundRepository.save(row);
         }
 

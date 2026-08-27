@@ -30,6 +30,7 @@ public class MbMemberRoleService {
 
     /* 회원 역할 연결 키조회 */
     public MbMemberRoleDto.Item getById(String id) {
+        // [QueryDSL] 회원 역할 연결 단건 조회
         MbMemberRoleDto.Item dto = mbMemberRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbMemberRoleService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberRoleDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 회원 역할 연결 단건 조회
         return mbMemberRoleRepository.selectById(id).orElse(null);
     }
 
     /* 회원 역할 연결 상세조회 */
     public MbMemberRole findById(String id) {
+        // [쿼리 메서드] 회원 역할 연결 단건 조회
         return mbMemberRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberRole findByIdOrNull(String id) {
+        // [쿼리 메서드] 회원 역할 연결 단건 조회
         return mbMemberRoleRepository.findById(id).orElse(null);
     }
 
     /* 회원 역할 연결 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 회원 역할 연결 존재 여부 확인
         return mbMemberRoleRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 회원 역할 연결 존재 여부 확인
         if (!mbMemberRoleRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 회원 역할 연결 목록조회 */
     public List<MbMemberRoleDto.Item> getList(MbMemberRoleDto.Request req) {
+        // [QueryDSL] 회원 역할 연결 목록 조회
         return mbMemberRoleRepository.selectList(req);
     }
 
     /* 회원 역할 연결 페이지조회 */
     public BasePage<MbMemberRoleDto.Item> getPageData(MbMemberRoleDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 회원 역할 연결 페이지 조회
         return mbMemberRoleRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbMemberRoleService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 역할 연결 저장
         MbMemberRole saved = mbMemberRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbMemberRoleService {
         VoUtil.voCopyExclude(body, entity, "memberRoleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 역할 연결 저장
         MbMemberRole saved = mbMemberRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbMemberRoleService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 회원 역할 연결 선택적 필드 수정
         int affected = mbMemberRoleRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbMemberRoleService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbMemberRole entity = findById(id);
+        // [쿼리 메서드] 회원 역할 연결 삭제
         mbMemberRoleRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbMemberRoleService {
         if ("D".equals(rowStatus)) {
             if (entity.getMemberRoleId() == null)
                 throw new CmBizException("삭제 대상 memberRoleId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원 역할 연결 존재 여부 확인
             if (!mbMemberRoleRepository.existsById(entity.getMemberRoleId()))
                 throw new CmBizException("존재하지 않는 MbMemberRole입니다: " + entity.getMemberRoleId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원 역할 연결 ID 기준 삭제
             mbMemberRoleRepository.deleteById(entity.getMemberRoleId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setMemberRoleId(CmUtil.generateId("mb_member_role"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 회원 역할 연결 저장
             MbMemberRole saved = mbMemberRoleRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbMemberRoleService {
             if (entity.getMemberRoleId() == null)
                 throw new CmBizException("수정 대상 memberRoleId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 회원 역할 연결 선택적 필드 수정
             int affected = mbMemberRoleRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbMemberRole입니다: " + entity.getMemberRoleId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbMemberRoleService {
             .map(MbMemberRole::getMemberRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 회원 역할 연결 조건별 삭제
             mbMemberRoleRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbMemberRoleService {
             .toList();
         for (MbMemberRole row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 회원 역할 연결 선택적 필드 수정
             int affected = mbMemberRoleRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberRoleId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbMemberRoleService {
             row.setMemberRoleId(CmUtil.generateId("mb_member_role"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 회원 역할 연결 저장
             mbMemberRoleRepository.save(row);
         }
 

@@ -30,6 +30,7 @@ public class DpPanelItemService {
 
     /* 전시 패널 아이템 키조회 */
     public DpPanelItemDto.Item getById(String id) {
+        // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 단건 조회
         DpPanelItemDto.Item dto = dpPanelItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class DpPanelItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpPanelItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 단건 조회
         return dpPanelItemRepository.selectById(id).orElse(null);
     }
 
     /* 전시 패널 아이템 상세조회 */
     public DpPanelItem findById(String id) {
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 단건 조회
         return dpPanelItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpPanelItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 단건 조회
         return dpPanelItemRepository.findById(id).orElse(null);
     }
 
     /* 전시 패널 아이템 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 존재 여부 확인
         return dpPanelItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 존재 여부 확인
         if (!dpPanelItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 전시 패널 아이템 목록조회 */
     public List<DpPanelItemDto.Item> getList(DpPanelItemDto.Request req) {
+        // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 목록 조회
         return dpPanelItemRepository.selectList(req);
     }
 
     /* 전시 패널 아이템 페이지조회 */
     public BasePage<DpPanelItemDto.Item> getPageData(DpPanelItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 페이지 조회
         return dpPanelItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class DpPanelItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 저장
         DpPanelItem saved = dpPanelItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class DpPanelItemService {
         VoUtil.voCopyExclude(body, entity, "panelItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 저장
         DpPanelItem saved = dpPanelItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class DpPanelItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPanelItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 선택적 필드 수정
         int affected = dpPanelItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class DpPanelItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         DpPanelItem entity = findById(id);
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 삭제
         dpPanelItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class DpPanelItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getPanelItemId() == null)
                 throw new CmBizException("삭제 대상 panelItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 존재 여부 확인
             if (!dpPanelItemRepository.existsById(entity.getPanelItemId()))
                 throw new CmBizException("존재하지 않는 DpPanelItem입니다: " + entity.getPanelItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) ID 기준 삭제
             dpPanelItemRepository.deleteById(entity.getPanelItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPanelItemId(CmUtil.generateId("dp_panel_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 저장
             DpPanelItem saved = dpPanelItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class DpPanelItemService {
             if (entity.getPanelItemId() == null)
                 throw new CmBizException("수정 대상 panelItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 선택적 필드 수정
             int affected = dpPanelItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 DpPanelItem입니다: " + entity.getPanelItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class DpPanelItemService {
             .map(DpPanelItem::getPanelItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 조건별 삭제
             dpPanelItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class DpPanelItemService {
             .toList();
         for (DpPanelItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 선택적 필드 수정
             int affected = dpPanelItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPanelItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class DpPanelItemService {
             row.setPanelItemId(CmUtil.generateId("dp_panel_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 저장
             dpPanelItemRepository.save(row);
         }
 

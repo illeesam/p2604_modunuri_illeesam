@@ -30,6 +30,7 @@ public class PmSaveItemService {
 
     /* 적립금 대상 상품 키조회 */
     public PmSaveItemDto.Item getById(String id) {
+        // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 단건 조회
         PmSaveItemDto.Item dto = pmSaveItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmSaveItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmSaveItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 단건 조회
         return pmSaveItemRepository.selectById(id).orElse(null);
     }
 
     /* 적립금 대상 상품 상세조회 */
     public PmSaveItem findById(String id) {
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 단건 조회
         return pmSaveItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmSaveItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 단건 조회
         return pmSaveItemRepository.findById(id).orElse(null);
     }
 
     /* 적립금 대상 상품 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 존재 여부 확인
         return pmSaveItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 존재 여부 확인
         if (!pmSaveItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 적립금 대상 상품 목록조회 */
     public List<PmSaveItemDto.Item> getList(PmSaveItemDto.Request req) {
+        // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 목록 조회
         return pmSaveItemRepository.selectList(req);
     }
 
     /* 적립금 대상 상품 페이지조회 */
     public BasePage<PmSaveItemDto.Item> getPageData(PmSaveItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 페이지 조회
         return pmSaveItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmSaveItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 저장
         PmSaveItem saved = pmSaveItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmSaveItemService {
         VoUtil.voCopyExclude(body, entity, "saveItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 저장
         PmSaveItem saved = pmSaveItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmSaveItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 선택적 필드 수정
         int affected = pmSaveItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmSaveItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmSaveItem entity = findById(id);
+        // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 삭제
         pmSaveItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmSaveItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getSaveItemId() == null)
                 throw new CmBizException("삭제 대상 saveItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 존재 여부 확인
             if (!pmSaveItemRepository.existsById(entity.getSaveItemId()))
                 throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + entity.getSaveItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) ID 기준 삭제
             pmSaveItemRepository.deleteById(entity.getSaveItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSaveItemId(CmUtil.generateId("pm_save_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 저장
             PmSaveItem saved = pmSaveItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmSaveItemService {
             if (entity.getSaveItemId() == null)
                 throw new CmBizException("수정 대상 saveItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 선택적 필드 수정
             int affected = pmSaveItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmSaveItem입니다: " + entity.getSaveItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmSaveItemService {
             .map(PmSaveItem::getSaveItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 조건별 삭제
             pmSaveItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmSaveItemService {
             .toList();
         for (PmSaveItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 적립금 대상 상품 (pm_save 하위 항목) 선택적 필드 수정
             int affected = pmSaveItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSaveItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmSaveItemService {
             row.setSaveItemId(CmUtil.generateId("pm_save_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 적립금 대상 상품 (pm_save 하위 항목) 저장
             pmSaveItemRepository.save(row);
         }
 

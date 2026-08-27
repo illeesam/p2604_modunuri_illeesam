@@ -30,6 +30,7 @@ public class PmCouponUsageService {
 
     /* 쿠폰 사용 이력 키조회 */
     public PmCouponUsageDto.Item getById(String id) {
+        // [QueryDSL] 쿠폰 사용 이력 단건 조회
         PmCouponUsageDto.Item dto = pmCouponUsageRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmCouponUsageService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmCouponUsageDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 쿠폰 사용 이력 단건 조회
         return pmCouponUsageRepository.selectById(id).orElse(null);
     }
 
     /* 쿠폰 사용 이력 상세조회 */
     public PmCouponUsage findById(String id) {
+        // [쿼리 메서드] 쿠폰 사용 이력 단건 조회
         return pmCouponUsageRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmCouponUsage findByIdOrNull(String id) {
+        // [쿼리 메서드] 쿠폰 사용 이력 단건 조회
         return pmCouponUsageRepository.findById(id).orElse(null);
     }
 
     /* 쿠폰 사용 이력 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 쿠폰 사용 이력 존재 여부 확인
         return pmCouponUsageRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 쿠폰 사용 이력 존재 여부 확인
         if (!pmCouponUsageRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 쿠폰 사용 이력 목록조회 */
     public List<PmCouponUsageDto.Item> getList(PmCouponUsageDto.Request req) {
+        // [QueryDSL] 쿠폰 사용 이력 목록 조회
         return pmCouponUsageRepository.selectList(req);
     }
 
     /* 쿠폰 사용 이력 페이지조회 */
     public BasePage<PmCouponUsageDto.Item> getPageData(PmCouponUsageDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 쿠폰 사용 이력 페이지 조회
         return pmCouponUsageRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmCouponUsageService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 쿠폰 사용 이력 저장
         PmCouponUsage saved = pmCouponUsageRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmCouponUsageService {
         VoUtil.voCopyExclude(body, entity, "couponUsageId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 쿠폰 사용 이력 저장
         PmCouponUsage saved = pmCouponUsageRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmCouponUsageService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCouponUsageId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 쿠폰 사용 이력 선택적 필드 수정
         int affected = pmCouponUsageRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmCouponUsageService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmCouponUsage entity = findById(id);
+        // [쿼리 메서드] 쿠폰 사용 이력 삭제
         pmCouponUsageRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmCouponUsageService {
         if ("D".equals(rowStatus)) {
             if (entity.getCouponUsageId() == null)
                 throw new CmBizException("삭제 대상 couponUsageId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 쿠폰 사용 이력 존재 여부 확인
             if (!pmCouponUsageRepository.existsById(entity.getCouponUsageId()))
                 throw new CmBizException("존재하지 않는 PmCouponUsage입니다: " + entity.getCouponUsageId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 쿠폰 사용 이력 ID 기준 삭제
             pmCouponUsageRepository.deleteById(entity.getCouponUsageId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setCouponUsageId(CmUtil.generateId("pm_coupon_usage"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 쿠폰 사용 이력 저장
             PmCouponUsage saved = pmCouponUsageRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmCouponUsageService {
             if (entity.getCouponUsageId() == null)
                 throw new CmBizException("수정 대상 couponUsageId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 쿠폰 사용 이력 선택적 필드 수정
             int affected = pmCouponUsageRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmCouponUsage입니다: " + entity.getCouponUsageId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmCouponUsageService {
             .map(PmCouponUsage::getCouponUsageId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 쿠폰 사용 이력 조건별 삭제
             pmCouponUsageRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmCouponUsageService {
             .toList();
         for (PmCouponUsage row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 쿠폰 사용 이력 선택적 필드 수정
             int affected = pmCouponUsageRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCouponUsageId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmCouponUsageService {
             row.setCouponUsageId(CmUtil.generateId("pm_coupon_usage"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 쿠폰 사용 이력 저장
             pmCouponUsageRepository.save(row);
         }
 

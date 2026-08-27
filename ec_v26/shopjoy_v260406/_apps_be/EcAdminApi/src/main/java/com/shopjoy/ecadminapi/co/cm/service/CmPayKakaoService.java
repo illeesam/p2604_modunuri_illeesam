@@ -45,6 +45,7 @@ public class CmPayKakaoService {
     private String prop(String propKey) {
         String profile = environment.getActiveProfiles().length > 0
             ? environment.getActiveProfiles()[0] : "-";
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 전체/다건 조회
         return syPropRepository.findAll().stream()
             .filter(p -> "Y".equals(p.getUseYn())
                 && propKey.equals(p.getPropKey())

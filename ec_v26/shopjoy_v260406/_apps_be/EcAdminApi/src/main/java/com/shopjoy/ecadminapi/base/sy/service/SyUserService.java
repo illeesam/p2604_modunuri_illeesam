@@ -33,6 +33,7 @@ public class SyUserService {
 
     /** getById — 단건조회 (QueryDSL, JOIN 필드 포함된 Item) */
     public SyUserDto.Item getById(String id) {
+        // [QueryDSL] 관리자 사용자 단건 조회
         SyUserDto.Item dto = syUserRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -40,44 +41,52 @@ public class SyUserService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyUserDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 관리자 사용자 단건 조회
         return syUserRepository.selectById(id).orElse(null);
     }
 
     /** findById — 단건조회 (JPA, 영속성 컨텍스트 동기화된 SyUser 엔티티). 변경 메서드의 저장 후 응답에 사용. */
     public SyUser findById(String id) {
+        // [쿼리 메서드] 관리자 사용자 단건 조회
         return syUserRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyUser findByIdOrNull(String id) {
+        // [쿼리 메서드] 관리자 사용자 단건 조회
         return syUserRepository.findById(id).orElse(null);
     }
 
     /** existsById — 존재 여부 확인 (JPA) */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 관리자 사용자 존재 여부 확인
         return syUserRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 관리자 사용자 존재 여부 확인
         if (!syUserRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /** getList — 목록조회 (QueryDSL Request 받아 Map 변환 후 Repository 호출 — DTO 타입 안전 + Repository missing field 안전) */
     public List<SyUserDto.Item> getList(SyUserDto.Request req) {
+        // [QueryDSL] 관리자 사용자 목록 조회
         return syUserRepository.selectList(req);
     }
 
     /** getPageData — 페이징조회 (QueryDSL Request → Repository 호출) */
     public BasePage<SyUserDto.Item> getPageData(SyUserDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 관리자 사용자 페이지 조회
         return syUserRepository.selectPageData(req);
     }
 
     /** countList — 검색조건 기준 전체 카운트 (대량 export 시 안전 상한 검증용) */
     public long countList(SyUserDto.Request req) {
+        // [QueryDSL] 관리자 사용자 건수 조회
         return syUserRepository.selectCount(req);
     }
 
@@ -114,6 +123,7 @@ public class SyUserService {
         int totalProcessed = 0;
         while (true) {
             snap.setPageNo(pageNo);
+            // [QueryDSL] 관리자 사용자 목록 조회
             List<SyUserDto.Item> chunk = syUserRepository.selectList(snap);
             if (chunk.isEmpty()) break;
             for (SyUserDto.Item item : chunk) consumer.accept(item);
@@ -138,6 +148,7 @@ public class SyUserService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 관리자 사용자 저장
         SyUser saved = syUserRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -152,6 +163,7 @@ public class SyUserService {
         VoUtil.voCopyExclude(body, entity, "userId^loginId^loginPwdHash^regBy^regDate^lastLogin^lastLoginDate^loginFailCnt");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 관리자 사용자 저장
         SyUser saved = syUserRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -164,9 +176,11 @@ public class SyUserService {
     public SyUser updateSelective(SyUser entity) {
         if (entity.getUserId() == null)
             throw new CmBizException("userId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        // [쿼리 메서드] 관리자 사용자 존재 여부 확인
         if (!syUserRepository.existsById(entity.getUserId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        // [QueryDSL] 관리자 사용자 선택적 필드 수정
         int affected = syUserRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         // QueryDSL 벌크연산 후 영속성 컨텍스트 동기화
@@ -180,8 +194,10 @@ public class SyUserService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyUser entity = findById(id);
+        // [쿼리 메서드] 관리자 사용자 삭제
         syUserRepository.delete(entity);
         em.flush();
+        // [쿼리 메서드] 관리자 사용자 존재 여부 확인
         if (syUserRepository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
@@ -206,14 +222,17 @@ public class SyUserService {
         if ("D".equals(rowStatus)) {
             if (entity.getUserId() == null)
                 throw new CmBizException("삭제 대상 userId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 관리자 사용자 존재 여부 확인
             if (!syUserRepository.existsById(entity.getUserId()))
                 throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 관리자 사용자 ID 기준 삭제
             syUserRepository.deleteById(entity.getUserId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setUserId(CmUtil.generateId("sy_user"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 관리자 사용자 저장
             SyUser saved = syUserRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -223,6 +242,7 @@ public class SyUserService {
             if (entity.getUserId() == null)
                 throw new CmBizException("수정 대상 userId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 관리자 사용자 선택적 필드 수정
             int affected = syUserRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
@@ -266,6 +286,7 @@ public class SyUserService {
             .map(SyUser::getUserId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 관리자 사용자 조건별 삭제
             syUserRepository.deleteAllById(deleteIds);
         }
 
@@ -275,6 +296,7 @@ public class SyUserService {
             .toList();
         for (SyUser row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 관리자 사용자 선택적 필드 수정
             int affected = syUserRepository.updateSelective(row);
             if (affected == 0) {
                 throw new CmBizException("존재하지 않는 데이터입니다: " + row.getUserId() + "::" + CmUtil.svcCallerInfo(this));
@@ -289,6 +311,7 @@ public class SyUserService {
             row.setUserId(CmUtil.generateId("sy_user"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 관리자 사용자 저장
             syUserRepository.save(row);
         }
 
@@ -304,6 +327,7 @@ public class SyUserService {
      *   검색조건이 있으면 그 조건에 부합하는 사용자만 카운트 (page 그리드 결과와 동기).
      *   결과: { deptId: cnt, '__total__': 전체, '__orphan__': dept 없음 } */
     public java.util.List<java.util.Map<String, Object>> getDeptTreeNodeCounts(SyUserDto.Request req) {
+        // [QueryDSL] 관리자 사용자 조회
         return syUserRepository.selectDeptTreeUserCnts(req);
     }
 }

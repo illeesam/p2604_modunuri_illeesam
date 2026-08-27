@@ -30,6 +30,7 @@ public class PdhProdStatusHistService {
 
     /* 상품 상태 이력 키조회 */
     public PdhProdStatusHistDto.Item getById(String id) {
+        // [QueryDSL] 상품 상태 이력 단건 조회
         PdhProdStatusHistDto.Item dto = pdhProdStatusHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdhProdStatusHistService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdhProdStatusHistDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품 상태 이력 단건 조회
         return pdhProdStatusHistRepository.selectById(id).orElse(null);
     }
 
     /* 상품 상태 이력 상세조회 */
     public PdhProdStatusHist findById(String id) {
+        // [쿼리 메서드] 상품 상태 이력 단건 조회
         return pdhProdStatusHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdhProdStatusHist findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품 상태 이력 단건 조회
         return pdhProdStatusHistRepository.findById(id).orElse(null);
     }
 
     /* 상품 상태 이력 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품 상태 이력 존재 여부 확인
         return pdhProdStatusHistRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품 상태 이력 존재 여부 확인
         if (!pdhProdStatusHistRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 상품 상태 이력 목록조회 */
     public List<PdhProdStatusHistDto.Item> getList(PdhProdStatusHistDto.Request req) {
+        // [QueryDSL] 상품 상태 이력 목록 조회
         return pdhProdStatusHistRepository.selectList(req);
     }
 
     /* 상품 상태 이력 페이지조회 */
     public BasePage<PdhProdStatusHistDto.Item> getPageData(PdhProdStatusHistDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 상태 이력 페이지 조회
         return pdhProdStatusHistRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdhProdStatusHistService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 상태 이력 저장
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdhProdStatusHistService {
         VoUtil.voCopyExclude(body, entity, "prodStatusHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 상태 이력 저장
         PdhProdStatusHist saved = pdhProdStatusHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdhProdStatusHistService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품 상태 이력 선택적 필드 수정
         int affected = pdhProdStatusHistRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdhProdStatusHistService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdhProdStatusHist entity = findById(id);
+        // [쿼리 메서드] 상품 상태 이력 삭제
         pdhProdStatusHistRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdhProdStatusHistService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdStatusHistId() == null)
                 throw new CmBizException("삭제 대상 prodStatusHistId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 상태 이력 존재 여부 확인
             if (!pdhProdStatusHistRepository.existsById(entity.getProdStatusHistId()))
                 throw new CmBizException("존재하지 않는 PdhProdStatusHist입니다: " + entity.getProdStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 상태 이력 ID 기준 삭제
             pdhProdStatusHistRepository.deleteById(entity.getProdStatusHistId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdStatusHistId(CmUtil.generateId("pdh_prod_status_hist"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품 상태 이력 저장
             PdhProdStatusHist saved = pdhProdStatusHistRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdhProdStatusHistService {
             if (entity.getProdStatusHistId() == null)
                 throw new CmBizException("수정 대상 prodStatusHistId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품 상태 이력 선택적 필드 수정
             int affected = pdhProdStatusHistRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdhProdStatusHist입니다: " + entity.getProdStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdhProdStatusHistService {
             .map(PdhProdStatusHist::getProdStatusHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품 상태 이력 조건별 삭제
             pdhProdStatusHistRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdhProdStatusHistService {
             .toList();
         for (PdhProdStatusHist row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품 상태 이력 선택적 필드 수정
             int affected = pdhProdStatusHistRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdStatusHistId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdhProdStatusHistService {
             row.setProdStatusHistId(CmUtil.generateId("pdh_prod_status_hist"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품 상태 이력 저장
             pdhProdStatusHistRepository.save(row);
         }
 

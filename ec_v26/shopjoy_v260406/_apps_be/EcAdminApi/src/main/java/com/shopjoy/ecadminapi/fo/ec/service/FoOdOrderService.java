@@ -45,6 +45,7 @@ public class FoOdOrderService {
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [QueryDSL] 주문 목록 조회
         List<OdOrderDto.Item> list = odOrderRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -55,6 +56,7 @@ public class FoOdOrderService {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(req);
+        // [QueryDSL] 주문 페이지 조회
         BasePage<OdOrderDto.Item> res = odOrderRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -62,6 +64,7 @@ public class FoOdOrderService {
 
     /** getById — 조회 */
     public OdOrderDto.Item getById(String orderId) {
+        // [QueryDSL] 주문 단건 조회
         OdOrderDto.Item dto = odOrderRepository.selectById(orderId).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 주문입니다: " + orderId + "::" + CmUtil.svcCallerInfo(this));
         if (!dto.getMemberId().equals(SecurityUtil.getAuthUser().authId()))
@@ -154,6 +157,7 @@ public class FoOdOrderService {
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문 저장
         OdOrder saved = odOrderRepository.save(entity);
         if (saved == null) throw new CmBizException("주문 생성에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;

@@ -29,6 +29,7 @@ public class SyAlarmService {
 
     /* 알람 키조회 */
     public SyAlarmDto.Item getById(String id) {
+        // [QueryDSL] 알림 단건 조회
         SyAlarmDto.Item dto = syAlarmRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -36,39 +37,46 @@ public class SyAlarmService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyAlarmDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 알림 단건 조회
         return syAlarmRepository.selectById(id).orElse(null);
     }
 
     /* 알람 상세조회 */
     public SyAlarm findById(String id) {
+        // [쿼리 메서드] 알림 단건 조회
         return syAlarmRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyAlarm findByIdOrNull(String id) {
+        // [쿼리 메서드] 알림 단건 조회
         return syAlarmRepository.findById(id).orElse(null);
     }
 
     /* 알람 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 알림 존재 여부 확인
         return syAlarmRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 알림 존재 여부 확인
         if (!syAlarmRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 알람 목록조회 */
     public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) {
+        // [QueryDSL] 알림 목록 조회
         return syAlarmRepository.selectList(req);
     }
 
     /* 알람 페이지조회 */
     public BasePage<SyAlarmDto.Item> getPageData(SyAlarmDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 알림 페이지 조회
         return syAlarmRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyAlarmService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 알림 저장
         SyAlarm saved = syAlarmRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -98,6 +107,7 @@ public class SyAlarmService {
         CmUtil.requireText(entity.getAlarmTitle(), "알림 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 알림 저장
         SyAlarm saved = syAlarmRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -112,6 +122,7 @@ public class SyAlarmService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 알림 선택적 필드 수정
         int affected = syAlarmRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -124,6 +135,7 @@ public class SyAlarmService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyAlarm entity = findById(id);
+        // [쿼리 메서드] 알림 삭제
         syAlarmRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -143,14 +155,17 @@ public class SyAlarmService {
         if ("D".equals(rowStatus)) {
             if (entity.getAlarmId() == null)
                 throw new CmBizException("삭제 대상 alarmId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 알림 존재 여부 확인
             if (!syAlarmRepository.existsById(entity.getAlarmId()))
                 throw new CmBizException("존재하지 않는 SyAlarm입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 알림 ID 기준 삭제
             syAlarmRepository.deleteById(entity.getAlarmId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setAlarmId(CmUtil.generateId("sy_alarm"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 알림 저장
             SyAlarm saved = syAlarmRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -158,6 +173,7 @@ public class SyAlarmService {
             if (entity.getAlarmId() == null)
                 throw new CmBizException("수정 대상 alarmId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 알림 선택적 필드 수정
             int affected = syAlarmRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyAlarm입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
@@ -173,6 +189,7 @@ public class SyAlarmService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyAlarmDto.Request req) {
+        // [QueryDSL] 알림 조회
         return syAlarmRepository.selectPathTreeAlarmCnts(req);
     }
 }

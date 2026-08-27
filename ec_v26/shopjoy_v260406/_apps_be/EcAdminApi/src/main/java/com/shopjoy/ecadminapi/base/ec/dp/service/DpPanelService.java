@@ -37,49 +37,58 @@ public class DpPanelService {
 
     /* 전시 패널 키조회 (+ 패널 아이템 연관 채움) */
     public DpPanelDto.Item getById(String id) {
+        // [QueryDSL] 디스플레이 패널 단건 조회
         DpPanelDto.Item dto = dpPanelRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         DpPanelItemDto.Request itemReq = new DpPanelItemDto.Request();
         itemReq.setPanelId(id);
+        // [QueryDSL] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 목록 조회
         dto.setPanelItems(dpPanelItemRepository.selectList(itemReq));
         return dto;
     }
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpPanelDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 디스플레이 패널 단건 조회
         return dpPanelRepository.selectById(id).orElse(null);
     }
 
     /* 전시 패널 상세조회 */
     public DpPanel findById(String id) {
+        // [쿼리 메서드] 디스플레이 패널 단건 조회
         return dpPanelRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpPanel findByIdOrNull(String id) {
+        // [쿼리 메서드] 디스플레이 패널 단건 조회
         return dpPanelRepository.findById(id).orElse(null);
     }
 
     /* 전시 패널 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 디스플레이 패널 존재 여부 확인
         return dpPanelRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 디스플레이 패널 존재 여부 확인
         if (!dpPanelRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 전시 패널 목록조회 */
     public List<DpPanelDto.Item> getList(DpPanelDto.Request req) {
+        // [QueryDSL] 디스플레이 패널 목록 조회
         return dpPanelRepository.selectList(req);
     }
 
     /* 전시 패널 페이지조회 */
     public BasePage<DpPanelDto.Item> getPageData(DpPanelDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 디스플레이 패널 페이지 조회
         return dpPanelRepository.selectPageData(req);
     }
 
@@ -91,6 +100,7 @@ public class DpPanelService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 패널 저장
         DpPanel saved = dpPanelRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -108,6 +118,7 @@ public class DpPanelService {
         VoUtil.voCopyExclude(body, entity, "panelId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 패널 저장
         DpPanel saved = dpPanelRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -120,6 +131,7 @@ public class DpPanelService {
      *  rows 파싱 실패는 패널 저장을 막지 않는다 (미러 성격). */
     private void syncPanelItems(DpPanel saved) {
         if (saved == null || saved.getPanelId() == null) return;
+        // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 조건별 삭제
         dpPanelItemRepository.deleteByPanelId(saved.getPanelId());
         String cj = saved.getContentJson();
         if (cj == null || cj.isBlank()) return;
@@ -142,6 +154,7 @@ public class DpPanelService {
                     .dispYn(r.path("dispYn").asText("Y"))
                     .useYn("Y")
                     .build();
+                // [쿼리 메서드] 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성) 저장
                 dpPanelItemRepository.save(it);
             }
         } catch (Exception e) {
@@ -157,6 +170,7 @@ public class DpPanelService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 디스플레이 패널 선택적 필드 수정
         int affected = dpPanelRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -169,6 +183,7 @@ public class DpPanelService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         DpPanel entity = findById(id);
+        // [쿼리 메서드] 디스플레이 패널 삭제
         dpPanelRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -190,14 +205,17 @@ public class DpPanelService {
         if ("D".equals(rowStatus)) {
             if (entity.getPanelId() == null)
                 throw new CmBizException("삭제 대상 panelId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 패널 존재 여부 확인
             if (!dpPanelRepository.existsById(entity.getPanelId()))
                 throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 패널 ID 기준 삭제
             dpPanelRepository.deleteById(entity.getPanelId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPanelId(CmUtil.generateId("dp_panel"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 패널 저장
             DpPanel saved = dpPanelRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -205,6 +223,7 @@ public class DpPanelService {
             if (entity.getPanelId() == null)
                 throw new CmBizException("수정 대상 panelId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 패널 선택적 필드 수정
             int affected = dpPanelRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 DpPanel입니다: " + entity.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
@@ -240,6 +259,7 @@ public class DpPanelService {
             .map(DpPanel::getPanelId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 디스플레이 패널 조건별 삭제
             dpPanelRepository.deleteAllById(deleteIds);
         }
 
@@ -249,6 +269,7 @@ public class DpPanelService {
             .toList();
         for (DpPanel row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 패널 선택적 필드 수정
             int affected = dpPanelRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPanelId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -261,6 +282,7 @@ public class DpPanelService {
             row.setPanelId(CmUtil.generateId("dp_panel"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 패널 저장
             dpPanelRepository.save(row);
         }
 
@@ -274,6 +296,7 @@ public class DpPanelService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpPanelDto.Request req) {
+        // [QueryDSL] 디스플레이 패널 조회
         return dpPanelRepository.selectPathTreePanelCnts(req);
     }
 }

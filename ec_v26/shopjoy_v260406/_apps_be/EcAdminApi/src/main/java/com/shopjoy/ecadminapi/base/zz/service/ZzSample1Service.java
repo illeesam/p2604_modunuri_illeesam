@@ -39,6 +39,7 @@ public class ZzSample1Service {
 
     /** getById — 조회 (하위 sample2s / sample3s 포함, sample1_id 기준) */
     public ZzSample1Dto.Item getById(String id) {
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 단건 조회
         ZzSample1Dto.Item dto = zzSample1Repository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         _itemFillRelations(dto);
@@ -47,33 +48,39 @@ public class ZzSample1Service {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public ZzSample1Dto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 단건 조회
         return zzSample1Repository.selectById(id).orElse(null);
     }
 
     /** findById — 엔티티 조회 */
     public ZzSample1 findById(String id) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 단건 조회
         return zzSample1Repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public ZzSample1 findByIdOrNull(String id) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 단건 조회
         return zzSample1Repository.findById(id).orElse(null);
     }
 
     /** existsById — 존재 확인 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 존재 여부 확인
         return zzSample1Repository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 존재 여부 확인
         if (!zzSample1Repository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /** getList — 조회 (각 항목에 하위 sample2s / sample3s 포함) */
     public List<ZzSample1Dto.Item> getList(ZzSample1Dto.Request req) {
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 목록 조회
         List<ZzSample1Dto.Item> list = zzSample1Repository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -82,6 +89,7 @@ public class ZzSample1Service {
     /** getPageData — 조회 (각 항목에 하위 sample2s / sample3s 포함) */
     public BasePage<ZzSample1Dto.Item> getPageData(ZzSample1Dto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 페이지 조회
         BasePage<ZzSample1Dto.Item> res = zzSample1Repository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -105,12 +113,14 @@ public class ZzSample1Service {
         // 하위 sample2 일괄조회 → Map<sample1Id, List<sample2>>
         ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
         req2.setSample1Ids(sample1Ids);
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 2 목록 조회
         Map<String, List<ZzSample2Dto.Item>> sample2Map = zzSample2Repository.selectList(req2).stream()
             .collect(Collectors.groupingBy(ZzSample2Dto.Item::getSample1Id));
 
         // 하위 sample3 일괄조회 → Map<sample1Id, List<sample3>>
         ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
         req3.setSample1Ids(sample1Ids);
+        // [QueryDSL] ZzSample3 목록 조회
         Map<String, List<ZzSample3Dto.Item>> sample3Map = zzSample3Repository.selectList(req3).stream()
             .collect(Collectors.groupingBy(ZzSample3Dto.Item::getSample1Id));
 
@@ -126,11 +136,13 @@ public class ZzSample1Service {
         // 하위 sample2 목록 조회 (sample1Id 기준)
         ZzSample2Dto.Request req2 = new ZzSample2Dto.Request();
         req2.setSample1Id(item.getSample1Id());
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 2 목록 조회
         item.setSample2s(zzSample2Repository.selectList(req2)); // sample2 목록
 
         // 하위 sample3 목록 조회 (sample1Id 기준)
         ZzSample3Dto.Request req3 = new ZzSample3Dto.Request();
         req3.setSample1Id(item.getSample1Id());
+        // [QueryDSL] ZzSample3 목록 조회
         item.setSample3s(zzSample3Repository.selectList(req3)); // sample3 목록
     }
 
@@ -142,6 +154,7 @@ public class ZzSample1Service {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 저장
         ZzSample1 saved = zzSample1Repository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -150,21 +163,25 @@ public class ZzSample1Service {
     /** save — 저장 (단건) */
     @Transactional
     public ZzSample1 save(ZzSample1 entity) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 존재 여부 확인
         if (entity.getSample1Id() == null || !zzSample1Repository.existsById(entity.getSample1Id()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSample1Id() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 저장
         return zzSample1Repository.save(entity);
     }
 
     /** update — 수정 */
     @Transactional
     public ZzSample1 update(String id, ZzSample1 body) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 단건 조회
         ZzSample1 entity = zzSample1Repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         VoUtil.voCopyExclude(body, entity, "sample1Id^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 저장
         ZzSample1 saved = zzSample1Repository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -174,6 +191,7 @@ public class ZzSample1Service {
     /** updateSelective — 부분 수정 (selective) */
     @Transactional
     public int updateSelective(ZzSample1 entity) {
+        // [QueryDSL] 다목적 샘플/코드성 데이터 저장소 선택적 필드 수정
         return zzSample1Repository.updateSelective(entity);
     }
 
@@ -181,10 +199,13 @@ public class ZzSample1Service {
     @Transactional
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 단건 조회
         ZzSample1 entity = zzSample1Repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 삭제
         zzSample1Repository.delete(entity);
         em.flush();
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 존재 여부 확인
         if (zzSample1Repository.existsById(id))
             throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
@@ -192,6 +213,7 @@ public class ZzSample1Service {
     /** saveList — 일괄 저장 */
     @Transactional
     public void saveList(List<ZzSample1> rows) {
+        // [쿼리 메서드] 다목적 샘플/코드성 데이터 저장소 일괄 저장
         zzSample1Repository.saveAll(rows);
     }
 }

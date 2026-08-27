@@ -31,10 +31,12 @@ public class MdSgDownloadHistService {
     private EntityManager em;
 
     public List<MdSgDownloadHistDto.Item> getList(MdSgDownloadHistDto.Request req) {
+        // [QueryDSL] 소스젠 ZIP 다운로드 클릭 기록 — 파일 재보관 없이 로그만 남긴다 목록 조회
         return mdSgDownloadHistRepository.selectList(req);
     }
 
     public BasePage<MdSgDownloadHistDto.Item> getPageData(MdSgDownloadHistDto.Request req) {
+        // [QueryDSL] 소스젠 ZIP 다운로드 클릭 기록 — 파일 재보관 없이 로그만 남긴다 페이지 조회
         return mdSgDownloadHistRepository.selectPageData(req);
     }
 
@@ -46,6 +48,7 @@ public class MdSgDownloadHistService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 ZIP 다운로드 클릭 기록 — 파일 재보관 없이 로그만 남긴다 저장
         MdSgDownloadHist saved = mdSgDownloadHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -56,8 +59,10 @@ public class MdSgDownloadHistService {
     @Transactional
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
+        // [쿼리 메서드] 소스젠 ZIP 다운로드 클릭 기록 — 파일 재보관 없이 로그만 남긴다 단건 조회
         MdSgDownloadHist entity = mdSgDownloadHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+        // [쿼리 메서드] 소스젠 ZIP 다운로드 클릭 기록 — 파일 재보관 없이 로그만 남긴다 삭제
         mdSgDownloadHistRepository.delete(entity);
         em.flush();
     }

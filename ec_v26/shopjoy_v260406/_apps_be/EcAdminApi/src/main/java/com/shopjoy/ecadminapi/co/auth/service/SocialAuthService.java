@@ -89,10 +89,12 @@ public class SocialAuthService {
         MbMemberSnsDto.Request snsReq = new MbMemberSnsDto.Request();
         snsReq.setSnsChannelCd(info.getSnsChannelCd());
         snsReq.setSnsUserId(info.getSnsUserId());
+        // [쿼리 메서드] MemberSns 목록 조회
         List<MbMemberSnsDto.Item> snsMatches = memberSnsRepository.selectList(snsReq);
 
         if (!snsMatches.isEmpty()) {
             String memberId = snsMatches.get(0).getMemberId();
+            // [쿼리 메서드] Member 단건 조회
             member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException(
                     "연동된 회원 정보를 찾을 수 없습니다. 관리자에게 문의해주세요." + "::" + CmUtil.svcCallerInfo(this)));
@@ -166,6 +168,7 @@ public class SocialAuthService {
             throw new CmBizException("로그인이 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
+        // [쿼리 메서드] Member 단건 조회
         MbMember member = memberRepository.findById(memberId)
             .orElseThrow(() -> new CmBizException(
                 "회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
@@ -177,6 +180,7 @@ public class SocialAuthService {
         String siteId = "";
 
         // 1) SNS 연동행 전체 삭제 (소셜 연동 정보 제거)
+        // [쿼리 메서드] MemberSns 조건별 삭제
         memberSnsRepository.deleteByMemberId(memberId);
 
         // 2) 회원 상태 WITHDRAWN 변경 (이전 상태 보존, updDate=탈퇴시각)
@@ -188,6 +192,7 @@ public class SocialAuthService {
         // 3) 보유 토큰 전체 무효화 (모든 디바이스 세션 종료) + REVOKE 이력 (logout 흐름 모방)
         String reason = (request != null)
             ? CmUtil.nvlStr(request.getWithdrawReason(), "WITHDRAW") : "WITHDRAW";
+        // [쿼리 메서드] MemberTokenLog 조건별 삭제
         memberTokenLogRepository.deleteByAuthId(memberId);
         saveTokenLog(memberId, siteId, null, null, "REVOKE", appTypeCd, reason, null, null);
 
@@ -216,6 +221,7 @@ public class SocialAuthService {
             : email;
 
         // loginId 중복 시: 이미 같은 이메일로 일반 가입된 회원이 있으면 그 회원에 SNS 연동만 추가
+        // [쿼리 메서드] Member 조건별 조회
         Optional<MbMember> existing = memberRepository.findByLoginId(loginId);
         if (existing.isPresent()) {
             MbMember exist = existing.get();
@@ -240,6 +246,7 @@ public class SocialAuthService {
             .regBy(memberId)
             .updBy(memberId)
             .build();
+        // [쿼리 메서드] Member 저장
         memberRepository.save(member);
 
         // SNS 연동행 생성
@@ -259,6 +266,7 @@ public class SocialAuthService {
             .regBy(memberId)
             .updBy(memberId)
             .build();
+        // [쿼리 메서드] MemberSns 저장
         memberSnsRepository.save(sns);
     }
 

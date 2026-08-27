@@ -30,6 +30,7 @@ public class PdReviewAttachService {
 
     /* 리뷰 첨부파일 키조회 */
     public PdReviewAttachDto.Item getById(String id) {
+        // [QueryDSL] 리뷰 이미지/동영상 단건 조회
         PdReviewAttachDto.Item dto = pdReviewAttachRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdReviewAttachService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdReviewAttachDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 리뷰 이미지/동영상 단건 조회
         return pdReviewAttachRepository.selectById(id).orElse(null);
     }
 
     /* 리뷰 첨부파일 상세조회 */
     public PdReviewAttach findById(String id) {
+        // [쿼리 메서드] 리뷰 이미지/동영상 단건 조회
         return pdReviewAttachRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdReviewAttach findByIdOrNull(String id) {
+        // [쿼리 메서드] 리뷰 이미지/동영상 단건 조회
         return pdReviewAttachRepository.findById(id).orElse(null);
     }
 
     /* 리뷰 첨부파일 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 리뷰 이미지/동영상 존재 여부 확인
         return pdReviewAttachRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 리뷰 이미지/동영상 존재 여부 확인
         if (!pdReviewAttachRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 리뷰 첨부파일 목록조회 */
     public List<PdReviewAttachDto.Item> getList(PdReviewAttachDto.Request req) {
+        // [QueryDSL] 리뷰 이미지/동영상 목록 조회
         return pdReviewAttachRepository.selectList(req);
     }
 
     /* 리뷰 첨부파일 페이지조회 */
     public BasePage<PdReviewAttachDto.Item> getPageData(PdReviewAttachDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 리뷰 이미지/동영상 페이지 조회
         return pdReviewAttachRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdReviewAttachService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 리뷰 이미지/동영상 저장
         PdReviewAttach saved = pdReviewAttachRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdReviewAttachService {
         VoUtil.voCopyExclude(body, entity, "reviewAttachId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 리뷰 이미지/동영상 저장
         PdReviewAttach saved = pdReviewAttachRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdReviewAttachService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getReviewAttachId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 리뷰 이미지/동영상 선택적 필드 수정
         int affected = pdReviewAttachRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdReviewAttachService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdReviewAttach entity = findById(id);
+        // [쿼리 메서드] 리뷰 이미지/동영상 삭제
         pdReviewAttachRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdReviewAttachService {
         if ("D".equals(rowStatus)) {
             if (entity.getReviewAttachId() == null)
                 throw new CmBizException("삭제 대상 reviewAttachId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 리뷰 이미지/동영상 존재 여부 확인
             if (!pdReviewAttachRepository.existsById(entity.getReviewAttachId()))
                 throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 리뷰 이미지/동영상 ID 기준 삭제
             pdReviewAttachRepository.deleteById(entity.getReviewAttachId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setReviewAttachId(CmUtil.generateId("pd_review_attach"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 리뷰 이미지/동영상 저장
             PdReviewAttach saved = pdReviewAttachRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdReviewAttachService {
             if (entity.getReviewAttachId() == null)
                 throw new CmBizException("수정 대상 reviewAttachId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 리뷰 이미지/동영상 선택적 필드 수정
             int affected = pdReviewAttachRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdReviewAttach입니다: " + entity.getReviewAttachId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdReviewAttachService {
             .map(r -> r.getReviewAttachId())
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 리뷰 이미지/동영상 조건별 삭제
             pdReviewAttachRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdReviewAttachService {
             .toList();
         for (PdReviewAttach row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 리뷰 이미지/동영상 선택적 필드 수정
             int affected = pdReviewAttachRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getReviewAttachId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdReviewAttachService {
             row.setReviewAttachId(CmUtil.generateId("pd_review_attach"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 리뷰 이미지/동영상 저장
             pdReviewAttachRepository.save(row);
         }
 

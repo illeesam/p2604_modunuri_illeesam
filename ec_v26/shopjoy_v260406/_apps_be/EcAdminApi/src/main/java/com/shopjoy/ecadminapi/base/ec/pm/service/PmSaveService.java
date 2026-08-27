@@ -30,6 +30,7 @@ public class PmSaveService {
 
     /* 적립금 키조회 */
     public PmSaveDto.Item getById(String id) {
+        // [QueryDSL] 적립금 적립/사용 이력 단건 조회
         PmSaveDto.Item dto = pmSaveRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmSaveService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmSaveDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 적립금 적립/사용 이력 단건 조회
         return pmSaveRepository.selectById(id).orElse(null);
     }
 
     /* 적립금 상세조회 */
     public PmSave findById(String id) {
+        // [쿼리 메서드] 적립금 적립/사용 이력 단건 조회
         return pmSaveRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmSave findByIdOrNull(String id) {
+        // [쿼리 메서드] 적립금 적립/사용 이력 단건 조회
         return pmSaveRepository.findById(id).orElse(null);
     }
 
     /* 적립금 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 적립금 적립/사용 이력 존재 여부 확인
         return pmSaveRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 적립금 적립/사용 이력 존재 여부 확인
         if (!pmSaveRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 적립금 목록조회 */
     public List<PmSaveDto.Item> getList(PmSaveDto.Request req) {
+        // [QueryDSL] 적립금 적립/사용 이력 목록 조회
         return pmSaveRepository.selectList(req);
     }
 
     /* 적립금 페이지조회 */
     public BasePage<PmSaveDto.Item> getPageData(PmSaveDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 적립금 적립/사용 이력 페이지 조회
         return pmSaveRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmSaveService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 적립/사용 이력 저장
         PmSave saved = pmSaveRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmSaveService {
         VoUtil.voCopyExclude(body, entity, "saveId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 적립/사용 이력 저장
         PmSave saved = pmSaveRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmSaveService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 적립금 적립/사용 이력 선택적 필드 수정
         int affected = pmSaveRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmSaveService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmSave entity = findById(id);
+        // [쿼리 메서드] 적립금 적립/사용 이력 삭제
         pmSaveRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmSaveService {
         if ("D".equals(rowStatus)) {
             if (entity.getSaveId() == null)
                 throw new CmBizException("삭제 대상 saveId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 적립금 적립/사용 이력 존재 여부 확인
             if (!pmSaveRepository.existsById(entity.getSaveId()))
                 throw new CmBizException("존재하지 않는 PmSave입니다: " + entity.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 적립금 적립/사용 이력 ID 기준 삭제
             pmSaveRepository.deleteById(entity.getSaveId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSaveId(CmUtil.generateId("pm_save"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 적립금 적립/사용 이력 저장
             PmSave saved = pmSaveRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmSaveService {
             if (entity.getSaveId() == null)
                 throw new CmBizException("수정 대상 saveId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 적립금 적립/사용 이력 선택적 필드 수정
             int affected = pmSaveRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmSave입니다: " + entity.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmSaveService {
             .map(PmSave::getSaveId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 적립금 적립/사용 이력 조건별 삭제
             pmSaveRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmSaveService {
             .toList();
         for (PmSave row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 적립금 적립/사용 이력 선택적 필드 수정
             int affected = pmSaveRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmSaveService {
             row.setSaveId(CmUtil.generateId("pm_save"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 적립금 적립/사용 이력 저장
             pmSaveRepository.save(row);
         }
 

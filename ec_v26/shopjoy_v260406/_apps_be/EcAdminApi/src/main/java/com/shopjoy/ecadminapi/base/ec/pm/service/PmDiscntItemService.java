@@ -30,6 +30,7 @@ public class PmDiscntItemService {
 
     /* 할인 대상 상품 키조회 */
     public PmDiscntItemDto.Item getById(String id) {
+        // [QueryDSL] 할인 대상 항목 단건 조회
         PmDiscntItemDto.Item dto = pmDiscntItemRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmDiscntItemService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmDiscntItemDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 할인 대상 항목 단건 조회
         return pmDiscntItemRepository.selectById(id).orElse(null);
     }
 
     /* 할인 대상 상품 상세조회 */
     public PmDiscntItem findById(String id) {
+        // [쿼리 메서드] 할인 대상 항목 단건 조회
         return pmDiscntItemRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmDiscntItem findByIdOrNull(String id) {
+        // [쿼리 메서드] 할인 대상 항목 단건 조회
         return pmDiscntItemRepository.findById(id).orElse(null);
     }
 
     /* 할인 대상 상품 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 할인 대상 항목 존재 여부 확인
         return pmDiscntItemRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 할인 대상 항목 존재 여부 확인
         if (!pmDiscntItemRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 할인 대상 상품 목록조회 */
     public List<PmDiscntItemDto.Item> getList(PmDiscntItemDto.Request req) {
+        // [QueryDSL] 할인 대상 항목 목록 조회
         return pmDiscntItemRepository.selectList(req);
     }
 
     /* 할인 대상 상품 페이지조회 */
     public BasePage<PmDiscntItemDto.Item> getPageData(PmDiscntItemDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 할인 대상 항목 페이지 조회
         return pmDiscntItemRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmDiscntItemService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인 대상 항목 저장
         PmDiscntItem saved = pmDiscntItemRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmDiscntItemService {
         VoUtil.voCopyExclude(body, entity, "discntItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인 대상 항목 저장
         PmDiscntItem saved = pmDiscntItemRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmDiscntItemService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDiscntItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 할인 대상 항목 선택적 필드 수정
         int affected = pmDiscntItemRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmDiscntItemService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmDiscntItem entity = findById(id);
+        // [쿼리 메서드] 할인 대상 항목 삭제
         pmDiscntItemRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmDiscntItemService {
         if ("D".equals(rowStatus)) {
             if (entity.getDiscntItemId() == null)
                 throw new CmBizException("삭제 대상 discntItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 할인 대상 항목 존재 여부 확인
             if (!pmDiscntItemRepository.existsById(entity.getDiscntItemId()))
                 throw new CmBizException("존재하지 않는 PmDiscntItem입니다: " + entity.getDiscntItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 할인 대상 항목 ID 기준 삭제
             pmDiscntItemRepository.deleteById(entity.getDiscntItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDiscntItemId(CmUtil.generateId("pm_discnt_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 할인 대상 항목 저장
             PmDiscntItem saved = pmDiscntItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmDiscntItemService {
             if (entity.getDiscntItemId() == null)
                 throw new CmBizException("수정 대상 discntItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 할인 대상 항목 선택적 필드 수정
             int affected = pmDiscntItemRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmDiscntItem입니다: " + entity.getDiscntItemId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmDiscntItemService {
             .map(PmDiscntItem::getDiscntItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 할인 대상 항목 조건별 삭제
             pmDiscntItemRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmDiscntItemService {
             .toList();
         for (PmDiscntItem row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 할인 대상 항목 선택적 필드 수정
             int affected = pmDiscntItemRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDiscntItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmDiscntItemService {
             row.setDiscntItemId(CmUtil.generateId("pm_discnt_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 할인 대상 항목 저장
             pmDiscntItemRepository.save(row);
         }
 

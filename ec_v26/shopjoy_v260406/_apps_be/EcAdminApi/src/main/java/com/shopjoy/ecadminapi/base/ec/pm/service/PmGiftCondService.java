@@ -30,6 +30,7 @@ public class PmGiftCondService {
 
     /* 사은품 지급 조건 키조회 */
     public PmGiftCondDto.Item getById(String id) {
+        // [QueryDSL] 사은품 지급 조건 단건 조회
         PmGiftCondDto.Item dto = pmGiftCondRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmGiftCondService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmGiftCondDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 사은품 지급 조건 단건 조회
         return pmGiftCondRepository.selectById(id).orElse(null);
     }
 
     /* 사은품 지급 조건 상세조회 */
     public PmGiftCond findById(String id) {
+        // [쿼리 메서드] 사은품 지급 조건 단건 조회
         return pmGiftCondRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmGiftCond findByIdOrNull(String id) {
+        // [쿼리 메서드] 사은품 지급 조건 단건 조회
         return pmGiftCondRepository.findById(id).orElse(null);
     }
 
     /* 사은품 지급 조건 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 사은품 지급 조건 존재 여부 확인
         return pmGiftCondRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 사은품 지급 조건 존재 여부 확인
         if (!pmGiftCondRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 사은품 지급 조건 목록조회 */
     public List<PmGiftCondDto.Item> getList(PmGiftCondDto.Request req) {
+        // [QueryDSL] 사은품 지급 조건 목록 조회
         return pmGiftCondRepository.selectList(req);
     }
 
     /* 사은품 지급 조건 페이지조회 */
     public BasePage<PmGiftCondDto.Item> getPageData(PmGiftCondDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 사은품 지급 조건 페이지 조회
         return pmGiftCondRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmGiftCondService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 사은품 지급 조건 저장
         PmGiftCond saved = pmGiftCondRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmGiftCondService {
         VoUtil.voCopyExclude(body, entity, "giftCondId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 사은품 지급 조건 저장
         PmGiftCond saved = pmGiftCondRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmGiftCondService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getGiftCondId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 사은품 지급 조건 선택적 필드 수정
         int affected = pmGiftCondRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmGiftCondService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmGiftCond entity = findById(id);
+        // [쿼리 메서드] 사은품 지급 조건 삭제
         pmGiftCondRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmGiftCondService {
         if ("D".equals(rowStatus)) {
             if (entity.getGiftCondId() == null)
                 throw new CmBizException("삭제 대상 giftCondId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 사은품 지급 조건 존재 여부 확인
             if (!pmGiftCondRepository.existsById(entity.getGiftCondId()))
                 throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 사은품 지급 조건 ID 기준 삭제
             pmGiftCondRepository.deleteById(entity.getGiftCondId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setGiftCondId(CmUtil.generateId("pm_gift_cond"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 사은품 지급 조건 저장
             PmGiftCond saved = pmGiftCondRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmGiftCondService {
             if (entity.getGiftCondId() == null)
                 throw new CmBizException("수정 대상 giftCondId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 사은품 지급 조건 선택적 필드 수정
             int affected = pmGiftCondRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmGiftCond입니다: " + entity.getGiftCondId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmGiftCondService {
             .map(PmGiftCond::getGiftCondId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 사은품 지급 조건 조건별 삭제
             pmGiftCondRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmGiftCondService {
             .toList();
         for (PmGiftCond row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 사은품 지급 조건 선택적 필드 수정
             int affected = pmGiftCondRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getGiftCondId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmGiftCondService {
             row.setGiftCondId(CmUtil.generateId("pm_gift_cond"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 사은품 지급 조건 저장
             pmGiftCondRepository.save(row);
         }
 

@@ -32,6 +32,7 @@ public class SyUserRoleService {
 
     /* 사용자별 역할 키조회 */
     public SyUserRoleDto.Item getById(String id) {
+        // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 단건 조회
         SyUserRoleDto.Item dto = syUserRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -39,27 +40,32 @@ public class SyUserRoleService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyUserRoleDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 단건 조회
         return syUserRoleRepository.selectById(id).orElse(null);
     }
 
     /* 사용자별 역할 상세조회 */
     public SyUserRole findById(String id) {
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 단건 조회
         return syUserRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyUserRole findByIdOrNull(String id) {
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 단건 조회
         return syUserRoleRepository.findById(id).orElse(null);
     }
 
     /* 사용자별 역할 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 존재 여부 확인
         return syUserRoleRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 존재 여부 확인
         if (!syUserRoleRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
@@ -71,12 +77,14 @@ public class SyUserRoleService {
 
     /* 사용자별 역할 목록조회 */
     public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) {
+        // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 목록 조회
         return syUserRoleRepository.selectList(req);
     }
 
     /* 사용자별 역할 페이지조회 */
     public BasePage<SyUserRoleDto.Item> getPageData(SyUserRoleDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 페이지 조회
         return syUserRoleRepository.selectPageData(req);
     }
 
@@ -88,6 +96,7 @@ public class SyUserRoleService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 저장
         SyUserRole saved = syUserRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -104,6 +113,7 @@ public class SyUserRoleService {
         VoUtil.voCopyExclude(body, entity, "userRoleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 저장
         SyUserRole saved = syUserRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -118,6 +128,7 @@ public class SyUserRoleService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 선택적 필드 수정
         int affected = syUserRoleRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -130,6 +141,7 @@ public class SyUserRoleService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyUserRole entity = findById(id);
+        // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 삭제
         syUserRoleRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -151,14 +163,17 @@ public class SyUserRoleService {
         if ("D".equals(rowStatus)) {
             if (entity.getUserRoleId() == null)
                 throw new CmBizException("삭제 대상 userRoleId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 존재 여부 확인
             if (!syUserRoleRepository.existsById(entity.getUserRoleId()))
                 throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) ID 기준 삭제
             syUserRoleRepository.deleteById(entity.getUserRoleId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setUserRoleId(CmUtil.generateId("sy_user_role"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 저장
             SyUserRole saved = syUserRoleRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -166,6 +181,7 @@ public class SyUserRoleService {
             if (entity.getUserRoleId() == null)
                 throw new CmBizException("수정 대상 userRoleId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 선택적 필드 수정
             int affected = syUserRoleRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyUserRole입니다: " + entity.getUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
@@ -201,6 +217,7 @@ public class SyUserRoleService {
             .map(SyUserRole::getUserRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 조건별 삭제
             syUserRoleRepository.deleteAllById(deleteIds);
             /* DELETE 를 DB 에 즉시 반영하여 동일 트랜잭션 내 INSERT 시 unique 충돌 회피 */
             em.flush();
@@ -213,6 +230,7 @@ public class SyUserRoleService {
             .toList();
         for (SyUserRole row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 관리자 사용자-역할 매핑 (N:M) 선택적 필드 수정
             int affected = syUserRoleRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getUserRoleId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -225,6 +243,7 @@ public class SyUserRoleService {
             row.setUserRoleId(CmUtil.generateId("sy_user_role"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 관리자 사용자-역할 매핑 (N:M) 저장
             syUserRoleRepository.save(row);
         }
 

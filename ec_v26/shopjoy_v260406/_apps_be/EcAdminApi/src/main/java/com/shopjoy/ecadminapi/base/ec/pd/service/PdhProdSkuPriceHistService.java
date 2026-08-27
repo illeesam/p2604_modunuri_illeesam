@@ -32,6 +32,7 @@ public class PdhProdSkuPriceHistService {
 
     /* 상품 SKU 가격 이력 키조회 */
     public PdhProdSkuPriceHistDto.Item getById(String id) {
+        // [QueryDSL] SKU 가격 변경 이력 단건 조회
         PdhProdSkuPriceHistDto.Item dto = pdhProdSkuPriceHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -39,28 +40,33 @@ public class PdhProdSkuPriceHistService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdhProdSkuPriceHistDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] SKU 가격 변경 이력 단건 조회
         return pdhProdSkuPriceHistRepository.selectById(id).orElse(null);
     }
 
     /* 상품 SKU 가격 이력 상세조회 */
     public PdhProdSkuPriceHist findById(String id) {
+        // [쿼리 메서드] SKU 가격 변경 이력 단건 조회
         return pdhProdSkuPriceHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdhProdSkuPriceHist findByIdOrNull(String id) {
+        // [쿼리 메서드] SKU 가격 변경 이력 단건 조회
         return pdhProdSkuPriceHistRepository.findById(id).orElse(null);
     }
 
     /* 상품 SKU 가격 이력 목록조회 */
     public List<PdhProdSkuPriceHistDto.Item> getList(PdhProdSkuPriceHistDto.Request req) {
+        // [QueryDSL] SKU 가격 변경 이력 목록 조회
         return pdhProdSkuPriceHistRepository.selectList(req);
     }
 
     /* 상품 SKU 가격 이력 페이지조회 */
     public BasePage<PdhProdSkuPriceHistDto.Item> getPageData(PdhProdSkuPriceHistDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] SKU 가격 변경 이력 페이지 조회
         return pdhProdSkuPriceHistRepository.selectPageData(req);
     }
 
@@ -70,6 +76,7 @@ public class PdhProdSkuPriceHistService {
         body.setHistId(CmUtil.generateId("pdh_prod_sku_price_hist"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
+        // [쿼리 메서드] SKU 가격 변경 이력 저장
         PdhProdSkuPriceHist saved = pdhProdSkuPriceHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

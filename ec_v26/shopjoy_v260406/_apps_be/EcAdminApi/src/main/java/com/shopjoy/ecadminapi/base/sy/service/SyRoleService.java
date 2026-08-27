@@ -30,6 +30,7 @@ public class SyRoleService {
 
     /* 역할(권한) 키조회 */
     public SyRoleDto.Item getById(String id) {
+        // [QueryDSL] 역할 (권한그룹) 단건 조회
         SyRoleDto.Item dto = syRoleRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,44 +38,52 @@ public class SyRoleService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyRoleDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 역할 (권한그룹) 단건 조회
         return syRoleRepository.selectById(id).orElse(null);
     }
 
     /* 역할(권한) 상세조회 */
     public SyRole findById(String id) {
+        // [쿼리 메서드] 역할 (권한그룹) 단건 조회
         return syRoleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyRole findByIdOrNull(String id) {
+        // [쿼리 메서드] 역할 (권한그룹) 단건 조회
         return syRoleRepository.findById(id).orElse(null);
     }
 
     /* 역할(권한) 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 역할 (권한그룹) 존재 여부 확인
         return syRoleRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 역할 (권한그룹) 존재 여부 확인
         if (!syRoleRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 역할(권한) 목록조회 */
     public List<SyRoleDto.Item> getList(SyRoleDto.Request req) {
+        // [QueryDSL] 역할 (권한그룹) 목록 조회
         return syRoleRepository.selectList(req);
     }
 
     /* 역할(권한) 페이지조회 */
     public BasePage<SyRoleDto.Item> getPageData(SyRoleDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 역할 (권한그룹) 페이지 조회
         return syRoleRepository.selectPageData(req);
     }
 
     /** countList — 검색조건 기준 전체 카운트 (대량 export 시 안전 상한 검증용) */
     public long countList(SyRoleDto.Request req) {
+        // [QueryDSL] 역할 (권한그룹) 건수 조회
         return syRoleRepository.selectCount(req);
     }
 
@@ -96,6 +105,7 @@ public class SyRoleService {
         int totalProcessed = 0;
         while (true) {
             snap.setPageNo(pageNo);
+            // [QueryDSL] 역할 (권한그룹) 목록 조회
             List<SyRoleDto.Item> chunk = syRoleRepository.selectList(snap);
             if (chunk.isEmpty()) break;
             for (SyRoleDto.Item item : chunk) consumer.accept(item);
@@ -118,6 +128,7 @@ public class SyRoleService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 역할 (권한그룹) 저장
         SyRole saved = syRoleRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -134,6 +145,7 @@ public class SyRoleService {
         VoUtil.voCopyExclude(body, entity, "roleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 역할 (권한그룹) 저장
         SyRole saved = syRoleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -148,6 +160,7 @@ public class SyRoleService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRoleId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 역할 (권한그룹) 선택적 필드 수정
         int affected = syRoleRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -160,6 +173,7 @@ public class SyRoleService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyRole entity = findById(id);
+        // [쿼리 메서드] 역할 (권한그룹) 삭제
         syRoleRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -181,14 +195,17 @@ public class SyRoleService {
         if ("D".equals(rowStatus)) {
             if (entity.getRoleId() == null)
                 throw new CmBizException("삭제 대상 roleId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 역할 (권한그룹) 존재 여부 확인
             if (!syRoleRepository.existsById(entity.getRoleId()))
                 throw new CmBizException("존재하지 않는 SyRole입니다: " + entity.getRoleId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 역할 (권한그룹) ID 기준 삭제
             syRoleRepository.deleteById(entity.getRoleId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setRoleId(CmUtil.generateId("sy_role"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 역할 (권한그룹) 저장
             SyRole saved = syRoleRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -196,6 +213,7 @@ public class SyRoleService {
             if (entity.getRoleId() == null)
                 throw new CmBizException("수정 대상 roleId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 역할 (권한그룹) 선택적 필드 수정
             int affected = syRoleRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyRole입니다: " + entity.getRoleId() + "::" + CmUtil.svcCallerInfo(this));
@@ -231,6 +249,7 @@ public class SyRoleService {
             .map(SyRole::getRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 역할 (권한그룹) 조건별 삭제
             syRoleRepository.deleteAllById(deleteIds);
         }
 
@@ -240,6 +259,7 @@ public class SyRoleService {
             .toList();
         for (SyRole row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 역할 (권한그룹) 선택적 필드 수정
             int affected = syRoleRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getRoleId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -252,6 +272,7 @@ public class SyRoleService {
             row.setRoleId(CmUtil.generateId("sy_role"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 역할 (권한그룹) 저장
             syRoleRepository.save(row);
         }
 

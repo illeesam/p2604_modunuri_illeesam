@@ -48,6 +48,7 @@ public class BoPmVoucherService {
 
     /** sendSns — 전송 */
     public void sendSns(String id, PmVoucherSendSnsDto.Request req) {
+        // [쿼리 메서드] 상품권 존재 여부 확인
         if (!pmVoucherRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         log.info("SNS 발송 요청 - voucherId={}, channel={}", id, req.getChannel());
     }
@@ -55,12 +56,14 @@ public class BoPmVoucherService {
     /** changeStatus — voucherStatusCd 변경 (이력 보존) */
     @Transactional
     public PmVoucherDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 상품권 단건 조회
         PmVoucher entity = pmVoucherRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setVoucherStatusCdBefore(entity.getVoucherStatusCd());
         entity.setVoucherStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품권 저장
         PmVoucher saved = pmVoucherRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

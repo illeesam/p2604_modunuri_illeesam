@@ -30,6 +30,7 @@ public class MbMemberSnsService {
 
     /* SNS 연동 회원 키조회 */
     public MbMemberSnsDto.Item getById(String id) {
+        // [QueryDSL] 회원 SNS 연동 단건 조회
         MbMemberSnsDto.Item dto = mbMemberSnsRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbMemberSnsService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberSnsDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 회원 SNS 연동 단건 조회
         return mbMemberSnsRepository.selectById(id).orElse(null);
     }
 
     /* SNS 연동 회원 상세조회 */
     public MbMemberSns findById(String id) {
+        // [쿼리 메서드] 회원 SNS 연동 단건 조회
         return mbMemberSnsRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberSns findByIdOrNull(String id) {
+        // [쿼리 메서드] 회원 SNS 연동 단건 조회
         return mbMemberSnsRepository.findById(id).orElse(null);
     }
 
     /* SNS 연동 회원 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 회원 SNS 연동 존재 여부 확인
         return mbMemberSnsRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 회원 SNS 연동 존재 여부 확인
         if (!mbMemberSnsRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* SNS 연동 회원 목록조회 */
     public List<MbMemberSnsDto.Item> getList(MbMemberSnsDto.Request req) {
+        // [QueryDSL] 회원 SNS 연동 목록 조회
         return mbMemberSnsRepository.selectList(req);
     }
 
     /* SNS 연동 회원 페이지조회 */
     public BasePage<MbMemberSnsDto.Item> getPageData(MbMemberSnsDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 회원 SNS 연동 페이지 조회
         return mbMemberSnsRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbMemberSnsService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 SNS 연동 저장
         MbMemberSns saved = mbMemberSnsRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbMemberSnsService {
         VoUtil.voCopyExclude(body, entity, "memberSnsId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 SNS 연동 저장
         MbMemberSns saved = mbMemberSnsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbMemberSnsService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberSnsId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 회원 SNS 연동 선택적 필드 수정
         int affected = mbMemberSnsRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbMemberSnsService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbMemberSns entity = findById(id);
+        // [쿼리 메서드] 회원 SNS 연동 삭제
         mbMemberSnsRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbMemberSnsService {
         if ("D".equals(rowStatus)) {
             if (entity.getMemberSnsId() == null)
                 throw new CmBizException("삭제 대상 memberSnsId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원 SNS 연동 존재 여부 확인
             if (!mbMemberSnsRepository.existsById(entity.getMemberSnsId()))
                 throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원 SNS 연동 ID 기준 삭제
             mbMemberSnsRepository.deleteById(entity.getMemberSnsId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setMemberSnsId(CmUtil.generateId("mb_member_sns"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 회원 SNS 연동 저장
             MbMemberSns saved = mbMemberSnsRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbMemberSnsService {
             if (entity.getMemberSnsId() == null)
                 throw new CmBizException("수정 대상 memberSnsId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 회원 SNS 연동 선택적 필드 수정
             int affected = mbMemberSnsRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbMemberSns입니다: " + entity.getMemberSnsId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbMemberSnsService {
             .map(MbMemberSns::getMemberSnsId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 회원 SNS 연동 조건별 삭제
             mbMemberSnsRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbMemberSnsService {
             .toList();
         for (MbMemberSns row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 회원 SNS 연동 선택적 필드 수정
             int affected = mbMemberSnsRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberSnsId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbMemberSnsService {
             row.setMemberSnsId(CmUtil.generateId("mb_member_sns"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 회원 SNS 연동 저장
             mbMemberSnsRepository.save(row);
         }
 

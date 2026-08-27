@@ -30,6 +30,7 @@ public class CmhPushLogService {
 
     /* 푸시 발송 이력 키조회 */
     public CmhPushLogDto.Item getById(String id) {
+        // [QueryDSL] 푸시/알림 발송 로그 단건 조회
         CmhPushLogDto.Item dto = cmhPushLogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class CmhPushLogService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmhPushLogDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 푸시/알림 발송 로그 단건 조회
         return cmhPushLogRepository.selectById(id).orElse(null);
     }
 
     /* 푸시 발송 이력 상세조회 */
     public CmhPushLog findById(String id) {
+        // [쿼리 메서드] 푸시/알림 발송 로그 단건 조회
         return cmhPushLogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmhPushLog findByIdOrNull(String id) {
+        // [쿼리 메서드] 푸시/알림 발송 로그 단건 조회
         return cmhPushLogRepository.findById(id).orElse(null);
     }
 
     /* 푸시 발송 이력 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 푸시/알림 발송 로그 존재 여부 확인
         return cmhPushLogRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 푸시/알림 발송 로그 존재 여부 확인
         if (!cmhPushLogRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 푸시 발송 이력 목록조회 */
     public List<CmhPushLogDto.Item> getList(CmhPushLogDto.Request req) {
+        // [QueryDSL] 푸시/알림 발송 로그 목록 조회
         return cmhPushLogRepository.selectList(req);
     }
 
     /* 푸시 발송 이력 페이지조회 */
     public BasePage<CmhPushLogDto.Item> getPageData(CmhPushLogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 푸시/알림 발송 로그 페이지 조회
         return cmhPushLogRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class CmhPushLogService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 푸시/알림 발송 로그 저장
         CmhPushLog saved = cmhPushLogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class CmhPushLogService {
         VoUtil.voCopyExclude(body, entity, "logId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 푸시/알림 발송 로그 저장
         CmhPushLog saved = cmhPushLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class CmhPushLogService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 푸시/알림 발송 로그 선택적 필드 수정
         int affected = cmhPushLogRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class CmhPushLogService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmhPushLog entity = findById(id);
+        // [쿼리 메서드] 푸시/알림 발송 로그 삭제
         cmhPushLogRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -143,14 +155,17 @@ public class CmhPushLogService {
         if ("D".equals(rowStatus)) {
             if (entity.getLogId() == null)
                 throw new CmBizException("삭제 대상 logId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 푸시/알림 발송 로그 존재 여부 확인
             if (!cmhPushLogRepository.existsById(entity.getLogId()))
                 throw new CmBizException("존재하지 않는 CmhPushLog입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 푸시/알림 발송 로그 ID 기준 삭제
             cmhPushLogRepository.deleteById(entity.getLogId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setLogId(CmUtil.generateId("cmh_push_log"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 푸시/알림 발송 로그 저장
             CmhPushLog saved = cmhPushLogRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -158,6 +173,7 @@ public class CmhPushLogService {
             if (entity.getLogId() == null)
                 throw new CmBizException("수정 대상 logId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 푸시/알림 발송 로그 선택적 필드 수정
             int affected = cmhPushLogRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 CmhPushLog입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
@@ -191,6 +207,7 @@ public class CmhPushLogService {
             .map(CmhPushLog::getLogId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 푸시/알림 발송 로그 조건별 삭제
             cmhPushLogRepository.deleteAllById(deleteIds);
         }
 
@@ -200,6 +217,7 @@ public class CmhPushLogService {
             .toList();
         for (CmhPushLog row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 푸시/알림 발송 로그 선택적 필드 수정
             int affected = cmhPushLogRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -212,6 +230,7 @@ public class CmhPushLogService {
             row.setLogId(CmUtil.generateId("cmh_push_log"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 푸시/알림 발송 로그 저장
             cmhPushLogRepository.save(row);
         }
 

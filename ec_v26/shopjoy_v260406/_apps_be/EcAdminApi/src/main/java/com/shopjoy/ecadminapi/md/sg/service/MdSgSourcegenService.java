@@ -31,6 +31,7 @@ public class MdSgSourcegenService {
 
     public List<MdSgSourcegenDto.Item> getByProjectId(String projectId) {
         CmUtil.requireId(projectId, "projectId", this);
+        // [쿼리 메서드] 소스젠 DDL 정의 — 프로젝트당 여러 테이블 DDL 보관 조건별 조회
         return mdSgSourcegenRepository.findByProjectIdOrderByTabNoAsc(projectId).stream()
             .map(e -> {
                 MdSgSourcegenDto.Item item = new MdSgSourcegenDto.Item();
@@ -73,6 +74,7 @@ public class MdSgSourcegenService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
         }
+        // [쿼리 메서드] 소스젠 DDL 정의 — 프로젝트당 여러 테이블 DDL 보관 일괄 저장
         mdSgSourcegenRepository.saveAll(rows);
 
         em.flush();

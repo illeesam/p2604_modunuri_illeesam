@@ -50,11 +50,13 @@ public class BoCmBlogService {
     /** toggleUse — useYn 전환 */
     @Transactional
     public CmBlogDto.Item toggleUse(String id, CmBlogToggleUseDto.Request req) {
+        // [쿼리 메서드] 블로그 게시글 단건 조회
         CmBlog entity = cmBlogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setUseYn(req.getUseYn());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 게시글 저장
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

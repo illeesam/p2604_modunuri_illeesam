@@ -30,6 +30,7 @@ public class PdProdRelService {
 
     /* 연관 상품 키조회 */
     public PdProdRelDto.Item getById(String id) {
+        // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 단건 조회
         PdProdRelDto.Item dto = pdProdRelRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdProdRelService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdRelDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 단건 조회
         return pdProdRelRepository.selectById(id).orElse(null);
     }
 
     /* 연관 상품 상세조회 */
     public PdProdRel findById(String id) {
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 단건 조회
         return pdProdRelRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdRel findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 단건 조회
         return pdProdRelRepository.findById(id).orElse(null);
     }
 
     /* 연관 상품 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 존재 여부 확인
         return pdProdRelRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 존재 여부 확인
         if (!pdProdRelRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 연관 상품 목록조회 */
     public List<PdProdRelDto.Item> getList(PdProdRelDto.Request req) {
+        // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 목록 조회
         return pdProdRelRepository.selectList(req);
     }
 
     /* 연관 상품 페이지조회 */
     public BasePage<PdProdRelDto.Item> getPageData(PdProdRelDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 페이지 조회
         return pdProdRelRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdProdRelService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 저장
         PdProdRel saved = pdProdRelRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdProdRelService {
         VoUtil.voCopyExclude(body, entity, "prodRelId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 저장
         PdProdRel saved = pdProdRelRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdProdRelService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdRelId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 선택적 필드 수정
         int affected = pdProdRelRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdProdRelService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdRel entity = findById(id);
+        // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 삭제
         pdProdRelRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdProdRelService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdRelId() == null)
                 throw new CmBizException("삭제 대상 prodRelId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 존재 여부 확인
             if (!pdProdRelRepository.existsById(entity.getProdRelId()))
                 throw new CmBizException("존재하지 않는 PdProdRel입니다: " + entity.getProdRelId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) ID 기준 삭제
             pdProdRelRepository.deleteById(entity.getProdRelId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdRelId(CmUtil.generateId("pd_prod_rel"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 저장
             PdProdRel saved = pdProdRelRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdProdRelService {
             if (entity.getProdRelId() == null)
                 throw new CmBizException("수정 대상 prodRelId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 선택적 필드 수정
             int affected = pdProdRelRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdRel입니다: " + entity.getProdRelId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdProdRelService {
             .map(PdProdRel::getProdRelId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 조건별 삭제
             pdProdRelRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdProdRelService {
             .toList();
         for (PdProdRel row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품 연관 관계 (연관상품/코디상품) 선택적 필드 수정
             int affected = pdProdRelRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdRelId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdProdRelService {
             row.setProdRelId(CmUtil.generateId("pd_prod_rel"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품 연관 관계 (연관상품/코디상품) 저장
             pdProdRelRepository.save(row);
         }
 

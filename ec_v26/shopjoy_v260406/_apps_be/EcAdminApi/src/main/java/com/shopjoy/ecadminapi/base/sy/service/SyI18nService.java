@@ -30,6 +30,7 @@ public class SyI18nService {
 
     /* 다국어 키조회 */
     public SyI18nDto.Item getById(String id) {
+        // [QueryDSL] 다국어 키 마스터 단건 조회
         SyI18nDto.Item dto = syI18nRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyI18nService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyI18nDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 다국어 키 마스터 단건 조회
         return syI18nRepository.selectById(id).orElse(null);
     }
 
     /* 다국어 상세조회 */
     public SyI18n findById(String id) {
+        // [쿼리 메서드] 다국어 키 마스터 단건 조회
         return syI18nRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyI18n findByIdOrNull(String id) {
+        // [쿼리 메서드] 다국어 키 마스터 단건 조회
         return syI18nRepository.findById(id).orElse(null);
     }
 
     /* 다국어 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 다국어 키 마스터 존재 여부 확인
         return syI18nRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 다국어 키 마스터 존재 여부 확인
         if (!syI18nRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 다국어 목록조회 */
     public List<SyI18nDto.Item> getList(SyI18nDto.Request req) {
+        // [QueryDSL] 다국어 키 마스터 목록 조회
         return syI18nRepository.selectList(req);
     }
 
     /* 다국어 페이지조회 */
     public BasePage<SyI18nDto.Item> getPageData(SyI18nDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 다국어 키 마스터 페이지 조회
         return syI18nRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyI18nService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 다국어 키 마스터 저장
         SyI18n saved = syI18nRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyI18nService {
         VoUtil.voCopyExclude(body, entity, "i18nId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 다국어 키 마스터 저장
         SyI18n saved = syI18nRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyI18nService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getI18nId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 다국어 키 마스터 선택적 필드 수정
         int affected = syI18nRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyI18nService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyI18n entity = findById(id);
+        // [쿼리 메서드] 다국어 키 마스터 삭제
         syI18nRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyI18nService {
         if ("D".equals(rowStatus)) {
             if (entity.getI18nId() == null)
                 throw new CmBizException("삭제 대상 i18nId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 다국어 키 마스터 존재 여부 확인
             if (!syI18nRepository.existsById(entity.getI18nId()))
                 throw new CmBizException("존재하지 않는 SyI18n입니다: " + entity.getI18nId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 다국어 키 마스터 ID 기준 삭제
             syI18nRepository.deleteById(entity.getI18nId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setI18nId(CmUtil.generateId("sy_i18n"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 다국어 키 마스터 저장
             SyI18n saved = syI18nRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyI18nService {
             if (entity.getI18nId() == null)
                 throw new CmBizException("수정 대상 i18nId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 다국어 키 마스터 선택적 필드 수정
             int affected = syI18nRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyI18n입니다: " + entity.getI18nId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyI18nService {
             .map(SyI18n::getI18nId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 다국어 키 마스터 조건별 삭제
             syI18nRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyI18nService {
             .toList();
         for (SyI18n row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 다국어 키 마스터 선택적 필드 수정
             int affected = syI18nRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getI18nId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyI18nService {
             row.setI18nId(CmUtil.generateId("sy_i18n"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 다국어 키 마스터 저장
             syI18nRepository.save(row);
         }
 

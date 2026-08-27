@@ -60,6 +60,7 @@ public class CmDashboardDataService {
 
     /** 항목의 data_source_cd 로 실데이터를 만든다. 소스 미지정/미등록/실패면 빈 목록 */
     private List<CmDashboardWidgetRow> runDataSource(String dashboardItemId, String siteId) {
+        // [쿼리 메서드] 대시보드 차트 패널 정의 단건 조회
         CmDashboardItem item = cmDashboardItemRepository.findById(dashboardItemId).orElse(null);
         if (item == null || !cmDashboardDataSourceRegistry.has(item.getDataSourceCd())) return List.of();
         return cmDashboardDataSourceRegistry.run(item.getDataSourceCd(), siteId);
@@ -81,6 +82,7 @@ public class CmDashboardDataService {
 
         String existingId = null;
         if (body.getDashboardDataId() != null && !body.getDashboardDataId().isBlank()) {
+            // [QueryDSL] 대시보드 3레벨 항목 실데이터 단건 조회
             if (cmDashboardDataRepository.selectById(body.getDashboardDataId()).isPresent()) {
                 existingId = body.getDashboardDataId();
             }
@@ -98,10 +100,12 @@ public class CmDashboardDataService {
             final String targetId = existingId;
             body.setDashboardDataId(targetId);
             body.setUpdBy(authId);
+            // [QueryDSL] 대시보드 3레벨 항목 실데이터 선택적 필드 수정
             int affected = cmDashboardDataRepository.updateSelective(body);
             if (affected == 0) throw new CmBizException("데이터 수정에 실패했습니다: " + targetId + "::" + CmUtil.svcCallerInfo(this));
             em.flush();
             em.clear();   // updateSelective 는 벌크 UPDATE 라 영속성 컨텍스트가 옛 값을 들고 있다 — 다시 읽기 전에 비운다
+            // [QueryDSL] 대시보드 3레벨 항목 실데이터 단건 조회
             return cmDashboardDataRepository.selectById(targetId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + targetId + "::" + CmUtil.svcCallerInfo(this)));
         }
@@ -109,6 +113,7 @@ public class CmDashboardDataService {
         body.setDashboardDataId(CmUtil.generateId("cm_dashboard_data"));
         body.setRegBy(authId); body.setRegDate(now);
         body.setUpdBy(authId); body.setUpdDate(now);
+        // [쿼리 메서드] 대시보드 3레벨 항목 실데이터 저장
         CmDashboardData saved = cmDashboardDataRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -117,6 +122,7 @@ public class CmDashboardDataService {
 
     @Transactional
     public void deleteByItemAndDate(String dashboardItemId, String yyyymmdd) {
+        // [쿼리 메서드] 대시보드 3레벨 항목 실데이터 조건별 삭제
         cmDashboardDataRepository.deleteByDashboardItemIdAndYyyymmdd(dashboardItemId, yyyymmdd);
         em.flush();
     }

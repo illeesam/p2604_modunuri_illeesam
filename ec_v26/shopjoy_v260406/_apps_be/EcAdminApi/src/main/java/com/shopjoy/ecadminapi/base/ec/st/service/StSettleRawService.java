@@ -30,6 +30,7 @@ public class StSettleRawService {
 
     /* 정산 원천 데이터 키조회 */
     public StSettleRawDto.Item getById(String id) {
+        // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 단건 조회
         StSettleRawDto.Item dto = stSettleRawRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class StSettleRawService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleRawDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 단건 조회
         return stSettleRawRepository.selectById(id).orElse(null);
     }
 
     /* 정산 원천 데이터 상세조회 */
     public StSettleRaw findById(String id) {
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 단건 조회
         return stSettleRawRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettleRaw findByIdOrNull(String id) {
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 단건 조회
         return stSettleRawRepository.findById(id).orElse(null);
     }
 
     /* 정산 원천 데이터 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 존재 여부 확인
         return stSettleRawRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 존재 여부 확인
         if (!stSettleRawRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 정산 원천 데이터 목록조회 */
     public List<StSettleRawDto.Item> getList(StSettleRawDto.Request req) {
+        // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 목록 조회
         return stSettleRawRepository.selectList(req);
     }
 
     /* 정산 원천 데이터 페이지조회 */
     public BasePage<StSettleRawDto.Item> getPageData(StSettleRawDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 페이지 조회
         return stSettleRawRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class StSettleRawService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 저장
         StSettleRaw saved = stSettleRawRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class StSettleRawService {
         VoUtil.voCopyExclude(body, entity, "settleRawId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 저장
         StSettleRaw saved = stSettleRawRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class StSettleRawService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettleRawId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 선택적 필드 수정
         int affected = stSettleRawRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class StSettleRawService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StSettleRaw entity = findById(id);
+        // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 삭제
         stSettleRawRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class StSettleRawService {
         if ("D".equals(rowStatus)) {
             if (entity.getSettleRawId() == null)
                 throw new CmBizException("삭제 대상 settleRawId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 존재 여부 확인
             if (!stSettleRawRepository.existsById(entity.getSettleRawId()))
                 throw new CmBizException("존재하지 않는 StSettleRaw입니다: " + entity.getSettleRawId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) ID 기준 삭제
             stSettleRawRepository.deleteById(entity.getSettleRawId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSettleRawId(CmUtil.generateId("st_settle_raw"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 저장
             StSettleRaw saved = stSettleRawRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class StSettleRawService {
             if (entity.getSettleRawId() == null)
                 throw new CmBizException("수정 대상 settleRawId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 선택적 필드 수정
             int affected = stSettleRawRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StSettleRaw입니다: " + entity.getSettleRawId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class StSettleRawService {
             .map(StSettleRaw::getSettleRawId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 조건별 삭제
             stSettleRawRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class StSettleRawService {
             .toList();
         for (StSettleRaw row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 선택적 필드 수정
             int affected = stSettleRawRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSettleRawId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class StSettleRawService {
             row.setSettleRawId(CmUtil.generateId("st_settle_raw"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블) 저장
             stSettleRawRepository.save(row);
         }
 

@@ -58,6 +58,7 @@ public class FoCmBlogService {
         List<CmBlogCateDto.Item> list = cmBlogCateService.getList(req);
 
         // 카테고리별 공개 블로그 건수 집계 → Map<blogCateId, count>
+        // [QueryDSL] 블로그 게시글 조회
         Map<String, Long> cntMap = cmBlogRepository.selectCateCounts();
         for (CmBlogCateDto.Item it : list) {
             it.setBlogCnt(cntMap.getOrDefault(it.getBlogCateId(), 0L));
@@ -67,6 +68,7 @@ public class FoCmBlogService {
 
     /** getList — 조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
+        // [QueryDSL] 블로그 게시글 목록 조회
         List<CmBlogDto.Item> list = cmBlogRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -75,6 +77,7 @@ public class FoCmBlogService {
     /** getPageData — 조회 */
     public BasePage<CmBlogDto.Item> getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 블로그 게시글 페이지 조회
         BasePage<CmBlogDto.Item> res = cmBlogRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -82,6 +85,7 @@ public class FoCmBlogService {
 
     /** getById — 키조회 */
     public CmBlogDto.Item getById(String blogId) {
+        // [QueryDSL] 블로그 게시글 단건 조회
         CmBlogDto.Item dto = cmBlogRepository.selectById(blogId).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 게시물입니다: " + blogId + "::" + CmUtil.svcCallerInfo(this));
         _itemFillRelations(dto);
@@ -91,11 +95,14 @@ public class FoCmBlogService {
     /** getByIdAndIncrView — 조회 + viewCount 증가 */
     @Transactional
     public CmBlogDto.Item getByIdAndIncrView(String blogId) {
+        // [쿼리 메서드] 블로그 게시글 단건 조회
         CmBlog entity = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId + "::" + CmUtil.svcCallerInfo(this)));
         entity.setViewCount((entity.getViewCount() != null ? entity.getViewCount() : 0) + 1);
+        // [쿼리 메서드] 블로그 게시글 저장
         cmBlogRepository.save(entity);
         em.flush();
+        // [QueryDSL] 블로그 게시글 단건 조회
         CmBlogDto.Item dto = cmBlogRepository.selectById(blogId).orElse(null);
         _itemFillRelations(dto);
         return dto;
@@ -174,6 +181,7 @@ public class FoCmBlogService {
         entity.setUpdDate(LocalDateTime.now());
         if (entity.getUseYn() == null) entity.setUseYn("Y");
         if (entity.getViewCount() == null) entity.setViewCount(0);
+        // [쿼리 메서드] 블로그 게시글 저장
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("게시물 작성에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -182,6 +190,7 @@ public class FoCmBlogService {
     /** update — 수정 */
     @Transactional
     public CmBlog update(String blogId, CmBlog entity) {
+        // [쿼리 메서드] 블로그 게시글 단건 조회
         CmBlog existing = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId + "::" + CmUtil.svcCallerInfo(this)));
         if (!existing.getRegBy().equals(SecurityUtil.getAuthUser().authId()) && !SecurityUtil.isBo())
@@ -191,6 +200,7 @@ public class FoCmBlogService {
         entity.setRegDate(existing.getRegDate());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 블로그 게시글 저장
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("게시물 수정에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -200,10 +210,12 @@ public class FoCmBlogService {
     /** delete — 삭제 */
     @Transactional
     public void delete(String blogId) {
+        // [쿼리 메서드] 블로그 게시글 단건 조회
         CmBlog existing = cmBlogRepository.findById(blogId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 게시물입니다: " + blogId + "::" + CmUtil.svcCallerInfo(this)));
         if (!existing.getRegBy().equals(SecurityUtil.getAuthUser().authId()) && !SecurityUtil.isBo())
             throw new CmBizException("삭제 권한이 없습니다." + "::" + CmUtil.svcCallerInfo(this));
+        // [쿼리 메서드] 블로그 게시글 ID 기준 삭제
         cmBlogRepository.deleteById(blogId);
         em.flush();
     }

@@ -29,6 +29,7 @@ public class BoPdCategoryProdService {
     /** getPageData — 조회 */
     public BasePage<PdCategoryProdDto.Item> getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 페이지 조회
         return pdCategoryProdRepository.selectPageData(req);
     }
 
@@ -43,7 +44,9 @@ public class BoPdCategoryProdService {
             String rowStatus = row.getRowStatus() != null ? row.getRowStatus() : "U";
             if ("D".equals(rowStatus)) {
                 String id = row.getCategoryProdId();
+                // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 존재 여부 확인
                 if (id != null && pdCategoryProdRepository.existsById(id)) {
+                    // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) ID 기준 삭제
                     pdCategoryProdRepository.deleteById(id);
                 }
             }
@@ -64,6 +67,7 @@ public class BoPdCategoryProdService {
                     .categoryProdId(CmUtil.generateId("pd_category_prod"))
                     .build();
             } else {
+                // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 단건 조회
                 entity = pdCategoryProdRepository.findById(id)
                         .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
             }
@@ -75,6 +79,7 @@ public class BoPdCategoryProdService {
             entity.setEmphasisCd(row.getEmphasisCd());
             if (row.getSortOrd() != null) entity.setSortOrd(row.getSortOrd());
 
+            // [쿼리 메서드] 상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록) 저장
             pdCategoryProdRepository.save(entity);
         }
         em.flush();

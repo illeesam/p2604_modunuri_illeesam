@@ -30,6 +30,7 @@ public class StErpVoucherLineService {
 
     /* ERP 전표 상세 키조회 */
     public StErpVoucherLineDto.Item getById(String id) {
+        // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 단건 조회
         StErpVoucherLineDto.Item dto = stErpVoucherLineRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class StErpVoucherLineService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StErpVoucherLineDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 단건 조회
         return stErpVoucherLineRepository.selectById(id).orElse(null);
     }
 
     /* ERP 전표 상세 상세조회 */
     public StErpVoucherLine findById(String id) {
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 단건 조회
         return stErpVoucherLineRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StErpVoucherLine findByIdOrNull(String id) {
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 단건 조회
         return stErpVoucherLineRepository.findById(id).orElse(null);
     }
 
     /* ERP 전표 상세 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 존재 여부 확인
         return stErpVoucherLineRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 존재 여부 확인
         if (!stErpVoucherLineRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* ERP 전표 상세 목록조회 */
     public List<StErpVoucherLineDto.Item> getList(StErpVoucherLineDto.Request req) {
+        // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 목록 조회
         return stErpVoucherLineRepository.selectList(req);
     }
 
     /* ERP 전표 상세 페이지조회 */
     public BasePage<StErpVoucherLineDto.Item> getPageData(StErpVoucherLineDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 페이지 조회
         return stErpVoucherLineRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class StErpVoucherLineService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 저장
         StErpVoucherLine saved = stErpVoucherLineRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class StErpVoucherLineService {
         VoUtil.voCopyExclude(body, entity, "erpVoucherLineId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 저장
         StErpVoucherLine saved = stErpVoucherLineRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class StErpVoucherLineService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getErpVoucherLineId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 선택적 필드 수정
         int affected = stErpVoucherLineRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class StErpVoucherLineService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StErpVoucherLine entity = findById(id);
+        // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 삭제
         stErpVoucherLineRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class StErpVoucherLineService {
         if ("D".equals(rowStatus)) {
             if (entity.getErpVoucherLineId() == null)
                 throw new CmBizException("삭제 대상 erpVoucherLineId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 존재 여부 확인
             if (!stErpVoucherLineRepository.existsById(entity.getErpVoucherLineId()))
                 throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) ID 기준 삭제
             stErpVoucherLineRepository.deleteById(entity.getErpVoucherLineId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setErpVoucherLineId(CmUtil.generateId("st_erp_voucher_line"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 저장
             StErpVoucherLine saved = stErpVoucherLineRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class StErpVoucherLineService {
             if (entity.getErpVoucherLineId() == null)
                 throw new CmBizException("수정 대상 erpVoucherLineId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 선택적 필드 수정
             int affected = stErpVoucherLineRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StErpVoucherLine입니다: " + entity.getErpVoucherLineId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class StErpVoucherLineService {
             .map(StErpVoucherLine::getErpVoucherLineId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 조건별 삭제
             stErpVoucherLineRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class StErpVoucherLineService {
             .toList();
         for (StErpVoucherLine row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 선택적 필드 수정
             int affected = stErpVoucherLineRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getErpVoucherLineId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class StErpVoucherLineService {
             row.setErpVoucherLineId(CmUtil.generateId("st_erp_voucher_line"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] ERP 전표 라인 (분개 항목, 차변/대변 1행씩) 저장
             stErpVoucherLineRepository.save(row);
         }
 

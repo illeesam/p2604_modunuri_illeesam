@@ -33,6 +33,7 @@ public class CmFaqService {
 
     /* FAQ 키조회 */
     public CmFaqDto.Item getById(String id) {
+        // [QueryDSL] FAQ (자주 묻는 질문) 단건 조회
         CmFaqDto.Item dto = cmFaqRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -40,16 +41,19 @@ public class CmFaqService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환) */
     public CmFaqDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] FAQ (자주 묻는 질문) 단건 조회
         return cmFaqRepository.selectById(id).orElse(null);
     }
 
     /** incrViewCount — FAQ 조회수(읽음수) +1 후 갱신된 viewCount 반환. 없으면 null */
     @Transactional
     public Integer incrViewCount(String id) {
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 단건 조회
         CmFaq entity = cmFaqRepository.findById(id).orElse(null);
         if (entity == null) return null;
         int next = (entity.getViewCount() != null ? entity.getViewCount() : 0) + 1;
         entity.setViewCount(next);
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 저장
         cmFaqRepository.save(entity);
         em.flush();
         return next;
@@ -57,23 +61,27 @@ public class CmFaqService {
 
     /* FAQ 상세조회 (Entity) */
     public CmFaq findById(String id) {
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 단건 조회
         return cmFaqRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /* FAQ 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 존재 여부 확인
         return cmFaqRepository.existsById(id);
     }
 
     /* FAQ 목록조회 */
     public List<CmFaqDto.Item> getList(CmFaqDto.Request req) {
+        // [QueryDSL] FAQ (자주 묻는 질문) 목록 조회
         return cmFaqRepository.selectList(req);
     }
 
     /* FAQ 페이지조회 */
     public BasePage<CmFaqDto.Item> getPageData(CmFaqDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] FAQ (자주 묻는 질문) 페이지 조회
         return cmFaqRepository.selectPageData(req);
     }
 
@@ -85,6 +93,7 @@ public class CmFaqService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 저장
         CmFaq saved = cmFaqRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_FAQ, saved.getFaqId());
@@ -101,6 +110,7 @@ public class CmFaqService {
         VoUtil.voCopyExclude(body, entity, "faqId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 저장
         CmFaq saved = cmFaqRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_FAQ, id);
@@ -114,6 +124,7 @@ public class CmFaqService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         CmFaq entity = findById(id);
+        // [쿼리 메서드] FAQ (자주 묻는 질문) 삭제
         cmFaqRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -142,6 +153,7 @@ public class CmFaqService {
             .map(CmFaq::getFaqId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] FAQ (자주 묻는 질문) 조건별 삭제
             cmFaqRepository.deleteAllById(deleteIds);
         }
 
@@ -151,6 +163,7 @@ public class CmFaqService {
             .toList();
         for (CmFaq row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] FAQ (자주 묻는 질문) 선택적 필드 수정
             int affected = cmFaqRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getFaqId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -163,6 +176,7 @@ public class CmFaqService {
             row.setFaqId(CmUtil.generateId("cm_faq"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] FAQ (자주 묻는 질문) 저장
             cmFaqRepository.save(row);
         }
 
@@ -173,6 +187,7 @@ public class CmFaqService {
 
     /** getPathTreeNodeCounts — 표시경로 노드별 FAQ 수 (검색조건 + 자손 누적, 트리 우측 뱃지용) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(CmFaqDto.Request req) {
+        // [QueryDSL] FAQ (자주 묻는 질문) 조회
         return cmFaqRepository.selectPathTreeFaqCnts(req);
     }
 }

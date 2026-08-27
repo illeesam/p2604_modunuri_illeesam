@@ -30,32 +30,38 @@ public class PmSavePolicyService {
 
     /* 적립금정책 키조회 */
     public PmSavePolicyDto.Item getById(String id) {
+        // [QueryDSL] 적립금 정책(캠페인) 단건 조회
         PmSavePolicyDto.Item dto = pmSavePolicyRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     public PmSavePolicyDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 적립금 정책(캠페인) 단건 조회
         return pmSavePolicyRepository.selectById(id).orElse(null);
     }
 
     public PmSavePolicy findById(String id) {
+        // [쿼리 메서드] 적립금 정책(캠페인) 단건 조회
         return pmSavePolicyRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     public boolean existsById(String id) {
+        // [쿼리 메서드] 적립금 정책(캠페인) 존재 여부 확인
         return pmSavePolicyRepository.existsById(id);
     }
 
     /* 적립금정책 목록조회 */
     public List<PmSavePolicyDto.Item> getList(PmSavePolicyDto.Request req) {
+        // [QueryDSL] 적립금 정책(캠페인) 목록 조회
         return pmSavePolicyRepository.selectList(req);
     }
 
     /* 적립금정책 페이지조회 */
     public BasePage<PmSavePolicyDto.Item> getPageData(PmSavePolicyDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 적립금 정책(캠페인) 페이지 조회
         return pmSavePolicyRepository.selectPageData(req);
     }
 
@@ -67,6 +73,7 @@ public class PmSavePolicyService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 정책(캠페인) 저장
         PmSavePolicy saved = pmSavePolicyRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -81,6 +88,7 @@ public class PmSavePolicyService {
         VoUtil.voCopyExclude(body, entity, "saveId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 적립금 정책(캠페인) 저장
         PmSavePolicy saved = pmSavePolicyRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -92,6 +100,7 @@ public class PmSavePolicyService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmSavePolicy entity = findById(id);
+        // [쿼리 메서드] 적립금 정책(캠페인) 삭제
         pmSavePolicyRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -118,6 +127,7 @@ public class PmSavePolicyService {
             .map(PmSavePolicy::getSaveId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 적립금 정책(캠페인) 조건별 삭제
             pmSavePolicyRepository.deleteAllById(deleteIds);
         }
 
@@ -126,6 +136,7 @@ public class PmSavePolicyService {
             .toList();
         for (PmSavePolicy row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 적립금 정책(캠페인) 선택적 필드 수정
             int affected = pmSavePolicyRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSaveId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -137,6 +148,7 @@ public class PmSavePolicyService {
             row.setSaveId(CmUtil.generateId("pm_save_policy"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 적립금 정책(캠페인) 저장
             pmSavePolicyRepository.save(row);
         }
 

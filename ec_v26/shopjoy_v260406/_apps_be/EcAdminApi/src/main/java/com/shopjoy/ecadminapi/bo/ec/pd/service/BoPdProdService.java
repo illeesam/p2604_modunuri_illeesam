@@ -99,6 +99,7 @@ public class BoPdProdService {
             .toList();
         if (prodIds.isEmpty()) return;
 
+        // [쿼리 메서드] 상품 재고 마스터 — prod_stock_id PK, stock_code UNIQUE 조건별 조회
         Map<String, Integer> saleCountMap = pdProdStockRepository.findByProdIdIn(prodIds).stream()
             .collect(Collectors.groupingBy(PdProdStock::getProdId,
                 Collectors.summingInt(s -> s.getSaleCount() != null ? s.getSaleCount() : 0)));

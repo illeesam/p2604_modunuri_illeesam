@@ -196,6 +196,7 @@ public class BoExcelDownService {
             .physicalPath(out.getAbsolutePath())
             .attachUrl("/cdn/" + storageDir + "/" + fileNm)
             .build();
+        // [쿼리 메서드] 첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리 저장
         return syAttachRepository.save(attach);
     }
 

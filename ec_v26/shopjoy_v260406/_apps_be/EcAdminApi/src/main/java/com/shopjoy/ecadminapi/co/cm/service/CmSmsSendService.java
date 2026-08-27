@@ -90,6 +90,7 @@ public class CmSmsSendService {
                 .refId(refId)
                 .build();
             stampReg(logRow);
+            // [쿼리 메서드] 메시지 발송 로그 (SMS/카카오/앱푸시) 저장
             syhSendMsgLogRepository.save(logRow);
         } catch (Exception e) {
             logId = null;

@@ -50,6 +50,7 @@ public class SyExceldownService {
 
     /** 엑셀다운로드 키조회 */
     public SyExceldownDto.Item getById(String id) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 단건 조회
         SyExceldownDto.Item dto = syExceldownRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -57,33 +58,39 @@ public class SyExceldownService {
 
     /** getByIdOrNull — 단건조회 (없으면 null) */
     public SyExceldownDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 단건 조회
         return syExceldownRepository.selectById(id).orElse(null);
     }
 
     /** findById — 엔티티 조회 */
     public SyExceldown findById(String id) {
+        // [쿼리 메서드] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 단건 조회
         return syExceldownRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** 엑셀다운로드 목록조회 */
     public List<SyExceldownDto.Item> getList(SyExceldownDto.Request req) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 목록 조회
         return syExceldownRepository.selectList(req);
     }
 
     /** 엑셀다운로드 페이지조회 */
     public BasePage<SyExceldownDto.Item> getPageData(SyExceldownDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 페이지 조회
         return syExceldownRepository.selectPageData(req);
     }
 
     /** 현재 진행중(RUNNING) 1건 — 없으면 null */
     public SyExceldownDto.Item getRunning(String siteId) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 조회
         return syExceldownRepository.selectRunning(siteId).orElse(null);
     }
 
     /** 대기열(WAITING) 건수 */
     public long countWaiting(String siteId) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 건수 조회
         return syExceldownRepository.countWaiting(siteId);
     }
 
@@ -119,6 +126,7 @@ public class SyExceldownService {
             body.setStartDate(LocalDateTime.now());
         }
         body.setPodId(podId());
+        // [쿼리 메서드] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 저장
         SyExceldown saved = syExceldownRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -134,6 +142,7 @@ public class SyExceldownService {
      */
     @Transactional
     public String claimNextWaiting(String siteId) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 호출
         return syExceldownRepository.claimNextWaiting(siteId, podId());
     }
 
@@ -149,6 +158,7 @@ public class SyExceldownService {
             .exceldownId(exceldownId)
             .doneCount(doneCount)
             .build();
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 선택적 필드 수정
         syExceldownRepository.updateSelective(patch);
     }
 
@@ -171,6 +181,7 @@ public class SyExceldownService {
             .elapsedMs(elapsedMs(startDate, now))
             .expireDate(expireDate)
             .build();
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 선택적 필드 수정
         syExceldownRepository.updateSelective(patch);
     }
 
@@ -193,6 +204,7 @@ public class SyExceldownService {
             .endDate(now)
             .elapsedMs(elapsedMs(startDate, now))
             .build();
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 선택적 필드 수정
         syExceldownRepository.updateSelective(patch);
     }
 
@@ -220,6 +232,7 @@ public class SyExceldownService {
             .endDate(now)
             .errorMsg("사용자 강제취소")
             .build();
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 선택적 필드 수정
         syExceldownRepository.updateSelective(patch);
     }
 
@@ -237,6 +250,7 @@ public class SyExceldownService {
      */
     @Transactional
     public int recoverStaleRunning(int timeoutMinutes) {
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 호출
         int n = syExceldownRepository.recoverStaleRunning(timeoutMinutes);
         if (n > 0) log.warn("[SyExceldown] 응답 없는 진행건 {}건 TIMEOUT 회수 (기준 {}분)", n, timeoutMinutes);
         return n;
@@ -254,6 +268,7 @@ public class SyExceldownService {
             .attachId("")     // updateSelective 는 null 을 건너뛰므로 빈 문자열로 비운다
             .errorMsg("보관기간 만료로 파일이 삭제되었습니다.")
             .build();
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 선택적 필드 수정
         syExceldownRepository.updateSelective(patch);
     }
 
@@ -266,6 +281,7 @@ public class SyExceldownService {
             .downloadCount(CmUtil.nvlInt(cur.getDownloadCount(), 0) + 1)
             .lastDownloadDate(LocalDateTime.now())
             .build();
+        // [QueryDSL] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 선택적 필드 수정
         syExceldownRepository.updateSelective(patch);
     }
 
@@ -273,9 +289,11 @@ public class SyExceldownService {
     @Transactional
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
+        // [쿼리 메서드] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) 존재 여부 확인
         if (!syExceldownRepository.existsById(id)) {
             throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         }
+        // [쿼리 메서드] 엑셀 다운로드 요청/이력 (동기·비동기 전부 기록) ID 기준 삭제
         syExceldownRepository.deleteById(id);
         em.flush();
     }

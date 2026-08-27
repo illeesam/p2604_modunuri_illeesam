@@ -126,6 +126,7 @@ public class CacheRedisReloadService {
     public int reloadCode() {
         if (!redis.isEnabled()) return 0;
         codeCache.evictAll();
+        // [쿼리 메서드] Code 목록 조회
         List<SyCodeDto.Item> list = codeRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto.Request());
         Map<String, List<Map<String, Object>>> grouped = list.stream()
             .collect(Collectors.groupingBy(
@@ -142,6 +143,7 @@ public class CacheRedisReloadService {
     public int reloadMenu() {
         if (!redis.isEnabled()) return 0;
         menuCache.evictAll();
+        // [쿼리 메서드] Menu 목록 조회
         List<SyMenuDto.Item> list = menuRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto.Request());
         menuCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-menu 리로드 완료 — {}건", list.size());
@@ -152,6 +154,7 @@ public class CacheRedisReloadService {
     public int reloadRole() {
         if (!redis.isEnabled()) return 0;
         roleCache.evictAll();
+        // [쿼리 메서드] Role 목록 조회
         List<SyRoleDto.Item> list = roleRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto.Request());
         roleCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-role 리로드 완료 — {}건", list.size());
@@ -162,6 +165,7 @@ public class CacheRedisReloadService {
     public int reloadRoleMenu() {
         if (!redis.isEnabled()) return 0;
         roleMenuCache.evictAll();
+        // [쿼리 메서드] RoleMenu 목록 조회
         List<SyRoleMenuDto.Item> list = roleMenuRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto.Request());
         list.stream()
             .collect(Collectors.groupingBy(
@@ -177,6 +181,7 @@ public class CacheRedisReloadService {
     public int reloadProp() {
         if (!redis.isEnabled()) return 0;
         propCache.evictAll();
+        // [쿼리 메서드] Prop 목록 조회
         List<SyPropDto.Item> list = propRepository.selectList(new SyPropDto.Request());
         Map<String, String> propMap = list.stream()
             .filter(dto -> dto.getPropKey() != null)
@@ -205,6 +210,7 @@ public class CacheRedisReloadService {
     public int reloadI18n() {
         if (!redis.isEnabled()) return 0;
         i18nCache.evictAll();
+        // [쿼리 메서드] I18n 목록 조회
         List<SyI18nDto.Item> list = i18nRepository.selectList(new SyI18nDto.Request());
         Map<String, Map<String, String>> i18nMap = new LinkedHashMap<>();
         for (String lang : List.of("ko", "en", "cn", "ja")) {
@@ -231,6 +237,7 @@ public class CacheRedisReloadService {
     public int reloadEcPdCate() {
         if (!redis.isEnabled()) return 0;
         ecPdCateCache.evictAll();
+        // [쿼리 메서드] Category 목록 조회
         List<com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Item> list = categoryRepository.selectList(new com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Request());
         ecPdCateCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] ec-pd-cate 리로드 완료 — {}건", list.size());

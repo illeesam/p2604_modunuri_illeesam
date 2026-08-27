@@ -30,6 +30,7 @@ public class PmDiscntService {
 
     /* 할인 키조회 */
     public PmDiscntDto.Item getById(String id) {
+        // [QueryDSL] 할인정책 단건 조회
         PmDiscntDto.Item dto = pmDiscntRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PmDiscntService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmDiscntDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 할인정책 단건 조회
         return pmDiscntRepository.selectById(id).orElse(null);
     }
 
     /* 할인 상세조회 */
     public PmDiscnt findById(String id) {
+        // [쿼리 메서드] 할인정책 단건 조회
         return pmDiscntRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PmDiscnt findByIdOrNull(String id) {
+        // [쿼리 메서드] 할인정책 단건 조회
         return pmDiscntRepository.findById(id).orElse(null);
     }
 
     /* 할인 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 할인정책 존재 여부 확인
         return pmDiscntRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 할인정책 존재 여부 확인
         if (!pmDiscntRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 할인 목록조회 */
     public List<PmDiscntDto.Item> getList(PmDiscntDto.Request req) {
+        // [QueryDSL] 할인정책 목록 조회
         return pmDiscntRepository.selectList(req);
     }
 
     /* 할인 페이지조회 */
     public BasePage<PmDiscntDto.Item> getPageData(PmDiscntDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 할인정책 페이지 조회
         return pmDiscntRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PmDiscntService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인정책 저장
         PmDiscnt saved = pmDiscntRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PmDiscntService {
         VoUtil.voCopyExclude(body, entity, "discntId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인정책 저장
         PmDiscnt saved = pmDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PmDiscntService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getDiscntId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 할인정책 선택적 필드 수정
         int affected = pmDiscntRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PmDiscntService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PmDiscnt entity = findById(id);
+        // [쿼리 메서드] 할인정책 삭제
         pmDiscntRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PmDiscntService {
         if ("D".equals(rowStatus)) {
             if (entity.getDiscntId() == null)
                 throw new CmBizException("삭제 대상 discntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 할인정책 존재 여부 확인
             if (!pmDiscntRepository.existsById(entity.getDiscntId()))
                 throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + entity.getDiscntId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 할인정책 ID 기준 삭제
             pmDiscntRepository.deleteById(entity.getDiscntId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDiscntId(CmUtil.generateId("pm_discnt"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 할인정책 저장
             PmDiscnt saved = pmDiscntRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PmDiscntService {
             if (entity.getDiscntId() == null)
                 throw new CmBizException("수정 대상 discntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 할인정책 선택적 필드 수정
             int affected = pmDiscntRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PmDiscnt입니다: " + entity.getDiscntId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PmDiscntService {
             .map(PmDiscnt::getDiscntId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 할인정책 조건별 삭제
             pmDiscntRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PmDiscntService {
             .toList();
         for (PmDiscnt row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 할인정책 선택적 필드 수정
             int affected = pmDiscntRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDiscntId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PmDiscntService {
             row.setDiscntId(CmUtil.generateId("pm_discnt"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 할인정책 저장
             pmDiscntRepository.save(row);
         }
 

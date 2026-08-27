@@ -77,6 +77,7 @@ public class CmDashboardService {
            응답 맵 키(info0101 등)를 만드는 용도로만 계속 쓰고, 조회는 itemKey 로 한다. */
         String itemKeyParam = str(p.get("itemKey"));
         CmDashboardItem panel = itemKeyParam != null
+            // [쿼리 메서드] 대시보드 차트 패널 정의 조건별 조회
             ? cmDashboardItemRepository.findByItemKey(itemKeyParam).orElse(null)
             : null;
 
@@ -84,10 +85,12 @@ public class CmDashboardService {
             // cm_dashboard 헤더로 dashboardId 조회 (itemKey 미지정 시의 구 매칭 경로 — 폴백)
             String dashboardId = null;
             if (uiNm != null) {
+                // [쿼리 메서드] 대시보드 정의 조건별 조회
                 CmDashboard dash = cmDashboardRepository.findByUiCompNm(uiNm).orElse(null);
                 if (dash != null) dashboardId = dash.getDashboardId();
             }
 
+            // [QueryDSL] 대시보드 차트 패널 정의 목록 조회
             List<CmDashboardItem> itemList = cmDashboardItemRepository.selectList(
                 dashboardId != null ? Map.of("dashboardId", dashboardId) : Map.of());
 
@@ -110,6 +113,7 @@ public class CmDashboardService {
         if (rows.isEmpty()) {
             String srcItemId = extractSrcItemId(panel.getOptionJson());
             if (srcItemId != null) {
+                // [쿼리 메서드] 대시보드 차트 패널 정의 단건 조회
                 CmDashboardItem src = cmDashboardItemRepository.findById(srcItemId).orElse(null);
                 if (src != null) rows = queryRows(src.getDashboardItemId(), siteId, startYmd, endYmd);
             }

@@ -30,6 +30,7 @@ public class MbMemberService {
 
     /* 회원 키조회 */
     public MbMemberDto.Item getById(String id) {
+        // [QueryDSL] 회원 단건 조회
         MbMemberDto.Item dto = mbMemberRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbMemberService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 회원 단건 조회
         return mbMemberRepository.selectById(id).orElse(null);
     }
 
     /* 회원 상세조회 */
     public MbMember findById(String id) {
+        // [쿼리 메서드] 회원 단건 조회
         return mbMemberRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMember findByIdOrNull(String id) {
+        // [쿼리 메서드] 회원 단건 조회
         return mbMemberRepository.findById(id).orElse(null);
     }
 
     /* 회원 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 회원 존재 여부 확인
         return mbMemberRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 회원 존재 여부 확인
         if (!mbMemberRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 회원 목록조회 */
     public List<MbMemberDto.Item> getList(MbMemberDto.Request req) {
+        // [QueryDSL] 회원 목록 조회
         return mbMemberRepository.selectList(req);
     }
 
     /* 회원 페이지조회 */
     public BasePage<MbMemberDto.Item> getPageData(MbMemberDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 회원 페이지 조회
         return mbMemberRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbMemberService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 저장
         MbMember saved = mbMemberRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbMemberService {
         VoUtil.voCopyExclude(body, entity, "memberId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 저장
         MbMember saved = mbMemberRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbMemberService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 회원 선택적 필드 수정
         int affected = mbMemberRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbMemberService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbMember entity = findById(id);
+        // [쿼리 메서드] 회원 삭제
         mbMemberRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbMemberService {
         if ("D".equals(rowStatus)) {
             if (entity.getMemberId() == null)
                 throw new CmBizException("삭제 대상 memberId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원 존재 여부 확인
             if (!mbMemberRepository.existsById(entity.getMemberId()))
                 throw new CmBizException("존재하지 않는 MbMember입니다: " + entity.getMemberId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원 ID 기준 삭제
             mbMemberRepository.deleteById(entity.getMemberId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setMemberId(CmUtil.generateId("mb_member"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 회원 저장
             MbMember saved = mbMemberRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbMemberService {
             if (entity.getMemberId() == null)
                 throw new CmBizException("수정 대상 memberId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 회원 선택적 필드 수정
             int affected = mbMemberRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbMember입니다: " + entity.getMemberId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbMemberService {
             .map(MbMember::getMemberId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 회원 조건별 삭제
             mbMemberRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbMemberService {
             .toList();
         for (MbMember row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 회원 선택적 필드 수정
             int affected = mbMemberRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbMemberService {
             row.setMemberId(CmUtil.generateId("mb_member"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 회원 저장
             mbMemberRepository.save(row);
         }
 

@@ -42,10 +42,12 @@ public class FoPmEventService {
     public List<PmEventDto.Item> getList(PmEventDto.Request req) {
         req.setCurrentYn("Y");   // FO 강제 — 진행중 이벤트만 (클래스 상단 주석 참조)
         if (StringUtils.hasText(req.getProdId())) {
+            // [QueryDSL] 이벤트 적용 상품 전개 (배치 생성) 조회
             List<String> eventIds = pmEventProdRepository.selectEventIdsByProdId(req.getProdId());
             if (eventIds.isEmpty()) return List.of();
             req.setEventIds(eventIds);
         }
+        // [QueryDSL] 이벤트 목록 조회
         List<PmEventDto.Item> list = pmEventRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -55,6 +57,7 @@ public class FoPmEventService {
     public BasePage<PmEventDto.Item> getPageData(PmEventDto.Request req) {
         req.setCurrentYn("Y");   // FO 강제 — 진행중 이벤트만 (클래스 상단 주석 참조)
         if (StringUtils.hasText(req.getProdId())) {
+            // [QueryDSL] 이벤트 적용 상품 전개 (배치 생성) 조회
             List<String> eventIds = pmEventProdRepository.selectEventIdsByProdId(req.getProdId());
             if (eventIds.isEmpty()) {
                 BasePage<PmEventDto.Item> empty = new BasePage<>();
@@ -63,6 +66,7 @@ public class FoPmEventService {
             req.setEventIds(eventIds);
         }
         PageHelper.addPaging(req);
+        // [QueryDSL] 이벤트 페이지 조회
         BasePage<PmEventDto.Item> res = pmEventRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -70,6 +74,7 @@ public class FoPmEventService {
 
     /** getById — 조회 */
     public PmEventDto.Item getById(String eventId) {
+        // [QueryDSL] 이벤트 단건 조회
         PmEventDto.Item dto = pmEventRepository.selectById(eventId).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 이벤트입니다: " + eventId + "::" + CmUtil.svcCallerInfo(this));
         _itemFillRelations(dto);

@@ -30,6 +30,7 @@ public class StSettlePayService {
 
     /* 정산 지급 키조회 */
     public StSettlePayDto.Item getById(String id) {
+        // [QueryDSL] 정산지급 단건 조회
         StSettlePayDto.Item dto = stSettlePayRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class StSettlePayService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettlePayDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 정산지급 단건 조회
         return stSettlePayRepository.selectById(id).orElse(null);
     }
 
     /* 정산 지급 상세조회 */
     public StSettlePay findById(String id) {
+        // [쿼리 메서드] 정산지급 단건 조회
         return stSettlePayRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public StSettlePay findByIdOrNull(String id) {
+        // [쿼리 메서드] 정산지급 단건 조회
         return stSettlePayRepository.findById(id).orElse(null);
     }
 
     /* 정산 지급 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 정산지급 존재 여부 확인
         return stSettlePayRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 정산지급 존재 여부 확인
         if (!stSettlePayRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 정산 지급 목록조회 */
     public List<StSettlePayDto.Item> getList(StSettlePayDto.Request req) {
+        // [QueryDSL] 정산지급 목록 조회
         return stSettlePayRepository.selectList(req);
     }
 
     /* 정산 지급 페이지조회 */
     public BasePage<StSettlePayDto.Item> getPageData(StSettlePayDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 정산지급 페이지 조회
         return stSettlePayRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class StSettlePayService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산지급 저장
         StSettlePay saved = stSettlePayRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class StSettlePayService {
         VoUtil.voCopyExclude(body, entity, "settlePayId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산지급 저장
         StSettlePay saved = stSettlePayRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class StSettlePayService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSettlePayId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 정산지급 선택적 필드 수정
         int affected = stSettlePayRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class StSettlePayService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         StSettlePay entity = findById(id);
+        // [쿼리 메서드] 정산지급 삭제
         stSettlePayRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class StSettlePayService {
         if ("D".equals(rowStatus)) {
             if (entity.getSettlePayId() == null)
                 throw new CmBizException("삭제 대상 settlePayId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산지급 존재 여부 확인
             if (!stSettlePayRepository.existsById(entity.getSettlePayId()))
                 throw new CmBizException("존재하지 않는 StSettlePay입니다: " + entity.getSettlePayId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 정산지급 ID 기준 삭제
             stSettlePayRepository.deleteById(entity.getSettlePayId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setSettlePayId(CmUtil.generateId("st_settle_pay"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 정산지급 저장
             StSettlePay saved = stSettlePayRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class StSettlePayService {
             if (entity.getSettlePayId() == null)
                 throw new CmBizException("수정 대상 settlePayId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 정산지급 선택적 필드 수정
             int affected = stSettlePayRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 StSettlePay입니다: " + entity.getSettlePayId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class StSettlePayService {
             .map(StSettlePay::getSettlePayId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 정산지급 조건별 삭제
             stSettlePayRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class StSettlePayService {
             .toList();
         for (StSettlePay row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 정산지급 선택적 필드 수정
             int affected = stSettlePayRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSettlePayId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class StSettlePayService {
             row.setSettlePayId(CmUtil.generateId("st_settle_pay"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 정산지급 저장
             stSettlePayRepository.save(row);
         }
 

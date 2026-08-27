@@ -115,6 +115,7 @@ public class BoOdClaimService {
     @Transactional
     public OdClaimDto.Item saveOneStatus(OdClaim row) {
         CmUtil.requireId(row == null ? null : row.getClaimId(), "claimId", this);
+        // [쿼리 메서드] 클레임 (취소/반품/교환) 단건 조회
         OdClaim entity = odClaimRepository.findById(row.getClaimId())
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getClaimId() + "::" + CmUtil.svcCallerInfo(this)));
         String prevStatus = entity.getClaimStatusCd();
@@ -127,6 +128,7 @@ public class BoOdClaimService {
         String authId = SecurityUtil.getAuthUser().authId();
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 클레임 (취소/반품/교환) 저장
         OdClaim saved = odClaimRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -153,11 +155,13 @@ public class BoOdClaimService {
         CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdClaim row : rows) {
+            // [쿼리 메서드] 클레임 (취소/반품/교환) 단건 조회
             odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setClaimStatusCdBefore(e.getClaimStatusCd());
                 e.setClaimStatusCd(row.getClaimStatusCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 클레임 (취소/반품/교환) 저장
                 OdClaim saved = odClaimRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -172,10 +176,12 @@ public class BoOdClaimService {
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdClaim row : rows) {
             if (row.getClaimTypeCd() == null) continue;
+            // [쿼리 메서드] 클레임 (취소/반품/교환) 단건 조회
             odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setClaimTypeCd(row.getClaimTypeCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 클레임 (취소/반품/교환) 저장
                 OdClaim saved = odClaimRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -189,9 +195,11 @@ public class BoOdClaimService {
         CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdClaim row : rows) {
+            // [쿼리 메서드] 클레임 (취소/반품/교환) 단건 조회
             odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 클레임 (취소/반품/교환) 저장
                 OdClaim saved = odClaimRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -205,9 +213,11 @@ public class BoOdClaimService {
         CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdClaim row : rows) {
+            // [쿼리 메서드] 클레임 (취소/반품/교환) 단건 조회
             odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 클레임 (취소/반품/교환) 저장
                 OdClaim saved = odClaimRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });

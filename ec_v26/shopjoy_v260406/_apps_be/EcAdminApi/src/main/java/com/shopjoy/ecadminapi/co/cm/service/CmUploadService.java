@@ -52,6 +52,7 @@ public class CmUploadService {
     private String fnCdnHost() {
         String profile = environment.getActiveProfiles().length > 0
             ? environment.getActiveProfiles()[0] : "-";
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 전체/다건 조회
         String v = syPropRepository.findAll().stream()
             .filter(p -> "Y".equals(p.getUseYn())
                 && "app.file.cdn-host".equals(p.getPropKey())

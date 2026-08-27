@@ -30,6 +30,7 @@ public class PdProdSkuService {
 
     /* 상품 SKU 키조회 */
     public PdProdSkuDto.Item getById(String id) {
+        // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 단건 조회
         PdProdSkuDto.Item dto = pdProdSkuRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,27 +38,32 @@ public class PdProdSkuService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdSkuDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 단건 조회
         return pdProdSkuRepository.selectById(id).orElse(null);
     }
 
     /* 상품 SKU 상세조회 */
     public PdProdSku findById(String id) {
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 단건 조회
         return pdProdSkuRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdSku findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 단건 조회
         return pdProdSkuRepository.findById(id).orElse(null);
     }
 
     /* 상품 SKU 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 존재 여부 확인
         return pdProdSkuRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 존재 여부 확인
         if (!pdProdSkuRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
@@ -65,12 +71,14 @@ public class PdProdSkuService {
     /* 상품 SKU 목록조회 */
     public List<PdProdSkuDto.Item> getList(PdProdSkuDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 목록 조회
         return pdProdSkuRepository.selectList(req);
     }
 
     /* 상품 SKU 페이지조회 */
     public BasePage<PdProdSkuDto.Item> getPageData(PdProdSkuDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 페이지 조회
         return pdProdSkuRepository.selectPageData(req);
     }
 
@@ -83,6 +91,7 @@ public class PdProdSkuService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 저장
         PdProdSku saved = pdProdSkuRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -99,6 +108,7 @@ public class PdProdSkuService {
         VoUtil.voCopyExclude(body, entity, "skuId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 저장
         PdProdSku saved = pdProdSkuRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -113,6 +123,7 @@ public class PdProdSkuService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 선택적 필드 수정
         int affected = pdProdSkuRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -125,6 +136,7 @@ public class PdProdSkuService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdSku entity = findById(id);
+        // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 삭제
         pdProdSkuRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -146,14 +158,17 @@ public class PdProdSkuService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdSkuId() == null)
                 throw new CmBizException("삭제 대상 skuId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 존재 여부 확인
             if (!pdProdSkuRepository.existsById(entity.getProdSkuId()))
                 throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) ID 기준 삭제
             pdProdSkuRepository.deleteById(entity.getProdSkuId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdSkuId(CmUtil.generateId("pd_prod_sku"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 저장
             PdProdSku saved = pdProdSkuRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -161,6 +176,7 @@ public class PdProdSkuService {
             if (entity.getProdSkuId() == null)
                 throw new CmBizException("수정 대상 skuId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 선택적 필드 수정
             int affected = pdProdSkuRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
@@ -196,6 +212,7 @@ public class PdProdSkuService {
             .map(PdProdSku::getProdSkuId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 조건별 삭제
             pdProdSkuRepository.deleteAllById(deleteIds);
         }
 
@@ -205,6 +222,7 @@ public class PdProdSkuService {
             .toList();
         for (PdProdSku row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품 옵션 SKU (조합별 재고/가격) 선택적 필드 수정
             int affected = pdProdSkuRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -217,6 +235,7 @@ public class PdProdSkuService {
             row.setProdSkuId(CmUtil.generateId("pd_prod_sku"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품 옵션 SKU (조합별 재고/가격) 저장
             pdProdSkuRepository.save(row);
         }
 

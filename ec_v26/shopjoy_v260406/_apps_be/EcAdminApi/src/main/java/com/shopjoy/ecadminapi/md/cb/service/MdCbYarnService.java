@@ -29,26 +29,31 @@ public class MdCbYarnService {
     private EntityManager em;
 
     public MdCbYarnDto.Item getById(String id) {
+        // [QueryDSL] 코바늘 실 마스터 단건 조회
         MdCbYarnDto.Item dto = mdCbYarnRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
     }
 
     public MdCbYarn findById(String id) {
+        // [쿼리 메서드] 코바늘 실 마스터 단건 조회
         return mdCbYarnRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     public boolean existsById(String id) {
+        // [쿼리 메서드] 코바늘 실 마스터 존재 여부 확인
         return mdCbYarnRepository.existsById(id);
     }
 
     public List<MdCbYarnDto.Item> getList(MdCbYarnDto.Request req) {
+        // [QueryDSL] 코바늘 실 마스터 목록 조회
         return mdCbYarnRepository.selectList(req);
     }
 
     public BasePage<MdCbYarnDto.Item> getPageData(MdCbYarnDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 코바늘 실 마스터 페이지 조회
         return mdCbYarnRepository.selectPageData(req);
     }
 
@@ -59,6 +64,7 @@ public class MdCbYarnService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 코바늘 실 마스터 저장
         MdCbYarn saved = mdCbYarnRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -72,6 +78,7 @@ public class MdCbYarnService {
         VoUtil.voCopyExclude(body, entity, "yarnId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 코바늘 실 마스터 저장
         MdCbYarn saved = mdCbYarnRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -82,6 +89,7 @@ public class MdCbYarnService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MdCbYarn entity = findById(id);
+        // [쿼리 메서드] 코바늘 실 마스터 삭제
         mdCbYarnRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -103,11 +111,13 @@ public class MdCbYarnService {
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream().filter(r -> "D".equals(r.getRowStatus())).map(MdCbYarn::getYarnId).toList();
+        // [쿼리 메서드] 코바늘 실 마스터 조건별 삭제
         if (!deleteIds.isEmpty()) mdCbYarnRepository.deleteAllById(deleteIds);
 
         List<MdCbYarn> updateRows = rows.stream().filter(r -> "U".equals(r.getRowStatus())).toList();
         for (MdCbYarn row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 코바늘 실 마스터 선택적 필드 수정
             int affected = mdCbYarnRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getYarnId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -117,6 +127,7 @@ public class MdCbYarnService {
             row.setYarnId(CmUtil.generateId("cb_yarn"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 코바늘 실 마스터 저장
             mdCbYarnRepository.save(row);
         }
 

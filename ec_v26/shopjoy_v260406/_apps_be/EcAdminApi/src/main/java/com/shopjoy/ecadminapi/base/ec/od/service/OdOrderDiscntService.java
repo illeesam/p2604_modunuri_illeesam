@@ -30,6 +30,7 @@ public class OdOrderDiscntService {
 
     /* 주문 할인 키조회 */
     public OdOrderDiscntDto.Item getById(String id) {
+        // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 단건 조회
         OdOrderDiscntDto.Item dto = odOrderDiscntRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdOrderDiscntService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdOrderDiscntDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 단건 조회
         return odOrderDiscntRepository.selectById(id).orElse(null);
     }
 
     /* 주문 할인 상세조회 */
     public OdOrderDiscnt findById(String id) {
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 단건 조회
         return odOrderDiscntRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdOrderDiscnt findByIdOrNull(String id) {
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 단건 조회
         return odOrderDiscntRepository.findById(id).orElse(null);
     }
 
     /* 주문 할인 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 존재 여부 확인
         return odOrderDiscntRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 존재 여부 확인
         if (!odOrderDiscntRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 주문 할인 목록조회 */
     public List<OdOrderDiscntDto.Item> getList(OdOrderDiscntDto.Request req) {
+        // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 목록 조회
         return odOrderDiscntRepository.selectList(req);
     }
 
     /* 주문 할인 페이지조회 */
     public BasePage<OdOrderDiscntDto.Item> getPageData(OdOrderDiscntDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 페이지 조회
         return odOrderDiscntRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdOrderDiscntService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 저장
         OdOrderDiscnt saved = odOrderDiscntRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdOrderDiscntService {
         VoUtil.voCopyExclude(body, entity, "orderDiscntId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 저장
         OdOrderDiscnt saved = odOrderDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdOrderDiscntService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderDiscntId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 선택적 필드 수정
         int affected = odOrderDiscntRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdOrderDiscntService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdOrderDiscnt entity = findById(id);
+        // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 삭제
         odOrderDiscntRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdOrderDiscntService {
         if ("D".equals(rowStatus)) {
             if (entity.getOrderDiscntId() == null)
                 throw new CmBizException("삭제 대상 orderDiscntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 존재 여부 확인
             if (!odOrderDiscntRepository.existsById(entity.getOrderDiscntId()))
                 throw new CmBizException("존재하지 않는 OdOrderDiscnt입니다: " + entity.getOrderDiscntId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) ID 기준 삭제
             odOrderDiscntRepository.deleteById(entity.getOrderDiscntId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setOrderDiscntId(CmUtil.generateId("od_order_discnt"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 저장
             OdOrderDiscnt saved = odOrderDiscntRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdOrderDiscntService {
             if (entity.getOrderDiscntId() == null)
                 throw new CmBizException("수정 대상 orderDiscntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 선택적 필드 수정
             int affected = odOrderDiscntRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdOrderDiscnt입니다: " + entity.getOrderDiscntId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdOrderDiscntService {
             .map(OdOrderDiscnt::getOrderDiscntId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 조건별 삭제
             odOrderDiscntRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdOrderDiscntService {
             .toList();
         for (OdOrderDiscnt row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 선택적 필드 수정
             int affected = odOrderDiscntRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getOrderDiscntId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdOrderDiscntService {
             row.setOrderDiscntId(CmUtil.generateId("od_order_discnt"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 주문할인·차감 내역 (주문쿠폰·적립금·캐쉬) 저장
             odOrderDiscntRepository.save(row);
         }
 

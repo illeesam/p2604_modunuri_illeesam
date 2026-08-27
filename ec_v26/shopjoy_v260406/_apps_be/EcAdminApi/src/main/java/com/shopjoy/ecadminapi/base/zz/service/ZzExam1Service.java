@@ -39,6 +39,7 @@ public class ZzExam1Service {
 
     /** getById — 조회 (하위 exam2s / exam3s 포함) */
     public ZzExam1Dto.Item getById(String exam1Id) {
+        // [QueryDSL] ZzExam1 단건 조회
         ZzExam1Dto.Item dto = zzExam1Repository.selectById(exam1Id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "::" + CmUtil.svcCallerInfo(this));
         _itemFillRelations(dto);
@@ -47,22 +48,26 @@ public class ZzExam1Service {
 
     /** getByIdOrNull — 단건조회 (없으면 null) */
     public ZzExam1Dto.Item getByIdOrNull(String exam1Id) {
+        // [QueryDSL] ZzExam1 단건 조회
         return zzExam1Repository.selectById(exam1Id).orElse(null);
     }
 
     /** findById — 엔티티 조회 */
     public ZzExam1 findById(String exam1Id) {
+        // [쿼리 메서드] ZzExam1 단건 조회
         return zzExam1Repository.findById(exam1Id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** existsById — 존재 확인 */
     public boolean existsById(String exam1Id) {
+        // [쿼리 메서드] ZzExam1 존재 여부 확인
         return zzExam1Repository.existsById(exam1Id);
     }
 
     /** getList — 조회 (각 항목에 하위 exam2s / exam3s 포함) */
     public List<ZzExam1Dto.Item> getList(ZzExam1Dto.Request req) {
+        // [QueryDSL] ZzExam1 목록 조회
         List<ZzExam1Dto.Item> list = zzExam1Repository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -71,6 +76,7 @@ public class ZzExam1Service {
     /** getPageData — 조회 (각 항목에 하위 exam2s / exam3s 포함) */
     public BasePage<ZzExam1Dto.Item> getPageData(ZzExam1Dto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] ZzExam1 페이지 조회
         BasePage<ZzExam1Dto.Item> res = zzExam1Repository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -94,12 +100,14 @@ public class ZzExam1Service {
         // 하위 exam2 일괄조회 → Map<exam1Id, List<exam2>>
         ZzExam2Dto.Request req2 = new ZzExam2Dto.Request();
         req2.setExam1Ids(exam1Ids);
+        // [QueryDSL] ZzExam2 목록 조회
         Map<String, List<ZzExam2Dto.Item>> exam2Map = zzExam2Repository.selectList(req2).stream()
             .collect(Collectors.groupingBy(ZzExam2Dto.Item::getExam1Id));
 
         // 하위 exam3 일괄조회 → Map<exam1Id, List<exam3>>
         ZzExam3Dto.Request req3 = new ZzExam3Dto.Request();
         req3.setExam1Ids(exam1Ids);
+        // [QueryDSL] ZzExam3 목록 조회
         Map<String, List<ZzExam3Dto.Item>> exam3Map = zzExam3Repository.selectList(req3).stream()
             .collect(Collectors.groupingBy(ZzExam3Dto.Item::getExam1Id));
 
@@ -115,11 +123,13 @@ public class ZzExam1Service {
         // 하위 exam2 목록 조회 (exam1Id 기준)
         ZzExam2Dto.Request req2 = new ZzExam2Dto.Request();
         req2.setExam1Id(item.getExam1Id());
+        // [QueryDSL] ZzExam2 목록 조회
         item.setExam2s(zzExam2Repository.selectList(req2)); // exam2 목록
 
         // 하위 exam3 목록 조회 (exam1Id 기준)
         ZzExam3Dto.Request req3 = new ZzExam3Dto.Request();
         req3.setExam1Id(item.getExam1Id());
+        // [QueryDSL] ZzExam3 목록 조회
         item.setExam3s(zzExam3Repository.selectList(req3)); // exam3 목록
     }
 
@@ -128,12 +138,14 @@ public class ZzExam1Service {
     public ZzExam1 create(ZzExam1 body) {
         if (body.getExam1Id() == null || body.getExam1Id().isBlank())
             throw new CmBizException("exam1Id 는 필수입니다." + "::" + CmUtil.svcCallerInfo(this));
+        // [쿼리 메서드] ZzExam1 존재 여부 확인
         if (zzExam1Repository.existsById(body.getExam1Id()))
             throw new CmBizException("이미 존재하는 데이터입니다: " + body.getExam1Id() + "::" + CmUtil.svcCallerInfo(this));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] ZzExam1 저장
         ZzExam1 saved = zzExam1Repository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         return saved;
@@ -142,11 +154,13 @@ public class ZzExam1Service {
     /** update — 수정 */
     @Transactional
     public ZzExam1 update(String exam1Id, ZzExam1 body) {
+        // [쿼리 메서드] ZzExam1 단건 조회
         ZzExam1 entity = zzExam1Repository.findById(exam1Id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "::" + CmUtil.svcCallerInfo(this)));
         VoUtil.voCopyExclude(body, entity, "exam1Id^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] ZzExam1 저장
         ZzExam1 saved = zzExam1Repository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -156,16 +170,20 @@ public class ZzExam1Service {
     /** updateSelective — 부분 수정 */
     @Transactional
     public int updateSelective(ZzExam1 entity) {
+        // [QueryDSL] ZzExam1 선택적 필드 수정
         return zzExam1Repository.updateSelective(entity);
     }
 
     /** delete — 삭제 */
     @Transactional
     public void delete(String exam1Id) {
+        // [쿼리 메서드] ZzExam1 단건 조회
         ZzExam1 entity = zzExam1Repository.findById(exam1Id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + exam1Id + "::" + CmUtil.svcCallerInfo(this)));
+        // [쿼리 메서드] ZzExam1 삭제
         zzExam1Repository.delete(entity);
         em.flush();
+        // [쿼리 메서드] ZzExam1 존재 여부 확인
         if (zzExam1Repository.existsById(exam1Id))
             throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
@@ -173,6 +191,7 @@ public class ZzExam1Service {
     /** saveList — 일괄 저장 */
     @Transactional
     public void saveList(List<ZzExam1> rows) {
+        // [쿼리 메서드] ZzExam1 일괄 저장
         zzExam1Repository.saveAll(rows);
     }
 }

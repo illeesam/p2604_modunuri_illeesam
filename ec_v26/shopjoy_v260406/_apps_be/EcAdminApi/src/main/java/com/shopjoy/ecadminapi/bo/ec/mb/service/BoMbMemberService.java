@@ -126,12 +126,14 @@ public class BoMbMemberService {
     /** changeStatus — memberStatusCd 변경 (이력 보존) */
     @Transactional
     public MbMemberDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 회원 단건 조회
         MbMember entity = mbMemberRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setMemberStatusCdBefore(entity.getMemberStatusCd());
         entity.setMemberStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원 저장
         mbMemberRepository.save(entity);
         em.flush();
         return mbMemberService.getById(id);

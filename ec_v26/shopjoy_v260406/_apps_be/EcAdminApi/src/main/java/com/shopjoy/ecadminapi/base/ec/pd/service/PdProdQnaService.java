@@ -33,6 +33,7 @@ public class PdProdQnaService {
 
     /* 상품 문의 키조회 */
     public PdProdQnaDto.Item getById(String id) {
+        // [QueryDSL] 상품문의 단건 조회
         PdProdQnaDto.Item dto = pdProdQnaRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -40,39 +41,46 @@ public class PdProdQnaService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdQnaDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품문의 단건 조회
         return pdProdQnaRepository.selectById(id).orElse(null);
     }
 
     /* 상품 문의 상세조회 */
     public PdProdQna findById(String id) {
+        // [쿼리 메서드] 상품문의 단건 조회
         return pdProdQnaRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdQna findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품문의 단건 조회
         return pdProdQnaRepository.findById(id).orElse(null);
     }
 
     /* 상품 문의 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품문의 존재 여부 확인
         return pdProdQnaRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품문의 존재 여부 확인
         if (!pdProdQnaRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 상품 문의 목록조회 */
     public List<PdProdQnaDto.Item> getList(PdProdQnaDto.Request req) {
+        // [QueryDSL] 상품문의 목록 조회
         return pdProdQnaRepository.selectList(req);
     }
 
     /* 상품 문의 페이지조회 */
     public BasePage<PdProdQnaDto.Item> getPageData(PdProdQnaDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품문의 페이지 조회
         return pdProdQnaRepository.selectPageData(req);
     }
 
@@ -85,6 +93,7 @@ public class PdProdQnaService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품문의 저장
         PdProdQna saved = pdProdQnaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.PD_PROD_QNA, saved.getProdQnaId());
@@ -106,6 +115,7 @@ public class PdProdQnaService {
         CmUtil.requireText(entity.getProdQnaTitle(), "Q&A 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품문의 저장
         PdProdQna saved = pdProdQnaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.PD_PROD_QNA, id);
@@ -124,6 +134,7 @@ public class PdProdQnaService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품문의 선택적 필드 수정
         int affected = pdProdQnaRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -136,6 +147,7 @@ public class PdProdQnaService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdQna entity = findById(id);
+        // [쿼리 메서드] 상품문의 삭제
         pdProdQnaRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -157,14 +169,17 @@ public class PdProdQnaService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdQnaId() == null)
                 throw new CmBizException("삭제 대상 prodQnaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품문의 존재 여부 확인
             if (!pdProdQnaRepository.existsById(entity.getProdQnaId()))
                 throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품문의 ID 기준 삭제
             pdProdQnaRepository.deleteById(entity.getProdQnaId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdQnaId(CmUtil.generateId("pd_prod_qna"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품문의 저장
             PdProdQna saved = pdProdQnaRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -172,6 +187,7 @@ public class PdProdQnaService {
             if (entity.getProdQnaId() == null)
                 throw new CmBizException("수정 대상 prodQnaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품문의 선택적 필드 수정
             int affected = pdProdQnaRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
@@ -207,6 +223,7 @@ public class PdProdQnaService {
             .map(PdProdQna::getProdQnaId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품문의 조건별 삭제
             pdProdQnaRepository.deleteAllById(deleteIds);
         }
 
@@ -216,6 +233,7 @@ public class PdProdQnaService {
             .toList();
         for (PdProdQna row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품문의 선택적 필드 수정
             int affected = pdProdQnaRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -228,6 +246,7 @@ public class PdProdQnaService {
             row.setProdQnaId(CmUtil.generateId("pd_prod_qna"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품문의 저장
             pdProdQnaRepository.save(row);
         }
 

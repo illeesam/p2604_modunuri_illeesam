@@ -30,6 +30,7 @@ public class OdPayMethodService {
 
     /* 결제수단 키조회 */
     public OdPayMethodDto.Item getById(String id) {
+        // [QueryDSL] 마이페이지 등록 결제수단 단건 조회
         OdPayMethodDto.Item dto = odPayMethodRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdPayMethodService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdPayMethodDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 마이페이지 등록 결제수단 단건 조회
         return odPayMethodRepository.selectById(id).orElse(null);
     }
 
     /* 결제수단 상세조회 */
     public OdPayMethod findById(String id) {
+        // [쿼리 메서드] 마이페이지 등록 결제수단 단건 조회
         return odPayMethodRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdPayMethod findByIdOrNull(String id) {
+        // [쿼리 메서드] 마이페이지 등록 결제수단 단건 조회
         return odPayMethodRepository.findById(id).orElse(null);
     }
 
     /* 결제수단 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 마이페이지 등록 결제수단 존재 여부 확인
         return odPayMethodRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 마이페이지 등록 결제수단 존재 여부 확인
         if (!odPayMethodRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 결제수단 목록조회 */
     public List<OdPayMethodDto.Item> getList(OdPayMethodDto.Request req) {
+        // [QueryDSL] 마이페이지 등록 결제수단 목록 조회
         return odPayMethodRepository.selectList(req);
     }
 
     /* 결제수단 페이지조회 */
     public BasePage<OdPayMethodDto.Item> getPageData(OdPayMethodDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 마이페이지 등록 결제수단 페이지 조회
         return odPayMethodRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdPayMethodService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 마이페이지 등록 결제수단 저장
         OdPayMethod saved = odPayMethodRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdPayMethodService {
         VoUtil.voCopyExclude(body, entity, "payMethodId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 마이페이지 등록 결제수단 저장
         OdPayMethod saved = odPayMethodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdPayMethodService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPayMethodId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 마이페이지 등록 결제수단 선택적 필드 수정
         int affected = odPayMethodRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdPayMethodService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdPayMethod entity = findById(id);
+        // [쿼리 메서드] 마이페이지 등록 결제수단 삭제
         odPayMethodRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdPayMethodService {
         if ("D".equals(rowStatus)) {
             if (entity.getPayMethodId() == null)
                 throw new CmBizException("삭제 대상 payMethodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 마이페이지 등록 결제수단 존재 여부 확인
             if (!odPayMethodRepository.existsById(entity.getPayMethodId()))
                 throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 마이페이지 등록 결제수단 ID 기준 삭제
             odPayMethodRepository.deleteById(entity.getPayMethodId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPayMethodId(CmUtil.generateId("od_pay_method"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 마이페이지 등록 결제수단 저장
             OdPayMethod saved = odPayMethodRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdPayMethodService {
             if (entity.getPayMethodId() == null)
                 throw new CmBizException("수정 대상 payMethodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 마이페이지 등록 결제수단 선택적 필드 수정
             int affected = odPayMethodRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdPayMethod입니다: " + entity.getPayMethodId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdPayMethodService {
             .map(OdPayMethod::getPayMethodId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 마이페이지 등록 결제수단 조건별 삭제
             odPayMethodRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdPayMethodService {
             .toList();
         for (OdPayMethod row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 마이페이지 등록 결제수단 선택적 필드 수정
             int affected = odPayMethodRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPayMethodId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdPayMethodService {
             row.setPayMethodId(CmUtil.generateId("od_pay_method"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 마이페이지 등록 결제수단 저장
             odPayMethodRepository.save(row);
         }
 

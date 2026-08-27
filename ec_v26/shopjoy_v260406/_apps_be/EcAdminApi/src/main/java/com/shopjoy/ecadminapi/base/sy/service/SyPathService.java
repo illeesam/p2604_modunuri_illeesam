@@ -30,6 +30,7 @@ public class SyPathService {
 
     /* 키조회 */
     public SyPathDto.Item getById(String id) {
+        // [QueryDSL] 경로 (업무별 트리) 단건 조회
         SyPathDto.Item dto = syPathRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyPathService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyPathDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 경로 (업무별 트리) 단건 조회
         return syPathRepository.selectById(id).orElse(null);
     }
 
     /* 상세조회 */
     public SyPath findById(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 단건 조회
         return syPathRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyPath findByIdOrNull(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 단건 조회
         return syPathRepository.findById(id).orElse(null);
     }
 
     /* 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 존재 여부 확인
         return syPathRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 경로 (업무별 트리) 존재 여부 확인
         if (!syPathRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 목록조회 */
     public List<SyPathDto.Item> getList(SyPathDto.Request req) {
+        // [QueryDSL] 경로 (업무별 트리) 목록 조회
         return syPathRepository.selectList(req);
     }
 
     /* 페이지조회 */
     public BasePage<SyPathDto.Item> getPageData(SyPathDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 경로 (업무별 트리) 페이지 조회
         return syPathRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyPathService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 경로 (업무별 트리) 저장
         SyPath saved = syPathRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyPathService {
         VoUtil.voCopyExclude(body, entity, "pathId^regBy^regDate");
         entity.setUpdBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 경로 (업무별 트리) 저장
         SyPath saved = syPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyPathService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPathId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 경로 (업무별 트리) 선택적 필드 수정
         int affected = syPathRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyPathService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyPath entity = findById(id);
+        // [쿼리 메서드] 경로 (업무별 트리) 삭제
         syPathRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class SyPathService {
         if ("D".equals(rowStatus)) {
             if (entity.getPathId() == null)
                 throw new CmBizException("삭제 대상 pathId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 경로 (업무별 트리) 존재 여부 확인
             if (!syPathRepository.existsById(entity.getPathId()))
                 throw new CmBizException("존재하지 않는 SyPath입니다: " + entity.getPathId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 경로 (업무별 트리) ID 기준 삭제
             syPathRepository.deleteById(entity.getPathId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPathId(CmUtil.generateId("sy_path"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 경로 (업무별 트리) 저장
             SyPath saved = syPathRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class SyPathService {
             if (entity.getPathId() == null)
                 throw new CmBizException("수정 대상 pathId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 경로 (업무별 트리) 선택적 필드 수정
             int affected = syPathRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyPath입니다: " + entity.getPathId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class SyPathService {
             .map(SyPath::getPathId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 경로 (업무별 트리) 조건별 삭제
             syPathRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class SyPathService {
             .toList();
         for (SyPath row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 경로 (업무별 트리) 선택적 필드 수정
             int affected = syPathRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPathId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class SyPathService {
             row.setPathId(CmUtil.generateId("sy_path"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 경로 (업무별 트리) 저장
             syPathRepository.save(row);
         }
 

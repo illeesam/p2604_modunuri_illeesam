@@ -30,6 +30,7 @@ public class PdProdImgService {
 
     /* 상품 이미지 키조회 */
     public PdProdImgDto.Item getById(String id) {
+        // [QueryDSL] 상품 이미지 단건 조회
         PdProdImgDto.Item dto = pdProdImgRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,27 +38,32 @@ public class PdProdImgService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdImgDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품 이미지 단건 조회
         return pdProdImgRepository.selectById(id).orElse(null);
     }
 
     /* 상품 이미지 상세조회 */
     public PdProdImg findById(String id) {
+        // [쿼리 메서드] 상품 이미지 단건 조회
         return pdProdImgRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdImg findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품 이미지 단건 조회
         return pdProdImgRepository.findById(id).orElse(null);
     }
 
     /* 상품 이미지 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품 이미지 존재 여부 확인
         return pdProdImgRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품 이미지 존재 여부 확인
         if (!pdProdImgRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
@@ -65,12 +71,14 @@ public class PdProdImgService {
     /* 상품 이미지 목록조회 */
     public List<PdProdImgDto.Item> getList(PdProdImgDto.Request req) {
         if (req != null && req.getPageSize() != null) PageHelper.addPaging(req);
+        // [QueryDSL] 상품 이미지 목록 조회
         return pdProdImgRepository.selectList(req);
     }
 
     /* 상품 이미지 페이지조회 */
     public BasePage<PdProdImgDto.Item> getPageData(PdProdImgDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품 이미지 페이지 조회
         return pdProdImgRepository.selectPageData(req);
     }
 
@@ -83,6 +91,7 @@ public class PdProdImgService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 이미지 저장
         PdProdImg saved = pdProdImgRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -99,6 +108,7 @@ public class PdProdImgService {
         VoUtil.voCopyExclude(body, entity, "prodImgId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품 이미지 저장
         PdProdImg saved = pdProdImgRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -113,6 +123,7 @@ public class PdProdImgService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdImgId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품 이미지 선택적 필드 수정
         int affected = pdProdImgRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -125,6 +136,7 @@ public class PdProdImgService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdImg entity = findById(id);
+        // [쿼리 메서드] 상품 이미지 삭제
         pdProdImgRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -146,14 +158,17 @@ public class PdProdImgService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdImgId() == null)
                 throw new CmBizException("삭제 대상 prodImgId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 이미지 존재 여부 확인
             if (!pdProdImgRepository.existsById(entity.getProdImgId()))
                 throw new CmBizException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품 이미지 ID 기준 삭제
             pdProdImgRepository.deleteById(entity.getProdImgId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdImgId(CmUtil.generateId("pd_prod_img"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품 이미지 저장
             PdProdImg saved = pdProdImgRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -161,6 +176,7 @@ public class PdProdImgService {
             if (entity.getProdImgId() == null)
                 throw new CmBizException("수정 대상 prodImgId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품 이미지 선택적 필드 수정
             int affected = pdProdImgRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdImg입니다: " + entity.getProdImgId() + "::" + CmUtil.svcCallerInfo(this));
@@ -196,6 +212,7 @@ public class PdProdImgService {
             .map(PdProdImg::getProdImgId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품 이미지 조건별 삭제
             pdProdImgRepository.deleteAllById(deleteIds);
         }
 
@@ -205,6 +222,7 @@ public class PdProdImgService {
             .toList();
         for (PdProdImg row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품 이미지 선택적 필드 수정
             int affected = pdProdImgRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdImgId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -217,6 +235,7 @@ public class PdProdImgService {
             row.setProdImgId(CmUtil.generateId("pd_prod_img"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품 이미지 저장
             pdProdImgRepository.save(row);
         }
 

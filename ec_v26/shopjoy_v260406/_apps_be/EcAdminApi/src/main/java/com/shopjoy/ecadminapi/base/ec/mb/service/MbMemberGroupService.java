@@ -30,6 +30,7 @@ public class MbMemberGroupService {
 
     /* 회원 그룹 키조회 */
     public MbMemberGroupDto.Item getById(String id) {
+        // [QueryDSL] 회원그룹 단건 조회
         MbMemberGroupDto.Item dto = mbMemberGroupRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class MbMemberGroupService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberGroupDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 회원그룹 단건 조회
         return mbMemberGroupRepository.selectById(id).orElse(null);
     }
 
     /* 회원 그룹 상세조회 */
     public MbMemberGroup findById(String id) {
+        // [쿼리 메서드] 회원그룹 단건 조회
         return mbMemberGroupRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public MbMemberGroup findByIdOrNull(String id) {
+        // [쿼리 메서드] 회원그룹 단건 조회
         return mbMemberGroupRepository.findById(id).orElse(null);
     }
 
     /* 회원 그룹 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 회원그룹 존재 여부 확인
         return mbMemberGroupRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 회원그룹 존재 여부 확인
         if (!mbMemberGroupRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 회원 그룹 목록조회 */
     public List<MbMemberGroupDto.Item> getList(MbMemberGroupDto.Request req) {
+        // [QueryDSL] 회원그룹 목록 조회
         return mbMemberGroupRepository.selectList(req);
     }
 
     /* 회원 그룹 페이지조회 */
     public BasePage<MbMemberGroupDto.Item> getPageData(MbMemberGroupDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 회원그룹 페이지 조회
         return mbMemberGroupRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class MbMemberGroupService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원그룹 저장
         MbMemberGroup saved = mbMemberGroupRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class MbMemberGroupService {
         VoUtil.voCopyExclude(body, entity, "memberGroupId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 회원그룹 저장
         MbMemberGroup saved = mbMemberGroupRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class MbMemberGroupService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getMemberGroupId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 회원그룹 선택적 필드 수정
         int affected = mbMemberGroupRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class MbMemberGroupService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MbMemberGroup entity = findById(id);
+        // [쿼리 메서드] 회원그룹 삭제
         mbMemberGroupRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class MbMemberGroupService {
         if ("D".equals(rowStatus)) {
             if (entity.getMemberGroupId() == null)
                 throw new CmBizException("삭제 대상 memberGroupId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원그룹 존재 여부 확인
             if (!mbMemberGroupRepository.existsById(entity.getMemberGroupId()))
                 throw new CmBizException("존재하지 않는 MbMemberGroup입니다: " + entity.getMemberGroupId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 회원그룹 ID 기준 삭제
             mbMemberGroupRepository.deleteById(entity.getMemberGroupId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setMemberGroupId(CmUtil.generateId("mb_member_group"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 회원그룹 저장
             MbMemberGroup saved = mbMemberGroupRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class MbMemberGroupService {
             if (entity.getMemberGroupId() == null)
                 throw new CmBizException("수정 대상 memberGroupId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 회원그룹 선택적 필드 수정
             int affected = mbMemberGroupRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 MbMemberGroup입니다: " + entity.getMemberGroupId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class MbMemberGroupService {
             .map(MbMemberGroup::getMemberGroupId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 회원그룹 조건별 삭제
             mbMemberGroupRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class MbMemberGroupService {
             .toList();
         for (MbMemberGroup row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 회원그룹 선택적 필드 수정
             int affected = mbMemberGroupRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGroupId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class MbMemberGroupService {
             row.setMemberGroupId(CmUtil.generateId("mb_member_group"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 회원그룹 저장
             mbMemberGroupRepository.save(row);
         }
 

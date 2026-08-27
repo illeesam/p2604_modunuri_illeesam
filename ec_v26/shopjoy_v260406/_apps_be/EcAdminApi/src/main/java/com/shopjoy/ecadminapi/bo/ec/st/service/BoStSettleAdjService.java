@@ -47,11 +47,13 @@ public class BoStSettleAdjService {
     /** approve — 승인 */
     @Transactional
     public StSettleAdjDto.Item approve(String id, StSettleAdjApproveDto.Request req) {
+        // [쿼리 메서드] 정산조정 단건 조회
         StSettleAdj entity = stSettleAdjRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setAprvStatusCd(req.getAprvStatusCd() != null ? req.getAprvStatusCd() : "승인");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산조정 저장
         StSettleAdj saved = stSettleAdjRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

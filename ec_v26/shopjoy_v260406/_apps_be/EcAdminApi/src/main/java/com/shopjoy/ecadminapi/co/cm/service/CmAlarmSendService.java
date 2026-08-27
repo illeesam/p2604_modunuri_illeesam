@@ -79,6 +79,7 @@ public class CmAlarmSendService {
                 .alarmFailCount(0)
                 .build();
             stampReg(alarm);
+            // [쿼리 메서드] 알림 저장
             syAlarmRepository.save(alarm);
             log.info("[CmAlarmSend] 시스템 알림 생성 (alarmId={}, refId={})", alarmId, refId);
         } catch (Exception e) {
@@ -106,6 +107,7 @@ public class CmAlarmSendService {
                 .sendHistStatusCd(HIST_SENT)
                 .build();
             stampReg(hist);
+            // [쿼리 메서드] 알림 발송 이력 저장
             syhAlarmSendHistRepository.save(hist);
         } catch (Exception e) {
             log.error("[CmAlarmSend] 알림 발송 이력 저장 실패 (alarmId={})", alarmId, e);

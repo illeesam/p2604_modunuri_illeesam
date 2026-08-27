@@ -30,6 +30,7 @@ public class OdhPayChgHistService {
 
     /* 결제 변경 이력 키조회 */
     public OdhPayChgHistDto.Item getById(String id) {
+        // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 단건 조회
         OdhPayChgHistDto.Item dto = odhPayChgHistRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdhPayChgHistService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdhPayChgHistDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 단건 조회
         return odhPayChgHistRepository.selectById(id).orElse(null);
     }
 
     /* 결제 변경 이력 상세조회 */
     public OdhPayChgHist findById(String id) {
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 단건 조회
         return odhPayChgHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdhPayChgHist findByIdOrNull(String id) {
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 단건 조회
         return odhPayChgHistRepository.findById(id).orElse(null);
     }
 
     /* 결제 변경 이력 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 존재 여부 확인
         return odhPayChgHistRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 존재 여부 확인
         if (!odhPayChgHistRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 결제 변경 이력 목록조회 */
     public List<OdhPayChgHistDto.Item> getList(OdhPayChgHistDto.Request req) {
+        // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 목록 조회
         return odhPayChgHistRepository.selectList(req);
     }
 
     /* 결제 변경 이력 페이지조회 */
     public BasePage<OdhPayChgHistDto.Item> getPageData(OdhPayChgHistDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 페이지 조회
         return odhPayChgHistRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdhPayChgHistService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 저장
         OdhPayChgHist saved = odhPayChgHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdhPayChgHistService {
         VoUtil.voCopyExclude(body, entity, "payChgHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 저장
         OdhPayChgHist saved = odhPayChgHistRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdhPayChgHistService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPayChgHistId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 선택적 필드 수정
         int affected = odhPayChgHistRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdhPayChgHistService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdhPayChgHist entity = findById(id);
+        // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 삭제
         odhPayChgHistRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdhPayChgHistService {
         if ("D".equals(rowStatus)) {
             if (entity.getPayChgHistId() == null)
                 throw new CmBizException("삭제 대상 payChgHistId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 존재 여부 확인
             if (!odhPayChgHistRepository.existsById(entity.getPayChgHistId()))
                 throw new CmBizException("존재하지 않는 OdhPayChgHist입니다: " + entity.getPayChgHistId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) ID 기준 삭제
             odhPayChgHistRepository.deleteById(entity.getPayChgHistId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setPayChgHistId(CmUtil.generateId("odh_pay_chg_hist"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 저장
             OdhPayChgHist saved = odhPayChgHistRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdhPayChgHistService {
             if (entity.getPayChgHistId() == null)
                 throw new CmBizException("수정 대상 payChgHistId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 선택적 필드 수정
             int affected = odhPayChgHistRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdhPayChgHist입니다: " + entity.getPayChgHistId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdhPayChgHistService {
             .map(OdhPayChgHist::getPayChgHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 조건별 삭제
             odhPayChgHistRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdhPayChgHistService {
             .toList();
         for (OdhPayChgHist row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 결제 변경 이력 (모든 결제 변경사항 추적) 선택적 필드 수정
             int affected = odhPayChgHistRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getPayChgHistId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdhPayChgHistService {
             row.setPayChgHistId(CmUtil.generateId("odh_pay_chg_hist"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 결제 변경 이력 (모든 결제 변경사항 추적) 저장
             odhPayChgHistRepository.save(row);
         }
 

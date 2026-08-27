@@ -66,6 +66,7 @@ public class BoAuthService {
     /* join */
     @Transactional
     public BoJoinRes join(SyUser body, String appTypeCd) {
+        // [쿼리 메서드] 관리자 사용자 조건별 조회
         boolean exists = syUserRepository.findByLoginId(body.getLoginId()).isPresent();
         if (exists) throw new CmBizException("이미 사용 중인 아이디입니다." + "::" + CmUtil.svcCallerInfo(this));
 
@@ -86,6 +87,7 @@ public class BoAuthService {
     /* login */
     @Transactional
     public LoginRes login(LoginReq request, String appTypeCd) {
+        // [쿼리 메서드] 관리자 사용자 조건별 조회
         SyUser user = syUserRepository.findByLoginId(request.getLoginId()).orElse(null);
         if (user == null) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, null, 0, null, null);
@@ -116,6 +118,7 @@ public class BoAuthService {
         String authId = user.getUserId();
 
         // 1세션: 기존 토큰 로그 삭제
+        // [쿼리 메서드] 관리자 사용자 토큰 이력 조건별 삭제
         syhUserTokenLogRepository.deleteByAuthId(authId);
 
         String accessToken  = buildAccessToken(user, appTypeCd);
@@ -236,6 +239,7 @@ public class BoAuthService {
             String authId = claims.getSubject();
             if (authId != null) {
                 // 토큰 삭제 먼저 (1세션) — DELETE 후 REVOKE 로그 persist해야 삭제되지 않음
+                // [쿼리 메서드] 관리자 사용자 토큰 이력 조건별 삭제
                 syhUserTokenLogRepository.deleteByAuthId(authId);
                 // REVOKE 토큰 이력 기록
                 saveTokenLog(authId, null, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);

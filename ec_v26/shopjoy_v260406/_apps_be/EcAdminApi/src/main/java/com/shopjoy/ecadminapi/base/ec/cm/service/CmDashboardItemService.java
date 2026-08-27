@@ -34,12 +34,14 @@ public class CmDashboardItemService {
 
     /** getById — 단건조회. 없으면 CmBizException */
     public CmDashboardItem getById(String id) {
+        // [QueryDSL] 대시보드 차트 패널 정의 단건 조회
         return cmDashboardItemRepository.selectById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** getByIdOptional — 단건조회 (Optional 반환) */
     public Optional<CmDashboardItem> getByIdOptional(String id) {
+        // [QueryDSL] 대시보드 차트 패널 정의 단건 조회
         return cmDashboardItemRepository.selectById(id);
     }
 
@@ -51,6 +53,7 @@ public class CmDashboardItemService {
     public List<CmDashboardItem> getList(Map<String, Object> p) {
         String dashboardId = (String) p.get("dashboardId");
         String useYn       = (String) p.get("useYn");
+        // [QueryDSL] 대시보드 차트 패널 정의 목록 조회
         return cmDashboardItemRepository.selectList(Map.of(
             "dashboardId", dashboardId == null ? "" : dashboardId,
             "useYn", useYn == null ? "" : useYn
@@ -95,14 +98,17 @@ public class CmDashboardItemService {
 
         if ("D".equals(rowStatus)) {
             CmUtil.requireId(body.getDashboardItemId(), "dashboardItemId", this);
+            // [쿼리 메서드] 대시보드 차트 패널 정의 존재 여부 확인
             if (!cmDashboardItemRepository.existsById(body.getDashboardItemId()))
                 throw new CmBizException("존재하지 않는 데이터입니다: " + body.getDashboardItemId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 대시보드 차트 패널 정의 ID 기준 삭제
             cmDashboardItemRepository.deleteById(body.getDashboardItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
             body.setDashboardItemId(CmUtil.generateId("cm_dashboard_item"));
             body.setRegBy(authId); body.setRegDate(now);
             body.setUpdBy(authId); body.setUpdDate(now);
+            // [쿼리 메서드] 대시보드 차트 패널 정의 저장
             CmDashboardItem saved = cmDashboardItemRepository.save(body);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -112,6 +118,7 @@ public class CmDashboardItemService {
                불필요하게 전 컬럼을 UPDATE 문에 올리지 않도록 하기 위함. */
             CmUtil.requireId(body.getDashboardItemId(), "dashboardItemId", this);
             body.setUpdBy(authId);
+            // [QueryDSL] 대시보드 차트 패널 정의 선택적 필드 수정
             int affected = cmDashboardItemRepository.updateSelective(body);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + body.getDashboardItemId() + "::" + CmUtil.svcCallerInfo(this));
             em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -142,6 +149,7 @@ public class CmDashboardItemService {
             .map(CmDashboardItem::getDashboardItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 대시보드 차트 패널 정의 조건별 삭제
             cmDashboardItemRepository.deleteAllById(deleteIds);
         }
 
@@ -154,6 +162,7 @@ public class CmDashboardItemService {
             VoUtil.voCopyExclude(row, entity, "dashboardItemId^regBy^regDate");
             entity.setUpdBy(authId);
             entity.setUpdDate(now);
+            // [쿼리 메서드] 대시보드 차트 패널 정의 저장
             cmDashboardItemRepository.save(entity);
         }
 
@@ -165,6 +174,7 @@ public class CmDashboardItemService {
             row.setDashboardItemId(CmUtil.generateId("cm_dashboard_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 대시보드 차트 패널 정의 저장
             cmDashboardItemRepository.save(row);
         }
 
@@ -175,6 +185,7 @@ public class CmDashboardItemService {
     /** 다음 차트 일련번호 — chart### 의 최대값 +1 (없으면 1) */
     public int nextChartSeq() {
         int max = 0;
+        // [쿼리 메서드] 대시보드 차트 패널 정의 전체/다건 조회
         for (CmDashboardItem it : cmDashboardItemRepository.findAll()) {
             String c = it.getItemKey();
             if (c == null || !c.startsWith("chart")) continue;

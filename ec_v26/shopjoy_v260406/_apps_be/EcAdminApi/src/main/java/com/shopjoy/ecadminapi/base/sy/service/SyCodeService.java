@@ -30,6 +30,7 @@ public class SyCodeService {
 
     /* 키조회 */
     public SyCodeDto.Item getById(String id) {
+        // [QueryDSL] 공통코드 단건 조회
         SyCodeDto.Item dto = syCodeRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class SyCodeService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyCodeDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 공통코드 단건 조회
         return syCodeRepository.selectById(id).orElse(null);
     }
 
     /* 상세조회 */
     public SyCode findById(String id) {
+        // [쿼리 메서드] 공통코드 단건 조회
         return syCodeRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public SyCode findByIdOrNull(String id) {
+        // [쿼리 메서드] 공통코드 단건 조회
         return syCodeRepository.findById(id).orElse(null);
     }
 
     /* 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 공통코드 존재 여부 확인
         return syCodeRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 공통코드 존재 여부 확인
         if (!syCodeRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 목록조회 */
     public List<SyCodeDto.Item> getList(SyCodeDto.Request req) {
+        // [QueryDSL] 공통코드 목록 조회
         return syCodeRepository.selectList(req);
     }
 
     /* 페이지조회 */
     public BasePage<SyCodeDto.Item> getPageData(SyCodeDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 공통코드 페이지 조회
         return syCodeRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class SyCodeService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 공통코드 저장
         SyCode saved = syCodeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class SyCodeService {
         VoUtil.voCopyExclude(body, entity, "codeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 공통코드 저장
         SyCode saved = syCodeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class SyCodeService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCodeId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 공통코드 선택적 필드 수정
         int affected = syCodeRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class SyCodeService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyCode entity = findById(id);
+        // [쿼리 메서드] 공통코드 삭제
         syCodeRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -143,14 +155,17 @@ public class SyCodeService {
         if ("D".equals(rowStatus)) {
             if (entity.getCodeId() == null)
                 throw new CmBizException("삭제 대상 codeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 공통코드 존재 여부 확인
             if (!syCodeRepository.existsById(entity.getCodeId()))
                 throw new CmBizException("존재하지 않는 SyCode입니다: " + entity.getCodeId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 공통코드 ID 기준 삭제
             syCodeRepository.deleteById(entity.getCodeId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setCodeId(CmUtil.generateId("sy_code"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 공통코드 저장
             SyCode saved = syCodeRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -158,6 +173,7 @@ public class SyCodeService {
             if (entity.getCodeId() == null)
                 throw new CmBizException("수정 대상 codeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 공통코드 선택적 필드 수정
             int affected = syCodeRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 SyCode입니다: " + entity.getCodeId() + "::" + CmUtil.svcCallerInfo(this));
@@ -191,6 +207,7 @@ public class SyCodeService {
             .map(SyCode::getCodeId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 공통코드 조건별 삭제
             syCodeRepository.deleteAllById(deleteIds);
         }
 
@@ -200,6 +217,7 @@ public class SyCodeService {
             .toList();
         for (SyCode row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 공통코드 선택적 필드 수정
             int affected = syCodeRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCodeId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -212,6 +230,7 @@ public class SyCodeService {
             row.setCodeId(CmUtil.generateId("sy_code"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 공통코드 저장
             syCodeRepository.save(row);
         }
 
@@ -236,6 +255,7 @@ public class SyCodeService {
                 .sortOrd(row.getSortOrd())
                 .updBy(authId)
                 .build();
+            // [QueryDSL] 공통코드 선택적 필드 수정
             int affected = syCodeRepository.updateSelective(patch);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCodeId() + "::" + CmUtil.svcCallerInfo(this));
         }

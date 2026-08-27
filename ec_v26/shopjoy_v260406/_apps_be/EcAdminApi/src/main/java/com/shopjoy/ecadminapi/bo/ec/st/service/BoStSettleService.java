@@ -46,12 +46,14 @@ public class BoStSettleService {
     /** changeStatus — settleStatusCd 변경 (이력 보존) */
     @Transactional
     public StSettleDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 정산 마스터 (업체별 월정산) 단건 조회
         StSettle entity = stSettleRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setSettleStatusCdBefore(entity.getSettleStatusCd());
         entity.setSettleStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산 마스터 (업체별 월정산) 저장
         StSettle saved = stSettleRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

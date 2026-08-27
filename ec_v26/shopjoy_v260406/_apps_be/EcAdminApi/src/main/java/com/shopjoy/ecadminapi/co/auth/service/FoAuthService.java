@@ -71,6 +71,7 @@ public class FoAuthService {
     public LoginRes login(LoginReq request, String appTypeCd) {
         MbMember member;
         try {
+            // [쿼리 메서드] Member 조건별 조회
             member = memberRepository.findByLoginId(request.getLoginId())
                 .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this)));
         } catch (CmBizException e) {
@@ -134,8 +135,10 @@ public class FoAuthService {
 
     /** FO 로그인 화면 사이트 선택란 — 회원이 등록된 사이트 목록 (선택지 1개면 프론트에서 자동선택 처리) */
     public List<SiteOption> getLoginSiteOptions() {
+        // [쿼리 메서드] Member 조회
         List<String> siteIds = memberRepository.selectDistinctSiteIds();
         if (siteIds.isEmpty()) return List.of();
+        // [쿼리 메서드] Site 전체/다건 조회
         return siteRepository.findAllById(siteIds).stream()
             .map(s -> new SiteOption(s.getSiteId(), s.getSiteNm()))
             .toList();
@@ -146,6 +149,7 @@ public class FoAuthService {
     /* join */
     @Transactional
     public FoJoinRes join(MbMember body, String appTypeCd) {
+        // [쿼리 메서드] Member 조건별 조회
         if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
             throw new CmBizException("이미 사용 중인 로그인 ID입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -166,6 +170,7 @@ public class FoAuthService {
         body.setUpdBy(newId);
         body.setUpdDate(LocalDateTime.now());
 
+        // [쿼리 메서드] Member 저장
         memberRepository.save(body);
         return new FoJoinRes(newId, body.getLoginId());
     }
@@ -204,6 +209,7 @@ public class FoAuthService {
             throw new CmBizException("refreshToken이 만료되었습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
         }
 
+        // [쿼리 메서드] Member 단건 조회
         MbMember member = memberRepository.findById(authId)
             .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
 
@@ -229,6 +235,7 @@ public class FoAuthService {
     @Transactional
     public void changePassword(ChangePasswordReq request, String appTypeCd) {
         String memberId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] Member 단건 조회
         MbMember member = memberRepository.findById(memberId)
             .orElseThrow(() -> new CmBizException("회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
         if (!passwordEncoder.matches(request.getCurrentPassword(), member.getLoginPwdHash())) {
@@ -253,6 +260,7 @@ public class FoAuthService {
             if (authId != null) {
                 String siteId = "";
                 // 토큰 삭제 먼저 (멀티디바이스: 해당 토큰만) — DELETE 후 REVOKE 로그 persist
+                // [쿼리 메서드] MemberTokenLog 조건별 삭제
                 memberTokenLogRepository.deleteByAuthIdAndAccessToken(authId, accessToken);
                 // REVOKE 토큰 이력 기록
                 saveTokenLog(authId, siteId, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);

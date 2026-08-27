@@ -46,11 +46,13 @@ public class BoStSettleCloseService {
     /** reopen — 마감 재오픈 */
     @Transactional
     public StSettleCloseDto.Item reopen(String id) {
+        // [쿼리 메서드] 정산마감 이력 단건 조회
         StSettleClose entity = stSettleCloseRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setCloseStatusCd("OPEN");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 정산마감 이력 저장
         StSettleClose saved = stSettleCloseRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

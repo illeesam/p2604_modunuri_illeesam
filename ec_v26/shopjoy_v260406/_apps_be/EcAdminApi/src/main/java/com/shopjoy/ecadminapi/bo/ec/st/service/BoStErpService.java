@@ -54,12 +54,14 @@ public class BoStErpService {
     /** ERP 전표 재전송 — 상태를 PENDING으로 초기화 후 재발송 요청 */
     @Transactional
     public void resend(String id) {
+        // [쿼리 메서드] ERP 전표 마스터 (정산 → ERP 회계 전표) 단건 조회
         StErpVoucher entity = stErpVoucherRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 전표입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setErpVoucherStatusCd("PENDING");
         entity.setErpSendDate(null);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] ERP 전표 마스터 (정산 → ERP 회계 전표) 저장
         stErpVoucherRepository.save(entity);
         log.info("ERP 전표 재전송 요청 - slipId={}", id);
     }

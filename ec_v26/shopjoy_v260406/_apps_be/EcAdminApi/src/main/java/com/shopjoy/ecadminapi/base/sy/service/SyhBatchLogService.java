@@ -20,23 +20,27 @@ public class SyhBatchLogService {
 
     /** getById — 단건조회 */
     public SyhBatchLogDto.Item getById(String id) {
+        // [QueryDSL] 배치 실행 로그 단건 조회
         return syhBatchLogRepository.selectById(id).orElse(null);
     }
 
     /** getList — 목록조회 */
     public List<SyhBatchLogDto.Item> getList(SyhBatchLogDto.Request req) {
+        // [QueryDSL] 배치 실행 로그 목록 조회
         return syhBatchLogRepository.selectList(req);
     }
 
     /** getPageData — 페이징조회 */
     public BasePage<SyhBatchLogDto.Item> getPageData(SyhBatchLogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 배치 실행 로그 페이지 조회
         return syhBatchLogRepository.selectPageData(req);
     }
 
     /** update — 수정 */
     @Transactional
     public int update(SyhBatchLog entity) {
+        // [QueryDSL] 배치 실행 로그 선택적 필드 수정
         return syhBatchLogRepository.updateSelective(entity);
     }
 }

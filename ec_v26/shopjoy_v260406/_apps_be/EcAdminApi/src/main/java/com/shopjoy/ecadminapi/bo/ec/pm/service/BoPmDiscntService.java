@@ -46,12 +46,14 @@ public class BoPmDiscntService {
     /** changeStatus — discntStatusCd 변경 (이력 보존) */
     @Transactional
     public PmDiscntDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 할인정책 단건 조회
         PmDiscnt entity = pmDiscntRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setDiscntStatusCdBefore(entity.getDiscntStatusCd());
         entity.setDiscntStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 할인정책 저장
         PmDiscnt saved = pmDiscntRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

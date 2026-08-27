@@ -205,6 +205,7 @@ public class BoOdOrderService {
                 .build();
             order = odOrderService.create(order);   // orderId 생성 + flush
         } else {
+            // [쿼리 메서드] 주문 단건 조회
             order = odOrderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new CmBizException("존재하지 않는 주문입니다: " + req.getOrderId() + "::" + CmUtil.svcCallerInfo(this)));
             order.setMemberId(req.getMemberId());
@@ -218,8 +219,10 @@ public class BoOdOrderService {
             if (req.getMemo() != null)          order.setMemo(req.getMemo());
             order.setUpdBy(SecurityUtil.getAuthUser().authId());
             order.setUpdDate(LocalDateTime.now());
+            // [쿼리 메서드] 주문 저장
             odOrderRepository.save(order);
             /* 기존 항목 전체 삭제 후 재삽입 (전체 교체 방식) */
+            // [쿼리 메서드] 주문상품 조건별 삭제
             odOrderItemRepository.deleteByOrderId(order.getOrderId());
             em.flush();
         }
@@ -258,6 +261,7 @@ public class BoOdOrderService {
             throw new CmBizException("orderId는 필수입니다.::" + CmUtil.svcCallerInfo(this));
         if (req.getAmount() == null || req.getAmount() <= 0)
             throw new CmBizException("요청 금액은 0보다 커야 합니다.::" + CmUtil.svcCallerInfo(this));
+        // [쿼리 메서드] 주문 단건 조회
         OdOrder order = odOrderRepository.findById(req.getOrderId())
             .orElseThrow(() -> new CmBizException("존재하지 않는 주문입니다: " + req.getOrderId() + "::" + CmUtil.svcCallerInfo(this)));
         String line = "[추가결제요청] " + req.getAmount() + "원"
@@ -266,6 +270,7 @@ public class BoOdOrderService {
         order.setMemo((order.getMemo() == null ? "" : order.getMemo() + "\n") + line);
         order.setUpdBy(SecurityUtil.getAuthUser().authId());
         order.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문 저장
         odOrderRepository.save(order);
         em.flush();
         return getById(order.getOrderId());
@@ -275,12 +280,14 @@ public class BoOdOrderService {
     @Transactional
     public OdOrderDto.Item saveOneStatus(OdOrder row) {
         CmUtil.requireId(row == null ? null : row.getOrderId(), "orderId", this);
+        // [쿼리 메서드] 주문 단건 조회
         OdOrder entity = odOrderRepository.findById(row.getOrderId())
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getOrderId() + "::" + CmUtil.svcCallerInfo(this)));
         entity.setOrderStatusCdBefore(entity.getOrderStatusCd());
         entity.setOrderStatusCd(row.getOrderStatusCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 주문 저장
         OdOrder saved = odOrderRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -294,11 +301,13 @@ public class BoOdOrderService {
         CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdOrder row : rows) {
+            // [쿼리 메서드] 주문 단건 조회
             odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
                 e.setOrderStatusCdBefore(e.getOrderStatusCd());
                 e.setOrderStatusCd(row.getOrderStatusCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 주문 저장
                 OdOrder saved = odOrderRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -313,10 +322,12 @@ public class BoOdOrderService {
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdOrder row : rows) {
             if (row.getPayMethodCd() == null) continue;
+            // [쿼리 메서드] 주문 단건 조회
             odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
                 e.setPayMethodCd(row.getPayMethodCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 주문 저장
                 OdOrder saved = odOrderRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -330,9 +341,11 @@ public class BoOdOrderService {
         CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdOrder row : rows) {
+            // [쿼리 메서드] 주문 단건 조회
             odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 주문 저장
                 OdOrder saved = odOrderRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });
@@ -346,9 +359,11 @@ public class BoOdOrderService {
         CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
         for (OdOrder row : rows) {
+            // [쿼리 메서드] 주문 단건 조회
             odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
+                // [쿼리 메서드] 주문 저장
                 OdOrder saved = odOrderRepository.save(e);
                 if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             });

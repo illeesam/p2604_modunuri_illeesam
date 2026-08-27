@@ -30,6 +30,7 @@ public class DpWidgetLibService {
 
     /* 전시 위젯 라이브러리 키조회 */
     public DpWidgetLibDto.Item getById(String id) {
+        // [QueryDSL] 디스플레이 위젯 라이브러리 단건 조회
         DpWidgetLibDto.Item dto = dpWidgetLibRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class DpWidgetLibService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpWidgetLibDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 디스플레이 위젯 라이브러리 단건 조회
         return dpWidgetLibRepository.selectById(id).orElse(null);
     }
 
     /* 전시 위젯 라이브러리 상세조회 */
     public DpWidgetLib findById(String id) {
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 단건 조회
         return dpWidgetLibRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public DpWidgetLib findByIdOrNull(String id) {
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 단건 조회
         return dpWidgetLibRepository.findById(id).orElse(null);
     }
 
     /* 전시 위젯 라이브러리 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 존재 여부 확인
         return dpWidgetLibRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 존재 여부 확인
         if (!dpWidgetLibRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 전시 위젯 라이브러리 목록조회 */
     public List<DpWidgetLibDto.Item> getList(DpWidgetLibDto.Request req) {
+        // [QueryDSL] 디스플레이 위젯 라이브러리 목록 조회
         return dpWidgetLibRepository.selectList(req);
     }
 
     /* 전시 위젯 라이브러리 페이지조회 */
     public BasePage<DpWidgetLibDto.Item> getPageData(DpWidgetLibDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 디스플레이 위젯 라이브러리 페이지 조회
         return dpWidgetLibRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class DpWidgetLibService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 저장
         DpWidgetLib saved = dpWidgetLibRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class DpWidgetLibService {
         VoUtil.voCopyExclude(body, entity, "widgetLibId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 저장
         DpWidgetLib saved = dpWidgetLibRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class DpWidgetLibService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getWidgetLibId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 디스플레이 위젯 라이브러리 선택적 필드 수정
         int affected = dpWidgetLibRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class DpWidgetLibService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         DpWidgetLib entity = findById(id);
+        // [쿼리 메서드] 디스플레이 위젯 라이브러리 삭제
         dpWidgetLibRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class DpWidgetLibService {
         if ("D".equals(rowStatus)) {
             if (entity.getWidgetLibId() == null)
                 throw new CmBizException("삭제 대상 widgetLibId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 위젯 라이브러리 존재 여부 확인
             if (!dpWidgetLibRepository.existsById(entity.getWidgetLibId()))
                 throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 디스플레이 위젯 라이브러리 ID 기준 삭제
             dpWidgetLibRepository.deleteById(entity.getWidgetLibId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setWidgetLibId(CmUtil.generateId("dp_widget_lib"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 위젯 라이브러리 저장
             DpWidgetLib saved = dpWidgetLibRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class DpWidgetLibService {
             if (entity.getWidgetLibId() == null)
                 throw new CmBizException("수정 대상 widgetLibId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 위젯 라이브러리 선택적 필드 수정
             int affected = dpWidgetLibRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 DpWidgetLib입니다: " + entity.getWidgetLibId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class DpWidgetLibService {
             .map(DpWidgetLib::getWidgetLibId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 디스플레이 위젯 라이브러리 조건별 삭제
             dpWidgetLibRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class DpWidgetLibService {
             .toList();
         for (DpWidgetLib row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 디스플레이 위젯 라이브러리 선택적 필드 수정
             int affected = dpWidgetLibRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getWidgetLibId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class DpWidgetLibService {
             row.setWidgetLibId(CmUtil.generateId("dp_widget_lib"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 디스플레이 위젯 라이브러리 저장
             dpWidgetLibRepository.save(row);
         }
 
@@ -228,6 +247,7 @@ public class DpWidgetLibService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpWidgetLibDto.Request req) {
+        // [QueryDSL] 디스플레이 위젯 라이브러리 조회
         return dpWidgetLibRepository.selectPathTreeWidgetLibCnts(req);
     }
 }

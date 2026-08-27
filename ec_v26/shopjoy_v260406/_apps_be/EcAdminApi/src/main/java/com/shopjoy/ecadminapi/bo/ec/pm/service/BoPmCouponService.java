@@ -46,12 +46,14 @@ public class BoPmCouponService {
     /** changeStatus — couponStatusCd 변경 (이력 보존) */
     @Transactional
     public PmCouponDto.Item changeStatus(String id, String statusCd) {
+        // [쿼리 메서드] 쿠폰 단건 조회
         PmCoupon entity = pmCouponRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         entity.setCouponStatusCdBefore(entity.getCouponStatusCd());
         entity.setCouponStatusCd(statusCd);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 쿠폰 저장
         PmCoupon saved = pmCouponRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

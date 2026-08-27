@@ -39,6 +39,7 @@ public class FoMbLikeService {
         if (req == null) req = new MbLikeDto.Request();
         // memberId는 보안 컨텍스트에서 강제
         req.setMemberId(SecurityUtil.getAuthUser().authId());
+        // [QueryDSL] 좋아요 (위시리스트) 목록 조회
         List<MbLikeDto.Item> list = mbLikeRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -77,6 +78,7 @@ public class FoMbLikeService {
     @Transactional
     public boolean toggle(String targetTypeCd, String targetId, String siteId) {
         String authId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] 좋아요 (위시리스트) 전체/다건 조회
         Optional<MbLike> existing = mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
@@ -84,6 +86,7 @@ public class FoMbLikeService {
             .findFirst();
 
         if (existing.isPresent()) {
+            // [쿼리 메서드] 좋아요 (위시리스트) 삭제
             mbLikeRepository.delete(existing.get());
             return false;
         } else {
@@ -94,6 +97,7 @@ public class FoMbLikeService {
                 .targetTypeCd(targetTypeCd)
                 .targetId(targetId)
                 .build();
+            // [쿼리 메서드] 좋아요 (위시리스트) 저장
             MbLike saved = mbLikeRepository.save(like);
             if (saved == null) throw new CmBizException("찜 추가에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return true;
@@ -104,6 +108,7 @@ public class FoMbLikeService {
     @Transactional
     public void unlike(String targetTypeCd, String targetId) {
         String authId = SecurityUtil.getAuthUser().authId();
+        // [쿼리 메서드] 좋아요 (위시리스트) 전체/다건 조회
         mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())

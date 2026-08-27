@@ -30,6 +30,7 @@ public class PdProdTagService {
 
     /* 상품 태그 키조회 */
     public PdProdTagDto.Item getById(String id) {
+        // [QueryDSL] 상품-태그 매핑 단건 조회
         PdProdTagDto.Item dto = pdProdTagRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdProdTagService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdTagDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품-태그 매핑 단건 조회
         return pdProdTagRepository.selectById(id).orElse(null);
     }
 
     /* 상품 태그 상세조회 */
     public PdProdTag findById(String id) {
+        // [쿼리 메서드] 상품-태그 매핑 단건 조회
         return pdProdTagRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdProdTag findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품-태그 매핑 단건 조회
         return pdProdTagRepository.findById(id).orElse(null);
     }
 
     /* 상품 태그 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품-태그 매핑 존재 여부 확인
         return pdProdTagRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품-태그 매핑 존재 여부 확인
         if (!pdProdTagRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 상품 태그 목록조회 */
     public List<PdProdTagDto.Item> getList(PdProdTagDto.Request req) {
+        // [QueryDSL] 상품-태그 매핑 목록 조회
         return pdProdTagRepository.selectList(req);
     }
 
     /* 상품 태그 페이지조회 */
     public BasePage<PdProdTagDto.Item> getPageData(PdProdTagDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품-태그 매핑 페이지 조회
         return pdProdTagRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdProdTagService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품-태그 매핑 저장
         PdProdTag saved = pdProdTagRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdProdTagService {
         VoUtil.voCopyExclude(body, entity, "prodTagId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품-태그 매핑 저장
         PdProdTag saved = pdProdTagRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdProdTagService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdTagId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품-태그 매핑 선택적 필드 수정
         int affected = pdProdTagRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdProdTagService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdProdTag entity = findById(id);
+        // [쿼리 메서드] 상품-태그 매핑 삭제
         pdProdTagRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdProdTagService {
         if ("D".equals(rowStatus)) {
             if (entity.getProdTagId() == null)
                 throw new CmBizException("삭제 대상 prodTagId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품-태그 매핑 존재 여부 확인
             if (!pdProdTagRepository.existsById(entity.getProdTagId()))
                 throw new CmBizException("존재하지 않는 PdProdTag입니다: " + entity.getProdTagId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품-태그 매핑 ID 기준 삭제
             pdProdTagRepository.deleteById(entity.getProdTagId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setProdTagId(CmUtil.generateId("pd_prod_tag"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품-태그 매핑 저장
             PdProdTag saved = pdProdTagRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdProdTagService {
             if (entity.getProdTagId() == null)
                 throw new CmBizException("수정 대상 prodTagId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품-태그 매핑 선택적 필드 수정
             int affected = pdProdTagRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdProdTag입니다: " + entity.getProdTagId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdProdTagService {
             .map(PdProdTag::getProdTagId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품-태그 매핑 조건별 삭제
             pdProdTagRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdProdTagService {
             .toList();
         for (PdProdTag row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품-태그 매핑 선택적 필드 수정
             int affected = pdProdTagRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdTagId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdProdTagService {
             row.setProdTagId(CmUtil.generateId("pd_prod_tag"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품-태그 매핑 저장
             pdProdTagRepository.save(row);
         }
 

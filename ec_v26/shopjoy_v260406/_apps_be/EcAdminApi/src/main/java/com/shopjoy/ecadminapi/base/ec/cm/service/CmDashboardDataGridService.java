@@ -77,6 +77,7 @@ public class CmDashboardDataGridService {
      * 각 노드는 {@code lvl}(1|2|3) 과 {@code itemKey} 를 갖는다.</p>
      */
     public List<Map<String, Object>> getItemTree(String dashboardId) {
+        // [쿼리 메서드] Item 목록 조회
         List<CmDashboardItem> all = itemRepository.selectList(Map.of("dashboardId", dashboardId));
 
         Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
@@ -135,6 +136,7 @@ public class CmDashboardDataGridService {
      * 필요가 없다(기존 "전체 로드 후 클라이언트 슬라이스" 방식의 성능 문제를 해소하는 게 목적).</p>
      */
     public BasePage<CmDashboardItem> getChartPage(Map<String, Object> p) {
+        // [쿼리 메서드] Item 페이지 조회
         BasePage<CmDashboardItem> page = itemRepository.selectPageData(p);
         List<CmDashboardItem> charts = page.getPageList();
         List<String> chartIds = charts.stream().map(CmDashboardItem::getDashboardItemId).toList();
@@ -153,6 +155,7 @@ public class CmDashboardDataGridService {
     public List<Map<String, Object>> getItemTreeByChartIds(List<String> chartIds) {
         if (chartIds == null || chartIds.isEmpty()) return List.of();
         Map<String, CmDashboardItem> chartById = new LinkedHashMap<>();
+        // [쿼리 메서드] Item 전체/다건 조회
         itemRepository.findAllById(chartIds).forEach(c -> chartById.put(c.getDashboardItemId(), c));
         List<CmDashboardItem> ordered = chartIds.stream()
             .map(chartById::get).filter(java.util.Objects::nonNull).toList();
@@ -169,6 +172,7 @@ public class CmDashboardDataGridService {
      * 왕복은 1번으로 줄인다.</p>
      */
     public Map<String, Object> getChartPageWithTree(Map<String, Object> p) {
+        // [쿼리 메서드] Item 페이지 조회
         BasePage<CmDashboardItem> page = itemRepository.selectPageData(p);
         List<CmDashboardItem> charts = page.getPageList();
         List<String> chartIds = charts.stream().map(CmDashboardItem::getDashboardItemId).toList();
@@ -194,10 +198,12 @@ public class CmDashboardDataGridService {
     private Map<String, List<CmDashboardItem>> fetchDescendantsByParent(List<String> chartIds) {
         Map<String, List<CmDashboardItem>> byParent = new LinkedHashMap<>();
         if (chartIds == null || chartIds.isEmpty()) return byParent;
+        // [쿼리 메서드] Item 목록 조회
         List<CmDashboardItem> sers = itemRepository.selectList(Map.of("parentDashboardItemIds", chartIds));
         sers.forEach(s -> byParent.computeIfAbsent(s.getParentDashboardItemId(), k -> new ArrayList<>()).add(s));
         List<String> seriesIds = sers.stream().map(CmDashboardItem::getDashboardItemId).toList();
         if (!seriesIds.isEmpty()) {
+            // [쿼리 메서드] Item 목록 조회
             List<CmDashboardItem> items = itemRepository.selectList(Map.of("parentDashboardItemIds", seriesIds));
             items.forEach(it -> byParent.computeIfAbsent(it.getParentDashboardItemId(), k -> new ArrayList<>()).add(it));
         }
@@ -262,6 +268,7 @@ public class CmDashboardDataGridService {
                                             List<Map<String, Object>> series,
                                             List<Map<String, Object>> cols,
                                             Map<String, Object> cellOverrides) {
+        // [쿼리 메서드] Item 단건 조회
         CmDashboardItem ch = itemRepository.findById(chartId)
             .orElseThrow(() -> new CmBizException("존재하지 않는 차트입니다: " + chartId));
         if (!"chart".equals(ch.getItemTypeCd()))
@@ -333,7 +340,9 @@ public class CmDashboardDataGridService {
         int delRow = 0, delData = 0;
         for (Map.Entry<String, CmDashboardItem> e : exist.entrySet()) {
             if (keep.contains(e.getKey())) continue;
+            // [쿼리 메서드] Data 조건별 삭제
             delData += dataRepository.deleteByItemKey(e.getKey());
+            // [쿼리 메서드] Item 삭제
             itemRepository.delete(e.getValue());
             delRow++;
         }
@@ -365,6 +374,7 @@ public class CmDashboardDataGridService {
      */
     @Transactional
     public Map<String, Object> generateFromQuery(String chartId, String siteId, String yyyymmdd) {
+        // [쿼리 메서드] Item 단건 조회
         CmDashboardItem ch = itemRepository.findById(chartId)
             .orElseThrow(() -> new CmBizException("존재하지 않는 차트입니다: " + chartId));
         if (!"chart".equals(ch.getItemTypeCd()))
@@ -470,6 +480,7 @@ public class CmDashboardDataGridService {
             if (val != null) {
                 CmDashboardData e = upsert(it.getDashboardItemId(), siteId, runPeriod[0], runPeriod[1], null, null, ch, authId, now);
                 e.setDataVal(val);
+                // [쿼리 메서드] Data 저장
                 dataRepository.save(e);
                 upVal++;
             }
@@ -479,7 +490,9 @@ public class CmDashboardDataGridService {
         int delRow = 0, delData = 0;
         for (Map.Entry<String, CmDashboardItem> e : exist.entrySet()) {
             if (keep.contains(e.getKey())) continue;
+            // [쿼리 메서드] Data 조건별 삭제
             delData += dataRepository.deleteByItemKey(e.getKey());
+            // [쿼리 메서드] Item 삭제
             itemRepository.delete(e.getValue());
             delRow++;
         }
@@ -519,10 +532,12 @@ public class CmDashboardDataGridService {
      * dashboardId 로 갱신한다.
      */
     private List<CmDashboardItem> descendantsOf(CmDashboardItem ch) {
+        // [쿼리 메서드] Item 목록 조회
         List<CmDashboardItem> sers = itemRepository.selectList(Map.of("parentDashboardItemId", ch.getDashboardItemId()));
         List<CmDashboardItem> out = new ArrayList<>();
         for (CmDashboardItem se : sers) {
             out.add(se);
+            // [쿼리 메서드] Item 목록 조회
             out.addAll(itemRepository.selectList(Map.of("parentDashboardItemId", se.getDashboardItemId())));
         }
         return out;
@@ -561,6 +576,7 @@ public class CmDashboardDataGridService {
         row.setEditableYn(nvlStr(editableYn, "Y"));
         row.setUpdBy(authId);
         row.setUpdDate(now);
+        // [쿼리 메서드] Item 저장
         CmDashboardItem saved = itemRepository.save(row);
         /* exist 맵을 바로 갱신 — 같은 실행 안에서 같은 코드가 또 나오면(예: 쿼리방식 결과가
            한 시리즈에 항목을 여럿 반환하는 보통의 경우) 두 번째부터도 방금 만든 이 행을
@@ -607,7 +623,9 @@ public class CmDashboardDataGridService {
 
         row.setItemKey(newCode);
         row.setKeyNm(newKeyNm);
+        // [쿼리 메서드] Item 저장
         itemRepository.save(row);
+        // [쿼리 메서드] Data 호출
         dataRepository.updateItemKey(oldCode, newCode);
         exist.remove(oldCode);
         exist.put(newCode, row);
@@ -619,7 +637,9 @@ public class CmDashboardDataGridService {
             String nc = newCode + c.substring(oldCode.length());
             CmDashboardItem d = e.getValue();
             d.setItemKey(nc);
+            // [쿼리 메서드] Item 저장
             itemRepository.save(d);
+            // [쿼리 메서드] Data 호출
             dataRepository.updateItemKey(c, nc);
             exist.remove(c);
             exist.put(nc, d);
@@ -731,6 +751,7 @@ public class CmDashboardDataGridService {
     public Map<String, Object> getGrids(String dashboardId, String siteId, String yyyymmdd,
                                         String prodId, String vendorId) {
         requireCond(siteId, yyyymmdd);
+        // [쿼리 메서드] Item 목록 조회
         List<CmDashboardItem> all = itemRepository.selectList(Map.of("dashboardId", dashboardId));
         Comparator<CmDashboardItem> bySort = Comparator.comparing(x -> x.getSortOrd() == null ? 0 : x.getSortOrd());
         List<CmDashboardItem> charts0 = all.stream()
@@ -755,6 +776,7 @@ public class CmDashboardDataGridService {
             throw new CmBizException("조회할 차트 목록이 비어 있습니다.");
 
         Map<String, CmDashboardItem> byId = new LinkedHashMap<>();
+        // [쿼리 메서드] Item 전체/다건 조회
         itemRepository.findAllById(chartIds).forEach(it -> byId.put(it.getDashboardItemId(), it));
         List<CmDashboardItem> charts0 = chartIds.stream()
             .map(byId::get)
@@ -767,6 +789,7 @@ public class CmDashboardDataGridService {
         Set<String> dashboardIds = new LinkedHashSet<>();
         charts0.forEach(ch -> dashboardIds.add(ch.getDashboardId()));
         List<CmDashboardItem> all = new ArrayList<>();
+        // [쿼리 메서드] Item 목록 조회
         for (String did : dashboardIds) all.addAll(itemRepository.selectList(Map.of("dashboardId", did)));
 
         return buildGridResult(all, charts0, siteId, yyyymmdd, prodId, vendorId);
@@ -923,6 +946,7 @@ public class CmDashboardDataGridService {
         for (Map<String, Object> chart : charts == null ? List.<Map<String, Object>>of() : charts) {
             String chartId = str(chart.get("dashboardItemId"));
             if (chartId == null) continue;
+            // [쿼리 메서드] Item 단건 조회
             CmDashboardItem ch = itemRepository.findById(chartId)
                 .orElseThrow(() -> new CmBizException("존재하지 않는 차트입니다: " + chartId));
             /* 자동수집 차트는 배치가 채운다 — 화면에서 직접 저장하지 않는다(방어적 재검증,
@@ -940,6 +964,7 @@ public class CmDashboardDataGridService {
                     if (v == null) continue;   /* 빈 셀은 저장하지 않는다 */
                     CmDashboardData e = upsert(leafId, siteId, yyyymmdd, per, pId, vId, ch, authId, now);
                     e.setDataVal(v);
+                    // [쿼리 메서드] Data 저장
                     dataRepository.save(e);
                     saved++;
                 }
@@ -970,6 +995,7 @@ public class CmDashboardDataGridService {
         /* item_key = 값이 붙는 3레벨 정의행의 조립코드. (item_key, data_opts, data_opt2s) 가
            UNIQUE 라 이 셋으로 찾는다(2026-08-26, data_opts 를 site_id+yyyymmdd 로만 좁히고
            나머지 차원을 data_opt2s 로 분리) */
+        // [쿼리 메서드] Item 단건 조회
         CmDashboardItem leaf = itemRepository.findById(defItemId)
             .orElseThrow(() -> new CmBizException("존재하지 않는 정의행입니다: " + defItemId));
         if (!Integer.valueOf(3).equals(leaf.getKeyLevel()))
@@ -1068,6 +1094,7 @@ public class CmDashboardDataGridService {
     @SuppressWarnings("unchecked")
     public List<CmDashboardWidgetRow> queryWidgetRows(String chartId, String siteId,
                                                        String startYmd, String endYmd) {
+        // [쿼리 메서드] Item 단건 조회
         CmDashboardItem ch = itemRepository.findById(chartId).orElse(null);
         if (ch == null) return List.of();
 

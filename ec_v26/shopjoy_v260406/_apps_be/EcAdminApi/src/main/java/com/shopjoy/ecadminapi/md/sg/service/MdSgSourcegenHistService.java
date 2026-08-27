@@ -34,6 +34,7 @@ public class MdSgSourcegenHistService {
     /** getPageData — 소스젠 경계를 넘는 전체 생성이력 조회(이력 화면용) */
     public BasePage<MdSgSourcegenHistDto.Item> getPageData(MdSgSourcegenHistDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 소스젠 생성 이력 — 생성 결과 ZIP 을 첨부(sy_attach)로 보관 페이지 조회
         return mdSgSourcegenHistRepository.selectPageData(req);
     }
 
@@ -41,6 +42,7 @@ public class MdSgSourcegenHistService {
         CmUtil.requireId(projectId, "projectId", this);
         MdSgSourcegenHistDto.Request req = new MdSgSourcegenHistDto.Request();
         req.setProjectId(projectId);
+        // [QueryDSL] 소스젠 생성 이력 — 생성 결과 ZIP 을 첨부(sy_attach)로 보관 목록 조회
         return mdSgSourcegenHistRepository.selectList(req);
     }
 
@@ -55,6 +57,7 @@ public class MdSgSourcegenHistService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 소스젠 생성 이력 — 생성 결과 ZIP 을 첨부(sy_attach)로 보관 저장
         MdSgSourcegenHist saved = mdSgSourcegenHistRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -64,8 +67,10 @@ public class MdSgSourcegenHistService {
     @Transactional
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
+        // [쿼리 메서드] 소스젠 생성 이력 — 생성 결과 ZIP 을 첨부(sy_attach)로 보관 단건 조회
         MdSgSourcegenHist entity = mdSgSourcegenHistRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+        // [쿼리 메서드] 소스젠 생성 이력 — 생성 결과 ZIP 을 첨부(sy_attach)로 보관 삭제
         mdSgSourcegenHistRepository.delete(entity);
         em.flush();
     }

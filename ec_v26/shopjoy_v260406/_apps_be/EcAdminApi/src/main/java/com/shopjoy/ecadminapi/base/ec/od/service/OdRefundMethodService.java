@@ -30,6 +30,7 @@ public class OdRefundMethodService {
 
     /* 환불수단 키조회 */
     public OdRefundMethodDto.Item getById(String id) {
+        // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 단건 조회
         OdRefundMethodDto.Item dto = odRefundMethodRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class OdRefundMethodService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdRefundMethodDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 단건 조회
         return odRefundMethodRepository.selectById(id).orElse(null);
     }
 
     /* 환불수단 상세조회 */
     public OdRefundMethod findById(String id) {
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 단건 조회
         return odRefundMethodRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public OdRefundMethod findByIdOrNull(String id) {
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 단건 조회
         return odRefundMethodRepository.findById(id).orElse(null);
     }
 
     /* 환불수단 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 존재 여부 확인
         return odRefundMethodRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 존재 여부 확인
         if (!odRefundMethodRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 환불수단 목록조회 */
     public List<OdRefundMethodDto.Item> getList(OdRefundMethodDto.Request req) {
+        // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 목록 조회
         return odRefundMethodRepository.selectList(req);
     }
 
     /* 환불수단 페이지조회 */
     public BasePage<OdRefundMethodDto.Item> getPageData(OdRefundMethodDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 페이지 조회
         return odRefundMethodRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class OdRefundMethodService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 저장
         OdRefundMethod saved = odRefundMethodRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class OdRefundMethodService {
         VoUtil.voCopyExclude(body, entity, "refundMethodId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 저장
         OdRefundMethod saved = odRefundMethodRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class OdRefundMethodService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getRefundMethodId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 선택적 필드 수정
         int affected = odRefundMethodRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class OdRefundMethodService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         OdRefundMethod entity = findById(id);
+        // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 삭제
         odRefundMethodRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class OdRefundMethodService {
         if ("D".equals(rowStatus)) {
             if (entity.getRefundMethodId() == null)
                 throw new CmBizException("삭제 대상 refundMethodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 존재 여부 확인
             if (!odRefundMethodRepository.existsById(entity.getRefundMethodId()))
                 throw new CmBizException("존재하지 않는 OdRefundMethod입니다: " + entity.getRefundMethodId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) ID 기준 삭제
             odRefundMethodRepository.deleteById(entity.getRefundMethodId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setRefundMethodId(CmUtil.generateId("od_refund_method"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 저장
             OdRefundMethod saved = odRefundMethodRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class OdRefundMethodService {
             if (entity.getRefundMethodId() == null)
                 throw new CmBizException("수정 대상 refundMethodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 선택적 필드 수정
             int affected = odRefundMethodRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 OdRefundMethod입니다: " + entity.getRefundMethodId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class OdRefundMethodService {
             .map(OdRefundMethod::getRefundMethodId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 조건별 삭제
             odRefundMethodRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class OdRefundMethodService {
             .toList();
         for (OdRefundMethod row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 환불수단 내역 (수단별 환불금액 및 우선순위) 선택적 필드 수정
             int affected = odRefundMethodRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getRefundMethodId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class OdRefundMethodService {
             row.setRefundMethodId(CmUtil.generateId("od_refund_method"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 환불수단 내역 (수단별 환불금액 및 우선순위) 저장
             odRefundMethodRepository.save(row);
         }
 

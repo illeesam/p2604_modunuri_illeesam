@@ -30,6 +30,7 @@ public class PdhProdViewLogService {
 
     /* 상품 조회 로그 키조회 */
     public PdhProdViewLogDto.Item getById(String id) {
+        // [QueryDSL] 상품/페이지 조회 로그 단건 조회
         PdhProdViewLogDto.Item dto = pdhProdViewLogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return dto;
@@ -37,39 +38,46 @@ public class PdhProdViewLogService {
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdhProdViewLogDto.Item getByIdOrNull(String id) {
+        // [QueryDSL] 상품/페이지 조회 로그 단건 조회
         return pdhProdViewLogRepository.selectById(id).orElse(null);
     }
 
     /* 상품 조회 로그 상세조회 */
     public PdhProdViewLog findById(String id) {
+        // [쿼리 메서드] 상품/페이지 조회 로그 단건 조회
         return pdhProdViewLogRepository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
     }
 
     /** findByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public PdhProdViewLog findByIdOrNull(String id) {
+        // [쿼리 메서드] 상품/페이지 조회 로그 단건 조회
         return pdhProdViewLogRepository.findById(id).orElse(null);
     }
 
     /* 상품 조회 로그 키검증 */
     public boolean existsById(String id) {
+        // [쿼리 메서드] 상품/페이지 조회 로그 존재 여부 확인
         return pdhProdViewLogRepository.existsById(id);
     }
 
     /** existsByIdOrThrow — 존재 확인, 없으면 CmBizException */
     public boolean existsByIdOrThrow(String id) {
+        // [쿼리 메서드] 상품/페이지 조회 로그 존재 여부 확인
         if (!pdhProdViewLogRepository.existsById(id)) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
         return true;
     }
 
     /* 상품 조회 로그 목록조회 */
     public List<PdhProdViewLogDto.Item> getList(PdhProdViewLogDto.Request req) {
+        // [QueryDSL] 상품/페이지 조회 로그 목록 조회
         return pdhProdViewLogRepository.selectList(req);
     }
 
     /* 상품 조회 로그 페이지조회 */
     public BasePage<PdhProdViewLogDto.Item> getPageData(PdhProdViewLogDto.Request req) {
         PageHelper.addPaging(req);
+        // [QueryDSL] 상품/페이지 조회 로그 페이지 조회
         return pdhProdViewLogRepository.selectPageData(req);
     }
 
@@ -81,6 +89,7 @@ public class PdhProdViewLogService {
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
         body.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품/페이지 조회 로그 저장
         PdhProdViewLog saved = pdhProdViewLogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -97,6 +106,7 @@ public class PdhProdViewLogService {
         VoUtil.voCopyExclude(body, entity, "logId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [쿼리 메서드] 상품/페이지 조회 로그 저장
         PdhProdViewLog saved = pdhProdViewLogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
@@ -111,6 +121,7 @@ public class PdhProdViewLogService {
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
+        // [QueryDSL] 상품/페이지 조회 로그 선택적 필드 수정
         int affected = pdhProdViewLogRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();   // clear() 전 필수 — 보류 중인 INSERT/UPDATE 가 clear 로 폐기되는 것 방지
@@ -123,6 +134,7 @@ public class PdhProdViewLogService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         PdhProdViewLog entity = findById(id);
+        // [쿼리 메서드] 상품/페이지 조회 로그 삭제
         pdhProdViewLogRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -144,14 +156,17 @@ public class PdhProdViewLogService {
         if ("D".equals(rowStatus)) {
             if (entity.getLogId() == null)
                 throw new CmBizException("삭제 대상 logId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품/페이지 조회 로그 존재 여부 확인
             if (!pdhProdViewLogRepository.existsById(entity.getLogId()))
                 throw new CmBizException("존재하지 않는 PdhProdViewLog입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
+            // [쿼리 메서드] 상품/페이지 조회 로그 ID 기준 삭제
             pdhProdViewLogRepository.deleteById(entity.getLogId());
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setLogId(CmUtil.generateId("pdh_prod_view_log"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
+            // [쿼리 메서드] 상품/페이지 조회 로그 저장
             PdhProdViewLog saved = pdhProdViewLogRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
@@ -159,6 +174,7 @@ public class PdhProdViewLogService {
             if (entity.getLogId() == null)
                 throw new CmBizException("수정 대상 logId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
+            // [QueryDSL] 상품/페이지 조회 로그 선택적 필드 수정
             int affected = pdhProdViewLogRepository.updateSelective(entity);
             if (affected == 0)
                 throw new CmBizException("존재하지 않는 PdhProdViewLog입니다: " + entity.getLogId() + "::" + CmUtil.svcCallerInfo(this));
@@ -194,6 +210,7 @@ public class PdhProdViewLogService {
             .map(PdhProdViewLog::getLogId)
             .toList();
         if (!deleteIds.isEmpty()) {
+            // [쿼리 메서드] 상품/페이지 조회 로그 조건별 삭제
             pdhProdViewLogRepository.deleteAllById(deleteIds);
         }
 
@@ -203,6 +220,7 @@ public class PdhProdViewLogService {
             .toList();
         for (PdhProdViewLog row : updateRows) {
             row.setUpdBy(authId);
+            // [QueryDSL] 상품/페이지 조회 로그 선택적 필드 수정
             int affected = pdhProdViewLogRepository.updateSelective(row);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getLogId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -215,6 +233,7 @@ public class PdhProdViewLogService {
             row.setLogId(CmUtil.generateId("pdh_prod_view_log"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
+            // [쿼리 메서드] 상품/페이지 조회 로그 저장
             pdhProdViewLogRepository.save(row);
         }
 

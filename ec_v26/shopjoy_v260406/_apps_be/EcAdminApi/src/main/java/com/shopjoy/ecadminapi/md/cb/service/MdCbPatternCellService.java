@@ -31,6 +31,7 @@ public class MdCbPatternCellService {
 
     public List<MdCbPatternCellDto.Item> getByPatternId(String patternId) {
         CmUtil.requireId(patternId, "patternId", this);
+        // [쿼리 메서드] 코바늘 도안 격자 셀 (단×코 위치별 기호/배색) 조건별 조회
         return mdCbPatternCellRepository.findByPatternIdOrderByRowNoAscColNoAsc(patternId).stream()
             .map(e -> {
                 MdCbPatternCellDto.Item item = new MdCbPatternCellDto.Item();
@@ -64,6 +65,7 @@ public class MdCbPatternCellService {
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
         }
+        // [쿼리 메서드] 코바늘 도안 격자 셀 (단×코 위치별 기호/배색) 일괄 저장
         mdCbPatternCellRepository.saveAll(rows);
 
         em.flush();
