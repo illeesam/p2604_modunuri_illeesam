@@ -47,7 +47,7 @@ public class PmCouponExpireJob implements SchBatchJobHandler {
         LocalDateTime now   = LocalDateTime.now();
         log.info("[{}] 쿠폰 만료 처리 시작 — 기준일: {}", batchCode(), today);
 
-        List<PmCoupon> targets = couponRepository.findExpireTargets(today);
+        List<PmCoupon> targets = couponRepository.selectExpireTargets(today);
         log.info("[{}] 만료 대상 쿠폰 {}건", batchCode(), targets.size());
 
         int count = 0;

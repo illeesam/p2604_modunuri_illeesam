@@ -10,4 +10,7 @@ public interface SyhUserTokenLogRepository extends JpaRepository<SyhUserTokenLog
     @Modifying
     @Query("DELETE FROM SyhUserTokenLog")
     void deleteAllBulk();
+
+    /** 1세션 정책 — 로그인/로그아웃 시 해당 사용자의 기존 토큰 전체 삭제 */
+    long deleteByAuthId(String authId);
 }

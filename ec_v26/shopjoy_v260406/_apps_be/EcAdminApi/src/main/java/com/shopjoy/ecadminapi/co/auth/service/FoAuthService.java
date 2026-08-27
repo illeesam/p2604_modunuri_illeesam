@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberTokenLogRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
@@ -19,7 +20,6 @@ import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +52,7 @@ public class FoAuthService {
     private EntityManager em;
 
     private final MbMemberRepository memberRepository;
+    private final MbhMemberTokenLogRepository memberTokenLogRepository;
     private final SySiteRepository   siteRepository;
     private final JwtProvider         jwtProvider;
     private final PasswordEncoder     passwordEncoder;
@@ -70,7 +71,7 @@ public class FoAuthService {
     public LoginRes login(LoginReq request, String appTypeCd) {
         MbMember member;
         try {
-            member = memberRepository.findByLoginId(request.getLoginId())
+            member = memberRepository.selectByLoginId(request.getLoginId())
                 .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this)));
         } catch (CmBizException e) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, 0, null, null);
@@ -133,7 +134,7 @@ public class FoAuthService {
 
     /** FO 로그인 화면 사이트 선택란 — 회원이 등록된 사이트 목록 (선택지 1개면 프론트에서 자동선택 처리) */
     public List<SiteOption> getLoginSiteOptions() {
-        List<String> siteIds = memberRepository.findDistinctSiteIds();
+        List<String> siteIds = memberRepository.selectDistinctSiteIds();
         if (siteIds.isEmpty()) return List.of();
         return siteRepository.findAllById(siteIds).stream()
             .map(s -> new SiteOption(s.getSiteId(), s.getSiteNm()))
@@ -145,7 +146,7 @@ public class FoAuthService {
     /* join */
     @Transactional
     public FoJoinRes join(MbMember body, String appTypeCd) {
-        if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
+        if (memberRepository.selectByLoginId(body.getLoginId()).isPresent()) {
             throw new CmBizException("이미 사용 중인 로그인 ID입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
@@ -189,17 +190,9 @@ public class FoAuthService {
             throw new CmBizException("토큰에서 회원 정보를 확인할 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
-        MbhMemberTokenLog tokenLog;
-        try {
-            tokenLog = em.createQuery(
-                    "SELECT t FROM MbhMemberTokenLog t WHERE t.authId = :authId AND t.accessToken = :accessToken",
-                    MbhMemberTokenLog.class)
-                .setParameter("authId", authId)
-                .setParameter("accessToken", expiredAccessToken)
-                .getSingleResult();
-        } catch (NoResultException e) {
-            throw new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
-        }
+        MbhMemberTokenLog tokenLog = memberTokenLogRepository
+            .selectByAuthIdAndAccessToken(authId, expiredAccessToken)
+            .orElseThrow(() -> new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this)));
 
         String storedRefreshToken = tokenLog.getRefreshToken();
         if (storedRefreshToken == null || storedRefreshToken.isBlank()) {
@@ -260,11 +253,7 @@ public class FoAuthService {
             if (authId != null) {
                 String siteId = "";
                 // 토큰 삭제 먼저 (멀티디바이스: 해당 토큰만) — DELETE 후 REVOKE 로그 persist
-                em.createQuery(
-                        "DELETE FROM MbhMemberTokenLog t WHERE t.authId = :authId AND t.accessToken = :accessToken")
-                    .setParameter("authId", authId)
-                    .setParameter("accessToken", accessToken)
-                    .executeUpdate();
+                memberTokenLogRepository.deleteByAuthIdAndAccessToken(authId, accessToken);
                 // REVOKE 토큰 이력 기록
                 saveTokenLog(authId, siteId, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);
                 // LOGOUT 로그인 이력 기록

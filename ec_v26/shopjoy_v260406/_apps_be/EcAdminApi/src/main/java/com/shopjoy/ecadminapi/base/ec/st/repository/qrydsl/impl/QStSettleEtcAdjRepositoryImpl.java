@@ -88,6 +88,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId())); // 기타조정ID 필터
+        whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleId, search.getSettleId())); // 정산ID 필터 (상위 FK)
         whereList.add(QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd())); // 기타조정유형 필터 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
@@ -121,6 +122,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         List<BooleanExpression> whereList = new ArrayList<>();
         whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId())); // 기타조정ID 필터
+        whereList.add(QdslUtil.strEq(stSettleEtcAdj.settleId, search.getSettleId())); // 정산ID 필터 (상위 FK)
         whereList.add(QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd())); // 기타조정유형 필터 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(stSettleEtcAdj.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);

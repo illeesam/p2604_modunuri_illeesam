@@ -232,4 +232,24 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         long affected = update.where(odRefund.refundId.eq(entity.getRefundId())).execute();
         return (int) affected;
     }
+
+    /** 장기 PENDING 환불 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<OdRefund> selectPendingBefore(java.time.LocalDateTime threshold) {
+        return queryFactory.selectFrom(odRefund)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPendingBefore()")
+                .where(odRefund.refundStatusCd.eq("PENDING"), odRefund.refundReqDate.lt(threshold))
+                .fetch();
+    }
+
+    /** 특정 claimId 들에 연결된 PENDING 환불 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<OdRefund> selectPendingByClaimIdsAndBefore(List<String> claimIds, java.time.LocalDateTime threshold) {
+        return queryFactory.selectFrom(odRefund)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPendingByClaimIdsAndBefore()")
+                .where(odRefund.claimId.in(claimIds),
+                        odRefund.refundStatusCd.eq("PENDING"),
+                        odRefund.refundReqDate.lt(threshold))
+                .fetch();
+    }
 }

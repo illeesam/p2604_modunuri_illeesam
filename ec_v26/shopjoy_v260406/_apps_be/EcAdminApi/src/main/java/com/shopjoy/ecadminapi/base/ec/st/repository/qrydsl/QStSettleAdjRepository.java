@@ -20,4 +20,8 @@ public interface QStSettleAdjRepository {
     BasePage<StSettleAdjDto.Item> selectPageData(StSettleAdjDto.Request search);
 
     int updateSelective(StSettleAdj entity);
+
+    /** 정산ID 기준 승인된 조정항목(aprvStatusCd=APPROVED, 관리 엔티티 그대로 반환).
+     *  base 의 findApprovedBySettleId 대체 (2026-08-27) */
+    List<StSettleAdj> selectApprovedBySettleId(String settleId);
 }

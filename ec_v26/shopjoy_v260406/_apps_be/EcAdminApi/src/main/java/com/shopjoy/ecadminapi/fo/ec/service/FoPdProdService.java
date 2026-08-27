@@ -265,10 +265,10 @@ public class FoPdProdService {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
 
         // pm_*_prod 테이블에서 이 상품에 적용 가능한 ID 목록 조회
-        List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId);
-        List<String> discntIds = pmDiscntProdRepository.findDiscntIdsByProdId(prodId);
-        List<String> eventIds  = pmEventProdRepository.findEventIdsByProdId(prodId);
-        List<String> saveIds   = pmSaveProdRepository.findSaveIdsByProdId(prodId);
+        List<String> couponIds = pmCouponProdRepository.selectCouponIdsByProdId(prodId);
+        List<String> discntIds = pmDiscntProdRepository.selectDiscntIdsByProdId(prodId);
+        List<String> eventIds  = pmEventProdRepository.selectEventIdsByProdId(prodId);
+        List<String> saveIds   = pmSaveProdRepository.selectSaveIdsByProdId(prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();
 

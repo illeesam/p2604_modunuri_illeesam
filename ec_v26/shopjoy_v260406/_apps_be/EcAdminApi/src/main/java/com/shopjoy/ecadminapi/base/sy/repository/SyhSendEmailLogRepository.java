@@ -8,13 +8,9 @@ import org.springframework.data.repository.query.Param;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhSendEmailLogRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+/* findFailedBefore → QSyhSendEmailLogRepository.selectFailedBefore 로 전환 (2026-08-27) */
 public interface SyhSendEmailLogRepository extends JpaRepository<SyhSendEmailLog, String>, QSyhSendEmailLogRepository {
-
-    /** 재발송 대상: FAILED 이고 send_date 가 threshold 이전인 건 (최대 maxRetry 회 미만) */
-    @Query("SELECT e FROM SyhSendEmailLog e WHERE e.resultCd = 'FAILED' AND e.sendDate < :threshold")
-    List<SyhSendEmailLog> findFailedBefore(@Param("threshold") LocalDateTime threshold);
 
     /** 오래된 로그 삭제: send_date 가 before 이전인 전체 건 */
     @Modifying

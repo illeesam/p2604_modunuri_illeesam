@@ -120,7 +120,7 @@ public class SchBatchRunner implements ApplicationRunner {
             return;
         }
 
-        List<SyBatch> activeBatches = batchRepository.findByBatchStatusCd("ACTIVE");
+        List<SyBatch> activeBatches = batchRepository.selectListByBatchStatusCd("ACTIVE");
 
         if (activeBatches.isEmpty()) {
             log.info("[SCH] 등록할 ACTIVE 배치 없음");

@@ -137,10 +137,12 @@ public class BoPdProdTabController {
         LocalDateTime now = LocalDateTime.now();
 
         // 1) 기존 SKU 전체 삭제 (연결된 pd_prod_stock 도 stockCode 기준으로 삭제)
-        List<PdProdSku> existingSkus = pdProdSkuRepository.findByProdId(prodId);
-        for (PdProdSku existSku : existingSkus) {
+        PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
+        skuReq.setProdId(prodId);
+        List<PdProdSkuDto.Item> existingSkus = pdProdSkuRepository.selectList(skuReq);
+        for (PdProdSkuDto.Item existSku : existingSkus) {
             if (existSku.getProdSkuCode() != null) {
-                pdProdStockRepository.findByStockCode(existSku.getProdSkuCode())
+                pdProdStockRepository.selectByStockCode(existSku.getProdSkuCode())
                     .ifPresent(sc -> pdProdStockRepository.delete(sc));
             }
         }
@@ -169,7 +171,7 @@ public class BoPdProdTabController {
             Object stockObj = row.get("stockQty");
             int stockQty = stockObj != null ? Integer.parseInt(String.valueOf(stockObj)) : 0;
             String stockCode = sku.getProdSkuCode();
-            PdProdStock sc = pdProdStockRepository.findByStockCode(stockCode).orElse(null);
+            PdProdStock sc = pdProdStockRepository.selectByStockCode(stockCode).orElse(null);
             if (sc != null) {
                 sc.setStockQty(stockQty);
                 pdProdStockRepository.save(sc);

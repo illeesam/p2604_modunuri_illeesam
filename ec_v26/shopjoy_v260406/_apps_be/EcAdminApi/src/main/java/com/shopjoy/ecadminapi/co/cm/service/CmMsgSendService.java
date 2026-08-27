@@ -179,7 +179,7 @@ public class CmMsgSendService {
         t.templateCode = templateCode;
         try {
             SyTemplate tpl = syTemplateRepository
-                .findFirstByTemplateCodeAndUseYn(templateCode, "Y").orElse(null);
+                .selectFirstByTemplateCodeAndUseYn(templateCode, "Y").orElse(null);
             if (tpl != null) {
                 t.templateId = tpl.getTemplateId();
                 t.subject = tpl.getTemplateSubject() != null ? CmUtil.fillTemplate(tpl.getTemplateSubject(), params) : null;

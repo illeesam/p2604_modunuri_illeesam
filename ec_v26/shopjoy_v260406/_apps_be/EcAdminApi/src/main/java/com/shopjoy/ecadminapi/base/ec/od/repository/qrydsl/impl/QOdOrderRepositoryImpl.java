@@ -374,4 +374,13 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         long affected = update.where(odOrder.orderId.eq(entity.getOrderId())).execute();
         return (int) affected;
     }
+
+    /** 미처리 주문 경보 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<OdOrder> selectStalePaidOrders(java.time.LocalDateTime threshold) {
+        return queryFactory.selectFrom(odOrder)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectStalePaidOrders()")
+                .where(odOrder.orderStatusCd.eq("PAID"), odOrder.regDate.lt(threshold))
+                .fetch();
+    }
 }

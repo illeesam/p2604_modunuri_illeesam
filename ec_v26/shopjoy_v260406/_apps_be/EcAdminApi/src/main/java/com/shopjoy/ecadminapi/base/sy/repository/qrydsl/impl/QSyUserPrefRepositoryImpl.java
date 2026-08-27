@@ -7,6 +7,7 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyUserPrefRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 /** SyUserPref(관리자 사용자 개인화 설정) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -23,5 +24,14 @@ public class QSyUserPrefRepositoryImpl implements QSyUserPrefRepository {
                 .where(syUserPref.userId.eq(userId))
                 .orderBy(syUserPref.prefKey.asc())
                 .fetch();
+    }
+
+    @Override
+    public Optional<SyUserPref> selectByUserIdAndPrefKey(String userId, String prefKey) {
+        SyUserPref result = queryFactory
+                .selectFrom(syUserPref)
+                .where(syUserPref.userId.eq(userId).and(syUserPref.prefKey.eq(prefKey)))
+                .fetchOne();
+        return Optional.ofNullable(result);
     }
 }

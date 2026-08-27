@@ -17,4 +17,8 @@ public interface QPmCouponIssueRepository {
     BasePage<PmCouponIssueDto.Item> selectPageData(PmCouponIssueDto.Request search);
 
     int updateSelective(PmCouponIssue entity);
+
+    /** 지정 쿠폰ID 목록 중 미사용(use_yn≠Y) 발급 내역 — 배치 발송 대상 (관리 엔티티 그대로 반환).
+     *  base 의 findUnusedByCouponIds 대체 (2026-08-27) */
+    List<PmCouponIssue> selectUnusedByCouponIds(List<String> couponIds);
 }

@@ -32,7 +32,7 @@ public class BoPdProdPlanController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PdProdPlan>>> list(
             @PathVariable("prodId") String prodId) {
-        return ResponseEntity.ok(ApiResponse.ok(planRepository.findByProdIdOrderBySortOrdAsc(prodId)));
+        return ResponseEntity.ok(ApiResponse.ok(planRepository.selectListByProdId(prodId)));
     }
 
     /**

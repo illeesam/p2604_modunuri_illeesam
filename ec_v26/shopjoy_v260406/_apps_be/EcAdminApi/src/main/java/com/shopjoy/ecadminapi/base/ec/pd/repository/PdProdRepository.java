@@ -2,14 +2,8 @@ package com.shopjoy.ecadminapi.base.ec.pd.repository;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdRepository;
 
-import java.util.List;
-
+/* findSyncTargets → QPdProdRepository.selectSyncTargets 로 전환 (2026-08-27) */
 public interface PdProdRepository extends JpaRepository<PdProd, String>, QPdProdRepository {
-
-    @Query("SELECT p FROM PdProd p " +
-           "WHERE p.prodStatusCd IN ('ACTIVE', 'INACTIVE')")
-    List<PdProd> findSyncTargets();
 }

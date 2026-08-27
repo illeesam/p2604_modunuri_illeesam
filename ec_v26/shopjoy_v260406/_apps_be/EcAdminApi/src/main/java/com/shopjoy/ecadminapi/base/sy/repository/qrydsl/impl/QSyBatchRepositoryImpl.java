@@ -87,6 +87,25 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         return Optional.ofNullable(dtl);
     }
 
+    /* 스케줄러 부팅/재로드용 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<SyBatch> selectListByBatchStatusCd(String batchStatusCd) {
+        return queryFactory.selectFrom(syBatch)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectListByBatchStatusCd()")
+                .where(syBatch.batchStatusCd.eq(batchStatusCd))
+                .fetch();
+    }
+
+    /* UNIQUE(batch_code) 단건 조회 — 관리 엔티티 그대로 반환 */
+    @Override
+    public Optional<SyBatch> selectByBatchCode(String batchCode) {
+        SyBatch result = queryFactory.selectFrom(syBatch)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByBatchCode()")
+                .where(syBatch.batchCode.eq(batchCode))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
     /* 배치 목록조회 */
     @Override
     public List<SyBatchDto.Item> selectList(SyBatchDto.Request search) {

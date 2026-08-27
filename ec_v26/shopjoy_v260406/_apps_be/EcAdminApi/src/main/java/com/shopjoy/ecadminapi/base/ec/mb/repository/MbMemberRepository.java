@@ -2,53 +2,12 @@ package com.shopjoy.ecadminapi.base.ec.mb.repository;
 
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberRepository;
 
+/* findByLoginId → QMbMemberRepository.selectByLoginId
+   findDistinctSiteIds → selectDistinctSiteIds
+   findActiveForGradeCalc → selectActiveForGradeCalc
+   findDormantWarnTargets → selectDormantWarnTargets
+   findDormantTargets → selectDormantTargets 로 전환 (2026-08-27) */
 public interface MbMemberRepository extends JpaRepository<MbMember, String>, QMbMemberRepository {
-
-    Optional<MbMember> findByLoginId(String loginId);
-
-    /** FO 로그인 화면 사이트 선택란 — 회원이 실제 등록된 사이트 목록 (등록 회원이 있는 사이트만) */
-    @Query("SELECT DISTINCT m.siteId FROM MbMember m")
-    List<String> findDistinctSiteIds();
-
-    /**
-     * 등급 재산정 대상 회원 조회 — ACTIVE 상태 + 사이트별.
-     * SUSPENDED / WITHDRAWN 회원은 등급 재산정 제외.
-     */
-    @Query("SELECT m FROM MbMember m " +
-           "WHERE m.memberStatusCd = 'ACTIVE'")
-    List<MbMember> findActiveForGradeCalc();
-
-    /**
-     * 휴면 예정 이메일 대상 조회 — ACTIVE 상태 + 마지막 로그인이 warnThreshold ~ dormantThreshold 사이인 회원.
-     * (lastLogin <= warnThreshold) AND (lastLogin > dormantThreshold)
-     * → 이미 휴면 기준(365일)을 넘은 회원은 제외(별도 처리).
-     */
-    @Query("SELECT m FROM MbMember m " +
-           "WHERE m.memberStatusCd = 'ACTIVE' " +
-           "AND m.lastLogin <= :warnThreshold " +
-           "AND m.lastLogin > :dormantThreshold")
-    List<MbMember> findDormantWarnTargets(
-        @Param("warnThreshold") LocalDateTime warnThreshold,
-        @Param("dormantThreshold") LocalDateTime dormantThreshold
-    );
-
-    /**
-     * 휴면 전환 대상 조회 — ACTIVE 상태 + 마지막 로그인이 threshold 이전인 회원.
-     * lastLogin IS NULL(가입 후 미로그인)인 경우도 regDate 기준으로 threshold 경과 시 대상에 포함.
-     */
-    @Query("SELECT m FROM MbMember m " +
-           "WHERE m.memberStatusCd = 'ACTIVE' " +
-           "AND (m.lastLogin <= :threshold OR " +
-           "     (m.lastLogin IS NULL AND m.regDate <= :threshold))")
-    List<MbMember> findDormantTargets(
-        @Param("threshold") LocalDateTime threshold
-    );
 }

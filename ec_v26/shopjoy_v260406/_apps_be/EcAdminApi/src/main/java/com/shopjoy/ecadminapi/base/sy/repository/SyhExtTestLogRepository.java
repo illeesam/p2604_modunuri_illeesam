@@ -1,32 +1,16 @@
 package com.shopjoy.ecadminapi.base.sy.repository;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhExtTestLog;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhExtTestLogRepository;
 
-import java.util.List;
-
-public interface SyhExtTestLogRepository extends JpaRepository<SyhExtTestLog, String> {
-
-    @Query("SELECT l FROM SyhExtTestLog l WHERE l.channelKey = :channelKey ORDER BY l.regDate DESC")
-    Page<SyhExtTestLog> findByChannelKey(@Param("channelKey") String channelKey, Pageable pageable);
-
-    @Query("SELECT l FROM SyhExtTestLog l ORDER BY l.regDate DESC")
-    Page<SyhExtTestLog> findAllOrderByRegDateDesc(Pageable pageable);
+/* findByChannelKey → QSyhExtTestLogRepository.selectByChannelKey
+   findAllOrderByRegDateDesc → selectAllOrderByRegDateDesc
+   findLatestByChannel → selectLatestByChannel 로 전환 (2026-08-27) */
+public interface SyhExtTestLogRepository extends JpaRepository<SyhExtTestLog, String>, QSyhExtTestLogRepository {
 
     @Query("SELECT COUNT(l) FROM SyhExtTestLog l WHERE l.channelKey = :channelKey")
     long countByChannelKey(@Param("channelKey") String channelKey);
-
-    @Query("""
-        SELECT l FROM SyhExtTestLog l
-        WHERE l.regDate = (
-            SELECT MAX(l2.regDate) FROM SyhExtTestLog l2
-            WHERE l2.channelKey = l.channelKey
-          )
-        ORDER BY l.channelKey
-        """)
-    List<SyhExtTestLog> findLatestByChannel();
 }

@@ -31,7 +31,7 @@ public class MdCbPatternYarnService {
 
     public List<MdCbPatternYarnDto.Item> getByPatternId(String patternId) {
         CmUtil.requireId(patternId, "patternId", this);
-        return mdCbPatternYarnRepository.findByPatternIdOrderByRegDateAsc(patternId).stream()
+        return mdCbPatternYarnRepository.selectListByPatternId(patternId).stream()
             .map(e -> {
                 MdCbPatternYarnDto.Item item = new MdCbPatternYarnDto.Item();
                 item.setPatternYarnId(e.getPatternYarnId());

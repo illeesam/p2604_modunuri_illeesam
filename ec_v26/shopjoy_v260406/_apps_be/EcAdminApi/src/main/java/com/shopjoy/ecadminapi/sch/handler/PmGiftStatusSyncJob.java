@@ -36,7 +36,7 @@ public class PmGiftStatusSyncJob implements SchBatchJobHandler {
         LocalDateTime now   = LocalDateTime.now();
         log.info("[{}] 사은품 상태 동기화 시작 — 기준일: {}", batchCode(), today);
 
-        List<PmGift> targets = giftRepository.findSyncTargets();
+        List<PmGift> targets = giftRepository.selectSyncTargets();
         int toInactive = 0;
         for (PmGift gift : targets) {
             if (gift.getEndDate() == null || !today.isAfter(gift.getEndDate())) continue;

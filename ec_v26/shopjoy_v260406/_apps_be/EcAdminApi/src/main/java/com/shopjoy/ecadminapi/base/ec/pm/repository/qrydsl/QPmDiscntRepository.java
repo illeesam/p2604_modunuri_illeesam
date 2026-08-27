@@ -17,4 +17,8 @@ public interface QPmDiscntRepository {
     BasePage<PmDiscntDto.Item> selectPageData(PmDiscntDto.Request search);
 
     int updateSelective(PmDiscnt entity);
+
+    /** 상태 배치 동기화 대상 — useYn=Y AND ACTIVE (mutate+save 필요, DTO selectList 와 다른 반환타입).
+     *  base 의 findSyncTargets 대체 (2026-08-27) */
+    List<PmDiscnt> selectSyncTargets();
 }

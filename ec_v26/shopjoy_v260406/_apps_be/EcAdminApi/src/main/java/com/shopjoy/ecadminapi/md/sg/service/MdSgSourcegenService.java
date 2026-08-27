@@ -31,7 +31,7 @@ public class MdSgSourcegenService {
 
     public List<MdSgSourcegenDto.Item> getByProjectId(String projectId) {
         CmUtil.requireId(projectId, "projectId", this);
-        return mdSgSourcegenRepository.findByProjectIdOrderByTabNoAsc(projectId).stream()
+        return mdSgSourcegenRepository.selectListByProjectId(projectId).stream()
             .map(e -> {
                 MdSgSourcegenDto.Item item = new MdSgSourcegenDto.Item();
                 item.setSourcegenId(e.getSourcegenId());

@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -76,6 +77,21 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                 .where(cmBlog.blogId.eq(blogId))
                 .fetchOne();
         return Optional.ofNullable(dtl);
+    }
+
+    /** 카테고리별 공개(useYn=Y) 블로그 건수 — {blogCateId: count} */
+    @Override
+    public Map<String, Long> selectCateCounts() {
+        List<Tuple> rows = queryFactory
+                .select(cmBlog.blogCateId, cmBlog.count())
+                .from(cmBlog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectCateCounts()")
+                .where(cmBlog.useYn.eq("Y"), cmBlog.blogCateId.isNotNull())
+                .groupBy(cmBlog.blogCateId)
+                .fetch();
+        Map<String, Long> result = new java.util.LinkedHashMap<>();
+        for (Tuple t : rows) result.put(t.get(cmBlog.blogCateId), t.get(cmBlog.count()));
+        return result;
     }
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */

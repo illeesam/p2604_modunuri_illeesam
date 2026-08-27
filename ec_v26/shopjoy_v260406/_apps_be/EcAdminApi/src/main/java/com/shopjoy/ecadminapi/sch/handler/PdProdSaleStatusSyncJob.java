@@ -44,7 +44,7 @@ public class PdProdSaleStatusSyncJob implements SchBatchJobHandler {
         LocalDateTime now = LocalDateTime.now();
         log.info("[{}] 상품 판매상태 동기화 시작 — 기준시각: {}", batchCode(), now);
 
-        List<PdProd> targets = prodRepository.findSyncTargets();
+        List<PdProd> targets = prodRepository.selectSyncTargets();
         int toActive = 0, toInactive = 0;
         for (PdProd prod : targets) {
             String newStatus = resolveProdStatus(now, prod.getProdStatusCd(), prod.getSaleStartDate(), prod.getSaleEndDate());

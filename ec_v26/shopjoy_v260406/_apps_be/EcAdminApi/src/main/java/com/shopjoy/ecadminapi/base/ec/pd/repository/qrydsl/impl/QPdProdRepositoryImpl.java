@@ -477,4 +477,13 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         long affected = update.where(pdProd.prodId.eq(entity.getProdId())).execute();
         return (int) affected;
     }
+
+    /** 판매상태 배치 동기화 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<PdProd> selectSyncTargets() {
+        return queryFactory.selectFrom(pdProd)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectSyncTargets()")
+                .where(pdProd.prodStatusCd.in("ACTIVE", "INACTIVE"))
+                .fetch();
+    }
 }

@@ -17,4 +17,8 @@ public interface QOdOrderRepository {
     BasePage<OdOrderDto.Item> selectPageData(OdOrderDto.Request search);
 
     int updateSelective(OdOrder entity);
+
+    /** 미처리 주문 경보 대상 — PAID 상태로 threshold 이전 등록 (관리 엔티티 그대로 반환).
+     *  base 의 findStalePaidOrders 대체 (2026-08-27) */
+    List<OdOrder> selectStalePaidOrders(java.time.LocalDateTime threshold);
 }

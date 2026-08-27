@@ -72,12 +72,7 @@ public class BoCmDashboardController {
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String useYn,
             @RequestParam(required = false) String scope) {
-        List<CmDashboard> result;
-        if (useYn != null) {
-            result = cmDashboardRepository.findByUseYnOrderBySortOrdAsc(useYn);
-        } else {
-            result = cmDashboardRepository.findAllByOrderBySortOrdAsc();
-        }
+        List<CmDashboard> result = cmDashboardRepository.selectList(useYn);
         if (scope != null && !scope.isBlank()) {
             AuthPrincipal me = SecurityUtil.getAuthUser();
             result = result.stream().filter(d -> switch (scope) {
@@ -449,11 +444,11 @@ public class BoCmDashboardController {
         String scp = normScope(scope);
         if ("SYS".equals(scp)) {
             return ResponseEntity.ok(ApiResponse.ok(
-                cmDashboardMenuRepository.findByMenuScopeCdOrderBySortOrdAsc(scp)));
+                cmDashboardMenuRepository.selectList(scp, null)));
         }
         String uid = SecurityUtil.getAuthUser().authId();
         return ResponseEntity.ok(ApiResponse.ok(
-            cmDashboardMenuRepository.findByMenuScopeCdAndOwnerUserIdOrderBySortOrdAsc(scp, uid)));
+            cmDashboardMenuRepository.selectList(scp, uid)));
     }
 
     /**

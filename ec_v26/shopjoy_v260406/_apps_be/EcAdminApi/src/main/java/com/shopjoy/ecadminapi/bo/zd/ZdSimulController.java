@@ -988,7 +988,7 @@ public class ZdSimulController {
 
     /** 시뮬용 pd_prod_stock 생성 (stockCode = prodSkuId, 이미 존재하면 재생성하지 않음) */
     private void createSimulStockCode(String prodSkuId, String prodId, String siteId, int stockQty) {
-        if (pdProdStockRepository.findByStockCode(prodSkuId).isPresent()) return;
+        if (pdProdStockRepository.selectByStockCode(prodSkuId).isPresent()) return;
         LocalDateTime now = LocalDateTime.now();
         /* reg/updDate 는 EntitySaveListener 가 서버시각으로 채운다 (여기서 넣어도 덮어씀) */
         PdProdStock sc = PdProdStock.builder()

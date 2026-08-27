@@ -657,6 +657,37 @@ QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv), // 노출환경 필터
 `selectXxxList`/`selectXxxPage` 처럼 매번 다른 이름을 짓지 않는다(레포마다 이름이 달라지면
 호출부에서 "이 레포는 뭐라고 불렀더라"를 매번 찾아봐야 한다).
 
+### 14.6.9 `findById` 이외의 파생쿼리는 QueryDSL 로 ⭐⭐ (2026-08-27)
+
+**원칙**: `JpaRepository` 표준 상속 메서드인 `findById`/`findAllById` 를 제외한 모든 `find*`
+파생쿼리(Spring Data 네이밍 파생 + `@Query` JPQL/native 커스텀 메서드 전부, Repository 안이든
+Service 에서 `EntityManager.createQuery`/`createNativeQuery` 를 직접 부르는 경우든)는 새로
+만들 때부터 QueryDSL(`Q*Repository`/`Impl`)로 작성한다. 기존 코드를 손보다가 발견해도 그 자리에서
+전환한다 — "나중에 몰아서" 미루지 않는다.
+
+**전환 매핑**:
+
+| 기존 패턴 | 전환 방식 |
+|---|---|
+| 읽기전용, 호출부가 결과를 그대로 소비만 함 | 기존 `selectList(Dto.Request)`/`selectById` 에 조건 흡수, 없으면 §14.6.8 기준으로 전용 `selectXxx` 신설 |
+| 호출부가 결과 엔티티를 직접 수정 후 암묵적 flush(dirty-checking)로 저장하거나, 엔티티 타입 자체가 다른 곳(다른 Repository.save() 등)에 그대로 넘어감 | DTO 프로젝션이 아니라 **관리 엔티티를 그대로 반환**하는 전용 `selectXxx`/`selectListByXxx` 신설(§14.6.8 예외 기준과 별개로, "DTO 로 바꾸면 조용히 깨지는 mutate 흐름" 자체가 전용 메서드를 두는 이유) |
+| 단순 단일/복합 컬럼 동등조건 `deleteByXxx`(조건·계산 없음) | QueryDSL 로 안 옮기고 base 인터페이스의 평범한 Spring Data 파생 삭제로 남겨도 된다 — 이 정도는 변환 실익이 없다 |
+
+**QueryDSL 이 원천적으로 불가능해서 못 옮기는 경우** (판단하지 말고 그대로 native/JPQL 유지):
+
+1. **재귀 CTE**(`WITH RECURSIVE`) — 트리 자손 ID 수집류(`findTreeXxxIds` 등). QueryDSL-JPA API 자체에 대응 기능 없음.
+2. **엔티티가 `generateQueryDsl` 스캔 범위 밖** — `build.gradle.kts` 의 Q-클래스 생성 태스크는
+   `**/entity/*.java`, `**/data/entity/*.java` 만 스캔한다. 이 폴더 관례를 안 지킨 `@Entity`(예:
+   `bo/zd/ZdSimulLog.java`)는 Q-클래스 자체가 없어서 변환 불가 — 빌드 스캔 범위를 넓히거나 엔티티
+   파일을 옮기는 별도 결정이 먼저 필요하다(임의로 건드리지 말 것).
+3. **런타임에 테이블이 정해지는 범용 서비스** — `AutoRestService` 처럼 컴파일 시점에 대상 테이블을
+   알 수 없는 구조는 QueryDSL 의 컴파일타임 Q-타입 전제와 근본적으로 안 맞는다.
+4. **무거운 분석/집계 native SQL** — GROUP BY·날짜버킷·멀티조인 집계, 대량 `INSERT ... SELECT`
+   류(대시보드 통계, 배치 집계, 프로모션 대상 전개 등)는 QueryDSL 로 옮겨도 억지스럽고 실익이 없다.
+   이런 곳은 native SQL 유지가 맞는 선택이다.
+
+이 4가지에 해당하지 않는 한(즉 "그냥 손 안 대서 남아있던" 파생쿼리라면) QueryDSL 전환 대상이다.
+
 ---
 
 ## 14.7 Service `save` / `saveList` 표준 패턴

@@ -3,12 +3,9 @@ package com.shopjoy.ecadminapi.base.sy.repository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBatchRepository;
 
+/* findByBatchStatusCd → QSyBatchRepository.selectListByBatchStatusCd 로 전환
+   findByBatchCode → QSyBatchRepository.selectByBatchCode 로 전환 (2026-08-27) */
 public interface SyBatchRepository extends JpaRepository<SyBatch, String>, QSyBatchRepository {
-    List<SyBatch> findByBatchStatusCd(String batchStatusCd);
-    Optional<SyBatch> findByBatchCode(String batchCode);
-
 }

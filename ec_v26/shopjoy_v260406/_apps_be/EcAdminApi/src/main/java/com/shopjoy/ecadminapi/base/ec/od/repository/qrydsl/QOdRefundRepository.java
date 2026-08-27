@@ -17,4 +17,12 @@ public interface QOdRefundRepository {
     BasePage<OdRefundDto.Item> selectPageData(OdRefundDto.Request search);
 
     int updateSelective(OdRefund entity);
+
+    /** 장기 PENDING 환불 — 요청일시가 threshold 이전 (mutate+save 필요, 관리 엔티티 그대로 반환).
+     *  base 의 findPendingBefore 대체 (2026-08-27) */
+    List<OdRefund> selectPendingBefore(java.time.LocalDateTime threshold);
+
+    /** 특정 claimId 들에 연결된 PENDING 환불 (mutate+save 필요, 관리 엔티티 그대로 반환).
+     *  base 의 findPendingByClaimIdsAndBefore 대체 (2026-08-27) */
+    List<OdRefund> selectPendingByClaimIdsAndBefore(List<String> claimIds, java.time.LocalDateTime threshold);
 }

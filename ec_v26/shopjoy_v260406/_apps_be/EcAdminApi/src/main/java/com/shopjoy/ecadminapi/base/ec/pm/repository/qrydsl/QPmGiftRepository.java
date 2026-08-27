@@ -20,4 +20,8 @@ public interface QPmGiftRepository {
     BasePage<PmGiftDto.Item> selectPageData(PmGiftDto.Request search);
 
     int updateSelective(PmGift entity);
+
+    /** 상태 배치 동기화 대상 — useYn=Y AND ACTIVE (mutate+save 필요, DTO selectList 와 다른 반환타입).
+     *  base 의 findSyncTargets 대체 (2026-08-27) */
+    List<PmGift> selectSyncTargets();
 }

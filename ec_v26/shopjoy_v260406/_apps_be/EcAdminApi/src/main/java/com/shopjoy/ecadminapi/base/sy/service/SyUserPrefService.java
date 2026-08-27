@@ -31,7 +31,7 @@ public class SyUserPrefService {
      *  복합 PK → 대리키 전환으로 findById 대신 (userId, prefKey) 조회로 기존 행을 찾는다. */
     @Transactional
     public void upsert(String userId, String prefKey, String prefValue) {
-        SyUserPref entity = syUserPrefRepository.findByUserIdAndPrefKey(userId, prefKey)
+        SyUserPref entity = syUserPrefRepository.selectByUserIdAndPrefKey(userId, prefKey)
                 .orElseGet(() -> SyUserPref.builder()
                         .userPrefId(CmUtil.generateId("sy_user_pref"))
                         .userId(userId)

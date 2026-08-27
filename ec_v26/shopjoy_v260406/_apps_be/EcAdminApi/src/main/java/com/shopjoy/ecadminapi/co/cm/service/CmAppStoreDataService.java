@@ -5,6 +5,8 @@ import com.shopjoy.ecadminapi.base.ec.dp.repository.*;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.*;
 import com.shopjoy.ecadminapi.base.sy.repository.*;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
@@ -219,7 +221,9 @@ public class CmAppStoreDataService {
         List<Map<String, Object>> result = new java.util.ArrayList<>();
 
         // sy_user_role :: select list :: authId
-        syUserRoleRepository.findByUserId(authId).forEach(ur -> {
+        SyUserRoleDto.Request userRoleReq = new SyUserRoleDto.Request();
+        userRoleReq.setUserId(authId);
+        syUserRoleRepository.selectList(userRoleReq).forEach(ur -> {
             SyRole role = roleMap.get(ur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
             row.put("roleTypeCd", "user_role");
@@ -233,7 +237,9 @@ public class CmAppStoreDataService {
         });
 
         // sy_vendor_user_role :: select list :: authId
-        syVendorUserRoleRepository.findByUserId(authId).forEach(vur -> {
+        SyVendorUserRoleDto.Request vendorUserRoleReq = new SyVendorUserRoleDto.Request();
+        vendorUserRoleReq.setUserId(authId);
+        syVendorUserRoleRepository.selectList(vendorUserRoleReq).forEach(vur -> {
             SyRole role = roleMap.get(vur.getRoleId());
             Map<String, Object> row = new java.util.LinkedHashMap<>();
             row.put("roleTypeCd", "vendor_user_role");
@@ -361,11 +367,15 @@ public class CmAppStoreDataService {
 
         if (AuthPrincipal.BO.equals(appTypeCd) || AuthPrincipal.SO.equals(appTypeCd)) {
             // sy_user_role :: select list :: authId
-            syUserRoleRepository.findByUserId(authUser.authId()).forEach(ur ->
+            SyUserRoleDto.Request userRoleReq2 = new SyUserRoleDto.Request();
+            userRoleReq2.setUserId(authUser.authId());
+            syUserRoleRepository.selectList(userRoleReq2).forEach(ur ->
                 roleVendorMap.put(ur.getRoleId(), null));
 
             // sy_vendor_user_role :: select list :: authId
-            syVendorUserRoleRepository.findByUserId(authUser.authId()).forEach(vur ->
+            SyVendorUserRoleDto.Request vendorUserRoleReq2 = new SyVendorUserRoleDto.Request();
+            vendorUserRoleReq2.setUserId(authUser.authId());
+            syVendorUserRoleRepository.selectList(vendorUserRoleReq2).forEach(vur ->
                 roleVendorMap.put(vur.getRoleId(), vur.getVendorId()));
         } else {
             return List.of();

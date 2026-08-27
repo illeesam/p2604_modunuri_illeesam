@@ -294,4 +294,13 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         long affected = update.where(pmEvent.eventId.eq(entity.getEventId())).execute();
         return (int) affected;
     }
+
+    /** 상태 배치 동기화 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<PmEvent> selectSyncTargets() {
+        return queryFactory.selectFrom(pmEvent)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectSyncTargets()")
+                .where(pmEvent.useYn.eq("Y"), pmEvent.eventStatusCd.in("PENDING", "ACTIVE"))
+                .fetch();
+    }
 }

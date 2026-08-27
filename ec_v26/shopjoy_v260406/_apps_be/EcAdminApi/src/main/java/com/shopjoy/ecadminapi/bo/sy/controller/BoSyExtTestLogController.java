@@ -88,8 +88,8 @@ public class BoSyExtTestLogController {
             @RequestParam(defaultValue = "5")  int pageSize) {
         PageRequest pr = PageRequest.of(pageNo - 1, pageSize);
         Page<SyhExtTestLog> page = (channelKey != null && !channelKey.isBlank())
-            ? repository.findByChannelKey(channelKey, pr)
-            : repository.findAllOrderByRegDateDesc(pr);
+            ? repository.selectByChannelKey(channelKey, pr)
+            : repository.selectAllOrderByRegDateDesc(pr);
         PageResult<SyhExtTestLog> result = PageResult.of(
             page.getContent(), page.getTotalElements(), pageNo, pageSize, null);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -98,7 +98,7 @@ public class BoSyExtTestLogController {
     /** 채널별 최신 이력 1건씩 조회 (연동결과 초기값용) */
     @GetMapping("/latest")
     public ResponseEntity<ApiResponse<java.util.List<SyhExtTestLog>>> latest() {
-        java.util.List<SyhExtTestLog> list = repository.findLatestByChannel();
+        java.util.List<SyhExtTestLog> list = repository.selectLatestByChannel();
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 

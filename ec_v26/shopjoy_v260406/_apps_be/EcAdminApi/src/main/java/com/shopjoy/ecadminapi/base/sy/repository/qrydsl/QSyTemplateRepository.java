@@ -11,6 +11,10 @@ import java.util.Optional;
 /** SyTemplate QueryDSL Custom Repository */
 public interface QSyTemplateRepository {
     Optional<SyTemplateDto.Item> selectById(String templateId);
+
+    /** (templateCode, useYn=Y) 발송용 단건 조회 — 관리 엔티티 그대로 반환(발송 서비스가 엔티티 getter 사용, DTO selectById 와 다른 반환타입).
+     *  base 의 findFirstByTemplateCodeAndUseYn 대체 (2026-08-27) */
+    Optional<SyTemplate> selectFirstByTemplateCodeAndUseYn(String templateCode, String useYn);
     List<SyTemplateDto.Item> selectList(SyTemplateDto.Request search);
     BasePage<SyTemplateDto.Item> selectPageData(SyTemplateDto.Request search);
     int updateSelective(SyTemplate entity);

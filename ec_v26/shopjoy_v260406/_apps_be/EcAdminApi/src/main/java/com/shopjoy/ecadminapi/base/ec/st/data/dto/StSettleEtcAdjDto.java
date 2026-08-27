@@ -14,6 +14,7 @@ public class StSettleEtcAdjDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;                 // 사이트ID 필터
         @Size(max = 21) private String settleEtcAdjId;         // 기타조정ID 필터
+        @Size(max = 21) private String settleId;               // 정산ID 필터 (st_settle.settle_id)
         @Size(max = 20) private String etcAdjTypeCd;           // 기타조정유형 필터 — ETC_ADJ_TYPE_CD (SHIP/RETURN_SHIP/PENALTY/OTHER)
     }
 

@@ -340,4 +340,27 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         long affected = update.where(pmCoupon.couponId.eq(entity.getCouponId())).execute();
         return (int) affected;
     }
+
+    /** 만료 처리 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<PmCoupon> selectExpireTargets(java.time.LocalDate today) {
+        return queryFactory.selectFrom(pmCoupon)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectExpireTargets()")
+                .where(pmCoupon.useYn.eq("Y"),
+                        pmCoupon.couponStatusCd.ne("EXPIRED"),
+                        pmCoupon.validTo.isNotNull(),
+                        pmCoupon.validTo.lt(today))
+                .fetch();
+    }
+
+    /** 만료 D-N 안내 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<PmCoupon> selectExpiringSoon(java.time.LocalDate expireTarget) {
+        return queryFactory.selectFrom(pmCoupon)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectExpiringSoon()")
+                .where(pmCoupon.useYn.eq("Y"),
+                        pmCoupon.couponStatusCd.eq("ACTIVE"),
+                        pmCoupon.validTo.eq(expireTarget))
+                .fetch();
+    }
 }

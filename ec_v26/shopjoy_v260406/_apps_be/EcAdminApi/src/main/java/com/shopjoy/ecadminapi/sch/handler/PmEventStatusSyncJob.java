@@ -73,7 +73,7 @@ public class PmEventStatusSyncJob implements SchBatchJobHandler {
 
     /** @return [total, toActive, toEnded, toPending] */
     private int[] syncEvents(LocalDate today, LocalDateTime now) {
-        var targets = eventRepository.findSyncTargets();
+        var targets = eventRepository.selectSyncTargets();
         int toActive = 0, toEnded = 0, toPending = 0;
 
         for (PmEvent event : targets) {
@@ -103,7 +103,7 @@ public class PmEventStatusSyncJob implements SchBatchJobHandler {
 
     /** @return [total, toActive, toEnded, toDraft] */
     private int[] syncPlans(LocalDate today, LocalDateTime now) {
-        var targets = planRepository.findSyncTargets();
+        var targets = planRepository.selectSyncTargets();
         int toActive = 0, toEnded = 0, toDraft = 0;
 
         for (PmPlan plan : targets) {

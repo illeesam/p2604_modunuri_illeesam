@@ -62,7 +62,8 @@ public class CmPopupPickService {
 
     /** 팝업 정의 조회 */
     public CmPopup getPopup(String popupCode, String siteId) {
-        return cmPopupRepository.findByPopupCodeAndUseYn(popupCode, "Y")
+        return cmPopupRepository.selectByPopupCode(popupCode)
+            .filter(p -> "Y".equals(p.getUseYn()))
             .orElseThrow(() -> new CmBizException(
                 "등록되지 않은 팝업코드입니다: " + popupCode + "::" + CmUtil.svcCallerInfo(this)));
     }
@@ -142,7 +143,7 @@ public class CmPopupPickService {
     );
 
     public List<CmPopupItem> getPopupItems(String popupId) {
-        return cmPopupItemRepository.findByPopupIdAndUseYnOrderBySortOrdAsc(popupId, "Y");
+        return cmPopupItemRepository.selectList(popupId, "Y");
     }
 
     /**

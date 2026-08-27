@@ -4,6 +4,8 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserTokenLog;
+import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyhUserTokenLogRepository;
 import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
 import com.shopjoy.ecadminapi.co.auth.data.vo.BoJoinRes;
@@ -15,7 +17,6 @@ import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,8 @@ public class BoAuthService {
 
     private final JwtProvider     jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final SyUserRepository syUserRepository;
+    private final SyhUserTokenLogRepository syhUserTokenLogRepository;
 
     /** 마스터 패스워드(개발/테스트 전용 우회 로그인) 활성 여부 — prod 는 false */
     @Value("${auth.master-pwd.enabled:false}")
@@ -63,10 +66,7 @@ public class BoAuthService {
     /* join */
     @Transactional
     public BoJoinRes join(SyUser body, String appTypeCd) {
-        boolean exists = em.createQuery(
-                "SELECT COUNT(u) FROM SyUser u WHERE u.loginId = :loginId", Long.class)
-            .setParameter("loginId", body.getLoginId())
-            .getSingleResult() > 0;
+        boolean exists = syUserRepository.selectByLoginId(body.getLoginId()).isPresent();
         if (exists) throw new CmBizException("이미 사용 중인 아이디입니다." + "::" + CmUtil.svcCallerInfo(this));
 
         body.setUserId("US" + LocalDateTime.now().format(ID_FMT)
@@ -86,13 +86,8 @@ public class BoAuthService {
     /* login */
     @Transactional
     public LoginRes login(LoginReq request, String appTypeCd) {
-        SyUser user;
-        try {
-            user = em.createQuery(
-                    "SELECT u FROM SyUser u WHERE u.loginId = :loginId", SyUser.class)
-                .setParameter("loginId", request.getLoginId())
-                .getSingleResult();
-        } catch (NoResultException e) {
+        SyUser user = syUserRepository.selectByLoginId(request.getLoginId()).orElse(null);
+        if (user == null) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, null, 0, null, null);
             throw new CmBizException("사용자 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -121,10 +116,7 @@ public class BoAuthService {
         String authId = user.getUserId();
 
         // 1세션: 기존 토큰 로그 삭제
-        em.createQuery(
-                "DELETE FROM SyhUserTokenLog t WHERE t.authId = :authId")
-            .setParameter("authId", authId)
-            .executeUpdate();
+        syhUserTokenLogRepository.deleteByAuthId(authId);
 
         String accessToken  = buildAccessToken(user, appTypeCd);
         String refreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
@@ -182,17 +174,9 @@ public class BoAuthService {
             throw new CmBizException("토큰에서 사용자 정보를 확인할 수 없습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
-        SyhUserTokenLog tokenLog;
-        try {
-            tokenLog = em.createQuery(
-                    "SELECT t FROM SyhUserTokenLog t WHERE t.authId = :authId AND t.accessToken = :accessToken",
-                    SyhUserTokenLog.class)
-                .setParameter("authId", authId)
-                .setParameter("accessToken", expiredAccessToken)
-                .getSingleResult();
-        } catch (NoResultException e) {
-            throw new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this));
-        }
+        SyhUserTokenLog tokenLog = syhUserTokenLogRepository
+            .selectByAuthIdAndAccessToken(authId, expiredAccessToken)
+            .orElseThrow(() -> new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this)));
 
         String storedRefreshToken = tokenLog.getRefreshToken();
         if (storedRefreshToken == null || storedRefreshToken.isBlank()) {
@@ -252,10 +236,7 @@ public class BoAuthService {
             String authId = claims.getSubject();
             if (authId != null) {
                 // 토큰 삭제 먼저 (1세션) — DELETE 후 REVOKE 로그 persist해야 삭제되지 않음
-                em.createQuery(
-                        "DELETE FROM SyhUserTokenLog t WHERE t.authId = :authId")
-                    .setParameter("authId", authId)
-                    .executeUpdate();
+                syhUserTokenLogRepository.deleteByAuthId(authId);
                 // REVOKE 토큰 이력 기록
                 saveTokenLog(authId, null, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);
                 // LOGOUT 로그인 이력 기록

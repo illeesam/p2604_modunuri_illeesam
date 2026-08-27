@@ -1,11 +1,13 @@
 package com.shopjoy.ecadminapi.co.auth.service;
 
+import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberSnsRepository;
+import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberTokenLogRepository;
 import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.co.auth.data.dto.SocialUserInfo;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
@@ -63,6 +65,7 @@ public class SocialAuthService {
 
     private final MbMemberRepository    memberRepository;
     private final MbMemberSnsRepository memberSnsRepository;
+    private final MbhMemberTokenLogRepository memberTokenLogRepository;
     private final SocialTokenVerifier   socialTokenVerifier;
     private final JwtProvider           jwtProvider;
     private final PasswordEncoder       passwordEncoder;
@@ -83,8 +86,8 @@ public class SocialAuthService {
 
         // 2) (siteId, snsChannelCd, snsUserId) 매칭 → 기존 연동 회원 조회
         MbMember member;
-        Optional<MbMemberSns> snsOpt = memberSnsRepository
-            .findBySnsChannelCdAndSnsUserId(info.getSnsChannelCd(), info.getSnsUserId());
+        Optional<MbMemberSnsDto.Item> snsOpt = memberSnsRepository
+            .selectBySnsChannelCdAndSnsUserId(info.getSnsChannelCd(), info.getSnsUserId());
 
         if (snsOpt.isPresent()) {
             String memberId = snsOpt.get().getMemberId();
@@ -183,9 +186,7 @@ public class SocialAuthService {
         // 3) 보유 토큰 전체 무효화 (모든 디바이스 세션 종료) + REVOKE 이력 (logout 흐름 모방)
         String reason = (request != null)
             ? CmUtil.nvlStr(request.getWithdrawReason(), "WITHDRAW") : "WITHDRAW";
-        em.createQuery("DELETE FROM MbhMemberTokenLog t WHERE t.authId = :authId")
-            .setParameter("authId", memberId)
-            .executeUpdate();
+        memberTokenLogRepository.deleteByAuthId(memberId);
         saveTokenLog(memberId, siteId, null, null, "REVOKE", appTypeCd, reason, null, null);
 
         // 탈퇴 이력 기록 (login_log)
@@ -213,7 +214,7 @@ public class SocialAuthService {
             : email;
 
         // loginId 중복 시: 이미 같은 이메일로 일반 가입된 회원이 있으면 그 회원에 SNS 연동만 추가
-        Optional<MbMember> existing = memberRepository.findByLoginId(loginId);
+        Optional<MbMember> existing = memberRepository.selectByLoginId(loginId);
         if (existing.isPresent()) {
             MbMember exist = existing.get();
             createSnsLink(memberSnsId, siteId,

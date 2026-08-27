@@ -75,6 +75,15 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 .where(mbMemberSns.memberSnsId.eq(memberSnsId)).fetchOne());
     }
 
+    /* (snsChannelCd, snsUserId) 복합 UNIQUE 단건 조회 */
+    @Override
+    public Optional<MbMemberSnsDto.Item> selectBySnsChannelCdAndSnsUserId(String snsChannelCd, String snsUserId) {
+        return Optional.ofNullable(baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectBySnsChannelCdAndSnsUserId()")
+                .where(mbMemberSns.snsChannelCd.eq(snsChannelCd).and(mbMemberSns.snsUserId.eq(snsUserId)))
+                .fetchOne());
+    }
+
     /* SNS 연동 회원 목록조회 */
     @Override
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {

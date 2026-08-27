@@ -1,8 +1,8 @@
 package com.shopjoy.ecadminapi.sch.handler;
 
+import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleEtcAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleAdjRepository;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleConfigRepository;
@@ -93,7 +93,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
             if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;
             String siteId = site.getSiteId();
 
-            List<String> vendorIds = rawRepository.findDistinctVendorIdsBySettlePeriod(ymLabel);
+            List<String> vendorIds = rawRepository.selectDistinctVendorIdsBySettlePeriod(ymLabel);
             if (vendorIds.isEmpty()) {
                 log.info("[{}] siteId={} — {} 원천 데이터 없음, 스킵", batchCode(), siteId, ymLabel);
                 continue;
@@ -101,7 +101,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
 
             for (String vendorId : vendorIds) {
                 totalVendors++;
-                List<StSettleRaw> raws = rawRepository.findBySettlePeriodAndVendor(ymLabel, vendorId);
+                List<StSettleRaw> raws = rawRepository.selectListBySettlePeriodAndVendor(ymLabel, vendorId);
 
                 // 집계
                 long   totalOrderAmt  = 0L, totalReturnAmt = 0L, totalDiscntAmt = 0L;
@@ -211,7 +211,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
         String settleId = settle.getSettleId();
 
         // 승인된 정산조정 (ADD 가산 / DEDUCT 차감)
-        List<StSettleAdj> adjs = adjRepository.findApprovedBySettleId(settleId);
+        List<StSettleAdj> adjs = adjRepository.selectApprovedBySettleId(settleId);
         long adjAmt = 0L;
         for (StSettleAdj a : adjs) {
             long amt = nvl(a.getAdjAmt());
@@ -219,9 +219,11 @@ public class StSettlementReportJob implements SchBatchJobHandler {
         }
 
         // 기타조정 (ADD 가산 / DEDUCT 차감)
-        List<StSettleEtcAdj> etcAdjs = etcAdjRepository.findBySettleId(settleId);
+        StSettleEtcAdjDto.Request etcAdjReq = new StSettleEtcAdjDto.Request();
+        etcAdjReq.setSettleId(settleId);
+        List<StSettleEtcAdjDto.Item> etcAdjs = etcAdjRepository.selectList(etcAdjReq);
         long etcAdjAmt = 0L;
-        for (StSettleEtcAdj e : etcAdjs) {
+        for (StSettleEtcAdjDto.Item e : etcAdjs) {
             long amt = nvl(e.getEtcAdjAmt());
             etcAdjAmt += "ADD".equals(e.getEtcAdjDirCd()) ? amt : -amt;
         }

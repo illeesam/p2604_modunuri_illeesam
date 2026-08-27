@@ -70,7 +70,7 @@ public class BoCmPopupPickController {
     @GetMapping("/popup/list")
     public ResponseEntity<ApiResponse<List<CmPopup>>> popupList(
             @RequestParam(required = false) String siteId) {
-        List<CmPopup> list = cmPopupRepository.findByUseYnOrderBySortOrdAsc("Y");
+        List<CmPopup> list = cmPopupRepository.selectList(Map.of("useYn", "Y"));
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 
@@ -131,7 +131,7 @@ public class BoCmPopupPickController {
 
     @DeleteMapping("/popup/{popupId}")
     public ResponseEntity<ApiResponse<Void>> popupDelete(@PathVariable("popupId") String popupId) {
-        cmPopupItemRepository.findByPopupIdAndUseYnOrderBySortOrdAsc(popupId, "Y")
+        cmPopupItemRepository.selectList(popupId, "Y")
             .forEach(i -> cmPopupItemRepository.deleteById(i.getPopupItemId()));
         cmPopupRepository.deleteById(popupId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));

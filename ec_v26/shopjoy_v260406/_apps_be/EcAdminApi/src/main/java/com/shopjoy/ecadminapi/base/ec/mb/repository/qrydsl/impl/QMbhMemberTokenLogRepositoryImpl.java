@@ -91,6 +91,16 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                 .where(mbhMemberTokenLog.logId.eq(logId)).fetchOne());
     }
 
+    /** (authId, accessToken) 복합 UNIQUE 단건 조회 — 관리 엔티티 그대로 반환 */
+    @Override
+    public Optional<MbhMemberTokenLog> selectByAuthIdAndAccessToken(String authId, String accessToken) {
+        MbhMemberTokenLog result = queryFactory.selectFrom(mbhMemberTokenLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByAuthIdAndAccessToken()")
+                .where(mbhMemberTokenLog.authId.eq(authId), mbhMemberTokenLog.accessToken.eq(accessToken))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
     /* 목록조회 */
     @Override
     public List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search) {

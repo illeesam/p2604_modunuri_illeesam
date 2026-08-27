@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +49,7 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
         log.info("[{}] 판매계획 동기화 시작 — 기준시각: {}", batchCode(), now);
 
         // 1) 종료된 ACTIVE 계획 → ENDED
-        List<PdProdPlan> ended = planRepository.findEndedActivePlans(now);
+        List<PdProdPlan> ended = planRepository.selectEndedActivePlans(now);
         for (PdProdPlan plan : ended) {
             plan.setPlanStatusCd("ENDED");
             plan.setUpdDate(now);
@@ -59,7 +58,7 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
         }
 
         // 2) 지금 유효한 계획 → ACTIVE + pd_prod 가격 반영
-        List<PdProdPlan> active = planRepository.findActivePlans(now);
+        List<PdProdPlan> active = planRepository.selectActivePlans(now);
         for (PdProdPlan plan : active) {
             // 이미 ACTIVE 이면 가격만 재확인
             if (!"ACTIVE".equals(plan.getPlanStatusCd())) {
@@ -100,12 +99,7 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
 
     private void syncSaleCount(LocalDateTime now) {
         // prodId 기준 전체 판매수량 집계 (SKU 유무 무관, 취소 제외)
-        Map<String, Long> prodQtyMap = new HashMap<>();
-        for (Object[] row : orderItemRepository.sumSaleQtyByProdId()) {
-            String prodId = (String) row[0];
-            long   qty    = row[1] instanceof Number ? ((Number) row[1]).longValue() : 0L;
-            prodQtyMap.put(prodId, qty);
-        }
+        Map<String, Long> prodQtyMap = orderItemRepository.selectSaleQtySumByProdId();
 
         // pd_prod_stock 전체 순회 — prodId 로 집계값 매핑 후 변경분만 저장
         int updated = 0;

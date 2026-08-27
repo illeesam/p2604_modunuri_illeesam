@@ -10,4 +10,10 @@ public interface MbhMemberTokenLogRepository extends JpaRepository<MbhMemberToke
     @Modifying
     @Query("DELETE FROM MbhMemberTokenLog")
     void deleteAllBulk();
+
+    /** 탈퇴 시 보유 토큰 전체 무효화 */
+    long deleteByAuthId(String authId);
+
+    /** 로그아웃 시 해당 디바이스(토큰)만 삭제 — 멀티디바이스 세션은 유지 */
+    long deleteByAuthIdAndAccessToken(String authId, String accessToken);
 }

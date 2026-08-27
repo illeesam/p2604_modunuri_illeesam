@@ -77,14 +77,14 @@ public class CmDashboardService {
            응답 맵 키(info0101 등)를 만드는 용도로만 계속 쓰고, 조회는 itemKey 로 한다. */
         String itemKeyParam = str(p.get("itemKey"));
         CmDashboardItem panel = itemKeyParam != null
-            ? cmDashboardItemRepository.findByItemKey(itemKeyParam).orElse(null)
+            ? cmDashboardItemRepository.selectByItemKey(itemKeyParam).orElse(null)
             : null;
 
         if (panel == null) {
             // cm_dashboard 헤더로 dashboardId 조회 (itemKey 미지정 시의 구 매칭 경로 — 폴백)
             String dashboardId = null;
             if (uiNm != null) {
-                CmDashboard dash = cmDashboardRepository.findByUiCompNm(uiNm).orElse(null);
+                CmDashboard dash = cmDashboardRepository.selectByUiCompNm(uiNm).orElse(null);
                 if (dash != null) dashboardId = dash.getDashboardId();
             }
 

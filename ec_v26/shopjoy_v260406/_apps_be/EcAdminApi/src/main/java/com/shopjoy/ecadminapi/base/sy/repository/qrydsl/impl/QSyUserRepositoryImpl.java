@@ -117,6 +117,16 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         return Optional.ofNullable(dtl);
     }
 
+    /** UNIQUE(login_id) 단건 조회 — 관리 엔티티 그대로 반환 */
+    @Override
+    public Optional<SyUser> selectByLoginId(String loginId) {
+        SyUser result = queryFactory.selectFrom(syUser)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByLoginId()")
+                .where(syUser.loginId.eq(loginId))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
     /** 전체 목록 (page/size 가 양수면 페이징 적용. null 안전) */
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {

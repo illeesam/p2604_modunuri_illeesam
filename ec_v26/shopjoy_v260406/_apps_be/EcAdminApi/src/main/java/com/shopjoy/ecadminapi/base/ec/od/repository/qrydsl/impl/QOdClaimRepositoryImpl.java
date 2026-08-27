@@ -496,4 +496,24 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         long affected = update.where(odClaim.claimId.eq(entity.getClaimId())).execute();
         return (int) affected;
     }
+
+    /** 환불 자동 COMPLT 대상 클레임 풀 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<OdClaim> selectCompltCancelReturnClaims() {
+        return queryFactory.selectFrom(odClaim)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectCompltCancelReturnClaims()")
+                .where(odClaim.claimTypeCd.in("CANCEL", "RETURN"),
+                        odClaim.claimStatusCd.eq("COMPLT"),
+                        odClaim.claimCancelYn.isNull().or(odClaim.claimCancelYn.ne("Y")))
+                .fetch();
+    }
+
+    /** 미처리 클레임 경보 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<OdClaim> selectStaleRequestedClaims(java.time.LocalDateTime threshold) {
+        return queryFactory.selectFrom(odClaim)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectStaleRequestedClaims()")
+                .where(odClaim.claimStatusCd.eq("REQUESTED"), odClaim.regDate.lt(threshold))
+                .fetch();
+    }
 }

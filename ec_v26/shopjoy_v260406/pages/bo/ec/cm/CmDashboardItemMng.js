@@ -1588,7 +1588,10 @@ window.CmDashboardItemMng = {
     ];
 
     columns.seriesRowGrid = [
-      { key: 'cd',       label: '코드 (cd)', width: '190px' },
+      /* 2026-08-27: 시리즈·항목 그리드를 좌우로 배치하면서 폭이 절반으로 줄어(패널 폭 halved)
+         190px 이던 코드칸 안의 안내문구(placeholder)+입력값+색상 라벨이 줄바꿈되어 3행으로
+         보였다 — 코드칸만 넓혀서 한 줄로 보이게 한다. */
+      { key: 'cd',       label: '코드 (cd)', width: '260px' },
       { key: 'name',     label: '시리즈명 (name)' },
       { key: 'color',    label: '색상 (color)', width: '150px' },
       { key: '_preview', label: '고유 item_key 미리보기', width: '230px',
@@ -1598,7 +1601,10 @@ window.CmDashboardItemMng = {
       ] },
     ];
     columns.colRowGrid = [
-      { key: 'cd',       label: '코드 (cd)', width: '190px' },
+      /* 2026-08-27: 시리즈·항목 그리드를 좌우로 배치하면서 폭이 절반으로 줄어(패널 폭 halved)
+         190px 이던 코드칸 안의 안내문구(placeholder)+입력값+색상 라벨이 줄바꿈되어 3행으로
+         보였다 — 코드칸만 넓혀서 한 줄로 보이게 한다. */
+      { key: 'cd',       label: '코드 (cd)', width: '260px' },
       { key: 'name',     label: '항목명 (name)' },
       { key: 'color',    label: '색상 (color, 파이용)', width: '150px' },
       { key: '_preview', label: '고유 item_key 미리보기', width: '230px',
@@ -1720,9 +1726,11 @@ window.CmDashboardItemMng = {
         onChange: () => onGrpChange() },
       { key: '_itemCodeSample', label: '고유 item_key 형식', type: 'readonly',
         fmt: () => (panelForm.itemKey || '항목키') + '-시리즈cd-항목cd' },
-      /* JSON 직접 입력 대신 행 그리드로 편집한다 (저장 시 JSON 으로 직렬화) */
-      { key: '_seriesGrid', label: '2레벨 · 시리즈 정의', type: 'slot', name: 'seriesGrid', colSpan: 3 },
-      { key: '_colsGrid',   label: '3레벨 · 항목 정의',   type: 'slot', name: 'colsGrid',   colSpan: 3 },
+      /* JSON 직접 입력 대신 행 그리드로 편집한다 (저장 시 JSON 으로 직렬화).
+         시리즈·항목 두 그리드를 좌우로 나란히 배치하기 위해 슬롯 하나(colSpan:3, 한 줄 전체 폭)로
+         합치고, 그 안에서 flex 2단으로 쪼갠다(2026-08-27) — 예전엔 슬롯을 2개(각 colSpan:3)로
+         나눠 위아래로 쌓았었다. 각 반쪽 안의 소제목(form-label)으로 원래 라벨을 그대로 옮겼다. */
+      { key: '_seriesColsGrid', label: null, type: 'slot', name: 'seriesColsGrid', hideLabel: true, colSpan: 3 },
       /* 구조를 짜는 중에 실제 모양을 바로 확인하는 영역 (저장 대상 아님) */
       { type: 'group', label: '시뮬레이션 값 입력 · 미리보기' },
       { key: '_simGrid',    label: '시뮬레이션 값 (미저장)', type: 'slot', name: 'simGrid',   colSpan: 3 },
@@ -1936,33 +1944,76 @@ window.CmDashboardItemMng = {
           </div>
         </template>
 
-        <!-- ===== ■. 2레벨 시리즈 정의 (행 그리드) ========================= -->
-        <template #seriesGrid>
-          <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-            <div style="padding:6px;background:#fafafa;border-bottom:1px solid #f0f0f0;">
-              <button class="btn btn_new" :disabled="cfDtlMode" @click="fnAddSeriesRow()">+ 시리즈 추가</button>
+        <!-- ===== ■. 2레벨 시리즈 정의 + 3레벨 항목 정의 (좌우 배치, 2026-08-27) ========= -->
+        <template #seriesColsGrid>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <!-- 좌: 시리즈 정의 -->
+            <div style="flex:1;min-width:0;">
+              <div class="form-label" style="margin-bottom:6px;">2레벨 · 시리즈 정의</div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+                <div style="padding:6px;background:#fafafa;border-bottom:1px solid #f0f0f0;">
+                  <button class="btn btn_new" :disabled="cfDtlMode" @click="fnAddSeriesRow()">+ 시리즈 추가</button>
+                </div>
+                <!-- bo-grid 전환(2026-08-25) — 셀 내부 입력/select/color 마크업은 원본과 동일, 표 틀만 교체.
+                     draggable 이 ☰ 드래그 열을 자동 렌더하므로 수기 "순서" 열은 뺐다(show-row-no 가 같은 값). -->
+                <bo-grid bare :columns="columns.seriesRowGrid" :rows="seriesRows" :draggable="!cfDtlMode"
+                  empty-text="시리즈가 없습니다. [+ 시리즈 추가]로 등록하세요. (없으면 단일 시리즈로 동작)">
+                  <template #cell-cd="{ row: r }">
+                    <!-- 코드그룹이 지정되면 선택, 아니면 직접입력 -->
+                    <select v-if="fnGrpOptions(panelForm.lvl1CodeGrp).length" class="form-control"
+                      v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl1CodeGrp)">
+                      <option value="">-- 선택 --</option>
+                      <option v-for="o in fnGrpOptions(panelForm.lvl1CodeGrp)" :key="o.codeValue" :value="o.codeValue">
+                        {{ o.codeLabel }} ({{ o.codeValue }})</option>
+                    </select>
+                    <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
+                      placeholder="예: CH_COUPANG (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
+                  </template>
+                  <template #cell-name="{ row: r }">
+                    <input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 쿠팡" />
+                  </template>
+                  <template #cell-color="{ row: r }">
+                    <div style="display:flex;align-items:center;gap:4px;">
+                      <input type="color" v-model="r.color" :disabled="cfDtlMode"
+                        style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
+                      <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
+                        placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
+                    </div>
+                  </template>
+                </bo-grid>
+              </div>
             </div>
-            <!-- bo-grid 전환(2026-08-25) — 셀 내부 입력/select/color 마크업은 원본과 동일, 표 틀만 교체.
-                 draggable 이 ☰ 드래그 열을 자동 렌더하므로 수기 "순서" 열은 뺐다(show-row-no 가 같은 값). -->
-            <bo-grid bare :columns="columns.seriesRowGrid" :rows="seriesRows" :draggable="!cfDtlMode"
-              empty-text="시리즈가 없습니다. [+ 시리즈 추가]로 등록하세요. (없으면 단일 시리즈로 동작)">
-              <template #cell-cd="{ row: r }">
-                <!-- 코드그룹이 지정되면 선택, 아니면 직접입력 -->
-                <select v-if="fnGrpOptions(panelForm.lvl1CodeGrp).length" class="form-control"
-                  v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl1CodeGrp)">
-                  <option value="">-- 선택 --</option>
-                  <option v-for="o in fnGrpOptions(panelForm.lvl1CodeGrp)" :key="o.codeValue" :value="o.codeValue">
-                    {{ o.codeLabel }} ({{ o.codeValue }})</option>
-                </select>
-                <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
-                  placeholder="예: CH_COUPANG (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
-              </template>
-              <template #cell-name="{ row: r }">
-                <input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 쿠팡" />
-              </template>
-              <template #cell-color="{ row: r }">
-                <div style="display:flex;align-items:center;gap:4px;">
-                  <input type="color" v-model="r.color" :disabled="cfDtlMode"
+            <!-- 우: 항목 정의 -->
+            <div style="flex:1;min-width:0;">
+              <div class="form-label" style="margin-bottom:6px;">3레벨 · 항목 정의</div>
+              <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+                <div style="padding:6px;background:#fafafa;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <button class="btn btn_new" :disabled="cfDtlMode" @click="fnAddColRow()">+ 항목 추가</button>
+                  <span style="font-size:11px;color:#94a3b8;">
+                    시리즈 {{ seriesRows.length || 1 }}개 × 항목 {{ colRows.length }}개 =
+                    <b>{{ (seriesRows.length || 1) * colRows.length }}</b>개 행이 트리 3레벨에 생성됩니다.</span>
+                </div>
+                <!-- bo-grid 전환(2026-08-25). 원본 colspan="6"(시리즈 표는 7)이던 이유는 이 표에
+                     순서 열만 있고 관리 열이 하나 더 있었던 계산 차이인데, bo-grid 는 콜스팬을
+                     자동 계산하므로 더 이상 손으로 맞출 필요가 없다. -->
+                <bo-grid bare :columns="columns.colRowGrid" :rows="colRows" :draggable="!cfDtlMode"
+                  empty-text="항목이 없습니다. 비워두면 데이터관리 화면에서 열 제목을 직접 입력합니다.">
+                  <template #cell-cd="{ row: r }">
+                    <select v-if="fnGrpOptions(panelForm.lvl2CodeGrp).length" class="form-control"
+                      v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl2CodeGrp)">
+                      <option value="">-- 선택 --</option>
+                      <option v-for="o in fnGrpOptions(panelForm.lvl2CodeGrp)" :key="o.codeValue" :value="o.codeValue">
+                        {{ o.codeLabel }} ({{ o.codeValue }})</option>
+                    </select>
+                    <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
+                      placeholder="예: M01 (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
+                  </template>
+                  <template #cell-name="{ row: r }">
+                    <input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 1월" />
+                  </template>
+                  <template #cell-color="{ row: r }">
+                    <div style="display:flex;align-items:center;gap:4px;">
+                      <input type="color" v-model="r.color" :disabled="cfDtlMode"
                     style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
                   <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
                     placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
@@ -1970,44 +2021,8 @@ window.CmDashboardItemMng = {
               </template>
             </bo-grid>
           </div>
-        </template>
-
-        <!-- ===== ■. 3레벨 항목 정의 (행 그리드) ========================== -->
-        <template #colsGrid>
-          <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-            <div style="padding:6px;background:#fafafa;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
-              <button class="btn btn_new" :disabled="cfDtlMode" @click="fnAddColRow()">+ 항목 추가</button>
-              <span style="font-size:11px;color:#94a3b8;">
-                시리즈 {{ seriesRows.length || 1 }}개 × 항목 {{ colRows.length }}개 =
-                <b>{{ (seriesRows.length || 1) * colRows.length }}</b>개 행이 트리 3레벨에 생성됩니다.</span>
             </div>
-            <!-- bo-grid 전환(2026-08-25). 원본 colspan="6"(시리즈 표는 7)이던 이유는 이 표에
-                 순서 열만 있고 관리 열이 하나 더 있었던 계산 차이인데, bo-grid 는 콜스팬을
-                 자동 계산하므로 더 이상 손으로 맞출 필요가 없다. -->
-            <bo-grid bare :columns="columns.colRowGrid" :rows="colRows" :draggable="!cfDtlMode"
-              empty-text="항목이 없습니다. 비워두면 데이터관리 화면에서 열 제목을 직접 입력합니다.">
-              <template #cell-cd="{ row: r }">
-                <select v-if="fnGrpOptions(panelForm.lvl2CodeGrp).length" class="form-control"
-                  v-model="r.cd" :disabled="cfDtlMode" @change="onPickCode(r, panelForm.lvl2CodeGrp)">
-                  <option value="">-- 선택 --</option>
-                  <option v-for="o in fnGrpOptions(panelForm.lvl2CodeGrp)" :key="o.codeValue" :value="o.codeValue">
-                    {{ o.codeLabel }} ({{ o.codeValue }})</option>
-                </select>
-                <input v-else type="text" class="form-control" v-model="r.cd" :disabled="cfDtlMode"
-                  placeholder="예: M01 (비우면 이름이 코드)" style="font-family:monospace;font-size:11px;" />
-              </template>
-              <template #cell-name="{ row: r }">
-                <input type="text" class="form-control" v-model="r.name" :disabled="cfDtlMode" placeholder="예: 1월" />
-              </template>
-              <template #cell-color="{ row: r }">
-                <div style="display:flex;align-items:center;gap:4px;">
-                  <input type="color" v-model="r.color" :disabled="cfDtlMode"
-                    style="width:32px;height:26px;padding:0;border:1px solid #d1d5db;border-radius:4px;" />
-                  <input type="text" class="form-control" v-model="r.color" :disabled="cfDtlMode"
-                    placeholder="#6366f1" style="font-family:monospace;font-size:11px;" />
-                </div>
-              </template>
-            </bo-grid>
+            <!-- /우: 항목 정의 -->
           </div>
         </template>
 

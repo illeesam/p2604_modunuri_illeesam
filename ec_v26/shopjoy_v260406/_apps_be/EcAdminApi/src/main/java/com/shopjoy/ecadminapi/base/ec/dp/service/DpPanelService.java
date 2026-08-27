@@ -39,9 +39,9 @@ public class DpPanelService {
     public DpPanelDto.Item getById(String id) {
         DpPanelDto.Item dto = dpPanelRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
-        dto.setPanelItems(dpPanelItemRepository.findByPanelIdOrderBySortOrdAsc(id).stream()
-            .map(e -> { DpPanelItemDto.Item d = new DpPanelItemDto.Item(); VoUtil.voCopy(e, d); return d; })
-            .toList());
+        DpPanelItemDto.Request itemReq = new DpPanelItemDto.Request();
+        itemReq.setPanelId(id);
+        dto.setPanelItems(dpPanelItemRepository.selectList(itemReq));
         return dto;
     }
 

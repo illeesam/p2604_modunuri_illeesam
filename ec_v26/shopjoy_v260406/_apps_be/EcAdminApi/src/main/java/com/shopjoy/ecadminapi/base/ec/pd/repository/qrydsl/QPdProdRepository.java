@@ -20,4 +20,8 @@ public interface QPdProdRepository {
     BasePage<PdProdDto.Item> selectPageData(PdProdDto.Request search);
 
     int updateSelective(PdProd entity);
+
+    /** 판매상태 배치 동기화 대상 — ACTIVE/INACTIVE 상태만 (mutate+save 필요, DTO selectList 와 다른 반환타입).
+     *  base 의 findSyncTargets 대체 (2026-08-27) */
+    List<PdProd> selectSyncTargets();
 }

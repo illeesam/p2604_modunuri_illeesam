@@ -31,7 +31,7 @@ public class MdCbPatternCellService {
 
     public List<MdCbPatternCellDto.Item> getByPatternId(String patternId) {
         CmUtil.requireId(patternId, "patternId", this);
-        return mdCbPatternCellRepository.findByPatternIdOrderByRowNoAscColNoAsc(patternId).stream()
+        return mdCbPatternCellRepository.selectListByPatternId(patternId).stream()
             .map(e -> {
                 MdCbPatternCellDto.Item item = new MdCbPatternCellDto.Item();
                 item.setCellId(e.getCellId());

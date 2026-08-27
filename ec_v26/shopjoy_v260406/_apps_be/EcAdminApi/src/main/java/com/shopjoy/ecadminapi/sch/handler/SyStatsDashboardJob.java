@@ -116,7 +116,7 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
      * 환경, 항목관리에서 지운 경우 등) 조용히 건너뛴다 — 배치 한 항목 실패로 나머지가 죽으면 안 된다.
      */
     private int upsertLeaf(String itemKey, String siteId, String yyyymm, Double val) {
-        CmDashboardItem leaf = itemRepository.findByItemKey(itemKey).orElse(null);
+        CmDashboardItem leaf = itemRepository.selectByItemKey(itemKey).orElse(null);
         if (leaf == null) { log.warn("[{}] 정의행 없음 — 건너뜀: {}", batchCode(), itemKey); return 0; }
 
         CmDashboardData probe = new CmDashboardData();

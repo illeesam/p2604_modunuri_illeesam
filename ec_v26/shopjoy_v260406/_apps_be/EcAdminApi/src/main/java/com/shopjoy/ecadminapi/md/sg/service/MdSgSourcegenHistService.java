@@ -39,25 +39,9 @@ public class MdSgSourcegenHistService {
 
     public List<MdSgSourcegenHistDto.Item> getByProjectId(String projectId) {
         CmUtil.requireId(projectId, "projectId", this);
-        return mdSgSourcegenHistRepository.findByProjectIdOrderByGenDateDesc(projectId).stream()
-            .map(e -> {
-                MdSgSourcegenHistDto.Item item = new MdSgSourcegenHistDto.Item();
-                item.setSourcegenHistId(e.getSourcegenHistId());
-                item.setProjectId(e.getProjectId());
-                item.setGenDate(e.getGenDate());
-                item.setDdlCount(e.getDdlCount());
-                item.setFileCount(e.getFileCount());
-                item.setAttachId(e.getAttachId());
-                item.setZipFileNm(e.getZipFileNm());
-                item.setZipFileSize(e.getZipFileSize());
-                item.setZipUrl(e.getZipUrl());
-                item.setGenMemo(e.getGenMemo());
-                item.setDdlSnapshotJson(e.getDdlSnapshotJson());
-                item.setUseYn(e.getUseYn());
-                item.setRegBy(e.getRegBy());
-                item.setRegDate(e.getRegDate());
-                return item;
-            }).toList();
+        MdSgSourcegenHistDto.Request req = new MdSgSourcegenHistDto.Request();
+        req.setProjectId(projectId);
+        return mdSgSourcegenHistRepository.selectList(req);
     }
 
     @Transactional

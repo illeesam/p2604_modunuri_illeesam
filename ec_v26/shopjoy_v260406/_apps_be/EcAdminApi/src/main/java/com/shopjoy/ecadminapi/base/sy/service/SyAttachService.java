@@ -165,7 +165,7 @@ public class SyAttachService {
     public List<AttachFile> getAttachFilesByRef(String refTableNm, String refId) {
         if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank()) return List.of();
         return syAttachRepository
-            .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(refTableNm, List.of(refId))
+            .selectListByRefIds(refTableNm, List.of(refId))
             .stream().map(this::toAttachFile).toList();
     }
 

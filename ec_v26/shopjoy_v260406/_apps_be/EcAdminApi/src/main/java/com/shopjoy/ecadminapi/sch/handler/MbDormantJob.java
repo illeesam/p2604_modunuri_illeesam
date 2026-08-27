@@ -59,7 +59,7 @@ public class MbDormantJob implements SchBatchJobHandler {
         log.info("[{}] 회원 휴면 전환 배치 시작 — 기준: {} 이전 미로그인", batchCode(), threshold.toLocalDate());
 
         // site_id 제거 후 전사 단일 처리
-        List<MbMember> targets = memberRepository.findDormantTargets(threshold);
+        List<MbMember> targets = memberRepository.selectDormantTargets(threshold);
         int totalConverted = 0;
         for (MbMember m : targets) {
             try {

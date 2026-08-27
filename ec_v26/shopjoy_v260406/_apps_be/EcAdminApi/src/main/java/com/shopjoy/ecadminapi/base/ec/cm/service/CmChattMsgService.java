@@ -108,7 +108,7 @@ public class CmChattMsgService {
         /* SyAttach → Brief 매핑은 SyAttachService.toBrief 로 통일(도메인마다 각자 복제 금지, §10-A) */
         Map<String, List<SyAttachDto.Brief>> byMsg = new LinkedHashMap<>();
         for (SyAttach a : syAttachRepository
-                .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(SyAttachRefTableConst.CM_CHATT_MSG, msgIds)) {
+                .selectListByRefIds(SyAttachRefTableConst.CM_CHATT_MSG, msgIds)) {
             byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(syAttachService.toBrief(a));
         }
         for (CmChattMsgDto.Item it : items) {

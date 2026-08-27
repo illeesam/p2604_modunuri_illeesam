@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /** CmPopup(공통 선택/조회 팝업 정의) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -31,9 +33,31 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
     /** 통합검색 대상 — 팝업명 / 팝업코드 / 대상 엔티티명 */
 
     /* ============================================================
-     * 조회 메서드 — selectPageData
+     * 조회 메서드 — selectByPopupCode / selectList / selectPageData
      * 검색조건은 .where(andXxx(...), ...) 형태로 직접 나열
      * ============================================================ */
+
+    /** UNIQUE(popup_code) 단건 조회 */
+    @Override
+    public Optional<CmPopup> selectByPopupCode(String popupCode) {
+        CmPopup result = queryFactory.selectFrom(cmPopup)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByPopupCode()")
+                .where(cmPopup.popupCode.eq(popupCode))
+                .fetchOne();
+        return Optional.ofNullable(result);
+    }
+
+    /** 조건 검색 — useYn(선택), 정렬 고정(sortOrd asc, popupCode asc) */
+    @Override
+    public List<CmPopup> selectList(Map<String, Object> p) {
+        String useYn = (String) p.get("useYn");
+        BooleanExpression cond = useYn != null && !useYn.isBlank() ? cmPopup.useYn.eq(useYn) : null;
+        return queryFactory.selectFrom(cmPopup)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(cond)
+                .orderBy(buildOrder())
+                .fetch();
+    }
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
     @Override

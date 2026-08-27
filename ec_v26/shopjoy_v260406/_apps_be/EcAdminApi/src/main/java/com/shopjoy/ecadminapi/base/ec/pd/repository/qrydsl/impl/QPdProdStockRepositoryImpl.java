@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
@@ -8,6 +9,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdStockRepositor
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** PdProdStock(상품 재고 마스터 — prod_stock_id PK, stock_code UNIQUE) QueryDSL Custom 구현체 */
@@ -35,6 +38,23 @@ public class QPdProdStockRepositoryImpl implements QPdProdStockRepository {
                 .where(sc.stockCode.eq(stockCode))
                 .fetchOne();
         return Optional.ofNullable(result);
+    }
+
+    @Override
+    public List<PdProdStock> selectList(Map<String, Object> p) {
+        String prodId = (String) p.get("prodId");
+        @SuppressWarnings("unchecked")
+        List<String> prodIds = (List<String>) p.get("prodIds");
+
+        BooleanBuilder cond = new BooleanBuilder();
+        if (prodId != null && !prodId.isBlank()) cond.and(sc.prodId.eq(prodId));
+        if (prodIds != null && !prodIds.isEmpty()) cond.and(sc.prodId.in(prodIds));
+
+        return queryFactory
+                .selectFrom(sc)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(cond)
+                .fetch();
     }
 
     @Override

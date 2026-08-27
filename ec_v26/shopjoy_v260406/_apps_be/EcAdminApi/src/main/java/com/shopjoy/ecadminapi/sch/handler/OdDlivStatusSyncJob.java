@@ -64,8 +64,8 @@ public class OdDlivStatusSyncJob implements SchBatchJobHandler {
 
         // 진행 중인 배송 (SHIPPED, IN_TRANSIT) 전체 조회
         List<OdDliv> targets = new ArrayList<>();
-        targets.addAll(dlivRepository.findByDlivStatusCd("SHIPPED"));
-        targets.addAll(dlivRepository.findByDlivStatusCd("IN_TRANSIT"));
+        targets.addAll(dlivRepository.selectListByDlivStatusCd("SHIPPED"));
+        targets.addAll(dlivRepository.selectListByDlivStatusCd("IN_TRANSIT"));
 
         int checked = 0, updated = 0, skipped = 0;
 
@@ -144,7 +144,7 @@ public class OdDlivStatusSyncJob implements SchBatchJobHandler {
         dliv.setUpdDate(now);
         dlivRepository.save(dliv);
 
-        for (OdDlivItem item : dlivItemRepository.findByDlivId(dliv.getDlivId())) {
+        for (OdDlivItem item : dlivItemRepository.selectListByDlivId(dliv.getDlivId())) {
             item.setDlivItemStatusCdBefore(item.getDlivItemStatusCd());
             item.setDlivItemStatusCd(newStatus);
             item.setUpdDate(now);

@@ -236,6 +236,24 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
 
     /* 주문 아이템(상품) 키조회 */
     @Override
+    public Map<String, Long> selectSaleQtySumByProdId() {
+        List<com.querydsl.core.Tuple> rows = queryFactory
+                .select(odOrderItem.prodId,
+                        odOrderItem.orderQty.subtract(odOrderItem.cancelQty.coalesce(0)).sum())
+                .from(odOrderItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectSaleQtySumByProdId()")
+                .where(odOrderItem.orderItemStatusCd.ne("CANCELLED"))
+                .groupBy(odOrderItem.prodId)
+                .fetch();
+        Map<String, Long> result = new java.util.LinkedHashMap<>();
+        for (com.querydsl.core.Tuple t : rows) {
+            Integer sum = t.get(1, Integer.class);
+            result.put(t.get(0, String.class), sum != null ? sum.longValue() : 0L);
+        }
+        return result;
+    }
+
+    @Override
     public Optional<OdOrderItemDto.Item> selectById(String orderItemId) {
         OdOrderItemDto.Item dtl = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderItem.orderItemId.eq(orderItemId))

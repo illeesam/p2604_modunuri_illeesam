@@ -242,4 +242,13 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         long affected = update.where(syhSendMsgLog.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
+
+    /** 재발송 대상 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<SyhSendMsgLog> selectFailedBefore(java.time.LocalDateTime threshold) {
+        return queryFactory.selectFrom(syhSendMsgLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectFailedBefore()")
+                .where(syhSendMsgLog.resultCd.eq("FAILED"), syhSendMsgLog.sendDate.lt(threshold))
+                .fetch();
+    }
 }

@@ -99,7 +99,7 @@ public class BoPdProdService {
             .toList();
         if (prodIds.isEmpty()) return;
 
-        Map<String, Integer> saleCountMap = pdProdStockRepository.findByProdIdIn(prodIds).stream()
+        Map<String, Integer> saleCountMap = pdProdStockRepository.selectList(Map.of("prodIds", prodIds)).stream()
             .collect(Collectors.groupingBy(PdProdStock::getProdId,
                 Collectors.summingInt(s -> s.getSaleCount() != null ? s.getSaleCount() : 0)));
 

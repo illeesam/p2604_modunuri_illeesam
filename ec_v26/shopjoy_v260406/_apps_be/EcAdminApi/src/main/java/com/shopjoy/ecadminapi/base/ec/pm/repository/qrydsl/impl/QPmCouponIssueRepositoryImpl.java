@@ -212,4 +212,14 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         long affected = update.where(pmCouponIssue.couponIssueId.eq(entity.getCouponIssueId())).execute();
         return (int) affected;
     }
+
+    /** 지정 쿠폰ID 목록 중 미사용 발급 내역 — 관리 엔티티 그대로 반환 */
+    @Override
+    public List<PmCouponIssue> selectUnusedByCouponIds(List<String> couponIds) {
+        return queryFactory.selectFrom(pmCouponIssue)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectUnusedByCouponIds()")
+                .where(pmCouponIssue.couponId.in(couponIds),
+                        pmCouponIssue.useYn.isNull().or(pmCouponIssue.useYn.ne("Y")))
+                .fetch();
+    }
 }

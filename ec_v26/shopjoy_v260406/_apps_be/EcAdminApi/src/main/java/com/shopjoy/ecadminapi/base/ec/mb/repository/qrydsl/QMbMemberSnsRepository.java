@@ -12,6 +12,10 @@ public interface QMbMemberSnsRepository {
 
     Optional<MbMemberSnsDto.Item> selectById(String memberSnsId);
 
+    /** (snsChannelCd, snsUserId) 복합 UNIQUE 단건 조회 — 소셜 로그인 매칭용.
+     *  base 의 findBySnsChannelCdAndSnsUserId 대체 */
+    Optional<MbMemberSnsDto.Item> selectBySnsChannelCdAndSnsUserId(String snsChannelCd, String snsUserId);
+
     List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search);
 
     BasePage<MbMemberSnsDto.Item> selectPageData(MbMemberSnsDto.Request search);

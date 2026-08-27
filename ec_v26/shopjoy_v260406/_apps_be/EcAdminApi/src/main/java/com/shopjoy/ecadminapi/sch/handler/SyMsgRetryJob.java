@@ -73,7 +73,7 @@ public class SyMsgRetryJob implements SchBatchJobHandler {
         LocalDateTime from = now.minusDays(MAX_RETRY_AGE_DAYS);
         LocalDateTime to   = now.minusHours(RETRY_SKIP_RECENT_HOURS);
 
-        List<SyhSendEmailLog> targets = emailLogRepository.findFailedBefore(to).stream()
+        List<SyhSendEmailLog> targets = emailLogRepository.selectFailedBefore(to).stream()
             .filter(e -> e.getSendDate() != null && e.getSendDate().isAfter(from))
             .toList();
 
@@ -112,7 +112,7 @@ public class SyMsgRetryJob implements SchBatchJobHandler {
         LocalDateTime from = now.minusDays(MAX_RETRY_AGE_DAYS);
         LocalDateTime to   = now.minusHours(RETRY_SKIP_RECENT_HOURS);
 
-        List<SyhSendMsgLog> targets = msgLogRepository.findFailedBefore(to).stream()
+        List<SyhSendMsgLog> targets = msgLogRepository.selectFailedBefore(to).stream()
             .filter(m -> m.getSendDate() != null && m.getSendDate().isAfter(from))
             .toList();
 

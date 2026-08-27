@@ -39,7 +39,7 @@ public class FoPmCouponService {
         // prodId 가 있으면 해당 상품에 적용 가능한 쿠폰 ID 만 사전 필터
         String prodId = req.getProdId();
         if (StringUtils.hasText(prodId)) {
-            List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId);
+            List<String> couponIds = pmCouponProdRepository.selectCouponIdsByProdId(prodId);
             if (couponIds.isEmpty()) return List.of();  // 적용 쿠폰 없음
             req.setCouponIds(couponIds);
         }
