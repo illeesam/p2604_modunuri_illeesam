@@ -299,12 +299,4 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         return (int) affected;
     }
 
-    /** 상태 배치 동기화 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<PmGift> selectSyncTargets() {
-        return queryFactory.selectFrom(pmGift)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectSyncTargets()")
-                .where(pmGift.useYn.eq("Y"), pmGift.giftStatusCd.eq("ACTIVE"))
-                .fetch();
-    }
 }

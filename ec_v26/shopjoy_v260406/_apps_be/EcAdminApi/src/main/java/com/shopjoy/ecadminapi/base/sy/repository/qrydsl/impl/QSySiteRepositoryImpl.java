@@ -167,7 +167,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? sySite.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? sySite.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "sy_site"))
                 : null;
     }
 

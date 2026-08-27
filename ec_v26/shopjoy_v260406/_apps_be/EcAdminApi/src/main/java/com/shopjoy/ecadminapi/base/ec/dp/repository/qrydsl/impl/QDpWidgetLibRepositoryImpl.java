@@ -161,7 +161,8 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? dpWidgetLib.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? dpWidgetLib.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "dp_widget_lib"))
                 : null;
     }
 

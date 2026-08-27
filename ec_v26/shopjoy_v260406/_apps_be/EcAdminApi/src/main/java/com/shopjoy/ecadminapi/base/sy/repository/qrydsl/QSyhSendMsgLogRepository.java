@@ -20,8 +20,4 @@ public interface QSyhSendMsgLogRepository {
     BasePage<SyhSendMsgLogDto.Item> selectPageData(SyhSendMsgLogDto.Request search);
 
     int updateSelective(SyhSendMsgLog entity);
-
-    /** 재발송 대상 — FAILED 이고 sendDate 가 threshold 이전 (mutate+save 필요, 관리 엔티티 그대로 반환).
-     *  base 의 findFailedBefore 대체 (2026-08-27) */
-    List<SyhSendMsgLog> selectFailedBefore(java.time.LocalDateTime threshold);
 }

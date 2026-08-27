@@ -11,7 +11,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 
@@ -21,7 +20,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -36,7 +34,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final SyRoleRepository syRoleRepository;
     private final SyPathRepository syPathRepository;
     private final EntityManager em;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleRepositoryImpl";
@@ -44,10 +41,9 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyRole syRole = QSyRole.syRole;
 
-    public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, @Lazy SyRoleRepository syRoleRepository, EntityManager em) {
+    public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, EntityManager em) {
         this.queryFactory = queryFactory;
         this.syPathRepository = syPathRepository;
-        this.syRoleRepository = syRoleRepository;
         this.em = em;
     }
     private static final QVwSyCode codeRoleTypeCd = new QVwSyCode("cd_rt");    /*
@@ -249,5 +245,23 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         long affected = update.where(syRole.roleId.eq(entity.getRoleId())).execute();
         return (int) affected;
+    }
+
+    /** 루트 role + 모든 자손 role_id 수집 — 전체 (roleId, parentRoleId) 를 한 번에 읽어 자바에서 BFS */
+    @Override
+    public List<String> selectTreeRoleIds(String rootRoleId) {
+        List<com.querydsl.core.Tuple> rows = queryFactory.select(syRole.roleId, syRole.parentRoleId)
+                .from(syRole)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectTreeRoleIds()")
+                .fetch();
+
+        Map<String, List<String>> childrenOf = new java.util.HashMap<>();
+        for (com.querydsl.core.Tuple row : rows) {
+            String parentId = row.get(syRole.parentRoleId);
+            if (parentId != null) {
+                childrenOf.computeIfAbsent(parentId, k -> new ArrayList<>()).add(row.get(syRole.roleId));
+            }
+        }
+        return QdslUtil.collectTreeIds(rootRoleId, childrenOf);
     }
 }

@@ -76,7 +76,8 @@ public class SySendEmailJob implements SchBatchJobHandler {
         LocalDateTime dormantWarnThreshold = now.minusDays(DORMANT_WARN_DAYS);
         LocalDateTime dormantThreshold     = now.minusDays(DORMANT_DAYS);
         List<MbMember> warnTargets = memberRepository
-            .selectDormantWarnTargets(dormantWarnThreshold, dormantThreshold);
+            // [QueryDSL] 휴면 예정 이메일 대상 조회
+            .selectDormantWarnTargets("ACTIVE", dormantWarnThreshold, dormantThreshold);
 
         log.info("[{}] 휴면예정 이메일 대상: {}명", batchCode(), warnTargets.size());
 

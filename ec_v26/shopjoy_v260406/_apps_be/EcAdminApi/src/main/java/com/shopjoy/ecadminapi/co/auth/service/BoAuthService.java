@@ -66,7 +66,7 @@ public class BoAuthService {
     /* join */
     @Transactional
     public BoJoinRes join(SyUser body, String appTypeCd) {
-        boolean exists = syUserRepository.selectByLoginId(body.getLoginId()).isPresent();
+        boolean exists = syUserRepository.findByLoginId(body.getLoginId()).isPresent();
         if (exists) throw new CmBizException("이미 사용 중인 아이디입니다." + "::" + CmUtil.svcCallerInfo(this));
 
         body.setUserId("US" + LocalDateTime.now().format(ID_FMT)
@@ -86,7 +86,7 @@ public class BoAuthService {
     /* login */
     @Transactional
     public LoginRes login(LoginReq request, String appTypeCd) {
-        SyUser user = syUserRepository.selectByLoginId(request.getLoginId()).orElse(null);
+        SyUser user = syUserRepository.findByLoginId(request.getLoginId()).orElse(null);
         if (user == null) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, null, 0, null, null);
             throw new CmBizException("사용자 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -175,7 +175,7 @@ public class BoAuthService {
         }
 
         SyhUserTokenLog tokenLog = syhUserTokenLogRepository
-            .selectByAuthIdAndAccessToken(authId, expiredAccessToken)
+            .findByAuthIdAndAccessToken(authId, expiredAccessToken)
             .orElseThrow(() -> new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this)));
 
         String storedRefreshToken = tokenLog.getRefreshToken();

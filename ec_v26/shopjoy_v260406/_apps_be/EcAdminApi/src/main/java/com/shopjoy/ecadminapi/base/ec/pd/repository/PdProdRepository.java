@@ -4,6 +4,10 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdRepository;
 
-/* findSyncTargets → QPdProdRepository.selectSyncTargets 로 전환 (2026-08-27) */
+import java.util.List;
+
 public interface PdProdRepository extends JpaRepository<PdProd, String>, QPdProdRepository {
+
+    /** 판매상태 자동 동기화 배치 대상 — prodStatusCd 가 지정 목록에 포함된 상품 전체 */
+    List<PdProd> findByProdStatusCdIn(List<String> prodStatusCds);
 }

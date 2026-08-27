@@ -161,11 +161,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private BooleanExpression andPathIdIn(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
         if ("__orphan__".equals(search.getPathId())) {
-            List<String> registeredPaths = syPathRepository.findAllPathIdsByBizCd("sy_prop");
+            // [QueryDSL] biz_cd 기준 등록 path_id 전체
+            List<String> registeredPaths = syPathRepository.selectAllPathIdsByBizCd("sy_prop");
             if (registeredPaths.isEmpty()) return null;
             return syProp.pathId.isNull().or(syProp.pathId.notIn(registeredPaths));
         }
-        return syProp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"));
+        // [QueryDSL] 표시경로 트리 자손ID 수집
+        return syProp.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "sy_prop"));
     }
 
     /* propKeys IN 조건 (쉼표 구분 복수 키) */

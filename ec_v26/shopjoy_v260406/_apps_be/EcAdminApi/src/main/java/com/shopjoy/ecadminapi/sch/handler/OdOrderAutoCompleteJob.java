@@ -59,7 +59,8 @@ public class OdOrderAutoCompleteJob implements SchBatchJobHandler {
         LocalDateTime threshold = now.minusDays(COMPLETE_AFTER_DAYS);
         log.info("[{}] 주문 자동 완료 처리 시작 — 기준: 배송완료일시 <= {}", batchCode(), threshold);
 
-        List<OdDliv> targets = dlivRepository.selectDeliveredOutboundBefore(threshold);
+        // [QueryDSL] 주문 자동완료 대상 조회
+        List<OdDliv> targets = dlivRepository.selectDeliveredOutboundBefore("OUTBOUND", "DELIVERED", threshold);
 
         int checked = 0, completed = 0, skipped = 0;
 

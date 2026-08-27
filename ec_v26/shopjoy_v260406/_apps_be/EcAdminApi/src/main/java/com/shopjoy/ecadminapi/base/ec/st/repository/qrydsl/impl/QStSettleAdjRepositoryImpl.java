@@ -193,12 +193,4 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return (int) affected;
     }
 
-    /** 정산ID 기준 승인된 조정항목 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<StSettleAdj> selectApprovedBySettleId(String settleId) {
-        return queryFactory.selectFrom(stSettleAdj)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectApprovedBySettleId()")
-                .where(stSettleAdj.settleId.eq(settleId), stSettleAdj.aprvStatusCd.eq("APPROVED"))
-                .fetch();
-    }
 }

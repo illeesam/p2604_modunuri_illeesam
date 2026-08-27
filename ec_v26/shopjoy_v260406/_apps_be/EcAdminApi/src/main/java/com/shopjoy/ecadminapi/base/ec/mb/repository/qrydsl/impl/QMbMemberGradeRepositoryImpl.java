@@ -187,13 +187,4 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         return (int) update.where(mbMemberGrade.memberGradeId.eq(entity.getMemberGradeId())).execute();
     }
 
-    /** 활성 등급 목록 — gradeRank 내림차순, 관리 엔티티 그대로 반환 */
-    @Override
-    public List<MbMemberGrade> selectActiveOrderByRankDesc() {
-        return queryFactory.selectFrom(mbMemberGrade)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectActiveOrderByRankDesc()")
-                .where(mbMemberGrade.useYn.eq("Y"))
-                .orderBy(mbMemberGrade.gradeRank.desc())
-                .fetch();
-    }
 }

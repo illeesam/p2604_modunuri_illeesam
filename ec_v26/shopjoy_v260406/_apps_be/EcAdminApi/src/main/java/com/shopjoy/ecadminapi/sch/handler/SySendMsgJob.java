@@ -75,7 +75,7 @@ public class SySendMsgJob implements SchBatchJobHandler {
 
         /* ── 1) 쿠폰 만료 D-3 카카오 알림톡 ─────────────────────────── */
         LocalDate expireTarget = LocalDate.now().plusDays(COUPON_EXPIRE_WARN_DAYS);
-        List<PmCoupon> expiringSoonCoupons = couponRepository.selectExpiringSoon(expireTarget);
+        List<PmCoupon> expiringSoonCoupons = couponRepository.selectExpiringSoon("Y", "ACTIVE", expireTarget);
 
         if (!expiringSoonCoupons.isEmpty()) {
             List<String> couponIds = expiringSoonCoupons.stream()

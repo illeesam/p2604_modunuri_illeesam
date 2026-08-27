@@ -92,16 +92,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         return Optional.ofNullable(dtl);
     }
 
-    /** (authId, accessToken) 복합 UNIQUE 단건 조회 — 관리 엔티티 그대로 반환 */
-    @Override
-    public Optional<SyhUserTokenLog> selectByAuthIdAndAccessToken(String authId, String accessToken) {
-        SyhUserTokenLog result = queryFactory.selectFrom(syhUserTokenLog)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByAuthIdAndAccessToken()")
-                .where(syhUserTokenLog.authId.eq(authId), syhUserTokenLog.accessToken.eq(accessToken))
-                .fetchOne();
-        return Optional.ofNullable(result);
-    }
-
     /* 목록조회 */
     @Override
     public List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search) {

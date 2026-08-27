@@ -140,7 +140,7 @@ public class SchBatchController {
         if (ipDenied != null) return (ResponseEntity<ApiResponse<Map<String, Object>>>) (ResponseEntity) ipDenied;
 
         registry.unregisterAll();
-        List<SyBatch> active = batchRepository.selectListByBatchStatusCd("ACTIVE");
+        List<SyBatch> active = batchRepository.findByBatchStatusCd("ACTIVE");
         active.forEach(registry::register);
         boolean jenkinsMode = properties.getJenkins().isEnabled();
         return ResponseEntity.ok(ApiResponse.ok(
@@ -235,7 +235,7 @@ public class SchBatchController {
 
     /** findBatch */
     private SyBatch findBatch(String batchCode) {
-        return batchRepository.selectByBatchCode(batchCode)
+        return batchRepository.findByBatchCode(batchCode)
             .orElseThrow(() -> new CmBizException("배치를 찾을 수 없습니다: " + batchCode));
     }
 }

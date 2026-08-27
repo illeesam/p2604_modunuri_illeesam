@@ -101,7 +101,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
 
             for (String vendorId : vendorIds) {
                 totalVendors++;
-                List<StSettleRaw> raws = rawRepository.selectListBySettlePeriodAndVendor(ymLabel, vendorId);
+                List<StSettleRaw> raws = rawRepository.findBySettlePeriodAndVendorId(ymLabel, vendorId);
 
                 // 집계
                 long   totalOrderAmt  = 0L, totalReturnAmt = 0L, totalDiscntAmt = 0L;
@@ -211,7 +211,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
         String settleId = settle.getSettleId();
 
         // 승인된 정산조정 (ADD 가산 / DEDUCT 차감)
-        List<StSettleAdj> adjs = adjRepository.selectApprovedBySettleId(settleId);
+        List<StSettleAdj> adjs = adjRepository.findBySettleIdAndAprvStatusCd(settleId, "APPROVED");
         long adjAmt = 0L;
         for (StSettleAdj a : adjs) {
             long amt = nvl(a.getAdjAmt());

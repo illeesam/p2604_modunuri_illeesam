@@ -79,16 +79,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         return Optional.ofNullable(dtl);
     }
 
-    /* (templateCode, useYn) 발송용 단건 조회 — 관리 엔티티 그대로 반환 */
-    @Override
-    public Optional<SyTemplate> selectFirstByTemplateCodeAndUseYn(String templateCode, String useYn) {
-        SyTemplate result = queryFactory.selectFrom(syTemplate)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectFirstByTemplateCodeAndUseYn()")
-                .where(syTemplate.templateCode.eq(templateCode).and(syTemplate.useYn.eq(useYn)))
-                .fetchFirst();
-        return Optional.ofNullable(result);
-    }
-
     /* 템플릿 목록조회 */
     @Override
     public List<SyTemplateDto.Item> selectList(SyTemplateDto.Request search) {
@@ -161,7 +151,8 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? syTemplate.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_template"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? syTemplate.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "sy_template"))
                 : null;
     }
 

@@ -107,16 +107,6 @@ public class QCmDashboardItemRepositoryImpl implements QCmDashboardItemRepositor
         return Optional.ofNullable(row);
     }
 
-    /** UNIQUE(item_key) 단건 조회 */
-    @Override
-    public Optional<CmDashboardItem> selectByItemKey(String itemKey) {
-        if (itemKey == null) return Optional.empty();
-        CmDashboardItem row = queryFactory.selectFrom(cmDashboardItem)
-            .setHint("org.hibernate.comment", QRY_SRC + " :: selectByItemKey()")
-            .where(cmDashboardItem.itemKey.eq(itemKey))
-            .fetchOne();
-        return Optional.ofNullable(row);
-    }
 
     /**
      * 조건 목록 조회 — dashboardId(단일) / useYn / parentDashboardItemId(단일) /

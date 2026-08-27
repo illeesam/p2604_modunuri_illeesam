@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -86,16 +85,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 .where(syAttach.attachId.eq(attachId))
                 .fetchOne();
         return Optional.ofNullable(dtl);
-    }
-
-    /* N+1 방지 배치조회 — 관리 엔티티 그대로 반환. 정렬: refId asc, sortOrd asc, attachId asc */
-    @Override
-    public List<SyAttach> selectListByRefIds(String refTableNm, List<String> refIds) {
-        return queryFactory.selectFrom(syAttach)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectListByRefIds()")
-                .where(syAttach.refTableNm.eq(refTableNm).and(syAttach.refId.in(refIds)))
-                .orderBy(syAttach.refId.asc(), syAttach.sortOrd.asc(), syAttach.attachId.asc())
-                .fetch();
     }
 
     /* 첨부파일 목록조회 */

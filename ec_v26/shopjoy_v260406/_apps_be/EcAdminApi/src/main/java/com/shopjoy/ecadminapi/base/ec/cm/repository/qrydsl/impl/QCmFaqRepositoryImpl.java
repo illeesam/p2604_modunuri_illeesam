@@ -153,7 +153,8 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     /* pathId — 선택 노드 + 모든 자손 path 포함 (트리 클릭 시 하위까지 조회) */
     private BooleanExpression andPathTreeIn(CmFaqDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
-        List<String> ids = syPathRepository.findTreePathIds(search.getPathId(), "cm_faq");
+        // [QueryDSL] 표시경로 트리 자손ID 수집
+        List<String> ids = syPathRepository.selectTreePathIds(search.getPathId(), "cm_faq");
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
     }
 

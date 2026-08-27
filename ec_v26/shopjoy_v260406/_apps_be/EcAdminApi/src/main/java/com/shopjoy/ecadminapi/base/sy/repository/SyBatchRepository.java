@@ -5,7 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBatchRepository;
 
-/* findByBatchStatusCd → QSyBatchRepository.selectListByBatchStatusCd 로 전환
-   findByBatchCode → QSyBatchRepository.selectByBatchCode 로 전환 (2026-08-27) */
+import java.util.List;
+import java.util.Optional;
+
 public interface SyBatchRepository extends JpaRepository<SyBatch, String>, QSyBatchRepository {
+
+    /** 스케줄러 부팅/재로드용 */
+    List<SyBatch> findByBatchStatusCd(String batchStatusCd);
+
+    /** UNIQUE(batch_code) 단건 조회 */
+    Optional<SyBatch> findByBatchCode(String batchCode);
 }

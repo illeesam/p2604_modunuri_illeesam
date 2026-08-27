@@ -341,25 +341,25 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         return (int) affected;
     }
 
-    /** 만료 처리 대상 — 관리 엔티티 그대로 반환 */
+    /** 만료 처리 대상 — useYn=Y, couponStatusCd 가 excludeStatusCd 아님, validTo < today */
     @Override
-    public List<PmCoupon> selectExpireTargets(java.time.LocalDate today) {
+    public List<PmCoupon> selectExpireTargets(String useYn, String excludeStatusCd, LocalDate today) {
         return queryFactory.selectFrom(pmCoupon)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectExpireTargets()")
-                .where(pmCoupon.useYn.eq("Y"),
-                        pmCoupon.couponStatusCd.ne("EXPIRED"),
+                .where(pmCoupon.useYn.eq(useYn),
+                        pmCoupon.couponStatusCd.ne(excludeStatusCd),
                         pmCoupon.validTo.isNotNull(),
                         pmCoupon.validTo.lt(today))
                 .fetch();
     }
 
-    /** 만료 D-N 안내 대상 — 관리 엔티티 그대로 반환 */
+    /** 만료 D-N 안내 대상 — useYn=Y, couponStatusCd, validTo = expireTarget */
     @Override
-    public List<PmCoupon> selectExpiringSoon(java.time.LocalDate expireTarget) {
+    public List<PmCoupon> selectExpiringSoon(String useYn, String couponStatusCd, LocalDate expireTarget) {
         return queryFactory.selectFrom(pmCoupon)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectExpiringSoon()")
-                .where(pmCoupon.useYn.eq("Y"),
-                        pmCoupon.couponStatusCd.eq("ACTIVE"),
+                .where(pmCoupon.useYn.eq(useYn),
+                        pmCoupon.couponStatusCd.eq(couponStatusCd),
                         pmCoupon.validTo.eq(expireTarget))
                 .fetch();
     }

@@ -180,4 +180,22 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         long affected = update.where(cmBlogCate.blogCateId.eq(entity.getBlogCateId())).execute();
         return (int) affected;
     }
+
+    /** 루트 blogCate + 모든 자손 blog_cate_id 수집 — 전체 (blogCateId, parentBlogCateId) 를 한 번에 읽어 자바에서 BFS */
+    @Override
+    public List<String> selectTreeBlogCateIds(String rootBlogCateId) {
+        List<com.querydsl.core.Tuple> rows = queryFactory.select(cmBlogCate.blogCateId, cmBlogCate.parentBlogCateId)
+                .from(cmBlogCate)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectTreeBlogCateIds()")
+                .fetch();
+
+        Map<String, List<String>> childrenOf = new java.util.HashMap<>();
+        for (com.querydsl.core.Tuple row : rows) {
+            String parentId = row.get(cmBlogCate.parentBlogCateId);
+            if (parentId != null) {
+                childrenOf.computeIfAbsent(parentId, k -> new ArrayList<>()).add(row.get(cmBlogCate.blogCateId));
+            }
+        }
+        return QdslUtil.collectTreeIds(rootBlogCateId, childrenOf);
+    }
 }

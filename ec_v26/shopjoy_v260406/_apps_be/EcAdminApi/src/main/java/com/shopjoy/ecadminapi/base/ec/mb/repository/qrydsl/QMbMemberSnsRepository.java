@@ -12,10 +12,7 @@ public interface QMbMemberSnsRepository {
 
     Optional<MbMemberSnsDto.Item> selectById(String memberSnsId);
 
-    /** (snsChannelCd, snsUserId) 복합 UNIQUE 단건 조회 — 소셜 로그인 매칭용.
-     *  base 의 findBySnsChannelCdAndSnsUserId 대체 */
-    Optional<MbMemberSnsDto.Item> selectBySnsChannelCdAndSnsUserId(String snsChannelCd, String snsUserId);
-
+    /** 소셜 로그인 매칭 시 snsChannelCd+snsUserId 필터로 selectList 사용 (단일테이블+조인 → §14.6.9). */
     List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search);
 
     BasePage<MbMemberSnsDto.Item> selectPageData(MbMemberSnsDto.Request search);

@@ -15,9 +15,11 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -382,5 +384,26 @@ public class QdslUtil {
             or = (or == null) ? expr : or.or(expr);
         }
         return or;
+    }
+
+    /**
+     * 트리 자손ID 수집 — 재귀 CTE 대신 QueryDSL 로 전체 (id, parentId) 를 한 번에 읽은 뒤
+     * 자바에서 BFS 순회한다(§14.6.9 — 트리/계층 조회는 QueryDSL, 재귀 CTE 자체는 원천 불가 예외).
+     * 반환 목록에는 rootId 자기 자신도 포함된다(원래 재귀 CTE 의 anchor 행과 동일).
+     *
+     * @param rootId     자손을 찾을 루트 ID
+     * @param childrenOf parentId → 자식 ID 목록 (호출부가 전체 로우에서 미리 구성)
+     */
+    public static List<String> collectTreeIds(String rootId, Map<String, List<String>> childrenOf) {
+        List<String> result = new ArrayList<>();
+        Deque<String> queue = new ArrayDeque<>();
+        queue.add(rootId);
+        while (!queue.isEmpty()) {
+            String cur = queue.poll();
+            result.add(cur);
+            List<String> children = childrenOf.get(cur);
+            if (children != null) queue.addAll(children);
+        }
+        return result;
     }
 }

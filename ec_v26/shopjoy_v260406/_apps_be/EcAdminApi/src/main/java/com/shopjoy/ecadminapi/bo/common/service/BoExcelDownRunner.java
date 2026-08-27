@@ -314,7 +314,7 @@ public class BoExcelDownRunner {
             if (it.getFileCount() == null || it.getFileCount() == 0) continue;   // 이미 정리됨
 
             List<SyAttach> files = syAttachRepository
-                .selectListByRefIds(REF_TABLE, List.of(it.getExceldownId()));
+                .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(REF_TABLE, List.of(it.getExceldownId()));
             cleanupFiles(new ArrayList<>(files));
             syExceldownService.markFilesPurged(it.getExceldownId());
             cleaned++;

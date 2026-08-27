@@ -21,9 +21,6 @@ public interface QCmDashboardItemRepository {
     /** 단건 조회 (dashboardItemId) */
     Optional<CmDashboardItem> selectById(String dashboardItemId);
 
-    /** UNIQUE(item_key) 단건 조회 — base 의 findByItemKey 대체 (2026-08-27) */
-    Optional<CmDashboardItem> selectByItemKey(String itemKey);
-
     /**
      * 조건 목록 조회 — dashboardId(단일) / useYn / parentDashboardItemId(단일) /
      * parentDashboardItemIds(목록, 콤마 아니라 진짜 List) 를 옵션으로 받는다. 아무 것도 안 주면

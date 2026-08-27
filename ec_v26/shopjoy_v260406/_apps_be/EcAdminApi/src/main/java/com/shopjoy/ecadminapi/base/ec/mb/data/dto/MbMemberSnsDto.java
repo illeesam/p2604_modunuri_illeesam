@@ -17,6 +17,8 @@ public class MbMemberSnsDto {
         @Size(max = 21) private String memberSnsId;    // SNS연동ID 필터
         @Size(max = 21) private String memberId;       // 상위 FK 필터
         private List<String> memberIds;                // 상위 FK 다건 IN
+        @Size(max = 30) private String snsChannelCd;   // SNS채널코드 필터 — SNS_CHANNEL_CD
+        @Size(max = 100) private String snsUserId;     // SNS 플랫폼 사용자ID 필터
     }
 
     @Getter @Setter @NoArgsConstructor

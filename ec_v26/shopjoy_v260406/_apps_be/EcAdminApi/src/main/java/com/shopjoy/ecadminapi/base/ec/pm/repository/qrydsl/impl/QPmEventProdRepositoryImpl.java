@@ -23,4 +23,11 @@ public class QPmEventProdRepositoryImpl implements QPmEventProdRepository {
                 .where(pmEventProd.prodId.eq(prodId))
                 .fetch();
     }
+
+    @Override
+    public long deleteAllByEventIds(List<String> eventIds) {
+        return queryFactory.delete(pmEventProd)
+                .where(pmEventProd.eventId.in(eventIds))
+                .execute();
+    }
 }

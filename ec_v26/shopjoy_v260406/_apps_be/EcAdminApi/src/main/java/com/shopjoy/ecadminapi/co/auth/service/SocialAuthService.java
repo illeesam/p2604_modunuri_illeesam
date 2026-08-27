@@ -86,11 +86,13 @@ public class SocialAuthService {
 
         // 2) (siteId, snsChannelCd, snsUserId) 매칭 → 기존 연동 회원 조회
         MbMember member;
-        Optional<MbMemberSnsDto.Item> snsOpt = memberSnsRepository
-            .selectBySnsChannelCdAndSnsUserId(info.getSnsChannelCd(), info.getSnsUserId());
+        MbMemberSnsDto.Request snsReq = new MbMemberSnsDto.Request();
+        snsReq.setSnsChannelCd(info.getSnsChannelCd());
+        snsReq.setSnsUserId(info.getSnsUserId());
+        List<MbMemberSnsDto.Item> snsMatches = memberSnsRepository.selectList(snsReq);
 
-        if (snsOpt.isPresent()) {
-            String memberId = snsOpt.get().getMemberId();
+        if (!snsMatches.isEmpty()) {
+            String memberId = snsMatches.get(0).getMemberId();
             member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CmBizException(
                     "연동된 회원 정보를 찾을 수 없습니다. 관리자에게 문의해주세요." + "::" + CmUtil.svcCallerInfo(this)));
@@ -214,7 +216,7 @@ public class SocialAuthService {
             : email;
 
         // loginId 중복 시: 이미 같은 이메일로 일반 가입된 회원이 있으면 그 회원에 SNS 연동만 추가
-        Optional<MbMember> existing = memberRepository.selectByLoginId(loginId);
+        Optional<MbMember> existing = memberRepository.findByLoginId(loginId);
         if (existing.isPresent()) {
             MbMember exist = existing.get();
             createSnsLink(memberSnsId, siteId,

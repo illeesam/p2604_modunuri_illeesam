@@ -125,26 +125,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return Optional.ofNullable(dtl);
     }
 
-    /* 배송상태 동기화 배치용 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<OdDliv> selectListByDlivStatusCd(String dlivStatusCd) {
-        return queryFactory.selectFrom(odDliv)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectListByDlivStatusCd()")
-                .where(odDliv.dlivStatusCd.eq(dlivStatusCd))
-                .fetch();
-    }
-
-    /** 주문 자동완료 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<OdDliv> selectDeliveredOutboundBefore(java.time.LocalDateTime threshold) {
-        return queryFactory.selectFrom(odDliv)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDeliveredOutboundBefore()")
-                .where(odDliv.dlivDivCd.eq("OUTBOUND"),
-                        odDliv.dlivStatusCd.eq("DELIVERED"),
-                        odDliv.dlivDate.loe(threshold))
-                .fetch();
-    }
-
     /* 배송 목록조회 */
     @Override
     public List<OdDlivDto.Item> selectList(OdDlivDto.Request search) {
@@ -315,5 +295,16 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
 
         long affected = update.where(odDliv.dlivId.eq(entity.getDlivId())).execute();
         return (int) affected;
+    }
+
+    /** 주문 자동 완료 대상 — dlivDivCd + dlivStatusCd + dlivDate <= threshold */
+    @Override
+    public List<OdDliv> selectDeliveredOutboundBefore(String dlivDivCd, String dlivStatusCd, LocalDateTime threshold) {
+        return queryFactory.selectFrom(odDliv)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDeliveredOutboundBefore()")
+                .where(odDliv.dlivDivCd.eq(dlivDivCd),
+                        odDliv.dlivStatusCd.eq(dlivStatusCd),
+                        odDliv.dlivDate.loe(threshold))
+                .fetch();
     }
 }

@@ -152,7 +152,8 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? dpArea.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_area"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? dpArea.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "dp_area"))
                 : null;
     }
 

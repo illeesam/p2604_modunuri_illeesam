@@ -164,7 +164,8 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? dpUi.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_ui"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? dpUi.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "dp_ui"))
                 : null;
     }
 

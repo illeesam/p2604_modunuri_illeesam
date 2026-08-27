@@ -657,23 +657,68 @@ QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv), // 노출환경 필터
 `selectXxxList`/`selectXxxPage` 처럼 매번 다른 이름을 짓지 않는다(레포마다 이름이 달라지면
 호출부에서 "이 레포는 뭐라고 불렀더라"를 매번 찾아봐야 한다).
 
-### 14.6.9 `findById` 이외의 파생쿼리는 QueryDSL 로 ⭐⭐ (2026-08-27)
+### 14.6.9 JPQL(`@Query`) 금지 — Query Method 와 QueryDSL 만 사용 ⭐⭐⭐ (2026-08-27 제정, 2026-08-28 확정)
 
-**원칙**: `JpaRepository` 표준 상속 메서드인 `findById`/`findAllById` 를 제외한 모든 `find*`
-파생쿼리(Spring Data 네이밍 파생 + `@Query` JPQL/native 커스텀 메서드 전부, Repository 안이든
-Service 에서 `EntityManager.createQuery`/`createNativeQuery` 를 직접 부르는 경우든)는 새로
-만들 때부터 QueryDSL(`Q*Repository`/`Impl`)로 작성한다. 기존 코드를 손보다가 발견해도 그 자리에서
-전환한다 — "나중에 몰아서" 미루지 않는다.
+**원칙**: 신규/수정 Repository 코드에서 **`@Query`(JPQL) 는 쓰지 않는다.** 모든 파생쿼리는
+① Spring Data **Query Method**(메서드 이름 파생, 예: `findByLoginId`) 또는 ② **QueryDSL**
+(`Q*Repository`/`Impl`, "select 방식") 둘 중 하나로만 구현한다. `findById`/`findAllById` 같은
+`JpaRepository` 표준 상속 메서드는 그대로 상속받아 쓴다(재선언 불필요).
 
-**전환 매핑**:
+**Query Method 로 충분한 경우** (QueryDSL 전환 불필요):
 
-| 기존 패턴 | 전환 방식 |
-|---|---|
-| 읽기전용, 호출부가 결과를 그대로 소비만 함 | 기존 `selectList(Dto.Request)`/`selectById` 에 조건 흡수, 없으면 §14.6.8 기준으로 전용 `selectXxx` 신설 |
-| 호출부가 결과 엔티티를 직접 수정 후 암묵적 flush(dirty-checking)로 저장하거나, 엔티티 타입 자체가 다른 곳(다른 Repository.save() 등)에 그대로 넘어감 | DTO 프로젝션이 아니라 **관리 엔티티를 그대로 반환**하는 전용 `selectXxx`/`selectListByXxx` 신설(§14.6.8 예외 기준과 별개로, "DTO 로 바꾸면 조용히 깨지는 mutate 흐름" 자체가 전용 메서드를 두는 이유) |
-| 단순 단일/복합 컬럼 동등조건 `deleteByXxx`(조건·계산 없음) | QueryDSL 로 안 옮기고 base 인터페이스의 평범한 Spring Data 파생 삭제로 남겨도 된다 — 이 정도는 변환 실익이 없다 |
+- 조인 없이 **한 테이블만** 보고, `And`/`Or` 없이 **AND 로만 이어지는** 조건 — `Eq`/`In`/
+  `Before`/`After`/`LessThan(Equal)`/`GreaterThan(Equal)`/`Not`/`IsNull`/`OrderBy` 등 Spring
+  Data 키워드 조합. 개수는 여러 개라도 되지만 **파라미터는 최대 2개까지만** — 3개 이상이면
+  파라미터 개수만으로 아래 "QueryDSL 사용" 대상이다(조건이 단순해도 예외 없음).
+- IN 절에 고정값을 하드코딩하지 않는다 — `IN ('PENDING','ACTIVE')` 같은 고정 조건은 메서드
+  파라미터(`List<String> statusCds`)로 받고, 호출부에서 `List.of("PENDING", "ACTIVE")` 로
+  값을 넘긴다. Repository 안에 비즈니스 상수를 박아두지 않는다.
+  ```java
+  // ❌ 금지 — JPQL 에 상태값 하드코딩
+  @Query("SELECT e FROM PmEvent e WHERE e.useYn = 'Y' AND e.eventStatusCd IN ('PENDING', 'ACTIVE')")
+  List<PmEvent> findSyncTargets();
 
-**QueryDSL 이 원천적으로 불가능해서 못 옮기는 경우** (판단하지 말고 그대로 native/JPQL 유지):
+  // ✅ Query Method + 호출부 파라미터
+  List<PmEvent> findByUseYnAndEventStatusCdIn(String useYn, List<String> eventStatusCds);
+  // 호출부: eventRepository.findByUseYnAndEventStatusCdIn("Y", List.of("PENDING", "ACTIVE"));
+  ```
+- **WHERE 조건 없는 전체삭제**는 커스텀 메서드를 만들지 말고 `JpaRepository` 기본 제공
+  `deleteAllInBatch()` 를 그대로 호출한다(`deleteAllBulk()` 같은 래퍼 메서드 금지).
+- **단일 부모ID 기준 자식 컬렉션 삭제**(`deleteByPatternId`, `deleteByProjectId` 등)는 메서드
+  이름이 이미 Query Method 파생 규칙과 정확히 일치하면 `@Modifying @Query` 없이 그대로
+  Query Method 로 둔다. Spring Data 의 파생 delete 는 엔티티를 조회해 건별로 삭제하지만(단일
+  DML 벌크 삭제 아님), 화면 하위 소규모 자식 컬렉션(도안 격자, DDL 탭 등)에는 그 정도로 충분하다.
+  모델: `SyhAlarmSendHistRepository.deleteBySendDateBefore`.
+- **단일테이블인데 라벨 조회 등으로 조인이 필요한 경우**도 파생쿼리로 새로 만들지 않는다 — 대신
+  그 테이블의 기존 `selectById`/`selectList`/`selectPageData` 표준 3종에 조건 필드를 추가해서
+  재사용한다(§14.6.8). 표준 모델: `MbMemberSnsRepository` — `findBySnsChannelCdAndSnsUserId` 대신
+  `MbMemberSnsDto.Request` 에 `snsChannelCd`/`snsUserId` 필터 필드를 추가하고
+  `QMbMemberSnsRepository.selectList(request)` 를 그대로 사용(소셜 로그인 매칭, `SocialAuthService`).
+
+**QueryDSL(select 방식) 로 반드시 작성해야 하는 경우** — 아래 중 하나라도 해당하면 예외 없이
+QueryDSL 이다(JPQL `@Query` 로 도피 금지):
+
+- **파라미터 3개 이상** — AND 로만 이어지는 단순 조건이라도 파라미터가 3개부터는 QueryDSL.
+  (예: `findByDlivDivCdAndDlivStatusCdAndDlivDateLessThanEqual(String, String, LocalDateTime)`
+  → `QOdDlivRepository.selectDeliveredOutboundBefore(dlivDivCd, dlivStatusCd, threshold)`)
+- **AND 안에 OR 그룹이 있는 조건** — `A AND (B OR C)` 형태는 Query Method 이름으로 괄호 그룹을
+  표현할 수 없다. (예: `claimCancelYn IS NULL OR claimCancelYn <> 'Y'`)
+- **단일컬럼 스칼라/DISTINCT 투영** — `SELECT DISTINCT x.col FROM ...` 처럼 컬럼 하나만 뽑는
+  조회는 Query Method 이름으로 표현 불가. (예: `selectDistinctVendorIdsBySettlePeriod`,
+  `selectCouponIdsByProdId`)
+- **응용쿼리** — 동적/선택적 조건이 2개 이상 조합되는 검색, 여러 테이블 조인이 필요한 조회,
+  DTO 투영(라벨 조인 등), 집계/서브쿼리(GROUP BY, 상관 서브쿼리 등), 화면 전용 필터가 얽힌 조회
+- **트리/계층 구조 조회** — 부모-자식 순회, 계층 데이터 조립(재귀 CTE 로만 가능한 것 제외 — 그건
+  아래 "원천적으로 불가능한 경우" 참조)
+- **단일 DML 벌크 삭제가 진짜 필요한 경우** — 부모ID 조건이 아니라 IN 목록·날짜범위 등으로
+  대량(수천 건+) 삭제가 예상되고 엔티티별 lifecycle 콜백이 불필요하면 QueryDSL
+  `queryFactory.delete(qEntity).where(...).execute()` 사용.
+
+이 경계가 애매하면 QueryDSL 쪽으로 판단한다 — "단순함"의 기준은 조건 개수가 아니라
+**단일 테이블 + 파라미터 2개 이하 + AND 전용** 세 가지를 모두 만족하는지가 우선이다.
+
+**QueryDSL 조차 원천적으로 불가능해서 어쩔 수 없이 native/JPQL 을 유지하는 경우** (판단하지 말고
+그대로 두되, 호출부 주석에 `// [JPQL]` 또는 `// [Native SQL]` 태그로 명시 — 아래 코멘트 규칙 참조):
 
 1. **재귀 CTE**(`WITH RECURSIVE`) — 트리 자손 ID 수집류(`findTreeXxxIds` 등). QueryDSL-JPA API 자체에 대응 기능 없음.
 2. **엔티티가 `generateQueryDsl` 스캔 범위 밖** — `build.gradle.kts` 의 Q-클래스 생성 태스크는
@@ -686,7 +731,42 @@ Service 에서 `EntityManager.createQuery`/`createNativeQuery` 를 직접 부르
    류(대시보드 통계, 배치 집계, 프로모션 대상 전개 등)는 QueryDSL 로 옮겨도 억지스럽고 실익이 없다.
    이런 곳은 native SQL 유지가 맞는 선택이다.
 
-이 4가지에 해당하지 않는 한(즉 "그냥 손 안 대서 남아있던" 파생쿼리라면) QueryDSL 전환 대상이다.
+**호출부 코멘트 태그 규칙** ⭐ (2026-08-28 제정, 위치 확정) — Repository 메서드를 호출하는 코드
+**바로 윗줄**(우측 아님)에 어떤 방식으로 구현된 조회/변경인지 태그 코멘트를 남긴다. 리뷰·유지보수 시
+JPQL 이 섞여 들어왔는지, QueryDSL 이 필요한 자리에 Query Method 로 억지로 구현되어 있진 않은지를
+호출부만 보고 바로 확인하기 위함이다.
+
+```java
+// [쿼리 메서드] 로그인ID 단건조회
+syUserRepository.findByLoginId(loginId);
+
+// [QueryDSL] 회원 등록 사이트 목록
+memberRepository.selectDistinctSiteIds();
+
+// [JPQL] 원천적으로 QueryDSL 불가 — §14.6.9 예외④
+legacyRepository.findByCreatedDateBetweenLegacy(from, to);
+```
+
+- 형식: 호출 코드 줄 바로 위, 같은 들여쓰기로 `// [쿼리 메서드] <한 줄 설명>` /
+  `// [QueryDSL] <한 줄 설명>` / `// [JPQL] <한 줄 설명>` / `// [Native SQL] <한 줄 설명>`.
+  **줄 우측(trailing)에 붙이지 않는다** — 긴 호출문에서 우측 주석은 잘려 보이거나 줄바꿈을
+  유발해 가독성이 떨어진다.
+- 삼항연산자·메서드 체인처럼 호출이 표현식 중간에 있는 경우도 그 표현식이 시작되는 줄(또는
+  호출이 실제로 등장하는 줄) 바로 위에 같은 들여쓰기로 붙인다.
+- 신규로 작성하거나 수정하는 호출부에는 반드시 붙인다. 기존 코드는 그 줄을 다른 이유로 손댈 때
+  같이 붙인다(전수 소급 적용은 별도 작업).
+- `[JPQL]`/`[Native SQL]` 태그가 붙는 자리는 위 "원천적으로 불가능한 경우" 4가지 중 하나여야
+  한다 — 그 외의 이유로 JPQL 을 새로 쓰고 태그만 붙이는 것은 금지.
+
+**2026-08-27~28 경과**: 2026-08-27 "findById 외 전부 QueryDSL" 로 과하게 넓게 적용했던
+단일테이블+단순조건 조회(로그인/배치/토큰 조회, 상태 동기화 배치 대상 조회 등 30여 건)는
+2026-08-28 Query Method 로 되돌렸다. 그 직후 남은 JPQL(`@Query`) 전부를 이 날 다시 훑어
+① 파라미터 2개 이하 AND 전용 → Query Method, ② 3개 이상 파라미터·AND-속-OR·단일컬럼 투영
+→ QueryDSL, ③ WHERE 없는 전체삭제 → `deleteAllInBatch()`, ④ 부모ID 단건 자식삭제 →
+`@Query` 없는 순수 `deleteByXxx` 로 전환했다(`OdClaim`/`OdOrder`/`OdRefund`/`OdDliv`/
+`PmCoupon`/`PmCouponIssue`/`Pm*Prod`/`PdProdPlan`/`MbMember`/`SyhSendEmailLog`/`SyhSendMsgLog`/
+`Md*`/`Syh*Log`/`Mbh*Log` 등). **이 §14.6.9 최종 기준이 진짜 기준이다** — 앞으로 새
+파생쿼리를 판단할 때도, 기존 코드에서 JPQL 을 발견했을 때도 이 기준대로 전환한다.
 
 ---
 

@@ -31,7 +31,7 @@ public class MdCbPatternYarnService {
 
     public List<MdCbPatternYarnDto.Item> getByPatternId(String patternId) {
         CmUtil.requireId(patternId, "patternId", this);
-        return mdCbPatternYarnRepository.selectListByPatternId(patternId).stream()
+        return mdCbPatternYarnRepository.findByPatternIdOrderByRegDateAsc(patternId).stream()
             .map(e -> {
                 MdCbPatternYarnDto.Item item = new MdCbPatternYarnDto.Item();
                 item.setPatternYarnId(e.getPatternYarnId());
@@ -49,6 +49,7 @@ public class MdCbPatternYarnService {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
+        // [쿼리 메서드] 도안-실 매핑 전체 삭제
         mdCbPatternYarnRepository.deleteByPatternId(patternId);
         em.flush();
 

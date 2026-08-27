@@ -5,12 +5,14 @@ import java.util.List;
 /**
  * PmDiscntProd QueryDSL Custom Repository.
  *
- * <p>DTO 투영 화면(검색/페이징)이 없는 단순 상품-할인 전개 테이블이라 baseSelColumnQuery 없이
- * discntId 컬럼만 스칼라 투영한다.</p>
+ * <p>단일컬럼 스칼라 투영(discntId 만 SELECT)과 IN 목록 기준 벌크 삭제(단일 DELETE 문)는
+ * Query Method 로 표현할 수 없어 QueryDSL 사용.</p>
  */
 public interface QPmDiscntProdRepository {
 
-    /** 상품에 적용 가능한 활성 할인ID 목록 (FO 상품상세/주문 페이지용).
-     *  base 의 findDiscntIdsByProdId 대체 (2026-08-27) */
+    /** 상품에 적용 가능한 활성 할인ID 목록 (FO 상품상세/주문 페이지용) */
     List<String> selectDiscntIdsByProdId(String prodId);
+
+    /** 특정 할인의 전개 행 전체 삭제 (재계산 전 초기화용) */
+    long deleteAllByDiscntIds(List<String> discntIds);
 }

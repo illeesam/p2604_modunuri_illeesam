@@ -497,23 +497,14 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return (int) affected;
     }
 
-    /** 환불 자동 COMPLT 대상 클레임 풀 — 관리 엔티티 그대로 반환 */
+    /** CANCEL/RETURN 클레임 중 지정 상태이고 철회되지 않은 건 — claimCancelYn IS NULL OR <> 'Y' 그룹 조건 */
     @Override
-    public List<OdClaim> selectCompltCancelReturnClaims() {
+    public List<OdClaim> selectCompltCancelReturnClaims(List<String> claimTypeCds, String claimStatusCd) {
         return queryFactory.selectFrom(odClaim)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectCompltCancelReturnClaims()")
-                .where(odClaim.claimTypeCd.in("CANCEL", "RETURN"),
-                        odClaim.claimStatusCd.eq("COMPLT"),
+                .where(odClaim.claimTypeCd.in(claimTypeCds),
+                        odClaim.claimStatusCd.eq(claimStatusCd),
                         odClaim.claimCancelYn.isNull().or(odClaim.claimCancelYn.ne("Y")))
-                .fetch();
-    }
-
-    /** 미처리 클레임 경보 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<OdClaim> selectStaleRequestedClaims(java.time.LocalDateTime threshold) {
-        return queryFactory.selectFrom(odClaim)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectStaleRequestedClaims()")
-                .where(odClaim.claimStatusCd.eq("REQUESTED"), odClaim.regDate.lt(threshold))
                 .fetch();
     }
 }

@@ -88,8 +88,8 @@ public class BoSyExtTestLogController {
             @RequestParam(defaultValue = "5")  int pageSize) {
         PageRequest pr = PageRequest.of(pageNo - 1, pageSize);
         Page<SyhExtTestLog> page = (channelKey != null && !channelKey.isBlank())
-            ? repository.selectByChannelKey(channelKey, pr)
-            : repository.selectAllOrderByRegDateDesc(pr);
+            ? repository.findByChannelKey(channelKey, pr)
+            : repository.findAllByOrderByRegDateDesc(pr);
         PageResult<SyhExtTestLog> result = PageResult.of(
             page.getContent(), page.getTotalElements(), pageNo, pageSize, null);
         return ResponseEntity.ok(ApiResponse.ok(result));

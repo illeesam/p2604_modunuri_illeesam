@@ -17,4 +17,7 @@ public interface QSyDeptRepository {
     BasePage<SyDeptDto.Item> selectPageData(SyDeptDto.Request search);
 
     int updateSelective(SyDept entity);
+
+    /** 루트 dept + 모든 자손 dept_id 수집(트리조회, §14.6.9 — QueryDSL 전체조회 + 자바 BFS) */
+    List<String> selectTreeDeptIds(String rootDeptId);
 }

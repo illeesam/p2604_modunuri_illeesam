@@ -17,4 +17,7 @@ public interface QCmBlogCateRepository {
     BasePage<CmBlogCateDto.Item> selectPageData(CmBlogCateDto.Request search);
 
     int updateSelective(CmBlogCate entity);
+
+    /** 루트 blogCate + 모든 자손 blog_cate_id 수집(트리조회 §14.6.9 — QueryDSL 전체조회 + 자바 BFS) */
+    List<String> selectTreeBlogCateIds(String rootBlogCateId);
 }

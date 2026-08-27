@@ -213,7 +213,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         return (int) affected;
     }
 
-    /** 지정 쿠폰ID 목록 중 미사용 발급 내역 — 관리 엔티티 그대로 반환 */
+    /** 지정 쿠폰ID 목록 중 미사용 발급 내역 — useYn IS NULL OR <> 'Y' 그룹 조건 */
     @Override
     public List<PmCouponIssue> selectUnusedByCouponIds(List<String> couponIds) {
         return queryFactory.selectFrom(pmCouponIssue)

@@ -49,7 +49,8 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
         log.info("[{}] 판매계획 동기화 시작 — 기준시각: {}", batchCode(), now);
 
         // 1) 종료된 ACTIVE 계획 → ENDED
-        List<PdProdPlan> ended = planRepository.selectEndedActivePlans(now);
+        // [쿼리 메서드] 종료된 ACTIVE 판매계획 조회
+        List<PdProdPlan> ended = planRepository.findByPlanStatusCdAndEndDatetimeLessThanEqual("ACTIVE", now);
         for (PdProdPlan plan : ended) {
             plan.setPlanStatusCd("ENDED");
             plan.setUpdDate(now);
@@ -58,7 +59,8 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
         }
 
         // 2) 지금 유효한 계획 → ACTIVE + pd_prod 가격 반영
-        List<PdProdPlan> active = planRepository.selectActivePlans(now);
+        // [QueryDSL] 현재 적용되어야 할 판매계획 조회
+        List<PdProdPlan> active = planRepository.selectActivePlans(now, "CANCELLED");
         for (PdProdPlan plan : active) {
             // 이미 ACTIVE 이면 가격만 재확인
             if (!"ACTIVE".equals(plan.getPlanStatusCd())) {

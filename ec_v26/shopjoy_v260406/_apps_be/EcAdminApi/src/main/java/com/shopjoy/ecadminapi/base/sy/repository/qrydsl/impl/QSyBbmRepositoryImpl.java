@@ -155,7 +155,8 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로의 게시판까지 포함 */
     private BooleanExpression andPathIdIn(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? syBbm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_bbm"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? syBbm.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "sy_bbm"))
                 : null;
     }
 

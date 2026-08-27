@@ -4,7 +4,12 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleRawRepository;
 
-/* findBySettlePeriodAndVendor → QStSettleRawRepository.selectListBySettlePeriodAndVendor 로 전환
-   findDistinctVendorIdsBySettlePeriod → selectDistinctVendorIdsBySettlePeriod 로 전환 (2026-08-27) */
+import java.util.List;
+
+/* 단일컬럼 DISTINCT 투영은 Query Method 로 표현 불가 →
+   QStSettleRawRepository.selectDistinctVendorIdsBySettlePeriod() (QueryDSL) 사용 */
 public interface StSettleRawRepository extends JpaRepository<StSettleRaw, String>, QStSettleRawRepository {
+
+    /** 정산 집계 배치용 — 특정 정산기간+업체 원천 데이터 목록 */
+    List<StSettleRaw> findBySettlePeriodAndVendorId(String settlePeriod, String vendorId);
 }

@@ -4,7 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberSnsRepository;
 
-/* findBySnsChannelCdAndSnsUserId → QMbMemberSnsRepository.selectBySnsChannelCdAndSnsUserId 로 전환 (2026-08-27) */
+/* findBySnsChannelCdAndSnsUserId → 단일테이블+조인 조회라 QMbMemberSnsRepository.selectList(snsChannelCd/snsUserId 필터) 로 전환 (2026-08-27, §14.6.9) */
 public interface MbMemberSnsRepository extends JpaRepository<MbMemberSns, String>, QMbMemberSnsRepository {
 
     /**

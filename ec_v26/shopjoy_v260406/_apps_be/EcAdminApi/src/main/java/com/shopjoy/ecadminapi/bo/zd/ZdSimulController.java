@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.zd;
 
+import com.shopjoy.ecadminapi.bo.zd.entity.ZdSimulLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberGradeService;
@@ -139,7 +140,8 @@ public class ZdSimulController {
         String status  = blankToNull(str(p, "status",  null));
 
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-        Page<ZdSimulLog> page = zdSimulLogRepository.search(siteId, domain, uiNm, userNm, desc, status, pageable);
+        // [QueryDSL] 시뮬레이터 실행 로그 검색
+        Page<ZdSimulLog> page = zdSimulLogRepository.selectPage(siteId, domain, uiNm, userNm, desc, status, pageable);
 
         PageResult<ZdSimulLog> result = PageResult.of(
             page.getContent(), page.getTotalElements(), pageNo, pageSize, p);
@@ -988,7 +990,7 @@ public class ZdSimulController {
 
     /** 시뮬용 pd_prod_stock 생성 (stockCode = prodSkuId, 이미 존재하면 재생성하지 않음) */
     private void createSimulStockCode(String prodSkuId, String prodId, String siteId, int stockQty) {
-        if (pdProdStockRepository.selectByStockCode(prodSkuId).isPresent()) return;
+        if (pdProdStockRepository.findByStockCode(prodSkuId).isPresent()) return;
         LocalDateTime now = LocalDateTime.now();
         /* reg/updDate 는 EntitySaveListener 가 서버시각으로 채운다 (여기서 넣어도 덮어씀) */
         PdProdStock sc = PdProdStock.builder()

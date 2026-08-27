@@ -10,7 +10,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
@@ -19,7 +18,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -32,16 +30,14 @@ import com.shopjoy.ecadminapi.common.util.QdslUtil;
 public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final PdCategoryRepository pdCategoryRepository;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryRepositoryImpl";
     private static final QSySite siteEx = new QSySite("site_ex");
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QPdCategory pdCategory   = QPdCategory.pdCategory;
 
-    public QPdCategoryRepositoryImpl(JPAQueryFactory queryFactory, @Lazy PdCategoryRepository pdCategoryRepository) {
+    public QPdCategoryRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-        this.pdCategoryRepository = pdCategoryRepository;
     }
     private static final QPdCategory p1  = new QPdCategory("p1");
     private static final QPdCategory p2  = new QPdCategory("p2");
@@ -167,8 +163,27 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
     private BooleanExpression andParentCategoryIdIn(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCategoryId())
-                ? pdCategory.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
+                // [QueryDSL] 카테고리 트리 자손ID 수집
+                ? pdCategory.categoryId.in(selectTreeCategoryIds(search.getParentCategoryId()))
                 : null;
+    }
+
+    /** 루트 category + 모든 자손 category_id 수집 — 전체 (categoryId, parentCategoryId) 를 한 번에 읽어 자바에서 BFS */
+    @Override
+    public List<String> selectTreeCategoryIds(String rootCategoryId) {
+        List<com.querydsl.core.Tuple> rows = queryFactory.select(pdCategory.categoryId, pdCategory.parentCategoryId)
+                .from(pdCategory)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectTreeCategoryIds()")
+                .fetch();
+
+        Map<String, List<String>> childrenOf = new java.util.HashMap<>();
+        for (com.querydsl.core.Tuple row : rows) {
+            String parentId = row.get(pdCategory.parentCategoryId);
+            if (parentId != null) {
+                childrenOf.computeIfAbsent(parentId, k -> new ArrayList<>()).add(row.get(pdCategory.categoryId));
+            }
+        }
+        return QdslUtil.collectTreeIds(rootCategoryId, childrenOf);
     }
 
     /* searchType 예: "categoryDesc,categoryId,categoryNm,categoryStatusCd,categoryStatusCdBefore" 등 (콤마 조합, 미지정 시 전체 OR) */

@@ -233,12 +233,4 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return (int) affected;
     }
 
-    /** 재발송 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<SyhSendEmailLog> selectFailedBefore(java.time.LocalDateTime threshold) {
-        return queryFactory.selectFrom(syhSendEmailLog)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectFailedBefore()")
-                .where(syhSendEmailLog.resultCd.eq("FAILED"), syhSendEmailLog.sendDate.lt(threshold))
-                .fetch();
-    }
 }

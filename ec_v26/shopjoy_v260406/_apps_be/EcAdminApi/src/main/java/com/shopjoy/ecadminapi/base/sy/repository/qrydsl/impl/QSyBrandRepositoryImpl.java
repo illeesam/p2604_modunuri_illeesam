@@ -152,7 +152,8 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? syBrand.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_brand"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? syBrand.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "sy_brand"))
                 : null;
     }
 

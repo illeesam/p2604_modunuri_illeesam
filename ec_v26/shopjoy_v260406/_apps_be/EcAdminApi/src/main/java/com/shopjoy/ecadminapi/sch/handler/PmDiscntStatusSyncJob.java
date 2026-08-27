@@ -35,7 +35,7 @@ public class PmDiscntStatusSyncJob implements SchBatchJobHandler {
         LocalDateTime now   = LocalDateTime.now();
         log.info("[{}] 할인정책 상태 동기화 시작 — 기준일: {}", batchCode(), today);
 
-        List<PmDiscnt> targets = discntRepository.selectSyncTargets();
+        List<PmDiscnt> targets = discntRepository.findByUseYnAndDiscntStatusCd("Y", "ACTIVE");
         int toExpired = 0;
         for (PmDiscnt discnt : targets) {
             if (discnt.getEndDate() == null || !today.isAfter(discnt.getEndDate())) continue;

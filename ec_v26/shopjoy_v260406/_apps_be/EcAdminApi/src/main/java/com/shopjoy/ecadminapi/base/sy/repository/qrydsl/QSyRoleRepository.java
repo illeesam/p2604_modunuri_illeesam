@@ -20,4 +20,7 @@ public interface QSyRoleRepository {
     long selectCount(SyRoleDto.Request search);
 
     int updateSelective(SyRole entity);
+
+    /** 루트 role + 모든 자손 role_id 수집(트리조회 §14.6.9 — QueryDSL 전체조회 + 자바 BFS) */
+    List<String> selectTreeRoleIds(String rootRoleId);
 }

@@ -27,7 +27,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String userIdOrLoginId) throws UsernameNotFoundException {
         // JWT sub claim(userId)로 먼저 시도, 없으면 로그인 화면 입력값(loginId)으로 폴백
         SyUser syUser = syUserRepository.findById(userIdOrLoginId)
-            .or(() -> syUserRepository.selectByLoginId(userIdOrLoginId))
+            .or(() -> syUserRepository.findByLoginId(userIdOrLoginId))
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userIdOrLoginId));
 
         if (!"ACTIVE".equals(syUser.getUserStatusCd())) {

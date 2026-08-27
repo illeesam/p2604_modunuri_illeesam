@@ -63,7 +63,7 @@ public class OdRefundAutoJob implements SchBatchJobHandler {
 
     private int processLongPendingFailed(LocalDateTime now) {
         LocalDateTime threshold = now.minusDays(PENDING_FAIL_DAYS);
-        List<OdRefund> targets = refundRepository.selectPendingBefore(threshold);
+        List<OdRefund> targets = refundRepository.findByRefundStatusCdAndRefundReqDateBefore("PENDING", threshold);
 
         for (OdRefund r : targets) {
             r.setRefundStatusCdBefore(r.getRefundStatusCd());
@@ -86,14 +86,14 @@ public class OdRefundAutoJob implements SchBatchJobHandler {
     private int processClaimCompltRefund(LocalDateTime now) {
         LocalDateTime threshold = now.minusDays(AUTO_COMPLT_DAYS);
 
-        List<OdClaim> claims = claimRepository.selectCompltCancelReturnClaims();
+        List<OdClaim> claims = claimRepository.selectCompltCancelReturnClaims(List.of("CANCEL", "RETURN"), "COMPLT");
         if (claims.isEmpty()) {
             log.info("[{}] 클레임→환불COMPLT 대상 없음", batchCode());
             return 0;
         }
 
         List<String> claimIds = claims.stream().map(c -> c.getClaimId()).toList();
-        List<OdRefund> targets = refundRepository.selectPendingByClaimIdsAndBefore(claimIds, threshold);
+        List<OdRefund> targets = refundRepository.selectPendingByClaimIdsAndBefore(claimIds, "PENDING", threshold);
 
         for (OdRefund r : targets) {
             r.setRefundStatusCdBefore(r.getRefundStatusCd());

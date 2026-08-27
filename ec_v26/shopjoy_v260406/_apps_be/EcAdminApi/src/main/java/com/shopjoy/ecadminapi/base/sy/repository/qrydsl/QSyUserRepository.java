@@ -14,10 +14,6 @@ public interface QSyUserRepository {
     /** 단건 조회 */
     Optional<SyUserDto.Item> selectById(String userId);
 
-    /** UNIQUE(login_id) 단건 조회 — 관리 엔티티 그대로 반환(로그인 후 실패횟수/최근로그인 등 dirty-checking 저장 필요, DTO selectById 와 다른 반환타입).
-     *  co.auth 서비스의 raw EntityManager JPQL 대체 (2026-08-27) */
-    Optional<SyUser> selectByLoginId(String loginId);
-
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     List<SyUserDto.Item> selectList(SyUserDto.Request search);
 

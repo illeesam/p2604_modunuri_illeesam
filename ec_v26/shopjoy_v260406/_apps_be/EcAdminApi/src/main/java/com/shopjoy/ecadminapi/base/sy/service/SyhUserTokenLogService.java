@@ -43,6 +43,7 @@ public class SyhUserTokenLogService {
     /** deleteAll — 삭제 */
     @Transactional
     public void deleteAll() {
-        syhUserTokenLogRepository.deleteAllBulk();
+        // [쿼리 메서드] 전체 로그 삭제 (JpaRepository 기본 제공)
+        syhUserTokenLogRepository.deleteAllInBatch();
     }
 }

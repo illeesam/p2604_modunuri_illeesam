@@ -178,4 +178,33 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         long affected = update.where(syPath.pathId.eq(entity.getPathId())).execute();
         return (int) affected;
     }
+
+    /** biz_cd 기준 등록된 모든 path_id 목록 (고아 필터용) */
+    @Override
+    public List<String> selectAllPathIdsByBizCd(String bizCd) {
+        return queryFactory.select(syPath.pathId)
+                .from(syPath)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectAllPathIdsByBizCd()")
+                .where(syPath.bizCd.eq(bizCd))
+                .fetch();
+    }
+
+    /** 루트 path + 모든 자손 path_id 수집(biz_cd 한정) — 해당 biz_cd 전체 (pathId, parentPathId) 를 읽어 자바에서 BFS */
+    @Override
+    public List<String> selectTreePathIds(String rootPathId, String bizCd) {
+        List<com.querydsl.core.Tuple> rows = queryFactory.select(syPath.pathId, syPath.parentPathId)
+                .from(syPath)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectTreePathIds()")
+                .where(syPath.bizCd.eq(bizCd))
+                .fetch();
+
+        Map<String, List<String>> childrenOf = new java.util.HashMap<>();
+        for (com.querydsl.core.Tuple row : rows) {
+            String parentId = row.get(syPath.parentPathId);
+            if (parentId != null) {
+                childrenOf.computeIfAbsent(parentId, k -> new ArrayList<>()).add(row.get(syPath.pathId));
+            }
+        }
+        return QdslUtil.collectTreeIds(rootPathId, childrenOf);
+    }
 }

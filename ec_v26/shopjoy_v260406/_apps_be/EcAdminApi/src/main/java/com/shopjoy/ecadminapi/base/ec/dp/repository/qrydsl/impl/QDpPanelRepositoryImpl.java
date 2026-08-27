@@ -165,7 +165,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? dpPanel.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
+                // [QueryDSL] 표시경로 트리 자손ID 수집
+                ? dpPanel.pathId.in(syPathRepository.selectTreePathIds(search.getPathId(), "dp_panel"))
                 : null;
     }
 

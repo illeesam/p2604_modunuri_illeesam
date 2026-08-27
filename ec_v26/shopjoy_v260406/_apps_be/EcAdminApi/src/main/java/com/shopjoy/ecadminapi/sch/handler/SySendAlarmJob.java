@@ -63,10 +63,10 @@ public class SySendAlarmJob implements SchBatchJobHandler {
 
         // site_id 제거 후 EC 쿼리는 전사 단일 조회. 알림 발송은 활성 사이트별 1회.
         LocalDateTime orderThreshold = now.minusHours(UNPAID_WARN_HOURS);
-        List<OdOrder> stalePaidOrders = orderRepository.selectStalePaidOrders(orderThreshold);
+        List<OdOrder> stalePaidOrders = orderRepository.findByOrderStatusCdAndRegDateBefore("PAID", orderThreshold);
 
         LocalDateTime claimThreshold = now.minusHours(CLAIM_WARN_HOURS);
-        List<OdClaim> staleClaims = claimRepository.selectStaleRequestedClaims(claimThreshold);
+        List<OdClaim> staleClaims = claimRepository.findByClaimStatusCdAndRegDateBefore("REQUESTED", claimThreshold);
 
         for (SySite site : siteRepository.findAll()) {
             if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;

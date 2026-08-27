@@ -75,15 +75,6 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 .where(mbMemberSns.memberSnsId.eq(memberSnsId)).fetchOne());
     }
 
-    /* (snsChannelCd, snsUserId) 복합 UNIQUE 단건 조회 */
-    @Override
-    public Optional<MbMemberSnsDto.Item> selectBySnsChannelCdAndSnsUserId(String snsChannelCd, String snsUserId) {
-        return Optional.ofNullable(baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectBySnsChannelCdAndSnsUserId()")
-                .where(mbMemberSns.snsChannelCd.eq(snsChannelCd).and(mbMemberSns.snsUserId.eq(snsUserId)))
-                .fetchOne());
-    }
-
     /* SNS 연동 회원 목록조회 */
     @Override
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
@@ -92,6 +83,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         whereList.add(QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds())); // 상위 FK 다건 IN
         whereList.add(QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId())); // 상위 FK 필터
         whereList.add(QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId())); // SNS연동ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberSns.snsChannelCd, search.getSnsChannelCd())); // SNS채널코드 필터 (소셜로그인 매칭용)
+        whereList.add(QdslUtil.strEq(mbMemberSns.snsUserId, search.getSnsUserId())); // SNS 플랫폼 사용자ID 필터 (소셜로그인 매칭용)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
@@ -126,6 +119,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         whereList.add(QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds())); // 상위 FK 다건 IN
         whereList.add(QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId())); // 상위 FK 필터
         whereList.add(QdslUtil.strEq(mbMemberSns.memberSnsId, search.getMemberSnsId())); // SNS연동ID 필터
+        whereList.add(QdslUtil.strEq(mbMemberSns.snsChannelCd, search.getSnsChannelCd())); // SNS채널코드 필터 (소셜로그인 매칭용)
+        whereList.add(QdslUtil.strEq(mbMemberSns.snsUserId, search.getSnsUserId())); // SNS 플랫폼 사용자ID 필터 (소셜로그인 매칭용)
         whereList.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(mbMemberSns.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));

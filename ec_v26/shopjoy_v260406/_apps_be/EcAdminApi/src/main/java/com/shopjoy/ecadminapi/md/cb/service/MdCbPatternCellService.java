@@ -31,7 +31,7 @@ public class MdCbPatternCellService {
 
     public List<MdCbPatternCellDto.Item> getByPatternId(String patternId) {
         CmUtil.requireId(patternId, "patternId", this);
-        return mdCbPatternCellRepository.selectListByPatternId(patternId).stream()
+        return mdCbPatternCellRepository.findByPatternIdOrderByRowNoAscColNoAsc(patternId).stream()
             .map(e -> {
                 MdCbPatternCellDto.Item item = new MdCbPatternCellDto.Item();
                 item.setCellId(e.getCellId());
@@ -51,6 +51,7 @@ public class MdCbPatternCellService {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
+        // [쿼리 메서드] 도안 격자 전체 삭제
         mdCbPatternCellRepository.deleteByPatternId(patternId);
         em.flush();
 

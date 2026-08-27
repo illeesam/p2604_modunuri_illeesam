@@ -23,4 +23,11 @@ public class QPmCouponProdRepositoryImpl implements QPmCouponProdRepository {
                 .where(pmCouponProd.prodId.eq(prodId))
                 .fetch();
     }
+
+    @Override
+    public long deleteAllByCouponIds(List<String> couponIds) {
+        return queryFactory.delete(pmCouponProd)
+                .where(pmCouponProd.couponId.in(couponIds))
+                .execute();
+    }
 }

@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,7 +12,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
@@ -19,10 +19,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyDeptRepository;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +33,13 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final SyDeptRepository syDeptRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyDeptRepositoryImpl";
     private static final QSyUser regUserEx = new QSyUser("reg_user_ex");
     private static final QSySite regSiteEx = new QSySite("reg_site_ex");
     private static final QSyDept syDept = QSyDept.syDept;
 
-    public QSyDeptRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyDeptRepository syDeptRepository) {
+    public QSyDeptRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
-        this.syDeptRepository = syDeptRepository;
     }
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QVwSyCode codeDeptTypeCd = new QVwSyCode("cd_dt");    /*
@@ -154,11 +152,30 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return res.setPageInfo(pageList, CmUtil.nvlLong(pageTotalCount), pageNo, pageSize, search);
     }
 
-    /* 부서 트리 — 선택 노드 + 모든 자손 부서 포함 (자기참조 재귀 CTE) */
+    /* 부서 트리 — 선택 노드 + 모든 자손 부서 포함 (자기참조) */
     private BooleanExpression andParentDeptIdIn(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentDeptId())
-                ? syDept.deptId.in(syDeptRepository.findTreeDeptIds(search.getParentDeptId()))
+                // [QueryDSL] 부서 트리 자손ID 수집
+                ? syDept.deptId.in(selectTreeDeptIds(search.getParentDeptId()))
                 : null;
+    }
+
+    /** 루트 dept + 모든 자손 dept_id 수집 — 전체 (deptId, parentDeptId) 를 한 번에 읽어 자바에서 BFS */
+    @Override
+    public List<String> selectTreeDeptIds(String rootDeptId) {
+        List<Tuple> rows = queryFactory.select(syDept.deptId, syDept.parentDeptId)
+                .from(syDept)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectTreeDeptIds()")
+                .fetch();
+
+        Map<String, List<String>> childrenOf = new HashMap<>();
+        for (Tuple row : rows) {
+            String parentId = row.get(syDept.parentDeptId);
+            if (parentId != null) {
+                childrenOf.computeIfAbsent(parentId, k -> new ArrayList<>()).add(row.get(syDept.deptId));
+            }
+        }
+        return QdslUtil.collectTreeIds(rootDeptId, childrenOf);
     }
 
     /* searchType 예: "deptCode,deptId,deptNm,deptRemark,deptTypeCd" 등 (콤마 조합, 미지정 시 전체 OR) */

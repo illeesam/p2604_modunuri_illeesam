@@ -99,56 +99,6 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         return Optional.ofNullable(dtl);
     }
 
-    /* UNIQUE(login_id) 단건 조회 — 관리 엔티티 그대로 반환 */
-    @Override
-    public Optional<MbMember> selectByLoginId(String loginId) {
-        MbMember result = queryFactory.selectFrom(mbMember)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByLoginId()")
-                .where(mbMember.loginId.eq(loginId))
-                .fetchOne();
-        return Optional.ofNullable(result);
-    }
-
-    /** FO 로그인 화면 사이트 선택란 — 회원이 실제 등록된 사이트 목록 */
-    @Override
-    public List<String> selectDistinctSiteIds() {
-        return queryFactory.select(mbMember.siteId).distinct()
-                .from(mbMember)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDistinctSiteIds()")
-                .fetch();
-    }
-
-    /** 등급 재산정 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<MbMember> selectActiveForGradeCalc() {
-        return queryFactory.selectFrom(mbMember)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectActiveForGradeCalc()")
-                .where(mbMember.memberStatusCd.eq("ACTIVE"))
-                .fetch();
-    }
-
-    /** 휴면 예정 이메일 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<MbMember> selectDormantWarnTargets(java.time.LocalDateTime warnThreshold, java.time.LocalDateTime dormantThreshold) {
-        return queryFactory.selectFrom(mbMember)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDormantWarnTargets()")
-                .where(mbMember.memberStatusCd.eq("ACTIVE"),
-                        mbMember.lastLogin.loe(warnThreshold),
-                        mbMember.lastLogin.gt(dormantThreshold))
-                .fetch();
-    }
-
-    /** 휴면 전환 대상 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<MbMember> selectDormantTargets(java.time.LocalDateTime threshold) {
-        return queryFactory.selectFrom(mbMember)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDormantTargets()")
-                .where(mbMember.memberStatusCd.eq("ACTIVE"),
-                        mbMember.lastLogin.loe(threshold)
-                                .or(mbMember.lastLogin.isNull().and(mbMember.regDate.loe(threshold))))
-                .fetch();
-    }
-
     /* 회원 목록조회 */
     @Override
     public List<MbMemberDto.Item> selectList(MbMemberDto.Request search) {
@@ -276,5 +226,36 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
         long affected = update.where(mbMember.memberId.eq(entity.getMemberId())).execute();
         return (int) affected;
+    }
+
+    /** FO 로그인 화면 사이트 선택란 — 회원이 실제 등록된 사이트 목록 (DISTINCT 단일컬럼) */
+    @Override
+    public List<String> selectDistinctSiteIds() {
+        return queryFactory.select(mbMember.siteId).distinct()
+                .from(mbMember)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDistinctSiteIds()")
+                .fetch();
+    }
+
+    /** 휴면 전환 대상 — lastLogin <= threshold 이거나 (lastLogin IS NULL AND regDate <= threshold) */
+    @Override
+    public List<MbMember> selectDormantTargets(LocalDateTime threshold) {
+        return queryFactory.selectFrom(mbMember)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDormantTargets()")
+                .where(mbMember.memberStatusCd.eq("ACTIVE"),
+                        mbMember.lastLogin.loe(threshold)
+                                .or(mbMember.lastLogin.isNull().and(mbMember.regDate.loe(threshold))))
+                .fetch();
+    }
+
+    /** 휴면 예정 이메일 대상 — memberStatusCd + lastLogin 구간(warnThreshold ~ dormantThreshold) */
+    @Override
+    public List<MbMember> selectDormantWarnTargets(String memberStatusCd, LocalDateTime warnThreshold, LocalDateTime dormantThreshold) {
+        return queryFactory.selectFrom(mbMember)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDormantWarnTargets()")
+                .where(mbMember.memberStatusCd.eq(memberStatusCd),
+                        mbMember.lastLogin.loe(warnThreshold),
+                        mbMember.lastLogin.gt(dormantThreshold))
+                .fetch();
     }
 }

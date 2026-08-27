@@ -57,14 +57,14 @@ public class MbMemberGradeCalcJob implements SchBatchJobHandler {
         int totalChecked = 0, totalChanged = 0;
 
         // site_id 제거 후 등급/회원 데이터가 전사 공유 — 한 번만 처리
-        List<MbMemberGrade> grades = gradeRepository.selectActiveOrderByRankDesc();
+        List<MbMemberGrade> grades = gradeRepository.findByUseYnOrderByGradeRankDesc("Y");
         if (grades.isEmpty()) {
             log.warn("[{}] 등록된 회원등급 없음 — 스킵", batchCode());
             return;
         }
         String lowestGradeCd = grades.get(grades.size() - 1).getGradeCd();
 
-        List<MbMember> members = memberRepository.selectActiveForGradeCalc();
+        List<MbMember> members = memberRepository.findByMemberStatusCd("ACTIVE");
         for (MbMember member : members) {
             totalChecked++;
             long purchaseAmt = member.getTotalPurchaseAmt() != null

@@ -221,4 +221,22 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         long affected = update.where(syBbs.bbsId.eq(entity.getBbsId())).execute();
         return (int) affected;
     }
+
+    /** 루트 bbs + 모든 자손 bbs_id 수집 — 전체 (bbsId, parentBbsId) 를 한 번에 읽어 자바에서 BFS */
+    @Override
+    public List<String> selectTreeBbsIds(String rootBbsId) {
+        List<com.querydsl.core.Tuple> rows = queryFactory.select(syBbs.bbsId, syBbs.parentBbsId)
+                .from(syBbs)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectTreeBbsIds()")
+                .fetch();
+
+        Map<String, List<String>> childrenOf = new java.util.HashMap<>();
+        for (com.querydsl.core.Tuple row : rows) {
+            String parentId = row.get(syBbs.parentBbsId);
+            if (parentId != null) {
+                childrenOf.computeIfAbsent(parentId, k -> new ArrayList<>()).add(row.get(syBbs.bbsId));
+            }
+        }
+        return QdslUtil.collectTreeIds(rootBbsId, childrenOf);
+    }
 }

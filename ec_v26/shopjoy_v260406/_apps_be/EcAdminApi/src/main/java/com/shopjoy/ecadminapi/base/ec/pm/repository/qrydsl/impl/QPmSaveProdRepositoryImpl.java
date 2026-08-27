@@ -23,4 +23,11 @@ public class QPmSaveProdRepositoryImpl implements QPmSaveProdRepository {
                 .where(pmSaveProd.prodId.eq(prodId))
                 .fetch();
     }
+
+    @Override
+    public long deleteAllBySaveIds(List<String> saveIds) {
+        return queryFactory.delete(pmSaveProd)
+                .where(pmSaveProd.saveId.in(saveIds))
+                .execute();
+    }
 }

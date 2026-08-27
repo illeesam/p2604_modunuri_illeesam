@@ -51,22 +51,22 @@ public class SyMsgLogCleanupJob implements SchBatchJobHandler {
     }
 
     private void cleanEmailLog(LocalDateTime cutoff) {
-        long before = emailLogRepository.countOlderThan(cutoff);
+        long before = emailLogRepository.countBySendDateBefore(cutoff);
         if (before == 0) {
             log.info("[{}] 이메일 로그 — 삭제 대상 없음", batchCode());
             return;
         }
-        int deleted = emailLogRepository.deleteOlderThan(cutoff);
+        long deleted = emailLogRepository.deleteBySendDateBefore(cutoff);
         log.info("[{}] 이메일 로그 삭제 — 대상: {}건, 삭제: {}건", batchCode(), before, deleted);
     }
 
     private void cleanMsgLog(LocalDateTime cutoff) {
-        long before = msgLogRepository.countOlderThan(cutoff);
+        long before = msgLogRepository.countBySendDateBefore(cutoff);
         if (before == 0) {
             log.info("[{}] 메시지 로그 — 삭제 대상 없음", batchCode());
             return;
         }
-        int deleted = msgLogRepository.deleteOlderThan(cutoff);
+        long deleted = msgLogRepository.deleteBySendDateBefore(cutoff);
         log.info("[{}] 메시지 로그 삭제 — 대상: {}건, 삭제: {}건", batchCode(), before, deleted);
     }
 

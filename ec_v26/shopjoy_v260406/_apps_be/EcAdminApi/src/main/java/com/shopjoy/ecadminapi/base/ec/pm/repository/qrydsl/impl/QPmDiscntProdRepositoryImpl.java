@@ -23,4 +23,11 @@ public class QPmDiscntProdRepositoryImpl implements QPmDiscntProdRepository {
                 .where(pmDiscntProd.prodId.eq(prodId))
                 .fetch();
     }
+
+    @Override
+    public long deleteAllByDiscntIds(List<String> discntIds) {
+        return queryFactory.delete(pmDiscntProd)
+                .where(pmDiscntProd.discntId.in(discntIds))
+                .execute();
+    }
 }

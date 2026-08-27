@@ -31,7 +31,7 @@ public class MdSgSourcegenService {
 
     public List<MdSgSourcegenDto.Item> getByProjectId(String projectId) {
         CmUtil.requireId(projectId, "projectId", this);
-        return mdSgSourcegenRepository.selectListByProjectId(projectId).stream()
+        return mdSgSourcegenRepository.findByProjectIdOrderByTabNoAsc(projectId).stream()
             .map(e -> {
                 MdSgSourcegenDto.Item item = new MdSgSourcegenDto.Item();
                 item.setSourcegenId(e.getSourcegenId());
@@ -57,6 +57,7 @@ public class MdSgSourcegenService {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
+        // [쿼리 메서드] 프로젝트 DDL 탭 전체 삭제
         mdSgSourcegenRepository.deleteByProjectId(projectId);
         em.flush();
 

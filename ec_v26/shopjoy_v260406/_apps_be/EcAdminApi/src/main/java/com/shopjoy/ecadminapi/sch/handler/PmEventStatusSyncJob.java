@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 이벤트 / 기획전 시작·종료일 기준 상태 자동 동기화.
@@ -73,7 +74,7 @@ public class PmEventStatusSyncJob implements SchBatchJobHandler {
 
     /** @return [total, toActive, toEnded, toPending] */
     private int[] syncEvents(LocalDate today, LocalDateTime now) {
-        var targets = eventRepository.selectSyncTargets();
+        var targets = eventRepository.findByUseYnAndEventStatusCdIn("Y", List.of("PENDING", "ACTIVE"));
         int toActive = 0, toEnded = 0, toPending = 0;
 
         for (PmEvent event : targets) {
@@ -103,7 +104,7 @@ public class PmEventStatusSyncJob implements SchBatchJobHandler {
 
     /** @return [total, toActive, toEnded, toDraft] */
     private int[] syncPlans(LocalDate today, LocalDateTime now) {
-        var targets = planRepository.selectSyncTargets();
+        var targets = planRepository.findByUseYnAndPlanStatusCdIn("Y", List.of("DRAFT", "ACTIVE"));
         int toActive = 0, toEnded = 0, toDraft = 0;
 
         for (PmPlan plan : targets) {

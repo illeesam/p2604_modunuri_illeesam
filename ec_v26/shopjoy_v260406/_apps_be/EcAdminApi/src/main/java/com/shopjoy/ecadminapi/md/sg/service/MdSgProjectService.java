@@ -91,7 +91,9 @@ public class MdSgProjectService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         MdSgProject entity = findById(id);
+        // [쿼리 메서드] 프로젝트 DDL 탭 전체 삭제
         mdSgSourcegenRepository.deleteByProjectId(id);
+        // [쿼리 메서드] 프로젝트 생성이력 전체 삭제
         mdSgSourcegenHistRepository.deleteByProjectId(id);
         mdSgProjectRepository.delete(entity);
         em.flush();

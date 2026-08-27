@@ -4,6 +4,10 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleAdjRepository;
 
-/* findApprovedBySettleId → QStSettleAdjRepository.selectApprovedBySettleId 로 전환 (2026-08-27) */
+import java.util.List;
+
 public interface StSettleAdjRepository extends JpaRepository<StSettleAdj, String>, QStSettleAdjRepository {
+
+    /** 정산ID 기준 승인된 조정항목 (aprvStatusCd=APPROVED) */
+    List<StSettleAdj> findBySettleIdAndAprvStatusCd(String settleId, String aprvStatusCd);
 }

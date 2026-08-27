@@ -4,6 +4,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyTemplateRepository;
 
-/* findFirstByTemplateCodeAndUseYn → QSyTemplateRepository.selectFirstByTemplateCodeAndUseYn 로 전환 (2026-08-27) */
+import java.util.Optional;
+
 public interface SyTemplateRepository extends JpaRepository<SyTemplate, String>, QSyTemplateRepository {
+
+    /** (templateCode, useYn=Y) 발송용 단건 조회 */
+    Optional<SyTemplate> findFirstByTemplateCodeAndUseYn(String templateCode, String useYn);
 }

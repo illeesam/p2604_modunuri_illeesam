@@ -4,8 +4,16 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdStockRepository;
 
-/* findByStockCode → QPdProdStockRepository.selectByStockCode
-   findByProdId / findByProdIdIn → QPdProdStockRepository.selectList (prodId/prodIds 필터) 로 통합 (2026-08-27)
-   findAllByOrderByStockCodeAsc — 호출부 0건 확인 후 제거 (2026-08-27) */
+import java.util.List;
+import java.util.Optional;
+
 public interface PdProdStockRepository extends JpaRepository<PdProdStock, String>, QPdProdStockRepository {
+
+    List<PdProdStock> findAllByOrderByStockCodeAsc();
+
+    Optional<PdProdStock> findByStockCode(String stockCode);
+
+    Optional<PdProdStock> findByProdId(String prodId);
+
+    List<PdProdStock> findByProdIdIn(List<String> prodIds);
 }

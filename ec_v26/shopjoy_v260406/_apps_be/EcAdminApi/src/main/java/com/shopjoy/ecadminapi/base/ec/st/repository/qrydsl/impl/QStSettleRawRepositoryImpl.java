@@ -205,25 +205,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return Optional.ofNullable(dtl);
     }
 
-    /* 정산 집계 배치용 — 관리 엔티티 그대로 반환 */
-    /** 특정 정산기간에 원천 데이터가 존재하는 업체ID 목록 (distinct) */
-    @Override
-    public List<String> selectDistinctVendorIdsBySettlePeriod(String settlePeriod) {
-        return queryFactory.select(stSettleRaw.vendorId).distinct()
-                .from(stSettleRaw)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDistinctVendorIdsBySettlePeriod()")
-                .where(stSettleRaw.settlePeriod.eq(settlePeriod), stSettleRaw.vendorId.isNotNull())
-                .fetch();
-    }
-
-    @Override
-    public List<StSettleRaw> selectListBySettlePeriodAndVendor(String settlePeriod, String vendorId) {
-        return queryFactory.selectFrom(stSettleRaw)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectListBySettlePeriodAndVendor()")
-                .where(stSettleRaw.settlePeriod.eq(settlePeriod).and(stSettleRaw.vendorId.eq(vendorId)))
-                .fetch();
-    }
-
     /* 정산 원천 데이터 목록조회 */
     @Override
     public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
@@ -457,5 +438,15 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
         long affected = update.where(stSettleRaw.settleRawId.eq(entity.getSettleRawId())).execute();
         return (int) affected;
+    }
+
+    /** 특정 정산기간에 원천 데이터가 존재하는 업체ID 목록 (distinct) */
+    @Override
+    public List<String> selectDistinctVendorIdsBySettlePeriod(String settlePeriod) {
+        return queryFactory.select(stSettleRaw.vendorId).distinct()
+                .from(stSettleRaw)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectDistinctVendorIdsBySettlePeriod()")
+                .where(stSettleRaw.settlePeriod.eq(settlePeriod), stSettleRaw.vendorId.isNotNull())
+                .fetch();
     }
 }

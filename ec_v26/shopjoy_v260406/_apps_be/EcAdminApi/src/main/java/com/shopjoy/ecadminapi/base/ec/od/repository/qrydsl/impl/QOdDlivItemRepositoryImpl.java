@@ -80,15 +80,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return Optional.ofNullable(dtl);
     }
 
-    /* 배송상태 동기화 배치용 — 관리 엔티티 그대로 반환 */
-    @Override
-    public List<OdDlivItem> selectListByDlivId(String dlivId) {
-        return queryFactory.selectFrom(odDlivItem)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectListByDlivId()")
-                .where(odDlivItem.dlivId.eq(dlivId))
-                .fetch();
-    }
-
     /* 배송 아이템 목록조회 */
     @Override
     public List<OdDlivItemDto.Item> selectList(OdDlivItemDto.Request search) {

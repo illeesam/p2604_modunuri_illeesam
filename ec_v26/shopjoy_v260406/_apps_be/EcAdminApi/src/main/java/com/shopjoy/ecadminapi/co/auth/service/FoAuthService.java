@@ -71,7 +71,7 @@ public class FoAuthService {
     public LoginRes login(LoginReq request, String appTypeCd) {
         MbMember member;
         try {
-            member = memberRepository.selectByLoginId(request.getLoginId())
+            member = memberRepository.findByLoginId(request.getLoginId())
                 .orElseThrow(() -> new CmBizException("회원 로그인ID가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this)));
         } catch (CmBizException e) {
             saveLoginLog(null, null, request.getLoginId(), "FAIL", null, 0, null, null);
@@ -146,7 +146,7 @@ public class FoAuthService {
     /* join */
     @Transactional
     public FoJoinRes join(MbMember body, String appTypeCd) {
-        if (memberRepository.selectByLoginId(body.getLoginId()).isPresent()) {
+        if (memberRepository.findByLoginId(body.getLoginId()).isPresent()) {
             throw new CmBizException("이미 사용 중인 로그인 ID입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
@@ -191,7 +191,7 @@ public class FoAuthService {
         }
 
         MbhMemberTokenLog tokenLog = memberTokenLogRepository
-            .selectByAuthIdAndAccessToken(authId, expiredAccessToken)
+            .findByAuthIdAndAccessToken(authId, expiredAccessToken)
             .orElseThrow(() -> new CmBizException("로그인 세션을 찾을 수 없습니다. 다시 로그인해주세요." + "::" + CmUtil.svcCallerInfo(this)));
 
         String storedRefreshToken = tokenLog.getRefreshToken();
