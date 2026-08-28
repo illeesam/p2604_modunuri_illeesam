@@ -72,3 +72,7 @@
 .mfe-tab-close:hover { background: #e8587a; color: #fff; }
 
 .mfe-content { padding: 16px 20px; flex: 1; }
+
+/* ── 로그인 화면: 테스트 계정 클릭 시 자동 로그인 ── */
+.mfe-quick-login { cursor: pointer; border-radius: 4px; padding: 1px 4px; transition: background .15s; }
+.mfe-quick-login:hover { background: #fff0f4; color: #c44569; }

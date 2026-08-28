@@ -83,6 +83,14 @@
           loginLoading.value = false;
         }
       };
+      /* quickLogin — 로그인 화면의 테스트 계정 목록을 클릭하면 그 계정으로 바로
+         로그인한다(2026-08-28). 아이디/비밀번호를 채워넣고 doLogin() 을 그대로
+         재사용 — 별도 API 경로를 새로 만들지 않는다. */
+      const quickLogin = (loginId) => {
+        loginForm.loginId = loginId;
+        loginForm.loginPwd = '1111';
+        doLogin();
+      };
       const doLogout = () => {
         _boAuthStore?.saReset?.();
         _syncCurrentAuthUser();
@@ -301,12 +309,17 @@
       const openGroup = async (menuKey, folder, group, wantScreenId) => {
         screenError.value = null;
         if (folder && !window.MFE_REGISTRY.isFolderLoaded(folder)) {
+          // 이미 다른 클릭이 같은 폴더를 로딩 중이면(더블클릭 등) ensureFolderLoaded 가
+          // 같은 Promise 를 재사용해 중복 네트워크 요청은 막아주지만, 실패 시 토스트는
+          // 각 호출이 따로 catch 해서 중복으로 뜬다 — 그래서 "이 호출이 로딩을 시작한
+          // 첫 호출인지"만 기억해뒀다가 실패 토스트는 그 첫 호출만 띄운다(2026-08-28).
+          const isFirstCaller = !loadingFolders.has(folder);
           loadingFolders.add(folder);
           try {
             await window.MFE_REGISTRY.ensureFolderLoaded(folder);
             _registerLoadedComponents();
           } catch (e) {
-            showToast('그룹을 불러오지 못했습니다: ' + (e?.message || e), 'error', 0);
+            if (isFirstCaller) showToast('그룹을 불러오지 못했습니다: ' + (e?.message || e), 'error', 0);
             loadingFolders.delete(folder);
             return;
           }
@@ -440,7 +453,7 @@
 
       return {
         TOP_MENUS,
-        cfIsLoggedIn, currentAuthUser, loginForm, loginError, loginLoading, doLogin, doLogout,
+        cfIsLoggedIn, currentAuthUser, loginForm, loginError, loginLoading, doLogin, doLogout, quickLogin,
         toasts, closeToast, confirmState, closeConfirm,
         activeMenu, activeScreenId, fnMenuItems, fnActiveItem, fnActiveItemMissingComp, cfActiveMenuDef, selectMenu, selectScreen, screenError,
         openTabs, openTab, openGroup, selectTab, closeTab, menuOf, groupedMenuOf, fnIsActive, fnClickGroup, fnClickItem,
@@ -464,10 +477,10 @@
           shopjoy_v260406 과 같은 백엔드(:3000) · 같은 계정을 씁니다
         </div>
         <div style="font-size:11.5px;color:#888;text-align:center;margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb;line-height:1.7;">
-          <div style="font-weight:700;color:#666;margin-bottom:2px;">테스트 계정 (비밀번호 전부 공통 1111)</div>
-          <div><b>admin1</b> / 1111 — 관리자(전체 메뉴)</div>
-          <div><b>admin2</b> / 1111 — 관리자(전체 메뉴)</div>
-          <div><b>user1</b> / 1111 — 게스트(제한 화면)</div>
+          <div style="font-weight:700;color:#666;margin-bottom:2px;">테스트 계정 (클릭 시 자동 로그인 · 비밀번호 전부 공통 1111)</div>
+          <div class="mfe-quick-login" @click="quickLogin('admin1')"><b>admin1</b> / 1111 — 관리자(전체 메뉴)</div>
+          <div class="mfe-quick-login" @click="quickLogin('admin2')"><b>admin2</b> / 1111 — 관리자(전체 메뉴)</div>
+          <div class="mfe-quick-login" @click="quickLogin('user1')"><b>user1</b> / 1111 — 게스트(제한 화면)</div>
         </div>
       </div>
     </div>

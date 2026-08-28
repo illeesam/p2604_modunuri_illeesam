@@ -109,7 +109,14 @@ window.MFE_REGISTRY = (function () {
       pendingLoads[key] = { promise, resolve: resolveFn, reject: rejectFn };
       const s = document.createElement('script');
       s.src = key + 'manifest.js';
-      s.onerror = () => { pendingLoads[key].reject(new Error('manifest.js 로드 실패: ' + s.src)); };
+      /* 실패 시에도 pendingLoads[key]를 지운다(2026-08-28) — 지우지 않으면 이 rejected
+         Promise가 캐시에 영구히 남아, 사용자가 같은 소그룹을 다시 클릭해도 새로 네트워크
+         요청을 안 하고 같은 실패를 즉시(그리고 영원히) 재현한다 — 새로고침 전엔 재시도
+         자체가 불가능해지는 버그였다. 성공 경로(_domainReady)는 이미 지운다. */
+      s.onerror = () => {
+        pendingLoads[key].reject(new Error('manifest.js 로드 실패: ' + s.src));
+        delete pendingLoads[key];
+      };
       document.head.appendChild(s);
       return promise;
     },
@@ -134,8 +141,16 @@ window.MFE_REGISTRY = (function () {
         return;
       }
       if ((menus[menuKey] || []).length) return;
+      /* check 는 resolve 되고 나면 tickListeners 에서 스스로를 빼야 한다(2026-08-28) —
+         안 빼면 이 세션이 끝날 때까지 매 _domainReady() 호출마다 이미 쓸모없어진 이
+         콜백까지 영원히 순회하게 되는 리스너 누수였다. */
       await new Promise((resolve) => {
-        const check = () => { if ((menus[menuKey] || []).length) resolve(); };
+        const check = () => {
+          if (!(menus[menuKey] || []).length) return;
+          const idx = tickListeners.indexOf(check);
+          if (idx !== -1) tickListeners.splice(idx, 1);
+          resolve();
+        };
         tickListeners.push(check);
         check();
       });
