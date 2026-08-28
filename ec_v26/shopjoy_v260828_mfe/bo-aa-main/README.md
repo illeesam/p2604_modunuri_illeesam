@@ -11,7 +11,7 @@
 
 - **메인프레임(셸)**: `bo-aa-main/mfe.html` + `bo-aa-main/lib/mfe/mfeShell.js` — Vue/Pinia 부트,
   로그인, 토스트/컨펌, 좌측 메뉴/열린 탭 UI만 담당. **어떤 화면이 있는지 전혀 모릅니다.**
-- **마이크로 도메인**: `bo-aa-home/`, `bo-pd-pd/`, `bo-pd-cate/`, `bo-cu-ba/`, `bo-cu-co/`, `bo-sy-ba/`, `bo-sy-org/` —
+- **마이크로 도메인**: `bo-ab-home/`, `bo-pd-pd/`, `bo-pd-cate/`, `bo-cu-ba/`, `bo-cu-co/`, `bo-sy-ba/`, `bo-sy-org/` —
   `bo-aa-main/`의 **형제(sibling) 폴더**로 존재합니다(= 각자 별도 git 레포라는 뜻을 폴더 배치
   자체로 표현). 각자 `manifest.js` 안에서 자기 화면 스크립트를 로드하고
   `window.MFE_REGISTRY.register(...)`로 **스스로** "나는 이 대메뉴의 이 소그룹에 속한다"고
@@ -34,8 +34,8 @@
 1. **카탈로그(가벼운 목차)** — `bo-aa-main/lib/mfe/mfeCatalog.js` 가 "어느 대메뉴에 어느
    폴더가 기여하는지"만 선언합니다(코드는 전혀 안 실림):
    ```js
-   R.registerCatalog('pd', '../bo-pd-pd/');
-   R.registerCatalog('pd', '../bo-pd-cate/');
+   R.registerCatalog('bo-pd', '../bo-pd-pd/');
+   R.registerCatalog('bo-pd', '../bo-pd-cate/');
    ```
 2. **부팅 시** `mfe.html`은 `mfeRegistry.js` + `mfeCatalog.js` 이 두 개만 로드합니다
    (7개 도메인 실제 코드는 전혀 안 실립니다). 좌측 메뉴는 아직 비어있고, 상단바(대메뉴
@@ -58,7 +58,7 @@
 불렸는지, 나중에 동적으로 불렸는지(`mfe.html` 지연로드) 전혀 모릅니다 — 어느 쪽이든
 똑같은 코드로 동작합니다. `register()`가 "이미 카탈로그로 만들어진 자리가 있으면
 채우고, 없으면 새로 추가"하는 upsert 방식이라 가능한 일입니다. 그래서
-`bo-aa-home/dev.html`처럼 도메인 하나만 단독 실행하는 화면은 코드 수정이 전혀 필요
+`bo-ab-home/dev.html`처럼 도메인 하나만 단독 실행하는 화면은 코드 수정이 전혀 필요
 없었습니다.
 
 ### 대메뉴 하나 = 여러 마이크로 레포 (2026-08-28)
@@ -68,7 +68,7 @@
 
 | 대메뉴 | 기여 레포 | 소그룹(`group`) |
 |---|---|---|
-| 🏠 홈 | `bo-aa-home/` | (그룹 없음 — 평평하게 표시) |
+| 🏠 홈 | `bo-ab-home/` | (그룹 없음 — 평평하게 표시) |
 | 📦 상품관리 | `bo-pd-pd/` | 상품 |
 | 📦 상품관리 | `bo-pd-cate/` | 카테고리 |
 | 💬 고객센터 | `bo-cu-ba/` | 고객 |
@@ -87,7 +87,7 @@
 `boAppBase.js`의 실제 BO 레이아웃을 최소 구성으로 재현했습니다:
 - **좌측 메뉴**: 상단에서 고른 대메뉴의 소그룹 + 화면만 보여줍니다(다른 대메뉴 항목은 안 그림 — 실제 bo.html과 동일 패턴). 로딩 중엔 스피너가 뜹니다.
 - **열린 탭**: 좌측 메뉴에서 화면을 클릭하면 상단에 탭으로 "열리고" 유지됩니다(같은 화면 다시 클릭 시 탭 재사용). 탭 클릭으로 전환, ✕로 개별 탭 닫기 — `boAppBase.js`의 `openTabs` 배열과 동일한 개념입니다.
-- **URL 라우팅**: 화면 전환 시 주소창이 `?menu=pd&screen=pdTagMng`처럼 바뀝니다(`history.pushState`). 새로고침해도 같은 화면이 유지되고, 브라우저 뒤로/앞으로가기도 동작하며, 특정 화면 URL을 그대로 복사해 공유할 수 있습니다.
+- **URL 라우팅**: 화면 전환 시 주소창이 `?menu=bo-pd&screen=bo-pd-pd-pdTagMng`처럼 바뀝니다(`history.pushState`). 새로고침해도 같은 화면이 유지되고, 브라우저 뒤로/앞으로가기도 동작하며, 특정 화면 URL을 그대로 복사해 공유할 수 있습니다.
 
 ## 폴더 배치 — 컨테이너 하나 안에 8개의 완전한 형제 폴더
 
@@ -96,21 +96,21 @@
 놓입니다 — 어느 쪽도 다른 쪽 안에 중첩되지 않습니다(중첩되면 나중에 각 폴더에서
 `git init`할 때 부모가 이미 추적 중인 트리 안에 자식 저장소가 끼는 꼴이 되어 "독립 레포"
 라는 의도와 모순됩니다). `bo-` 접두어는 정렬용이 아니라 **의미론적** 접두어입니다
-(2026-08-29, `aa-main`/`ab-home`/`pd-pd`/... → `bo-aa-main`/`bo-aa-home`/`bo-pd-pd`/...
+(2026-08-29, `aa-main`/`ab-home`/`pd-pd`/... → `bo-aa-main`/`bo-ab-home`/`bo-pd-pd`/...
 로 전면 변경) — 원본 프로젝트의 `bo-`/`fo-` 파일명 규칙(관리자 화면은 `bo-`, 사용자
 화면은 `fo-`)을 폴더 단위로 그대로 확장한 것으로, 이 8개 폴더가 전부 **관리자(Back
 Office) 화면**이라는 뜻입니다(나중에 사용자 페이스 마이크로 도메인을 추가한다면
-`fo-*`가 될 자리). 셸(`bo-aa-main`)과 홈(`bo-aa-home`)만 추가로 `aa-`라는 정렬용
-서브접두어를 공유합니다(둘 다 대메뉴 트리 바깥의 "기반" 성격이라는 표시일 뿐, 그
-결과 파일탐색기에서는 `bo-aa-home`이 `bo-aa-main`보다 알파벳순으로 먼저 옵니다 —
-`home` < `main`). 어느 경우든 실제 git 레포명(`shopjoy-mfe-shell`,
+`fo-*`가 될 자리). `bo-` 뒤의 `aa-`/`ab-` 서브접두어는 예전(2026-08-28) 정렬 관례를
+그대로 이어받은 것 — 셸(`bo-aa-main`)이 파일탐색기 최상단 + 홈(`bo-ab-home`)보다
+앞에 오도록 `aa < ab` 알파벳순으로 고정한 것뿐입니다(도메인 폴더들은 이런 서브
+접두어 없이 `bo-{도메인}` 그대로). 어느 경우든 실제 git 레포명(`shopjoy-mfe-shell`,
 `shopjoy-mfe-domain-home` 등)에는 이 접두어들을 넣지 않습니다:
 
 ```
 shopjoy_v260828_mfe/     ← 컨테이너(워크스페이스)일 뿐, 이 자체는 git 레포 아님
 ├── bo-aa-main/                       ← git 레포 1  (메인프레임 셸)
 │   └── mfe.html, lib/, components/, assets/, pages/base/
-├── bo-aa-home/                       ← git 레포 2  (홈)
+├── bo-ab-home/                       ← git 레포 2  (홈)
 ├── bo-pd-pd/                         ← git 레포 3  (상품관리 > 상품)
 ├── bo-pd-cate/                       ← git 레포 4  (상품관리 > 카테고리)
 ├── bo-cu-ba/                         ← git 레포 5  (고객센터 > 고객)
@@ -124,7 +124,7 @@ shopjoy_v260828_mfe/     ← 컨테이너(워크스페이스)일 뿐, 이 자체
 형제 폴더로 참조하든, 나중에 완전히 다른 CDN 오리진에서 절대 URL로 참조하든 항상
 정확히 동작합니다(도메인 코드가 셸의 물리적 위치를 몰라도 되는 게 핵심).
 
-**Live Server 실행 시**: `mfe.html`이 `../bo-aa-home/manifest.js`처럼 형제 폴더를 참조하므로,
+**Live Server 실행 시**: `mfe.html`이 `../bo-ab-home/manifest.js`처럼 형제 폴더를 참조하므로,
 VS Code에서 **`shopjoy_v260828_mfe/`(컨테이너 폴더)를 워크스페이스로 열어야**
 8개 형제 폴더가 전부 같은 서버 루트 아래 놓여서 `../` 참조가 정상 동작합니다
 (`bo-aa-main/` 폴더만 단독으로 열면 `../`가 서버 밖으로 나가 404가 납니다).
@@ -148,7 +148,7 @@ VS Code에서 **`shopjoy_v260828_mfe/`(컨테이너 폴더)를 워크스페이�
 <script src="lib/mfe/mfeCatalog.js"></script>
 ...
 <script>
-  window.mfeBootShell([{ key: 'sy', label: '시스템', icon: '⚙️' }]);
+  window.mfeBootShell([{ key: 'bo-sy', label: '시스템', icon: '⚙️' }]);
 </script>
 ```
 
@@ -170,8 +170,8 @@ VS Code에서 **`shopjoy_v260828_mfe/`(컨테이너 폴더)를 워크스페이�
 
 ```
 bo-sy-org/dev.html  →  ../bo-aa-main/... (공용 런타임) + manifest.js(자기 자신) 만 로드
-                     → window.mfeBootShell([{ key:'sy', ... }])  (메뉴 1개짜리 셸)
-                     ※ 같은 대메뉴(sy)를 공유하는 bo-sy-ba 도 전혀 안 불러온다
+                     → window.mfeBootShell([{ key:'bo-sy', ... }])  (메뉴 1개짜리 셸)
+                     ※ 같은 대메뉴(bo-sy)를 공유하는 bo-sy-ba 도 전혀 안 불러온다
 ```
 
 예: `http://127.0.0.1:5500/bo-sy-org/dev.html` 로 접속하면 사용자관리/부서관리 2개만 뜨는
@@ -181,17 +181,25 @@ bo-sy-org/dev.html  →  ../bo-aa-main/... (공용 런타임) + manifest.js(자�
 직접 확인한 셈입니다. `mfe.html`과 `dev.html`은 같은 `window.mfeBootShell(대메뉴목록)`
 함수를 쓰고, 넘기는 목록만 다릅니다(`bo-aa-main/lib/mfe/mfeShell.js` 참조).
 
-## 메뉴 구성 (전부 shopjoy_v260406 실제 화면 그대로, 수정 없이 복사)
+## 메뉴 구성 (원래 shopjoy_v260406 실제 화면. 로직·템플릿은 그대로, 컴포넌트 식별자만 변경됨)
+
+`window.ComponentName`/`name:` 옵션값/레지스트리 `id`는 전부 **`Bo{대메뉴}{소그룹}원래이름`**
+패턴으로 통일했습니다(2026-08-29) — 예: `PdTagMng`(원본, `bo-pd-pd`) → `BoPdPdPdTagMng`.
+`Bo`는 8개 폴더 전부 공통(관리자 화면)이라 사실상 "이 프로젝트 소속" 표시고, 실제 구분은
+`{대메뉴}{소그룹}` 부분(폴더명에서 `bo-`와 순수 정렬용 접두어를 뺀 나머지)이 합니다.
+도메인 폴더 안에서 새로 화면을 추가할 때도 이 패턴을 그대로 따르면 다른 도메인과
+이름이 겹칠 걱정 없이 기계적으로 이름을 지을 수 있습니다. `pages/` 안 실제 코드
+(`setup()`/`template`/props 등)는 원본과 완전히 동일합니다 — 바뀐 건 컴포넌트 식별자뿐.
 
 | 대메뉴 | 소그룹 | 화면 |
 |---|---|---|
-| 🏠 홈 | — | EC 대시보드1 (`DashboardBoEc01`), EC 대시보드2 (`DashboardBoEc02`) |
-| 📦 상품관리 | 상품 (`bo-pd-pd/`) | 상품태그관리 (`PdTagMng`), 재입고알림관리 (`PdRestockNotiMng`) |
-| 📦 상품관리 | 카테고리 (`bo-pd-cate/`) | 카테고리관리 (`PdCategoryMng`), 카테고리상품관리 (`PdCategoryProdMng`) |
-| 💬 고객센터 | 고객 (`bo-cu-ba/`) | 공지사항관리 (`CmNoticeMng`+`CmNoticeDtl`), FAQ관리 (`CmFaqMng`+`CmFaqDtl`) |
-| 💬 고객센터 | 공통업무 (`bo-cu-co/`) | 공지사항관리, FAQ관리 (bo-cu-ba 와 동일 화면 — 독립 레포가 각자 등록해도 충돌 없이 동작하는지 확인용) |
-| ⚙️ 시스템 | 기준정보 (`bo-sy-ba/`) | 브랜드관리 (`SyBrandMng`), 공통코드관리 (`SyCodeMng`) |
-| ⚙️ 시스템 | 조직 (`bo-sy-org/`) | 사용자관리 (`SyUserMng`+`SyUserDtl`), 부서관리 (`SyDeptMng`) |
+| 🏠 홈 | — | EC 대시보드1 (`BoHomeDashboardBoEc01`), EC 대시보드2 (`BoHomeDashboardBoEc02`) |
+| 📦 상품관리 | 상품 (`bo-pd-pd/`) | 상품태그관리 (`BoPdPdPdTagMng`), 재입고알림관리 (`BoPdPdPdRestockNotiMng`) |
+| 📦 상품관리 | 카테고리 (`bo-pd-cate/`) | 카테고리관리 (`BoPdCatePdCategoryMng`), 카테고리상품관리 (`BoPdCatePdCategoryProdMng`) |
+| 💬 고객센터 | 고객 (`bo-cu-ba/`) | 공지사항관리 (`BoCuBaCmNoticeMng`+`BoCuBaCmNoticeDtl`), FAQ관리 (`BoCuBaCmFaqMng`+`BoCuBaCmFaqDtl`) |
+| 💬 고객센터 | 공통업무 (`bo-cu-co/`) | 공지사항관리 (`BoCuCoCmNoticeMng`+`BoCuCoCmNoticeDtl`), FAQ관리 (`BoCuCoCmFaqMng`+`BoCuCoCmFaqDtl`) — bo-cu-ba 와 로직은 동일한 화면(독립 레포가 각자 등록해도 충돌 없이 동작하는지 확인용), 식별자만 도메인별로 분리 |
+| ⚙️ 시스템 | 기준정보 (`bo-sy-ba/`) | 브랜드관리 (`BoSyBaSyBrandMng`), 공통코드관리 (`BoSyBaSyCodeMng`), 공지사항상세·파일명중복테스트 (`BoSyBaCmNoticeDtl`, `bo-cu-ba`의 CmNoticeDtl.js를 복사해온 것 — 도메인별 식별자 분리 사례) |
+| ⚙️ 시스템 | 조직 (`bo-sy-org/`) | 사용자관리 (`BoSyOrgSyUserMng`+`BoSyOrgSyUserDtl`), 부서관리 (`BoSyOrgSyDeptMng`) |
 
 ## 실행 방법
 
@@ -212,7 +220,8 @@ bo-sy-org/dev.html  →  ../bo-aa-main/... (공용 런타임) + manifest.js(자�
 
 | 구분 | 내용 |
 |---|---|
-| **원본 그대로 복사(바이트 단위 동일)** | CDN 라이브러리, `bo-global-style01.css`, `lib/utils/*`, `lib/services/*`, `lib/stores/bo/*`, `components/comp/*`, `components/modals/*`, 14개 화면 파일 + Dtl 컴포넌트들 |
+| **원본 그대로 복사(바이트 단위 동일)** | CDN 라이브러리, `bo-global-style01.css`, `lib/utils/*`, `lib/services/*`, `lib/stores/bo/*`, `components/comp/*`, `components/modals/*` |
+| **원본에서 식별자만 변경(로직·템플릿·props 등은 100% 동일)** | 14개 화면 파일 + Dtl 컴포넌트들 — `window.ComponentName`/`name:` 옵션값을 `Bo{대메뉴}{소그룹}원래이름`으로 통일(2026-08-29, 도메인 간 이름 충돌 방지 + 새 도메인 추가 시 이름을 기계적으로 지을 수 있게). 위 "메뉴 구성" 표 참고 |
 | **새로 작성** | `lib/mfe/mfeRegistry.js`(레지스트리 — 카탈로그+지연로드+group 필드 지원), `lib/mfe/mfeCatalog.js`(도메인 목차), `lib/mfe/mfeShell.js`(단순화된 셸 — 로그인/토스트/컨펌은 `boAppBase.js`와 동일 패턴으로 재작성, 좌측메뉴 2단 그룹핑·열린 탭·URL 라우팅·지연로드 UI 자체 구현, 다중탭 kept 캐시·3/4열 뷰모드·API 응답 패널은 이 데모 범위 밖이라 생략), 각 도메인의 `manifest.js`(자기등록 매니페스트, `document.write` 대신 동적 `<script>`+Promise) + `dev.html`(단독 실행용), `mfe.html`/`mfe-*.html`, `assets/css/mfe-style.css` |
 
 ## 새 도메인(마이크로 레포) 추가하기

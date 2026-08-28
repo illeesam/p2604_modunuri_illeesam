@@ -1,7 +1,7 @@
 shopjoy-mfe-domain-cu-co
 
 관리단위: 마이크로 도메인 — 고객센터 > 공통업무 (cu 대메뉴에 bo-cu-ba 와 함께 기여)
-현재 위치: shopjoy_v260828_mfe/bo-cu-co/  (컨테이너 폴더 바로 밑, bo-aa-main/bo-aa-home/bo-pd-pd/bo-pd-cate/bo-cu-ba/bo-sy-ba/bo-sy-org 와 형제)
+현재 위치: shopjoy_v260828_mfe/bo-cu-co/  (컨테이너 폴더 바로 밑, bo-aa-main/bo-ab-home/bo-pd-pd/bo-pd-cate/bo-cu-ba/bo-sy-ba/bo-sy-org 와 형제)
 포함 경로: manifest.js, pages/*, dev.html(단독 실행용 — ../bo-aa-main/ 공용 런타임만 참조하고 bo-cu-ba 포함 다른 도메인은 전혀 안 부름)
 등록 화면: 공지사항관리 (CmNoticeMng + CmNoticeDtl), FAQ관리 (CmFaqMng + CmFaqDtl) — 대메뉴 cu, 소그룹 "공통업무"
           ※ bo-cu-ba 와 같은 화면을 각자 독립적으로(별도 물리 파일로 복사해) 가지고 있음 —

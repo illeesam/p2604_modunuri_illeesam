@@ -15,7 +15,7 @@
   </script>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       이 화면은 "고객센터" 도메인 레포(이 폴더) 를 다른 도메인(bo-aa-home/bo-pd-pd/bo-pd-cate/bo-sy-ba/bo-sy-org) 없이,
+       이 화면은 "고객센터" 도메인 레포(이 폴더) 를 다른 도메인(bo-ab-home/bo-pd-pd/bo-pd-cate/bo-sy-ba/bo-sy-org) 없이,
        메인프레임(../bo-aa-main/)의 공용 런타임만으로 단독 실행한다 — 이게 되면
        이 도메인이 다른 도메인에 의존하지 않고 셸의 "런타임 계약"에만 의존한다는
        증거가 된다. 실제로 레포를 분리한다면, 여기 ../bo-aa-main/ 경로들은 배포된
@@ -84,12 +84,12 @@
 
   <script src="../bo-aa-main/lib/mfe/mfeRegistry.js"></script>
 
-  <!-- ■ 이 도메인 자기 자신만 로드 — bo-aa-home/bo-pd-pd/bo-pd-cate/bo-sy-ba/bo-sy-org 는 전혀 안 부른다 ■ -->
+  <!-- ■ 이 도메인 자기 자신만 로드 — bo-ab-home/bo-pd-pd/bo-pd-cate/bo-sy-ba/bo-sy-org 는 전혀 안 부른다 ■ -->
   <script src="manifest.js"></script>
 
   <script src="../bo-aa-main/lib/mfe/mfeShell.js"></script>
   <script>
-    window.mfeBootShell([{ key: 'cu', label: '고객센터', icon: '💬' }]);
+    window.mfeBootShell([{ key: 'bo-cu', label: '고객센터', icon: '💬' }]);
   </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 shopjoy-mfe-domain-sy-org
 
 관리단위: 마이크로 도메인 — 시스템 > 조직 (sy 대메뉴에 bo-sy-ba 와 함께 기여)
-현재 위치: shopjoy_v260828_mfe/bo-sy-org/  (컨테이너 폴더 바로 밑, bo-aa-main/bo-aa-home/bo-pd-pd/bo-pd-cate/bo-cu-ba/bo-cu-co/bo-sy-ba 와 형제)
+현재 위치: shopjoy_v260828_mfe/bo-sy-org/  (컨테이너 폴더 바로 밑, bo-aa-main/bo-ab-home/bo-pd-pd/bo-pd-cate/bo-cu-ba/bo-cu-co/bo-sy-ba 와 형제)
 포함 경로: manifest.js, pages/*, dev.html(단독 실행용 — ../bo-aa-main/ 공용 런타임만 참조하고 bo-sy-ba 포함 다른 도메인은 전혀 안 부름)
 등록 화면: 사용자관리 (SyUserMng + SyUserDtl), 부서관리 (SyDeptMng) — 대메뉴 sy, 소그룹 "조직"
 셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,

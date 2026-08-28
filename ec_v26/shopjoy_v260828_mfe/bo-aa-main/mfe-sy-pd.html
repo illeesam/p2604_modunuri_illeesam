@@ -20,7 +20,7 @@
   <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
   <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
   <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
-  <!-- echarts — 이 대메뉴 조합(sy+pd)은 안 쓰지만 메인프레임이 상시 제공하는 공용 런타임의 일부라 그대로 로드 -->
+  <!-- echarts — 이 대메뉴 조합(bo-sy+bo-pd)은 안 쓰지만 메인프레임이 상시 제공하는 공용 런타임의 일부라 그대로 로드 -->
   <script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
@@ -80,12 +80,12 @@
   <!-- ═══════════════════════════════════════════════════════════════════
        mfe.html(전체 7개 대메뉴)의 축소판 — 앞선 mfe-sy.html/mfe-pd.html 은 "같은
        대메뉴를 공유하는 레포끼리"만 묶었는데, 이 파일은 한 단계 더 나아가 **서로
-       다른 대메뉴(sy, pd) 자체를 여러 개 골라 묶는 예시**다. 지연로드 전환
+       다른 대메뉴(bo-sy, bo-pd) 자체를 여러 개 골라 묶는 예시**다. 지연로드 전환
        (2026-08-28) 이후로는 mfe.html 과 똑같이 카탈로그 전체를 로드해도 무방하고
-       (코드는 안 실림), 실제 차이는 아래 mfeBootShell() 인자다 — 대메뉴를 sy/pd
+       (코드는 안 실림), 실제 차이는 아래 mfeBootShell() 인자다 — 대메뉴를 bo-sy/bo-pd
        두 개만 넘기면 상단바엔 시스템/상품관리 두 버튼만 뜨고, 좌측 메뉴는 그 중
        선택된 대메뉴의 소그룹만 보여준다. 실제로 클릭한 대메뉴의 도메인만 그때
-       로드된다(bo-aa-home/bo-cu-ba/bo-cu-co 는 이 화면에서 클릭할 방법이 없으니 로드되지
+       로드된다(bo-ab-home/bo-cu-ba/bo-cu-co 는 이 화면에서 클릭할 방법이 없으니 로드되지
        않는다). -->
   <script src="lib/mfe/mfeRegistry.js"></script>
   <script src="lib/mfe/mfeCatalog.js"></script>
@@ -93,8 +93,8 @@
   <script src="lib/mfe/mfeShell.js"></script>
   <script>
     window.mfeBootShell([
-      { key: 'sy', label: '시스템', icon: '⚙️' },
-      { key: 'pd', label: '상품관리', icon: '📦' },
+      { key: 'bo-sy', label: '시스템', icon: '⚙️' },
+      { key: 'bo-pd', label: '상품관리', icon: '📦' },
     ]);
   </script>
 </body>

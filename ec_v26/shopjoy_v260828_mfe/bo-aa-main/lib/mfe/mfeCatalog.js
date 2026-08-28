@@ -39,13 +39,13 @@
  *        만들기 전에 다른 도메인 폴더에 같은 이름이 이미 있는지 확인할 것(주석 안에
  *        glob 을 쓰면 `*` 다음에 `/`가 와서 블록주석을 조기 종료시키므로 폴더를 풀어
  *        나열한다):
- *        `grep -rn "window\.컴포넌트명\s*=" ../bo-aa-home/pages ../bo-pd-pd/pages ../bo-pd-cate/pages ../bo-cu-ba/pages ../bo-cu-co/pages ../bo-sy-ba/pages ../bo-sy-org/pages`
+ *        `grep -rn "window\.컴포넌트명\s*=" ../bo-ab-home/pages ../bo-pd-pd/pages ../bo-pd-cate/pages ../bo-cu-ba/pages ../bo-cu-co/pages ../bo-sy-ba/pages ../bo-sy-org/pages`
  * 3. 그 폴더 안에 `dev.html` 작성 — 다른 도메인 없이 `../bo-aa-main/`의 공용 런타임 +
  *    자기 `manifest.js` 하나만 정적 로드해서 "이 도메인이 혼자서도 돌아가는지" 확인용.
  *    기존 dev.html(예: bo-sy-ba/dev.html) 그대로 복사 후 스크립트 목록만 자기 화면으로 교체
  * 4. **여기(`mfeCatalog.js`)에 `R.registerCatalog(menuKey, folder, group, screens)` 한
  *    줄 추가** — 이게 셸이 이 새 도메인의 존재를 아는 유일한 지점이다:
- *      - `menuKey` — 기존 대메뉴에 합류(예: 'pd')면 그대로, 완전히 새 대메뉴면
+ *      - `menuKey` — 기존 대메뉴에 합류(예: 'bo-pd')면 그대로, 완전히 새 대메뉴면
  *        `mfe.html`/`mfe-*.html`의 `mfeBootShell([...])` 호출 배열에도 새 항목 추가 필요
  *      - `group` — 소그룹(중메뉴) 라벨. 기존 대메뉴에 합류할 때 다른 그룹 이름과
  *        겹치지 않게(같은 그룹명이면 좌측 메뉴에서 같은 소그룹으로 섞여 보임)
@@ -67,35 +67,35 @@
 (function () {
   var R = window.MFE_REGISTRY;
 
-  R.registerCatalog('home', '../bo-aa-home/', null, [
-    { id: 'dashboardBoEc01', label: 'EC 대시보드 1' },
-    { id: 'dashboardBoEc02', label: 'EC 대시보드 2' },
+  R.registerCatalog('bo-home', '../bo-ab-home/', null, [
+    { id: 'bo-ab-home-dashboardBoEc01', label: 'EC 대시보드 1' },
+    { id: 'bo-ab-home-dashboardBoEc02', label: 'EC 대시보드 2' },
   ]);
-  R.registerCatalog('pd', '../bo-pd-pd/', '상품', [
-    { id: 'pdTagMng', label: '상품태그관리' },
-    { id: 'pdRestockNotiMng', label: '재입고알림관리' },
+  R.registerCatalog('bo-pd', '../bo-pd-pd/', '상품', [
+    { id: 'bo-pd-pd-pdTagMng', label: '상품태그관리' },
+    { id: 'bo-pd-pd-pdRestockNotiMng', label: '재입고알림관리' },
   ]);
-  R.registerCatalog('pd', '../bo-pd-cate/', '카테고리', [
-    { id: 'pdCategoryMng', label: '카테고리관리' },
-    { id: 'pdCategoryProdMng', label: '카테고리상품관리' },
+  R.registerCatalog('bo-pd', '../bo-pd-cate/', '카테고리', [
+    { id: 'bo-pd-cate-pdCategoryMng', label: '카테고리관리' },
+    { id: 'bo-pd-cate-pdCategoryProdMng', label: '카테고리상품관리' },
   ]);
-  R.registerCatalog('cu', '../bo-cu-ba/', '고객', [
-    { id: 'cmNoticeMng', label: '공지사항관리' },
-    { id: 'cmFaqMng', label: 'FAQ관리' },
+  R.registerCatalog('bo-cu', '../bo-cu-ba/', '고객', [
+    { id: 'bo-cu-ba-cmNoticeMng', label: '공지사항관리' },
+    { id: 'bo-cu-ba-cmFaqMng', label: 'FAQ관리' },
   ]);
-  R.registerCatalog('cu', '../bo-cu-co/', '공통업무', [
-    { id: 'cmNoticeMng_co', label: '공지사항관리' },
-    { id: 'cmFaqMng_co', label: 'FAQ관리' },
+  R.registerCatalog('bo-cu', '../bo-cu-co/', '공통업무', [
+    { id: 'bo-cu-co-cmNoticeMng', label: '공지사항관리' },
+    { id: 'bo-cu-co-cmFaqMng', label: 'FAQ관리' },
   ]);
-  R.registerCatalog('sy', '../bo-sy-ba/', '기준정보', [
-    { id: 'syBrandMng', label: '브랜드관리' },
-    { id: 'syCodeMng', label: '공통코드관리' },
-    // syCmNoticeDtlDup — bo-cu-ba/pages/CmNoticeDtl.js 를 그대로 복사해온 파일명/전역명
+  R.registerCatalog('bo-sy', '../bo-sy-ba/', '기준정보', [
+    { id: 'bo-sy-ba-syBrandMng', label: '브랜드관리' },
+    { id: 'bo-sy-ba-syCodeMng', label: '공통코드관리' },
+    // bo-sy-ba-cmNoticeDtl — bo-cu-ba/pages/bo/cu/ba/CmNoticeDtl.js 를 그대로 복사해온 파일명/전역명
     // 중복 테스트용(2026-08-28). bo-sy-ba/manifest.js 상단 주석 참고.
-    { id: 'syCmNoticeDtlDup', label: '공지사항상세(파일명중복테스트)' },
+    { id: 'bo-sy-ba-cmNoticeDtl', label: '공지사항상세(파일명중복테스트)' },
   ]);
-  R.registerCatalog('sy', '../bo-sy-org/', '조직', [
-    { id: 'syUserMng', label: '사용자관리' },
-    { id: 'syDeptMng', label: '부서관리' },
+  R.registerCatalog('bo-sy', '../bo-sy-org/', '조직', [
+    { id: 'bo-sy-org-syUserMng', label: '사용자관리' },
+    { id: 'bo-sy-org-syDeptMng', label: '부서관리' },
   ]);
 })();

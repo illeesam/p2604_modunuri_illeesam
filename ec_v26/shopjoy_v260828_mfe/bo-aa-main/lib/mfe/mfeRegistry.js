@@ -4,7 +4,7 @@
  * 자체(PAGE_COMP_MAP + v-else-if 체인)를 매번 고쳐야 했다(183개 분기, 3289줄).
  *
  * 이 데모는 그 반대 방향을 보여준다 — 메인프레임(mfe.html)은 "어떤 화면이 있는지" 전혀
- * 모른다. 각 도메인 폴더(bo-aa-home/, bo-pd-pd/, bo-pd-cate/, bo-cu-ba/, bo-cu-co/, bo-sy-ba/, bo-sy-org/ —
+ * 모른다. 각 도메인 폴더(bo-ab-home/, bo-pd-pd/, bo-pd-cate/, bo-cu-ba/, bo-cu-co/, bo-sy-ba/, bo-sy-org/ —
  * 메인프레임 bo-aa-main/ 의 형제 폴더)가 자기 화면을 스스로 이 레지스트리에 등록(register)
  * 하고, 메인프레임은 등록된 목록을 그대로 그려주기만 한다. 대메뉴 하나(pd/cu/sy)에
  * 여러 도메인 폴더가 소그룹(group)으로 나눠 기여할 수도 있다(2026-08-28).
