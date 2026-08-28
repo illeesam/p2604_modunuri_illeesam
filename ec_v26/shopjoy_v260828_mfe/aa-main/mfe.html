@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy MFE Demo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E">
+  <script>
+    /* shopjoy_v260406/bo.html 의 BO_SITE_NO 부트스트랩을 단순화 — 이 데모는 항상 01 사이트만 사용 */
+    window.BO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-bo-sy-siteNo', '01');
+      localStorage.setItem('modu-bo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <!-- ■ 메인프레임 공용 런타임 — shopjoy_v260406/assets/cdn/pkg 원본 그대로 재사용 ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <!-- echarts — ab-home/(대시보드) 화면이 <co-echart> 로 사용 -->
+  <script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <!-- 메인프레임 공용 CSS — shopjoy_v260406 원본 그대로 재사용 -->
+  <link rel="stylesheet" href="assets/css/bo-global-style01.css">
+  <!-- 이 셸(mfe.html) 전용 CSS — 프로젝트 컨벤션대로 분리 -->
+  <link rel="stylesheet" href="assets/css/mfe-style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       메인프레임 공용 자원 — shopjoy_v260406 원본 파일 그대로(수정 없이) 재사용.
+       이 구간은 "레포를 나눈다면 메인프레임 레포에 남는 부분"에 해당한다.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/license/licenseBo.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/boConsts.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
+  <script src="lib/utils/coNotiStore.js"></script>
+  <script src="lib/env/boEnvConsts.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
+  <script src="lib/utils/coAuth.js"></script>
+
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
+  <script src="lib/config/excelDomains.js"></script>
+
+  <script src="pages/base/boError401.js"></script>
+  <script src="pages/base/boError404.js"></script>
+  <script src="pages/base/boError500.js"></script>
+
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
+  <script src="lib/stores/bo/boUserPrefStore.js"></script>
+
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
+
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/BoComp.js"></script>
+  <script src="components/comp/BoAreaComp.js"></script>
+  <script src="components/comp/CoEchartComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
+
+  <script src="components/modals/BoModals.js"></script>
+  <script src="components/modals/BoExcelDownModal.js"></script>
+  <script src="components/modals/BoCmPopupModal.js"></script>
+  <script src="components/modals/HelpBoModal.js"></script>
+  <script src="components/modals/CoExtHelpModal.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       마이크로프론트엔드 레지스트리 — 도메인 manifest.js 들보다 반드시 먼저 로드.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/mfe/mfeRegistry.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       마이크로 도메인 — 셸은 이 7줄만 안다(각 폴더 내부 구성은 전혀 모름).
+       각 도메인은 이 셸(mainframe/) 폴더 밖의 형제(sibling) 폴더 — 즉 실제로 별도
+       git 레포다. 대메뉴 하나(pd/cu/sy)에 여러 레포가 소그룹(group)으로 나눠
+       기여할 수 있다는 걸 보여준다(2026-08-28) — pd-pd(상품)+pd-cate(카테고리),
+       cu-ba(고객)+cu-co(공통업무), sy-ba(기준정보)+sy-org(조직). 컨테이너 폴더
+       shopjoy_v260828_mfe/ 자체는 git 레포가 아니라 이 레포들을 한
+       워크스페이스로 묶어 보여주는 용도일 뿐. 실제로 레포를 나눈다면 이 줄들이
+       "각 마이크로 레포를 셸에 연결하는" 유일한 지점이 되고, 배포 시엔 이 src 를
+       절대 URL(CDN 등)로만 바꾸면 된다 — manifest.js 내부는
+       document.currentScript.src 기준으로 자기 pages/ 를 찾으므로 셸이 이 경로를
+       어떻게 참조하든 상관없다.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="../ab-home/manifest.js"></script>
+  <script src="../pd-pd/manifest.js"></script>
+  <script src="../pd-cate/manifest.js"></script>
+  <script src="../cu-ba/manifest.js"></script>
+  <script src="../cu-co/manifest.js"></script>
+  <script src="../sy-ba/manifest.js"></script>
+  <script src="../sy-org/manifest.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       메인 앱 부트스트랩 — 반드시 마지막(레지스트리에 전부 등록된 뒤 렌더해야 함).
+       mfeBootShell()에 넘기는 대메뉴 4개가 이 셸의 "통합 데모" 정체성이다 —
+       도메인 폴더의 dev.html 은 이 목록을 자기 메뉴 1개짜리로 바꿔서 동일 함수를 부른다.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/mfe/mfeShell.js"></script>
+  <script>
+    window.mfeBootShell([
+      { key: 'home', label: '홈', icon: '🏠' },
+      { key: 'pd',   label: '상품관리', icon: '📦' },
+      { key: 'cu',   label: '고객센터', icon: '💬' },
+      { key: 'sy',   label: '시스템', icon: '⚙️' },
+    ]);
+  </script>
+</body>
+</html>

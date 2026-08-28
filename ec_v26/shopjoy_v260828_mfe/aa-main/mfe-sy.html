@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy MFE Demo — 시스템</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <script>
+    /* shopjoy_v260406/bo.html 의 BO_SITE_NO 부트스트랩을 단순화 — 이 데모는 항상 01 사이트만 사용 */
+    window.BO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-bo-sy-siteNo', '01');
+      localStorage.setItem('modu-bo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <!-- ■ 메인프레임 공용 런타임 — shopjoy_v260406/assets/cdn/pkg 원본 그대로 재사용 ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <!-- echarts — 이 대메뉴(sy)는 안 쓰지만 메인프레임이 상시 제공하는 공용 런타임의 일부라 그대로 로드 -->
+  <script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/bo-global-style01.css">
+  <link rel="stylesheet" href="assets/css/mfe-style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       메인프레임 공용 자원 — mfe.html 과 완전히 동일(수정 없음).
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/license/licenseBo.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/boConsts.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
+  <script src="lib/utils/coNotiStore.js"></script>
+  <script src="lib/env/boEnvConsts.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
+  <script src="lib/utils/coAuth.js"></script>
+
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
+  <script src="lib/config/excelDomains.js"></script>
+
+  <script src="pages/base/boError401.js"></script>
+  <script src="pages/base/boError404.js"></script>
+  <script src="pages/base/boError500.js"></script>
+
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
+  <script src="lib/stores/bo/boUserPrefStore.js"></script>
+
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
+
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/BoComp.js"></script>
+  <script src="components/comp/BoAreaComp.js"></script>
+  <script src="components/comp/CoEchartComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
+
+  <script src="components/modals/BoModals.js"></script>
+  <script src="components/modals/BoExcelDownModal.js"></script>
+  <script src="components/modals/BoCmPopupModal.js"></script>
+  <script src="components/modals/HelpBoModal.js"></script>
+  <script src="components/modals/CoExtHelpModal.js"></script>
+
+  <script src="lib/mfe/mfeRegistry.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       mfe.html(전체 7개)의 축소판 — 같은 대메뉴(sy)를 공유하는 두 레포만 로드한다.
+       ab-home/pd-pd/pd-cate/cu-ba/cu-co 는 전혀 안 불러온다. sy-ba(기준정보)와
+       sy-org(조직) 둘 다 window.MFE_REGISTRY.register("sy", ...) 로 같은
+       menuKey 에 등록하므로, 셸의 groupedMenuOf('sy') 가 자동으로 두 소그룹으로
+       묶어 좌측 메뉴에 그린다 — 이 파일은 그 조합만 부팅 목록에서 골라낸 것뿐,
+       셸(mfeShell.js) 코드는 mfe.html 과 완전히 동일하다(2026-08-28).
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="../sy-ba/manifest.js"></script>
+  <script src="../sy-org/manifest.js"></script>
+
+  <script src="lib/mfe/mfeShell.js"></script>
+  <script>
+    window.mfeBootShell([
+      { key: 'sy', label: '시스템', icon: '⚙️' },
+    ]);
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+shopjoy-mfe-shell
+
+관리단위: 메인프레임(셸)
+현재 위치: shopjoy_v260828_mfe/aa-main/  (컨테이너 폴더 바로 밑, ab-home/pd-pd/pd-cate/cu-ba/cu-co/sy-ba/sy-org 와 형제.
+          폴더명 앞의 "aa-" 는 파일탐색기 최상단 + ab-home 보다 앞에 오도록 붙인
+          것뿐(aa < ab 라 알파벳순으로 순서까지 고정됨) — 실제 git 레포명은 여전히
+          shopjoy-mfe-shell 이 맞다, 로컬 정렬용 접두어를 레포명에 그대로 쓰지 않는다)
+포함 경로: mfe.html, mfe-{조합}.html(부분조합 진입점), lib/mfe/*, lib/utils/*, lib/services/*,
+          lib/stores/bo/*, lib/consts/*, lib/env/*, lib/config/*, lib/license/*,
+          components/comp/*, components/modals/*, pages/base/*, assets/*
+역할: Vue/Pinia 부트, 인증, 토스트/컨펌, 상단 대메뉴 + 좌측 메뉴 + 열린 탭 UI, 공용
+      컴포넌트/스토어 — 도메인이 무엇을 등록하는지는 모르고 window.MFE_REGISTRY
+      등록 결과만 그려준다.
+
+폴더 배치: shopjoy_v260828_mfe/ 컨테이너 자체는 git 레포가 아니다(8개 레포를
+          한 워크스페이스로 묶어 보여주는 용도). aa-main/ab-home/pd-pd/pd-cate/
+          cu-ba/cu-co/sy-ba/sy-org 8개 폴더가 각각 독립 git 레포이며 서로 완전한
+          형제(sibling) 관계 — 어느 쪽도 다른 쪽 안에 중첩되지 않는다. mfe.html은
+          도메인을 ../ab-home/manifest.js 처럼 참조한다.

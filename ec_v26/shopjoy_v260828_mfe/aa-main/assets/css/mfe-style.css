@@ -1,0 +1,67 @@
+/* mfe-style.css — mfe.html / dev.html 전용 스타일 (프로젝트 컨벤션: 독립 HTML 화면 전용 CSS는
+   assets/css/{파일명}-style.css 로 분리). 나머지 UI(.card/.btn/.form-control/.toast-*
+   등)는 shopjoy_v260406 에서 그대로 가져온 bo-global-style01.css 를 재사용한다. */
+
+.mfe-topbar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 10px 20px; background: #1a1d24; color: #fff;
+}
+.mfe-brand { font-weight: 800; font-size: 15px; letter-spacing: .01em; flex-shrink: 0; }
+.mfe-menus { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
+.mfe-menu-btn {
+  padding: 7px 14px; border: none; border-radius: 8px; cursor: pointer;
+  background: transparent; color: #cfd3dc; font-size: 12.5px; font-weight: 600;
+  transition: all .15s; white-space: nowrap;
+}
+.mfe-menu-btn:hover { background: rgba(255,255,255,0.08); }
+.mfe-menu-btn.active { background: linear-gradient(135deg,#e8587a,#c44569); color: #fff; }
+.mfe-user { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #cfd3dc; flex-shrink: 0; }
+
+/* ── 본문 레이아웃: 좌측 메뉴 + 우측(탭+콘텐츠) ── */
+.mfe-body { display: flex; align-items: flex-start; min-height: calc(100vh - 46px); }
+
+.mfe-sidebar {
+  width: 200px; flex-shrink: 0; background: #fff; border-right: 1px solid #e5e7eb;
+  min-height: calc(100vh - 46px); padding: 12px 0;
+}
+.mfe-sidebar-group-title {
+  /* 이제 클릭 불가(선택은 상단 대메뉴 바로만) — 현재 대메뉴 이름을 보여주는 정적 헤더 */
+  padding: 10px 16px; font-size: 12.5px; font-weight: 800; color: #e8587a;
+}
+.mfe-sidebar-subgroup {
+  padding: 8px 16px 3px 24px; font-size: 10.5px; font-weight: 800; color: #aaa;
+  letter-spacing: .03em;
+}
+.mfe-sidebar-item {
+  padding: 7px 16px 7px 30px; font-size: 12.5px; color: #777; cursor: pointer;
+  transition: all .15s; border-left: 2px solid transparent;
+}
+.mfe-sidebar-item-nested { padding-left: 40px; }
+.mfe-sidebar-item:hover { background: #f9fafb; color: #333; }
+.mfe-sidebar-item.active { background: linear-gradient(135deg,#fff0f4,#ffe4ec); color: #e8587a; font-weight: 700; border-left-color: #e8587a; }
+.mfe-sidebar-hint { margin: 14px 16px 0; font-size: 10.5px; color: #bbb; line-height: 1.5; }
+
+.mfe-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── 열린 탭 (boAppBase.js 의 openTabs 와 동일 개념) ── */
+.mfe-tabs {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  padding: 8px 16px; background: #fff; border-bottom: 1px solid #e5e7eb;
+  min-height: 20px;
+}
+.mfe-tabs-empty { font-size: 12px; color: #bbb; }
+.mfe-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px 6px 14px; border-radius: 8px 8px 0 0; cursor: pointer;
+  background: #f5f6f8; color: #666; font-size: 12.5px; font-weight: 600;
+  border-bottom: 2px solid transparent; transition: all .15s;
+}
+.mfe-tab:hover { background: #eef0f3; }
+.mfe-tab.active { background: linear-gradient(135deg,#fff0f4,#ffe4ec); color: #e8587a; border-bottom-color: #e8587a; }
+.mfe-tab-close {
+  font-size: 10px; color: #999; border-radius: 50%; width: 16px; height: 16px;
+  display: inline-flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.mfe-tab-close:hover { background: #e8587a; color: #fff; }
+
+.mfe-content { padding: 16px 20px; flex: 1; }
