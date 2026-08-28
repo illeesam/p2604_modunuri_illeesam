@@ -133,28 +133,46 @@
          라는 다른 위치의 에러로 보이는 것 — 실제 원인은 이 한 줄 누락이었다(2026-08-28). */
       window.boApp = { showToast, showConfirm };
 
-      /* ══════════════════════════ 대메뉴 / 화면 전환 (MFE_REGISTRY 조회만) ══════════════════════════
+      /* ══════════════════════════ 대메뉴 / 화면 전환 (지연로드 지원, 2026-08-28) ══════════════════════════
          URL(?menu=..&screen=..) 과 동기화한다 — 새로고침해도 같은 화면 유지, 뒤로/앞으로가기
          동작, 링크 복사로 특정 화면 바로 열기가 되도록. pushState 를 쓰므로 브라우저
-         뒤로가기(popstate)도 지원한다(2026-08-28). */
+         뒤로가기(popstate)도 지원한다.
+         지연로드 전환 전에는 부팅 시점에 이미 모든 도메인이 로드돼 있다고 가정하고
+         window.MFE_REGISTRY.getMenu() 를 그 자리에서 바로 읽었는데, 이제는 부팅
+         시점엔 카탈로그(가벼운 목차)만 있고 실제 화면은 아직 없다 — 그래서 URL에서는
+         "어느 대메뉴로 시작할지"만 읽고, 실제 화면 id 확정은 그 대메뉴가 로드된 뒤
+         openTab() 안에서 한다. */
       const _defaultMenuKey = () => TOP_MENUS[0]?.key || null;
-      const _fromUrl = () => {
+      const _urlParams = () => {
         const qs = new URLSearchParams(window.location.search);
         const menuKey = qs.get('menu');
         const screenId = qs.get('screen');
         const menu = TOP_MENUS.find((m) => m.key === menuKey) ? menuKey : _defaultMenuKey();
-        const items = window.MFE_REGISTRY.getMenu(menu);
-        const screen = items.find((it) => it.id === screenId) ? screenId : (items[0]?.id || null);
-        return { menu, screen };
+        return { menu, screen: screenId };
       };
-      const _init = _fromUrl();
+      const _init = _urlParams();
       const activeMenu = ref(_init.menu);
-      const activeScreenId = ref(_init.screen);
+      const activeScreenId = ref(null); // openTab()/openGroup() 이 로드 완료 후 채운다
+      /* loadingFolders — 지금 로딩 중인 "폴더"(절대경로) 집합. 대메뉴 단위가 아니라
+         소그룹(=폴더) 단위로 내렸다(2026-08-28) — "상품관리" 대메뉴를 눌러도 아무 것도
+         안 불러오고, 그 안의 "상품"/"카테고리" 소그룹을 각각 클릭해야 그 폴더 하나만
+         로드된다(같은 대메뉴의 다른 소그룹은 안 건드리면 영영 안 불려도 된다). */
+      const loadingFolders = reactive(new Set());
 
-      const cfMenuItems = computed(() => window.MFE_REGISTRY.getMenu(activeMenu.value));
-      const cfActiveItem = computed(() =>
-        cfMenuItems.value.find((it) => it.id === activeScreenId.value) || cfMenuItems.value[0] || null
-      );
+      /* fnMenuItems/fnActiveItem — computed() 가 아니라 일반 함수다(2026-08-28 버그 수정).
+         이유: window.MFE_REGISTRY.getMenu() 가 읽는 데이터는 Vue 반응형이 아닌 순수
+         JS 객체라서, computed 로 만들면 activeMenu/activeScreenId 값이 "이전과 같으면"
+         (예: 로딩 중에 한 번 찍히고, 로드 완료 후 같은 화면을 다시 클릭) Vue 가 재계산을
+         안 하고 로딩 전의 빈 결과를 영원히 캐시해버린다 — 사이드바(그룹/화면 목록은
+         이미 일반 함수라 매번 새로 계산돼서 정상으로 보이는데, 본문만 빈 채로 "왼쪽
+         메뉴에서 화면을 선택하세요" 가 뜨는 증상의 원인이 이거였다. groupedMenuOf 와
+         똑같이 일반 함수로 둬야 매 렌더마다 레지스트리 최신 상태를 반영한다. */
+      const fnMenuItems = () => window.MFE_REGISTRY.getMenu(activeMenu.value);
+      const fnActiveItem = () => fnMenuItems().find((it) => it.id === activeScreenId.value) || null;
+      /* fnActiveItemMissingComp — fnActiveItem() 은 있는데 comp 가 없는(로드 실패 등) 경우.
+         템플릿 v-if 안에서 && 를 직접 쓰면 이 프로젝트에서 Vue 컴파일러가 크래시하므로
+         여기서 미리 계산한다. */
+      const fnActiveItemMissingComp = () => { const it = fnActiveItem(); return !!it && !it.comp; };
       /* cfActiveMenuDef — 좌측 메뉴가 "지금 상단에서 고른 대메뉴"만 그리기 위해 필요 */
       const cfActiveMenuDef = computed(() => TOP_MENUS.find((m) => m.key === activeMenu.value) || null);
 
@@ -171,6 +189,21 @@
         console.error('[mfeShell] 화면 렌더 오류:', activeMenu.value, activeScreenId.value, err);
         return false; // 상위(셸 자체)로는 전파하지 않음 — 셸은 계속 정상 동작
       });
+      /* onErrorCaptured 는 setup()/render 중 "동기적으로 던져진" 에러만 잡는다 —
+         onMounted 안의 API 호출(handleSearchList 등)처럼 await 이후에 실패하는
+         비동기 에러나, Promise 를 안 잡고 그냥 던지는 경우는 못 잡고 콘솔에만
+         "Uncaught (in promise)" 로 조용히 찍힌다. 그래서 그런 경우도 화면에
+         보이도록 전역 핸들러를 추가로 둔다(2026-08-28) — 화면이 하얗게 비는데
+         빨간 에러 카드도 안 뜨는 증상의 원인이 대부분 이쪽이었다. */
+      window.addEventListener('error', (ev) => {
+        screenError.value = { msg: ev.message || String(ev.error), info: 'window.onerror', stack: ev.error?.stack || '' };
+        console.error('[mfeShell] 전역 오류:', ev.error || ev.message);
+      });
+      window.addEventListener('unhandledrejection', (ev) => {
+        const reason = ev.reason;
+        screenError.value = { msg: reason?.message || String(reason), info: 'unhandledrejection', stack: reason?.stack || '' };
+        console.error('[mfeShell] 처리 안 된 Promise 거부:', reason);
+      });
 
       /* syncUrl — 현재 activeMenu/activeScreenId 를 주소창에 반영(pushState) */
       const syncUrl = () => {
@@ -181,30 +214,117 @@
           window.location.pathname + '?' + qs.toString());
       };
       window.addEventListener('popstate', () => {
-        const s = _fromUrl();
-        screenError.value = null;
-        openTab(s.menu, s.screen, /* pushUrl */ false);
+        const s = _urlParams();
+        openTab(s.menu, s.screen, /* pushUrl */ false); // async, 결과 기다리지 않고 흘려보냄(fire-and-forget)
       });
+
+      /* ══════════════════════════ 지연로드 컴포넌트 등록 ══════════════════════════
+         원래는 부팅 시 한 번(app.mount 직후) window.MFE_REGISTRY.getAll() 을 순회해
+         app.component() 등록을 끝냈는데, 이제 부팅 시점엔 아직 아무 도메인도 로드
+         안 됐을 수 있다 — 그래서 도메인 하나가 새로 로드될 때마다(ensureMenuLoaded 뒤)
+         이 함수를 다시 불러 "아직 등록 안 한 것만" 추가로 등록한다. 화면 컴포넌트
+         자체는 <component :is="cfActiveItem.comp"> 로 객체를 직접 바인딩하니 전역
+         등록이 필요 없지만, CmNoticeDtl/SyUserDtl 처럼 <cm-notice-dtl> 태그로 쓰이는
+         내부 컴포넌트는 Vue 가 문자열 태그를 전역 등록 목록에서 찾으므로 반드시
+         app.component() 가 필요하다. */
+      const _registeredCompNames = new Set();
+      const _registerLoadedComponents = () => {
+        Object.values(window.MFE_REGISTRY.getAll()).forEach((items) => {
+          items.forEach((it) => {
+            if (!it.comp) return;
+            const name = it.comp.name || it.id;
+            if (_registeredCompNames.has(name)) return;
+            app.component(name, it.comp);
+            _registeredCompNames.add(name);
+          });
+        });
+        window.MFE_REGISTRY.getAllComponents().forEach((it) => {
+          if (_registeredCompNames.has(it.tag)) return;
+          app.component(it.tag, it.comp);
+          _registeredCompNames.add(it.tag);
+        });
+      };
 
       /* ══════════════════════════ 열린 탭 (boAppBase.js 의 openTabs 와 동일 개념) ══════════════════════════
          메뉴 카탈로그(대메뉴+서브메뉴)와 별개로, "지금 열려있는 화면들"을 탭으로 누적 관리한다.
          서브메뉴 클릭 = 탭 열기(이미 열려있으면 그 탭으로 전환). ✕ 로 개별 탭 닫기. */
       const openTabs = reactive([]);
       const _tabId = (menuKey, screenId) => menuKey + ':' + screenId;
-
-      const openTab = (menuKey, screenId, pushUrl = true) => {
-        if (!menuKey || !screenId) return;
-        screenError.value = null;
+      const _pushTab = (menuKey, screenId) => {
         const id = _tabId(menuKey, screenId);
-        if (!openTabs.find((t) => t.id === id)) {
-          const item = window.MFE_REGISTRY.getMenu(menuKey).find((it) => it.id === screenId);
-          const menuDef = TOP_MENUS.find((m) => m.key === menuKey);
-          openTabs.push({ id, menuKey, screenId, label: item?.label || screenId, menuIcon: menuDef?.icon || '' });
-        }
+        if (openTabs.find((t) => t.id === id)) return;
+        const item = window.MFE_REGISTRY.getMenu(menuKey).find((it) => it.id === screenId);
+        const menuDef = TOP_MENUS.find((m) => m.key === menuKey);
+        openTabs.push({ id, menuKey, screenId, label: item?.label || screenId, menuIcon: menuDef?.icon || '' });
+      };
+
+      /* openTab — 대메뉴/화면을 연다. 정상 경로(소그룹을 이미 openGroup() 으로 로드해둔
+         뒤 그 안의 화면을 클릭)라면 items 에 바로 있어서 로딩 없이 즉시 연다. 그 화면이
+         아직 없으면(URL 딥링크로 바로 들어왔거나 뒤로가기 등) 카탈로그에서 그 화면이
+         정확히 어느 폴더에 있는지 찾아 **그 폴더 하나만** 로드한다(2026-08-28 —
+         처음엔 안전하게 대메뉴 전체를 로드했는데, 카탈로그가 이미 screens 목록을
+         알고 있으니 그럴 필요가 없었다). 카탈로그에도 없는 화면이거나(screenId 를
+         안 줬을 때 등) 카탈로그 자체가 없으면(dev.html) 대메뉴 전체 로드로 안전하게
+         폴백한다. */
+      const openTab = async (menuKey, screenId, pushUrl = true) => {
+        if (!menuKey) return;
+        screenError.value = null;
         activeMenu.value = menuKey;
-        activeScreenId.value = screenId;
+        let items = window.MFE_REGISTRY.getMenu(menuKey);
+        let found = screenId ? items.find((it) => it.id === screenId) : items[0];
+        if (!found) {
+          try {
+            const owner = screenId
+              ? window.MFE_REGISTRY.getCatalog(menuKey).find((c) => (c.screens || []).some((s) => s.id === screenId))
+              : null;
+            if (owner) await window.MFE_REGISTRY.ensureFolderLoaded(owner.folder);
+            else await window.MFE_REGISTRY.ensureMenuLoaded(menuKey); // 폴백 — 대메뉴 전체
+            _registerLoadedComponents();
+          } catch (e) {
+            showToast('메뉴를 불러오지 못했습니다: ' + (e?.message || e), 'error', 0);
+            return;
+          }
+          items = window.MFE_REGISTRY.getMenu(menuKey);
+          found = screenId ? items.find((it) => it.id === screenId) : items[0];
+        }
+        if (!found) return; // 그래도 없음 — 등록된 화면 자체가 없는 대메뉴
+        activeScreenId.value = found.id;
+        _pushTab(menuKey, found.id);
         if (pushUrl) syncUrl();
       };
+      /* openGroup — 소그룹(중메뉴) 하나를 연다. 그 소그룹이 아직 지연로드 전이면
+         ensureFolderLoaded() 로 그 폴더 "하나만" 불러온다(같은 대메뉴의 다른 소그룹은
+         안 건드림) — 로딩 중엔 loadingFolders 에 그 폴더가 들어가 사이드바에
+         스피너가 뜬다. 로드가 끝나면 wantScreenId 로 지정한 화면(사용자가 카탈로그
+         자리표시 항목 중 하나를 콕 집어 눌렀을 때)을 열거나, 없으면 그 소그룹의
+         첫 화면을 자동으로 연다. */
+      const openGroup = async (menuKey, folder, group, wantScreenId) => {
+        screenError.value = null;
+        if (folder && !window.MFE_REGISTRY.isFolderLoaded(folder)) {
+          loadingFolders.add(folder);
+          try {
+            await window.MFE_REGISTRY.ensureFolderLoaded(folder);
+            _registerLoadedComponents();
+          } catch (e) {
+            showToast('그룹을 불러오지 못했습니다: ' + (e?.message || e), 'error', 0);
+            loadingFolders.delete(folder);
+            return;
+          }
+          loadingFolders.delete(folder);
+        }
+        const groupItems = window.MFE_REGISTRY.getMenu(menuKey).filter((it) => (it.group || null) === (group || null));
+        const target = (wantScreenId && groupItems.find((it) => it.id === wantScreenId)) || groupItems[0];
+        if (target) openTab(menuKey, target.id);
+      };
+      /* fnClickItem — 사이드바 화면 항목 클릭 라우터. 카탈로그 자리표시(아직 로드
+         전이라 label 만 있고 comp 없음)면 그 그룹을 로드하면서 이 화면을 콕 집어
+         열도록 openGroup 에 넘기고, 이미 로드된 실item 이면 곧장 openTab. */
+      const fnClickItem = (menuKey, g, it) => {
+        if (it._placeholder) openGroup(menuKey, g.folder, g.group, it.id);
+        else openTab(menuKey, it.id);
+      };
+      /* selectTab — 이미 열려있는 탭 클릭. 그 탭이 존재한다는 건 이미 로드가 끝났다는
+         뜻이라 기다릴 필요 없이 동기로 바로 전환한다. */
       const selectTab = (id) => {
         const t = openTabs.find((x) => x.id === id);
         if (!t) return;
@@ -226,35 +346,82 @@
         syncUrl();
       };
 
-      /* 부팅 시 URL(또는 기본값)로 결정된 화면을 첫 탭으로 자동 오픈 */
-      if (_init.menu && _init.screen) openTab(_init.menu, _init.screen, false);
+      /* 부팅 시 첫 화면 결정 — URL에 특정 화면이 지정돼 있으면(새로고침·딥링크) 안전하게
+         그 대메뉴의 카탈로그 전체를 로드해서 찾고(openTab 의 안전장치), 없으면 그
+         대메뉴의 "첫 번째 소그룹 하나만" 로드한다(openGroup) — 나머지 소그룹은 그대로
+         지연 상태로 남는다. 둘 다 async, 결과를 기다리지 않고 흘려보낸다(setup() 자체는
+         동기로 끝나야 하므로). */
+      if (_init.screen) {
+        openTab(_init.menu, _init.screen, false);
+      } else {
+        const firstEntry = window.MFE_REGISTRY.getCatalog(_init.menu)[0];
+        if (firstEntry) openGroup(_init.menu, firstEntry.folder, firstEntry.group);
+        else openTab(_init.menu, null, false); // 카탈로그 없음(dev.html) — 기존 방식대로
+      }
 
       const selectMenu = (key) => {
-        openTab(key, window.MFE_REGISTRY.getMenu(key)[0]?.id || null);
+        screenError.value = null;
+        activeMenu.value = key; // 대메뉴 전환만 — 아무 것도 자동 로드하지 않는다.
+                                 // 사용자가 좌측에서 소그룹(중메뉴)을 클릭해야 그때 로드된다.
       };
       const selectScreen = (id) => { openTab(activeMenu.value, id); };
 
       /* menuOf — 좌측 메뉴가 대메뉴별로 전부(활성 메뉴 아니어도) 항목을 그려야 해서 노출 */
       const menuOf = (key) => window.MFE_REGISTRY.getMenu(key);
-      /* groupedMenuOf — 대메뉴 하나에 여러 마이크로 레포가 소그룹(item.group)으로
-         나눠 기여할 수 있어서(예: pd = pd-pd 레포의 "상품" 그룹 + pd-cate 레포의
-         "카테고리" 그룹), 좌측 메뉴는 group 기준 2단으로 묶어 그린다. 아무 항목도
-         group 을 안 붙였으면(예: home) 그룹 헤더 없이 예전처럼 평평하게 보여준다. */
+      /* groupedMenuOf — 대메뉴 하나에 여러 마이크로 레포가 소그룹(=카탈로그 폴더 하나)
+         으로 나눠 기여한다(예: pd = pd-pd 의 "상품" + pd-cate 의 "카테고리"). 카탈로그가
+         있으면(mfe.html 류) 그 소그룹들을 로드 여부와 무관하게 전부 보여준다 — 아직 안
+         불린 소그룹은 카탈로그에 미리 선언된 화면 이름(placeholder, comp 없음)을 그대로
+         보여주다가, 로드가 끝나면 실제 항목(comp 채워짐)으로 자연스럽게 바뀐다(2026-08-28
+         — 로드 전에도 화면 이름이 안 보이던 걸 개선). 카탈로그가 없으면(dev.html) 이미
+         register() 된 것만 group 기준으로 묶어 예전처럼 평평하게 보여준다. */
       const groupedMenuOf = (key) => {
-        const items = window.MFE_REGISTRY.getMenu(key);
-        if (!items.some((it) => it.group)) return [{ group: null, items }];
+        const catalogEntries = window.MFE_REGISTRY.getCatalog(key);
+        const loadedItems = window.MFE_REGISTRY.getMenu(key);
+        if (catalogEntries.length) {
+          return catalogEntries.map((c) => {
+            const loaded = window.MFE_REGISTRY.isFolderLoaded(c.folder);
+            const loading = loadingFolders.has(c.folder);
+            const realItems = loadedItems.filter((it) => (it.group || null) === c.group);
+            const placeholderItems = (c.screens || []).map((s) => (
+              // _showSpinner — 이 자리표시 항목 옆에 로딩 스피너를 보일지. 템플릿에서
+              // _placeholder && loading 처럼 && 를 직접 쓰면 이 프로젝트에서 Vue
+              // 컴파일러가 크래시하므로 여기서 미리 계산해 불(boolean) 하나로 넘긴다.
+              { id: s.id, label: s.label, group: c.group, comp: null, _placeholder: true, _showSpinner: loading }
+            ));
+            return {
+              group: c.group,
+              folder: c.folder,
+              loaded,
+              loading,
+              // flatUnloaded — 소그룹 라벨이 없는(group:null) 폴더가 아직 안 불렸을 때만 true.
+              // 템플릿 v-if 안에 && 를 직접 쓰면 이 프로젝트에서 Vue 컴파일러가 크래시하므로
+              // 여기서 미리 계산해 불(boolean) 하나로 넘긴다.
+              flatUnloaded: !c.group && !loaded,
+              items: loaded ? realItems : placeholderItems,
+            };
+          });
+        }
+        if (!loadedItems.length) return [];
+        if (!loadedItems.some((it) => it.group)) {
+          return [{ group: null, folder: null, loaded: true, loading: false, flatUnloaded: false, items: loadedItems }];
+        }
         const order = [];
         const map = {};
-        items.forEach((it) => {
+        loadedItems.forEach((it) => {
           const g = it.group || '기타';
           if (!map[g]) { map[g] = []; order.push(g); }
           map[g].push(it);
         });
-        return order.map((g) => ({ group: g, items: map[g] }));
+        return order.map((g) => ({ group: g, folder: null, loaded: true, loading: false, flatUnloaded: false, items: map[g] }));
       };
       /* fnIsActive — 사이드바 항목/탭이 "지금 보고 있는 화면"인지. 템플릿 :class 안에서
          && 를 직접 쓰면 이 프로젝트에서 Vue 컴파일러가 크래시하므로 함수로 뺀다. */
       const fnIsActive = (menuKey, screenId) => activeMenu.value === menuKey && activeScreenId.value === screenId;
+      /* fnClickGroup — 소그룹 헤더 클릭. 이미 로드된 그룹을 눌러도 무해하게 무시한다
+         (openGroup 자체도 방어하지만, 여기서도 한 번 더 걸러 불필요한 호출을 줄인다).
+         같은 이유로 v-if/v-else-if/@click 등 템플릿 속성값 안에서는 && 를 직접 안 쓴다. */
+      const fnClickGroup = (menuKey, g) => { if (!g.loaded) openGroup(menuKey, g.folder, g.group); };
 
       /* 화면 컴포넌트가 요구하는 최소 공통 props — 이 데모 화면들은 목록형(Mng)이라
          navigate/openNewWindow 는 실질적으로 거의 호출되지 않지만, 방어적으로 스텁을 둔다. */
@@ -275,8 +442,8 @@
         TOP_MENUS,
         cfIsLoggedIn, currentAuthUser, loginForm, loginError, loginLoading, doLogin, doLogout,
         toasts, closeToast, confirmState, closeConfirm,
-        activeMenu, activeScreenId, cfMenuItems, cfActiveItem, cfActiveMenuDef, selectMenu, selectScreen, screenError,
-        openTabs, openTab, selectTab, closeTab, menuOf, groupedMenuOf, fnIsActive,
+        activeMenu, activeScreenId, fnMenuItems, fnActiveItem, fnActiveItemMissingComp, cfActiveMenuDef, selectMenu, selectScreen, screenError,
+        openTabs, openTab, openGroup, selectTab, closeTab, menuOf, groupedMenuOf, fnIsActive, fnClickGroup, fnClickItem,
         navigate, showToast, showConfirm, openNewWindow,
       };
     },
@@ -327,13 +494,27 @@
         <div class="mfe-sidebar-group">
           <div class="mfe-sidebar-group-title active">{{ cfActiveMenuDef.icon }} {{ cfActiveMenuDef.label }}</div>
           <template v-for="g in groupedMenuOf(activeMenu)" :key="activeMenu + '_' + (g.group || '_flat')">
-            <div v-if="g.group" class="mfe-sidebar-subgroup">{{ g.group }}</div>
+            <!-- 소그룹 헤더 — 이름은 카탈로그로 항상 미리 보이고, 로드 전이면 클릭해서
+                 그 폴더 하나만 불러온다(중메뉴 단위 지연로드). 아래 화면 이름도 카탈로그
+                 자리표시로 미리 다 보이므로, 헤더 자체는 "그 그룹 첫 화면 바로가기" 용도다. -->
+            <div v-if="g.group" class="mfe-sidebar-subgroup" :class="{ 'mfe-sidebar-subgroup-clickable': !g.loaded }"
+              @click="fnClickGroup(activeMenu, g)">
+              {{ g.group }}
+              <span v-if="g.loading">⏳</span>
+            </div>
+            <div v-if="g.flatUnloaded" class="mfe-sidebar-loading" @click="openGroup(activeMenu, g.folder, g.group)">
+              {{ g.loading ? '⏳ 불러오는 중...' : '클릭하여 불러오기' }}
+            </div>
+            <!-- 화면 항목 — 카탈로그 자리표시(_placeholder, 아직 comp 없음)도 이름은 그대로
+                 보여준다. 클릭하면 그 화면이 속한 폴더 하나만 로드된 뒤 바로 이 화면이 열린다. -->
             <div class="mfe-sidebar-item" v-for="it in g.items" :key="it.id"
-              :class="{ active: fnIsActive(activeMenu, it.id), 'mfe-sidebar-item-nested': g.group }"
-              @click="openTab(activeMenu, it.id)">{{ it.label }}</div>
+              :class="{ active: fnIsActive(activeMenu, it.id), 'mfe-sidebar-item-nested': g.group, 'mfe-sidebar-item-placeholder': it._placeholder }"
+              @click="fnClickItem(activeMenu, g, it)">
+              {{ it.label }}<span v-if="it._showSpinner">⏳</span>
+            </div>
           </template>
         </div>
-        <div class="mfe-sidebar-hint">각 폴더의 manifest.js 가 스스로 등록한 메뉴입니다</div>
+        <div class="mfe-sidebar-hint">각 폴더의 manifest.js 가 스스로 등록한 메뉴입니다(소그룹 클릭 시 그 폴더 하나만 불러옵니다)</div>
       </div>
 
       <!-- ══ 우측: 열린 탭 + 본문 ══ -->
@@ -354,10 +535,10 @@
             <div style="font-size:13px;color:#333;">{{ screenError.msg }}</div>
             <pre v-if="screenError.stack" style="font-size:11px;color:#999;white-space:pre-wrap;margin-top:8px;max-height:160px;overflow:auto;">{{ screenError.stack }}</pre>
           </div>
-          <div v-if="cfActiveItem && !cfActiveItem.comp" class="card" style="padding:24px;text-align:center;color:#c0392b;">
-            "{{ cfActiveItem.label }}" 컴포넌트가 window 에 없습니다 — manifest.js 의 스크립트 로드(404 등)를 확인하세요.
+          <div v-else-if="fnActiveItemMissingComp()" class="card" style="padding:24px;text-align:center;color:#c0392b;">
+            "{{ fnActiveItem().label }}" 컴포넌트가 window 에 없습니다 — manifest.js 의 스크립트 로드(404 등)를 확인하세요.
           </div>
-          <component v-else-if="cfActiveItem" :is="cfActiveItem.comp" :key="activeMenu + '_' + cfActiveItem.id"
+          <component v-else-if="fnActiveItem()" :is="fnActiveItem().comp" :key="activeMenu + '_' + fnActiveItem().id"
             :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" :open-new-window="openNewWindow" />
           <div v-else class="card" style="padding:60px 24px;text-align:center;color:#999;">왼쪽 메뉴에서 화면을 선택하세요.</div>
         </div>
@@ -454,12 +635,10 @@
     .component('TemplateSendModal', window.TemplateSendModal)
     .component('PdReviewStatusModal', window.PdReviewStatusModal);
 
-  /* ── 마이크로 도메인이 스스로 등록한 컴포넌트(메뉴 화면 + registerComponents 내부 컴포넌트) 등록 ──
-     셸은 "무엇이 등록됐는지" 내용을 몰라도 되고, 레지스트리를 순회만 하면 된다. */
-  Object.entries(window.MFE_REGISTRY.getAll()).forEach(([menuKey, items]) => {
-    items.forEach((it) => app.component(it.comp?.name || it.id, it.comp));
-  });
-  window.MFE_REGISTRY.getAllComponents().forEach((it) => app.component(it.tag, it.comp));
+  /* 마이크로 도메인이 스스로 등록한 컴포넌트(메뉴 화면 + registerComponents 내부 컴포넌트)는
+     여기서 한 번에 등록하지 않는다 — 지연로드라 부팅 시점엔 아직 아무 도메인도 안 불려 있을
+     수 있다. 대신 setup() 안의 _registerLoadedComponents() 가 각 도메인이 실제로 로드될
+     때마다(openTab 안에서) 그때그때 새로 등록한다(2026-08-28). */
 
   app.mount('#app');
   }; // window.mfeBootShell

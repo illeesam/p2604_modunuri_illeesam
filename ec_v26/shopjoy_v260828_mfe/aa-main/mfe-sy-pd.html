@@ -77,23 +77,18 @@
   <script src="components/modals/HelpBoModal.js"></script>
   <script src="components/modals/CoExtHelpModal.js"></script>
 
-  <script src="lib/mfe/mfeRegistry.js"></script>
-
   <!-- ═══════════════════════════════════════════════════════════════════
-       mfe.html(전체 7개)의 축소판 — 앞선 mfe-sy.html/mfe-pd.html 은 "같은 대메뉴를
-       공유하는 레포끼리"만 묶었는데, 이 파일은 한 단계 더 나아가 **서로 다른
-       대메뉴(sy, pd) 자체를 여러 개 골라 묶는 예시**다. ab-home/cu-ba/cu-co 는 전혀
-       안 불러온다. sy-ba/sy-org 는 menuKey "sy" 로, pd-pd/pd-cate 는 menuKey "pd"
-       로 등록하므로, mfeBootShell() 에 두 대메뉴를 같이 넘기면 상단바에 시스템/
-       상품관리 두 버튼만 뜨고, 좌측 메뉴는 그 중 선택된 대메뉴의 소그룹만 보여준다
-       — 대메뉴 선택 목록도, 도메인 로드 목록도 둘 다 "이 파일이 원하는 조합만
-       고르는" 자리일 뿐, 셸(mfeShell.js) 코드는 mfe.html 과 완전히 동일하다
-       (2026-08-28).
-  ═══════════════════════════════════════════════════════════════════ -->
-  <script src="../sy-ba/manifest.js"></script>
-  <script src="../sy-org/manifest.js"></script>
-  <script src="../pd-pd/manifest.js"></script>
-  <script src="../pd-cate/manifest.js"></script>
+       mfe.html(전체 7개 대메뉴)의 축소판 — 앞선 mfe-sy.html/mfe-pd.html 은 "같은
+       대메뉴를 공유하는 레포끼리"만 묶었는데, 이 파일은 한 단계 더 나아가 **서로
+       다른 대메뉴(sy, pd) 자체를 여러 개 골라 묶는 예시**다. 지연로드 전환
+       (2026-08-28) 이후로는 mfe.html 과 똑같이 카탈로그 전체를 로드해도 무방하고
+       (코드는 안 실림), 실제 차이는 아래 mfeBootShell() 인자다 — 대메뉴를 sy/pd
+       두 개만 넘기면 상단바엔 시스템/상품관리 두 버튼만 뜨고, 좌측 메뉴는 그 중
+       선택된 대메뉴의 소그룹만 보여준다. 실제로 클릭한 대메뉴의 도메인만 그때
+       로드된다(ab-home/cu-ba/cu-co 는 이 화면에서 클릭할 방법이 없으니 로드되지
+       않는다). -->
+  <script src="lib/mfe/mfeRegistry.js"></script>
+  <script src="lib/mfe/mfeCatalog.js"></script>
 
   <script src="lib/mfe/mfeShell.js"></script>
   <script>

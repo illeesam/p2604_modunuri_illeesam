@@ -9,27 +9,66 @@
 (`PAGE_COMP_MAP` + `v-else-if` 체인 183분기, 3,289줄)를 고쳐야 했습니다. 이 데모는 그
 반대 구조를 보여줍니다:
 
-- **메인프레임(셸)**: `aa-main/mfe.html` + `mainframe/lib/mfe/mfeShell.js` — Vue/Pinia 부트,
+- **메인프레임(셸)**: `aa-main/mfe.html` + `aa-main/lib/mfe/mfeShell.js` — Vue/Pinia 부트,
   로그인, 토스트/컨펌, 좌측 메뉴/열린 탭 UI만 담당. **어떤 화면이 있는지 전혀 모릅니다.**
-- **마이크로 도메인**: `home/`, `pd-pd/`, `pd-cate/`, `cu-ba/`, `cu-co/`, `sy-ba/`, `sy-org/` —
-  `mainframe/`의 **형제(sibling) 폴더**로 존재합니다(= 각자 별도 git 레포라는 뜻을 폴더 배치
+- **마이크로 도메인**: `ab-home/`, `pd-pd/`, `pd-cate/`, `cu-ba/`, `cu-co/`, `sy-ba/`, `sy-org/` —
+  `aa-main/`의 **형제(sibling) 폴더**로 존재합니다(= 각자 별도 git 레포라는 뜻을 폴더 배치
   자체로 표현). 각자 `manifest.js` 안에서 자기 화면 스크립트를 로드하고
   `window.MFE_REGISTRY.register(...)`로 **스스로** "나는 이 대메뉴의 이 소그룹에 속한다"고
   등록합니다.
 
-셸은 `mainframe/lib/mfe/mfeRegistry.js`(레지스트리)에 등록된 내용을 그려주기만 합니다.
-새 도메인을 추가해도 `mfe.html`에 `<script src="../새도메인/manifest.js">` 한 줄만
-추가하면 됩니다 — `boAppBase.js`처럼 셸 내부의 라우팅 테이블을 고칠 필요가 없습니다.
+셸은 `aa-main/lib/mfe/mfeRegistry.js`(레지스트리)에 등록된 내용을 그려주기만 합니다.
+새 도메인을 추가해도 `aa-main/lib/mfe/mfeCatalog.js`에 한 줄만 추가하면 됩니다 —
+`boAppBase.js`처럼 셸 내부의 라우팅 테이블을 고칠 필요가 없습니다.
 
-### 대메뉴 하나 = 여러 마이크로 레포 (2026-08-28 확장)
+## 지연로드(lazy load) — 화면 코드는 처음 클릭할 때만 불러옵니다 (2026-08-28)
 
-처음엔 대메뉴(홈/상품관리/고객센터/시스템) 하나당 도메인 레포 하나였는데, 실제 BO
-사이드바(좌측 메뉴 안에 "고객" · "고객센터" · "공통업무" 같은 소그룹이 여러 개 있는 것)를
-재현하기 위해 **하나의 대메뉴에 여러 레포가 각자 소그룹으로 기여**하도록 확장했습니다:
+처음엔 `mfe.html`이 부팅 시점에 7개 도메인의 `manifest.js`를 전부 정적 `<script>`로
+나열해서, 열자마자 다 로드했습니다. 하지만 도메인이 100개·1,000개로 늘어난다면 이건
+그대로 원본 `bo.html`(모놀리식)과 똑같은 "전부 강제 로드" 문제를 반복하는 셈입니다.
+그래서 **실제 지연로드 구조로 바꿨습니다** — 사용자가 그 대메뉴를 처음 클릭하는 순간에만
+그 대메뉴에 기여하는 도메인들의 코드를 불러옵니다.
+
+### 어떻게 동작하는가
+
+1. **카탈로그(가벼운 목차)** — `aa-main/lib/mfe/mfeCatalog.js` 가 "어느 대메뉴에 어느
+   폴더가 기여하는지"만 선언합니다(코드는 전혀 안 실림):
+   ```js
+   R.registerCatalog('pd', '../pd-pd/');
+   R.registerCatalog('pd', '../pd-cate/');
+   ```
+2. **부팅 시** `mfe.html`은 `mfeRegistry.js` + `mfeCatalog.js` 이 두 개만 로드합니다
+   (7개 도메인 실제 코드는 전혀 안 실립니다). 좌측 메뉴는 아직 비어있고, 상단바(대메뉴
+   버튼)만 카탈로그 정보로 그려집니다.
+3. **사용자가 대메뉴를 처음 클릭**하면 `window.MFE_REGISTRY.ensureMenuLoaded(menuKey)`가
+   카탈로그에 등록된 그 대메뉴의 폴더들의 `manifest.js`를 그때 `<script>` 태그로 동적
+   생성해 불러옵니다. 로딩 중엔 사이드바/본문에 "⏳ 불러오는 중..." 이 뜹니다.
+4. **`manifest.js`** 는 (예전 `document.write` 대신) `window.MFE_REGISTRY.loadScript()`로
+   자기 화면 파일들을 병렬로 불러온 뒤 `register()`를 호출하고, 마지막에
+   `_domainReady()`로 "이 폴더 로드 완료"를 알립니다. `document.write`는 "초기 페이지
+   파싱 중"에만 동작하는 방식이라(파싱이 끝난 뒤 부르면 페이지 전체가 지워짐), 나중에
+   클릭 시점에 동적으로 불러와야 하는 지연로드와는 애초에 안 맞아서 방식 자체를
+   바꿨습니다.
+5. 한 번 로드된 대메뉴는 `loadedFolders`에 기록되어, 다시 클릭해도 재로드하지 않고
+   바로 전환됩니다.
+
+### 같은 코드로 즉시로드/지연로드 둘 다 지원
+
+`manifest.js`는 자기가 정적 `<script src="manifest.js">`(도메인별 `dev.html`)로
+불렸는지, 나중에 동적으로 불렸는지(`mfe.html` 지연로드) 전혀 모릅니다 — 어느 쪽이든
+똑같은 코드로 동작합니다. `register()`가 "이미 카탈로그로 만들어진 자리가 있으면
+채우고, 없으면 새로 추가"하는 upsert 방식이라 가능한 일입니다. 그래서
+`ab-home/dev.html`처럼 도메인 하나만 단독 실행하는 화면은 코드 수정이 전혀 필요
+없었습니다.
+
+### 대메뉴 하나 = 여러 마이크로 레포 (2026-08-28)
+
+실제 BO 사이드바(좌측 메뉴 안에 "고객" · "고객센터" · "공통업무" 같은 소그룹이 여러 개
+있는 것)를 재현하기 위해 **하나의 대메뉴에 여러 레포가 각자 소그룹으로 기여**합니다:
 
 | 대메뉴 | 기여 레포 | 소그룹(`group`) |
 |---|---|---|
-| 🏠 홈 | `home/` | (그룹 없음 — 평평하게 표시) |
+| 🏠 홈 | `ab-home/` | (그룹 없음 — 평평하게 표시) |
 | 📦 상품관리 | `pd-pd/` | 상품 |
 | 📦 상품관리 | `pd-cate/` | 카테고리 |
 | 💬 고객센터 | `cu-ba/` | 고객 |
@@ -39,13 +78,14 @@
 
 각 `manifest.js`가 `register(menuKey, items)`를 호출할 때 항목에 `group: '소그룹명'`을
 같이 넘기면, 셸(`mfeShell.js`의 `groupedMenuOf()`)이 **같은 대메뉴로 등록된 모든 레포의
-항목을 group 기준으로 묶어** 좌측 메뉴에 그립니다. 셸은 여전히 "누가 등록했는지" 전혀
-모르고 레지스트리 결과만 봅니다 — 레포가 늘어나도 셸 코드는 그대로입니다.
+항목을 group 기준으로 묶어** 좌측 메뉴에 그립니다. 대메뉴 하나를 클릭하면
+`ensureMenuLoaded()`가 그 대메뉴에 기여하는 폴더 전부(예: `pd` → `pd-pd`+`pd-cate`)를
+병렬로 지연로드합니다.
 
 ## UI — 좌측 메뉴 / 열린 탭 / URL 라우팅
 
 `boAppBase.js`의 실제 BO 레이아웃을 최소 구성으로 재현했습니다:
-- **좌측 메뉴**: 대메뉴 4개 + 그 아래 소그룹 + 소그룹별 화면을 항상 펼쳐서 보여줍니다. `MFE_REGISTRY`에 등록된 내용을 그대로 그리는 거라 도메인(레포)이 늘어나면 자동으로 그룹/항목도 늘어납니다.
+- **좌측 메뉴**: 상단에서 고른 대메뉴의 소그룹 + 화면만 보여줍니다(다른 대메뉴 항목은 안 그림 — 실제 bo.html과 동일 패턴). 로딩 중엔 스피너가 뜹니다.
 - **열린 탭**: 좌측 메뉴에서 화면을 클릭하면 상단에 탭으로 "열리고" 유지됩니다(같은 화면 다시 클릭 시 탭 재사용). 탭 클릭으로 전환, ✕로 개별 탭 닫기 — `boAppBase.js`의 `openTabs` 배열과 동일한 개념입니다.
 - **URL 라우팅**: 화면 전환 시 주소창이 `?menu=pd&screen=pdTagMng`처럼 바뀝니다(`history.pushState`). 새로고침해도 같은 화면이 유지되고, 브라우저 뒤로/앞으로가기도 동작하며, 특정 화면 URL을 그대로 복사해 공유할 수 있습니다.
 
@@ -55,13 +95,15 @@
 한 워크스페이스로 묶어 보여주는 컨테이너 폴더**입니다. 그 바로 밑에 전부 **완전한 형제**로
 놓입니다 — 어느 쪽도 다른 쪽 안에 중첩되지 않습니다(중첩되면 나중에 각 폴더에서
 `git init`할 때 부모가 이미 추적 중인 트리 안에 자식 저장소가 끼는 꼴이 되어 "독립 레포"
-라는 의도와 모순됩니다):
+라는 의도와 모순됩니다). `aa-`/`ab-` 접두어는 파일탐색기에서 최상단에 오도록 붙인
+정렬용일 뿐, 실제 git 레포명(`shopjoy-mfe-shell`, `shopjoy-mfe-domain-home` 등)에는
+안 씁니다:
 
 ```
 shopjoy_v260828_mfe/     ← 컨테이너(워크스페이스)일 뿐, 이 자체는 git 레포 아님
-├── mainframe/                     ← git 레포 1  (메인프레임 셸)
+├── aa-main/                       ← git 레포 1  (메인프레임 셸)
 │   └── mfe.html, lib/, components/, assets/, pages/base/
-├── home/                          ← git 레포 2  (홈)
+├── ab-home/                       ← git 레포 2  (홈)
 ├── pd-pd/                         ← git 레포 3  (상품관리 > 상품)
 ├── pd-cate/                       ← git 레포 4  (상품관리 > 카테고리)
 ├── cu-ba/                         ← git 레포 5  (고객센터 > 고객)
@@ -78,7 +120,7 @@ shopjoy_v260828_mfe/     ← 컨테이너(워크스페이스)일 뿐, 이 자체
 **Live Server 실행 시**: `mfe.html`이 `../ab-home/manifest.js`처럼 형제 폴더를 참조하므로,
 VS Code에서 **`shopjoy_v260828_mfe/`(컨테이너 폴더)를 워크스페이스로 열어야**
 8개 형제 폴더가 전부 같은 서버 루트 아래 놓여서 `../` 참조가 정상 동작합니다
-(`mainframe/` 폴더만 단독으로 열면 `../`가 서버 밖으로 나가 404가 납니다).
+(`aa-main/` 폴더만 단독으로 열면 `../`가 서버 밖으로 나가 404가 납니다).
 
 실제로 git 레포를 나눈다면: 8개 폴더 각각의 안에서 그대로 `git init`만 하면 바로 8개의
 독립 레포가 됩니다 — 폴더 배치가 이미 끝나 있으니 추가 재배치가 필요 없습니다. 컨테이너
@@ -86,56 +128,38 @@ VS Code에서 **`shopjoy_v260828_mfe/`(컨테이너 폴더)를 워크스페이�
 싶다면 8개를 submodule로 등록하는 "메타 레포" 용도 정도로만 — 이 데모의 기본 전제는
 그것 없이도 동작하는, git 레벨 결합이 없는 방식입니다).
 
-## 같은 대메뉴를 공유하는 레포끼리만 묶어보기 — `mfe-{key}.html`
+## 대메뉴 일부만 노출하기 — `mfe-{key}.html`
 
-`mfe.html`(7개 전부) / 도메인별 `dev.html`(자기 1개만) 말고, **"이 대메뉴에 기여하는
-레포들만 같이 보고 싶다"**는 경우가 있습니다(예: sy-ba + sy-org 를 같이 띄워서 좌측
-메뉴가 기준정보+조직 두 소그룹으로 잘 묶이는지 확인). 이럴 땐 `mfe.html`을 복사해서
-**그 대메뉴에 해당하는 manifest.js 줄만 남기고**, `mfeBootShell()`에 그 대메뉴 하나만
-넘기면 됩니다 — 셸(`mfeShell.js`) 코드는 손댈 필요가 전혀 없습니다.
+`mfe.html`(대메뉴 4개 전부) / 도메인별 `dev.html`(자기 1개만) 말고, **"이 대메뉴만
+상단바에 보이게 하고 싶다"**는 경우가 있습니다. 지연로드 전환 이후로는 `mfe.html`과
+`mfe-*.html` 전부 **같은 카탈로그(`mfeCatalog.js`)를 로드**합니다(코드는 안 실리니
+비용이 거의 없음) — 차이는 오직 `mfeBootShell()`에 넘기는 대메뉴 배열뿐입니다:
 
-예시: `mainframe/mfe-sy.html` — sy-ba + sy-org 두 레포만 로드(다른 5개는 전혀 안 부름):
 ```html
-<!-- 도메인 로드 부분만 mfe.html 과 다름 -->
-<script src="../sy-ba/manifest.js"></script>
-<script src="../sy-org/manifest.js"></script>
+<!-- mfe-sy.html — 상단바에 "시스템"만 뜨게 -->
+<script src="lib/mfe/mfeRegistry.js"></script>
+<script src="lib/mfe/mfeCatalog.js"></script>
 ...
 <script>
   window.mfeBootShell([{ key: 'sy', label: '시스템', icon: '⚙️' }]);
 </script>
 ```
-같은 패턴으로 `mfe-pd.html`(pd-pd+pd-cate), `mfe-cu.html`(cu-ba+cu-co)도 만들어뒀습니다
-— 매번 `mfe.html`을 베이스로 복사해 도메인 로드 줄과 `mfeBootShell()` 인자만 그
-대메뉴 것으로 바꾸면 끝입니다.
 
-**한 단계 더 — 서로 다른 대메뉴 여러 개를 같이 묶기**: 위 예시들은 전부 "대메뉴 1개 +
-그걸 나눠 채우는 레포들"이었는데, `mfeBootShell()`에 넘기는 대메뉴 배열 자체를 2개
-이상 넘기면 **서로 다른 대메뉴 여러 개**도 같이 띄울 수 있습니다. `mainframe/mfe-sy-pd.html`
-이 예시입니다 — sy-ba/sy-org(대메뉴 sy) + pd-pd/pd-cate(대메뉴 pd) 4개 레포만 로드하고
-(home/cu-ba/cu-co 는 안 부름), 상단바엔 시스템/상품관리 두 버튼만 뜹니다:
-```html
-<script src="../sy-ba/manifest.js"></script>
-<script src="../sy-org/manifest.js"></script>
-<script src="../pd-pd/manifest.js"></script>
-<script src="../pd-cate/manifest.js"></script>
-...
-<script>
-  window.mfeBootShell([
-    { key: 'sy', label: '시스템', icon: '⚙️' },
-    { key: 'pd', label: '상품관리', icon: '📦' },
-  ]);
-</script>
-```
-결국 이 데모의 "조합"은 전부 **도메인 로드 목록 + `mfeBootShell()` 인자, 이 두 곳만
-고르는 문제**입니다 — 몇 개를 어떻게 섞든 셸(`mfeShell.js`) 코드는 절대 안 바뀝니다.
+`mfe-pd.html`(상품관리만), `mfe-cu.html`(고객센터만), 그리고 **대메뉴 2개를 같이
+노출**하는 `mfe-sy-pd.html`(시스템+상품관리)까지 만들어뒀습니다 — 매번 대메뉴 배열만
+바꾸면 되고, 셸(`mfeShell.js`) 코드는 절대 안 바뀝니다. 어떤 조합이든 실제로 클릭한
+대메뉴만 그 자리에서 로드되므로, "이 조합용 진입점을 미리 만들어야 하나"라는 고민 자체가
+지연로드 도입 후로는 성능상 크게 중요하지 않습니다(원한다면 상단바 버튼 개수를
+줄이는 용도로만 유용).
 
 ## 도메인 폴더 각각 단독 실행 — `dev.html`
 
-`mfe.html`은 7개 도메인을 전부 로드하는 "통합 데모" 화면이라, 이것만으로는 "도메인이
-정말 다른 도메인(같은 대메뉴를 공유하는 형제 레포 포함) 없이도 혼자 돌아가는지"를 확인할
-수 없습니다. 그래서 **7개 도메인 폴더 전부에 `dev.html`**을 하나씩 뒀습니다 — 다른
-도메인은 전혀 안 불러오고 `../aa-main/`의 공용 런타임(Vue/Pinia/coUtil/BoGrid 등) +
-**자기 `manifest.js` 하나만** 불러와서 그 도메인의 화면만 단독으로 띄웁니다.
+`mfe.html`만으로는 "도메인이 정말 다른 도메인(같은 대메뉴를 공유하는 형제 레포 포함)
+없이도 혼자 돌아가는지"를 확인할 수 없습니다. 그래서 **7개 도메인 폴더 전부에
+`dev.html`**을 하나씩 뒀습니다 — 다른 도메인은 전혀 안 불러오고 `../aa-main/`의 공용
+런타임(Vue/Pinia/coUtil/BoGrid 등) + **자기 `manifest.js` 하나만** 정적으로 불러와서
+그 도메인의 화면만 단독으로 띄웁니다(카탈로그 없이 즉시로드 — 위 "같은 코드로
+즉시로드/지연로드 둘 다 지원" 참고).
 
 ```
 sy-org/dev.html  →  ../aa-main/... (공용 런타임) + manifest.js(자기 자신) 만 로드
@@ -148,7 +172,7 @@ sy-org/dev.html  →  ../aa-main/... (공용 런타임) + manifest.js(자기 자
 로드되지도 않습니다. 이게 실제로 동작하면 "이 도메인 코드는 셸의 공용 런타임에만
 의존하고, 같은 대메뉴를 공유하는 형제 레포를 포함해 다른 도메인들과는 무관하다"는 걸
 직접 확인한 셈입니다. `mfe.html`과 `dev.html`은 같은 `window.mfeBootShell(대메뉴목록)`
-함수를 쓰고, 넘기는 목록만 다릅니다(`mainframe/lib/mfe/mfeShell.js` 참조).
+함수를 쓰고, 넘기는 목록만 다릅니다(`aa-main/lib/mfe/mfeShell.js` 참조).
 
 ## 메뉴 구성 (전부 shopjoy_v260406 실제 화면 그대로, 수정 없이 복사)
 
@@ -173,13 +197,16 @@ sy-org/dev.html  →  ../aa-main/... (공용 런타임) + manifest.js(자기 자
    다르면 됩니다 — 백엔드 CORS가 `allowedOriginPatterns("*")`라 어떤 포트든 됩니다.
 3. 로그인 계정은 `shopjoy_v260406`과 완전히 동일합니다(같은 백엔드·같은 DB). 로그인
    화면에 테스트 계정(`admin1`/`1111` 등)이 안내돼 있습니다.
+4. 로그인 후 상단바에서 대메뉴를 클릭하면 그 순간 네트워크 탭에 그 도메인의
+   `manifest.js`+화면 파일들이 새로 로드되는 게 보입니다 — 다시 클릭하면 더 이상
+   로드되지 않고 즉시 전환됩니다(지연로드 캐시 확인용).
 
 ## 재사용 vs 새로 작성 — 무엇이 원본 그대로이고 무엇이 새 코드인가
 
 | 구분 | 내용 |
 |---|---|
 | **원본 그대로 복사(바이트 단위 동일)** | CDN 라이브러리, `bo-global-style01.css`, `lib/utils/*`, `lib/services/*`, `lib/stores/bo/*`, `components/comp/*`, `components/modals/*`, 14개 화면 파일 + Dtl 컴포넌트들 |
-| **새로 작성** | `lib/mfe/mfeRegistry.js`(레지스트리 — group 필드 지원), `lib/mfe/mfeShell.js`(단순화된 셸 — 로그인/토스트/컨펌은 `boAppBase.js`와 동일 패턴으로 재작성, 좌측메뉴 2단 그룹핑·열린 탭·URL 라우팅 자체 구현, 다중탭 kept 캐시·3/4열 뷰모드·API 응답 패널은 이 데모 범위 밖이라 생략), 각 도메인의 `manifest.js`(자기등록 매니페스트) + `dev.html`(단독 실행용), `mfe.html`, `assets/css/mfe-style.css` |
+| **새로 작성** | `lib/mfe/mfeRegistry.js`(레지스트리 — 카탈로그+지연로드+group 필드 지원), `lib/mfe/mfeCatalog.js`(도메인 목차), `lib/mfe/mfeShell.js`(단순화된 셸 — 로그인/토스트/컨펌은 `boAppBase.js`와 동일 패턴으로 재작성, 좌측메뉴 2단 그룹핑·열린 탭·URL 라우팅·지연로드 UI 자체 구현, 다중탭 kept 캐시·3/4열 뷰모드·API 응답 패널은 이 데모 범위 밖이라 생략), 각 도메인의 `manifest.js`(자기등록 매니페스트, `document.write` 대신 동적 `<script>`+Promise) + `dev.html`(단독 실행용), `mfe.html`/`mfe-*.html`, `assets/css/mfe-style.css` |
 
 ## 알려진 한계 (샘플이라 의도적으로 생략한 것)
 
@@ -193,3 +220,5 @@ sy-org/dev.html  →  ../aa-main/... (공용 런타임) + manifest.js(자기 자
 - `cu-ba`/`cu-co` 는 의도적으로 같은 화면(공지사항관리/FAQ관리)을 각자 독립적으로
   등록합니다 — "여러 레포가 같은 화면을 각자 등록해도 안 깨지는지" 확인용 예시라
   실제 프로젝트라면 이렇게 중복 등록하지 않는 게 정상입니다.
+- 지연로드 실패(네트워크 오류 등) 시 토스트로만 안내하고 재시도 버튼은 없습니다 —
+  다시 그 대메뉴를 클릭하면 재시도됩니다.

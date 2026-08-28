@@ -77,18 +77,15 @@
   <script src="components/modals/HelpBoModal.js"></script>
   <script src="components/modals/CoExtHelpModal.js"></script>
 
-  <script src="lib/mfe/mfeRegistry.js"></script>
-
   <!-- ═══════════════════════════════════════════════════════════════════
-       mfe.html(전체 7개)의 축소판 — 같은 대메뉴(sy)를 공유하는 두 레포만 로드한다.
-       ab-home/pd-pd/pd-cate/cu-ba/cu-co 는 전혀 안 불러온다. sy-ba(기준정보)와
-       sy-org(조직) 둘 다 window.MFE_REGISTRY.register("sy", ...) 로 같은
-       menuKey 에 등록하므로, 셸의 groupedMenuOf('sy') 가 자동으로 두 소그룹으로
-       묶어 좌측 메뉴에 그린다 — 이 파일은 그 조합만 부팅 목록에서 골라낸 것뿐,
-       셸(mfeShell.js) 코드는 mfe.html 과 완전히 동일하다(2026-08-28).
-  ═══════════════════════════════════════════════════════════════════ -->
-  <script src="../sy-ba/manifest.js"></script>
-  <script src="../sy-org/manifest.js"></script>
+       mfe.html(전체 7개 대메뉴)의 축소판 — 지연로드 전환(2026-08-28) 이후로는
+       mfe.html 과 똑같이 카탈로그(가벼운 목차) 전체를 로드해도 무방하다(코드는
+       안 실리니 비용이 거의 없다). 진짜 차이는 아래 mfeBootShell() 인자 — 대메뉴를
+       "sy" 하나만 넘겨서 상단바엔 시스템만 뜨고, 실제로 클릭해야만 sy-ba/sy-org
+       코드가 로드된다. ab-home/pd-pd/pd-cate/cu-ba/cu-co 는 목차만 있고 이 화면에서
+       클릭할 방법이 없으니 사실상 안 불러오는 것과 같다. -->
+  <script src="lib/mfe/mfeRegistry.js"></script>
+  <script src="lib/mfe/mfeCatalog.js"></script>
 
   <script src="lib/mfe/mfeShell.js"></script>
   <script>

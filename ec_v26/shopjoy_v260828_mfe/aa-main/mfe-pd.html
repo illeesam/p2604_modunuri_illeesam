@@ -77,18 +77,14 @@
   <script src="components/modals/HelpBoModal.js"></script>
   <script src="components/modals/CoExtHelpModal.js"></script>
 
-  <script src="lib/mfe/mfeRegistry.js"></script>
-
   <!-- ═══════════════════════════════════════════════════════════════════
-       mfe.html(전체 7개)의 축소판 — 같은 대메뉴(pd)를 공유하는 두 레포만 로드한다.
-       ab-home/cu-ba/cu-co/sy-ba/sy-org 는 전혀 안 불러온다. pd-pd(상품)와
-       pd-cate(카테고리) 둘 다 window.MFE_REGISTRY.register("pd", ...) 로 같은
-       menuKey 에 등록하므로, 셸의 groupedMenuOf('pd') 가 자동으로 두 소그룹으로
-       묶어 좌측 메뉴에 그린다 — 이 파일은 그 조합만 부팅 목록에서 골라낸 것뿐,
-       셸(mfeShell.js) 코드는 mfe.html 과 완전히 동일하다(2026-08-28).
-  ═══════════════════════════════════════════════════════════════════ -->
-  <script src="../pd-pd/manifest.js"></script>
-  <script src="../pd-cate/manifest.js"></script>
+       mfe.html(전체 7개 대메뉴)의 축소판 — 지연로드 전환(2026-08-28) 이후로는
+       mfe.html 과 똑같이 카탈로그(가벼운 목차) 전체를 로드해도 무방하다(코드는
+       안 실리니 비용이 거의 없다). 진짜 차이는 아래 mfeBootShell() 인자 — 대메뉴를
+       "pd" 하나만 넘겨서 상단바엔 상품관리만 뜨고, 실제로 클릭해야만 pd-pd/pd-cate
+       코드가 로드된다. -->
+  <script src="lib/mfe/mfeRegistry.js"></script>
+  <script src="lib/mfe/mfeCatalog.js"></script>
 
   <script src="lib/mfe/mfeShell.js"></script>
   <script>

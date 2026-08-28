@@ -32,6 +32,8 @@
   padding: 8px 16px 3px 24px; font-size: 10.5px; font-weight: 800; color: #aaa;
   letter-spacing: .03em;
 }
+.mfe-sidebar-subgroup-clickable { cursor: pointer; }
+.mfe-sidebar-subgroup-clickable:hover { color: #e8587a; }
 .mfe-sidebar-item {
   padding: 7px 16px 7px 30px; font-size: 12.5px; color: #777; cursor: pointer;
   transition: all .15s; border-left: 2px solid transparent;
@@ -39,7 +41,12 @@
 .mfe-sidebar-item-nested { padding-left: 40px; }
 .mfe-sidebar-item:hover { background: #f9fafb; color: #333; }
 .mfe-sidebar-item.active { background: linear-gradient(135deg,#fff0f4,#ffe4ec); color: #e8587a; font-weight: 700; border-left-color: #e8587a; }
+/* 카탈로그 자리표시 — 아직 실제 코드(comp)가 없는 화면. 이름은 보이되 "아직 안 불렸다"는
+   느낌을 주려고 흐리게 + 기울임 처리(로드되면 이 클래스가 자연히 사라진다). */
+.mfe-sidebar-item-placeholder { color: #b0b4bb; font-style: italic; }
+.mfe-sidebar-item-placeholder:hover { color: #888; }
 .mfe-sidebar-hint { margin: 14px 16px 0; font-size: 10.5px; color: #bbb; line-height: 1.5; }
+.mfe-sidebar-loading { padding: 10px 16px; font-size: 12px; color: #e8587a; }
 
 .mfe-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 

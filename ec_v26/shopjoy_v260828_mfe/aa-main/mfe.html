@@ -81,35 +81,23 @@
   <script src="components/modals/CoExtHelpModal.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       마이크로프론트엔드 레지스트리 — 도메인 manifest.js 들보다 반드시 먼저 로드.
+       마이크로프론트엔드 레지스트리 + 카탈로그(가벼운 목차) — 도메인 실제 코드는
+       전혀 안 싣는다. mfeCatalog.js 가 "어느 대메뉴에 어느 폴더가 기여하는지"만
+       선언해두면, 셸이 그 대메뉴를 사용자가 처음 클릭하는 순간에만
+       window.MFE_REGISTRY.ensureMenuLoaded() 로 그 폴더의 manifest.js(=실제 화면
+       코드)를 동적으로 불러온다(지연로드, 2026-08-28). 예전엔 여기 7개 도메인의
+       manifest.js 를 전부 정적으로 나열해서 부팅 즉시 다 로드했었다 — 새 도메인이
+       추가돼도 이제 mfeCatalog.js 한 줄만 늘면 되고, 이 mfe.html 자체는 손댈 일이
+       없다.
   ═══════════════════════════════════════════════════════════════════ -->
   <script src="lib/mfe/mfeRegistry.js"></script>
+  <script src="lib/mfe/mfeCatalog.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       마이크로 도메인 — 셸은 이 7줄만 안다(각 폴더 내부 구성은 전혀 모름).
-       각 도메인은 이 셸(mainframe/) 폴더 밖의 형제(sibling) 폴더 — 즉 실제로 별도
-       git 레포다. 대메뉴 하나(pd/cu/sy)에 여러 레포가 소그룹(group)으로 나눠
-       기여할 수 있다는 걸 보여준다(2026-08-28) — pd-pd(상품)+pd-cate(카테고리),
-       cu-ba(고객)+cu-co(공통업무), sy-ba(기준정보)+sy-org(조직). 컨테이너 폴더
-       shopjoy_v260828_mfe/ 자체는 git 레포가 아니라 이 레포들을 한
-       워크스페이스로 묶어 보여주는 용도일 뿐. 실제로 레포를 나눈다면 이 줄들이
-       "각 마이크로 레포를 셸에 연결하는" 유일한 지점이 되고, 배포 시엔 이 src 를
-       절대 URL(CDN 등)로만 바꾸면 된다 — manifest.js 내부는
-       document.currentScript.src 기준으로 자기 pages/ 를 찾으므로 셸이 이 경로를
-       어떻게 참조하든 상관없다.
-  ═══════════════════════════════════════════════════════════════════ -->
-  <script src="../ab-home/manifest.js"></script>
-  <script src="../pd-pd/manifest.js"></script>
-  <script src="../pd-cate/manifest.js"></script>
-  <script src="../cu-ba/manifest.js"></script>
-  <script src="../cu-co/manifest.js"></script>
-  <script src="../sy-ba/manifest.js"></script>
-  <script src="../sy-org/manifest.js"></script>
-
-  <!-- ═══════════════════════════════════════════════════════════════════
-       메인 앱 부트스트랩 — 반드시 마지막(레지스트리에 전부 등록된 뒤 렌더해야 함).
-       mfeBootShell()에 넘기는 대메뉴 4개가 이 셸의 "통합 데모" 정체성이다 —
-       도메인 폴더의 dev.html 은 이 목록을 자기 메뉴 1개짜리로 바꿔서 동일 함수를 부른다.
+       메인 앱 부트스트랩 — 반드시 마지막. mfeBootShell()에 넘기는 대메뉴 4개가
+       이 셸의 "통합 데모" 정체성이다 — 도메인 폴더의 dev.html 은 이 목록을 자기
+       메뉴 1개짜리로 바꿔서 동일 함수를 부른다. 카탈로그만 로드된 상태이므로
+       실제 화면 코드는 사용자가 그 대메뉴를 처음 클릭할 때 지연로드된다.
   ═══════════════════════════════════════════════════════════════════ -->
   <script src="lib/mfe/mfeShell.js"></script>
   <script>
