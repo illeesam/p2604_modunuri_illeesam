@@ -372,10 +372,20 @@
         else openTab(_init.menu, null, false); // 카탈로그 없음(dev.html) — 기존 방식대로
       }
 
+      /* selectMenu — 상단 대메뉴 클릭. 그 대메뉴에서 지금 보고 있던 화면이 이미 있으면
+         (예: 다른 메뉴 갔다가 다시 돌아온 경우, 탭이 그 화면을 기억하고 있음) 그대로
+         두고, 처음 들어가는 대메뉴면 좌측 메뉴의 "첫 번째 화면"을 자동으로 연다
+         (2026-08-28) — boot 시 첫 대메뉴에 적용하던 것과 동일한 로직(openGroup 의
+         첫 카탈로그 엔트리)을 재사용. 로드가 필요하면(소그룹이 아직 지연로드 전)
+         openGroup 이 그 폴더 하나만 불러온다 — 대메뉴 클릭 한 번이 대메뉴 전체를
+         로드하는 건 아니다, 딱 첫 소그룹만. */
       const selectMenu = (key) => {
         screenError.value = null;
-        activeMenu.value = key; // 대메뉴 전환만 — 아무 것도 자동 로드하지 않는다.
-                                 // 사용자가 좌측에서 소그룹(중메뉴)을 클릭해야 그때 로드된다.
+        activeMenu.value = key;
+        if (fnActiveItem()) return; // 이 대메뉴에 이미 열려있는 화면이 있으면 유지
+        const firstEntry = window.MFE_REGISTRY.getCatalog(key)[0];
+        if (firstEntry) openGroup(key, firstEntry.folder, firstEntry.group);
+        else openTab(key, null, true); // 카탈로그 없음(dev.html) — 이미 로드된 첫 화면
       };
       const selectScreen = (id) => { openTab(activeMenu.value, id); };
 
