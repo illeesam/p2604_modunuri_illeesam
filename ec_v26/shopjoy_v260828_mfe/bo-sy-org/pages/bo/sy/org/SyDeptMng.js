@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 부서관리 (Tree CRUD 그리드) */
-window.BoSyOrgSyDeptMng = {
+export default {
   name: 'bo-sy-org-syDeptMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

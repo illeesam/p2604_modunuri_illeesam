@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 태그관리 */
-window.BoPdPdPdTagMng = {
+export default {
   name: 'bo-pd-pd-pdTagMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

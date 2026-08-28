@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 사용자관리(관리자) 목록 */
-window.BoSyOrgSyUserMng = {
+export default {
   name: 'bo-sy-org-syUserMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

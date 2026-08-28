@@ -1,14 +1,15 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록 (bo-sy-ba 전용 사본)
- * 원본: bo-cu-ba/pages/bo/cu/ba/BoCuBaCmNoticeDtl.js — 동일 파일명/동일 window 전역명이 서로 다른
+ * 원본: bo-cu-ba/pages/bo/cu/ba/CmNoticeDtl.js — 동일 파일명/동일 window 전역명이 서로 다른
  * 도메인 폴더에 있을 때의 충돌 시나리오를 점검하려고 일부러 복사해왔다가(2026-08-28),
  * 실제로 bo-cu-co(registerComponents, 태그 'CmNoticeDtl')와 여기(register() 메뉴
  * 항목, comp.name 폴백)가 서로 다른 경로로 같은 app.component() 이름을 두고 충돌하는
- * 걸 확인한 뒤(2026-08-29), window 전역명·컴포넌트 name 을 도메인별로 분리하고 파일도
- * `pages/bo/sy/ba/`(장차 통합 시스템으로 합칠 때 pages/ 트리가 안 겹치도록 도메인
- * 경로를 미리 새겨둠) 밑으로 옮겼다 — 이 화면은 메뉴 항목(register())으로 등록되며
- * 태그 등록이 아니라 comp.name 폴백 경로를 타므로, name 을 바꾼 것만으로 app.component()
- * 충돌이 사라진다(bo-cu-co 는 명시적 tag 를 쓰는 별개 경로라 이쪽만 바꿔도 충분했지만,
- * 일관성을 위해 두 파일 다 분리했다).
+ * 걸 확인했다(2026-08-29). id/name 분리(bo-sy-ba-cmNoticeDtl)로 app.component() 이름
+ * 충돌은 없앴지만, 그건 register() 호출 "이후" 문제만 막을 뿐 — window 전역 자체가
+ * 로드 순서에 따라 서로 덮어써질 수 있는 근본 레이스는 안 없어졌다. 그래서 ES 모듈로
+ * 한 번 더 전환했다(2026-08-29) — `window.ComponentName = {...}` 대신
+ * `export default {...}`. manifest.js 가 `R.loadModule()`(동적 import())로 불러와
+ * `.default`로 꺼내 쓴다 — 이제 이 파일은 어떤 전역도 안 쓰니, bo-cu-ba 쪽과 로드
+ * 순서가 어떻게 겹쳐도 서로 절대 안 부딪힌다.
  * ★ BO Dtl 표준 참조 모델 (2026-05-28) — 신규 Dtl 작성 시 이 파일 구조를 따른다.
  *   - 폼 reactive: `const baseForm = reactive({...})` (변수명 `form` 단독 금지)
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
@@ -21,7 +22,7 @@
  *   - reloadTrigger watch 로 상위 Mng 신호 수신 → 상세 재조회
  *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.7~§4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
  */
-window.BoSyBaCmNoticeDtl = {
+export default {
   name: 'bo-sy-ba-cmNoticeDtl',
   props: {
     navigate:      { type: Function, required: true }, // 페이지 이동

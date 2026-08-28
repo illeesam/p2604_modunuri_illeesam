@@ -8,27 +8,28 @@
  * 복사**해온 파일이었다(2026-08-28, 동일 파일명/동일 전역명 충돌 시나리오 점검용).
  * 실제로 bo-cu-co 의 registerComponents(태그 'CmNoticeDtl')와 이 화면의 register()
  * (comp.name 폴백)가 서로 다른 경로로 같은 app.component() 이름을 두고 부딪히는 걸
- * 확인했다(2026-08-29) — `_registerOne()`의 console.warn 으로 잡혀 나오는 그 케이스가
- * 바로 이것. 지금은 `window.BoSyBaCmNoticeDtl`로 전역명을 분리하고 `pages/bo/sy/ba/`
- * 밑으로 옮겨서(장차 통합 시스템으로 합칠 때를 대비해 도메인 경로를 파일 경로에 미리
- * 새겨둠) 어느 순서로 로드돼도 더 이상 충돌하지 않는다. */
+ * 확인했다(2026-08-29).
+ *
+ * ES 모듈 전면 전환(2026-08-29) — bo-ab-home/manifest.js 주석 참조. window.ComponentName
+ * 대신 export default + R.loadModule() — 이제 이 화면들은 어떤 전역도 안 쓰므로
+ * bo-cu-ba/bo-cu-co 와 로드 순서가 어떻게 겹쳐도 서로 충돌할 수 없다. */
 (function () {
   const R = window.MFE_REGISTRY;
   const base = document.currentScript.src.replace(/manifest\.js(\?.*)?$/, '');
 
   const scripts = [
-    R.loadScript(base + 'pages/bo/sy/ba/SyBrandMng.js'),
-    R.loadScript(base + 'pages/bo/sy/ba/SyCodeMng.js'),
-    R.loadScript(base + 'pages/bo/sy/ba/CmNoticeDtl.js'),
+    R.loadModule(base + 'pages/bo/sy/ba/SyBrandMng.js'),
+    R.loadModule(base + 'pages/bo/sy/ba/SyCodeMng.js'),
+    R.loadModule(base + 'pages/bo/sy/ba/CmNoticeDtl.js'),
   ];
 
-  Promise.all(scripts).then(function () {
+  Promise.all(scripts).then(function (results) {
     const screens = [
-      { id: 'bo-sy-ba-syBrandMng', label: '브랜드관리', group: '기준정보', comp: window.BoSyBaSyBrandMng },
-      { id: 'bo-sy-ba-syCodeMng', label: '공통코드관리', group: '기준정보', comp: window.BoSyBaSyCodeMng },
-      // id는 bo-cu-ba 쪽(bo-cu-ba-cmNoticeMng)과 겹치지 않게 붙였다. comp 자체도 이제
-      // window.BoSyBaCmNoticeDtl 로 분리돼 있어 app.component() 이름 충돌도 없다.
-      { id: 'bo-sy-ba-cmNoticeDtl', label: '공지사항상세(파일명중복테스트)', group: '기준정보', comp: window.BoSyBaCmNoticeDtl },
+      { id: 'bo-sy-ba-syBrandMng', label: '브랜드관리', group: '기준정보', comp: results[0].default },
+      { id: 'bo-sy-ba-syCodeMng', label: '공통코드관리', group: '기준정보', comp: results[1].default },
+      // id는 bo-cu-ba 쪽(bo-cu-ba-cmNoticeMng)과 겹치지 않게 붙였다. comp 자체도
+      // ES 모듈이라 window 전역 레이스와 무관하다.
+      { id: 'bo-sy-ba-cmNoticeDtl', label: '공지사항상세(파일명중복테스트)', group: '기준정보', comp: results[2].default },
     ];
     R.register('bo-sy', screens);
     R._domainReady(base);

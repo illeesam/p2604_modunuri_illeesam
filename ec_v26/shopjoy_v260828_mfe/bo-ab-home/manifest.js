@@ -18,20 +18,25 @@
  * 정적 <script src="manifest.js"> 로 즉시 불러도(dev.html), 나중에 클릭 시점에
  * 동적으로 불러도(mfe.html 지연로드) 똑같이 동작한다 — 도메인 코드는 자기가 어느
  * 모드로 불렸는지 전혀 몰라도 된다.
- */
+ *
+ * ES 모듈 전면 전환(2026-08-29) — 화면 파일이 window.ComponentName 대신 export default
+ * 를 쓴다. R.loadScript() 대신 R.loadModule()(동적 import())로 불러오고, Promise.all()
+ * 결과 배열의 각 원소(모듈 네임스페이스)에서 .default 로 실제 컴포넌트를 꺼낸다 —
+ * window 전역을 전혀 안 거치므로 다른 도메인과 파일명/컴포넌트명이 우연히 겹쳐도
+ * 구조적으로 충돌이 불가능하다. */
 (function () {
   const R = window.MFE_REGISTRY;
   const base = document.currentScript.src.replace(/manifest\.js(\?.*)?$/, '');
 
   const scripts = [
-    R.loadScript(base + 'pages/bo/ab/home/DashboardBoEc01.js'),
-    R.loadScript(base + 'pages/bo/ab/home/DashboardBoEc02.js'),
+    R.loadModule(base + 'pages/bo/ab/home/DashboardBoEc01.js'),
+    R.loadModule(base + 'pages/bo/ab/home/DashboardBoEc02.js'),
   ];
 
-  Promise.all(scripts).then(function () {
+  Promise.all(scripts).then(function (results) {
     const screens = [
-      { id: 'bo-ab-home-dashboardBoEc01', label: 'EC 대시보드 1', comp: window.BoHomeDashboardBoEc01 },
-      { id: 'bo-ab-home-dashboardBoEc02', label: 'EC 대시보드 2', comp: window.BoHomeDashboardBoEc02 },
+      { id: 'bo-ab-home-dashboardBoEc01', label: 'EC 대시보드 1', comp: results[0].default },
+      { id: 'bo-ab-home-dashboardBoEc02', label: 'EC 대시보드 2', comp: results[1].default },
     ];
     R.register('bo-home', screens);
     R._domainReady(base);

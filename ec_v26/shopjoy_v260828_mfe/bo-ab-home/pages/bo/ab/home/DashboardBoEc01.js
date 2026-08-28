@@ -1,5 +1,5 @@
 /* ShopJoy Admin - EC 종합 대시보드 (ECharts 기반, 14개월 현황 + X-View 히트맵) */
-window.BoHomeDashboardBoEc01 = {
+export default {
   name: 'bo-ab-home-dashboardBoEc01',
   props: {
     navigate: { type: Function, required: true },

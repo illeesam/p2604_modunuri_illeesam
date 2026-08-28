@@ -178,5 +178,19 @@ window.MFE_REGISTRY = (function () {
         document.head.appendChild(s);
       });
     },
+    /* loadModule(src) — loadScript() 의 ES 모듈 버전(2026-08-29). window.ComponentName
+       처럼 전역에 자기를 쓰는 대신 export default 로 내보내는 화면 파일 전용 — 네이티브
+       동적 import() 라 브라우저가 각 모듈을 자기만의 스코프로 로드해준다. 그래서 두
+       도메인이 똑같은 파일명(CmNoticeDtl.js)에 똑같은 컴포넌트 구조를 갖고 있어도
+       window 전역을 두고 서로 덮어쓰는 레이스 자체가 발생하지 않는다(loadScript() 는
+       "이 전역에 뭔가 쓰여지면 로드 완료"로 판정하는 구조라 이 문제를 피할 수 없었다).
+       resolve 값은 module namespace 객체 — 기본 export 는 .default 로 꺼내 쓴다.
+       ⚠ 아직 대부분의 화면 파일은 window.ComponentName 그대로다 — 실제로 여러 도메인에
+       물리적으로 중복 존재하는 파일(CmNoticeDtl.js 등)만 이 방식으로 개별 전환 중이며,
+       loadScript()/loadModule() 은 같은 manifest.js 의 Promise.all([...]) 배열 안에
+       섞어 써도 무방하다. */
+    loadModule(src) {
+      return import(src);
+    },
   };
 })();

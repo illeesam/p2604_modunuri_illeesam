@@ -1,4 +1,11 @@
 /* ShopJoy Admin - 공지사항관리 상세/등록
+ * ES 모듈 전환(2026-08-29) — 이 파일은 bo-sy-ba/pages/bo/sy/ba/CmNoticeDtl.js 와
+ * 물리적으로 중복 존재하는(동일 파일명·동일 구조) 화면이라, window.전역명 공유로 인한
+ * 로드 순서 레이스를 원천 차단하려고 `window.ComponentName = {...}` 대신
+ * `export default {...}`로 바꿨다. manifest.js 가 `R.loadModule()`(동적 import())로
+ * 불러와 `.default`로 꺼내 쓴다 — 이제 이 파일은 자기 자신을 어떤 전역에도 안 쓴다.
+ * 나머지 화면 파일(CmNoticeMng.js 등)은 아직 window.ComponentName 방식 그대로다 —
+ * 실제로 중복 존재하는 파일만 개별 전환 중.
  * ★ BO Dtl 표준 참조 모델 (2026-05-28) — 신규 Dtl 작성 시 이 파일 구조를 따른다.
  *   - 폼 reactive: `const baseForm = reactive({...})` (변수명 `form` 단독 금지)
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
@@ -11,7 +18,7 @@
  *   - reloadTrigger watch 로 상위 Mng 신호 수신 → 상세 재조회
  *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.7~§4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
  */
-window.BoCuBaCmNoticeDtl = {
+export default {
   name: 'bo-cu-ba-cmNoticeDtl',
   props: {
     navigate:      { type: Function, required: true }, // 페이지 이동

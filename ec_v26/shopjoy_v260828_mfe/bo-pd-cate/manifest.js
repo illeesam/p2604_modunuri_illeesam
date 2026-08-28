@@ -3,20 +3,23 @@
  * _domainReady)은 bo-ab-home/manifest.js 주석 참조. bo-pd-pd(상품) 와 같은 대메뉴(pd) 아래
  * 다른 소그룹(group)으로 기여하는 별도 레포다(2026-08-28). PdCategoryMng/
  * PdCategoryProdMng 은 둘 다 자체 완결형(별도 Dtl 컴포넌트 불필요)이라
- * registerComponents 는 필요 없다. */
+ * registerComponents 는 필요 없다.
+ *
+ * ES 모듈 전면 전환(2026-08-29) — bo-ab-home/manifest.js 주석 참조. window.ComponentName
+ * 대신 export default + R.loadModule(). */
 (function () {
   const R = window.MFE_REGISTRY;
   const base = document.currentScript.src.replace(/manifest\.js(\?.*)?$/, '');
 
   const scripts = [
-    R.loadScript(base + 'pages/bo/pd/cate/PdCategoryMng.js'),
-    R.loadScript(base + 'pages/bo/pd/cate/PdCategoryProdMng.js'),
+    R.loadModule(base + 'pages/bo/pd/cate/PdCategoryMng.js'),
+    R.loadModule(base + 'pages/bo/pd/cate/PdCategoryProdMng.js'),
   ];
 
-  Promise.all(scripts).then(function () {
+  Promise.all(scripts).then(function (results) {
     const screens = [
-      { id: 'bo-pd-cate-pdCategoryMng', label: '카테고리관리', group: '카테고리', comp: window.BoPdCatePdCategoryMng },
-      { id: 'bo-pd-cate-pdCategoryProdMng', label: '카테고리상품관리', group: '카테고리', comp: window.BoPdCatePdCategoryProdMng },
+      { id: 'bo-pd-cate-pdCategoryMng', label: '카테고리관리', group: '카테고리', comp: results[0].default },
+      { id: 'bo-pd-cate-pdCategoryProdMng', label: '카테고리상품관리', group: '카테고리', comp: results[1].default },
     ];
     R.register('bo-pd', screens);
     R._domainReady(base);

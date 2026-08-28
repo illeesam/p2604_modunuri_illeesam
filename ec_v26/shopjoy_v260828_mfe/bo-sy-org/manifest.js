@@ -3,24 +3,27 @@
  * _domainReady)은 bo-ab-home/manifest.js 주석 참조. bo-sy-ba(기준정보) 와 같은 대메뉴(sy)
  * 아래 다른 소그룹(group)으로 기여하는 별도 레포다(2026-08-28). SyUserDtl 은
  * SyUserMng 템플릿 안에서 <sy-user-dtl> 로 쓰이는 내부 컴포넌트라 메뉴에는 안 올리고
- * registerComponents 로만 등록한다. */
+ * registerComponents 로만 등록한다.
+ *
+ * ES 모듈 전면 전환(2026-08-29) — bo-ab-home/manifest.js 주석 참조. window.ComponentName
+ * 대신 export default + R.loadModule(). */
 (function () {
   const R = window.MFE_REGISTRY;
   const base = document.currentScript.src.replace(/manifest\.js(\?.*)?$/, '');
 
   const scripts = [
-    R.loadScript(base + 'pages/bo/sy/org/SyUserDtl.js'),
-    R.loadScript(base + 'pages/bo/sy/org/SyUserMng.js'),
-    R.loadScript(base + 'pages/bo/sy/org/SyDeptMng.js'),
+    R.loadModule(base + 'pages/bo/sy/org/SyUserDtl.js'),
+    R.loadModule(base + 'pages/bo/sy/org/SyUserMng.js'),
+    R.loadModule(base + 'pages/bo/sy/org/SyDeptMng.js'),
   ];
 
-  Promise.all(scripts).then(function () {
+  Promise.all(scripts).then(function (results) {
     const screens = [
-      { id: 'bo-sy-org-syUserMng', label: '사용자관리', group: '조직', comp: window.BoSyOrgSyUserMng },
-      { id: 'bo-sy-org-syDeptMng', label: '부서관리', group: '조직', comp: window.BoSyOrgSyDeptMng },
+      { id: 'bo-sy-org-syUserMng', label: '사용자관리', group: '조직', comp: results[1].default },
+      { id: 'bo-sy-org-syDeptMng', label: '부서관리', group: '조직', comp: results[2].default },
     ];
     const innerComps = [
-      { tag: 'SyUserDtl', comp: window.BoSyOrgSyUserDtl },
+      { tag: 'SyUserDtl', comp: results[0].default },
     ];
     R.register('bo-sy', screens);
     R.registerComponents(innerComps);

@@ -1,5 +1,5 @@
 /* ShopJoy Admin - FAQ관리 상세/등록 */
-window.BoCuBaCmFaqDtl = {
+export default {
   name: 'bo-cu-ba-cmFaqDtl',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

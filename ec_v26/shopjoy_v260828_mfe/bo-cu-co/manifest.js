@@ -7,32 +7,30 @@
  * 붙였다 — 두 레포가 같은 화면을 각자 등록해도 사이드바/탭에서 :key 충돌이 안 나게
  * 하려는 것뿐, 내용은 완전히 동일하다.
  *
- * pages/bo/cu/co/CmNoticeDtl.js — bo-cu-ba/pages/bo/cu/ba/CmNoticeDtl.js 를 처음엔 그대로
- * 복사(동일 window 전역명)해서 도메인 간 이름 충돌을 재현했었는데(2026-08-28), 실제로
- * bo-sy-ba 의 동일 실험 파일과 app.component() 이름이 부딪히는 걸 확인한 뒤(2026-08-29)
- * `window.BoCuCoCmNoticeDtl`로 전역명을 분리하고 `pages/bo/cu/co/` 밑으로 옮겼다(장차
- * 통합 시스템으로 합칠 때를 대비해 도메인 경로를 파일 경로에 미리 새겨둠). registerComponents
- * 의 tag 는 여전히 'CmNoticeDtl' 그대로라 CmNoticeMng.js 템플릿의 `<cm-notice-dtl>`은
- * 수정 불필요. */
+ * ES 모듈 전면 전환(2026-08-29) — bo-ab-home/manifest.js 주석 참조. window.ComponentName
+ * 대신 export default + R.loadModule() — bo-cu-ba 와 물리적으로 중복 존재하는 이
+ * 화면들이 이제 window 전역을 전혀 안 거치므로, 로드 순서가 어떻게 겹쳐도 서로
+ * 충돌할 수 없다. registerComponents 의 tag(`'CmNoticeDtl'`, `'CmFaqDtl'`)는 그대로라
+ * CmNoticeMng.js 템플릿의 `<cm-notice-dtl>` 은 수정 불필요. */
 (function () {
   const R = window.MFE_REGISTRY;
   const base = document.currentScript.src.replace(/manifest\.js(\?.*)?$/, '');
 
   const scripts = [
-    R.loadScript(base + 'pages/bo/cu/co/CmNoticeDtl.js'),
-    R.loadScript(base + 'pages/bo/cu/co/CmNoticeMng.js'),
-    R.loadScript(base + 'pages/bo/cu/co/CmFaqDtl.js'),
-    R.loadScript(base + 'pages/bo/cu/co/CmFaqMng.js'),
+    R.loadModule(base + 'pages/bo/cu/co/CmNoticeDtl.js'),
+    R.loadModule(base + 'pages/bo/cu/co/CmNoticeMng.js'),
+    R.loadModule(base + 'pages/bo/cu/co/CmFaqDtl.js'),
+    R.loadModule(base + 'pages/bo/cu/co/CmFaqMng.js'),
   ];
 
-  Promise.all(scripts).then(function () {
+  Promise.all(scripts).then(function (results) {
     const screens = [
-      { id: 'bo-cu-co-cmNoticeMng', label: '공지사항관리', group: '공통업무', comp: window.BoCuCoCmNoticeMng },
-      { id: 'bo-cu-co-cmFaqMng', label: 'FAQ관리', group: '공통업무', comp: window.BoCuCoCmFaqMng },
+      { id: 'bo-cu-co-cmNoticeMng', label: '공지사항관리', group: '공통업무', comp: results[1].default },
+      { id: 'bo-cu-co-cmFaqMng', label: 'FAQ관리', group: '공통업무', comp: results[3].default },
     ];
     const innerComps = [
-      { tag: 'CmNoticeDtl', comp: window.BoCuCoCmNoticeDtl },
-      { tag: 'CmFaqDtl', comp: window.BoCuCoCmFaqDtl },
+      { tag: 'CmNoticeDtl', comp: results[0].default },
+      { tag: 'CmFaqDtl', comp: results[2].default },
     ];
     R.register('bo-cu', screens);
     R.registerComponents(innerComps);

@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 공통코드관리 (CRUD 그리드) */
-window.BoSyBaSyCodeMng = {
+export default {
   name: 'bo-sy-ba-syCodeMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

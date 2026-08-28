@@ -43,12 +43,15 @@
 3. **사용자가 대메뉴를 처음 클릭**하면 `window.MFE_REGISTRY.ensureMenuLoaded(menuKey)`가
    카탈로그에 등록된 그 대메뉴의 폴더들의 `manifest.js`를 그때 `<script>` 태그로 동적
    생성해 불러옵니다. 로딩 중엔 사이드바/본문에 "⏳ 불러오는 중..." 이 뜹니다.
-4. **`manifest.js`** 는 (예전 `document.write` 대신) `window.MFE_REGISTRY.loadScript()`로
+4. **`manifest.js`** 는 (예전 `document.write` 대신) `window.MFE_REGISTRY.loadModule()`로
    자기 화면 파일들을 병렬로 불러온 뒤 `register()`를 호출하고, 마지막에
    `_domainReady()`로 "이 폴더 로드 완료"를 알립니다. `document.write`는 "초기 페이지
    파싱 중"에만 동작하는 방식이라(파싱이 끝난 뒤 부르면 페이지 전체가 지워짐), 나중에
    클릭 시점에 동적으로 불러와야 하는 지연로드와는 애초에 안 맞아서 방식 자체를
-   바꿨습니다.
+   바꿨습니다. `loadModule()`은 네이티브 동적 `import()`를 감싼 것으로(2026-08-29 —
+   화면 파일이 전부 `export default` 방식으로 바뀌면서 `loadScript()`(classic
+   `<script>` + `window.전역` 읽기) 대신 쓰게 됨), 화면이 window 전역을 아예 안
+   거치므로 다른 도메인과 이름이 겹쳐도 구조적으로 충돌이 불가능합니다.
 5. 한 번 로드된 대메뉴는 `loadedFolders`에 기록되어, 다시 클릭해도 재로드하지 않고
    바로 전환됩니다.
 
@@ -183,13 +186,16 @@ bo-sy-org/dev.html  →  ../bo-aa-main/... (공용 런타임) + manifest.js(자�
 
 ## 메뉴 구성 (원래 shopjoy_v260406 실제 화면. 로직·템플릿은 그대로, 컴포넌트 식별자만 변경됨)
 
-`window.ComponentName`/`name:` 옵션값/레지스트리 `id`는 전부 **`Bo{대메뉴}{소그룹}원래이름`**
-패턴으로 통일했습니다(2026-08-29) — 예: `PdTagMng`(원본, `bo-pd-pd`) → `BoPdPdPdTagMng`.
-`Bo`는 8개 폴더 전부 공통(관리자 화면)이라 사실상 "이 프로젝트 소속" 표시고, 실제 구분은
-`{대메뉴}{소그룹}` 부분(폴더명에서 `bo-`와 순수 정렬용 접두어를 뺀 나머지)이 합니다.
+화면 파일은 전부 `window.ComponentName = {...}` 대신 **`export default {...}`**(ES 모듈)로
+바뀌었고(2026-08-29), 레지스트리 `id`/`name:` 옵션값은 **`bo-{대메뉴}-{소그룹}-원래이름`**
+패턴으로 통일했습니다 — 예: `PdTagMng`(원본, `bo-pd-pd`) → `id:'bo-pd-pd-pdTagMng'`.
+`bo-`는 8개 폴더 전부 공통(관리자 화면)이라 사실상 "이 프로젝트 소속" 표시고, 실제 구분은
+`{대메뉴}-{소그룹}` 부분(폴더명에서 `bo-`와 순수 정렬용 접두어를 뺀 나머지)이 합니다.
 도메인 폴더 안에서 새로 화면을 추가할 때도 이 패턴을 그대로 따르면 다른 도메인과
-이름이 겹칠 걱정 없이 기계적으로 이름을 지을 수 있습니다. `pages/` 안 실제 코드
-(`setup()`/`template`/props 등)는 원본과 완전히 동일합니다 — 바뀐 건 컴포넌트 식별자뿐.
+`id`가 겹칠 걱정 없이 기계적으로 이름을 지을 수 있습니다 — 다만 진짜 충돌 방지는 이제
+`id` 네이밍이 아니라 **ES 모듈 자체**(화면이 window 전역을 아예 안 씀)가 담당합니다.
+`pages/` 안 실제 코드(`setup()`/`template`/props 등)는 원본과 완전히 동일합니다 —
+바뀐 건 맨 위 export 방식과 식별자뿐.
 
 | 대메뉴 | 소그룹 | 화면 |
 |---|---|---|
@@ -221,8 +227,8 @@ bo-sy-org/dev.html  →  ../bo-aa-main/... (공용 런타임) + manifest.js(자�
 | 구분 | 내용 |
 |---|---|
 | **원본 그대로 복사(바이트 단위 동일)** | CDN 라이브러리, `bo-global-style01.css`, `lib/utils/*`, `lib/services/*`, `lib/stores/bo/*`, `components/comp/*`, `components/modals/*` |
-| **원본에서 식별자만 변경(로직·템플릿·props 등은 100% 동일)** | 14개 화면 파일 + Dtl 컴포넌트들 — `window.ComponentName`/`name:` 옵션값을 `Bo{대메뉴}{소그룹}원래이름`으로 통일(2026-08-29, 도메인 간 이름 충돌 방지 + 새 도메인 추가 시 이름을 기계적으로 지을 수 있게). 위 "메뉴 구성" 표 참고 |
-| **새로 작성** | `lib/mfe/mfeRegistry.js`(레지스트리 — 카탈로그+지연로드+group 필드 지원), `lib/mfe/mfeCatalog.js`(도메인 목차), `lib/mfe/mfeShell.js`(단순화된 셸 — 로그인/토스트/컨펌은 `boAppBase.js`와 동일 패턴으로 재작성, 좌측메뉴 2단 그룹핑·열린 탭·URL 라우팅·지연로드 UI 자체 구현, 다중탭 kept 캐시·3/4열 뷰모드·API 응답 패널은 이 데모 범위 밖이라 생략), 각 도메인의 `manifest.js`(자기등록 매니페스트, `document.write` 대신 동적 `<script>`+Promise) + `dev.html`(단독 실행용), `mfe.html`/`mfe-*.html`, `assets/css/mfe-style.css` |
+| **원본에서 export 방식·식별자만 변경(로직·템플릿·props 등은 100% 동일)** | 20개 화면 파일(14개 메뉴 화면 + Dtl 등 내부 컴포넌트) — `window.ComponentName = {...}`를 `export default {...}`(ES 모듈)로, `name:` 옵션값을 `bo-{대메뉴}-{소그룹}-원래이름`으로 통일(2026-08-29, 도메인 간 이름 충돌을 구조적으로 차단 + 새 도메인 추가 시 이름을 기계적으로 지을 수 있게). 위 "메뉴 구성" 표 참고 |
+| **새로 작성** | `lib/mfe/mfeRegistry.js`(레지스트리 — 카탈로그+지연로드+group 필드+`loadModule()` 지원), `lib/mfe/mfeCatalog.js`(도메인 목차), `lib/mfe/mfeShell.js`(단순화된 셸 — 로그인/토스트/컨펌은 `boAppBase.js`와 동일 패턴으로 재작성, 좌측메뉴 2단 그룹핑·열린 탭·URL 라우팅·지연로드 UI 자체 구현, 다중탭 kept 캐시·3/4열 뷰모드·API 응답 패널은 이 데모 범위 밖이라 생략), 각 도메인의 `manifest.js`(자기등록 매니페스트, `document.write` 대신 동적 `import()`+Promise) + `dev.html`(단독 실행용), `mfe.html`/`mfe-*.html`, `assets/css/mfe-style.css` |
 
 ## 새 도메인(마이크로 레포) 추가하기
 
@@ -233,14 +239,16 @@ bo-sy-org/dev.html  →  ../bo-aa-main/... (공용 런타임) + manifest.js(자�
 1. **형제 폴더 생성** — `bo-aa-main/`과 같은 레벨에(중첩 금지). 예: `pd-brand/`
 2. **`manifest.js` 작성** — 기존 도메인(예: `bo-pd-pd/manifest.js`)을 그대로 베껴서 시작.
    `var` 대신 `const`, `scripts`/`screens`/`innerComps` 변수로 먼저 선언 후 주입, 마지막에
-   `R._domainReady(base)` 필수, `.catch(...)`로 로드 실패 로깅 필수. **화면 파일의
-   `window.컴포넌트명`은 다른 도메인 폴더와 절대 겹치면 안 됩니다** — 원본 프로젝트
-   컨벤션(모든 컴포넌트를 `window.ComponentName`으로 export)이 JS 전역이라, 다른
-   도메인이 같은 이름을 쓰면 나중에 로드된 쪽이 조용히 무시됩니다(2026-08-28,
-   `bo-cu-ba`/`bo-sy-ba`가 둘 다 `CmNoticeDtl`을 쓰게 만들어 직접 재현·확인 — `mfeShell.js`의
-   `_registerOne()`이 이제 이런 충돌을 `console.warn`으로 알려주지만, 알림일 뿐 원인
-   제거는 아닙니다). 새 파일 만들기 전에 다른 도메인 폴더에 같은 이름이 없는지
-   확인하세요
+   `R._domainReady(base)` 필수, `.catch(...)`로 로드 실패 로깅 필수. **화면 파일은
+   `export default {...}`(ES 모듈) 필수, `window.ComponentName` 금지**입니다 — 원본
+   프로젝트 컨벤션(모든 컴포넌트를 `window.ComponentName`으로 export)은 JS 전역이라,
+   다른 도메인이 같은 이름을 쓰면 나중에 로드된 쪽이 조용히 무시되는 문제가 실제로
+   있었습니다(2026-08-28, `bo-cu-ba`/`bo-sy-ba`가 둘 다 `CmNoticeDtl`을 쓰게 만들어
+   직접 재현·확인). `manifest.js`도 `R.loadScript()` 대신 `R.loadModule()`로 불러오고
+   `Promise.all(scripts).then(function (results) { ... results[N].default ... })`처럼
+   `.default`를 꺼내 씁니다 — 화면이 window 전역을 아예 안 쓰므로 이름이 겹쳐도
+   구조적으로 충돌이 불가능합니다(`mfeShell.js`의 `_registerOne()`은 그래도 만약을
+   대비한 `console.warn` 안전장치로 남아있습니다)
 3. **`dev.html` 작성** — 다른 도메인 없이 이 도메인 혼자 뜨는지 확인용(기존 걸 복사 후
    스크립트 목록만 교체)
 4. **`bo-aa-main/lib/mfe/mfeCatalog.js`에 `registerCatalog(menuKey, folder, group, screens)`

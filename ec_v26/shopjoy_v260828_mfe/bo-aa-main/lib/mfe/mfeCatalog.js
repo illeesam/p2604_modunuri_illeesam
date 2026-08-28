@@ -23,23 +23,26 @@
  * 2. 그 폴더 안에 `manifest.js` 작성 — 기존 7개(예: bo-pd-pd/manifest.js) 그대로 베껴서
  *    시작할 것. 지켜야 할 것:
  *      - `const`만 쓴다(`var`/`let` 금지 — 재할당 없는 값은 항상 const, 프로젝트 컨벤션)
- *      - 불러올 스크립트 목록은 `scripts` 변수로, `register()`에 넘길 화면 목록은
+ *      - 불러올 화면 목록은 `scripts` 변수로, `register()`에 넘길 화면 목록은
  *        `screens` 변수로(내부 컴포넌트가 있으면 `innerComps`도) 먼저 선언한 뒤 주입한다
  *        — Promise.all(...)/register(...) 호출부에 리터럴을 인라인으로 쓰지 않는다
  *      - 마지막에 반드시 `R._domainReady(base)` 호출 — 안 하면 그 폴더를 기다리는
  *        `ensureFolderLoaded()` Promise가 영원히 안 풀린다
  *      - `.catch(function (err) { console.error('[폴더명 manifest] 로드 실패:', err); })`
  *        빠뜨리지 말 것 — 화면 파일 하나만 404여도 전체가 조용히 안 뜨는 원인이 됨
- *      - **`window.컴포넌트명`은 도메인 폴더를 넘어 항상 유일해야 한다** — 원본 프로젝트
- *        컨벤션대로 모든 화면 파일이 `window.ComponentName = {...}`으로 export하는데, 이건
- *        JS 전역이라 다른 도메인 폴더(=별도 git 레포)가 우연히 같은 이름을 쓰면 나중에
- *        로드된 쪽이 조용히 무시된다(2026-08-28, `bo-cu-ba`/`bo-sy-ba` 둘 다 `CmNoticeDtl`을
- *        쓰게 만들어 직접 재현·확인함 — `mfeShell.js`의 `_registerOne()`이 이제 이런 충돌을
- *        `console.warn`으로 알려주지만, 알림일 뿐 원인 제거는 아니다). 새 화면 파일을
- *        만들기 전에 다른 도메인 폴더에 같은 이름이 이미 있는지 확인할 것(주석 안에
- *        glob 을 쓰면 `*` 다음에 `/`가 와서 블록주석을 조기 종료시키므로 폴더를 풀어
- *        나열한다):
- *        `grep -rn "window\.컴포넌트명\s*=" ../bo-ab-home/pages ../bo-pd-pd/pages ../bo-pd-cate/pages ../bo-cu-ba/pages ../bo-cu-co/pages ../bo-sy-ba/pages ../bo-sy-org/pages`
+ *      - **화면 파일은 `export default` 필수, `window.ComponentName` 금지**
+ *        (2026-08-29, 전체 화면 ES 모듈 전환 — `/CLAUDE.md`의 "ES 모듈 전환" 절 참고).
+ *        `manifest.js`는 `R.loadScript()` 대신 `R.loadModule()`(동적 `import()`)로
+ *        불러오고, `Promise.all(scripts).then(function (results) { ... results[N].default
+ *        ... })`처럼 모듈 네임스페이스에서 `.default`를 꺼내 쓴다. 화면이 window 전역을
+ *        아예 안 쓰므로, 다른 도메인 폴더와 파일명·컴포넌트명이 우연히 겹쳐도
+ *        구조적으로 충돌이 불가능하다(예전엔 window 전역 이름이 겹치면 나중에 로드된
+ *        쪽이 조용히 무시됐었다 — 2026-08-28, `bo-cu-ba`/`bo-sy-ba` 둘 다 `CmNoticeDtl`을
+ *        쓰게 만들어 직접 재현·확인함)
+ *      - 레지스트리 `id`/`name:`은 `bo-{대메뉴}-{소그룹}-{원래이름 첫글자 소문자}`
+ *        패턴(예: `PdTagMng`(`bo-pd-pd`) → `'bo-pd-pd-pdTagMng'`) — `id`와 `name:`은
+ *        항상 같은 문자열이다. `bo-{대메뉴}-{소그룹}` 부분이 폴더명(`bo-`/순수 정렬용
+ *        접두어 제외)에서 기계적으로 나오므로, 다른 도메인과 겹칠지 고민할 필요가 없다
  * 3. 그 폴더 안에 `dev.html` 작성 — 다른 도메인 없이 `../bo-aa-main/`의 공용 런타임 +
  *    자기 `manifest.js` 하나만 정적 로드해서 "이 도메인이 혼자서도 돌아가는지" 확인용.
  *    기존 dev.html(예: bo-sy-ba/dev.html) 그대로 복사 후 스크립트 목록만 자기 화면으로 교체
@@ -54,7 +57,8 @@
  *        이름이 보이다가, 로드 후 실제 항목으로 안 바뀌고 둘 다(자리표시+실제) 보이는
  *        버그가 난다
  *      - 같은 대메뉴 안에서 화면 `id`가 다른 도메인과 겹치면 안 된다(사이드바/탭의
- *        `:key`가 깨짐) — 겹칠 상황이면 `bo-cu-ba`/`bo-cu-co`처럼 접미어(`_co` 등)로 구분
+ *        `:key`가 깨짐) — 위의 `bo-{대메뉴}-{소그룹}-{원래이름}` 패턴을 그대로 따르면
+ *        자동으로 안 겹친다(예: `bo-cu-ba-cmNoticeMng` vs `bo-cu-co-cmNoticeMng`)
  * 5. `_git_shopjoy-mfe-domain-{도메인명}.txt` 마커 파일 추가 — 다른 도메인 폴더의
  *    파일을 그대로 본떠서, 이 폴더가 실제로는 별도 git 레포라는 걸 문서화(폴더명의
  *    정렬용 접두어는 절대 이 파일 안의 "실제 레포명"에 넣지 않는다)

@@ -42,24 +42,57 @@
 - 마지막에 반드시 `R._domainReady(base)` — 안 하면 `ensureFolderLoaded()`가 영원히 안 풀림
 - `.catch(...)`로 로드 실패를 콘솔에 남길 것 — 화면 파일 하나만 404여도 전체가 조용히
   안 뜨는 원인이 됨
-- **`window.컴포넌트명`/`name:`/레지스트리 `id` 는 전부 `Bo{대메뉴}{소그룹}원래이름`
-  패턴 필수** (2026-08-29, 14개 화면 전체 + 내부 Dtl 컴포넌트에 소급 적용 — 예:
-  `PdTagMng`(`bo-pd-pd`) → `window.BoPdPdPdTagMng`/`name:'BoPdPdPdTagMng'`,
-  `id:'boPdPdPdTagMng'`(camelCase는 id에만)). `Bo`는 8개 폴더 전부 공통(관리자 화면
-  표시)이고, `{대메뉴}{소그룹}` 부분이 폴더명(`bo-` 및 순수 정렬용 접두어 `aa-`/`ab-`
-  제외)에서 기계적으로 나온다 — 새 도메인을 추가할 때도 이 규칙만 따르면 다른 도메인과
-  이름이 겹칠지 고민할 필요가 없다(예전엔 "정말 겹칠 때만" 예외적으로 붙였는데, 실제로
-  적용해보니 `bo-cu-ba`/`bo-cu-co`가 `CmNoticeMng.js`/`CmFaqMng.js`도 물리적으로
-  복사돼 있어서 똑같이 이름이 겹쳐 있었다 — "언제 붙일지 판단"보다 "항상 붙인다"가
-  더 안전해서 전체 적용으로 확정). 원본 프로젝트 컨벤션(모든 컴포넌트를
-  `window.ComponentName`으로 export)이 JS 전역이라, 다른 도메인이 같은 이름을 쓰면
-  나중에 로드된 쪽이 조용히 무시됨 — 실제 `setup()`/`template`/props 등 로직은 원본과
-  100% 동일, 바뀌는 건 식별자뿐이다. `mfeShell.js`의 `_registerOne()`이 그래도 충돌이
-  남아있으면 `console.warn`으로 알려준다(안전장치, 아래 "버그 재발 방지 메모" 참고).
-  파일도 진짜로 여러 도메인에 물리적으로 중복 존재하는 경우(예: `CmNoticeDtl.js`가
-  `bo-cu-co`/`bo-sy-ba`에 복사됨)는 `pages/bo/{menu}/{sub}/`처럼 도메인 경로를 실제
-  파일 경로에 새겨두면(장차 여러 레포를 하나로 합칠 때 `pages/` 트리가 안 겹침)
-  더 좋다 — 각 도메인에 유일하게 하나만 있는 화면 파일까지 옮길 필요는 없다
+- **화면 파일은 `export default`(ES 모듈) 필수, `window.ComponentName` 금지**
+  (2026-08-29 전체 20개 화면 + 내부 Dtl 컴포넌트 전면 전환 — 처음엔 물리적으로 중복
+  존재하는 파일만 예외적으로 전환했는데, 결국 전체를 이 방식으로 통일했다). 자세한
+  방법·이유는 바로 아래 "ES 모듈 전환" 절 참고
+- **레지스트리 `id`/`name:` 는 `bo-{대메뉴}-{소그룹}-{원래이름 첫글자 소문자}`
+  패턴**(예: `PdTagMng`(`bo-pd-pd`) → `id:'bo-pd-pd-pdTagMng'`,
+  `name:'bo-pd-pd-pdTagMng'` — 이 둘은 항상 같은 문자열). `bo-`는 8개 폴더 전부
+  공통이라 사실상 노이즈지만, 폴더명을 기계적으로 그대로 옮긴 것이라 사람이 "이름이
+  겹칠까?"를 고민할 필요가 없다는 게 핵심 — `{대메뉴}-{소그룹}` 부분이 폴더명(`bo-`
+  및 순수 정렬용 접두어 `aa-`/`ab-` 제외)에서 그대로 나온다. `export default`로
+  바뀌면서 이 값은 더 이상 "충돌 방지"용이 아니라(모듈 자체가 전역을 안 쓰니 충돌이
+  구조적으로 불가능해짐) 사이드바/탭/URL에 쓰이는 **화면 식별자**로서의 역할만
+  남았다 — 그래도 값은 그대로 유지한다(이미 카탈로그와 맞춰뒀고, 바꿀 이유가 없음)
+
+## ES 모듈 전환 (2026-08-29, 전체 화면 적용)
+
+셸/레지스트리/Vue/Pinia/coUtil/공용 컴포넌트(`BoGrid` 등)는 **classic `<script>` +
+`window.*` 전역 그대로**(도메인 간 중복이 없어 애초에 충돌 위험이 없다). **도메인
+화면 파일 20개만** `window.ComponentName = {...}` 대신 `export default {...}`로
+바꿨다 — 처음엔 "물리적으로 중복 존재하는 파일만" 예외적으로 전환했는데, 실제로
+`bo-cu-ba`/`bo-cu-co`가 `CmNoticeMng.js`/`CmFaqMng.js`도 중복 복사돼 있었던 걸
+발견한 뒤로 "언제 전환할지 판단"보다 "화면 파일은 전부 이 방식"으로 확정했다:
+
+```js
+// 화면 파일 — window 전역에 자기를 안 씀
+export default { name: 'bo-sy-ba-cmNoticeDtl', ... };
+
+// manifest.js — loadScript() 대신 loadModule()
+const scripts = [ R.loadModule(base + 'pages/bo/sy/ba/CmNoticeDtl.js'), ... ];
+Promise.all(scripts).then(function (results) {
+  const screens = [{ id: '...', comp: results[0].default, ... }]; // 모듈 네임스페이스 → default export
+  ...
+});
+```
+
+- `loadScript()`(classic `<script>`)와 `loadModule()`(동적 `import()`)는 같은 `manifest.js`의
+  `Promise.all([...])` 배열 안에 섞어 써도 무방하다 — 다만 지금은 화면 파일이 전부
+  ESM이라 실제로는 각 `manifest.js`가 `loadModule()`만 쓴다
+- Vue/coUtil/boApiSvc 등 공용 전역을 읽는 코드는 모듈 안에서도 그대로 동작한다(모듈은
+  전역을 "쓰지만" 않을 뿐, "읽는" 건 classic 스크립트와 동일 — `setup()`/`template`/props
+  등 화면 내부 로직은 원본과 100% 동일, 바뀌는 건 맨 위 export 방식뿐)
+- `registerComponents([{tag:'CmNoticeDtl', comp: ...}])`의 `tag`는 그대로 문자열
+  하드코딩이다 — `<cm-notice-dtl>` 템플릿 태그는 `comp.name`이 아니라 이 `tag`로 찾으므로
+  ESM 전환과 무관하게 안 바뀐다
+- `dev.html`은 손댈 필요 없음 — `manifest.js` 자체는 여전히 `<script src="manifest.js">`로
+  불리고, 그 **안에서만** `import()`를 쓰는 거라 즉시로드/지연로드 둘 다 그대로 동작
+- 브라우저 네이티브 ESM(정적 `import`/동적 `import()`) 지원은 2017~2019년부터 사실상
+  전 브라우저에 있음 — 신기술 아님. 유일한 주의점은 서버가 `.js`를 올바른 MIME
+  타입(`text/javascript`)으로 서빙해야 한다는 것(Live Server는 기본으로 맞음)
+- 새 화면을 추가할 때도 처음부터 `export default`로 쓴다 — `window.ComponentName`
+  방식으로 새로 짜지 말 것
 
 ## 지연로드(lazy load) 단위 = 폴더(소그룹) — 화면 1개 단위 아님
 
@@ -87,7 +120,7 @@
 | 한 번 로드 실패한 소그룹은 재클릭해도 영원히 같은 실패만 재현(새로고침 전엔 재시도 불가) | `ensureFolderLoaded`가 실패 시 `pendingLoads[key]`를 안 지워서 rejected Promise가 캐시에 영구히 남음 | `mfeRegistry.js` — `onerror`에서도 `delete pendingLoads[key]` |
 | (경미) 세션이 길어질수록 `tickListeners` 배열이 계속 자람 | `ensureMenuLoaded`의 카탈로그 없음(dev.html) 폴백 폴링 콜백이 resolve 후에도 배열에서 안 빠짐 | `mfeRegistry.js` — resolve 시 `splice`로 자기 자신 제거 |
 | 여러 화면(PdTagMng 등)이 전부 렌더 실패 | `window.boApp`가 정의 안 돼 있어서 각 화면의 `const { showToast } = window.boApp` 구조분해가 setup() 맨 위에서 throw | `mfeShell.js` — `window.boApp = { showToast, showConfirm }` 부여 |
-| 서로 다른 도메인 폴더가 같은 `window.컴포넌트명`을 쓰면 나중 것이 아무 경고 없이 무시됨(2026-08-28, `bo-cu-co`+`bo-sy-ba` 둘 다 `CmNoticeDtl`로 재현 — registerComponents 태그 경로와 register() 의 comp.name 폴백 경로가 서로 다른데도 같은 이름으로 부딪힘) | `_registerLoadedComponents()`가 이미 등록된 이름이면 그냥 `return`(비교 없음) | `mfeShell.js` — `_registerOne()`이 이름은 같은데 객체가 다르면 `console.warn`(일반 안전장치). 이 두 파일은 2026-08-29 `window.BoCuCoCmNoticeDtl`/`window.BoSyBaCmNoticeDtl`로 전역명 자체를 분리 + `pages/bo/{cu/co,sy/ba}/`로 이동해 근본 해결. 이어서 `bo-cu-ba`/`bo-cu-co`가 `CmNoticeMng.js`/`CmFaqMng.js`도 물리적으로 복사돼 있어(동일 문제) `BoCuBaCmNoticeMng` 등으로 똑같이 분리하다가, 결국 14개 화면 전체에 `Bo{메뉴}{소그룹}원래이름` 패턴을 일괄 적용(`bo-cu-ba`의 `CmNoticeDtl`도 이제 `BoCuBaCmNoticeDtl`) |
+| 서로 다른 도메인 폴더가 같은 `window.컴포넌트명`을 쓰면 나중 것이 아무 경고 없이 무시됨(2026-08-28, `bo-cu-co`+`bo-sy-ba` 둘 다 `CmNoticeDtl`로 재현 — registerComponents 태그 경로와 register() 의 comp.name 폴백 경로가 서로 다른데도 같은 이름으로 부딪힘) | `_registerLoadedComponents()`가 이미 등록된 이름이면 그냥 `return`(비교 없음) | `mfeShell.js` — `_registerOne()`이 이름은 같은데 객체가 다르면 `console.warn`(일반 안전장치, 지금도 유지). 근본 해결은 단계적으로 갔다 — ①이름 분리(`Bo{메뉴}{소그룹}원래이름`)로 우선 봉합 → ②실제로 물리 중복인 `bo-cu-ba`/`bo-sy-ba`의 `CmNoticeDtl.js`만 ES 모듈로 전환 → ③이후 `bo-cu-ba`/`bo-cu-co`의 `CmNoticeMng.js`/`CmFaqMng.js`도 중복 복사된 걸 발견해서 결국 **20개 화면 파일 전체**를 `export default`+`R.loadModule()`로 전환(2026-08-29) — 이제 화면 컴포넌트는 window 전역을 아예 안 쓰므로 이 클래스의 버그 자체가 구조적으로 재발 불가능하다. 자세한 건 아래 "ES 모듈 전환" 절 참고 |
 
 ## Vue 템플릿 크래시 규칙 (원본 프로젝트와 동일 — 이 데모에도 그대로 적용)
 

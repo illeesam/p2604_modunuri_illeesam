@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 카테고리관리 */
-window.BoPdCatePdCategoryMng = {
+export default {
   name: 'bo-pd-cate-pdCategoryMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

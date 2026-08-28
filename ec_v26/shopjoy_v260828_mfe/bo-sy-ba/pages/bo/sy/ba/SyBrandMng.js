@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 브랜드관리 (CRUD 그리드) */
-window.BoSyBaSyBrandMng = {
+export default {
   name: 'bo-sy-ba-syBrandMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

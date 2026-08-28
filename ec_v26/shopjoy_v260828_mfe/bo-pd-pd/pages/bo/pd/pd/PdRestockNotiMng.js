@@ -1,5 +1,5 @@
 /* ShopJoy Admin - 재입고알림관리 */
-window.BoPdPdPdRestockNotiMng = {
+export default {
   name: 'bo-pd-pd-pdRestockNotiMng',
   props: {
     navigate:    { type: Function, required: true }, // 페이지 이동

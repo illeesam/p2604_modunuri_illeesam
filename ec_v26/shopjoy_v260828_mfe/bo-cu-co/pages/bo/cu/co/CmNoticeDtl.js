@@ -21,7 +21,7 @@
  *   - reloadTrigger watch 로 상위 Mng 신호 수신 → 상세 재조회
  *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.7~§4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
  */
-window.BoCuCoCmNoticeDtl = {
+export default {
   name: 'bo-cu-co-cmNoticeDtl',
   props: {
     navigate:      { type: Function, required: true }, // 페이지 이동

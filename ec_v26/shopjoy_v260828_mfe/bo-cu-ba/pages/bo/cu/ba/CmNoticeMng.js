@@ -8,7 +8,7 @@
  *   - 인라인 Dtl: baseDetail.panelKey / editId / dtlMode 바인딩
  *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
  */
-window.BoCuBaCmNoticeMng = {
+export default {
   name: 'bo-cu-ba-cmNoticeMng',
   props: {
     navigate: { type: Function, required: true }, // 페이지 이동
