@@ -1,9 +1,0 @@
-shopjoy-mfe-domain-pd-cate
-
-관리단위: 마이크로 도메인 — 상품관리 > 카테고리 (pd 대메뉴에 pd-pd 와 함께 기여)
-현재 위치: shopjoy_v260828_mfe/pd-cate/  (컨테이너 폴더 바로 밑, aa-main/ab-home/pd-pd/cu-ba/cu-co/sy-ba/sy-org 와 형제)
-포함 경로: manifest.js, pages/*, dev.html(단독 실행용 — ../aa-main/ 공용 런타임만 참조하고 pd-pd 포함 다른 도메인은 전혀 안 부름)
-등록 화면: 카테고리관리 (PdCategoryMng), 카테고리상품관리 (PdCategoryProdMng) — 대메뉴 pd, 소그룹 "카테고리"
-셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,
-                     BoContainer/BoGrid/BoPager/BoSearchArea/BoCategoryTree/BoTabBar/
-                     BoCmPopupModal/BoExcelDownModal 등 셸이 등록한 공용 컴포넌트

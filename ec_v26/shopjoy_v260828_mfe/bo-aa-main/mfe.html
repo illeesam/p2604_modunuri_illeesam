@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy MFE Demo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E">
+  <script>
+    /* shopjoy_v260406/bo.html 의 BO_SITE_NO 부트스트랩을 단순화 — 이 데모는 항상 01 사이트만 사용 */
+    window.BO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-bo-sy-siteNo', '01');
+      localStorage.setItem('modu-bo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <!-- ■ 메인프레임 공용 런타임 — shopjoy_v260406/assets/cdn/pkg 원본 그대로 재사용 ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <!-- echarts — bo-aa-home/(대시보드) 화면이 <co-echart> 로 사용 -->
+  <script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <!-- 메인프레임 공용 CSS — shopjoy_v260406 원본 그대로 재사용 -->
+  <link rel="stylesheet" href="assets/css/bo-global-style01.css">
+  <!-- 이 셸(mfe.html) 전용 CSS — 프로젝트 컨벤션대로 분리 -->
+  <link rel="stylesheet" href="assets/css/mfe-style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       메인프레임 공용 자원 — shopjoy_v260406 원본 파일 그대로(수정 없이) 재사용.
+       이 구간은 "레포를 나눈다면 메인프레임 레포에 남는 부분"에 해당한다.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/license/licenseBo.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/boConsts.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
+  <script src="lib/utils/coNotiStore.js"></script>
+  <script src="lib/env/boEnvConsts.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
+  <script src="lib/utils/coAuth.js"></script>
+
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
+  <script src="lib/config/excelDomains.js"></script>
+
+  <script src="pages/base/boError401.js"></script>
+  <script src="pages/base/boError404.js"></script>
+  <script src="pages/base/boError500.js"></script>
+
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
+  <script src="lib/stores/bo/boUserPrefStore.js"></script>
+
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
+
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/BoComp.js"></script>
+  <script src="components/comp/BoAreaComp.js"></script>
+  <script src="components/comp/CoEchartComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
+
+  <script src="components/modals/BoModals.js"></script>
+  <script src="components/modals/BoExcelDownModal.js"></script>
+  <script src="components/modals/BoCmPopupModal.js"></script>
+  <script src="components/modals/HelpBoModal.js"></script>
+  <script src="components/modals/CoExtHelpModal.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       마이크로프론트엔드 레지스트리 + 카탈로그(가벼운 목차) — 도메인 실제 코드는
+       전혀 안 싣는다. mfeCatalog.js 가 "어느 대메뉴에 어느 폴더가 기여하는지"만
+       선언해두면, 셸이 그 대메뉴를 사용자가 처음 클릭하는 순간에만
+       window.MFE_REGISTRY.ensureMenuLoaded() 로 그 폴더의 manifest.js(=실제 화면
+       코드)를 동적으로 불러온다(지연로드, 2026-08-28). 예전엔 여기 7개 도메인의
+       manifest.js 를 전부 정적으로 나열해서 부팅 즉시 다 로드했었다 — 새 도메인이
+       추가돼도 이제 mfeCatalog.js 한 줄만 늘면 되고, 이 mfe.html 자체는 손댈 일이
+       없다.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/mfe/mfeRegistry.js"></script>
+  <script src="lib/mfe/mfeCatalog.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       메인 앱 부트스트랩 — 반드시 마지막. mfeBootShell()에 넘기는 대메뉴 4개가
+       이 셸의 "통합 데모" 정체성이다 — 도메인 폴더의 dev.html 은 이 목록을 자기
+       메뉴 1개짜리로 바꿔서 동일 함수를 부른다. 카탈로그만 로드된 상태이므로
+       실제 화면 코드는 사용자가 그 대메뉴를 처음 클릭할 때 지연로드된다.
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/mfe/mfeShell.js"></script>
+  <script>
+    window.mfeBootShell([
+      { key: 'home', label: '홈', icon: '🏠' },
+      { key: 'pd',   label: '상품관리', icon: '📦' },
+      { key: 'cu',   label: '고객센터', icon: '💬' },
+      { key: 'sy',   label: '시스템', icon: '⚙️' },
+    ]);
+  </script>
+</body>
+</html>

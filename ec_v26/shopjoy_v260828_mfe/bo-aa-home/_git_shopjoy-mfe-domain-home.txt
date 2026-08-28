@@ -1,0 +1,15 @@
+shopjoy-mfe-domain-home
+
+관리단위: 마이크로 도메인 — 홈
+현재 위치: shopjoy_v260828_mfe/bo-aa-home/  (컨테이너 폴더 바로 밑, bo-aa-main/bo-pd-pd/bo-pd-cate/bo-cu-ba/bo-cu-co/bo-sy-ba/bo-sy-org 와 형제.
+          폴더명 앞의 "bo-" 는 정렬용이 아니라 의미론적 접두어(2026-08-29,
+          ab-home→bo-aa-home 전면 변경) — 원본 프로젝트의 bo-/fo- 파일명 규칙(관리자
+          화면=bo-, 사용자 화면=fo-)을 폴더 단위로 확장한 것으로, 이 8개 폴더가 전부
+          관리자(Back Office) 화면이라는 뜻이다. 셸과 홈만 추가로 "aa-" 서브접두어를
+          공유해 정렬상 인접하게 묶인다(다만 home < main 이라 이 폴더가 알파벳순으로
+          bo-aa-main 보다 먼저 온다) — 실제 git 레포명은 여전히 shopjoy-mfe-domain-home
+          이 맞다, 로컬 접두어를 레포명에 그대로 쓰지 않는다)
+포함 경로: manifest.js, pages/*, dev.html(단독 실행용 — ../bo-aa-main/ 공용 런타임만 참조하고 다른 도메인은 전혀 안 부름)
+등록 화면: EC 대시보드1 (DashboardBoEc01), EC 대시보드2 (DashboardBoEc02)
+셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,
+                     BoContainer/BoGrid/BoTabBar/CoEchart 등 셸이 등록한 공용 컴포넌트

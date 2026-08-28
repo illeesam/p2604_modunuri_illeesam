@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy MFE Demo — 고객센터</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%AC%3C/text%3E%3C/svg%3E">
+  <script>
+    /* shopjoy_v260406/bo.html 의 BO_SITE_NO 부트스트랩을 단순화 — 이 데모는 항상 01 사이트만 사용 */
+    window.BO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-bo-sy-siteNo', '01');
+      localStorage.setItem('modu-bo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <!-- ■ 메인프레임 공용 런타임 — shopjoy_v260406/assets/cdn/pkg 원본 그대로 재사용 ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <!-- echarts — 이 대메뉴(cu)는 안 쓰지만 메인프레임이 상시 제공하는 공용 런타임의 일부라 그대로 로드 -->
+  <script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/bo-global-style01.css">
+  <link rel="stylesheet" href="assets/css/mfe-style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       메인프레임 공용 자원 — mfe.html 과 완전히 동일(수정 없음).
+  ═══════════════════════════════════════════════════════════════════ -->
+  <script src="lib/license/licenseBo.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/boConsts.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
+  <script src="lib/utils/coNotiStore.js"></script>
+  <script src="lib/env/boEnvConsts.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
+  <script src="lib/utils/coAuth.js"></script>
+
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
+  <script src="lib/config/excelDomains.js"></script>
+
+  <script src="pages/base/boError401.js"></script>
+  <script src="pages/base/boError404.js"></script>
+  <script src="pages/base/boError500.js"></script>
+
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
+  <script src="lib/stores/bo/boUserPrefStore.js"></script>
+
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
+
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/BoComp.js"></script>
+  <script src="components/comp/BoAreaComp.js"></script>
+  <script src="components/comp/CoEchartComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
+
+  <script src="components/modals/BoModals.js"></script>
+  <script src="components/modals/BoExcelDownModal.js"></script>
+  <script src="components/modals/BoCmPopupModal.js"></script>
+  <script src="components/modals/HelpBoModal.js"></script>
+  <script src="components/modals/CoExtHelpModal.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       mfe.html(전체 7개 대메뉴)의 축소판 — 지연로드 전환(2026-08-28) 이후로는
+       mfe.html 과 똑같이 카탈로그(가벼운 목차) 전체를 로드해도 무방하다(코드는
+       안 실리니 비용이 거의 없다). 진짜 차이는 아래 mfeBootShell() 인자 — 대메뉴를
+       "cu" 하나만 넘겨서 상단바엔 고객센터만 뜨고, 실제로 클릭해야만 bo-cu-ba/bo-cu-co
+       코드가 로드된다. -->
+  <script src="lib/mfe/mfeRegistry.js"></script>
+  <script src="lib/mfe/mfeCatalog.js"></script>
+
+  <script src="lib/mfe/mfeShell.js"></script>
+  <script>
+    window.mfeBootShell([
+      { key: 'cu', label: '고객센터', icon: '💬' },
+    ]);
+  </script>
+</body>
+</html>
