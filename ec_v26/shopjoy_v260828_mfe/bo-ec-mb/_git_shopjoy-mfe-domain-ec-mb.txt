@@ -1,0 +1,37 @@
+shopjoy-mfe-domain-ec-mb
+
+관리단위: 마이크로 도메인 — 회원관리 대메뉴 전체 (shopjoy_v260406/pages/bo/ec/mb/ 전체
+          복제)
+현재 위치: shopjoy_v260828_mfe/bo-ec-mb/  (컨테이너 폴더 바로 밑, 다른 도메인 폴더들과
+          완전한 형제. "bo-" 는 정렬용이 아니라 의미론적 접두어(관리자 화면))
+
+⭐ 2026-08-29 구조 재설계 — "형상관리 단위(git 레포)"와 "지연로드 단위"를 분리:
+  - **형상관리 단위**: 이 `bo-ec-mb/` 폴더 전체가 레포 하나(실제로 분리한다면
+    여기서 `git init` 한 번). 34개였던 레포를 팀/대메뉴 단위로 통합하는 취지 —
+    아래 "소그룹별 독립 배포 시연" 목적은 bo-zd/devtools/bo-zd/simul 이 이미
+    충분히 증명했다고 보고, 실전에서 흔한 "팀 단위 레포 하나"로 재통합
+  - **지연로드 단위**: 레포 경계와 무관하게 여전히 **소그룹(중메뉴) 하나 = manifest.js
+    하나**. `registerCatalog(menuKey, folder, ...)`의 `folder`는 단순 URL 경로
+    문자열이라 레포 루트가 아니라 레포 **안의 하위 디렉터리**를 가리켜도 동일하게
+    동작한다 — 각 `manifest.js`가 `document.currentScript.src`로 자기 위치를
+    스스로 알아내기 때문(레포 하나로 합쳐도 소그룹 단위 지연로드 입자성이 그대로
+    유지되는 핵심 이유)
+
+포함 경로:
+  - `member/manifest.js` + `member/pages/bo/mb/member/*` — 소그룹 "회원"
+  - `grade/manifest.js`  + `grade/pages/bo/mb/grade/*`  — 소그룹 "등급·그룹"
+  - `dev.html`(레포 전체 단독 실행용 — `member/manifest.js`+`grade/manifest.js`
+    둘 다 정적 로드. mfe.html 지연로드 모드에서는 소그룹별로 따로 로드됨)
+
+등록 화면: 회원관리(MbMemberMng) — 소그룹 "회원" / 회원등급관리(MbMemGradeMng),
+          회원그룹관리(MbMemGroupMng) — 소그룹 "등급·그룹". 대메뉴 bo-ec-mb
+내부 컴포넌트: MbMemberDtl(<mb-member-dtl>), MbMemberHist(<mb-member-hist>) —
+          MbMemberMng 템플릿 안에서만 쓰이는 인라인 상세/이력, member/manifest.js
+          가 registerComponents 로만 등록
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/bo/ec/mb/ 를 그대로 복사(원본은 전혀
+     수정하지 않음). 화면 파일의 id/name(`bo-ec-mb-원래이름`)은 이전 단계(폴더별
+     분리 시절)에 이미 이 코드 규칙을 따르고 있어서 이번 재구조화로 변경할 필요가
+     없었다.
+셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,
+          셸이 등록한 공용 컴포넌트

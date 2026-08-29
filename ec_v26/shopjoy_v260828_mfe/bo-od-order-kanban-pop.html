@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주문 칸반 보드</title>
+  <script>
+    // BO 사이트 번호 (팝업은 항상 01)
+    window.BO_SITE_NO = '01';
+  </script>
+  <link rel="stylesheet" href="bo-ap-global/assets/css/bo-global-style01.css">
+  <style>
+    /* 팝업 전용 기본 */
+    body { margin: 0; background: #f5f6fa; font-size: 13px; }
+    #app { height: 100vh; overflow: auto; }
+
+    /* 토스트 — 팝업에는 boApp 의 토스트 시스템이 없어 자체 구현 */
+    .popup-toast {
+      position: fixed; right: 18px; bottom: 18px; z-index: 9999;
+      padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,.18); display: none; max-width: 420px;
+    }
+    .toast-success { background: #52c41a; color: #fff; }
+    .toast-error   { background: #ff4d4f; color: #fff; }
+    .toast-warning { background: #faad14; color: #fff; }
+    .toast-info    { background: #1677ff; color: #fff; }
+
+    /* 확인 모달 — 시스템 confirm 대신 사용 (정책상 alert/confirm 금지) */
+    .popup-confirm-dim {
+      position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 10000;
+      display: none; align-items: center; justify-content: center;
+    }
+    .popup-confirm-box {
+      background: #fff; border-radius: 12px; min-width: 320px; max-width: 460px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden;
+    }
+    .popup-confirm-hd { padding: 14px 18px; font-weight: 700; font-size: 14px;
+      background: linear-gradient(90deg,#fff0f4,#ffe4ec,#ffd5e1); color: #333; }
+    .popup-confirm-bd { padding: 18px; font-size: 13px; color: #444; white-space: pre-line; line-height: 1.6; }
+    .popup-confirm-ft { padding: 12px 18px 18px; display: flex; gap: 8px; justify-content: center; }
+  </style>
+</head>
+<body>
+<!-- ═══════════════════════════════════════════════════════════════════
+     shopjoy_v260406/bo-od-order-kanban-pop.html 을 그대로 복제(2026-08-29, 원본 무수정).
+     boUtil.bofOpenKanbanPopup() 등이 window.pageUrl() 로 계산하는 절대경로가 이
+     컨테이너 루트를 기준으로 삼기 때문에 이 파일도 컨테이너 루트(bo-ap-global/ 의
+     형제)에 둔다 — bo-ec-od/order/manifest.js 주석 참고. 화면 컴포넌트는 원본과 달리
+     classic <script> 가 아니라 <script type="module"> import 로 bo-ec-od/order/ 안의
+     ESM 파일(OdOrderKanban.js)을 그대로 재사용한다(파일 중복 없음).
+═══════════════════════════════════════════════════════════════════ -->
+<div id="app"></div>
+
+<!-- 자체 토스트 / 확인 모달 (Vue 앱 밖 — 칸반 컴포넌트에 함수로 주입) -->
+<div id="popupToast" class="popup-toast"></div>
+<div id="popupConfirm" class="popup-confirm-dim">
+  <div class="popup-confirm-box">
+    <div class="popup-confirm-hd" id="pcTitle">확인</div>
+    <div class="popup-confirm-bd" id="pcMsg"></div>
+    <div class="popup-confirm-ft">
+      <button class="btn btn_confirm" id="pcOk">확인</button>
+      <button class="btn btn_cancel"  id="pcCancel">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Vue 3 core (../bo-ap-global/ 형제인 컨테이너 루트에서 봤을 때는 bo-ap-global/ 그대로) ── -->
+<script src="bo-ap-global/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+<script src="bo-ap-global/assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+
+<!-- ── 유틸 & API (boApi 는 localStorage 토큰을 그대로 쓴다 — 오프너와 같은 출처라 재로그인 불필요) ── -->
+<script src="bo-ap-global/lib/utils/coUtil.js"></script>
+<script src="bo-ap-global/lib/utils/boApiAxios.js"></script>
+<script src="bo-ap-global/lib/utils/boUtil.js"></script>
+<script src="bo-ap-global/lib/env/boEnvConsts.js"></script>
+<script src="bo-ap-global/lib/services/coApiSvc.js"></script>
+<script src="bo-ap-global/lib/services/boApiSvc.js"></script>
+
+<!-- ── 공통 컴포넌트 (조건란 [주문선택]/[클레임선택]/[주문항목선택] 이 공통팝업(BoCmPopupModal) 을 쓴다) ── -->
+<script src="bo-ap-global/components/comp/BaseComp.js"></script>
+<script src="bo-ap-global/components/comp/BoComp.js"></script>
+<script src="bo-ap-global/components/comp/BoAreaComp.js"></script>
+<script src="bo-ap-global/components/modals/BoCmPopupModal.js"></script>
+
+<script type="module">
+  /* 주문 칸반 보드 팝업.
+     주문관리 목록의 [칸반] 버튼이 window.open 으로 이 페이지를 연다.
+     대상 주문/클레임은 URL 쿼리로 받는다 (?orderId=... / ?claimId=...).
+     칸반 컴포넌트는 자식 컴포넌트를 쓰지 않으므로 공용 컴포넌트 로드가 필요 없다. */
+  import OdOrderKanban from './bo-ec-od/order/pages/bo/od/order/OdOrderKanban.js';
+
+  const { createApp } = Vue;
+
+  const _q = new URLSearchParams(location.search);
+  const _orderId     = _q.get('orderId')     || null;
+  const _orderItemId = _q.get('orderItemId') || null;
+  const _claimId     = _q.get('claimId')     || null;
+
+  if (_orderId) { document.title = '주문 칸반 보드 · ' + _orderId; }
+
+  /* ── 토스트 ── */
+  let _toastTid = null;
+  const showToast = (msg, type = 'success', duration = 3500) => {
+    const el = document.getElementById('popupToast');
+    el.className = 'popup-toast toast-' + (type || 'success');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(_toastTid);
+    /* duration 0 은 "수동 닫힘" 규약 — 오류 토스트가 스스로 사라지지 않게 한다 */
+    if (duration > 0) { _toastTid = setTimeout(() => { el.style.display = 'none'; }, duration); }
+    else { el.onclick = () => { el.style.display = 'none'; }; }
+  };
+
+  /* ── 확인 모달 (시스템 confirm 대신) ── */
+  const showConfirm = (title, msg) => new Promise((resolve) => {
+    const dim = document.getElementById('popupConfirm');
+    document.getElementById('pcTitle').textContent = title || '확인';
+    document.getElementById('pcMsg').textContent   = msg || '';
+    dim.style.display = 'flex';
+    const done = (v) => {
+      dim.style.display = 'none';
+      document.getElementById('pcOk').onclick = null;
+      document.getElementById('pcCancel').onclick = null;
+      resolve(v);
+    };
+    document.getElementById('pcOk').onclick     = () => done(true);
+    document.getElementById('pcCancel').onclick = () => done(false);
+  });
+
+  /* boApp 최소 mock — 칸반이 props 미전달 시 window.boApp 로 폴백하므로 같은 함수를 물려준다 */
+  window.boApp = window.boApp || {};
+  window.boApp.showToast   = window.boApp.showToast   || showToast;
+  window.boApp.showConfirm = window.boApp.showConfirm || showConfirm;
+
+  const app = createApp({
+    setup() {
+      /* navigate — 팝업에는 라우팅이 없다. 상세 이동 요청은 오프너(부모 창)에게 넘긴다. */
+      const navigate = (pageId, opts) => {
+        try {
+          if (window.opener && !window.opener.closed && window.opener.boApp?.navigate) {
+            window.opener.boApp.navigate(pageId, opts);
+            window.opener.focus();
+            return;
+          }
+        } catch (_) { /* 교차 출처 등 접근 불가 시 무시 */ }
+        showToast('부모 창에서 이동할 수 없습니다.', 'warning');
+      };
+      return { orderId: _orderId, orderItemId: _orderItemId, claimId: _claimId,
+               navigate, showToast, showConfirm };
+    },
+    template: `
+<od-order-kanban
+  :order-id="orderId" :order-item-id="orderItemId" :claim-id="claimId"
+  mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />`,
+  });
+
+  app.component('OdOrderKanban', OdOrderKanban);
+  /* 조건란 선택 팝업(BoCmPopupModal) 및 그 템플릿이 쓰는 하위 컴포넌트들 — bo.html 과 동일 이름으로 등록 */
+  app.component('BoModal', window.BoModal);
+  app.component('BoSearchArea', window.BoSearchArea);
+  app.component('BoGrid', window.BoGrid);
+  app.component('BoPager', window.BoPager);
+  app.component('BoMultiCheckSelect', window.BoMultiCheckSelect);
+  app.component('BoCmPopupModal', window.BoCmPopupModal);
+  app.mount('#app');
+</script>
+</body>
+</html>

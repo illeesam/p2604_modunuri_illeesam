@@ -1,0 +1,40 @@
+shopjoy-mfe-domain-ec-od
+
+관리단위: 마이크로 도메인 — 주문관리 (shopjoy_v260406/pages/bo/ec/od/ 전체 +
+          pages/co/ec/od/OdOrderKanban.js 복제). 실제 좌측메뉴(LEFT_MENUS.order)가
+          소그룹 구분 없는 평평한 목록이라 대메뉴 하나 = 폴더 하나(bo-ap-home 과
+          동일 케이스). 폴더 이름 자체는 다른 도메인과 동일하게 3개 하이픈 세그먼트
+          (bo-ec-od) 형식 유지
+현재 위치: shopjoy_v260828_mfe/bo-ec-od/  (컨테이너 폴더 바로 밑, 다른 도메인 폴더들과
+          완전한 형제. "bo-" 는 정렬용이 아니라 의미론적 접두어(관리자 화면))
+
+⭐ 형상관리 단위(git 레포)와 지연로드 단위 분리 — bo-ec-mb/_git_shopjoy-mfe-domain-ec-mb.txt
+  와 동일한 설계. `bo-ec-od/` 전체가 레포 하나, 소그룹은 지금 "order" 1개뿐이라
+  `bo-ec-od/order/manifest.js` 하나만 있다(2026-08-29 같은 날 후속 재구조화로
+  manifest.js/pages/를 레포 루트에서 `order/` 밑으로 이동. `dev.html`과 이 마커
+  파일은 다른 레포들과 마찬가지로 레포 루트에 그대로 둔다). 소그룹이 지금 1개뿐이라
+  당장 체감 granularity 변화는 없지만, 나중에 반품/교환 등으로 소그룹이 늘어도
+  레포를 새로 만들 필요 없이 형제 폴더(`bo-ec-od/return/` 등)만 추가하면 된다.
+
+포함 경로: `order/manifest.js` + `order/pages/bo/od/order/*`, `dev.html`(레포 전체
+          단독 실행용 — 소그룹 1개뿐이라 지금은 dev.html 이 그 1개만 정적 로드)
+등록 화면: 주문항목관리(OdOrderItemMng), 주문관리(OdOrderMng), 클레임관리(OdClaimMng),
+          배송관리(OdDlivMng), 주문 칸반보드(OdOrderKanban), 장바구니관리(OdCartMng)
+          — 대메뉴 bo-ec-od(소그룹 없음)
+내부 컴포넌트: OdOrderDtl/OdOrderHist(OdOrderMng 안), OdOrderItemDtl(OdOrderItemMng 안),
+          OdClaimDtl/OdClaimHist/OdClaimCalcModal(OdClaimMng·OdClaimDtl 안),
+          OdDlivDtl/OdDlivHist(OdDlivMng 안) — registerComponents 로만 등록
+⚠ 팝업 2개(컨테이너 루트에 위치, 이 폴더 밖): `../bo-od-order-kanban-pop.html`,
+          `../bo-od-order-promo-pop.html`(원본과 동일 window.open 전용 독립 HTML).
+          boUtil.bofOpenKanbanPopup() 등이 쓰는 window.pageUrl() 이 URL 경로의
+          "shopjoy..." 세그먼트 바로 아래를 기준으로 절대경로를 만들기 때문에,
+          어느 도메인/셸에서 열든 항상 컨테이너 루트가 기준이라 팝업 HTML만 예외적으로
+          거기 둔다. 둘 다 <script type="module"> import 로 `order/` 폴더 안의
+          OdOrderKanban.js/OdOrderPromoPop.js(ESM)를 그대로 재사용(파일 중복 없음)
+원본: shopjoy_v260406(실제 프로덕션)의 pages/bo/ec/od/ + pages/co/ec/od/OdOrderKanban.js +
+     루트 bo-od-order-kanban-pop.html/bo-od-order-promo-pop.html 을 그대로 복사
+     (2026-08-29, 원본은 전혀 수정하지 않음. 복제본 팝업 HTML 안의 CDN/lib 경로만
+     ../bo-ap-global/ 기준으로 조정). 원본 페이지ID가 이미 프로젝트 전체에서 유일해서
+     `bo-` 접두어 하나만 붙였다.
+셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil
+          (bofOpenKanbanPopup 포함), 셸이 등록한 공용 컴포넌트

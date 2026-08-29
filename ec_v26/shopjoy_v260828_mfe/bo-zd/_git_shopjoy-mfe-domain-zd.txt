@@ -1,0 +1,47 @@
+shopjoy-mfe-domain-zd
+
+관리단위: 마이크로 도메인 — 개발도구 + 시뮬레이션 대메뉴 2개
+          (shopjoy_v260406/pages/bo/zd/ 전체 + pages/bo/sy/SyPostman.js 복제)
+현재 위치: shopjoy_v260828_mfe/bo-zd/  (컨테이너 폴더 바로 밑, 다른 도메인 폴더들과
+          완전한 형제. "bo-" 는 정렬용이 아니라 의미론적 접두어(관리자 화면))
+
+⭐ 형상관리 단위(git 레포)와 지연로드 단위 분리 — bo-ec-mb/_git_shopjoy-mfe-domain-ec-mb.txt
+  와 동일한 설계이되, 이 레포는 조금 다르다: 다른 레포는 전부 "대메뉴 1개 = 레포
+  1개"인데, 이 `bo-zd/`는 대메뉴 2개(bo-devtools/bo-simul)를 레포 하나로 묶는다 —
+  원래도 둘 다 "2레벨 분할 정책"(대메뉴 하나 = manifest.js 하나, 소그룹으로 더
+  안 쪼갬) 예시로 같이 다뤄졌고, 실제 프로젝트에서도 둘 다 개발자 전용 화면(zd
+  패키지)이라 형상관리까지 하나로 묶는 게 자연스럽다고 판단했다(사용자 지시).
+
+포함 경로:
+  - `devtools/manifest.js` + `devtools/pages/bo/zd/devtools/*` — 대메뉴 bo-devtools
+    전체(소그룹 8개: api/스토어/소셜 로그인/결제/지도/메일·SMS·푸시 알림/채팅·AI/
+    앱 메시지 — 전부 이 manifest.js 하나가 담당)
+  - `simul/manifest.js` + `simul/pages/bo/zd/simul/*` — 대메뉴 bo-simul 전체
+    (소그룹 7개: 회원/상품·주문/프로모션/전시·이벤트/정산·재무/알림/이력 — 전부
+    이 manifest.js 하나가 담당)
+  - `dev.html`(레포 전체 단독 실행용 — 2개 다 정적 로드, `mfeBootShell()`에
+    menuKey 2개(`bo-devtools`/`bo-simul`)를 동시에 넘긴다)
+
+등록 화면: 각 manifest.js 상단 주석 + `bo-ap-global/lib/mfe/mfeCatalog.js`의
+          `registerCatalog('bo-devtools', ...)` / `registerCatalog('bo-simul', ...)`
+          호출부가 상세 목록의 단일 소스.
+
+크로스도메인 흡수: SyPostman(API 테스트, 실제 소스는 pages/bo/sy/) — 실제
+          좌측메뉴에서 'api' 소그룹으로 devtools 대메뉴에 포함되므로 `devtools/`
+          안에 흡수.
+
+연혁:
+  1) 2026-08-28~29: 원래 `bo-zd-devtools`/`bo-zd-simul` 두 개의 독립 레포로
+     시작(각자 "2레벨 분할 정책" 예시).
+  2) 2026-08-29(같은 날 후속 재구조화): "형상관리 단위(git 레포)"와 "지연로드
+     단위"를 분리하는 다른 도메인들(bo-ec-mb 등)과 일관되게, 이 두 레포를 다시
+     `bo-zd/` 레포 하나로 합쳤다(사용자 지시). 각 manifest.js는 물리적으로
+     `bo-zd/devtools/`, `bo-zd/simul/`로 한 단계 더 들어왔을 뿐, 대메뉴 자체는
+     여전히 서로 다른 메뉴(bo-devtools/bo-simul)이고 지연로드 단위(레포 안의
+     manifest.js 파일 단위)도 그대로다.
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/bo/zd/ + pages/bo/sy/SyPostman.js 를
+     그대로 복사(원본은 전혀 수정하지 않음). 원본 페이지ID가 이미 프로젝트
+     전체에서 유일해서 `bo-` 접두어 하나만 붙였다.
+셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,
+          셸이 등록한 공용 컴포넌트

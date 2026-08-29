@@ -1,0 +1,24 @@
+shopjoy-mfe-shell
+
+관리단위: 메인프레임(셸)
+현재 위치: shopjoy_v260828_mfe/bo-ap-global/  (컨테이너 폴더 바로 밑, bo-ap-home/bo-ec-pd-pd/bo-ec-pd-cate/bo-ec-cu-ba/bo-ec-cu-co/bo-sy-ba/bo-sy-org 와 형제.
+          폴더명 앞의 "bo-" 는 정렬용이 아니라 의미론적 접두어(2026-08-29,
+          aa-main→bo-ap-global 전면 변경) — 원본 프로젝트의 bo-/fo- 파일명 규칙(관리자
+          화면=bo-, 사용자 화면=fo-)을 폴더 단위로 확장한 것으로, 이 8개 폴더가 전부
+          관리자(Back Office) 화면이라는 뜻이다. bo- 뒤의 "aa-"/"ab-" 서브접두어는
+          예전(2026-08-28) 정렬 관례를 그대로 이어받은 것 — 셸(bo-ap-global)이 파일탐색기
+          최상단 + 홈(bo-ap-home)보다 앞에 오도록 aa < ab 알파벳순으로 고정한 것뿐이다
+          (도메인 폴더들은 이런 서브접두어 없이 bo-{도메인} 그대로) — 실제 git 레포명은
+          여전히 shopjoy-mfe-shell 이 맞다, 로컬 접두어를 레포명에 그대로 쓰지 않는다)
+포함 경로: mfe.html, mfe-{조합}.html(부분조합 진입점), lib/mfe/*, lib/utils/*, lib/services/*,
+          lib/stores/bo/*, lib/consts/*, lib/env/*, lib/config/*, lib/license/*,
+          components/comp/*, components/modals/*, pages/base/*, assets/*
+역할: Vue/Pinia 부트, 인증, 토스트/컨펌, 상단 대메뉴 + 좌측 메뉴 + 열린 탭 UI, 공용
+      컴포넌트/스토어 — 도메인이 무엇을 등록하는지는 모르고 window.MFE_REGISTRY
+      등록 결과만 그려준다.
+
+폴더 배치: shopjoy_v260828_mfe/ 컨테이너 자체는 git 레포가 아니다(8개 레포를
+          한 워크스페이스로 묶어 보여주는 용도). bo-ap-global/bo-ap-home/bo-ec-pd-pd/bo-ec-pd-cate/
+          bo-ec-cu-ba/bo-ec-cu-co/bo-sy-ba/bo-sy-org 8개 폴더가 각각 독립 git 레포이며 서로 완전한
+          형제(sibling) 관계 — 어느 쪽도 다른 쪽 안에 중첩되지 않는다. mfe.html은
+          도메인을 ../bo-ap-home/manifest.js 처럼 참조한다.

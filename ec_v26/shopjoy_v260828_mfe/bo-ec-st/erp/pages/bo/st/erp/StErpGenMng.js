@@ -1,0 +1,226 @@
+/* ShopJoy Admin - ERP 전표생성 */
+export default {
+  name: 'st-erp-stErpGenMng',
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 ################################################## */
+
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const uiState = reactive({ error: null });
+    const codes = reactive({
+      erp_statuses: [],
+      erp_voucher_types: [],
+    });
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StErpGenMng.js : handleBtnAction -> ', cmd, param);
+      // 대상월/유형 기반 데이터 조회 (미리보기)
+      if (cmd === 'preview-search') {
+        return handleSearchData('DEFAULT');
+      // ERP 전표 생성 실행
+      } else if (cmd === 'preview-generate') {
+        return doGenerate();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['ERP_VOUCHER_STATUS_KR', 'ERP_VOUCHER_TYPE_KR'], {compNm: 'StErpGenMng'});
+      try {
+        codes.erp_statuses = codeStore.sgGetGrpCodes('ERP_VOUCHER_STATUS_KR');
+        codes.erp_voucher_types = codeStore.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const targetMon = ref(coUtil.cofToYm(new Date()));
+    const slipType  = ref('정산');
+
+    const orders = reactive([]);
+    const vendors = reactive([]);
+    const cfVendors = computed(() => vendors.filter(v => v.vendorTypeCd === 'SALES'));
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* handleSearchData — 처리 */
+    const handleSearchData = async (searchType = 'DEFAULT') => {
+      try {
+        const [resO, resV, resH] = await Promise.all([
+          boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 10000 }, 'ERP전표생성', '목록조회'),
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, 'ERP전표생성', '목록조회'),
+          boApiSvc.stErp.getGenPage({ targetMon: targetMon.value, pageNo: 1, pageSize: 100 }, 'ERP전표생성', '이력조회'),
+        ]);
+        orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        genHistories.splice(0, genHistories.length, ...(resH.data?.data?.pageList || resH.data?.data?.list || []));
+      } catch (_) { console.error('[catch-info]', _); }
+    };
+
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchData('DEFAULT');
+    };
+    onMounted(initPage);
+
+    const cfPreviewRows = computed(() => {
+      return cfVendors.value.map(v => {
+        const vOrders = orders.filter(o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
+        const sales   = vOrders.reduce((s, o) => s + o.totalPrice, 0);
+        const comm    = Math.round(sales * 0.10);
+        const settle  = sales - comm;
+
+        return { vendorNm: v.vendorNm, debit: '미지급금', credit: '현금', debitAmt: settle, creditAmt: settle, description: `${uiState.targetMon} ${v.vendorNm} 정산지급` };
+      }).filter(r => r.debitAmt > 0);
+    });
+
+    const genHistories = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
+
+    /* doGenerate — 실행 */
+    const doGenerate = async () => {
+      if (!cfPreviewRows.value.length) { showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
+      const ok = await showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
+      if (!ok) { return; }
+      genHistories.unshift({
+        genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
+        slipCnt: cfPreviewRows.value.length,
+        totalAmt: cfPreviewRows.value.reduce((s, r) => s + r.debitAmt, 0),
+        genDate: coUtil.cofToYmd(new Date()), status: '생성완료', regUserNm: '관리자',
+      });
+      try {
+        await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');
+        if (showToast) { showToast('ERP 전표가 생성되었습니다.', 'success'); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* fnStatusBadge */
+    const _ERP_STATUS_FB = { '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' };
+    /* fnStatusBadge — 상태 배지 */
+    const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_VOUCHER_STATUS_KR', s, _ERP_STATUS_FB[s] || 'badge-gray');
+
+    /* fmtW — 포맷 W */
+    const fmtW = coUtil.cofWon;
+
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    // 미리보기 그리드
+    const columns = {};
+    columns.previewGrid = [
+      { key: 'debit',       label: '차변계정' },
+      { key: 'credit',      label: '대변계정' },
+      { key: 'debitAmt',    label: '차변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#3498db' },
+      { key: 'creditAmt',   label: '대변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#27ae60' },
+      { key: 'description', label: '적요', cellStyle: 'color:#666' },
+    ];
+    // --- [컬럼 정의] ---
+    columns.histGrid = [
+      { key: 'genMon',    label: '정산월', cellStyle: 'font-weight:700' },
+      { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
+      { key: 'slipCnt',   label: '전표수', fmt: (v) => v + '건' },
+      { key: 'totalAmt',  label: '총금액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'genDate',   label: '생성일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+      { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
+      { key: 'regUserNm', label: '담당자' },
+    ];
+
+    // ===== 생성 설정 폼 (BoFormArea) =======================================
+    // input[type=month]는 BoFormArea가 미지원 → slot 으로 처리
+    columns.baseForm = [
+      { key: 'targetMon', label: '정산월', type: 'slot', name: 'targetMon' },
+      { key: 'slipType',  label: '전표유형', type: 'select', width: '160px',
+        options: () => codes.erp_voucher_types },
+      { key: '_actions', label: ' ', type: 'slot', name: 'actions', hideLabel: true },
+    ];
+    const settingForm = reactive({ slipType: slipType.value });
+    watch(() => settingForm.slipType, (v) => { slipType.value = v; });
+
+    /* buildExcelParams — 엑셀 다운로드 조건.
+       StErpVoucherDto.Request 는 siteId/erpVoucherId/erpVoucherTypeCd/erpVoucherStatusCd 만
+       지원한다(targetMon 필터 없음) — 화면의 대상월 선택은 다운로드 조건에 반영되지 않는다. */
+    const buildExcelParams = () => ({});
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+      columns,
+      targetMon, genHistories, settingForm, excelModal,                // 상태 / 데이터
+      handleBtnAction, // dispatch
+      cfPreviewRows, // computed
+      buildExcelParams,
+    };
+  },
+  template: /* html */`
+<bo-page title="ERP 전표생성"
+  desc-summary="마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다."
+  :desc-detail="['• 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다.','• 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다.','• 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다.','• 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.'].join(String.fromCharCode(10))">
+  <!-- ===== ■. 생성 설정 =================================================== -->
+  <bo-container title="전표 생성 설정">
+    <!-- ===== ■.■. 폼 영역 ================================================== -->
+    <bo-form-area :columns="columns.baseForm" :form="settingForm" :cols="3" :show-actions="false" compact>
+      <template #targetMon>
+        <input class="form-control" v-model="targetMon" type="month" style="width:160px" />
+      </template>
+      <template #actions>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn_search" @click="handleBtnAction('preview-search')">
+            조회
+          </button>
+          <button class="btn btn_save" @click="handleBtnAction('preview-generate')">
+            📋 ERP 전표생성
+          </button>
+        </div>
+      </template>
+    </bo-form-area>
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+    <!-- ===== ■.■. 미리보기 ================================================== -->
+    <div v-if="cfPreviewRows.length" style="margin-top:16px">
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+      <bo-grid
+        :columns="columns.previewGrid" :rows="cfPreviewRows"
+        :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'">
+      </bo-grid>
+    </div>
+    <div v-else style="color:#999;margin-top:12px">
+      해당 월의 생성 대상 전표가 없습니다.
+    </div>
+  </bo-container>
+  <!-- ===== □. 생성 설정 =================================================== -->
+  <!-- ===== ■. 생성 이력 =================================================== -->
+  <bo-container title="전표생성 이력" :count-text="genHistories.length + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
+    <bo-grid bare
+      :columns="columns.histGrid" :rows="genHistories" row-key="genId">
+    </bo-grid>
+  </bo-container>
+  <!-- ===== □. 생성 이력 =================================================== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="stErpVoucher" area-nm="ERP전표생성"
+    ui-nm="ERP전표생성" :columns="columns.histGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
+</bo-page>
+`,
+};

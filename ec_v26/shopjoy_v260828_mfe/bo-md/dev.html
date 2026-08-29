@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MFE 모듈 도메인 — 단독 실행</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%B6%3C/text%3E%3C/svg%3E">
+  <script>
+    /* bo-ap-global/mfe.html 과 동일한 BO_SITE_NO 부트스트랩 */
+    window.BO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-bo-sy-siteNo', '01');
+      localStorage.setItem('modu-bo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       이 화면은 "모듈" 도메인 레포(이 폴더) 를 다른 도메인 없이, 메인프레임
+       (../bo-ap-global/)의 공용 런타임만으로 단독 실행한다 — 이게 되면 이 도메인이
+       셸의 "런타임 계약"에만 의존한다는 증거가 된다. 실제로 레포를 분리한다면,
+       여기 ../bo-ap-global/ 경로들은 배포된 메인프레임의 URL(예: 사내 CDN, 스테이징
+       서버)로 바뀌는 자리다.
+  ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ 메인프레임 공용 런타임 (../bo-ap-global/ 참조 — bo-ap-global/mfe.html 과 동일 목록) ■ -->
+  <script src="../bo-ap-global/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="../bo-ap-global/assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="../bo-ap-global/assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="../bo-ap-global/assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+  <script src="../bo-ap-global/assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <!-- echarts — 이 도메인은 안 쓰지만 메인프레임이 상시 제공하는 공용 런타임의 일부라 그대로 로드 -->
+  <script src="../bo-ap-global/assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../bo-ap-global/assets/css/bo-global-style01.css">
+  <link rel="stylesheet" href="../bo-ap-global/assets/css/mfe-style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="../bo-ap-global/lib/license/licenseBo.js"></script>
+  <script src="../bo-ap-global/lib/utils/coUtil.js"></script>
+  <script src="../bo-ap-global/lib/consts/coConsts.js"></script>
+  <script src="../bo-ap-global/lib/consts/boConsts.js"></script>
+  <script src="../bo-ap-global/lib/utils/boApiAxios.js"></script>
+  <script src="../bo-ap-global/lib/utils/boUtil.js"></script>
+  <script src="../bo-ap-global/lib/utils/coNotiStore.js"></script>
+  <script src="../bo-ap-global/lib/env/boEnvConsts.js"></script>
+  <script src="../bo-ap-global/lib/utils/coExtSdk.js"></script>
+  <script src="../bo-ap-global/lib/utils/coAuth.js"></script>
+
+  <script src="../bo-ap-global/lib/services/coApiSvc.js"></script>
+  <script src="../bo-ap-global/lib/services/boApiSvc.js"></script>
+  <script src="../bo-ap-global/lib/config/excelDomains.js"></script>
+
+  <script src="../bo-ap-global/pages/base/boError401.js"></script>
+  <script src="../bo-ap-global/pages/base/boError404.js"></script>
+  <script src="../bo-ap-global/pages/base/boError500.js"></script>
+
+  <script src="../bo-ap-global/lib/stores/bo/boAppInitStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boAppStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boAuthStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boCodeStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boConfigStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boMenuStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boPropStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boRoleStore.js"></script>
+  <script src="../bo-ap-global/lib/stores/bo/boUserPrefStore.js"></script>
+
+  <script src="../bo-ap-global/lib/utils/refDefaults.js"></script>
+  <script src="../bo-ap-global/lib/utils/safeArrayUtils.js"></script>
+
+  <script src="../bo-ap-global/components/comp/BaseComp.js"></script>
+  <script src="../bo-ap-global/components/comp/BoComp.js"></script>
+  <script src="../bo-ap-global/components/comp/BoAreaComp.js"></script>
+  <script src="../bo-ap-global/components/comp/CoEchartComp.js"></script>
+  <script src="../bo-ap-global/components/comp/CoNotiBell.js"></script>
+
+  <script src="../bo-ap-global/components/modals/BoModals.js"></script>
+  <script src="../bo-ap-global/components/modals/BoExcelDownModal.js"></script>
+  <script src="../bo-ap-global/components/modals/BoCmPopupModal.js"></script>
+  <script src="../bo-ap-global/components/modals/HelpBoModal.js"></script>
+  <script src="../bo-ap-global/components/modals/CoExtHelpModal.js"></script>
+
+  <script src="../bo-ap-global/lib/mfe/mfeRegistry.js"></script>
+
+  <!-- ■ 이 레포(bo-md) 안의 소그룹별 manifest.js 전부 로드 — 다른 레포는 전혀 안 부른다.
+       지연로드 모드(mfe.html)에서는 소그룹별로 따로 로드되지만, 이 dev.html은
+       "레포 하나가 통째로 정상 동작하는지" 즉시 확인하는 용도라 둘 다 정적 로드한다 ■ -->
+  <script src="cb/manifest.js"></script>
+  <script src="sg/manifest.js"></script>
+
+  <script src="../bo-ap-global/lib/mfe/mfeShell.js"></script>
+  <script>
+    window.mfeBootShell([{ key: 'bo-module', label: '모듈', icon: '🧶' }]);
+  </script>
+</body>
+</html>

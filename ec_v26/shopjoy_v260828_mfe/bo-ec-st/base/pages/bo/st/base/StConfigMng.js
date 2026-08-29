@@ -1,0 +1,327 @@
+/* ShopJoy Admin - 정산기준관리 */
+export default {
+  name: 'st-base-stConfigMng',
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 ################################################## */
+
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const uiState = reactive({ isNew: false, error: null, loading: false, selectedId: null, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
+    const configs = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StConfigMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'configs-add') {
+        return openNew();
+      } else if (cmd === 'form-save') {
+        return handleSave();
+      } else if (cmd === 'form-cancel') {
+        return handleCancelEdit();
+      } else if (cmd === 'form-edit') {
+        return switchToEdit();
+      } else if (cmd === 'form-close') {
+        return closeForm();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StConfigMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'configs-rowEdit') {
+        return openEdit(param);
+      } else if (cmd === 'configs-rowDelete') {
+        return handleDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (번호/카테고리 클릭 시 상세 열기) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ StConfigMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'configs-cellClick') {
+        // 보기모드 트리거 컬럼: 카테고리(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row);
+        }
+        return;
+      }
+      console.warn('[handleGridCellAction] unknown cmd:', cmd);
+    };
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* handleLoadList — 목록 조회 */
+    const handleLoadList = async () => {
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.stSettleConfig.getPage({ pageNo: 1, pageSize: 100 }, '정산설정관리', '목록조회');
+        const pageResult = res.data?.data;
+        const pageList = pageResult?.pageList || [];
+        configs.splice(0, configs.length, ...pageList);
+      } catch (err) {
+        console.error('[handleLoadList]', err);
+        showToast?.(coUtil.cofErrMsg(err), 'error', 0);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    // ★ onMounted — 진입 시 목록 초기 조회
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleLoadList();
+    };
+    onMounted(initPage);
+
+        const form = reactive({});
+    const errors = reactive({});
+
+    /* fnMapUiToApi — 유틸 */
+    const fnMapUiToApi = (uiForm) => ({
+      settleConfigId: uiForm.settleConfigId,
+      siteId: uiForm.siteId,
+      vendorId: uiForm.vendorId || null,
+      categoryId: uiForm.categoryId || null,
+      settleCycleCd: uiForm.settleCycleCd,
+      settleDay: uiForm.settleDay,
+      commissionRate: uiForm.commissionRate,
+      minSettleAmt: uiForm.minSettleAmt,
+      settleConfigRemark: uiForm.settleConfigRemark,
+      useYn: uiForm.useYn
+    });
+
+    /* fnMapApiToUi — 유틸 */
+    const fnMapApiToUi = (apiData) => ({
+      settleConfigId: apiData.settleConfigId,
+      siteId: apiData.siteId,
+      siteNm: apiData.siteNm || 'ShopJoy 01',
+      vendorId: apiData.vendorId || null,
+      vendorNm: apiData.vendorNm || '',
+      categoryId: apiData.categoryId || null,
+      categoryNm: apiData.categoryNm || '',
+      settleCycleCd: apiData.settleCycleCd,
+      settleCycleNm: apiData.settleCycleNm || apiData.settleCycleCd,
+      settleDay: apiData.settleDay,
+      commissionRate: apiData.commissionRate,
+      minSettleAmt: apiData.minSettleAmt,
+      settleConfigRemark: apiData.settleConfigRemark,
+      useYn: apiData.useYn
+    });
+
+    /* _loadDetailForm — 인라인 패널에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (c, mode) => {
+      Object.assign(form, fnMapApiToUi(c));
+      uiState.selectedId = c.settleConfigId;
+      uiState.isNew = false;
+      uiState.dtlMode = mode;
+      Object.keys(errors).forEach(k => delete errors[k]);
+    };
+
+    /* loadView — 보기모드로 인라인 패널 열기 (행 클릭) */
+    const loadView = (c) => _loadDetailForm(c, 'view');
+
+    /* openEdit — 수정모드로 인라인 패널 열기 ([수정] 버튼) */
+    const openEdit = (c) => _loadDetailForm(c, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (BoFormArea readonly 상태의 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
+
+    /* openNew — 신규 열기 (항상 수정모드로 시작) */
+    const openNew = () => {
+      Object.assign(form, { settleConfigId: null, siteId: null, siteNm: '', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
+      uiState.selectedId = '__new__';
+      uiState.isNew = true;
+      uiState.dtlMode = 'edit';
+      Object.keys(errors).forEach(k => delete errors[k]);
+    };
+
+    /* closeForm — 닫기 */
+    const closeForm = () => { uiState.selectedId = null; uiState.isNew = false; uiState.dtlMode = 'view'; };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 행 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (uiState.isNew) { return closeForm(); }
+      const row = configs.find(c => c.settleConfigId === uiState.selectedId);
+      return row ? loadView(row) : closeForm();
+    };
+
+    /* validate — 검증 */
+    const validate = () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!form.settleCycleCd) { errors.settleCycleCd = '정산주기를 선택하세요.'; }
+      if (form.commissionRate === '' || form.commissionRate === null) { errors.commissionRate = '수수료율을 입력하세요.'; }
+      if (!form.settleDay) { errors.settleDay = '정산일을 입력하세요.'; }
+      return Object.keys(errors).length === 0;
+    };
+
+    /* handleSave — 저장 */
+    const handleSave = async () => {
+      if (!validate()) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      const ok = await showConfirm('저장', '정산기준을 저장하시겠습니까?');
+      if (!ok) { return; }
+      closeForm();
+      const apiData = fnMapUiToApi(form);
+      try {
+        const res = await (uiState.isNew ? boApiSvc.stSettleConfig.create(apiData, '정산설정관리', '등록') : boApiSvc.stSettleConfig.update(form.settleConfigId, apiData, '정산설정관리', '저장'));
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
+        await handleLoadList();
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* handleDelete — 삭제 */
+    const handleDelete = async (c) => {
+      const cycleName = c.settleCycleNm || c.settleCycleCd;
+      const ok = await showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      if (uiState.selectedId === c.settleConfigId) { closeForm(); }
+      try {
+        const res = await boApiSvc.stSettleConfig.remove(c.settleConfigId, '정산설정관리', '삭제');
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
+        await handleLoadList();
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* fnCycleCdToLabel — 유틸 */
+    const fnCycleCdToLabel = (cd) => ({ 'DAILY': '일정산', 'WEEKLY': '주정산', 'MONTHLY': '월정산' }[cd] || cd);
+
+    /* fnCycleBadge — 유틸 */
+    const fnCycleBadge = (cd) => ({ 'DAILY': 'badge-orange', 'WEEKLY': 'badge-green', 'MONTHLY': 'badge-blue' }[cd] || 'badge-gray');
+
+    // -- 공통코드 -------------------------------------------------------------
+    const codes = reactive({ settle_cycles: [], use_yn: [] });
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['SETTLE_CYCLE_CD', 'USE_YN'], {compNm: 'StConfigMng'});
+        codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE_CD');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+
+    /* 여기에 있던 두 번째 onMounted(코드 적재만) 는 제거했다 (2026-07-30).
+       같은 setup 안에서 onMounted 가 두 번 등록돼 fnLoadCodes 를 중복 호출하고 있었다.
+       화면 로드 시퀀스는 위쪽 initPage 한 곳에서만 관리한다. */
+    // --- [컬럼 정의] ---
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    // 기본 그리드
+    const columns = {};
+    columns.baseGrid = [
+      { key: 'siteNm',             label: '사이트' },
+      { key: 'categoryNm',         label: '카테고리', link: true, cellStyle: 'font-weight:700',
+        fmt: (v, row) => row.categoryNm || row.vendorNm || '-' },
+      { key: 'commissionRate',     label: '수수료율', cellStyle: 'font-weight:700',
+        fmt: (v) => v + '%' },
+      { key: 'settleCycleCd',      label: '정산주기',
+        badge: (row) => fnCycleBadge(row.settleCycleCd), fmt: (v) => fnCycleCdToLabel(v) },
+      { key: 'settleDay',          label: '정산일', fmt: (v) => '매월 ' + v + '일' },
+      { key: 'minSettleAmt',       label: '최소정산금',
+        fmt: (v) => coUtil.cofWon(v) },
+      { key: 'useYn',              label: '사용여부',
+        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '사용' : '미사용' },
+      { key: 'settleConfigRemark', label: '비고', cellStyle: 'color:#888' },
+    ];
+
+    // 기본 폼
+    columns.baseForm = [
+      { key: 'categoryNm',     label: '카테고리', type: 'text', placeholder: '카테고리명' },
+      { key: 'commissionRate', label: '수수료율(%)', type: 'number', required: true, min: 0, max: 100 },
+      { key: 'settleCycleCd',  label: '정산주기', type: 'select', required: true, nullLabel: '선택',
+        options: () => codes.settle_cycles },
+      { key: 'settleDay',      label: '정산일', type: 'number', required: true, min: 1, max: 31 },
+      { type: 'rowBreak' },
+      { key: 'minSettleAmt',   label: '최소정산금(원)', type: 'number', min: 0 },
+      { key: 'useYn',          label: '사용여부', type: 'select', options: () => codes.use_yn },
+      { type: 'rowBreak' },
+      { key: 'settleConfigRemark', label: '비고', type: 'text', placeholder: '비고 입력', colSpan: 4 },
+    ];
+
+    /* buildExcelParams — 엑셀 다운로드 조건 (목록 조회와 동일한 필터 기준) */
+    const buildExcelParams = () => ({});
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+      columns,
+      uiState, cfDtlMode, configs, form, errors, excelModal,
+      handleBtnAction, handleSelectAction, handleGridCellAction, buildExcelParams,
+    };
+  },
+  template: /* html */`
+<bo-page title="정산기준관리"
+  desc-summary="사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다."
+  :desc-detail="['• 정산 주기: 월정산 / 주정산 / 건별정산','• 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다.','• 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다.','• 설정 변경은 변경 이후 수집분부터 적용됩니다.'].join(String.fromCharCode(10))">
+  <!-- ===== ■. 목록 영역 ================================================= -->
+  <bo-container title="정산기준 목록" :count-text="'총 ' + configs.length + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+      <button class="btn btn_new" @click="handleBtnAction('configs-add')">+ 기준 추가</button>
+    </template>
+    <bo-grid bare
+      :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
+      :row-actions="true"
+      :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''"
+      grid-id="configs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #head-actions>
+        액션
+      </template>
+      <template #row-actions="{ row: c }">
+        <div class="actions">
+          <button class="btn btn_row_edit" @click="handleSelectAction('configs-rowEdit', c)">수정</button>
+          <button class="btn btn_row_delete"  @click="handleSelectAction('configs-rowDelete', c)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
+  </bo-container>
+  <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
+  <bo-container card-style="margin-top:12px"
+    :title="!uiState.selectedId ? '정산설정 상세' : (uiState.isNew ? '정산설정 신규' : (cfDtlMode ? '정산설정 상세' : '정산설정 수정'))">
+    <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
+    <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
+      목록에서 정산기준 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
+    </div>
+    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) — readonly 시 BoFormArea 가 [수정][닫기] 자동 노출 ===== -->
+    <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
+      :cols="3" :readonly="cfDtlMode" plain-readonly :show-delete="false"
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" />
+  </bo-container>
+  <bo-excel-down-modal :show="excelModal.show" domain="stSettleConfig" area-nm="정산기준관리"
+    ui-nm="정산기준관리" :columns="columns.baseGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
+</bo-page>
+`,
+};

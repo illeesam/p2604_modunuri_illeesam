@@ -1,0 +1,39 @@
+shopjoy-mfe-domain-sy
+
+관리단위: 마이크로 도메인 — 시스템 대메뉴 전체 (shopjoy_v260406/pages/bo/sy/ 전체 +
+          pages/bo/ec/cm/CmPopupMng.js 복제)
+현재 위치: shopjoy_v260828_mfe/bo-sy/  (컨테이너 폴더 바로 밑, 다른 도메인 폴더들과
+          완전한 형제. "bo-" 는 정렬용이 아니라 의미론적 접두어(관리자 화면))
+
+⭐ 형상관리 단위(git 레포)와 지연로드 단위 분리 — bo-ec-mb/_git_shopjoy-mfe-domain-ec-mb.txt
+  와 동일한 설계. `bo-sy/` 전체가 레포 하나, 소그룹(중메뉴)마다 별도 manifest.js.
+
+포함 경로:
+  - `ba/manifest.js`     + `ba/pages/bo/sy/ba/*`     — 소그룹 "기준정보" (3화면 + 내부 2)
+  - `common/manifest.js` + `common/pages/bo/sy/common/*` — 소그룹 "공통기능" (1화면)
+  - `vendor/manifest.js` + `vendor/pages/bo/sy/vendor/*` — 소그룹 "업체" (3화면 + 내부 1)
+  - `sys/manifest.js`    + `sys/pages/bo/sy/sys/*`    — 소그룹 "시스템" (7화면 + 내부 5)
+  - `org/manifest.js`    + `org/pages/bo/sy/org/*`    — 소그룹 "조직" (2화면 + 내부 1)
+  - `menu/manifest.js`   + `menu/pages/bo/sy/menu/*`   — 소그룹 "메뉴" (2화면)
+  - `hist/manifest.js`   + `hist/pages/bo/sy/hist/*`   — 소그룹 "이력조회" (4화면)
+  - `dev.html`(레포 전체 단독 실행용 — 7개 다 정적 로드)
+
+등록 화면(22개, 대메뉴 bo-sy): 사이트관리/공통코드관리/브랜드관리 — "기준정보" /
+          공통팝업관리 — "공통기능" / 업체/업체사용자/업체정보 — "업체" / 첨부파일
+          통합조회/템플릿관리/배치스케즐관리/알림관리/프로퍼티관리/표시경로/다국어
+          관리 — "시스템" / 사용자관리/부서관리 — "조직" / 메뉴관리/역할관리 —
+          "메뉴" / 회원로그인이력/사용자로그인이력/API로그조회/메시지발송이력 —
+          "이력조회"
+
+크로스도메인 흡수(SyPostman→bo-zd/devtools 와 동일 방식): CmPopupMng(공통팝업관리)
+          — 원본 소스 pages/bo/ec/cm/(cm 패키지)
+내부 컴포넌트: SySiteDtl/SyCodeDtl(ba/ 안), SyVendorDtl(vendor/ 안), SyAttachDtl/
+          SyTemplateDtl/SyBatchDtl+SyBatchHist/SyAlarmDtl(sys/ 안), SyUserDtl
+          (org/ 안) — registerComponents 로만 등록
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/bo/sy/ 를 그대로 복사(원본은 전혀
+     수정하지 않음). 원본 페이지ID가 이미 프로젝트 전체에서 유일해서 `bo-` 접두어
+     하나만 붙였다(sy 도메인은 원본 소스가 pages/bo/ec/ 밖이라 pd/mb/pm/... 계열의
+     `bo-ec-` 접두어 규칙은 적용하지 않는다).
+셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,
+          셸이 등록한 공용 컴포넌트

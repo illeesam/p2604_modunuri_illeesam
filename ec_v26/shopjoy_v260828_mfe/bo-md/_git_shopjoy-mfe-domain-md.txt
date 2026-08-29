@@ -1,0 +1,38 @@
+shopjoy-mfe-domain-md
+
+관리단위: 마이크로 도메인 — 모듈 대메뉴 전체 (shopjoy_v260406/pages/bo/md/ 전체 복제)
+현재 위치: shopjoy_v260828_mfe/bo-md/  (컨테이너 폴더 바로 밑, 다른 도메인 폴더들과
+          완전한 형제. "bo-" 는 정렬용이 아니라 의미론적 접두어(관리자 화면))
+
+⭐ 형상관리 단위(git 레포)와 지연로드 단위 분리 — bo-ec-mb/_git_shopjoy-mfe-domain-ec-mb.txt
+  와 동일한 설계. `bo-md/` 전체가 레포 하나, 소그룹(중메뉴)마다 별도 manifest.js.
+
+포함 경로:
+  - `cb/manifest.js` + `cb/pages/bo/md/cb/*` — 소그룹 "코바늘" (3화면)
+  - `sg/manifest.js` + `sg/pages/bo/md/sg/*` — 소그룹 "소스젠" (화면 목록은 각
+    manifest.js 참고)
+  - `dev.html`(레포 전체 단독 실행용 — 2개 다 정적 로드)
+
+등록 화면(대메뉴 bo-module): 도안관리(MdCbPatternMng)/기호관리(MdCbSymbolMng)/
+          실관리(MdCbYarnMng) — "코바늘" / (소스젠 화면 목록은 `sg/manifest.js` 참고)
+
+연혁:
+  1) 2026-08-29(1차): 원래 모듈 대메뉴는 코바늘/소스젠을 폴더 하나(`bo-md-module`)가
+     한꺼번에 담당하는 "2레벨 분할 정책"이었다. 회원관리 등 다른 도메인과 일관성을
+     맞추려고 소그룹 하나 = 레포 하나인 표준 3레벨 정책으로 분리해서 `bo-md-cb`/
+     `bo-md-sg` 두 개의 독립 레포가 됐다(사용자 지시 — 코바늘 3화면만으로도 독립
+     레포 단위가 되기에 충분히 작다고 판단).
+  2) 2026-08-29(같은 날 후속 재구조화): "형상관리 단위(git 레포)"와 "지연로드
+     단위"를 분리하는 원칙을 다른 도메인들(bo-ec-mb 등)과 나중에 이 도메인에도
+     적용하기로 하면서, `bo-md-cb`/`bo-md-sg` 두 레포를 다시 `bo-md/` 레포 하나로
+     합쳤다(사용자 지시). 소그룹별 지연로드 단위(각자의 manifest.js)는 물리적
+     위치만 `bo-md/cb/`, `bo-md/sg/`로 한 단계 더 들어왔을 뿐 그대로 유지된다 —
+     `registerCatalog()`는 manifest.js 파일의 물리적 위치만 보고 동작하므로
+     레포 수를 줄여도 소그룹 단위 지연로드 granularity가 깨지지 않는다.
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/bo/md/ 를 그대로 복사(원본은 전혀
+     수정하지 않음). 원본 페이지ID가 이미 프로젝트 전체에서 유일해서 `bo-` 접두어
+     하나만 붙였다(모듈 도메인은 원본 소스가 pages/bo/ec/ 밖이라 pd/mb/pm/... 계열의
+     `bo-ec-` 접두어 규칙은 적용하지 않는다).
+셸 의존(런타임 계약): window.MFE_REGISTRY, window.boApiSvc/coApiSvc, window.coUtil/boUtil,
+          셸이 등록한 공용 컴포넌트

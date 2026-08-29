@@ -1,0 +1,328 @@
+/* ShopJoy Admin - 업체정보 상세/등록 */
+export default {
+  name: 'SyVendorDtl',
+  props: {
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    dtlId:         { type: String, default: null },           // 수정 대상 ID
+    dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
+    active:        { type: Boolean, default: true },          // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
+    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 #################################################### */
+
+    const { reactive, computed, watch, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+
+    const modals = reactive({ isAddrSearchModal: false });   // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
+    const uiState = reactive({ loading: false, error: null }); // UI 상태
+    const codes = reactive({ active_statuses: [], vendor_type_kr: [] });              // 공통코드
+
+    const form = reactive({                        // 업체 폼 데이터
+      vendorId: null, vendorTypeCd: '판매업체', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
+      vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
+      contractDate: '', vendorStatusCd: '활성', vendorRemark: '',
+    });
+    const errors = reactive({});                   // 폼 검증 에러
+    const addrDetailRef = ref(null);               // 상세주소 input ref
+
+    const schema = yup.object({                    // 폼 검증 스키마
+      vendorNm: yup.string().required('업체명을 입력해주세요.'),
+      vendorNo: yup.string().required('사업자등록번호를 입력해주세요.'),
+      vendorPhone: yup.string().matches(coUtil.REGEX_PHONE, '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)'),
+      vendorEmail: yup.string().matches(coUtil.REGEX_EMAIL, '올바른 이메일 형식이 아닙니다.'),
+    });
+
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용, 'new'/'edit' 이면 편집
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyVendorDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (신규 등록 또는 수정)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 편집 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('__cancelEdit__');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__closeDtl__');
+      // 보기모드에서 바로 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
+      // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
+      } else if (cmd === 'addr-search') {
+        modals.isAddrSearchModal = true;
+        return;
+      // 주소 초기화
+      } else if (cmd === 'addr-clear') {
+        form.vendorZipCode = '';
+        form.vendorAddr = '';
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyVendorDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'addr-search') {
+        modals.isAddrSearchModal = false;
+        if (result == null) { return; }
+        form.vendorZipCode = result.zonecode;
+        form.vendorAddr = result.address;
+        if (addrDetailRef.value) { addrDetailRef.value.focus(); }
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
+      }
+    };
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* handleLoadDetail — 상세 조회 */
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syVendor.getById(props.dtlId, '판매자관리', '상세조회');
+        const data = res.data?.data;
+        if (data) { Object.assign(form, data); }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* handleSave — 저장 */
+    const handleSave = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
+      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        const res = await (cfIsNew.value ? boApiSvc.syVendor.create({ ...form }, '판매자관리', '등록') : boApiSvc.syVendor.update(form.vendorId, { ...form }, '판매자관리', '저장'));
+        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('syVendorMng', { reload: true }); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* handleDelete — 보기모드 [삭제] (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.vendorId) { return; }
+      const ok = await showConfirm('삭제', `[${form.vendorNm}] 업체를 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.syVendor.remove(form.vendorId, '판매자관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('syVendorMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['ACTIVE_STATUS', 'VENDOR_TYPE_KR'], {compNm: 'SyVendorDtl'});
+        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+        codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      if (!cfIsNew.value) { await handleLoadDetail(); }
+    };
+    onMounted(initPage);
+
+    /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
+    });
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    // 기본 폼 (cols=3 빈칸 최소화 + 메모는 한 줄 전체 폭)
+    const columns = {};
+    columns.baseForm = [
+      { type: 'group', label: '업체정보' },
+      // 1행: 사이트명(2) + 업체유형(1)
+      { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { key: 'vendorTypeCd',     label: '업체유형', type: 'select', nullable: false, required: true,
+        options: () => codes.vendor_type_kr },
+      // 2행: 업체명 / 사업자등록번호 / 대표자명
+      { key: 'vendorNm',       label: '업체명', type: 'text', required: true, placeholder: '업체명' },
+      { key: 'vendorNo',       label: '사업자등록번호', type: 'text', required: true, placeholder: '000-00-00000' },
+      { key: 'ceoNm',          label: '대표자명', type: 'text' },
+      // 3행: 전화번호 / 이메일 / 계약일
+      { key: 'vendorPhone',    label: '전화번호', type: 'text',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)' : null },
+      { key: 'vendorEmail',    label: '이메일', type: 'text',
+        validate: (v) => !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
+      { key: 'contractDate',   label: '계약일', type: 'date' },
+      // 4행: 주소(2) + 상태(1)
+      { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
+      { key: 'vendorStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
+      // 5행: 메모 (3, 한 줄 전체)
+      { key: 'vendorRemark',   label: '메모', type: 'slot', name: 'remark', colSpan: 3 },
+    ];
+
+    /* fnShareUrl — 이 업체 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'syVendorDtl');
+      qs.set('id', form.vendorId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    /* handleShareKakao — 카카오톡 공유(피드 카드, 상세보기 모드 전용) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `업체 ${form.vendorId} - ShopJoy BO`,
+          description: form.vendorNm || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    /* pdfAreaRef — 업체 상세 카드 캡처 대상. handleExportPdf — PDF 다운로드(항상 노출) */
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`업체상세_${form.vendorId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+
+      modals,   // 모달 표시 상태 모음
+      columns,
+      handleShareKakao, handleCopyLink,                                    // 카카오톡 공유 / 링크 복사 (상세보기)
+      pdfAreaRef, pdfExporting, handleExportPdf,                           // PDF 다운로드 (항상 노출)
+      form, errors, addrDetailRef, // 상태 / 데이터
+      handleBtnAction, fnCallbackModal,                                       // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode, // computed
+    };
+  },
+  template: /* html */`
+<div ref="pdfAreaRef">
+<!-- ===== ■. 상세 영역 (제목/라벨/폼 모두 컨테이너 안에) ============================= -->
+<bo-container :title="!active ? '업체 상세' : (cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.vendorId)">
+  <template #toolbar-actions>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </template>
+  <!-- ===== ■.■. 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+  <!-- ===== ■.■. 폼 영역 ================================================== -->
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active" :show-cancel="!cfIsNew" :show-delete="!cfIsNew"
+    @save="handleBtnAction('form-save')"
+    @cancel="handleBtnAction('form-cancel')"
+    @edit="handleBtnAction('form-edit')"
+    @close="handleBtnAction('form-close')"
+    @delete="handleBtnAction('form-delete')">
+    <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
+    <template #addr>
+      <div v-if="cfDtlMode" class="readonly-field-plain">
+        {{ [form.vendorZipCode, form.vendorAddr, form.vendorAddrDetail].filter(Boolean).join(' ') || '-' }}
+      </div>
+      <template v-else>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;">
+          <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
+            style="width:110px;flex-shrink:0;" readonly />
+          <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
+            style="white-space:nowrap;">
+            🔍 주소 검색
+          </button>
+          <button v-if="form.vendorZipCode || form.vendorAddr" type="button" title="주소 초기화"
+            @click="handleBtnAction('addr-clear')"
+            style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+            x
+          </button>
+        </div>
+        <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"
+          style="margin-bottom:6px;" readonly />
+        <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
+          placeholder="상세주소 (동/호수 등)" />
+      </template>
+    </template>
+    <!-- ===== ■.■.■. 메모: Quill 또는 view 모드 HTML =========================== -->
+    <template #remark>
+      <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '-'"></div>
+      <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
+    </template>
+  </bo-form-area>
+  <!-- ===== □.□. 폼 영역 ================================================== -->
+</bo-container>
+</div>
+<!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
+<bo-addr-search-modal v-if="modals.isAddrSearchModal" modal-name="addr-search" :on-callback="fnCallbackModal" />
+<!-- ===== □. 컨테이너 영역 =================================================== -->
+`,
+};
