@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>리다이렉트 중…</title>
+<script>
+  /* 이 파일은 실제 콘텐츠가 없는 리다이렉트 전용 스텁이다 — 진짜 FO 앱은
+     ../../fo-ap-global/fo.html 에 있다.
+
+     foModuleShell.js(shopjoy_v260406 원본 그대로, 무수정)의 navigate(pageId)가
+     `location.href = 'index.html#page=' + pageId` 로 하드코딩돼 있다 — 실제
+     프로덕션에서는 이 파일(fo-md-cb-cobanul.html)과 index.html이 프로젝트 루트에
+     나란히 있고, 원래 index.html도 예전엔 해시(#page=) 라우팅을 썼던 흔적이 그대로
+     남아있다(2026-08-22 index.html 자체는 쿼리스트링(?page=)으로 전환됐지만
+     foModuleShell.js의 이 한 줄은 그 전환에서 놓친 것으로 보인다 — 원본 자체의
+     흔적이라 이 데모에서 임의로 "고쳐 넣지" 않고 그대로 재현한다).
+
+     이 데모에서는 fo-ap-global/(FO 셸)이 별도 폴더로 분리돼 있어서 "index.html이
+     같은 폴더에 있다"는 가정과 "#page= 해시"라는 가정이 둘 다 깨진다 — 원본
+     foModuleShell.js는 무수정 원칙상 그대로 두고, 대신 이 스텁이 해시를 읽어
+     ?page= 쿼리스트링으로 바꿔서 실제 FO 셸로 넘겨준다(2026-08-29). */
+  var pageId = (location.hash || '').replace(/^#page=/, '') || 'home';
+  location.replace('../../fo-ap-global/fo.html?page=' + encodeURIComponent(pageId));
+</script>
+</head>
+<body></body>
+</html>
