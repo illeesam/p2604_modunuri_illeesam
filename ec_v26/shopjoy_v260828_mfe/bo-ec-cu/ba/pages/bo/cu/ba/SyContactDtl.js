@@ -102,8 +102,8 @@ export default {
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
-      contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
-      contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
+      contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '',
+      contactTitle: '', contactContent: '', contactStatusCd: '', contactAnswer: '',
     });
 
     /* cfContentAttachRefId / cfAnswerAttachRefId — 첨부 ref ID (contactId) */
@@ -170,6 +170,12 @@ export default {
       await fnLoadCodes();
       await fnLoadRefTableNm();
       if (!cfIsNew.value) { await handleLoadDetail(); }
+      /* 신규 등록 입력 최소화(2026-08-29) — '배송 문의'/'요청' 은 실제 codeValue 가
+         아니라 select 가 빈 값으로 보이던 값이었다. 코드그룹 첫 번째 값으로 대체. */
+      else {
+        form.categoryCd = codes.contact_categories[0]?.codeValue || '';
+        form.contactStatusCd = codes.contact_statuses[0]?.codeValue || '';
+      }
     };
     onMounted(initPage);
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */

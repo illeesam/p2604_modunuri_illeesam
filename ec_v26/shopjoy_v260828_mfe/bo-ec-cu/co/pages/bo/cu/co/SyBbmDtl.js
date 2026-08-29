@@ -33,12 +33,20 @@ export default {
       sortOrd: '', useYn: '', bbmRemark: '', pathId: null,
     });
     // 신규 진입 시에만 채울 기본값 (미선택/검색초기화 inactive 상태에서는 빈 폼 유지)
+    /* 2026-08-29 버그수정: '일반'/'불가'/'공개' 처럼 실제 codeValue 가 아닌 한글
+       placeholder 를 하드코딩해뒀던 탓에, 해당 코드그룹 옵션 중 어느 것과도 일치하지
+       않아 select 가 빈 값으로 보였다. 신규 등록 입력을 최소화하려는 목적이므로,
+       각 코드그룹의 "첫 번째 옵션"을 기본 선택해둔다(이 함수는 initPage 에서
+       fnLoadCodes() 완료 후에만 호출되므로 codes.* 는 이미 채워져 있다). */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        bbmTypeCd: '일반',
-        allowComment: '불가', allowAttach: '불가', allowLike: 'N',
-        contentTypeCd: 'textarea', scopeTypeCd: '공개',
-        sortOrd: 1, useYn: 'Y',
+        bbmTypeCd: codes.BBM_TYPE[0]?.codeValue || '',
+        allowComment: codes.BBM_COMMENT_TYPE[0]?.codeValue || '',
+        allowAttach: codes.BBM_ATTACH_TYPE[0]?.codeValue || '',
+        allowLike: codes.ALLOW_YN[0]?.codeValue || 'N',
+        contentTypeCd: codes.BBM_CONTENT_TYPE[0]?.codeValue || 'textarea',
+        scopeTypeCd: codes.BBM_SCOPE_TYPE[0]?.codeValue || '',
+        sortOrd: 1, useYn: codes.USE_YN[0]?.codeValue || 'Y',
       });
     };
     const errors = reactive({});

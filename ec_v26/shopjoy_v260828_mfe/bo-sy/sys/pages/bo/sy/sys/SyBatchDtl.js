@@ -19,7 +19,7 @@ export default {
     const codes = reactive({ active_statuses: [] });
 
     const form = reactive({                        // 배치 폼 데이터
-      batchId: null, batchNm: '', batchCode: '', batchDesc: '', cronExpr: '0 0 * * *', batchStatusCd: '활성',
+      batchId: null, batchNm: '', batchCode: '', batchDesc: '', cronExpr: '0 0 * * *', batchStatusCd: '',
     });
     const errors = reactive({});                   // 폼 검증 에러
 
@@ -133,6 +133,9 @@ export default {
     const initPage = async () => {
       await fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
+      /* 신규 등록 입력 최소화(2026-08-29) — 이전엔 '활성' 이 실제 codeValue 가 아니라
+         select 가 빈 값으로 보였다. 코드그룹의 첫 번째 값을 기본 선택. */
+      else { form.batchStatusCd = codes.active_statuses[0]?.codeValue || ''; }
     };
     onMounted(initPage);
 

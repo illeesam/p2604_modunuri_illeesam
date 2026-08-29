@@ -245,8 +245,12 @@ export default {
       const newRow = {
         batchId: _tempId--, batchNm: '', batchCode: '',
         cronExpr: refRow ? refRow.cronExpr : '0 0 * * *',
-        batchStatusCd: '활성', batchDesc: '',
-        batchLastRun: '-', batchNextRun: '-', batchRunCount: 0, batchRunStatusCd: '대기',
+        /* 2026-08-29 버그수정: '활성'/'대기' 는 실제 codeValue(ACTIVE_STATUS/BATCH_RUN_STATUS
+           그룹의 codeValue, 예: ACTIVE/READY 등)가 아닌 한글 placeholder 였다 — 신규 행의
+           활성 select 가 그 어떤 옵션과도 안 맞아 빈 값으로 보였다. 첫 번째 코드값으로 대체. */
+        batchStatusCd: codes.active_statuses[0]?.codeValue || '', batchDesc: '',
+        batchLastRun: '-', batchNextRun: '-', batchRunCount: 0,
+        batchRunStatusCd: codes.batch_run_statuses[0]?.codeValue || '',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;

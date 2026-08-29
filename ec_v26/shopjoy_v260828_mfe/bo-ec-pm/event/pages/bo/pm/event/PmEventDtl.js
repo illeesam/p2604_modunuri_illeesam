@@ -39,8 +39,10 @@ export default {
       vendorId: '', chargeStaff: '',
     });
     /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (inactive/초기화 상태에선 빈 폼 유지) */
+    /* 2026-08-29 버그수정: '진행중' 은 실제 codeValue 가 아니라 select 가 빈 값으로
+       보이던 값이었다. 코드그룹 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
-      Object.assign(form, { eventStatusCd: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END });
+      Object.assign(form, { eventStatusCd: codes.event_statuses[0]?.codeValue || '', startDate: DEFAULT_START, endDate: DEFAULT_END });
     };
     const errors = reactive({});
 

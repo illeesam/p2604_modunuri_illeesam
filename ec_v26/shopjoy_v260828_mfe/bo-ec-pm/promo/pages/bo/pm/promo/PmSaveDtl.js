@@ -503,7 +503,6 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('info-form-edit')"
         :save-click="() => handleBtnAction('info-form-save')"
-        :delete-click="() => handleBtnAction('info-form-delete')"
         :cancel-click="() => handleBtnAction('info-form-cancel')"
         :close-click="() => handleBtnAction('info-form-close')" />
     </div>
@@ -540,7 +539,6 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         :save-disabled="cfSaveDisabled"
         :edit-click="() => handleBtnAction('target-form-edit')"
         :save-click="() => handleBtnAction('target-form-save')"
-        :delete-click="() => handleBtnAction('target-form-delete')"
         :cancel-click="() => handleBtnAction('target-form-cancel')"
         :close-click="() => handleBtnAction('target-form-close')" />
     </div>
@@ -556,7 +554,6 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('visibility-form-edit')"
         :save-click="() => handleBtnAction('visibility-form-save')"
-        :delete-click="() => handleBtnAction('visibility-form-delete')"
         :cancel-click="() => handleBtnAction('visibility-form-cancel')"
         :close-click="() => handleBtnAction('visibility-form-close')" />
     </div>

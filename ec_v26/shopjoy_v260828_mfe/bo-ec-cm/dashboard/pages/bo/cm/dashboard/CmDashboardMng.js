@@ -295,7 +295,6 @@ export default {
         :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <bo-form-actions :readonly="cfDtlMode" :show-delete="false" :edit-click="() => handleBtnAction('baseForm-edit')"
  :save-click="() => handleBtnAction('baseForm-save')"
- :delete-click="() => handleBtnAction('baseForm-delete')"
  :cancel-click="() => handleBtnAction('baseForm-cancel')"
  :close-click="() => handleBtnAction('baseForm-close')" />
     </div>

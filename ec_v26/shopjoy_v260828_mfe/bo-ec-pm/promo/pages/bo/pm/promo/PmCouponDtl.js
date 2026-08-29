@@ -38,11 +38,14 @@ export default {
       memo: '',
       vendorId: '', chargeStaff: '', mdUserId: '', mdUserNm: '',
     });
-    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 (미선택/초기화 시엔 빈 폼 유지) */
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 (미선택/초기화 시엔 빈 폼 유지)
+       2026-08-29 버그수정: couponTypeCd/couponStatusCd 가 '상품할인쿠폰'/'활성' 처럼
+       실제 codeValue 가 아니라 select 가 빈 값으로 보이던 값이었다. 코드그룹 첫 번째
+       값으로 대체(discountType 은 'amount'/'percent' 자체가 codeValue 라 그대로 유지). */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        couponTypeCd: '상품할인쿠폰', discountType: 'amount', discountVal: 0,
-        minOrderAmt: 0, maxDiscountAmt: 0, couponStatusCd: '활성',
+        couponTypeCd: codes.COUPON_TYPE[0]?.codeValue || '', discountType: 'amount', discountVal: 0,
+        minOrderAmt: 0, maxDiscountAmt: 0, couponStatusCd: codes.COUPON_STATUS_DTL[0]?.codeValue || '',
         validFrom: DEFAULT_START, validTo: DEFAULT_END, issueLimit: 0, useLimit: 'unlimited',
         targetTypeCd: 'PRODUCT', issueMethods: 'auto', issueCondition: 'all', useScope: 'all',
       });

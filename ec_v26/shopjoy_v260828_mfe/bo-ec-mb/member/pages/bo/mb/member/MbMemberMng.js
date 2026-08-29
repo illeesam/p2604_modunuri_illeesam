@@ -109,8 +109,20 @@ export default {
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    /* _emptyForm — 빈(신규) 폼 기본값 */
-    const _emptyForm = () => ({ memberId: null, loginId: '', memberEmail: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' });
+    /* _emptyForm — 빈(신규) 폼 기본값.
+       2026-08-29 버그수정: gradeCd/memberStatusCd 를 '일반'/'활성' 처럼 실제 코드값이 아닌
+       한글 placeholder 로 하드코딩해뒀던 탓에, select 옵션(codes.MEMBER_GRADE/MEMBER_STATUS
+       의 실제 codeValue, 예: BASIC/GOLD/VIP, ACTIVE/DORMANT 등) 중 어느 것과도 일치하지
+       않아 신규 등록 화면에서 두 select 가 전부 빈 값(placeholder)으로 보였다. 신규 등록 시
+       입력을 최소화하려는 목적이므로, 코드가 이미 로드돼 있으면 그 그룹의 "첫 번째 옵션"을
+       기본값으로 채운다(신규 진입 시점엔 initPage 의 fnLoadCodes 가 이미 끝나있어 codes 배열이
+       채워진 상태 — 못 채워진 경우에만 빈 문자열로 폴백). */
+    const _emptyForm = () => ({
+      memberId: null, loginId: '', memberEmail: '', memberNm: '', memberPhone: '',
+      gradeCd: codes.MEMBER_GRADE[0]?.codeValue || '',
+      memberStatusCd: codes.MEMBER_STATUS[0]?.codeValue || '',
+      joinDate: '', memberMemo: '',
+    });
     const detailPanel = reactive({                 // 인라인 Dtl 패널 상태
       show: true,                                  // 상세영역 항상 표시 (진입 시 빈 신규 폼)
       isNew: false, dtlId: null, reloadTrigger: 0,

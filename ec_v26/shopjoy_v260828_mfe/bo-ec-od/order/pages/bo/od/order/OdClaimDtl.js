@@ -34,10 +34,13 @@ export default {
       claimTypeCd: '', claimStatusCd: '', reasonCd: '', reasonDetail: '',
       refundAmt: '', refundMethodCd: '', requestDate: '', memo: '',
     });
-    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (inactive/초기화 시 빈 폼 유지) */
+    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (inactive/초기화 시 빈 폼 유지)
+       2026-08-29 버그수정: claimTypeCd/claimStatusCd 가 '취소'/'신청' 처럼 실제 codeValue
+       (CANCEL/EXCHANGE 등)가 아니라 select 가 빈 값으로 보이던 값이었다. 코드그룹 첫 번째
+       값으로 대체(refundMethodCd 는 이 화면에 select 가 없는 표시전용 필드라 그대로 유지). */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        claimTypeCd: '취소', claimStatusCd: '신청',
+        claimTypeCd: codes.claim_types[0]?.codeValue || '', claimStatusCd: codes.claim_statuses[0]?.codeValue || '',
         refundAmt: 0, refundMethodCd: '계좌환불',
       });
     };

@@ -130,7 +130,6 @@ export default {
       :cols="3" :readonly="uiState.dtlMode === 'view'" :show-actions="false" />
     <bo-form-actions :readonly="uiState.dtlMode === 'view'" :show-delete="false" :edit-click="() => handleBtnAction('form-edit')"
  :save-click="() => handleBtnAction('form-save')"
- :delete-click="() => handleBtnAction('form-delete')"
  :cancel-click="() => handleBtnAction('form-cancel')"
  :close-click="() => handleBtnAction('form-close')" />
   </div>

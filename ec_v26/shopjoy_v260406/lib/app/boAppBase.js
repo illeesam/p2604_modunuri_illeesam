@@ -121,8 +121,16 @@
       const kanbanClaimId = ref(null); // odOrderKanban 전용 claimId (URL 파라미터로 F5 복원)
       const initSearchValue = ref(null); // ZdSimul BO상세 클릭 시 Mng 자동 조회용
 
-      /* ── 탭 관리 ── */
-      const openTabs = reactive([{ id: 'dashboard', label: 'EC대시보드' }]);
+      /* ── 탭 관리 ──
+         openTabs 초기값 — 2026-08-29 버그수정: 이전엔 무조건 EC대시보드 탭으로 시작한 뒤,
+         URL 에 ?page= 가 있으면 아래 readHash() 가 그 화면 탭을 "추가"로 열었다. 그 결과
+         bo.html?page=mbMemberMng 로 바로 들어오거나 F5 로 새로고침해도 EC대시보드 탭이
+         항상 같이 떠 있었다("F5 하면 EC대시보드가 기본 탭으로 또 생긴다"). bo.html 을
+         파라미터 없이(또는 로그인 안 된 상태의 강제 폴백으로) 열 때만 EC대시보드로
+         시작하고, 특정 page 로 바로 들어오면 그 화면 탭 하나로만 시작해야 하므로 일단
+         빈 배열로 시작 — 실제 초기 탭은 아래 readHash(false) 호출 직후, 그때까지도 탭이
+         하나도 없으면(=URL에 유효한 page 가 없었던 경우) EC대시보드를 채워 넣는다. */
+      const openTabs = reactive([]);
       const cfActiveTabId = computed(() => toTabId(page.value, dtlId.value));
       const refreshKeys = reactive({}); // pageId → 재마운트 카운터
 
@@ -434,6 +442,9 @@
         hoveredTop.value = null;
         clearTimeout(_hoverTimer);
         if (resolvedId) navigate(resolvedId);
+        /* '홈' 상단메뉴를 지금 처음 클릭한 시점에 좌측 대시보드 메뉴 트리를 지연 로드
+           (2026-08-29) — onMounted 시점엔 다른 화면이라 안 불렀을 수 있으므로 여기서도 보장. */
+        if (topId === 'home') fnEnsureDashMenusLoaded();
       };
 
       /* ── URL routing (2026-08-22 해시(#page=)에서 쿼리스트링(?page=)으로 전환 —
@@ -463,7 +474,10 @@
           if (page.value !== pg) page.value = pg;
           const newTop = PAGE_TO_TOP[pg];
           if (newTop && activeTop.value !== newTop) activeTop.value = newTop;
-          addTab(toTabId(pg, newDtlId));
+          /* pg==='dashboard' 는 PAGE_LABELS 상 라벨이 '대시보드'(범용) 라 그대로 두면
+             예전에 항상 붙어있던 'EC대시보드' 라벨과 달라진다 — 명시적으로 덮어써서
+             ?page=dashboard 직접 진입 시에도 라벨이 그대로 유지되게 한다. */
+          addTab(toTabId(pg, newDtlId), pg === 'dashboard' ? 'EC대시보드' : undefined);
         }
         if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
         if (kanbanClaimId.value !== newClaimId) kanbanClaimId.value = newClaimId;
@@ -481,6 +495,10 @@
         }
       };
       readHash(false);
+      /* readHash(false) 가 끝났는데도 탭이 하나도 없으면(=URL 에 유효한 page 가 없었거나,
+         비로그인 상태라 dashboard 로 강제 폴백만 되고 addTab 은 안 탄 경우) EC대시보드를
+         기본 탭으로 채운다 — bo.html 을 파라미터 없이 열 때의 기존 동작 유지. */
+      if (!openTabs.length) { addTab('dashboard', 'EC대시보드'); }
 
       /* standaloneDtlMode — Dtl 을 독립 새창(embed)으로 열었을 때만 쓰는 view/edit 토글.
          Mng 안에 인라인으로 끼워질 땐 Mng 자신의 detailPanel.openMode 가 이 역할을 하므로
@@ -563,8 +581,14 @@
         Vue.nextTick(scrollActiveTabIntoView);
       };
 
-      /* readHashWithNotification */
-      const readHashWithNotification = () => readHash(true);
+      /* readHashWithNotification — 뒤로/앞으로가기(popstate)로 '홈'(대시보드) 화면에
+         진입할 수도 있으니, readHash 가 activeTop 을 갱신한 뒤 좌측 대시보드 메뉴 트리도
+         지연 로드 보장한다(2026-08-29. fnEnsureDashMenusLoaded 는 내부에서 1회만 실행되게
+         막아주므로 여기서 매번 호출해도 안전). */
+      const readHashWithNotification = () => {
+        readHash(true);
+        if (activeTop.value === 'home') fnEnsureDashMenusLoaded();
+      };
       window.addEventListener('popstate', readHashWithNotification);
       onBeforeUnmount(() => window.removeEventListener('popstate', readHashWithNotification));
 
@@ -1310,8 +1334,14 @@
         setTimeout(() => {
           window.useBoAppInitStore?.()?.saRestoreFromStorage?.();
         }, 0);
-        /* 이미 로그인된 상태(F5 등)에서도 사용자 대시보드 좌측메뉴 로드 */
-        setTimeout(() => { fnLoadSysDashMenus(); fnLoadUserDashMenus(); }, 300);
+        /* 2026-08-29 버그수정: 이전엔 activeTop 과 무관하게 항상 이 4개 API(list×2 +
+           menu/tree×2)를 호출해서, 회원관리 등 전혀 다른 화면에서 F5 새로고침해도
+           대시보드 메뉴 API 가 매번 같이 나갔다. 실제로 '홈'(대시보드) 화면으로
+           시작할 때만 로드 — 다른 화면에서 시작했다가 나중에 '홈' 상단메뉴를 클릭하면
+           그때는 setTopMenu 가 fnEnsureDashMenusLoaded() 를 호출해 지연 로드한다. */
+        if (activeTop.value === 'home') {
+          setTimeout(() => { fnEnsureDashMenusLoaded(); }, 300);
+        }
         _loadApiLogsFromStorage();
         setTimeout(() => {
           if (typeof boApi !== 'undefined' && boApi.raw) {
@@ -1720,8 +1750,7 @@
           loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
-          fnLoadSysDashMenus();  /* 대시보드 좌측메뉴 로드 (공용) */
-          fnLoadUserDashMenus(); /* 사용자 대시보드 좌측메뉴 로드 */
+          fnEnsureDashMenusLoaded(); /* 대시보드 좌측메뉴 로드 (공용 + 사용자) */
           showToast(`${currentAuthUser?.authNm || currentAuthUser?.name || '사용자'}님 환영합니다.`);
         } catch (err) {
           console.error('[catch-info]', err);
@@ -2075,6 +2104,19 @@
       };
       /* 개인화 화면에서 대시보드 추가/삭제/이름변경 시 메뉴 갱신 신호 */
       window.addEventListener('user-dashboard-changed', fnLoadUserDashMenus);
+
+      /* fnEnsureDashMenusLoaded — 좌측 '홈' 메뉴(대시보드 트리) 지연 로드(2026-08-29 버그수정).
+         이전엔 onMounted 에서 topId 와 무관하게 항상 이 4개 API(list×2 + menu/tree×2)를
+         호출해서, 회원관리 등 전혀 다른 화면에서 F5 새로고침해도 대시보드 메뉴 API 가
+         매번 같이 나갔다. 실제로 '홈' 상단메뉴를 보게 되는 시점(최초 진입이 홈이거나,
+         홈 메뉴를 클릭했을 때)에만 1회 로드하고 이후엔 재호출하지 않는다. */
+      let _dashMenusLoaded = false;
+      const fnEnsureDashMenusLoaded = () => {
+        if (_dashMenusLoaded) return;
+        _dashMenusLoaded = true;
+        fnLoadSysDashMenus();
+        fnLoadUserDashMenus();
+      };
 
       /* 루트 클릭 → 컨텍스트 메뉴·유저메뉴 닫기 */
       const onRootClick = () => {

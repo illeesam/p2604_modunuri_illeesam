@@ -37,10 +37,13 @@ export default {
       vendorId: '', chargeStaff: '',
       targetTypeCd: 'PRODUCT', issueTargets: [], issueGrades: [],
     });
-    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움
+       2026-08-29 버그수정: '구매조건'/'활성' 은 실제 codeValue(QTY/AMOUNT/NONE, ACTIVE 등)가
+       아니라 select 가 빈 값으로 보이던 값이었다. 코드그룹 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        giftTypeCd: '구매조건', condVal: 0, giftStatusCd: '활성', giftStock: 0,
+        giftTypeCd: codes.gift_cond_types[0]?.codeValue || '', condVal: 0,
+        giftStatusCd: codes.gift_statuses[0]?.codeValue || '', giftStock: 0,
         startDate: DEFAULT_START, endDate: DEFAULT_END, minOrderAmt: 0, minOrderQty: 0,
       });
     };

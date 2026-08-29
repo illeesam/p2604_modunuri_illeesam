@@ -21,9 +21,9 @@ export default {
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });              // 공통코드
 
     const form = reactive({                        // 업체 폼 데이터
-      vendorId: null, vendorTypeCd: '판매업체', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
+      vendorId: null, vendorTypeCd: '', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
       vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
-      contractDate: '', vendorStatusCd: '활성', vendorRemark: '',
+      contractDate: '', vendorStatusCd: '', vendorRemark: '',
     });
     const errors = reactive({});                   // 폼 검증 에러
     const addrDetailRef = ref(null);               // 상세주소 input ref
@@ -167,6 +167,14 @@ export default {
     const initPage = async () => {
       await fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
+      /* 신규 등록 시 입력을 최소화 — select 는 항상 "그 코드그룹의 첫 번째 값"을 기본
+         선택해둔다(2026-08-29). 이전엔 '판매업체'/'활성' 처럼 실제 codeValue 와 다른
+         한글 placeholder 를 하드코딩해서, 코드가 로드되면 그 값과 일치하는 옵션이 없어
+         두 select 가 항상 빈 값으로 보였다. */
+      else {
+        form.vendorTypeCd = codes.vendor_type_kr[0]?.codeValue || '';
+        form.vendorStatusCd = codes.active_statuses[0]?.codeValue || '';
+      }
     };
     onMounted(initPage);
 

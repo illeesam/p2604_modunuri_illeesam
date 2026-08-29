@@ -361,7 +361,6 @@ export default {
     <!-- ===== 하단 액션 (Mng 인라인 상세 패널 표준 — 처리버튼은 하단 중앙 정렬) ===================== -->
     <bo-form-actions :readonly="cfReadonly" :show-delete="false" :edit-click="() => handleBtnAction('btn-edit')"
  :save-click="() => handleBtnAction('btn-save')"
- :delete-click="() => handleBtnAction('btn-delete')"
  :cancel-click="() => handleBtnAction('btn-cancel')"
  :close-click="() => handleBtnAction('btn-close')" />
   </template>

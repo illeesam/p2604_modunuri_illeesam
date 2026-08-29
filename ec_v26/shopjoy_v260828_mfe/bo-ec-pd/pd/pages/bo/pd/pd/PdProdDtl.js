@@ -2558,7 +2558,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('info-form-edit')"
         :save-click="() => handleBtnAction('info-form-save')"
-        :delete-click="() => handleBtnAction('info-form-delete')"
         :cancel-click="() => handleBtnAction('info-form-cancel')"
         :close-click="() => handleBtnAction('info-form-close')" />
     </div>
@@ -2704,7 +2703,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('option-form-edit')"
         :save-click="() => handleBtnAction('option-form-save')"
-        :delete-click="() => handleBtnAction('option-form-delete')"
         :cancel-click="() => handleBtnAction('option-form-cancel')"
         :close-click="() => handleBtnAction('option-form-close')" />
     </div>
@@ -2830,7 +2828,6 @@ export default {
           :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
           :edit-click="() => handleBtnAction('content-form-edit')"
           :save-click="() => handleBtnAction('content-form-save')"
-          :delete-click="() => handleBtnAction('content-form-delete')"
           :cancel-click="() => handleBtnAction('content-form-cancel')"
           :close-click="() => handleBtnAction('content-form-close')" />
       </div>
@@ -2892,7 +2889,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('detail-form-edit')"
         :save-click="() => handleBtnAction('detail-form-save')"
-        :delete-click="() => handleBtnAction('detail-form-delete')"
         :cancel-click="() => handleBtnAction('detail-form-cancel')"
         :close-click="() => handleBtnAction('detail-form-close')" />
     </div>
@@ -3020,7 +3016,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('promo-form-edit')"
         :save-click="() => handleBtnAction('promo-form-save')"
-        :delete-click="() => handleBtnAction('promo-form-delete')"
         :cancel-click="() => handleBtnAction('promo-form-cancel')"
         :close-click="() => handleBtnAction('promo-form-close')" />
     </div>
@@ -3128,7 +3123,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('image-form-edit')"
         :save-click="() => handleBtnAction('image-form-save')"
-        :delete-click="() => handleBtnAction('image-form-delete')"
         :cancel-click="() => handleBtnAction('image-form-cancel')"
         :close-click="() => handleBtnAction('image-form-close')" />
     </div>
@@ -3195,7 +3189,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('related-form-edit')"
         :save-click="() => handleBtnAction('related-form-save')"
-        :delete-click="() => handleBtnAction('related-form-delete')"
         :cancel-click="() => handleBtnAction('related-form-cancel')"
         :close-click="() => handleBtnAction('related-form-close')" />
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
@@ -3477,7 +3470,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('price-form-edit')"
         :save-click="() => handleBtnAction('price-form-save')"
-        :delete-click="() => handleBtnAction('price-form-delete')"
         :cancel-click="() => handleBtnAction('price-form-cancel')"
         :close-click="() => handleBtnAction('price-form-close')" />
     </div>
@@ -3517,7 +3509,6 @@ export default {
         :save-title="!cfBundleRateOk ? '안분율 합계가 100%여야 합니다.' : (cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : '')"
         :edit-click="() => handleBtnAction('bundle-form-edit')"
         :save-click="() => handleBtnAction('bundle-form-save')"
-        :delete-click="() => handleBtnAction('bundle-form-delete')"
         :cancel-click="() => handleBtnAction('bundle-form-cancel')"
         :close-click="() => handleBtnAction('bundle-form-close')" />
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
@@ -3557,7 +3548,6 @@ export default {
         :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
         :edit-click="() => handleBtnAction('setitems-form-edit')"
         :save-click="() => handleBtnAction('setitems-form-save')"
-        :delete-click="() => handleBtnAction('setitems-form-delete')"
         :cancel-click="() => handleBtnAction('setitems-form-cancel')"
         :close-click="() => handleBtnAction('setitems-form-close')" />
       </div>

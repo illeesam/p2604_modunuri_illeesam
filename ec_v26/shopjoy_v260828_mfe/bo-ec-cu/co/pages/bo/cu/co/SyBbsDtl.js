@@ -397,7 +397,6 @@ export default {
   <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false" :show-cancel="!cfIsNew"
     :edit-click="() => handleBtnAction('form-edit')"
     :save-click="() => handleBtnAction('form-save')"
-    :delete-click="() => handleBtnAction('form-delete')"
     :cancel-click="() => handleBtnAction('form-cancel')"
     :close-click="() => handleBtnAction('form-close')" />
   <!-- ===== □. 카드 영역 =================================================== -->

@@ -176,7 +176,10 @@ export default {
 
     /* openNew — 신규 열기 (항상 수정모드로 시작) */
     const openNew = () => {
-      Object.assign(form, { settleAdjId: null, settleId: '', adjTypeCd: '', adjAmt: 0, adjReason: '', settleAdjMemo: '', aprvStatusCd: '대기' });
+      /* 2026-08-29 버그수정: '대기' 는 실제 codeValue(APRV_STATUS_CD 그룹, 예: PENDING)가
+         아니라 select 옵션과 안 맞아 빈 값으로 보였다 — 코드그룹 첫 번째 값으로 대체. */
+      Object.assign(form, { settleAdjId: null, settleId: '', adjTypeCd: '', adjAmt: 0, adjReason: '', settleAdjMemo: '',
+        aprvStatusCd: codes.settle_adj_statuses[0]?.codeValue || '' });
       uiState.selectedId = '__new__'; uiState.isNew = true; uiState.dtlMode = 'edit';
       Object.keys(errors).forEach(k => delete errors[k]);
     };
@@ -219,7 +222,8 @@ export default {
       console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) { return; }
-      const body = { settleId: form.settleId, adjTypeCd: form.adjTypeCd, adjAmt: form.adjAmt, adjReason: form.adjReason, settleAdjMemo: form.settleAdjMemo, aprvStatusCd: form.aprvStatusCd || '대기' };
+      const body = { settleId: form.settleId, adjTypeCd: form.adjTypeCd, adjAmt: form.adjAmt, adjReason: form.adjReason, settleAdjMemo: form.settleAdjMemo,
+        aprvStatusCd: form.aprvStatusCd || codes.settle_adj_statuses[0]?.codeValue || '' };
       try {
         await (uiState.isNew ? boApiSvc.stSettleAdj.create(body, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.settleAdjId, body, '정산조정관리', '저장'));
         showToast('저장되었습니다.', 'success');

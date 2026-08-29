@@ -31,10 +31,12 @@ export default {
       dlivId: '', orderId: '', memberId: '', memberNm: '', recvNm: '',
       recvAddr: '', recvPhone: '', outboundCourierCd: '', outboundTrackingNo: '', dlivStatusCd: '', regDate: '', dlivMemo: '',
     });
-    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움
+       2026-08-29 버그수정: '준비중' 은 실제 codeValue(READY/DELIVERED 등)가 아니라
+       select 가 빈 값으로 보이던 값이었다. 코드그룹 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        dlivStatusCd: '준비중',
+        dlivStatusCd: codes.dliv_statuses[0]?.codeValue || '',
       });
     };
     const errors = reactive({});

@@ -27,8 +27,14 @@ export default {
       alarmMsg: '', alarmSendDate: '', alarmStatusCd: '', pathId: null,
     });
     // 신규 진입 시에만 기본값 채움 (미선택/초기화 상태에서는 빈 폼 유지)
+    /* 2026-08-29 버그수정: '푸시'/'전체'/'임시' 는 실제 codeValue 가 아닌 한글
+       placeholder 였다 — 신규 등록 입력 최소화를 위해 각 코드그룹의 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
-      Object.assign(form, { alarmTypeCd: '푸시', targetTypeCd: '전체', alarmStatusCd: '임시' });
+      Object.assign(form, {
+        alarmTypeCd: codes.alarm_types[0]?.codeValue || '',
+        targetTypeCd: codes.alarm_target_types[0]?.codeValue || '',
+        alarmStatusCd: codes.alarm_statuses[0]?.codeValue || '',
+      });
     };
     const errors = reactive({});                   // 폼 검증 에러
 

@@ -43,11 +43,15 @@ export default {
     /* ── MD 대리주문: 모달 상태 ── */
     const odModal = reactive({ member: false, orderCopy: false, prod: false }); // 회원/주문복사/상품 모달 표시
     const payState = reactive({ processing: false }); // 브랜드페이 결제 진행 플래그 (위젯은 공통 컴포넌트가 자체 관리)
-    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (미선택 시 빈 폼 유지) */
+    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (미선택 시 빈 폼 유지)
+       2026-08-29 버그수정: '무통장입금'/'입금대기'/'결제완료' 는 실제 codeValue 가 아니라
+       select 가 빈 값으로 보이던 값이었다. 코드그룹(또는 그 폴백) 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        totalAmt: 0, payMethodCd: '무통장입금', orderStatusCd: '입금대기',
-        payStatusCd: '결제완료',
+        totalAmt: 0,
+        payMethodCd: codes.payment_methods[0]?.codeValue || '',
+        orderStatusCd: codes.order_statuses[0]?.codeValue || '',
+        payStatusCd: cfPayStatusOptions.value[0]?.codeValue || '',
       });
     };
     const errors = reactive({});

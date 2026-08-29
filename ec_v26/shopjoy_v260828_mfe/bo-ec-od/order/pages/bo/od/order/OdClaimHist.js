@@ -27,7 +27,10 @@ export default {
     let itemIdSeq = 1;
 
     /* 처리 정보 로컬 폼 */
-    const processForm = reactive({ refundAmount: 0, refundMethodCd: '계좌환불', memo: '' });
+    /* refundMethodCd 초기값은 항상 onMounted(handleLoadProcess) 가 실제 API 데이터(또는 '')로
+       즉시 덮어써서(2026-08-29 확인) 화면에 노출된 적 없는 값이지만, 실제 codeValue 가
+       아닌 '계좌환불' 을 남겨두는 건 오해 소지가 있어 빈 문자열로 정리 */
+    const processForm = reactive({ refundAmount: 0, refundMethodCd: '', memo: '' });
 
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 getter 로 반응형 유지 */
     const tabs = reactive([

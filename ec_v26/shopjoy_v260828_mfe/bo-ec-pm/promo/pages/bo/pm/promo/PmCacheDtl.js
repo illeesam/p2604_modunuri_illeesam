@@ -121,10 +121,12 @@ export default {
       cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '', cacheAmt: '', balanceAmt: '', cacheDesc: '',
       refId: '', procUserId: '',
     });
-    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움
+       2026-08-29 버그수정: '충전' 은 실제 codeValue 가 아니라 select 가 빈 값으로
+       보이던 값이었다. 코드그룹 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0,
+        cacheTypeCd: codes.cache_trans_types[0]?.codeValue || '', cacheAmt: 0, balanceAmt: 0,
       });
     };
     const errors = reactive({});
@@ -349,7 +351,6 @@ export default {
     <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
       :edit-click="() => handleBtnAction('form-edit')"
       :save-click="() => handleBtnAction('form-save')"
-      :delete-click="() => handleBtnAction('form-delete')"
       :cancel-click="() => handleBtnAction('form-cancel')"
       :close-click="() => handleBtnAction('form-close')" />
   </div>

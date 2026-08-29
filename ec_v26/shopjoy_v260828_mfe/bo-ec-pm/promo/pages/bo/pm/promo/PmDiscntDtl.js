@@ -40,12 +40,15 @@ export default {
       vendorId: '', chargeStaff: '', mdUserId: '', mdUserNm: '',
       issueTargets: [], issueGrades: [],
     });
-    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움
+       2026-08-29 버그수정: '활성'/'전체상품' 은 실제 codeValue(ACTIVE, ALL_PROD 등)가
+       아니라 select 가 빈 값으로 보이던 값이었다. 코드그룹 첫 번째 값으로 대체. */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        discntTypeCd: 'PROD', discntValTypeCd: 'RATE', discntValue: 0, discntStatusCd: '활성',
+        discntTypeCd: 'PROD', discntValTypeCd: 'RATE', discntValue: 0,
+        discntStatusCd: codes.promo_statuses[0]?.codeValue || '',
         startDate: DEFAULT_START, endDate: DEFAULT_END,
-        discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0,
+        discntTargetCd: codes.discnt_prod_targets[0]?.codeValue || '', minOrderAmt: 0, maxDiscntAmt: 0,
       });
     };
     const errors = reactive({});

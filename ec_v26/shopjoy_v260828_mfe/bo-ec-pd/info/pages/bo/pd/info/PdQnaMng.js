@@ -357,7 +357,6 @@ export default {
         <!-- 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[답변저장][취소] -->
         <bo-form-actions :readonly="cfDtlMode" :show-delete="false" save-label="답변 저장" :edit-click="() => handleBtnAction('form-edit')"
  :save-click="() => handleBtnAction('form-save')"
- :delete-click="() => handleBtnAction('form-delete')"
  :cancel-click="() => handleBtnAction('form-cancel')"
  :close-click="() => handleBtnAction('form-close')" />
       </div>
