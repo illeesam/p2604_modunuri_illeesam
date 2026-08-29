@@ -60,6 +60,16 @@
   <script src="lib/utils/coUtil.js"></script>
   <script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
+
+  <!-- 외부 SDK(소셜 로그인/공유/결제) — 키는 로그인 후 server init data 로 주입(coExtSdk.js).
+       fo-md/* 독립 모듈 화면엔 이미 있던 것을 다른 FO 진입점엔 빠뜨렸었다(2026-08-29) —
+       카카오공유하기/소셜로그인 버튼이 이 스크립트 없이는 전부 실패했다. -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+          integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+          crossorigin="anonymous"></script>
+  <script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
   <script src="lib/consts/coConsts.js"></script>
   <script src="lib/consts/foConsts.js"></script>
   <script src="lib/utils/foApiAxios.js"></script>

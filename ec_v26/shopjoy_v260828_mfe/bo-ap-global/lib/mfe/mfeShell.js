@@ -20,7 +20,7 @@
  * window.MFE_REGISTRY 에 해당 화면들이 등록된 상태여야 한다.
  */
 (function () {
-  const { createApp, reactive, ref, computed, watch, onMounted, onErrorCaptured } = Vue;
+  const { createApp, reactive, ref, computed, watch, onMounted, onBeforeUnmount, onErrorCaptured } = Vue;
 
   window.mfeBootShell = function (topMenus) {
   const TOP_MENUS = topMenus;
@@ -183,6 +183,55 @@
       const fnActiveItemMissingComp = () => { const it = fnActiveItem(); return !!it && !it.comp; };
       /* cfActiveMenuDef — 좌측 메뉴가 "지금 상단에서 고른 대메뉴"만 그리기 위해 필요 */
       const cfActiveMenuDef = computed(() => TOP_MENUS.find((m) => m.key === activeMenu.value) || null);
+      /* fnShowSidebar — v-if 안에서 && 를 직접 쓰면 이 프로젝트에서 Vue 컴파일러가
+         크래시하므로(속성값 안 리터럴 &/&& 금지, CLAUDE.md 참고) 여기서 미리 계산한다. */
+      const fnShowSidebar = () => !!cfActiveMenuDef.value && sidebarOpen.value;
+
+      /* ══════════════════════════ 상단 대메뉴 바 — 넘치면 개행 대신 "···" 로 접기
+         (2026-08-29) ══════════════════════════
+         전에는 .mfe-menus 가 flex-wrap:wrap 이라 창 폭이 좁아지면 대메뉴가 2줄로
+         개행됐다. 실제 화면 폭에 맞춰 들어가는 만큼만 보여주고, 못 들어간 나머지는
+         맨 끝 "···" 버튼을 눌러야 보이는 드롭다운으로 옮긴다. 폭 계산은 각 버튼의
+         실측 offsetWidth 를 재는 방식이라(css로만은 "몇 개가 들어가는지" 알 수 없다),
+         버튼 DOM ref 배열을 직접 관리한다. */
+      const menusBarRef = ref(null);
+      const menuBtnEls = [];
+      const setMenuBtnRef = (el, idx) => { if (el) menuBtnEls[idx] = el; };
+      const overflowStartIndex = ref(TOP_MENUS.length); // 처음엔 전부 보이는 상태로 시작해 실폭을 잴 수 있게 함
+      const moreMenuOpen = ref(false);
+      const cfOverflowMenus = computed(() => TOP_MENUS.slice(overflowStartIndex.value));
+      const MORE_BTN_RESERVE = 46; // '···' 버튼 폭 + gap 예상치
+
+      const fnMeasureMenuOverflow = () => {
+        const bar = menusBarRef.value;
+        if (!bar || !TOP_MENUS.length) return;
+        const barWidth = bar.clientWidth;
+        const widths = TOP_MENUS.map((_, i) => (menuBtnEls[i] ? menuBtnEls[i].offsetWidth + 4 : 0));
+        const total = widths.reduce((a, b) => a + b, 0);
+        if (total <= barWidth) { overflowStartIndex.value = TOP_MENUS.length; return; }
+        const limit = barWidth - MORE_BTN_RESERVE;
+        let used = 0;
+        let cutoff = 0;
+        for (let i = 0; i < widths.length; i++) {
+          if (used + widths[i] > limit) break;
+          used += widths[i];
+          cutoff = i + 1;
+        }
+        overflowStartIndex.value = Math.max(cutoff, 1); // 최소 1개는 항상 보이게
+      };
+      const fnRecalcMenuOverflow = () => {
+        // 폭이 넓어졌을 수도 있으니 일단 전부 다시 보이는 상태로 되돌려 실측 가능하게 한 뒤 잰다
+        overflowStartIndex.value = TOP_MENUS.length;
+        Vue.nextTick(fnMeasureMenuOverflow);
+      };
+      let menuResizeTimer = null;
+      const onWindowResizeForMenu = () => {
+        clearTimeout(menuResizeTimer);
+        menuResizeTimer = setTimeout(fnRecalcMenuOverflow, 150);
+      };
+      const toggleMoreMenu = () => { moreMenuOpen.value = !moreMenuOpen.value; };
+      const closeMoreMenu = () => { moreMenuOpen.value = false; };
+      const selectMenuFromMore = (key) => { selectMenu(key); closeMoreMenu(); };
 
       /* ══════════════════════════ 화면 렌더 에러 캡처 ══════════════════════════
          도메인 화면(<component :is="cfActiveItem.comp">) 안에서 setup()/render 중
@@ -382,6 +431,207 @@
         syncUrl();
       };
 
+      /* ── 열린 탭 바 좌우 스크롤 화살표(2026-08-29 신규) — .mfe-tabs 를 nowrap+
+         overflow-x:auto 로 바꾼 뒤(개행 대신 한 줄 유지) 스크롤바만으로는 옆에 더
+         있는지 알아보기 어렵다는 피드백 → 넘칠 때만 좌우 화살표 버튼을 보여주고,
+         누르면 일정 폭만큼 부드럽게 스크롤한다. */
+      const tabsBarRef = ref(null);
+      const tabsOverflow = ref(false);
+      const fnUpdateTabsOverflow = () => {
+        const el = tabsBarRef.value;
+        tabsOverflow.value = !!el && el.scrollWidth > el.clientWidth + 1;
+      };
+      const fnScrollTabs = (dir) => {
+        const el = tabsBarRef.value;
+        if (el) el.scrollBy({ left: dir * 180, behavior: 'smooth' });
+      };
+      let tabsResizeTimer = null;
+      const onWindowResizeForTabs = () => {
+        clearTimeout(tabsResizeTimer);
+        tabsResizeTimer = setTimeout(fnUpdateTabsOverflow, 150);
+      };
+      /* 탭 열림/닫힘마다 넘치는지 다시 잰다. openTabs 는 reactive 배열이라 길이만
+         watch 해도 충분(라벨 길이 변화 등은 없음). */
+      watch(() => openTabs.length, () => { Vue.nextTick(fnUpdateTabsOverflow); });
+
+      /* ── 열린 탭 유지(📌 Keep, 2026-08-29 신규) — production(boAppBase.js)의
+         keptTabIds/toggleKeep과 같은 개념이지만, 이 데모의 렌더 구조에 맞게 구현이
+         다르다. production은 v-for + v-show로 켜진 탭 컴포넌트를 전부 동시에 마운트해
+         두고 숨기기만 하는데, 이 데모는 <component :is> 하나에 :key만 바꿔가며 매번
+         완전히 새로 마운트한다(그래서 지금까지는 탭을 벗어나면 화면 내부 상태 — 스크롤
+         위치·입력 중이던 검색어 등 — 가 사라졌다). Vue 내장 <KeepAlive> 로 감싸고
+         :include 에 "지금 pin 된 탭들의 컴포넌트 name" 배열을 넘기면, 그 이름과 일치하는
+         컴포넌트가 다시 렌더될 때 새로 마운트하지 않고 캐시된 인스턴스를 그대로
+         재사용한다 — v-for/v-show 없이도 같은 효과를 낸다. */
+      const keptTabIds = reactive(new Set());
+      const toggleKeep = (tabId) => { if (keptTabIds.has(tabId)) keptTabIds.delete(tabId); else keptTabIds.add(tabId); };
+      const cfKeptNames = computed(() => {
+        const names = [];
+        keptTabIds.forEach((tabId) => {
+          const t = openTabs.find((x) => x.id === tabId);
+          if (!t) return;
+          const item = window.MFE_REGISTRY.getMenu(t.menuKey).find((it) => it.id === t.screenId);
+          if (item?.comp?.name) names.push(item.comp.name);
+        });
+        return names;
+      });
+
+      /* ── 즐겨찾기(2026-08-29 신규, 같은 날 좌측 메뉴 트리에서도 추가 가능하도록 확장) —
+         열린 탭에서도, 아직 열지 않은 좌측 메뉴 트리 항목에서도 ★ 로 추가/해제할 수
+         있다. toggleFav 의 두 번째 인자(labelOverride)가 있으면(메뉴 트리 클릭) 그
+         라벨을 쓰고, 없으면(열린 탭/열린화면 목록 클릭) 이미 열려있는 탭에서 라벨을
+         가져온다. */
+      const favorites = reactive(JSON.parse(localStorage.getItem('modu-bo-sy-favorites') || '[]'));
+      watch(favorites, (v) => { try { localStorage.setItem('modu-bo-sy-favorites', JSON.stringify(v)); } catch (e) {} }, { deep: true });
+      const isFav = (tabId) => favorites.some((f) => f.id === tabId);
+      const toggleFav = (tabId, labelOverride) => {
+        const idx = favorites.findIndex((f) => f.id === tabId);
+        if (idx !== -1) { favorites.splice(idx, 1); return; }
+        const sepIdx = tabId.indexOf(':');
+        if (sepIdx === -1) return;
+        const menuKey = tabId.slice(0, sepIdx);
+        const screenId = tabId.slice(sepIdx + 1);
+        const t = openTabs.find((x) => x.id === tabId);
+        const label = labelOverride || t?.label;
+        if (!label) return;
+        const topLabel = TOP_MENUS.find((m) => m.key === menuKey)?.label || '';
+        favorites.push({ id: tabId, menuKey, screenId, label, topLabel });
+      };
+      const cfFavList = computed(() => favorites.map((f) => ({ id: f.id, label: f.label, topLabel: f.topLabel })));
+      /* cfOpenTabsWithGroup — 좌측 하단 "열린화면" 목록용. 대메뉴 라벨(topLabel)을 붙여서
+         "주문관리 › 주문항목관리" 처럼 어느 대메뉴 소속인지 한눈에 보이게 한다. */
+      const cfOpenTabsWithGroup = computed(() => openTabs.map((t) => ({
+        ...t, topLabel: TOP_MENUS.find((m) => m.key === t.menuKey)?.label || '',
+      })));
+      const sidebarTab = ref('open'); // 'fav' | 'open'
+      /* openTabId — 즐겨찾기/열린화면 목록 항목(결합된 tabId, "menuKey:screenId" 형식)
+         클릭 시 그 화면을 연다.
+         2026-08-29 버그수정: "열린화면" 목록 항목은 정의상 이미 openTabs 에 들어있는
+         탭인데, 이걸 매번 openTab()(비동기 지연로드 경로 — 카탈로그 재조회 후 폴더
+         로드 시도까지 포함)으로 열면, 등록된 메뉴 조회 타이밍에 따라 아무 반응이
+         없어 보이는 경우가 있었다("클릭해도 화면이 안 바뀐다"). 이미 열려있는
+         탭이면 상단 탭바 클릭과 똑같이 selectTab()(동기, 100% 검증된 경로)으로
+         전환하고, 아직 안 열린 탭(예: 닫은 뒤에도 남아있는 즐겨찾기)일 때만
+         openTab() 의 지연로드 경로를 탄다. */
+      const openTabId = (tabId) => {
+        if (openTabs.find((t) => t.id === tabId)) { selectTab(tabId); return; }
+        const idx = tabId.indexOf(':');
+        if (idx === -1) return;
+        openTab(tabId.slice(0, idx), tabId.slice(idx + 1));
+      };
+
+      /* ── 탭 우클릭 컨텍스트 메뉴(2026-08-29 신규) — production(boAppBase.js)의
+         ctxMenu/showCtxMenu/ctxClose* 를 그대로 이식했다. */
+      const ctxMenu = reactive({ show: false, x: 0, y: 0, tabId: null });
+      const showCtxMenu = (evt, tabId) => {
+        evt.preventDefault();
+        ctxMenu.show = true;
+        ctxMenu.x = evt.clientX;
+        ctxMenu.y = evt.clientY;
+        ctxMenu.tabId = tabId;
+      };
+      const closeCtxMenu = () => { ctxMenu.show = false; };
+      const ctxClose = () => { closeTab(ctxMenu.tabId); closeCtxMenu(); };
+      const ctxCloseLeft = () => {
+        const idx = openTabs.findIndex((t) => t.id === ctxMenu.tabId);
+        if (idx > 0) {
+          openTabs.splice(0, idx);
+          if (!openTabs.find((t) => fnIsActive(t.menuKey, t.screenId)) && openTabs.length > 0) openTabId(openTabs[0].id);
+        }
+        closeCtxMenu();
+      };
+      const ctxCloseRight = () => {
+        const idx = openTabs.findIndex((t) => t.id === ctxMenu.tabId);
+        if (idx !== -1 && idx < openTabs.length - 1) {
+          openTabs.splice(idx + 1);
+          if (!openTabs.find((t) => fnIsActive(t.menuKey, t.screenId))) openTabId(openTabs[idx].id);
+        }
+        closeCtxMenu();
+      };
+      const ctxCloseOthers = () => {
+        const tab = openTabs.find((t) => t.id === ctxMenu.tabId);
+        openTabs.forEach((t) => { if (t.id !== ctxMenu.tabId) keptTabIds.delete(t.id); });
+        openTabs.splice(0);
+        if (tab) { openTabs.push(tab); openTabId(tab.id); }
+        closeCtxMenu();
+      };
+      const ctxCloseAll = () => {
+        const tab = openTabs.find((t) => t.id === ctxMenu.tabId);
+        keptTabIds.clear();
+        openTabs.splice(0);
+        if (tab) { openTabs.push(tab); openTabId(tab.id); }
+        closeCtxMenu();
+      };
+      /* ctxNewWindow — 이 탭을 새 브라우저 창/탭으로 그대로 재현(같은 ?menu=&screen= 을
+         쓰는 새 창). production은 embed 모드(상단 nav 없이 화면만)까지 지원하는데, 이
+         데모의 셸은 embed 모드 자체가 없어(화면 하나만 단독 렌더하는 별도 진입점이
+         없음) 그냥 이 셸을 통째로 새 창에 다시 띄운다 — 화면은 같지만 셸 UI(메뉴바 등)
+         까지 같이 뜨는 점만 production과 다르다. */
+      const ctxNewWindow = () => {
+        const tabId = ctxMenu.tabId;
+        closeCtxMenu();
+        const idx = tabId.indexOf(':');
+        if (idx === -1) return;
+        const qs = new URLSearchParams();
+        qs.set('menu', tabId.slice(0, idx));
+        qs.set('screen', tabId.slice(idx + 1));
+        window.open(window.location.pathname + '?' + qs.toString(), '_blank');
+      };
+      /* ctxRefresh — 그 탭을 강제로 다시 마운트한다. :key 에 섞어 넣는 refreshKeys
+         카운터를 올리고, KeepAlive 로 고정(📌)돼 있으면 캐시에서 잠깐 뺐다가
+         nextTick 에 다시 넣어 캐시된 인스턴스를 버리게 한다(production과 동일 방식). */
+      const refreshKeys = reactive({});
+      const ctxRefresh = () => {
+        const tabId = ctxMenu.tabId;
+        closeCtxMenu();
+        refreshKeys[tabId] = (refreshKeys[tabId] || 0) + 1;
+        if (keptTabIds.has(tabId)) {
+          keptTabIds.delete(tabId);
+          Vue.nextTick(() => keptTabIds.add(tabId));
+        }
+      };
+
+      /* ── 레이아웃 접기/펼치기(좌측 사이드바/우측 패널, 2026-08-29 신규) —
+         production(boAppBase.js)의 leftMenuOpen/rightPanelOpen과 같은 개념. production은
+         백엔드 user-pref API(/api/bo/sy/user-pref)로 로그인 계정마다 서버에 저장하는데,
+         이 데모는 그 API 왕복 없이 localStorage로 단순화했다. 열린탭바 숨기기는 처음에
+         같이 넣었다가(production엔 tabBarOpen으로 있음) 사용자 피드백으로 이 데모에서는
+         뺐다 — 탭 자체가 항상 화면 전환의 기본 통로라 숨기는 옵션이 오히려 혼란을 준다는
+         판단(2026-08-29). */
+      const sidebarOpen = ref(localStorage.getItem('modu-bo-sy-sidebarOpen') !== 'false');
+      watch(sidebarOpen, (v) => { try { localStorage.setItem('modu-bo-sy-sidebarOpen', v); } catch (e) {} });
+      const rightPanelOpen = ref(localStorage.getItem('modu-bo-sy-rightPanelOpen') !== 'false');
+      watch(rightPanelOpen, (v) => { try { localStorage.setItem('modu-bo-sy-rightPanelOpen', v); } catch (e) {} });
+
+      /* ── API 로그(BO, 2026-08-29 신규) — FO 쪽 foMfeShell.js와 동일한 이벤트 기반
+         방식으로 이식했다. boApiAxios.js(원본 그대로, 무수정)가 이미 쏘는
+         api-response-success/api-response-error 커스텀 이벤트만 듣는다 — production의
+         boAppBase.js는 axios 인터셉터를 별도로 하나 더 붙여서 duration(소요시간)까지
+         재는데, boApiAxios.js 자체 이벤트 payload엔 duration이 없어서(foApiAxios.js와
+         다른 점 — FO 쪽엔 있음) 그 필드만 이 데모에선 비어 있다. */
+      const MAX_BO_API_LOGS = 15;
+      const boApiLogs = reactive(JSON.parse(localStorage.getItem('modu-bo-sy-apiLog') || '[]'));
+      let _boApiLogSeq = boApiLogs.length ? Math.max(...boApiLogs.map((l) => l._seq || 0)) + 1 : 1;
+      const apiLogHoverDetail = ref(null);
+      const addBoApiLog = (detail) => {
+        const now = new Date();
+        const ts = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0')
+          + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+        const entry = { _seq: _boApiLogSeq++, ts, ...detail };
+        boApiLogs.unshift(entry);
+        if (boApiLogs.length > MAX_BO_API_LOGS) boApiLogs.splice(MAX_BO_API_LOGS);
+        try { localStorage.setItem('modu-bo-sy-apiLog', JSON.stringify(boApiLogs.slice(0, MAX_BO_API_LOGS))); } catch (e) {}
+      };
+      const clearApiLogs = () => {
+        boApiLogs.splice(0, boApiLogs.length);
+        apiLogHoverDetail.value = null;
+        try { localStorage.removeItem('modu-bo-sy-apiLog'); } catch (e) {}
+      };
+      window.addEventListener('api-response-success', (ev) => { addBoApiLog(ev.detail || {}); });
+      window.addEventListener('api-response-error', (ev) => { addBoApiLog({ ...(ev.detail || {}), hasError: true }); });
+      const onApiLogEnter = (log) => { apiLogHoverDetail.value = log; };
+      const onApiLogLeave = () => { apiLogHoverDetail.value = null; };
+
       /* 활성 탭 라벨을 브라우저 탭 타이틀에 반영 — 여러 BO 창을 동시에 열어도 브라우저
          탭 목록에서 화면을 구분할 수 있게 한다(shopjoy_v260406/lib/app/boAppBase.js
          와 동일 패턴, 2026-08-29 이 데모에 이식). */
@@ -494,15 +744,30 @@
         // 도메인이 등록한 내부 컴포넌트(Dtl 등)를 이 시점에 app.component 로 일괄 등록
         // — 이미 boAppBase 패턴대로 createApp() 직후 처리하므로 여기서는 확인 로그만.
         console.info('[mfeShell] 등록된 마이크로 도메인 메뉴:', window.MFE_REGISTRY.getAll());
+        Vue.nextTick(fnMeasureMenuOverflow);
+        window.addEventListener('resize', onWindowResizeForMenu);
+        Vue.nextTick(fnUpdateTabsOverflow);
+        window.addEventListener('resize', onWindowResizeForTabs);
+      });
+      onBeforeUnmount(() => {
+        window.removeEventListener('resize', onWindowResizeForMenu);
+        window.removeEventListener('resize', onWindowResizeForTabs);
       });
 
       return {
         TOP_MENUS,
         cfIsLoggedIn, currentAuthUser, loginForm, loginError, loginLoading, doLogin, doLogout, quickLogin,
         toasts, closeToast, confirmState, closeConfirm,
-        activeMenu, activeScreenId, fnMenuItems, fnActiveItem, fnActiveItemMissingComp, cfActiveMenuDef, selectMenu, selectScreen, screenError,
+        activeMenu, activeScreenId, fnMenuItems, fnActiveItem, fnActiveItemMissingComp, cfActiveMenuDef, fnShowSidebar, selectMenu, selectScreen, screenError,
+        menusBarRef, setMenuBtnRef, overflowStartIndex, cfOverflowMenus, moreMenuOpen, toggleMoreMenu, closeMoreMenu, selectMenuFromMore,
+        tabsBarRef, tabsOverflow, fnScrollTabs,
         openTabs, openTab, openGroup, selectTab, closeTab, menuOf, groupedMenuOf, fnIsActive, fnClickGroup, fnClickItem,
         navigate, showToast, showConfirm, openNewWindow,
+        keptTabIds, toggleKeep, cfKeptNames,
+        favorites, isFav, toggleFav, cfFavList, cfOpenTabsWithGroup, sidebarTab, openTabId,
+        sidebarOpen, rightPanelOpen,
+        boApiLogs, apiLogHoverDetail, clearApiLogs, onApiLogEnter, onApiLogLeave,
+        ctxMenu, showCtxMenu, closeCtxMenu, ctxClose, ctxCloseLeft, ctxCloseRight, ctxCloseOthers, ctxCloseAll, ctxNewWindow, ctxRefresh, refreshKeys,
       };
     },
     template: /* html */`
@@ -534,11 +799,22 @@
   <!-- ══════════════════ 로그인 후: 셸 본체 ══════════════════ -->
   <template v-else>
     <div class="mfe-topbar">
+      <button class="mfe-collapse-btn" @click="sidebarOpen=!sidebarOpen" :title="sidebarOpen ? '좌측 숨기기' : '좌측 펼치기'">☰</button>
       <div class="mfe-brand">🧩 ShopJoy MFE Demo</div>
-      <div class="mfe-menus">
-        <button v-for="m in TOP_MENUS" :key="m.key" class="mfe-menu-btn" :class="{ active: activeMenu === m.key }"
+      <div class="mfe-menus" ref="menusBarRef">
+        <button v-for="(m, idx) in TOP_MENUS" :key="m.key" :ref="(el) => setMenuBtnRef(el, idx)"
+          class="mfe-menu-btn" :class="{ active: activeMenu === m.key, 'mfe-menu-btn-hidden': idx >= overflowStartIndex }"
           @click="selectMenu(m.key)">{{ m.icon }} {{ m.label }}</button>
+        <div class="mfe-menu-more-wrap" v-if="overflowStartIndex < TOP_MENUS.length">
+          <button class="mfe-menu-btn mfe-menu-more-btn" @click="toggleMoreMenu">···</button>
+          <div v-if="moreMenuOpen" style="position:fixed;inset:0;z-index:998;" @click="closeMoreMenu"></div>
+          <div v-if="moreMenuOpen" class="mfe-menu-more-dropdown" @click.stop>
+            <div v-for="m in cfOverflowMenus" :key="m.key" class="mfe-menu-more-item" :class="{ active: activeMenu === m.key }"
+              @click="selectMenuFromMore(m.key)">{{ m.icon }} {{ m.label }}</div>
+          </div>
+        </div>
       </div>
+      <button class="mfe-collapse-btn" @click="rightPanelOpen=!rightPanelOpen" :title="rightPanelOpen ? '우측 숨기기' : '우측 펼치기'">📡</button>
       <div class="mfe-user">
         <span>{{ currentAuthUser.authNm || currentAuthUser.name || currentAuthUser.authId }}님</span>
         <button class="btn btn-secondary btn-sm" @click="doLogout">로그아웃</button>
@@ -547,9 +823,11 @@
 
     <div class="mfe-body">
       <!-- ══ 좌측 메뉴 — 상단 대메뉴로 고른 것의 하위 메뉴만 보여줌(실제 bo.html 과 동일 패턴:
-           상단바=대메뉴 전환, 좌측=선택된 대메뉴의 화면 트리). 다른 대메뉴 항목은 아예 안 그림 ══ -->
-      <div class="mfe-sidebar" v-if="cfActiveMenuDef">
-        <div class="mfe-sidebar-group">
+           상단바=대메뉴 전환, 좌측=선택된 대메뉴의 화면 트리). 다른 대메뉴 항목은 아예 안 그림.
+           2026-08-29: sidebarOpen 토글 + 하단 즐겨찾기/열린화면 위젯 추가(production
+           boAppBase.js의 left-nav-open-section과 같은 개념) ══ -->
+      <div class="mfe-sidebar" v-if="fnShowSidebar()" style="display:flex;flex-direction:column;padding:0;">
+        <div class="mfe-sidebar-group" style="flex:1;overflow-y:auto;padding:12px 0;">
           <div class="mfe-sidebar-group-title active">{{ cfActiveMenuDef.icon }} {{ cfActiveMenuDef.label }}</div>
           <template v-for="g in groupedMenuOf(activeMenu)" :key="activeMenu + '_' + (g.group || '_flat')">
             <!-- 소그룹 헤더 — 이름은 카탈로그로 항상 미리 보이고, 로드 전이면 클릭해서
@@ -568,22 +846,70 @@
             <div class="mfe-sidebar-item" v-for="it in g.items" :key="it.id"
               :class="{ active: fnIsActive(activeMenu, it.id), 'mfe-sidebar-item-nested': g.group, 'mfe-sidebar-item-placeholder': it._placeholder }"
               @click="fnClickItem(activeMenu, g, it)">
-              {{ it.label }}<span v-if="it._showSpinner">⏳</span>
+              <span class="mfe-sidebar-item-label">{{ it.label }}<span v-if="it._showSpinner">⏳</span></span>
+              <span class="mfe-fav-star" :class="{ active: isFav(activeMenu + ':' + it.id) }"
+                @click.stop="toggleFav(activeMenu + ':' + it.id, it.label)"
+                :title="isFav(activeMenu + ':' + it.id) ? '즐겨찾기 해제' : '즐겨찾기 추가'">★</span>
             </div>
           </template>
         </div>
+        <!-- 즐겨찾기 / 열린화면 (하단 고정, 2026-08-29 신규) -->
+        <div class="mfe-sidebar-bottom">
+          <div class="mfe-sidebar-bottom-list">
+            <template v-if="sidebarTab==='fav'">
+              <div v-if="!cfFavList.length" class="mfe-sidebar-bottom-empty">즐겨찾기가 없습니다.<br>열린 탭의 ★ 를 클릭해 추가하세요.</div>
+              <div v-for="fav in cfFavList" :key="fav.id" class="mfe-sidebar-bottom-item"
+                :class="{ active: (activeMenu + ':' + activeScreenId) === fav.id }"
+                @click="openTabId(fav.id)">
+                <span class="mfe-sidebar-bottom-path">
+                  <span class="mfe-sidebar-bottom-group">{{ fav.topLabel }}</span>
+                  <span class="mfe-sidebar-bottom-sep"> › </span>
+                  <span>{{ fav.label }}</span>
+                </span>
+                <span class="mfe-fav-star active" @click.stop="toggleFav(fav.id)" title="즐겨찾기 해제">★</span>
+              </div>
+            </template>
+            <template v-if="sidebarTab==='open'">
+              <div v-if="!cfOpenTabsWithGroup.length" class="mfe-sidebar-bottom-empty">열린 화면이 없습니다.</div>
+              <div v-for="t in cfOpenTabsWithGroup" :key="t.id" class="mfe-sidebar-bottom-item"
+                :class="{ active: fnIsActive(t.menuKey, t.screenId) }"
+                @click="openTabId(t.id)">
+                <span class="mfe-sidebar-bottom-path">
+                  <span class="mfe-sidebar-bottom-group">{{ t.topLabel }}</span>
+                  <span class="mfe-sidebar-bottom-sep"> › </span>
+                  <span>{{ t.label }}</span>
+                </span>
+                <span class="mfe-fav-star" :class="{ active: isFav(t.id) }"
+                  @click.stop="toggleFav(t.id)" :title="isFav(t.id) ? '즐겨찾기 해제' : '즐겨찾기 추가'">★</span>
+                <span class="mfe-sidebar-bottom-close" @click.stop="closeTab(t.id, $event)">✕</span>
+              </div>
+            </template>
+          </div>
+          <div class="mfe-sidebar-bottom-tabs">
+            <button class="mfe-sidebar-bottom-tab" :class="{ active: sidebarTab==='fav' }" @click="sidebarTab='fav'">★ 즐겨찾기</button>
+            <button class="mfe-sidebar-bottom-tab" :class="{ active: sidebarTab==='open' }" @click="sidebarTab='open'">열린화면</button>
+          </div>
+        </div>
       </div>
 
-      <!-- ══ 우측: 열린 탭 + 본문 ══ -->
+      <!-- ══ 가운데: 열린 탭 + 본문 ══ -->
       <div class="mfe-main">
-        <div class="mfe-tabs">
-          <div v-if="!openTabs.length" class="mfe-tabs-empty">왼쪽 메뉴에서 화면을 선택하세요</div>
-          <div v-for="t in openTabs" :key="t.id" class="mfe-tab"
-            :class="{ active: fnIsActive(t.menuKey, t.screenId) }"
-            @click="selectTab(t.id)">
-            <span>{{ t.menuIcon }} {{ t.label }}</span>
-            <span class="mfe-tab-close" @click="closeTab(t.id, $event)">✕</span>
+        <div class="mfe-tabs-wrap">
+          <button v-if="tabsOverflow" class="mfe-tabs-arrow mfe-tabs-arrow-left" @click="fnScrollTabs(-1)" title="왼쪽으로 스크롤">‹</button>
+          <div class="mfe-tabs" ref="tabsBarRef" :class="{ 'has-arrows': tabsOverflow }">
+            <div v-if="!openTabs.length" class="mfe-tabs-empty">왼쪽 메뉴에서 화면을 선택하세요</div>
+            <div v-for="t in openTabs" :key="t.id" class="mfe-tab"
+              :class="{ active: fnIsActive(t.menuKey, t.screenId) }"
+              @click="selectTab(t.id)" @contextmenu.prevent="showCtxMenu($event, t.id)">
+              <span class="mfe-tab-pin" :class="{ active: keptTabIds.has(t.id) }" @click.stop="toggleKeep(t.id)"
+                :title="keptTabIds.has(t.id) ? '고정 해제' : '고정 (탭 전환 시 화면 상태 유지)'">📌</span>
+              <span>{{ t.menuIcon }} {{ t.label }}</span>
+              <span class="mfe-tab-fav" :class="{ active: isFav(t.id) }" @click.stop="toggleFav(t.id)"
+                :title="isFav(t.id) ? '즐겨찾기 해제' : '즐겨찾기 추가'">★</span>
+              <span class="mfe-tab-close" @click.stop="closeTab(t.id, $event)">✕</span>
+            </div>
           </div>
+          <button v-if="tabsOverflow" class="mfe-tabs-arrow mfe-tabs-arrow-right" @click="fnScrollTabs(1)" title="오른쪽으로 스크롤">›</button>
         </div>
 
         <div class="mfe-content admin-wrap">
@@ -595,9 +921,37 @@
           <div v-else-if="fnActiveItemMissingComp()" class="card" style="padding:24px;text-align:center;color:#c0392b;">
             "{{ fnActiveItem().label }}" 컴포넌트가 window 에 없습니다 — manifest.js 의 스크립트 로드(404 등)를 확인하세요.
           </div>
-          <component v-else-if="fnActiveItem()" :is="fnActiveItem().comp" :key="activeMenu + '_' + fnActiveItem().id"
-            :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" :open-new-window="openNewWindow" />
+          <!-- KeepAlive(2026-08-29 신규) — 📌 로 고정한 탭만 :include 로 지정해, 탭을
+               벗어났다 돌아와도 컴포넌트를 새로 마운트하지 않고 이전 상태(스크롤 위치·
+               입력 중이던 값 등)를 그대로 유지한다. :key 에 refreshKeys 카운터를 섞어
+               "새로고침" 컨텍스트 메뉴가 강제로 새 인스턴스를 만들 수 있게 한다. -->
+          <KeepAlive :include="cfKeptNames" v-else-if="fnActiveItem()">
+            <component :is="fnActiveItem().comp"
+              :key="activeMenu + '_' + fnActiveItem().id + '_' + (refreshKeys[activeMenu + ':' + fnActiveItem().id] || 0)"
+              :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" :open-new-window="openNewWindow" />
+          </KeepAlive>
           <div v-else class="card" style="padding:60px 24px;text-align:center;color:#999;">왼쪽 메뉴에서 화면을 선택하세요.</div>
+        </div>
+      </div>
+
+      <!-- ══ 우측: API 로그 패널 (2026-08-29 신규, foMfeShell.js와 동일 이벤트 기반) ══ -->
+      <div class="mfe-right-panel" v-if="rightPanelOpen">
+        <div class="mfe-right-panel-hd">
+          <span>📡 API 로그 (BO)</span>
+          <button class="btn btn-secondary btn-xs" @click="clearApiLogs">Clear</button>
+        </div>
+        <div class="mfe-right-panel-body">
+          <div v-if="!boApiLogs.length" class="mfe-api-log-empty">API 호출 기록이 없습니다</div>
+          <div v-for="log in boApiLogs" :key="log._seq" class="mfe-api-log-item" :class="{ err: log.hasError }"
+            @mouseenter="onApiLogEnter(log)" @mouseleave="onApiLogLeave()">
+            <div class="mfe-api-log-row">
+              <span class="mfe-api-log-method">{{ (log.method || '-').charAt(0) }}</span>
+              <span class="mfe-api-log-url" :title="log.url">{{ log.url }}</span>
+              <span v-if="log.status ? (Number(log.status) !== 200) : false" class="mfe-api-log-status">{{ log.status }}</span>
+            </div>
+            <div v-if="log.uiLabel" class="mfe-api-log-label">{{ log.uiLabel }}</div>
+            <div class="mfe-api-log-ts">{{ log.ts ? log.ts.slice(11,19) : '' }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -613,6 +967,20 @@
         <button class="btn btn-primary" @click="closeConfirm(true)">확인</button>
       </div>
     </div>
+  </div>
+
+  <!-- ══════════════════ 탭 우클릭 컨텍스트 메뉴(2026-08-29 신규) ══════════════════ -->
+  <div v-if="ctxMenu.show" style="position:fixed;inset:0;z-index:9999;" @click="closeCtxMenu" @contextmenu.prevent="closeCtxMenu"></div>
+  <div v-if="ctxMenu.show" class="tab-ctx-menu" :style="{ left: ctxMenu.x+'px', top: ctxMenu.y+'px' }" @click.stop>
+    <div class="tab-ctx-item" @click="ctxClose">현재 닫기</div>
+    <div class="tab-ctx-item" @click="ctxCloseLeft">왼쪽 닫기</div>
+    <div class="tab-ctx-item" @click="ctxCloseRight">오른쪽 닫기</div>
+    <div class="tab-ctx-item" @click="ctxCloseOthers">기타 닫기</div>
+    <div class="tab-ctx-sep"></div>
+    <div class="tab-ctx-item" @click="ctxCloseAll">전체 닫기</div>
+    <div class="tab-ctx-sep"></div>
+    <div class="tab-ctx-item" @click="ctxNewWindow">↗ 새창</div>
+    <div class="tab-ctx-item" @click="ctxRefresh">↺ 새로고침</div>
   </div>
 
   <!-- ══════════════════ 토스트 ══════════════════ -->
