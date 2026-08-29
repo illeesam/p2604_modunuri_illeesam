@@ -118,6 +118,11 @@
              view=editor 이거나 patternId 가 있으면 상세(편집), 그 외엔 목록. */
           const qs = new URLSearchParams(location.search);
           const curView = (qs.get('view') === 'editor' || qs.get('patternId')) ? 'editor' : 'list';
+          /* 브라우저 탭 타이틀에 현재 화면 반영(원본에는 없던 로직, 2026-08-29 추가) —
+             foMfeShell.js/mfeShell.js 와 같은 "{화면명} - ShopJoy" 형식으로 통일했다.
+             이 화면은 전체 새로고침으로만 뷰가 바뀌므로(위 주석 참고) 반응형 watch 없이
+             부팅 시 한 번만 정하면 된다. */
+          document.title = (curView === 'editor' ? '코바늘 도안 편집' : '코바늘 도안') + ' - ShopJoy';
           return { ...shell, page, curView };
         },
         template: /* html */`

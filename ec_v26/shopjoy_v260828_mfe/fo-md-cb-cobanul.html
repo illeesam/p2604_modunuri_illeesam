@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>리다이렉트 중…</title>
+<script>
+  /* 이 파일은 실제 콘텐츠가 없는 리다이렉트 전용 스텁이다 — 진짜 앱은
+     ../fo-md/cb/fo-md-cb-cobanul.html 에 있다.
+
+     foAppSidebar.js(shopjoy_v260406 원본 그대로, 무수정)가 '코바늘 도안' 메뉴를
+     `href: 'fo-md-cb-cobanul.html'` 처럼 하드코딩된 상대경로(pageUrl() 미사용)로
+     링크한다 — 실제 프로덕션에서는 index.html과 이 파일이 같은 폴더(프로젝트 루트)에
+     나란히 있어서 그 링크가 그냥 맞아떨어진다. 이 데모에서는 fo-md가 별도 "형상관리
+     단위" 레포 폴더(fo-md/cb/)로 분리돼 있어서 fo-ap-global/(셸)을 기준으로 한 그
+     상대경로 가정이 깨진다 — 그렇다고 원본 foAppSidebar.js를 이 데모 사정에 맞춰
+     고치는 건 "원본 무수정" 원칙에 어긋나므로, 대신 이 얇은 리다이렉트 스텁을
+     fo-ap-global/ 안에 둔다(2026-08-29, bo-pd-opt-code-mng.html/bo-od-order-*-pop.html
+     때와 같은 종류의 "공유 유틸의 상대경로 가정과 레포 분리 구조가 충돌"하는 문제).
+     쿼리스트링(예: ?mine=1, '내 코바늘 도안' 메뉴용)은 그대로 넘겨준다. */
+  location.replace('fo-md/cb/fo-md-cb-cobanul.html' + location.search + location.hash);
+</script>
+</head>
+<body></body>
+</html>

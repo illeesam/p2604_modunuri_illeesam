@@ -382,6 +382,18 @@
         syncUrl();
       };
 
+      /* 활성 탭 라벨을 브라우저 탭 타이틀에 반영 — 여러 BO 창을 동시에 열어도 브라우저
+         탭 목록에서 화면을 구분할 수 있게 한다(shopjoy_v260406/lib/app/boAppBase.js
+         와 동일 패턴, 2026-08-29 이 데모에 이식). */
+      watch(
+        () => _tabId(activeMenu.value, activeScreenId.value),
+        () => {
+          const tab = openTabs.find((t) => t.id === _tabId(activeMenu.value, activeScreenId.value));
+          document.title = tab ? tab.label + ' - ShopJoy BO' : 'ShopJoy BO';
+        },
+        { immediate: true }
+      );
+
       /* 부팅 시 첫 화면 결정 — URL에 특정 화면이 지정돼 있으면(새로고침·딥링크) 안전하게
          그 대메뉴의 카탈로그 전체를 로드해서 찾고(openTab 의 안전장치), 없으면 그
          대메뉴의 "첫 번째 소그룹 하나만" 로드한다(openGroup) — 나머지 소그룹은 그대로

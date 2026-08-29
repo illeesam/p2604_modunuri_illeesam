@@ -62,7 +62,40 @@
     /* ── Navigation ── */
     const page = ref('home');
     const errorMessage = ref('');
-    watch(page, () => foUtil.fofResetPageMeta());
+
+    /* FO_PAGE_LABELS — 브라우저 탭 타이틀에 쓸 페이지별 한글 라벨(신규, 2026-08-29).
+       원본 foAppBase.js는 상품상세/이벤트상세 등 "opt-in"한 화면만 foUtil.fofSetPageMeta()
+       로 자기 타이틀(상품명 등)을 설정하고, 나머지 화면은 전부 사이트 공통 타이틀로
+       남겨뒀다. 이 데모는 "모든 화면에서 지금 보고 있는 화면이 타이틀에 보이면 좋겠다"는
+       요청에 맞춰 그 나머지 화면들도 전부 커버하는 기본 라벨을 추가했다 — BO 쪽
+       mfeShell.js가 `{tab.label} - ShopJoy BO`를 쓰는 것과 같은 형식(`{label} - ShopJoy`)
+       이다. 상품상세/이벤트상세처럼 이미 자체적으로 더 구체적인 타이틀(상품명 등)을
+       설정하는 화면은 그 화면이 마운트된 뒤 자기 값으로 다시 덮어써서 최종적으로는
+       원본과 동일하게 동작한다 — 이 라벨은 그 전까지(또는 그런 로직이 없는 화면 전체에)
+       쓰이는 기본값이다. */
+    const FO_PAGE_LABELS = {
+      home: '홈', prodList: '상품목록', prodView: '상품상세',
+      cart: '장바구니', order: '주문/결제',
+      myOrder: '주문내역', myClaim: '취소/반품/교환', myCoupon: '쿠폰함',
+      myCache: '적립금/예치금', myContact: '1:1문의', myChatt: '채팅상담',
+      about: '회사소개', contact: '문의하기', faq: '자주묻는질문',
+      blog: '블로그', blogView: '블로그 상세', blogEdit: '블로그 작성',
+      event: '이벤트', eventView: '이벤트 상세',
+      like: '찜한상품', location: '매장위치',
+      dispUi01: '전시UI 샘플1', dispUi02: '전시UI 샘플2', dispUi03: '전시UI 샘플3',
+      dispUi04: '전시UI 샘플4', dispUi05: '전시UI 샘플5', dispUi06: '전시UI 샘플6',
+      sample01: '샘플01', sample02: '샘플02', sample03: '샘플03', sample04: '샘플04',
+      sample05: '샘플05', sample06: '샘플06', sample07: '샘플07',
+      sample11: '샘플11', sample12: '샘플12', sample13: '샘플13', sample14: '샘플14',
+      sample21: '샘플21', sample22: '샘플22', sample23: '샘플23',
+      xsStore: '스토어 개발도구', xsLocalStorage: '로컬스토리지 개발도구',
+      error401: '인증 오류', error404: '페이지 없음', error500: '서버 오류',
+      notFound: '페이지 없음',
+    };
+    watch(page, (id) => {
+      foUtil.fofResetPageMeta();
+      document.title = (FO_PAGE_LABELS[id] || 'ShopJoy') + ' - ShopJoy';
+    }, { immediate: true });
 
     const _fmtXHeaders = window.foAppFunc.fmtXHeaders;
 
