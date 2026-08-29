@@ -1,0 +1,127 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+ * fo-md-module-style.css — 독립 FO 모듈(md/*) 공통 스타일
+ *
+ * 대상: fo-md-cb-cobanul.html(코바늘) / fo-md-sg-sourcegen.html(소스젠) 등 "모듈" 메뉴 아래 화면 전부.
+ * fo-global-style0N.css **다음에** 로드해서 전역 버튼 톤만 모듈용으로 덮어쓴다.
+ *
+ * 왜 별도 파일인가: 모듈 화면들끼리 톤이 같아야 하는데, index.html 쪽 화면까지 바뀌면 안 된다.
+ *   → 모든 규칙을 .cb-page / .sg-page 컨테이너 안으로 한정한다(전역 오염 없음).
+ *
+ * 버튼 위계 (2026-08-24 확정) — 한 화면에 "꽉 찬 색"은 하나만 두는 것이 원칙.
+ *   저장·수정 = 분홍 솔리드   … 그 화면의 주(主) 액션. 가장 눈에 띄어야 한다
+ *   신규       = 검정 솔리드   … 다른 구역(상단)이라 색이 겹쳐도 헷갈리지 않는다
+ *   삭제       = 적색 아웃라인 … 파괴적이지만 주 액션은 아니다. 솔리드로 두면 [수정]과 싸운다
+ *   조회·목록·상세보기·취소 = 흰색 아웃라인 … 중립 이동/보조
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 0) 부팅 로딩 스피너 — 모든 독립 FO 모듈 진입점(fo-md-*.html)이 body 최상단에
+ *   동일하게 두는 #_boot_loading 오버레이. 파일마다 따로 갖고 있던 걸 여기 하나로 모았다
+ *   (2026-08-25, 신규 모듈 추가 시 이 블록은 복사할 필요 없이 fo-md-module-style.css 만 링크하면 됨). ── */
+#_boot_loading { position:fixed; inset:0; z-index:99999;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+#_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+  border:3px solid rgba(255,255,255,0.12); border-top-color:#c9a96e;
+  animation:_bootspin .8s linear infinite; }
+#_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+@keyframes _bootspin { to { transform: rotate(360deg); } }
+#_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+
+/* ── 1) 저장/수정/적용 — 분홍(로즈) 그라데이션 ─────────────────────────────
+ *   "지금 내가 만드는 것을 확정하는" 액션만 분홍. 조회/신규와 색으로 구분된다. */
+.cb-page .btn_save,  .sg-page .btn_save,
+.cb-page .btn_edit,  .sg-page .btn_edit,
+.cb-page .btn_apply, .sg-page .btn_apply {
+  background: linear-gradient(135deg, #f2708f, #e0466c);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(224, 70, 108, 0.22);
+}
+.cb-page .btn_save:hover:not(:disabled),  .sg-page .btn_save:hover:not(:disabled),
+.cb-page .btn_edit:hover:not(:disabled),  .sg-page .btn_edit:hover:not(:disabled),
+.cb-page .btn_apply:hover:not(:disabled), .sg-page .btn_apply:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(224, 70, 108, 0.34);
+}
+/* 다크 테마에서도 분홍 유지 (전역은 다크에서 흰색 계열로 뒤집는데, 모듈은 액센트를 지킨다) */
+[data-theme="dark"] .cb-page .btn_save,  [data-theme="dark"] .sg-page .btn_save,
+[data-theme="dark"] .cb-page .btn_edit,  [data-theme="dark"] .sg-page .btn_edit,
+[data-theme="dark"] .cb-page .btn_apply, [data-theme="dark"] .sg-page .btn_apply {
+  background: linear-gradient(135deg, #f2708f, #e0466c);
+  color: #fff;
+}
+
+/* ── 2) 신규 — 검정 그라데이션(전역 톤 유지) ───────────────────────────────── */
+.cb-page .btn_new, .sg-page .btn_new {
+  background: linear-gradient(135deg, #1a1a1a, #404040);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+}
+.cb-page .btn_new:hover:not(:disabled), .sg-page .btn_new:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+/* ── 3) 조회 / 목록으로 / 상세보기 — 흰색 아웃라인 ─────────────────────────── */
+.cb-page .btn_search, .sg-page .btn_search,
+.cb-page .btn_list,   .sg-page .btn_list,
+.cb-page .btn_detail, .sg-page .btn_detail {
+  background: var(--bg-card, #fff);
+  color: var(--text-primary, #333);
+  border: 1.5px solid var(--border, #e4e7ec);
+  box-shadow: none;
+}
+.cb-page .btn_search:hover:not(:disabled), .sg-page .btn_search:hover:not(:disabled),
+.cb-page .btn_list:hover:not(:disabled),   .sg-page .btn_list:hover:not(:disabled),
+.cb-page .btn_detail:hover:not(:disabled), .sg-page .btn_detail:hover:not(:disabled) {
+  border-color: #e0466c;
+  color: #e0466c;
+  background: rgba(224, 70, 108, 0.06);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .cb-page .btn_search, [data-theme="dark"] .sg-page .btn_search,
+[data-theme="dark"] .cb-page .btn_list,   [data-theme="dark"] .sg-page .btn_list,
+[data-theme="dark"] .cb-page .btn_detail, [data-theme="dark"] .sg-page .btn_detail {
+  background: transparent; color: #e0e0e0; border-color: #4a4a4a;
+}
+
+/* ── 4) 삭제 — 적색 "아웃라인" (솔리드로 두면 옆의 [수정]/[저장]과 시각적으로 충돌) ──
+ *   hover 시에만 채워져서, 파괴적 액션이라는 신호는 유지하면서 평소엔 뒤로 물러난다. */
+.cb-page .btn_delete, .sg-page .btn_delete {
+  background: var(--bg-card, #fff);
+  color: #d9363e;
+  border: 1.5px solid rgba(217, 54, 62, 0.45);
+  box-shadow: none;
+}
+.cb-page .btn_delete:hover:not(:disabled), .sg-page .btn_delete:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff4d4f, #d9363e);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+}
+[data-theme="dark"] .cb-page .btn_delete, [data-theme="dark"] .sg-page .btn_delete {
+  background: transparent; color: #ff7875; border-color: rgba(255, 120, 117, 0.5);
+}
+
+/* ── 5) 취소 — 흰색 아웃라인(전역과 동일 톤, 크기만 모듈 규격) ─────────────── */
+
+/* ── 6) 액션 버튼 컴팩트 규격 — 전역보다 한 단계 작게 ─────────────────────── */
+.cb-page .btn_save,   .sg-page .btn_save,
+.cb-page .btn_edit,   .sg-page .btn_edit,
+.cb-page .btn_new,    .sg-page .btn_new,
+.cb-page .btn_search, .sg-page .btn_search,
+.cb-page .btn_apply,  .sg-page .btn_apply,
+.cb-page .btn_delete, .sg-page .btn_delete,
+.cb-page .btn_list,   .sg-page .btn_list,
+.cb-page .btn_detail, .sg-page .btn_detail,
+.cb-page .btn_reset,  .sg-page .btn_reset,
+.cb-page .btn_cancel, .sg-page .btn_cancel,
+.cb-page .btn_close,  .sg-page .btn_close,
+.cb-page .btn_excel,  .sg-page .btn_excel {
+  padding: 7px 16px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+/* ── 7) 카드 안 [상세보기] 는 폭 100% 라 조금 더 여유롭게 ─────────────────── */
+.cb-page .cb-card-btn, .sg-page .sg-card-btn { padding: 8px 16px; }

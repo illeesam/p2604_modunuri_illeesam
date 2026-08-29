@@ -1,0 +1,1592 @@
+/**
+ * FoAreaComp.js — 사용자(Front Office) 공통 "영역(Area)" 컴포넌트 (검색영역 + 그리드 + 모달)
+ *
+ * ※ 모두 'Fo' prefix / 'fo-' 태그 사용. FoComp.js(개별 위젯)와 짝을 이루는 "영역" 단위 컴포넌트.
+ *   BoAreaComp.js 를 FO 컨텍스트로 이식 — 차이점:
+ *     · 스타일: .bo-table 미존재 → 본 파일 상단에서 .fo-grid-table CSS 를 1회 주입
+ *       (BaseModals.js 가 모달 CSS 를 주입하는 방식과 동일). 색상은 FO CSS 변수
+ *       (--text-primary / --blue / --border / --bg-card …)로 라이트/다크 자동 대응.
+ *     · 모달: FO 의 .modal-overlay / .modal-box CSS 재사용. BO 핑크 헤더 대신
+ *       FO 톤(악센트 컬러)·둥근 테두리.
+ *     · 페이저: FO 는 클라이언트 로컬 데이터가 대부분 → pager 가 BO식
+ *       (pageNo/pageSize/pageTotalCount) 또는 FO식(page/size) 둘 다 호환.
+ *
+ * ─ 제공 컴포넌트 ─────────────────────────────────────────────────────────
+ *
+ * FoSearchArea   — 검색영역 래퍼. 슬롯에 검색필드, [조회][초기화]·Enter 는 컴포넌트 제공.
+ *                  emit: search, reset  (검색조건 변경 즉시조회 금지 정책 준수)
+ *
+ * FoGrid         — 그리드 통합 컴포넌트(조회전용 + 일부 인라인 에디트 + 드래그 + 선택체크)
+ *                  · columns 배열만 넘기면 thead/tbody 자동 렌더
+ *                  · sortState 전달 → 헤더 클릭 정렬
+ *                  · col.edit('text'|'number'|'date'|'select') → 인라인 입력
+ *                  · draggable → 행 드래그 정렬 + reorder emit
+ *                  · selectable → 좌측 체크박스 + 헤더 전체선택
+ *                  · bare=true → card/toolbar/pager 없이 <table> 만 (FO 기본값 true 권장)
+ *                  props: columns, rows, pager, sortState, listTitle, rowKey,
+ *                         rowStyle, rowClass, countText, isExpanded, draggable,
+ *                         showSave, rowActions, bare, selectable, checkedKey,
+ *                         isChecked, allChecked, minWidth, emptyText …
+ *                  emit:  sort(key), row-click(row), cell-click({row,col,colKey,colIndex,rowIndex}),
+ *                         save, row-remove(row), reorder, toggle-check,
+ *                  ※ 페이징은 그리드 외부 <fo-pager> 로만 구현 (내부 페이저 제거됨, set-page/size-change emit 없음)
+ *                  ※ row-click=행 전체 클릭 / cell-click=col.link 셀(제목) 클릭 — 분리됨
+ *                         toggle-check-all
+ *                  슬롯: #toolbar-actions, #head, #head-actions, #cell-{key},
+ *                        #row-actions, #row-expand, #tfoot({rows,colspan})
+ *
+ * FoGridCrud     — CRUD 그리드 (전체 로드 / 행상태 N·I·U·D / 스크롤 컨테이너)
+ *                  xs/Sample 데모류(드래그·체크올·상태뱃지·행추가/삭제) 이식용.
+ *                  rows 는 _row_status·_row_check·_row_org 보유 gridRows
+ *                  emit:  add, save, cancel-checked, delete-checked, reorder,
+ *                         cell-change, update:checkAll, update:focusedIdx, sort
+ *
+ * FoModal        — 공통 모달 껍데기 (FO .modal-overlay / .modal-box 재사용)
+ *                  props: show, title, width, maxWidth, height, maxHeight,
+ *                         zIndex, bodyPad, closeOnBackdrop, teleport,
+ *                         onCloseCb(fn), onConfirmCb(fn)  ← 콜백 함수 직접 전달
+ *                  emit:  close, confirm
+ *                  슬롯: default/#body, #header-extra,
+ *                        #footer (슬롯 prop { confirm, close } 제공)
+ *
+ * ─ columns 배열 스펙 (FoGrid / FoGridCrud 공통) ──────────────────────────
+ *   { key, label, width, align('left'|'center'|'right'),
+ *     badge(true | fn(row)=>className), link(true → row-click),
+ *     sortKey, edit('text'|'number'|'date'|'select'), options, fmt(v,row),
+ *     placeholder, mono, cls, style, noHead }
+ *   특수 셀은 columns 에 두고 <template #cell-{key}="{ row, idx, no }"> override.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* ── FO 그리드 CSS 1회 주입 (BaseModal 패턴) ─────────────────────────────── */
+(function injectFoAreaStyle() {
+  if (document.getElementById('fo-area-comp-style')) return;
+  const css = `
+.fo-grid-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.fo-grid-table thead tr { background:var(--blue-dim); }
+.fo-grid-table thead th {
+  padding:9px 12px; text-align:left; font-weight:700; color:var(--blue);
+  border-bottom:1.5px solid var(--border); white-space:nowrap;
+}
+.fo-grid-table tbody td {
+  padding:8px 12px; color:var(--text-secondary);
+  border-bottom:1px solid var(--border); vertical-align:middle;
+}
+.fo-grid-table tbody tr:nth-child(even) { background:var(--bg-base); }
+.fo-grid-table tbody tr.fo-grid-clickable { cursor:pointer; }
+.fo-grid-table tbody tr.fo-grid-clickable:hover { background:var(--accent-dim); }
+.fo-grid-table tbody tr.fo-grid-selected td { background:rgba(37,99,235,.12); }
+.fo-grid-table tr.fo-grid-selected { outline:2px solid #2563eb; outline-offset:-2px; }
+.fo-grid-table tr.fo-grid-selected:hover td { background:rgba(37,99,235,.18); }
+.fo-grid-table tfoot td { padding:9px 12px; border-top:1.5px solid var(--border); font-weight:700; color:var(--text-primary); }
+.fo-grid-link { color:var(--blue); cursor:pointer; font-weight:600; text-decoration:underline; text-underline-offset:2px; }
+.fo-grid-badge { display:inline-block; padding:1px 8px; border-radius:9px; font-size:0.7rem; font-weight:700; background:var(--accent-dim); color:var(--accent); }
+.fo-grid-badge.b-green  { background:var(--green-dim);  color:var(--green); }
+.fo-grid-badge.b-blue   { background:var(--blue-dim);   color:var(--blue); }
+.fo-grid-badge.b-red    { background:rgba(229,62,62,.12); color:#e53e3e; }
+.fo-grid-badge.b-gray   { background:var(--border);     color:var(--text-muted); }
+.fo-grid-badge.b-orange { background:rgba(221,107,32,.12); color:#dd6b20; }
+.fo-grid-input, .fo-grid-select {
+  width:100%; padding:4px 8px; font-size:0.8rem; box-sizing:border-box;
+  border:1px solid var(--border); border-radius:6px;
+  background:var(--bg-card); color:var(--text-primary); outline:none;
+}
+.fo-grid-input:focus, .fo-grid-select:focus { border-color:var(--accent); }
+.fo-grid-num { text-align:right; }
+.fo-grid-empty { text-align:center; padding:30px; color:var(--text-muted); }
+.fo-grid-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:var(--shadow); }
+.fo-grid-toolbar { display:flex; align-items:center; margin-bottom:12px; }
+.fo-grid-title { font-size:0.92rem; font-weight:800; color:var(--text-primary); }
+.fo-grid-count { font-size:0.78rem; color:var(--text-muted); font-weight:600; margin-left:6px; }
+.fo-grid-drag { color:var(--text-muted); cursor:grab; font-size:1.05rem; user-select:none; text-align:center; }
+.fo-grid-status { display:inline-block; padding:1px 7px; border-radius:8px; font-size:0.66rem; font-weight:700; }
+.fo-grid-status.s-N { background:var(--border); color:var(--text-muted); }
+.fo-grid-status.s-I { background:var(--blue-dim); color:var(--blue); }
+.fo-grid-status.s-U { background:rgba(221,107,32,.12); color:#dd6b20; }
+.fo-grid-status.s-D { background:rgba(229,62,62,.12); color:#e53e3e; }
+.fo-grid-pager { display:flex; gap:6px; justify-content:center; margin-top:18px; flex-wrap:wrap; }
+.fo-grid-pager button {
+  padding:6px 12px; border:1px solid var(--border); border-radius:6px;
+  background:var(--bg-card); color:var(--text-secondary); cursor:pointer;
+  font-size:0.82rem; min-width:34px;
+}
+.fo-grid-pager button.on { background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700; }
+.fo-grid-pager button:disabled { opacity:.4; cursor:not-allowed; }
+.fo-grid-pager-size { padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-card); color:var(--text-secondary); cursor:pointer; font-size:0.82rem; margin-left:6px; }
+.fo-grid-scroll { overflow:auto; }
+.fo-grid-cardview { display:grid; grid-template-columns:repeat(auto-fill,minmax(var(--fo-grid-card-min,220px),1fr)); gap:14px; }
+.fo-grid-card-item { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px; box-shadow:var(--shadow); transition:transform .15s,box-shadow .15s; }
+.fo-grid-card-item.fo-grid-clickable { cursor:pointer; }
+.fo-grid-card-item.fo-grid-clickable:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.1); }
+.fo-grid-cardview .fo-grid-empty { grid-column:1/-1; padding:30px; text-align:center; color:var(--text-muted); }
+.fo-grid-card-default-title { font-weight:700; color:var(--text-primary); margin-bottom:6px; font-size:0.9rem; }
+.fo-grid-card-default-row { display:flex; justify-content:space-between; gap:8px; font-size:0.78rem; padding:2px 0; color:var(--text-secondary); }
+.fo-grid-card-default-row b { color:var(--text-muted); font-weight:600; }
+.fo-modal-box { display:flex; flex-direction:column; text-align:left; }
+.fo-modal-header { display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:18px; }
+.fo-modal-title { font-weight:800; font-size:1rem; color:var(--text-primary); letter-spacing:-0.2px; }
+.fo-modal-close { background:none; border:none; font-size:1.25rem; cursor:pointer; color:var(--text-muted); line-height:1; }
+.fo-modal-footer { flex-shrink:0; display:flex; justify-content:flex-end; gap:8px; padding-top:14px; border-top:1px solid var(--border); margin-top:16px; }
+`;
+  const el = document.createElement('style');
+  el.id = 'fo-area-comp-style';
+  el.textContent = css;
+  document.head.appendChild(el);
+})();
+
+/* ── FoSearchArea ─────────────────────────────────────────────────────────
+ *  검색 영역 표준 컴포넌트(FO). 슬롯 방식 + `:columns` 자동 렌더 모두 지원 (BoSearchArea 와 동등).
+ *
+ *  :columns 자동 렌더 사용 시 — `baseSearchColumns` 배열 정의 후 `:param="searchParam"` 전달:
+ *    [
+ *      { key: 'searchType', type: 'multiCheck',
+ *        options: [{value,label},...], placeholder: '검색대상 전체',
+ *        allLabel: '전체 선택', minWidth: '160px' },
+ *      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+ *      { key: 'cat',    type: 'select', options: () => codes.cats,   nullLabel: '카테고리 전체' },
+ *      { key: 'status', type: 'select', options: () => codes.status, nullLabel: '상태 전체' },
+ *      { key: 'dateRange', type: 'dateRange',
+ *        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
+ *        typeOptions: () => codes.date_types, rangeOptions: () => codes.date_range_opts,
+ *        onRangeChange: fn },
+ *      { label: '추가:', type: 'label' },                // 라벨 텍스트
+ *      { type: 'slot', name: 'extra' },                  // 슬롯 탈출구
+ *    ]
+ *  옵션 함수형(`options: () => codes.x`) 지원 — 코드 지연 로드 대응.
+ *
+ *  columns 없으면 기본 default 슬롯 사용 (기존 화면 호환). */
+/* ============================================================================
+ * FoContainer — FO 화면 영역 표준 래퍼 (BoContainer 의 FO 버전)
+ *   · 한 영역(검색/목록/상세/카드)을 .fo-card 로 감싸고 제목(+건수) 헤더 표준화
+ *   · bare=true 면 카드 없이 슬롯만 (다른 래퍼가 카드 담당 — fo-2col 자식 등)
+ *   props: title(영역 제목), countText(우측 건수), bare, bodyStyle, cardStyle
+ *   slots: default(본문), title(제목 커스텀), top(헤더 위), toolbar-actions(제목 우측 버튼)
+ * ========================================================================== */
+window.FoContainer = {
+  name: 'FoContainer',
+  props: {
+    title:      { type: String, default: '' },   // 영역 제목. 비우면 헤더 영역 미표시
+    countText:  { type: String, default: '' },   // 제목 우측 건수 텍스트(예: '20건')
+    bare:       { type: Boolean, default: false },// true=카드 없이 슬롯만(다른 래퍼가 카드 담당)
+    bodyStyle:  { type: String, default: '' },    // 본문 인라인 style
+    cardStyle:  { type: String, default: '' },    // .fo-card 인라인 style(grid-column 등)
+  },
+  template: `
+<div :class="bare ? '' : 'fo-card'" :style="cardStyle">
+  <slot name="top"></slot>
+  <div v-if="title || $slots['toolbar-actions'] || $slots.title" class="fo-area-head">
+    <span class="fo-area-title">
+      <slot name="title">{{ title }}</slot>
+      <span v-if="countText" class="fo-area-count">{{ countText }}</span>
+    </span>
+    <div v-if="$slots['toolbar-actions']" style="display:flex;gap:6px;align-items:center;">
+      <slot name="toolbar-actions"></slot>
+    </div>
+  </div>
+  <div :style="bodyStyle">
+    <slot></slot>
+  </div>
+</div>`,
+};
+
+/* ============================================================================
+ * FoPage — FO 화면 최상단 래퍼 (BoPage 의 FO 버전)
+ *   · <div class="page-wrap"> + 풀블리드 배너(page-banner-full) 반복 통일
+ *   · bannerImg 주면 이미지 배너 자동 렌더(eyebrow/title/breadcrumb)
+ *   · 화면 본문 전체를 default 슬롯으로 감쌈(종료 태그는 화면 맨 아래)
+ *   props:
+ *     title       화면 제목(배너 큰 글씨)
+ *     eyebrow     배너 상단 작은 영문 라벨(예: 'Shopping')
+ *     bannerImg   배너 배경 이미지 경로. 없으면 배너 미표시(page-wrap 만)
+ *     bannerAlign 이미지 object-position(기본 'center 50%')
+ *     crumbs      브레드크럼 배열 [{label, page?}] — page 있으면 클릭 이동
+ *     wrapClass   page-wrap 대체/추가 클래스(기본 'page-wrap')
+ *     bare        true=page-wrap 없이 슬롯만(레이아웃 자체 관리 화면)
+ *   slots: default(본문), banner(배너 통째 커스텀), title(제목 커스텀)
+ *   emits: nav(crumb page 클릭 시 page 전달) — 화면에서 navigate 연결
+ * ========================================================================== */
+window.FoPage = {
+  name: 'FoPage',
+  props: {
+    title:       { type: String, default: '' },    // 화면 제목(배너 큰 글씨)
+    eyebrow:     { type: String, default: '' },     // 배너 상단 작은 영문 라벨
+    bannerImg:   { type: String, default: '' },     // 배너 배경 이미지(없으면 배너 미표시)
+    bannerAlign: { type: String, default: 'center 50%' }, // 이미지 object-position
+    crumbs:      { type: Array,  default: () => [] },// 브레드크럼 [{label, page?}]
+    wrapClass:   { type: String, default: 'page-wrap' },  // 래퍼 클래스
+    bare:        { type: Boolean, default: false }, // true=page-wrap 없이 슬롯만
+    /* 배너 상단 PDF/공유/링크 버튼 — foAppHeader.js 설정 드롭다운에 동일 기능(현재 화면 전체 캡처)이
+       이미 있어 중복이라 기본 off 로 전환(2026-08-23). 화면별로 필요하면 개별 :show-xxx="true" 로 opt-in. */
+    showPdf:     { type: Boolean, default: false }, // 우측 상단 [PDF] 버튼
+    showShare:   { type: Boolean, default: false }, // 우측 상단 [카카오톡 공유] 버튼
+    showLink:    { type: Boolean, default: false }, // 우측 상단 [🔗 링크 공유(URL만)] 버튼
+    shareQuery:  { type: Object, default: null },   // 공유 URL에 함께 실을 검색조건 — 없으면 현재 URL 그대로
+  },
+  emits: ['nav'],
+  setup(props) {
+    const pdfAreaRef = Vue.ref(null);
+    const pdfExporting = Vue.ref(false);
+    /* fnBuildShareUrl — 현재 URL + shareQuery(검색조건)를 쿼리스트링으로 합쳐 공유 링크 생성 */
+    const fnBuildShareUrl = () => {
+      const qs = new URLSearchParams(window.location.search);
+      if (props.shareQuery) {
+        Object.keys(props.shareQuery).forEach((k) => {
+          const v = props.shareQuery[k];
+          if (v !== null && v !== undefined && v !== '') qs.set(k, v);
+          else qs.delete(k);
+        });
+      }
+      const qsStr = qs.toString();
+      return `${window.location.origin}${window.location.pathname}${qsStr ? '?' + qsStr : ''}`;
+    };
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename((props.title || '화면') + '.pdf');
+        const curUser = (window.sfGetFoAuthUser ? window.sfGetFoAuthUser() : null) || {};
+        await coUtil.cofExportPdf(pdfAreaRef.value, filename, window.foApp?.showToast, curUser);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+    /* handleShareKakao — 현재 FO 화면 URL을 카카오톡으로 공유(피드 템플릿) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: (props.title || 'ShopJoy') + ' - ShopJoy',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnBuildShareUrl(),
+        });
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnBuildShareUrl());
+        window.foApp?.showToast?.('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        window.foApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    return { pdfAreaRef, pdfExporting, handleExportPdf, handleShareKakao, handleCopyLink };
+  },
+  template: `
+<div :class="bare ? '' : wrapClass" ref="pdfAreaRef">
+  <div v-if="showPdf || showShare || showLink" class="fo-page-utilbar">
+    <button v-if="showLink" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="showShare" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button v-if="showPdf" class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </div>
+  <!-- ===== 페이지 타이틀 배너 ===== -->
+  <slot name="banner">
+    <div v-if="bannerImg" class="fo-page-banner">
+      <img :src="bannerImg" :alt="title" class="fo-page-banner-img" :style="'object-position:' + bannerAlign + ';'" />
+      <div class="fo-page-banner-dim"></div>
+      <div class="fo-page-banner-body">
+        <div v-if="eyebrow" class="fo-page-eyebrow">{{ eyebrow }}</div>
+        <h1 class="fo-page-h1"><slot name="title">{{ title }}</slot></h1>
+        <div v-if="crumbs.length" class="fo-page-crumbs">
+          <template v-for="(c, i) in crumbs" :key="i">
+            <span v-if="i > 0" class="fo-page-crumb-sep">/</span>
+            <span :class="c.page ? 'fo-page-crumb-link' : 'fo-page-crumb-cur'"
+              @click="c.page ? $emit('nav', c.page) : null">{{ c.label }}</span>
+          </template>
+        </div>
+      </div>
+    </div>
+  </slot>
+  <!-- 화면 본문 -->
+  <slot></slot>
+</div>`,
+};
+
+window.FoSearchArea = {
+  name: 'FoSearchArea',
+  props: {
+    columns:     { type: Array,   default: null },   // 자동 렌더용 필드 정의
+    param:       { type: Object,  default: null },   // searchParam reactive (columns 사용 시)
+    showActions: { type: Boolean, default: true },  // [조회][초기화] 버튼 노출
+    searchLabel: { type: String,  default: '조회' },
+    resetLabel:  { type: String,  default: '초기화' },
+    loading:     { type: Boolean, default: false },
+    barStyle:    { type: String,  default: '' },     // 검색바 인라인 style 보존용
+  },
+  emits: ['search', 'reset'],
+  setup(props, { emit }) {
+    const U = window._foAreaCompUtil;
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
+    /* ── ▼ search 영역 (검색바 전체) ─────────────────────────────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoSearchArea : handleBtnAction -> ', cmd, param);
+      if (cmd === 'search-emit') {
+        if (!props.loading) return emit('search');
+      } else if (cmd === 'search-reset') {
+        return emit('reset');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoSearchArea : handleSelectAction -> ', cmd, param);
+      if (cmd === 'field-select-change') {
+        return param.col && param.col.onChange ? param.col.onChange(param.event) : null;
+      } else if (cmd === 'field-range-change') {
+        return param.col && param.col.onRangeChange ? param.col.onRangeChange(param.event) : null;
+      } else if (cmd === 'field-pick-open') {
+        return param.col.onOpen(param.target);
+      } else if (cmd === 'field-pick-clear') {
+        return param.col.onClear(param.target);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    const normOpts = (opts) => U.normOptions(opts);
+    /* col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원 */
+    const po = (col) => col.paramObj || props.param;
+    /* 속성값 && 금지 정책상 v-if 가드는 computed/fn 로 분리 */
+    const cfAutoMode  = Vue.computed(() => !!(props.columns && props.param));
+    const fnHasRange1 = (col) => !!(col.rangeFirst && col.rangeOptions);
+    const fnHasRange2 = (col) => !!(!col.rangeFirst && col.rangeOptions);
+    return { U, normOpts, po, cfAutoMode, fnHasRange1, fnHasRange2,
+             handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<div :style="'display:flex;flex-wrap:wrap;gap:10px;align-items:center;'+barStyle" @keyup.enter="handleBtnAction('search-emit')">
+  <!-- ▼ search 영역 -->
+  <template v-if="cfAutoMode">
+    <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
+      <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시)
+           ⚠ dateRange + typeKey 는 라벨 생략 — BoSearchArea 와 동일 규칙.
+              기간유형 select 가 필드명을 이미 표시해 좌측 라벨과 중복된다. -->
+      <label v-if="col.label ? (col.type!=='label' ? (col.type!=='slot' ? !(col.type==='dateRange' ? !!col.typeKey : false) : false) : false) : false" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
+      {{ col.label }}
+    </label>
+    <!-- 라벨 텍스트 -->
+    <label v-if="col.type==='label'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
+      {{ col.label }}
+    </label>
+    <!-- 슬롯 탈출구 -->
+    <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'">
+    </slot>
+    <!-- picker 박스 (input readonly + 버튼) -->
+    <template v-else-if="col.type==='pick'">
+      <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
+          readonly :placeholder="col.placeholder || '선택'"
+          :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
+          @click="handleSelectAction('field-pick-open', { col, target: po(col) })" />
+      <button class="btn-outline btn-sm" @click="handleSelectAction('field-pick-open', { col, target: po(col) })">
+        {{ col.openLabel || '검색' }}
+      </button>
+      <button v-if="po(col)[col.key]" class="btn-outline btn-sm" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })">
+        ✕
+      </button>
+    </template>
+    <!-- 다중선택 -->
+    <bo-multi-check-select v-else-if="col.type==='multiCheck'"
+        v-model="po(col)[col.key]" :options="col.options"
+        :placeholder="col.placeholder || '전체'" :all-label="col.allLabel || '전체 선택'"
+        :min-width="col.minWidth || '160px'" />
+    <!-- 텍스트 입력 -->
+    <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
+        :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
+        @keyup.enter="handleBtnAction('search-emit')" />
+    <!-- select -->
+    <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
+        @change="handleSelectAction('field-select-change', { col, event: $event })">
+      <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
+      <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+    </select>
+    <!-- 단일 날짜 -->
+    <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" />
+    <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
+    <template v-else-if="col.type==='dateRange'">
+      <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
+        <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
+      </select>
+      <select v-if="fnHasRange1(col)" v-model="po(col)[col.key]"
+          @change="handleSelectAction('field-range-change', { col, event: $event })"
+          :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
+        <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
+        <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+      <input type="date" v-model="po(col)[col.startKey || 'dateRangeStart']"
+          :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
+      <span :style="col.sepStyle || ''">
+        ~
+      </span>
+      <input type="date" v-model="po(col)[col.endKey || 'dateRangeEnd']"
+          :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
+      <select v-if="fnHasRange2(col)" v-model="po(col)[col.key]"
+          @change="handleSelectAction('field-range-change', { col, event: $event })">
+        <option value="">옵션선택</option>
+        <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
+      </select>
+    </template>
+  </template>
+</template>
+<slot>
+</slot>
+<div v-if="showActions" style="display:flex;gap:6px;margin-left:auto;">
+  <slot name="actions-before">
+  </slot>
+  <button class="btn_search" :disabled="loading" @click="handleBtnAction('search-emit')">
+    {{ searchLabel }}
+  </button>
+  <button class="btn_reset" @click="handleBtnAction('search-reset')">
+    {{ resetLabel }}
+  </button>
+  <slot name="actions-after">
+  </slot>
+</div>
+</div>
+`,
+};
+
+/* ── 공통 헬퍼 (그리드 공유) ────────────────────────────────────────────── */
+window._foAreaCompUtil = {
+  normOptions(opts) {
+    // 함수형 options 지원 (codes 지연 로드 대응)
+    const arr = (typeof opts === 'function') ? opts() : opts;
+    return (arr || []).map(o => ({
+      value: o.value != null ? o.value : o.codeValue,
+      label: o.label != null ? o.label : o.codeLabel,
+    }));
+  },
+  cellText(col, row) {
+    const v = row ? row[col.key] : undefined;
+    if (typeof col.fmt === 'function') return col.fmt(v, row);
+    if (v == null) return '';
+    return v;
+  },
+  badgeClass(col, row) {
+    if (typeof col.badge === 'function') return col.badge(row);
+    if (window.coUtil && typeof coUtil.fnCodeBadge === 'function' && col.codeGrp) {
+      return coUtil.fnCodeBadge(col.codeGrp, row[col.key]);
+    }
+    return 'b-gray';
+  },
+  /* autoAlign — align 미지정 컬럼 자동 정렬(전체공통): 돈=우측, 코드성=가운데, 그 외 좌측('')
+     명시 col.align 우선. 편집/슬롯 셀은 적용 제외. */
+  autoAlign(col) {
+    if (col.align) return col.align;
+    if (col.edit || col.type === 'slot') return '';
+    const k = String(col.key || '').toLowerCase();
+    const l = String(col.label || '');
+    // 조회수/히트수 집계 카운트는 코드성보다 먼저 가운데(돈 cnt 오탐 회피)
+    if (/viewcnt|hitcnt|viewcount|readcnt/.test(k) || /조회수|방문수|클릭수/.test(l)) {
+      return 'center';
+    }
+    // 돈/수량/율 → 우측. 토큰 단어경계 매칭(부분일치 오탐 방지 — 예: 'discnt'의 'cnt'가 count 오탐).
+    const MONEY = ['amt', 'price', 'balance', 'fee', 'qty', 'cnt', 'count', 'rate', 'cost', 'stock', 'point', 'sum', 'total', 'value'];
+    const moneyKey = MONEY.some(t => new RegExp('(^|_)' + t + '(_|$)|' + t + '$').test(k));
+    if (moneyKey
+      || /금액|가격|잔액|배송비|할인값|할인가|수량|개수|건수|단가|합계|총액|포인트|적립금|충전금|재고|\(원\)|원\)$|율$/.test(l)) {
+      return 'right';
+    }
+    if (/(^|_)(cd|code|status|type|yn|flag|state|target)$/.test(k) || /cd$|status$|yn$|type$|typecd|statuscd|targetcd|target$/.test(k)
+      || /date$|regdate|moddate|period/.test(k)
+      || /^상태$|^유형$|^구분$|여부|^코드$|^등급$|^타입$|^단계$|일$|일시$|기간|등록일|수정일|작성일|시작일|종료일|^대상$|적용대상|대상$|^방식$|^방법$|^분류$|^레벨$|유형$/.test(l)) {
+      return 'center';
+    }
+    // 이름/제목성(명/제목/title/name) → 좌측 (가독성)
+    if (/(nm|name|title|label)$/.test(k) || /명$|제목|이름|타이틀/.test(l)) {
+      return '';
+    }
+    return '';
+  },
+  thStyle(col) {
+    if (col.style) return col.style;            // 원본 인라인 스타일 우선
+    let s = 'text-align:center;';
+    if (col.width) s += 'width:' + col.width + ';';
+    return s;
+  },
+  tdStyle(col, row) {
+    let s = '';
+    const al = this.autoAlign(col);
+    if (al) s += 'text-align:' + al + ';';
+    if (col.mono)  s += 'font-family:monospace;';
+    // 링크 셀(col.link)만 손가락 커서 — 행 전체 cursor:pointer 폐지(링크 있는 셀만 클릭 가능 표시)
+    if (col.link) s += 'cursor:pointer;';
+    // 모든 셀 기본 한 줄 말줄임(...). 편집/슬롯 셀은 col.noEllipsis 로 끌 수 있음.
+    if (!col.noEllipsis && !col.edit) {
+      s += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    }
+    // AG-Grid 식 cellStyle: 문자열 또는 (value,row)=>string. 미지정 시 기존 동작 동일
+    if (col.cellStyle != null) {
+      const ext = (typeof col.cellStyle === 'function')
+        ? col.cellStyle(row ? row[col.key] : undefined, row)
+        : col.cellStyle;
+      if (ext) s += (s && !s.endsWith(';') ? ';' : '') + ext;
+    }
+    return s;
+  },
+  /* AG-Grid 식 cellClass: 문자열 또는 (value,row)=>string. 미지정 시 '' */
+  cellClass(col, row) {
+    if (col.cellClass == null) return '';
+    return (typeof col.cellClass === 'function')
+      ? (col.cellClass(row ? row[col.key] : undefined, row) || '')
+      : col.cellClass;
+  },
+  /* AG-Grid 식 tooltipValueGetter 대응: cellTitle — true(=cellText) | string | (v,row)=>string */
+  cellTitle(col, row) {
+    // 기본: 셀 텍스트를 title 로 노출 (말줄임된 내용 hover 시 전체 표시).
+    if (col.cellTitle === false) return null;
+    if (col.cellTitle == null || col.cellTitle === true) {
+      const t = this.cellText(col, row);
+      return (t == null || t === '') ? null : String(t);
+    }
+    if (typeof col.cellTitle === 'function') {
+      const v = col.cellTitle(row ? row[col.key] : undefined, row);
+      return v == null ? null : String(v);
+    }
+    return String(col.cellTitle);
+  },
+  /* inner span 래퍼용 — 박스형 인라인 배지 (BoGrid와 동등) */
+  cellInnerStyle(col, row) {
+    if (col.cellInnerStyle == null) return null;
+    const v = (typeof col.cellInnerStyle === 'function')
+      ? col.cellInnerStyle(row ? row[col.key] : undefined, row)
+      : col.cellInnerStyle;
+    return v == null ? null : String(v);
+  },
+  cellInnerClass(col, row) {
+    if (col.cellInnerClass == null) return null;
+    const v = (typeof col.cellInnerClass === 'function')
+      ? col.cellInnerClass(row ? row[col.key] : undefined, row)
+      : col.cellInnerClass;
+    return v == null ? null : String(v);
+  },
+  /* 페이저 호환 — BO식(pageNo/pageSize/pageTotalCount) / FO식(page/size) 모두 수용 */
+  pgNo(p)    { return p ? (p.pageNo != null ? p.pageNo : (p.page != null ? p.page : 1)) : 1; },
+  pgSize(p)  { return p ? (p.pageSize != null ? p.pageSize : (p.size != null ? p.size : 20)) : 20; },
+  pgTotal(p, rowsLen) {
+    if (!p) return rowsLen;
+    if (p.pageTotalCount != null) return p.pageTotalCount;
+    if (p.total != null) return p.total;
+    return rowsLen;
+  },
+  pgSetNo(p, n) { if (!p) return; if (p.pageNo != null) p.pageNo = n; else p.page = n; },
+};
+
+/* ── FoGrid — 그리드 통합 ──────────────────────────────────────────────── */
+window.FoGrid = {
+  name: 'FoGrid',
+  props: {
+    columns:    { type: Array,  required: true },
+    rows:       { type: Array,  default: () => [] },
+    pager:      { type: Object, default: null },
+    sortState:  { type: Object, default: null },
+    listTitle:  { type: String, default: '목록' },
+    rowKey:     { type: String, default: null },
+    rowStyle:   { type: Function, default: null },
+    rowClass:   { type: Function, default: null },
+    countText:  { type: String,  default: null },
+    isExpanded: { type: Function, default: null },
+    draggable:  { type: Boolean, default: false },
+    showSave:   { type: Boolean, default: false },
+    saveLabel:  { type: String,  default: '저장' },
+    rowActions: { type: Boolean, default: false },
+    loading:    { type: Boolean, default: false },   // 조회 중: 툴바 '⏳ 조회 중…' + 기존 행 위 오버레이 + 빈 목록 문구 전환
+    emptyText:  { type: String, default: '데이터가 없습니다.' },
+    bare:       { type: Boolean, default: false },   // true=card/toolbar/pager 없이 <table>만
+    minWidth:   { type: String,  default: '' },      // 가로 스크롤용 table min-width
+    tableMaxHeight: { type: String, default: null }, // 테이블 영역 최대 높이(예: '46vh'). 주면 자체 스크롤 컨테이너
+    showRowNo:  { type: Boolean, default: true },    // 번호 컬럼 (FO 정적 테이블은 끌 수 있음)
+    rowClick:   { type: Function, default: null },   // 전체 행 클릭 핸들러(picker 등). 지정 시 tr 클릭→호출
+    selectable: { type: Boolean, default: false },
+    checkedKey: { type: String,  default: null },
+    isChecked:  { type: Function, default: null },
+    allChecked: { type: Boolean, default: false },
+    layout:       { type: String, default: 'table' },  // 'table'(기본) | 'card' — 카드형식 목록
+    cardMinWidth: { type: String, default: '220px' },  // 카드 최소 폭(auto-fill 반응형 그리드)
+    cardClass:    { type: String, default: '' },       // 카드 1장 wrapper 클래스 교체(page 가 자체 카드 CSS 를 이미 갖고 있을 때).
+                                                           // 지정 시 기본 .fo-grid-card-item 대신 이 클래스만 붙는다(레이아웃 원본 존중).
+    rowActionsCols: { type: Array, default: null },    // [{ label, cls, style, title: 문자열|(row,idx)=>값,
+                                                         //    onClick(row,idx), href(row,idx), target, visible(row,idx), disabled(row,idx) }]
+                                                         // 주면 #row-actions 기본 콘텐츠로 버튼 자동 렌더(그 화면이 직접
+                                                         // #row-actions 템플릿을 주면 그쪽이 항상 우선 — 슬롯 오버라이드 그대로).
+  },
+  emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder',
+          'toggle-check', 'toggle-check-all'],
+  setup(props, { emit, slots }) {
+    const U = window._foAreaCompUtil;
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
+    const cfTotal = Vue.computed(() => U.pgTotal(props.pager, props.rows.length));
+    const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
+    const dragSrc = Vue.ref(null);
+    /* cfActionsColDef — columns 배열 안에 { type:'actions', actions:[...] } 항목으로 행액션을 같이 선언한 경우 그 항목.
+       rowActions/rowActionsCols prop 을 별도로 안 줘도 columns 하나로 정의 가능(2026-08-25).
+       column.visible: ()=>bool 을 주면(행별이 아니라 컬럼 전체 노출 여부) 그 값도 반영. */
+    const cfActionsColDef = Vue.computed(() => {
+      const c = props.columns.find(c => c.type === 'actions');
+      if (!c) return null;
+      if (typeof c.visible === 'function' && !c.visible()) return null;
+      return c;
+    });
+    /* cfEffectiveCols — columns 에서 { type:'actions' } 항목 제외(데이터 컬럼 아님) */
+    const cfEffectiveCols = Vue.computed(() => props.columns.filter(col => col.type !== 'actions'));
+    const cfColspan = Vue.computed(() => cfEffectiveCols.value.length
+      + (props.showRowNo ? 1 : 0)
+      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + ((props.rowActions || cfActionsColDef.value) ? 1 : 0));
+    const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
+
+    /* ── ▼ 좌/우 고정(pin) — 번호 항상 좌측 고정, 관리(rowActions) 항상 우측 고정.
+       BoGrid 의 pinLeftStyle/pinRightStyle 을 FO 용으로 단순화(선택행 강조 없음)해 이식.
+       가로스크롤 없는 그리드는 시각적 변화 없어 안전하다. ── */
+    const cfPinDragLeft = Vue.computed(() => (props.selectable ? 34 : 0));
+    const cfPinNoLeft   = Vue.computed(() => cfPinDragLeft.value + (props.draggable ? 26 : 0));
+    /* th(헤더)는 배경을 여기서 주지 않는다 — .fo-grid-table thead th CSS 가 이미 th 자체에 직접
+       칠하므로 고정 헤더도 자연히 같은 색이 된다(인라인로 덮으면 고정 컬럼만 색이 달라짐).
+       반면 td(데이터 행)는 position:sticky 가 걸리면 부모 tr 의 배경(줄무늬)을 물려받지 못해
+       기본적으로 투명해진다 — 가로 스크롤 중 뒤에 있는(스크롤되는) 다른 컬럼 내용이 그 투명한
+       고정 셀을 통해 겹쳐 보이는 원인이 된다. td 는 반드시 fnPinBg() 로 불투명 배경을 직접 칠한다. */
+    const pinLeftStyle = (px, z, edge) => {
+      let st = 'position:sticky;left:' + px + 'px;z-index:' + z + ';';
+      if (edge) st += 'box-shadow:2px 0 4px rgba(0,0,0,.08);';
+      return st;
+    };
+    const pinRightStyle = (z, edge) => {
+      let st = 'position:sticky;right:0;z-index:' + z + ';';
+      if (edge) st += 'box-shadow:-2px 0 4px rgba(0,0,0,.08);';
+      return st;
+    };
+    const fnPinBg = (row, idx) => {
+      const rs = (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : '') || '';
+      const m = rs.match(/background:\s*([^;]+)/);
+      if (m) return m[1].trim();
+      return idx % 2 === 1 ? 'var(--grid-td-bg-alt)' : 'var(--grid-td-bg)';
+    };
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGrid : handleBtnAction -> ', cmd, param);
+      if (cmd === 'toolbar-save') {
+        return emit('save');
+      } else if (cmd === 'grid-toggle-check-all') {
+        return emit('toggle-check-all');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGrid : handleSelectAction -> ', cmd, param);
+      if (cmd === 'sort-toggle') {
+        /* 헤더 자체가 액션인 컬럼(전체선택 토글 등) — 정렬보다 우선한다 */
+        if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
+        if (param.col.sortKey) return emit('sort', param.col.sortKey);
+      } else if (cmd === 'grid-row-click') {
+        if (typeof props.rowClick === 'function') props.rowClick(param.row);
+        return emit('row-click', param.row);
+      } else if (cmd === 'grid-cell-click') {
+        // picker(rowClick prop) 는 셀 클릭으로 호출 — 행 아무 셀이나 선택
+        if (typeof props.rowClick === 'function') props.rowClick(param.row);
+        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
+      } else if (cmd === 'grid-row-remove') {
+        return emit('row-remove', param.row);
+      } else if (cmd === 'grid-row-toggle-check') {
+        const val = param.row[props.checkedKey || props.rowKey];
+        return emit('toggle-check', val);
+      } else if (cmd === 'grid-row-drag-start') {
+        if (props.draggable) dragSrc.value = param.idx;
+      } else if (cmd === 'grid-row-drag-over') {
+        if (!props.draggable || dragSrc.value === null || dragSrc.value === param.idx) return;
+        param.event.preventDefault();
+        const moved = props.rows.splice(dragSrc.value, 1)[0];
+        props.rows.splice(param.idx, 0, moved);
+        dragSrc.value = param.idx;
+      } else if (cmd === 'grid-row-drag-end') {
+        if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); }
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ── ▼ 내장 유틸 함수 ─────────────────────────────────────────────────── */
+    const rowNo = (idx) => props.pager
+      ? (U.pgNo(props.pager) - 1) * U.pgSize(props.pager) + idx + 1
+      : idx + 1;
+
+    const sortIcon = (col) => {
+      const st = props.sortState;
+      if (!col.sortKey || !st) return '';
+      if (st.sortKey !== col.sortKey) return '⇅';
+      return st.sortDir === 'asc' ? '↑' : '↓';
+    };
+    const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
+
+    const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : '');
+    const fnRowClass = (row, idx) => {
+      const base = typeof props.rowClass === 'function' ? (props.rowClass(row, idx) || '') : '';
+      return base + (props.rowClick ? ' fo-grid-clickable' : '');
+    };
+    const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
+
+    const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
+    const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
+
+    /* rowActionsCols 항목 헬퍼 — label/cls/style/title 은 문자열 또는 (row,idx)=>값 함수 둘 다 허용.
+       실사용 34곳을 조사해 보니 정적 문자열만으론 안 되는 경우(토글 라벨/동적 클래스)가 있었다. */
+    const fnRowActionVal = (v, row, idx) => (typeof v === 'function' ? v(row, idx) : v);
+    /* fnRowActionVisible — 없으면 항상 표시(true) */
+    const fnRowActionVisible = (a, row, idx) => (typeof a.visible === 'function' ? !!a.visible(row, idx) : true);
+    /* fnRowActionDisabled — 없으면 항상 활성(false). visible(숨김)과 별개 — CmDashboardItemMng 처럼
+       "보이되 잠금" 상태(cfDtlMode 등)를 표현하려고 둘을 분리했다. */
+    const fnRowActionDisabled = (a, row, idx) => (typeof a.disabled === 'function' ? !!a.disabled(row, idx) : false);
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+    /* cfEffectiveRowActions / cfEffectiveRowActionsCols — rowActions/rowActionsCols prop 을 직접 안 줬어도
+       columns 안의 { type:'actions', actions:[...] } 항목이 있으면 그걸로 갈음(아래 return 에서 동명 prop 을 shadow). */
+    const cfEffectiveRowActions = Vue.computed(() => props.rowActions || !!cfActionsColDef.value);
+    const cfEffectiveRowActionsCols = Vue.computed(() => props.rowActionsCols || (cfActionsColDef.value && cfActionsColDef.value.actions) || null);
+
+    return { fnRowActionVal, fnRowActionVisible, fnRowActionDisabled, fnColLabel, fnColNm, U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
+             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
+             cfTableStyle, fnRowChecked,
+             cfPinDragLeft, cfPinNoLeft, pinLeftStyle, pinRightStyle, fnPinBg,
+             handleBtnAction, handleSelectAction,
+             columns: cfEffectiveCols, rowActions: cfEffectiveRowActions, rowActionsCols: cfEffectiveRowActionsCols };
+  },
+  template: /* html */`
+<div :class="bare ? '' : 'fo-grid-card'">
+  <div v-if="!bare" class="fo-grid-toolbar">
+    <span class="fo-grid-title">
+      {{ listTitle }}
+      <span class="fo-grid-count">
+        {{ countText != null ? countText : ('총 ' + cfTotal + '건') }}
+      </span>
+      <span v-if="loading" style="margin-left:8px;font-size:12px;color:var(--accent);font-weight:400;">⏳ 조회 중…</span>
+    </span>
+    <div style="margin-left:auto;display:flex;gap:6px;">
+      <slot name="toolbar-actions">
+      </slot>
+      <button v-if="showSave" class="btn-blue btn-sm" @click="handleBtnAction('toolbar-save')">
+        {{ saveLabel }}
+      </button>
+    </div>
+  </div>
+  <div v-if="layout==='table'" class="fo-grid-scroll" :style="tableMaxHeight ? ('position:relative;max-height:' + tableMaxHeight + ';overflow:auto;') : 'position:relative;'">
+    <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
+    <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
+      <span style="font-size:13px;color:var(--accent);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
+    </div>
+    <table class="fo-grid-table" :style="cfTableStyle">
+      <thead>
+        <tr>
+          <th v-if="selectable" :style="'width:34px;text-align:center;' + pinLeftStyle(0, 6)">
+            <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
+          </th>
+          <th v-if="draggable" :style="'width:26px;' + pinLeftStyle(cfPinDragLeft, 6)">
+          </th>
+          <th v-if="showRowNo" :style="'width:40px;text-align:center;' + pinLeftStyle(cfPinNoLeft, 6, true)">
+            번호
+          </th>
+          <slot name="head">
+            <th v-for="col in columns" :key="col.key" :class="col.cls"
+              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
+              @click="handleSelectAction('sort-toggle', { col })">
+              {{ col.noHead ? '' : col.label }}
+              <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
+              <span v-if="col.sortKey"
+                :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
+                {{ sortIcon(col) }}
+              </span>
+            </th>
+          </slot>
+          <th v-if="rowActions || $slots['head-actions']" :style="'width:44px;text-align:center;' + pinRightStyle(6, true)">
+            <slot name="head-actions">
+              관리
+            </slot>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- ▼ grid-row 영역 -->
+        <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
+          <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
+            :draggable="draggable"
+            @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
+            @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
+            @dragend="handleSelectAction('grid-row-drag-end')">
+            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4) + 'background:' + fnPinBg(row, idx) + ';'" @click.stop>
+              <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
+            </td>
+            <td v-if="draggable" class="fo-grid-drag" :style="pinLeftStyle(cfPinDragLeft, 4) + 'background:' + fnPinBg(row, idx) + ';'">
+              ≡
+            </td>
+            <td v-if="showRowNo" :style="'text-align:center;color:var(--text-muted);font-size:0.74rem;' + pinLeftStyle(cfPinNoLeft, 4, true) + 'background:' + fnPinBg(row, idx) + ';'"
+              @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__' }, ci: -1, idx })">
+              {{ rowNo(idx) }}
+            </td>
+            <template v-for="(col, ci) in columns" :key="col.key">
+              <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
+                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                  @click="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
+                  <input v-if="col.edit==='text'" class="fo-grid-input" v-model="row[col.key]"
+                    :placeholder="col.placeholder" />
+                  <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
+                    v-model.number="row[col.key]" />
+                  <input v-else-if="col.edit==='date'" type="date" class="fo-grid-input"
+                    v-model="row[col.key]" />
+                  <select v-else-if="col.edit==='select'" class="fo-grid-select" v-model="row[col.key]">
+                    <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+                  </select>
+                  <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
+                    {{ U.cellText(col, row) }}
+                  </span>
+                  <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">
+                    {{ U.cellText(col, row) }}
+                  </span>
+                  <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
+                    :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
+                    {{ U.cellText(col, row) }}
+                  </span>
+                  <template v-else>
+                    {{ U.cellText(col, row) }}
+                  </template>
+                </td>
+              </slot>
+            </template>
+            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true) + 'background:' + fnPinBg(row, idx) + ';'">
+              <slot name="row-actions" :row="row" :idx="idx">
+                <template v-if="rowActionsCols">
+                  <template v-for="(a, ai) in rowActionsCols" :key="ai">
+                    <a v-if="a.href && fnRowActionVisible(a, row, idx)" :href="a.href(row, idx)" :target="a.target || '_blank'" rel="noopener"
+                      :class="fnRowActionVal(a.cls, row, idx)" :style="fnRowActionVal(a.style, row, idx)" :title="fnRowActionVal(a.title, row, idx)">{{ fnRowActionVal(a.label, row, idx) }}</a>
+                    <button v-else-if="fnRowActionVisible(a, row, idx)" type="button" :disabled="fnRowActionDisabled(a, row, idx)"
+                      :class="fnRowActionVal(a.cls, row, idx)" :style="fnRowActionVal(a.style, row, idx)" :title="fnRowActionVal(a.title, row, idx)"
+                      @click="a.onClick && a.onClick(row, idx)">{{ fnRowActionVal(a.label, row, idx) }}</button>
+                  </template>
+                </template>
+                <button v-else class="btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
+                  ✕
+                </button>
+              </slot>
+            </td>
+            <slot v-else name="row-actions" :row="row" :idx="idx">
+            </slot>
+          </tr>
+          <tr v-if="fnIsExpanded(row, idx)" class="fo-grid-expand-row">
+            <slot name="row-expand" :row="row" :idx="idx" :colspan="cfColspan">
+              <td :colspan="cfColspan">
+              </td>
+            </slot>
+          </tr>
+        </template>
+        <tr v-if="!rows.length">
+          <td :colspan="cfColspan" class="fo-grid-empty">
+            <span v-if="loading">⏳ 조회 중…</span>
+            <span v-else>{{ emptyText }}</span>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot v-if="cfShowTfoot">
+        <slot name="tfoot" :rows="rows" :colspan="cfColspan">
+        </slot>
+      </tfoot>
+    </table>
+  </div>
+  <!-- ▼ 카드형식(layout='card') — 표 대신 카드 그리드로 렌더. #card 슬롯이 콘텐츠를 전담하고
+       (row/idx/no 스코프 제공), 미제공 시 columns 기반 기본 카드(제목=첫 컬럼, 나머지는 라벨:값)로 대체 —
+       화면이 슬롯을 깜빡 빠뜨려도 빈 카드가 뜨지 않도록 하는 안전망이다. -->
+  <div v-else class="fo-grid-cardview" :style="{ '--fo-grid-card-min': cardMinWidth }">
+    <div v-if="loading && !rows.length" class="fo-grid-empty">⏳ 조회 중…</div>
+    <div v-else-if="!rows.length" class="fo-grid-empty">{{ emptyText }}</div>
+    <template v-else>
+      <div v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx"
+        :class="[cardClass || 'fo-grid-card-item', fnRowClass(row, idx)]" :style="fnRowStyle(row, idx)"
+        @click="handleSelectAction('grid-row-click', { row })">
+        <slot name="card" :row="row" :idx="idx" :no="rowNo(idx)">
+          <div class="fo-grid-card-default-title">{{ U.cellText(columns[0], row) }}</div>
+          <div v-for="col in columns.slice(1)" :key="col.key" class="fo-grid-card-default-row">
+            <b>{{ col.label }}</b><span>{{ U.cellText(col, row) }}</span>
+          </div>
+        </slot>
+      </div>
+    </template>
+  </div>
+  <!-- ▼ pager 는 그리드 외부 <fo-pager> 로만 구현 (내부 페이저 제거됨) -->
+</div>
+`,
+};
+
+/* ── FoGridCrud — CRUD 그리드(전체 로드 / 행상태 N·I·U·D) ────────────────── */
+window.FoGridCrud = {
+  name: 'FoGridCrud',
+  props: {
+    columns:    { type: Array,  required: true },
+    rows:       { type: Array,  required: true },
+    rowKey:     { type: String, required: true },
+    actionHeader:{ type: String, default: '관리' },            // 우측 관리 컬럼 헤더명. #head-actions 슬롯으로 오버라이드 가능
+    listTitle:  { type: String, default: '목록' },
+    maxHeight:  { type: String, default: '480px' },
+    totalCount: { type: Number, default: null },               // 서버 총건수(무한스크롤). 주면 '총 N건 · 조회 M건'
+    scrollEndOffset: { type: Number, default: 500 },           // 바닥에서 N px 앞에서 scroll-end 발화 (≈15행)
+    minWidth:   { type: String, default: '' },
+    draggable:  { type: Boolean, default: true },
+    checkAll:   { type: Boolean, default: false },
+    focusedIdx: { type: Number,  default: null },
+    showRowNo:     { type: Boolean, default: true },
+    showRowId:     { type: Boolean, default: true },
+    showRowStatus: { type: Boolean, default: true },
+    showRowCheck:  { type: Boolean, default: true },
+    showAdd:       { type: Boolean, default: true },
+    showSave:      { type: Boolean, default: true },
+    showExport:    { type: Boolean, default: false },          // 📥 엑셀 버튼 노출
+    showExcelUpload: { type: Boolean, default: false },        // 📤 엑셀업로드 버튼 노출
+    selectedKey: { type: [String, Number], default: null },    // 선택된 행의 rowKey 값. 일치 행에 파란 테두리 자동 부여
+    cellTitle:  { type: Function, default: null },
+    sortState:  { type: Object, default: null },
+    emptyText:  { type: String, default: '데이터가 없습니다.' },
+  },
+  emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
+          'update:checkAll', 'update:focusedIdx', 'sort', 'cell-click',
+          'scroll-end', 'export', 'excel-upload', 'row-dblclick', 'row-click'],
+  setup(props, { emit }) {
+    const U = window._foAreaCompUtil;
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
+    const cfVisibleCount = Vue.computed(() =>
+      props.rows.filter(r => r._row_status !== 'D').length);
+    const allChecked = Vue.ref(props.checkAll);
+    Vue.watch(() => props.checkAll, v => { allChecked.value = v; });
+    const dragSrc = Vue.ref(null);
+    const dragMoved = Vue.ref(false);
+    const cfEmptyColspan = Vue.computed(() => {
+      let n = props.columns.length + 1;            // 데이터 + 액션
+      if (props.draggable)     n += 1;
+      if (props.showRowNo)     n += 1;
+      if (props.showRowId)     n += 1;
+      if (props.showRowStatus) n += 1;
+      if (props.showRowCheck)  n += 1;
+      return n;
+    });
+    const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGridCrud : handleBtnAction -> ', cmd, param);
+      if (cmd === 'toolbar-add') {
+        return emit('add');
+      } else if (cmd === 'toolbar-save') {
+        return emit('save');
+      } else if (cmd === 'toolbar-cancel-checked') {
+        return emit('cancel-checked');
+      } else if (cmd === 'toolbar-delete-checked') {
+        return emit('delete-checked');
+      } else if (cmd === 'toolbar-export') {
+        return emit('export');
+      } else if (cmd === 'toolbar-excel-upload') {
+        return emit('excel-upload');
+      } else if (cmd === 'grid-toggle-check-all') {
+        const v = !allChecked.value;
+        allChecked.value = v;
+        props.rows.forEach(r => { r._row_check = v; });
+        return emit('update:checkAll', v);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGridCrud : handleSelectAction -> ', cmd, param);
+      if (cmd === 'sort-toggle') {
+        /* 헤더 자체가 액션인 컬럼(전체선택 토글 등) — 정렬보다 우선한다 */
+        if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
+        if (param.col.sortKey) return emit('sort', param.col.sortKey);
+      } else if (cmd === 'grid-row-focus') {
+        if (props.focusedIdx !== param.idx) emit('update:focusedIdx', param.idx);
+        return emit('row-click', param.row, param.idx);
+      } else if (cmd === 'grid-row-dblclick') {
+        return emit('row-dblclick', param.row, param.idx);
+      } else if (cmd === 'grid-cell-click') {
+        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
+      } else if (cmd === 'grid-row-cell-change') {
+        const row = param.row;
+        if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', row);
+        if (row._row_org) {
+          const changed = Object.keys(row._row_org).some(f => String(row[f]) !== String(row._row_org[f]));
+          row._row_status = changed ? 'U' : 'N';
+        }
+        return emit('cell-change', row);
+      } else if (cmd === 'grid-row-drag-start') {
+        if (props.draggable) { dragSrc.value = param.idx; dragMoved.value = false; }
+      } else if (cmd === 'grid-row-drag-over') {
+        if (!props.draggable || dragSrc.value === null || dragSrc.value === param.idx) return;
+        param.event.preventDefault();
+        const moved = props.rows.splice(dragSrc.value, 1)[0];
+        props.rows.splice(param.idx, 0, moved);
+        dragSrc.value = param.idx;
+        dragMoved.value = true;
+      } else if (cmd === 'grid-row-drag-end') {
+        if (dragMoved.value) emit('reorder');
+        dragSrc.value = null; dragMoved.value = false;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ── ▼ 내장 유틸 함수 ─────────────────────────────────────────────────── */
+    const fnStatusClass = s => 's-' + (s || 'N');
+    const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
+
+    const sortIcon = (col) => {
+      const st = props.sortState;
+      if (!col.sortKey || !st) return '';
+      if (st.sortKey !== col.sortKey) return '⇅';
+      return st.sortDir === 'asc' ? '↑' : '↓';
+    };
+    const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
+
+    /* ── ▼ 좌/우 고정(pin) — 드래그+번호+ID 좌측 고정(있는 것만 연속 누적), 우측 관리 컬럼 고정.
+       BoGridCrud 를 참고해 이식(행상태 배경색은 FO 쪽에 해당 CSS 자체가 없어 이식하지 않음 —
+       가로스크롤 없는 그리드는 시각적 변화 없어 안전). */
+    const cfPinIdLeft = Vue.computed(() => (props.draggable ? 26 : 0) + (props.showRowNo ? 40 : 0));
+    const fnRowSelected = (row) => props.selectedKey != null && row[props.rowKey] === props.selectedKey;
+    /* th(헤더)는 배경을 여기서 주지 않는다 — .fo-grid-table thead th CSS 가 이미 th 자체에 직접
+       칠하므로 고정 헤더도 자연히 같은 색이 된다. td(데이터 행)는 position:sticky 가 걸리면 부모 tr 의
+       줄무늬 배경을 물려받지 못해 투명해지고, 가로 스크롤 중 뒤 컬럼 내용이 겹쳐 보이는 원인이 된다.
+       td 는 반드시 fnPinBg() 로 불투명 배경을 직접 칠한다(BoGridCrud 이식).
+       선택행(selectedKey 일치)은 outline 이 고정 셀 아래로 가려지므로 BoGrid 와 동일하게
+       inset box-shadow 로 직접 그려 끊김 없이 이어지게 한다(선택 시에만 4번째 인자 전달). */
+    const pinLeftStyle = (px, z, edge, selected) => {
+      let st = 'position:sticky;left:' + px + 'px;z-index:' + z + ';';
+      const sh = [];
+      if (selected) { if (px === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
+      if (edge) sh.push('2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
+    const pinRightStyle = (z, edge, selected) => {
+      let st = 'position:sticky;right:0;z-index:' + z + ';';
+      const sh = [];
+      if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
+      if (edge) sh.push('-2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
+    const fnPinBg = (row, idx) => {
+      if (fnRowSelected(row)) return 'rgba(37,99,235,.12)';
+      return idx % 2 === 1 ? 'var(--grid-td-bg-alt)' : 'var(--grid-td-bg)';
+    };
+
+    /* cfCountText — 하단 좌측 건수 문구(BoGridCrud 의 .grid-foot 이식) */
+    const cfCountText = Vue.computed(() => (
+      props.totalCount != null
+        ? coUtil.cofCountText(props.totalCount, cfVisibleCount.value)
+        : coUtil.cofCountText(cfVisibleCount.value)
+    ));
+
+    /* onScroll — 바닥에서 scrollEndOffset(px) 이내로 오면 scroll-end 를 올린다(무한스크롤용).
+       연속 발화 방지: 같은 scrollHeight 에서 두 번 쏘지 않는다. */
+    let _lastEmitAt = -1;
+    const onScroll = (e) => {
+      const el = e.target;
+      const rest = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (rest > props.scrollEndOffset) { _lastEmitAt = -1; return; }
+      if (_lastEmitAt === el.scrollHeight) { return; }
+      _lastEmitAt = el.scrollHeight;
+      emit('scroll-end');
+    };
+
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, U, cfVisibleCount, cfCountText, onScroll, fnStatusClass, allChecked,
+             fnColTitle, cfEmptyColspan, sortIcon, sortActive, cfTableStyle,
+             cfPinIdLeft, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected,
+             handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<div class="fo-grid-card">
+  <div class="fo-grid-toolbar">
+    <span class="fo-grid-title">
+      {{ listTitle }}
+      <span class="fo-grid-count">
+        {{ cfVisibleCount }}건
+      </span>
+    </span>
+    <div style="display:flex;gap:6px;margin-left:auto;">
+      <slot name="toolbar-actions">
+      </slot>
+      <button v-if="showAdd" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-add')">
+        + 행추가
+      </button>
+      <button v-if="showRowCheck" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-delete-checked')">
+        행삭제
+      </button>
+      <button v-if="showRowCheck" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">
+        취소
+      </button>
+      <button v-if="showExport" class="btn btn_excel" @click="handleBtnAction('toolbar-export')">
+        📥 엑셀
+      </button>
+      <button v-if="showExcelUpload" class="btn btn_excel_upload" @click="handleBtnAction('toolbar-excel-upload')">
+        📤 엑셀업로드
+      </button>
+      <button v-if="showSave" class="btn btn_save" @click="handleBtnAction('toolbar-save')">
+        저장
+      </button>
+    </div>
+  </div>
+  <div class="fo-grid-scroll" :style="'max-height:' + maxHeight + ';'" @scroll="onScroll">
+    <table class="fo-grid-table" :style="cfTableStyle">
+      <thead>
+        <tr>
+          <th v-if="draggable" :style="'width:26px;' + pinLeftStyle(0, 6)">
+          </th>
+          <th v-if="showRowNo" :style="'width:40px;text-align:center;' + pinLeftStyle(draggable ? 26 : 0, 6)">
+            번호
+          </th>
+          <th v-if="showRowId" :style="'width:54px;text-align:center;' + pinLeftStyle(cfPinIdLeft, 6, true)">
+            ID
+          </th>
+          <th v-if="showRowStatus" style="width:40px;text-align:center;">
+            상태
+          </th>
+          <th v-if="showRowCheck" style="width:28px;text-align:center;">
+            <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
+          </th>
+          <slot name="head">
+            <th v-for="col in columns" :key="col.key" :class="col.cls"
+              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
+              :title="fnColTitle(col)" @click="handleSelectAction('sort-toggle', { col })">
+              {{ col.noHead ? '' : col.label }}
+              <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
+              <span v-if="col.sortKey"
+                :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
+                {{ sortIcon(col) }}
+              </span>
+            </th>
+          </slot>
+          <th :style="'width:44px;text-align:center;' + pinRightStyle(6, true)">
+            <slot name="head-actions">{{ actionHeader }}</slot>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- ▼ grid-row 영역 -->
+        <tr v-if="!rows.length">
+          <td :colspan="cfEmptyColspan" class="fo-grid-empty">
+            {{ emptyText }}
+          </td>
+        </tr>
+        <tr v-else v-for="(row, idx) in rows" :key="row[rowKey]"
+          class="fo-grid-clickable" :class="[ 's-row-' + row._row_status, focusedIdx===idx ? 'fo-grid-focused' : '', fnRowSelected(row) ? 'fo-grid-selected' : '' ]"
+          :draggable="draggable"
+          :style="focusedIdx===idx ? 'outline:2px solid var(--accent) inset;' : ''"
+          @click="handleSelectAction('grid-row-focus', { row, idx })"
+          @dblclick="handleSelectAction('grid-row-dblclick', { row, idx })"
+          @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
+          @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
+          @dragend="handleSelectAction('grid-row-drag-end')">
+          <td v-if="draggable" class="fo-grid-drag" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
+            ⠿
+          </td>
+          <td v-if="showRowNo" :style="'text-align:center;color:var(--text-muted);font-size:0.74rem;' + pinLeftStyle(draggable ? 26 : 0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
+            {{ idx + 1 }}
+          </td>
+          <td v-if="showRowId" :style="'text-align:center;color:var(--text-muted);font-size:0.74rem;' + pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
+            {{ row[rowKey] > 0 ? row[rowKey] : 'NEW' }}
+          </td>
+          <td v-if="showRowStatus" style="text-align:center;">
+            <span class="fo-grid-status" :class="fnStatusClass(row._row_status)">
+              {{ row._row_status }}
+            </span>
+          </td>
+          <td v-if="showRowCheck" style="text-align:center;" @click.stop>
+            <input type="checkbox" v-model="row._row_check" />
+          </td>
+          <template v-for="(col, ci) in columns" :key="col.key">
+            <slot :name="'cell-' + col.key" :row="row" :idx="idx">
+              <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
+                <input v-if="col.edit==='text'" class="fo-grid-input" :class="{ 'fo-grid-mono': col.mono }"
+                  v-model="row[col.key]" :disabled="row._row_status==='D'"
+                  :placeholder="col.placeholder" @input="handleSelectAction('grid-row-cell-change', { row, col })" />
+                <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
+                  v-model.number="row[col.key]" :disabled="row._row_status==='D'"
+                  @input="handleSelectAction('grid-row-cell-change', { row, col })" />
+                <input v-else-if="col.edit==='date'" type="date" class="fo-grid-input"
+                  v-model="row[col.key]" :disabled="row._row_status==='D'"
+                  @input="handleSelectAction('grid-row-cell-change', { row, col })" />
+                <select v-else-if="col.edit==='select'" class="fo-grid-select"
+                  v-model="row[col.key]" :disabled="row._row_status==='D'"
+                  @change="handleSelectAction('grid-row-cell-change', { row, col })">
+                  <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
+                  <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+                </select>
+                <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
+                  {{ U.cellText(col, row) }}
+                </span>
+                <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">
+                  {{ U.cellText(col, row) }}
+                </span>
+                <template v-else>
+                  {{ U.cellText(col, row) }}
+                </template>
+              </td>
+            </slot>
+          </template>
+          <td :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
+            <slot name="row-actions" :row="row" :idx="idx">
+            </slot>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:6px 2px 0;font-size:0.76rem;color:var(--text-muted);font-weight:600;">{{ cfCountText }}</div>
+</div>
+`,
+};
+
+/* ── FoModal — 공통 모달 껍데기 (FO .modal-overlay / .modal-box 재사용) ───── */
+window.FoModal = {
+  name: 'FoModal',
+  props: {
+    /* default: false ⭐ — Vue 는 :show="expr" 의 expr 이 undefined 로 평가되면 "prop 미전달"로
+       간주해 default 값을 대신 사용한다. 초기화 안 된 reactive 필드(예: uiState.xxxPopup)를
+       바인딩하면 값이 undefined 인 동안 default:true 로 떨어져 모달이 "묻지도 않았는데" 열려버린다
+       (Order.js 배송비 쿠폰 팝업 실사고, 2026-08-18). 기본은 닫힘이 안전하므로 false 로 둔다. */
+    show:            { type: Boolean, default: false },
+    title:           { type: String,  default: '' },
+    width:           { type: String,  default: '600px' },
+    maxWidth:        { type: String,  default: '95vw' },
+    height:          { type: String,  default: 'auto' },
+    minHeight:       { type: String,  default: '' },    // 목록형 팝업의 높이 출렁임 방지 (건수에 따라 커졌다 작아지는 것)
+    maxHeight:       { type: String,  default: '90vh' },
+    zIndex:          { type: Number,  default: 1500 },
+    boxPad:          { type: String,  default: '24px' },  // .modal-box 자체 padding (인라인 디자인 모달은 '0')
+    bodyPad:         { type: String,  default: '0' },
+    closeOnBackdrop: { type: Boolean, default: true },
+    teleport:        { type: Boolean, default: true },
+    onCloseCb:       { type: Function, default: null },  // 닫기 시 호출되는 콜백 (emit('close')와 병행)
+    onConfirmCb:     { type: Function, default: null },  // 확인 시 호출되는 콜백 (#footer 슬롯 prop 'confirm' + emit('confirm'))
+  },
+  emits: ['close', 'confirm'],
+  setup(props, { emit }) {
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
+    const cfOverlayStyle = Vue.computed(() => 'z-index:' + props.zIndex + ';');
+    const cfBoxStyle = Vue.computed(() =>
+      'width:' + props.width + ';max-width:' + props.maxWidth + ';'
+      + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'
+      + (props.minHeight ? ('min-height:' + props.minHeight + ';') : '')
+      + 'text-align:left;padding:' + props.boxPad + ';');
+    const cfBodyStyle = Vue.computed(() =>
+      'flex:1;overflow-y:auto;' + (props.bodyPad !== '0' ? ('padding:' + props.bodyPad + ';') : ''));
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        emit('close');
+        if (typeof props.onCloseCb === 'function') props.onCloseCb();
+      } else if (cmd === 'modal-confirm') {
+        emit('confirm');
+        if (typeof props.onConfirmCb === 'function') props.onConfirmCb();
+      } else if (cmd === 'modal-backdrop') {
+        if (props.closeOnBackdrop) handleBtnAction('modal-close');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoModal : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* footer slot prop 호환용 — 외부 슬롯이 confirm()/close() 호출하면 dispatch 경유 */
+    const onClose = () => handleBtnAction('modal-close');
+    const onConfirm = () => handleBtnAction('modal-confirm');
+
+    return { onClose, onConfirm, cfOverlayStyle, cfBoxStyle, cfBodyStyle,
+             handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<teleport to="body" :disabled="!teleport">
+  <div v-if="show" class="modal-overlay" :style="cfOverlayStyle" @click.self="handleBtnAction('modal-backdrop')">
+    <div class="modal-box fo-modal-box" :style="cfBoxStyle">
+      <div v-if="title" class="fo-modal-header">
+        <span class="fo-modal-title">
+          {{ title }}
+        </span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <slot name="header-extra">
+          </slot>
+          <button type="button" class="fo-modal-close" @click="handleBtnAction('modal-close')">
+            ✕
+          </button>
+        </span>
+      </div>
+      <div :style="cfBodyStyle">
+        <slot name="body">
+          <slot>
+          </slot>
+        </slot>
+      </div>
+      <div v-if="$slots.footer" class="fo-modal-footer">
+        <slot name="footer" :confirm="onConfirm" :close="onClose">
+        </slot>
+      </div>
+    </div>
+  </div>
+</teleport>
+`,
+};
+
+/* ── FoRowCancelDelete — FoGridCrud #row-actions 표준 취소/삭제 버튼 묶음 ─────
+ * FO xs/Sample 6개에서 반복되던 #row-cancel / #row-delete 슬롯 패턴을 통일.
+ *
+ *   <template #row-actions="{ row }">
+ *     <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
+ *   </template>
+ *
+ * 버튼 표시 조건 (BoRowCancelDelete 와 동일, 2026-08-26 개정):
+ *   취소: row._row_status ∈ ['U','I','D']
+ *   삭제: row._row_status === 'N'  (수정(U) 행은 [취소]만 — 삭제까지 뜨면 의미가 헷갈림, 전체공통)
+ *
+ * 스타일은 FO 톤(인라인 작은 버튼). BO 컴포넌트는 .btn 클래스 기반 ─ 디자인 분기. */
+window.FoRowCancelDelete = {
+  name: 'FoRowCancelDelete',
+  props: {
+    row:             { type: Object,  required: true },
+    allowDeleteNull: { type: Boolean, default: false },
+    cancelLabel:     { type: String,  default: '취소' },
+    deleteLabel:     { type: String,  default: '삭제' },
+  },
+  emits: ['cancel', 'delete'],
+  setup(props, { emit }) {
+    /* ── ▼ row 영역 (CRUD 행 취소/삭제 버튼) ──────────────────────────────── */
+    const cfShowCancel = Vue.computed(() => ['U', 'I', 'D'].includes(props.row._row_status));
+    const cfShowDelete = Vue.computed(() => {
+      const s = props.row._row_status;
+      if (props.allowDeleteNull && s == null) return true;
+      return s === 'N';
+    });
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoRowCancelDelete : handleBtnAction -> ', cmd, param);
+      if (cmd === 'row-cancel') {
+        return emit('cancel');
+      } else if (cmd === 'row-delete') {
+        return emit('delete');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoRowCancelDelete : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    return { cfShowCancel, cfShowDelete, handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<span>
+  <button v-if="cfShowCancel" @click.stop="handleBtnAction('row-cancel')"
+    style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">
+    {{ cancelLabel }}
+  </button>
+  <button v-if="cfShowDelete" class="btn_row_delete" @click.stop="handleBtnAction('row-delete')"
+    style="font-size:10px;padding:2px 7px;">
+    {{ deleteLabel }}
+  </button>
+</span>
+`,
+};
+
+/* ── FoFormArea ────────────────────────────────────────────────────────────
+ * FO 폼을 columns 정의로 자동 렌더 (BoFormArea 의 FO 버전).
+ * BO 와 다른 점: form-input/form-label/form-required/form-error 클래스 사용 +
+ * CSS grid 레이아웃 (BO 는 flex form-row). FO 톤(라운드·간격) 보존.
+ *
+ *   <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+ *     :cols="2" :gap="14"
+ *     @submit="handleSubmit" />
+ *
+ * column 타입:
+ *   - 'text' | 'email' | 'tel' | 'number' | 'date' | 'textarea' | 'password'
+ *   - 'select'   : options (배열|함수, sy_code|{value,label}|{codeValue,codeLabel} 호환)
+ *   - 'readonly' : 표시 전용 (fmt 로 값 가공 가능)
+ *   - 'slot'     : 슬롯 탈출구 (name 으로 슬롯 이름 지정)
+ *   - 'rowBreak' : 강제 줄바꿈
+ *
+ * 공통 속성: required, placeholder, colSpan(1~N), width, rows, mono, hint,
+ *           visible:(form)=>bool, onChange:(v,form,e)=>void, fmt:(v,form)=>string,
+ *           clearErrOnInput:true (기본) — 입력 시 errors[key] 자동 제거 */
+window.FoFormArea = {
+  name: 'FoFormArea',
+  props: {
+    columns:     { type: Array,   required: true },  // 필드 정의
+    /* 기본값 필수 — undefined 가 들어오면 템플릿의 form[col.key] 에서
+       'Cannot read properties of undefined' 로 화면 전체가 렌더 실패한다.
+       (MbMemberDtl 이 detailModal.form 을 가드 없이 넘겨 실제로 발생, 2026-07-30) */
+    form:        { type: Object,  default: () => ({}) },  // form reactive
+    errors:      { type: Object,  default: () => ({}) },
+    cols:        { type: Number,  default: 2 },      // 한 줄 필드 수
+    minColWidth: { type: String,  default: '240px' },// grid auto-fit 최소 너비
+    gap:         { type: Number,  default: 14 },     // 필드 간격(px)
+    showActions: { type: Boolean, default: false },  // FO 는 별도 제출 버튼이 많아 기본 off
+    submitLabel: { type: String,  default: '확인' },
+  },
+  emits: ['submit'],
+  setup(props, { emit }) {
+    const U = window._foAreaCompUtil;
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
+    /* type:'group' — 항목이 많을 때 중간 제목(섹션 헤더)을 끼워넣는 용도.
+     *                앞뒤로 강제 줄바꿈 + 항상 한 줄 전체 폭 단독 행. { type:'group', label:'기본정보' } 형태로 사용. */
+    const cfRows = Vue.computed(() => {
+      const rows = []; let cur = []; let used = 0;
+      for (const col of props.columns) {
+        if (col.visible && !col.visible(props.form)) continue;
+        if (col.type === 'rowBreak') { if (cur.length) { rows.push(cur); cur = []; used = 0; } continue; }
+        if (col.type === 'group') { if (cur.length) { rows.push(cur); cur = []; used = 0; } rows.push([col]); continue; }
+        const span = Math.min(col.colSpan || 1, props.cols);
+        if (used + span > props.cols && cur.length) { rows.push(cur); cur = []; used = 0; }
+        cur.push(col); used += span;
+      }
+      if (cur.length) rows.push(cur);
+      return rows;
+    });
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoFormArea : handleBtnAction -> ', cmd, param);
+      if (cmd === 'form-submit') {
+        return emit('submit');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoFormArea : handleSelectAction -> ', cmd, param);
+      if (cmd === 'field-change') {
+        /* errors 갱신 + col.onChange 콜백.
+           col.validate(value, form) 가 있으면 그 결과로 실시간 재판정(형식검증 등),
+           없으면 기존처럼 입력이 들어오면 지운다(단순 필수입력). */
+        const col = param.col, v = props.form[col.key];
+        if (col.validate) {
+          const msg = col.validate(v, props.form);
+          if (msg) { props.errors[col.key] = msg; }
+          else if (props.errors[col.key] !== undefined) { delete props.errors[col.key]; }
+        } else if (col.clearErrOnInput !== false && props.errors[col.key] !== undefined) {
+          delete props.errors[col.key];
+        }
+        if (col.onChange) return col.onChange(props.form[col.key], props.form, param.event);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    const normOpts = (opts) => U.normOptions(opts);
+    const dispVal = (col) => {
+      const v = props.form[col.key];
+      if (col.fmt) return col.fmt(v, props.form);
+      return (v == null || v === '') ? '-' : v;
+    };
+
+    /* fnColLabel / fnColNm — 개발용 DB 컬럼명 병기 (coUtil.SHOW_COL_NM 로 일괄 on/off) */
+    const fnColLabel = (col) => coUtil.cofColLabel(col);
+    const fnColNm    = (col) => coUtil.cofColNm(col);
+
+    return { fnColLabel, fnColNm, cfRows, normOpts, dispVal, handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<div class="fo-form-area">
+  <div v-for="(row, ri) in cfRows" :key="ri"
+    :style="{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax('+minColWidth+',1fr))',gap:gap+'px',marginBottom:gap+'px'}">
+    <div v-for="col in row" :key="col.key || col.label" :style="((col.colSpan ? col.colSpan>1 : false) ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
+    <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
+    <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
+    {{ fnColLabel(col) }}
+  </div>
+    <!-- 라벨 -->
+    <label v-else-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label">
+    {{ fnColLabel(col) }}
+    <span v-if="col.required" class="form-required">
+      *
+    </span>
+    <span v-if="col.hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
+      {{ col.hint }}
+    </span>
+  </label>
+  <!-- readonly 표시 -->
+  <div v-if="col.type === 'readonly'"
+        style="padding:10px 12px;background:#f9fafb;border-radius:6px;color:#374151;font-size:0.9rem;min-height:38px;display:flex;align-items:center;">
+    {{ dispVal(col) }}
+  </div>
+  <!-- text/email/tel/password -->
+  <input v-else-if="col.type === 'text' || col.type === 'email' || col.type === 'tel' || col.type === 'password'"
+        class="form-input" :type="col.type === 'password' ? 'password' : (col.type === 'email' ? 'email' : (col.type === 'tel' ? 'tel' : 'text'))"
+        v-model="form[col.key]" :placeholder="col.placeholder"
+        :readonly="col.readonly"
+        :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="handleSelectAction('field-change', { col, event: $event })" />
+  <!-- number -->
+  <input v-else-if="col.type === 'number'" class="form-input" type="number"
+        v-model.number="form[col.key]" :placeholder="col.placeholder"
+        :readonly="col.readonly" :min="col.min" :max="col.max"
+        :style="col.readonly ? 'background:#f5f5f5;' : ''"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="handleSelectAction('field-change', { col, event: $event })" />
+  <!-- date -->
+  <input v-else-if="col.type === 'date'" class="form-input" type="date"
+        v-model="form[col.key]" :readonly="col.readonly"
+        :class="errors[col.key] ? 'is-invalid' : ''" @change="handleSelectAction('field-change', { col, event: $event })" />
+  <!-- textarea -->
+  <textarea v-else-if="col.type === 'textarea'" class="form-input"
+        v-model="form[col.key]" :placeholder="col.placeholder"
+        :readonly="col.readonly" :rows="col.rows || 5"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="handleSelectAction('field-change', { col, event: $event })"></textarea>
+    <!-- select -->
+    <select v-else-if="col.type === 'select'" class="form-input"
+        v-model="form[col.key]" :disabled="col.readonly"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @change="handleSelectAction('field-change', { col, event: $event })">
+      <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '선택해주세요' }}</option>
+      <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
+    </select>
+    <!-- slot 탈출구 -->
+    <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col">
+    </slot>
+    <!-- 에러 메시지 (힌트는 라벨 우측에 표시) — slot 은 자체 슬롯 내부에서 직접 렌더(중복 방지) -->
+    <div v-if="col.type !== 'slot' && errors[col.key]" class="form-error">
+      {{ errors[col.key] }}
+    </div>
+  </div>
+</div>
+<!-- ▼ form-actions 영역 -->
+<div v-if="showActions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+  <slot name="actions-before">
+  </slot>
+  <button class="btn-blue" @click="handleBtnAction('form-submit')" style="padding:13px 24px;">
+    {{ submitLabel }}
+  </button>
+  <slot name="actions-after">
+  </slot>
+</div>
+</div>
+`,
+};

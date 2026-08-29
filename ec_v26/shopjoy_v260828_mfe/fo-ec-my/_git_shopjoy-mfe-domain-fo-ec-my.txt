@@ -1,0 +1,23 @@
+shopjoy-mfe-domain-fo-ec-my
+
+관리단위: 마이크로 도메인 — 마이페이지(로그인 필요, FO). shopjoy_v260406/
+          pages/fo/my/*.js 6개 복제. (처음엔 bo-ec-mb 와 나란히 fo-ec-mb 로
+          만들었다가, 실제로 이 레포가 담당하는 건 my/ 서브패키지 하나뿐이라
+          fo-ec-my 로 개명함 — 사용자 지시, 2026-08-29)
+현재 위치: shopjoy_v260828_mfe/fo-ec-my/  (컨테이너 폴더 바로 밑, 모든 fo-*
+          레포 및 fo-ap-global/ 과 완전한 형제)
+
+포함 경로: `my/manifest.js` + `my/pages/fo/my/{MyOrder,MyClaim,MyCoupon,
+          MyCache,MyContact,MyChatt}.js`, `dev.html`(단독 실행용)
+
+등록 pageId: myOrder, myClaim, myCoupon, myCache, myContact, myChatt
+          (전부 로그인 필요 — foMfeShell.js의 MY_PAGES/fnCanEnterPage 가드)
+
+각 화면은 공용 `<fo-my-layout>`(fo-ap-global/components/layout/foMyLayout.js,
+          셸이 항상 로드)으로 감싸져 있고, 그 안의 `<my-date-filter>` 태그는
+          같은 foMyLayout.js 파일 안에 정의된 컴포넌트라 별도 등록 불필요.
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/fo/my/*.js 를 그대로 복사(원본은
+     전혀 수정하지 않음).
+셸 의존(런타임 계약): window.FO_MFE_REGISTRY, window.foApp, window.foApiSvc/
+          coApiSvc, window.coUtil/foUtil, 셸이 등록한 공용 컴포넌트

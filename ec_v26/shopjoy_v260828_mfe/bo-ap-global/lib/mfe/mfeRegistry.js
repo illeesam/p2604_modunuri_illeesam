@@ -140,13 +140,26 @@ window.MFE_REGISTRY = (function () {
         for (const c of entries) await this.ensureFolderLoaded(c.folder);
         return;
       }
-      if ((menus[menuKey] || []).length) return;
+      /* 카탈로그가 없는 dev.html — 이 페이지에 정적으로 걸린 manifest.js <script> 태그
+         "전부"가 register()를 마칠 때까지 기다린다(2026-08-29 버그 수정). 예전엔
+         menus[menuKey]에 항목이 하나라도 생기는 순간 바로 통과시켰는데, 같은 menuKey를
+         여러 manifest.js가 소그룹별로 나눠 등록하는 지금 구조(2026-08-29 재구조화 이후
+         모든 다중 소그룹 레포의 dev.html이 이 케이스)에서는 그중 제일 먼저 끝난
+         소그룹 하나만 반영된 채로 초기 화면이 열려버리고, 나중에 끝난 나머지 소그룹은
+         register() 는 되는데 그 시점엔 이미 아무도 재렌더를 기다리고 있지 않아 사이드바에
+         "그 소그룹만" 계속 안 보이는 버그였다(사용자가 우연히 탭을 클릭하는 등 다른
+         이유로 재렌더가 일어나야만 뒤늦게 나타남 — 2026-08-29, bo-ec-mb/bo-ec-dp dev.html
+         에서 재현). 이 페이지의 manifest.js <script> 개수를 세어 그만큼 _domainReady()가
+         불릴 때까지 기다리는 걸로 고쳤다 — dev.html은 관련 없는 manifest.js를 더 안
+         실으므로 이 개수가 곧 "이 데모가 기대하는 소그룹 수"와 같다. */
+      const expectedCount = document.querySelectorAll('script[src$="manifest.js"]').length || 1;
+      if (loadedFolders.size >= expectedCount) return;
       /* check 는 resolve 되고 나면 tickListeners 에서 스스로를 빼야 한다(2026-08-28) —
          안 빼면 이 세션이 끝날 때까지 매 _domainReady() 호출마다 이미 쓸모없어진 이
          콜백까지 영원히 순회하게 되는 리스너 누수였다. */
       await new Promise((resolve) => {
         const check = () => {
-          if (!(menus[menuKey] || []).length) return;
+          if (loadedFolders.size < expectedCount) return;
           const idx = tickListeners.indexOf(check);
           if (idx !== -1) tickListeners.splice(idx, 1);
           resolve();

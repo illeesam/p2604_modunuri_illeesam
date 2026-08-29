@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <!-- fo.html — mfe.html 과 완전히 동일한 파일이다(2026-08-29 사용자 지시로 추가) —
+       shopjoy_v260406/index.html 과는 이름이 다른데, 컨테이너 안에 index.html이라는
+       이름을 쓰면 "이게 전체 데모의 랜딩 페이지"처럼 오해되기 쉬워서 bo.html과
+       대구를 맞춰 fo.html로 지었다(사용자 지시). 내용을 따로 유지하지 않는다 —
+       둘 중 하나를 고치면 반드시 다른 하나도 똑같이 맞출 것. -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy FO MFE Demo</title>
+  <meta name="description" content="FO(사용자 페이스) 마이크로프론트엔드 데모 — 지연로드">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
+  <script>
+    /* FO_SITE_NO — 이 데모는 사이트 01 하나로 범위 고정(bo-ap-global/mfe.html 의
+       BO_SITE_NO 고정과 동일한 판단). */
+    window.FO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-fo-sy-siteNo', '01');
+      localStorage.setItem('modu-fo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <script src="assets/cdn/pkg/postcode/2/postcode.v2.js"></script>
+  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="assets/cdn/pkg/toastui-editor/3.2.2/toastui-editor-all.min.js"></script>
+  <script src="assets/cdn/pkg/toastui-editor/3.2.2/ko-kr.min.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="assets/cdn/pkg/toastui-editor/3.2.2/toastui-editor.min.css">
+  <link rel="stylesheet" href="assets/css/fo-global-style01.css">
+
+  <style>
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+  </style>
+</head>
+<body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
+  <div id="app"></div>
+
+  <script src="lib/utils/perfUtil.js"></script>
+  <script src="lib/utils/safeUtil.js"></script>
+  <script src="lib/license/licenseFo.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/foConsts.js"></script>
+  <script src="lib/utils/foApiAxios.js"></script>
+  <script src="lib/utils/foUtil.js"></script>
+  <script src="lib/utils/coNotiStore.js"></script>
+  <script src="lib/env/foEnvConsts.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
+  <script src="lib/utils/coAuth.js"></script>
+
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/foApiSvc.js"></script>
+
+  <script src="lib/app/foAppConfig.js"></script>
+
+  <script src="lib/stores/fo/foAppInitStore.js"></script>
+  <script src="lib/stores/fo/foAppStore.js"></script>
+  <script src="lib/stores/fo/foAuthStore.js"></script>
+  <script src="lib/stores/fo/foCodeStore.js"></script>
+  <script src="lib/stores/fo/foDispStore.js"></script>
+  <script src="lib/stores/fo/foMenuStore.js"></script>
+  <script src="lib/stores/fo/foMyStore.js"></script>
+
+  <script src="lib/app/foAppAuth.js"></script>
+  <script src="lib/stores/fo/foPropStore.js"></script>
+  <script src="lib/stores/fo/foRoleStore.js"></script>
+
+  <script src="components/layout/foAppFooter.js"></script>
+  <script src="components/layout/foAppHeader.js"></script>
+  <script src="components/layout/foAppSidebar.js"></script>
+  <script src="components/layout/foMyLayout.js"></script>
+
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/FoComp.js"></script>
+  <script src="components/comp/FoAreaComp.js"></script>
+  <script src="components/comp/CoWidgetComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
+  <script src="components/modals/FoModals.js"></script>
+  <script src="components/modals/FoCmPopupModal.js"></script>
+  <script src="components/modals/CoExtHelpModal.js"></script>
+  <script src="components/modals/Login.js"></script>
+
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <script src="pages/base/foError401.js"></script>
+  <script src="pages/base/foError404.js"></script>
+  <script src="pages/base/foError500.js"></script>
+
+  <script src="lib/app/foAppStyles.js"></script>
+  <script src="lib/app/foAppFunc.js"></script>
+
+  <!-- ■ 지연로드 인프라 — 이 두 파일만 부팅 시 로드, 실제 도메인 코드는 전혀 안 실린다 ■ -->
+  <script src="lib/mfe/foMfeRegistry.js"></script>
+  <script src="lib/mfe/foMfeCatalog.js"></script>
+
+  <script src="lib/mfe/foMfeShell.js"></script>
+</body>
+</html>

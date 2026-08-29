@@ -1,0 +1,30 @@
+shopjoy-mfe-domain-fo-md-cb
+
+관리단위: 마이크로 도메인 — 코바늘 도안 제작(FO 사용자용 독립 모듈).
+          shopjoy_v260406/fo-md-cb-cobanul.html + pages/md/cb/* 복제.
+현재 위치: shopjoy_v260828_mfe/fo-md/cb/  (컨테이너 폴더 밑 fo-md/ 안,
+          형제 fo-md/sg/ 와 함께 — BO 쪽 bo-md/cb·bo-md/sg 와 대응)
+
+⭐ 이 도메인은 foMfeShell.js(?page=xxx 라우팅)의 지연로드 registry에 안 들어간다
+  — 완전히 독립된 별도 HTML 진입점(fo-md-cb-cobanul.html)으로, 실제 프로덕션에서도
+  index.html 밖에 있는 "독립 FO 모듈" 패턴이다(원본 파일 상단 주석: "앞으로 추가될
+  모듈들도 이런 패턴"). 그래서 manifest.js/카탈로그 등록이 없다 — 이 폴더의
+  fo-md-cb-cobanul.html 을 직접 열면 그 자체로 완결된 앱이다.
+
+포함 경로: `fo-md-cb-cobanul.html`(진입점, 컨테이너 루트가 아니라 이 폴더 안에
+          위치 — 원본은 shopjoy_v260406 루트에 있었지만, 이 데모는 도메인 폴더
+          안에 넣고 상대경로를 `../../fo-ap-global/`로 조정했다),
+          `pages/md/cb/{MdCbPatternListPage,MdCbCobanulPage}.js`(목록/상세),
+          `lib/services/mdCbApiSvc.js`, `assets/css/fo-md-cb-cobanul-style.css`
+
+셸 의존(fo-ap-global 공용, 이번에 추가됨): `lib/app/foModuleShell.js`(index.html의
+          foAppBase.js 축약판 — theme/auth/사이드바/토스트/컨펌만 담당, 페이지
+          라우팅은 이 모듈 밖의 관심사라 없음), `components/comp/BoComp.js`
+          (Login.js의 "회원선택" 서브모달이 쓰는 `bo-multi-check-select`, FO/BO
+          공용 위젯), `assets/css/fo-md-module-style.css`(cb/sg 공용 모듈 스타일),
+          `components/modals/Login.js`(원본은 pages/fo/Login.js 인데 이 데모에서는
+          fo-ap-global/components/modals/ 로 옮겨져 있어 경로만 다름, 내용 동일)
+
+원본: shopjoy_v260406(실제 프로덕션)의 fo-md-cb-cobanul.html + pages/md/cb/* +
+     lib/services/mdCbApiSvc.js + assets/css/fo-md-cb-cobanul-style.css 를
+     그대로 복사(원본은 전혀 수정하지 않음, 상대경로만 폴더 깊이에 맞게 조정).

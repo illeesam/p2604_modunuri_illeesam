@@ -1,0 +1,18 @@
+shopjoy-mfe-domain-fo-ec-od
+
+관리단위: 마이크로 도메인 — 장바구니/주문(FO). shopjoy_v260406/pages/fo/
+          {Cart,Order}.js 복제.
+현재 위치: shopjoy_v260828_mfe/fo-ec-od/  (컨테이너 폴더 바로 밑, 모든 fo-*
+          레포 및 fo-ap-global/ 과 완전한 형제. BO 쪽 bo-ec-od 와 같은 코드지만
+          여기서는 소그룹 폴더명이 "order"로 시작부터 일치 — od 코드=order 로
+          이해)
+
+포함 경로: `order/manifest.js` + `order/pages/fo/order/{Cart,Order}.js`,
+          `dev.html`(단독 실행용)
+
+등록 pageId: cart, order
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/fo/Cart.js + Order.js 를 그대로
+     복사(원본은 전혀 수정하지 않음).
+셸 의존(런타임 계약): window.FO_MFE_REGISTRY, window.foApp, window.foApiSvc/
+          coApiSvc, window.coUtil/foUtil, 셸이 등록한 공용 컴포넌트

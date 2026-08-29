@@ -1,0 +1,17 @@
+shopjoy-mfe-domain-fo-home
+
+관리단위: 마이크로 도메인 — 홈(FO). shopjoy_v260406/pages/fo/Home01.js 복제.
+현재 위치: shopjoy_v260828_mfe/fo-ap-home/  (컨테이너 폴더 바로 밑, 모든
+          fo-* 레포 및 fo-ap-global/ 과 완전한 형제)
+
+포함 경로: `home/manifest.js` + `home/pages/fo/home/Home01.js`, `dev.html`
+          (레포 전체 단독 실행용)
+
+등록 pageId: home (FO_SITE_NO 사이트 하나(01)로 범위 고정 — 02/03 은 필요 시
+          이 폴더에 Home02.js/Home03.js 를 형제 파일로 추가하고 manifest.js가
+          window.FO_SITE_NO 로 분기해서 로드하도록 확장하면 된다)
+
+원본: shopjoy_v260406(실제 프로덕션)의 pages/fo/Home01.js 를 그대로 복사
+     (원본은 전혀 수정하지 않음).
+셸 의존(런타임 계약): window.FO_MFE_REGISTRY, window.foApp, window.foApiSvc/
+          coApiSvc, window.coUtil/foUtil, 셸이 등록한 공용 컴포넌트

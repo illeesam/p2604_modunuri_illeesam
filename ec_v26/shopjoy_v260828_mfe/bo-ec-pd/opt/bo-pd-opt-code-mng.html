@@ -8,7 +8,7 @@
     // BO 사이트 번호 (팝업은 항상 01)
     window.BO_SITE_NO = '01';
   </script>
-  <link rel="stylesheet" href="../bo-ap-global/assets/css/bo-global-style01.css">
+  <link rel="stylesheet" href="../../bo-ap-global/assets/css/bo-global-style01.css">
   <style>
     /* 팝업 전용 기본 */
     body { margin: 0; background: #f5f6fa; font-size: 13px; }
@@ -40,39 +40,39 @@
 ═══════════════════════════════════════════════════════════════════ -->
 <div id="app"></div>
 
-<!-- ── Vue 3 core (../bo-ap-global/ 공용 런타임 참조) ── -->
-<script src="../bo-ap-global/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
-<script src="../bo-ap-global/assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
-<script src="../bo-ap-global/assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
-<script src="../bo-ap-global/assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+<!-- ── Vue 3 core (../../bo-ap-global/ 공용 런타임 참조) ── -->
+<script src="../../bo-ap-global/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+<script src="../../bo-ap-global/assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+<script src="../../bo-ap-global/assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+<script src="../../bo-ap-global/assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
 
 <!-- ── 유틸 & API ── -->
-<script src="../bo-ap-global/lib/utils/coUtil.js"></script>
-<script src="../bo-ap-global/lib/utils/boApiAxios.js"></script>
-<script src="../bo-ap-global/lib/utils/boUtil.js"></script>
-<script src="../bo-ap-global/lib/env/boEnvConsts.js"></script>
-<script src="../bo-ap-global/lib/utils/coExtSdk.js"></script>
-<script src="../bo-ap-global/lib/utils/coAuth.js"></script>
-<script src="../bo-ap-global/lib/services/coApiSvc.js"></script>
-<script src="../bo-ap-global/lib/services/boApiSvc.js"></script>
-<script src="../bo-ap-global/lib/utils/refDefaults.js"></script>
-<script src="../bo-ap-global/lib/utils/safeArrayUtils.js"></script>
+<script src="../../bo-ap-global/lib/utils/coUtil.js"></script>
+<script src="../../bo-ap-global/lib/utils/boApiAxios.js"></script>
+<script src="../../bo-ap-global/lib/utils/boUtil.js"></script>
+<script src="../../bo-ap-global/lib/env/boEnvConsts.js"></script>
+<script src="../../bo-ap-global/lib/utils/coExtSdk.js"></script>
+<script src="../../bo-ap-global/lib/utils/coAuth.js"></script>
+<script src="../../bo-ap-global/lib/services/coApiSvc.js"></script>
+<script src="../../bo-ap-global/lib/services/boApiSvc.js"></script>
+<script src="../../bo-ap-global/lib/utils/refDefaults.js"></script>
+<script src="../../bo-ap-global/lib/utils/safeArrayUtils.js"></script>
 
 <!-- ── Pinia 스토어 (인증/코드 의존) ── -->
-<script src="../bo-ap-global/lib/stores/bo/boAppInitStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boAppStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boAuthStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boCodeStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boConfigStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boMenuStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boPropStore.js"></script>
-<script src="../bo-ap-global/lib/stores/bo/boRoleStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boAppInitStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boAppStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boAuthStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boCodeStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boConfigStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boMenuStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boPropStore.js"></script>
+<script src="../../bo-ap-global/lib/stores/bo/boRoleStore.js"></script>
 
 <!-- ── 공통 컴포넌트 (btn / form 등 CSS 클래스 재사용) ── -->
-<script src="../bo-ap-global/components/comp/BaseComp.js"></script>
-<script src="../bo-ap-global/components/comp/BoComp.js"></script>
-<script src="../bo-ap-global/components/comp/BoAreaComp.js"></script>
-<script src="../bo-ap-global/components/modals/BoExcelDownModal.js"></script>
+<script src="../../bo-ap-global/components/comp/BaseComp.js"></script>
+<script src="../../bo-ap-global/components/comp/BoComp.js"></script>
+<script src="../../bo-ap-global/components/comp/BoAreaComp.js"></script>
+<script src="../../bo-ap-global/components/modals/BoExcelDownModal.js"></script>
 
 <!-- ── 팝업 컴포넌트(이 도메인 자기 자신) ── -->
 <script src="pages/bo/pd/opt/PdOptCodeMng.js"></script>

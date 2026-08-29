@@ -560,7 +560,6 @@
             </div>
           </template>
         </div>
-        <div class="mfe-sidebar-hint">각 폴더의 manifest.js 가 스스로 등록한 메뉴입니다(소그룹 클릭 시 그 폴더 하나만 불러옵니다)</div>
       </div>
 
       <!-- ══ 우측: 열린 탭 + 본문 ══ -->

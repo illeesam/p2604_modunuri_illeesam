@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FO MFE 홈 도메인 — 단독 실행</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
+  <script>
+    /* fo-ap-global/mfe.html 과 동일한 FO_SITE_NO 부트스트랩(사이트 01 고정) */
+    window.FO_SITE_NO = '01';
+    try {
+      localStorage.setItem('modu-fo-sy-siteNo', '01');
+      localStorage.setItem('modu-fo-sy-siteId', '2604010000000001');
+    } catch (e) {}
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       이 화면은 "홈" 도메인 레포(이 폴더) 를 다른 도메인 없이, 메인프레임
+       (../fo-ap-global/)의 공용 런타임만으로 단독 실행한다 — 이게 되면 이 도메인이
+       셸의 "런타임 계약"에만 의존한다는 증거가 된다.
+  ═══════════════════════════════════════════════════════════════════ -->
+
+  <script src="../fo-ap-global/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/postcode/2/postcode.v2.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/toastui-editor/3.2.2/toastui-editor-all.min.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/toastui-editor/3.2.2/ko-kr.min.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="../fo-ap-global/assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="../fo-ap-global/assets/cdn/pkg/toastui-editor/3.2.2/toastui-editor.min.css">
+  <link rel="stylesheet" href="../fo-ap-global/assets/css/fo-global-style01.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="../fo-ap-global/lib/utils/perfUtil.js"></script>
+  <script src="../fo-ap-global/lib/utils/safeUtil.js"></script>
+  <script src="../fo-ap-global/lib/license/licenseFo.js"></script>
+  <script src="../fo-ap-global/lib/utils/coUtil.js"></script>
+  <script src="../fo-ap-global/lib/consts/coConsts.js"></script>
+  <script src="../fo-ap-global/lib/consts/foConsts.js"></script>
+  <script src="../fo-ap-global/lib/utils/foApiAxios.js"></script>
+  <script src="../fo-ap-global/lib/utils/foUtil.js"></script>
+  <script src="../fo-ap-global/lib/utils/coNotiStore.js"></script>
+  <script src="../fo-ap-global/lib/env/foEnvConsts.js"></script>
+  <script src="../fo-ap-global/lib/utils/coExtSdk.js"></script>
+  <script src="../fo-ap-global/lib/utils/coAuth.js"></script>
+
+  <script src="../fo-ap-global/lib/services/coApiSvc.js"></script>
+  <script src="../fo-ap-global/lib/services/foApiSvc.js"></script>
+
+  <script src="../fo-ap-global/lib/app/foAppConfig.js"></script>
+
+  <script src="../fo-ap-global/lib/stores/fo/foAppInitStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foAppStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foAuthStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foCodeStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foDispStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foMenuStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foMyStore.js"></script>
+
+  <script src="../fo-ap-global/lib/app/foAppAuth.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foPropStore.js"></script>
+  <script src="../fo-ap-global/lib/stores/fo/foRoleStore.js"></script>
+
+  <script src="../fo-ap-global/components/layout/foAppFooter.js"></script>
+  <script src="../fo-ap-global/components/layout/foAppHeader.js"></script>
+  <script src="../fo-ap-global/components/layout/foAppSidebar.js"></script>
+  <script src="../fo-ap-global/components/layout/foMyLayout.js"></script>
+
+  <script src="../fo-ap-global/components/comp/BaseComp.js"></script>
+  <script src="../fo-ap-global/components/comp/FoComp.js"></script>
+  <script src="../fo-ap-global/components/comp/FoAreaComp.js"></script>
+  <script src="../fo-ap-global/components/comp/CoWidgetComp.js"></script>
+  <script src="../fo-ap-global/components/comp/CoNotiBell.js"></script>
+  <script src="../fo-ap-global/components/modals/FoModals.js"></script>
+  <script src="../fo-ap-global/components/modals/FoCmPopupModal.js"></script>
+  <script src="../fo-ap-global/components/modals/CoExtHelpModal.js"></script>
+  <script src="../fo-ap-global/components/modals/Login.js"></script>
+
+  <script src="../fo-ap-global/components/disp/DispX01Ui.js"></script>
+  <script src="../fo-ap-global/components/disp/DispX02Area.js"></script>
+  <script src="../fo-ap-global/components/disp/DispX03Panel.js"></script>
+  <script src="../fo-ap-global/components/disp/DispX04Widget.js"></script>
+
+  <script src="../fo-ap-global/pages/base/foError401.js"></script>
+  <script src="../fo-ap-global/pages/base/foError404.js"></script>
+  <script src="../fo-ap-global/pages/base/foError500.js"></script>
+
+  <script src="../fo-ap-global/lib/app/foAppStyles.js"></script>
+  <script src="../fo-ap-global/lib/app/foAppFunc.js"></script>
+
+  <script src="../fo-ap-global/lib/mfe/foMfeRegistry.js"></script>
+
+  <!-- ■ 이 레포(fo-ap-home) 안의 manifest.js 로드 — 다른 레포는 전혀 안 부른다 ■ -->
+  <script src="home/manifest.js"></script>
+
+  <script src="../fo-ap-global/lib/mfe/foMfeShell.js"></script>
+</body>
+</html>
