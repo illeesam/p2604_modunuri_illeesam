@@ -204,18 +204,18 @@
 .sg-ddl-actions-left { display:flex; gap:6px; flex-wrap:wrap; }
 .sg-ddl-actions-right { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 
-/* [소스 생성] 언어/스택 선택 팝오버(2026-08-26). 버튼 바로 위에 뜨는 카드형 — 클릭 밖 영역(투명
-   backdrop)을 누르면 닫힌다. Backend=1열/Frontend=2열/Fullstack=3열/모바일 앱=4열/기타=5열 — 구획
-   자체가 하나의 세로 열이 되도록 가로로 나열한다(2026-08-26 재조정 — 표에서 열=구획, 그 안은 1줄씩). */
+/* [소스 생성] 언어/스택 선택 — 2026-08-30: 버튼 앵커 팝오버 → 뷰포트 중앙 고정 모달로 변경.
+   버튼 위치를 기준으로 뜨는 방식(bottom:calc(100%+...); left:50%)은 버튼이 화면 오른쪽 구석에
+   있으면 팝업이 뷰포트 밖으로 밀려나가고, 버튼을 옮겨도(DDL 편집창 아래) 팝업 자체 높이가
+   버튼 위 여유 공간보다 크면 위쪽이 잘리는 문제가 반복됐다. position:fixed + 화면 정중앙
+   고정이면 버튼이 어디에 있든, 스크롤 위치가 어디든 항상 완전히 보인다(max-height+overflow-y
+   로 내용이 넘치면 팝업 자체가 스크롤 — 액션 버튼이 잘려서 안 눌리는 일이 없다). */
 .sg-gen-wrap { position:relative; display:inline-block; }
-.sg-stack-backdrop { position:fixed; inset:0; z-index:60; background:transparent; }
-.sg-stack-pop { position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%);
-  z-index:61; width:max-content; max-width:min(920px, 94vw); background:var(--bg-card,#fff);
-  border:1px solid var(--border,#e4e4e4);
+.sg-stack-backdrop { position:fixed; inset:0; z-index:60; background:rgba(20,20,25,0.35); }
+.sg-stack-pop { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  z-index:61; width:max-content; max-width:min(920px, 94vw); max-height:85vh; overflow-y:auto;
+  background:var(--bg-card,#fff); border:1px solid var(--border,#e4e4e4);
   border-radius:14px; box-shadow:0 16px 40px rgba(0,0,0,0.22); padding:16px 16px 14px; }
-/* 버튼을 가리키는 작은 꼬리표(삼각형) — 팝오버가 "이 버튼에서 나왔다"는 걸 시각적으로 이어준다 */
-.sg-stack-pop::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-  width:0; height:0; border:7px solid transparent; border-top-color:var(--bg-card,#fff); }
 .sg-stack-pop-title { font-size:13px; font-weight:800; color:var(--text-primary,#222); margin-bottom:12px;
   display:flex; align-items:center; gap:6px; }
 .sg-stack-pop-title::before { content:'⚙️'; font-size:12px; }

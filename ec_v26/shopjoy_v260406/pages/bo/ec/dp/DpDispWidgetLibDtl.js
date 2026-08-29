@@ -628,7 +628,7 @@ window.DpDispWidgetLibDtl = {
         form.libCode = fnGenLibCode();
       }
       try { await schema.validate(form, { abortEarly: false }); }
-      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
 
       const isNewLib = cfIsNew.value;
       const ok = await showConfirm('저장', '저장하시겠습니까?');

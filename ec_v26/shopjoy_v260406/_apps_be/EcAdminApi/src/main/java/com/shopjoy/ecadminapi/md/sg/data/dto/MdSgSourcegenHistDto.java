@@ -29,6 +29,7 @@ public class MdSgSourcegenHistDto {
         private Long zipFileSize;      // ZIP 파일 크기(byte)
         private String zipUrl;         // ZIP 다운로드 URL
         private String genMemo;        // 생성 메모
+        private String selectedStacks; // 선택된 언어/스택 라벨 목록(콤마 구분)
         private String ddlSnapshotJson; // DDL 탭 스냅샷(JSON) — [불러오기] 복원용
         private String useYn;          // 사용여부 Y/N
         private String projectNm;      // 소스젠명 (조인, 이력 목록 표시용)

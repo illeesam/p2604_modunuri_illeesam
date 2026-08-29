@@ -76,10 +76,17 @@ public class FileUploadUtil {
             Arrays.asList("mp4", "avi", "mov", "mkv", "webm", "flv", "wmv", "m4v"));
     /**
      * 화이트리스트와 무관하게 항상 차단하는 실행/위험 확장자.
-     * zip/rar 등 압축도 포함 — 우회 실행 위험 때문에 명시적으로 거부한다.
-     */
+     * rar/7z/iso 등 압축도 포함 — 우회 실행 위험 때문에 명시적으로 거부한다.
+     *
+     * <p>⚠ zip 은 여기 넣지 않는다(2026-08-30 버그수정) — {@code allowed-extensions} 기본값에는
+     * zip 이 이미 포함돼 있는데, 이 블랙리스트에도 zip 이 같이 있으면 항상 이쪽이 우선(validate()
+     * 참고)이라 zip 업로드가 항상 "실행 파일은 업로드할 수 없습니다" 로 조용히 실패했다(예:
+     * 소스젠 생성결과 ZIP 자동 보관 — HTTP 는 201 로 성공하지만 uploadedFiles 가 비어 이력에
+     * 안 남는 형태로 드러났다). 실행 파일 위장 우회 위험이 걱정되면 zip 을 막을 게 아니라
+     * allowed-extensions 에서 빼는 쪽이 맞다 — 지금처럼 "허용 목록에도 있고 차단 목록에도
+     * 있는" 자기모순 상태로 두지 말 것. */
     private static final Set<String> BLOCKED_EXTENSIONS = new HashSet<>(
-            Arrays.asList("exe", "bat", "cmd", "com", "dll", "sys", "scr", "vbs", "js", "jar", "zip", "rar", "7z", "iso"));
+            Arrays.asList("exe", "bat", "cmd", "com", "dll", "sys", "scr", "vbs", "js", "jar", "rar", "7z", "iso"));
 
     /**
      * 파일 유효성 검사 (확장자 + 용량).

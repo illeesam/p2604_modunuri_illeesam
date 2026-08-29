@@ -211,7 +211,7 @@ window.StSettleEtcAdjMng = {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) {
-      console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
       const ok = await showConfirm('저장', '기타조정을 저장하시겠습니까?');
       if (!ok) { return; }
       const body = { settleId: form.settleId, etcAdjTypeCd: form.etcAdjTypeCd, etcAdjDirCd: form.etcAdjDirCd, etcAdjAmt: form.etcAdjAmt, etcAdjReason: form.etcAdjReason, settleEtcAdjMemo: form.settleEtcAdjMemo };

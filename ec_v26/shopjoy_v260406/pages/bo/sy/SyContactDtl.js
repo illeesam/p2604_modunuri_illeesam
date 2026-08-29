@@ -218,7 +218,7 @@ window.SyContactDtl = {
       if (tabId === 'content') {
         Object.keys(errors).forEach(k => delete errors[k]);
         try { await schema.validate(form, { abortEarly: false }); }
-        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
@@ -251,7 +251,7 @@ window.SyContactDtl = {
       delete errors.contactAnswer;
       if (!form.contactAnswer || !form.contactAnswer.trim()) {
         errors.contactAnswer = '답변 내용을 입력해주세요.';
-        showToast('입력 내용을 확인해주세요.', 'error');
+        coUtil.cofValidationToast(errors, showToast);
         return;
       }
       const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');

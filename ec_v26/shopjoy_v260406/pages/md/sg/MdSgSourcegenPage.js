@@ -665,7 +665,7 @@ window.MdSgSourcegenPage = {
 
     /* ── 1) 상태 선언 (ref/reactive 를 computed/watch 보다 먼저) ── */
     const uiState = reactive({
-      loading: false, generating: false, saving: false, thumbUploading: false,
+      loading: false, generating: false, thumbUploading: false,
       autoThumb: true,        // 대표이미지 미첨부 시 DDL 정보로 자동 생성 (기본 ON)
       dtlMode: 'edit',        // 'view' | 'edit' — 목록에서 행 클릭=보기, [수정] 클릭=수정모드
       activeTabId: null,      // 현재 편집 중인 DDL 탭(tabId — 배열 재정렬과 무관한 안정 식별자)
@@ -737,6 +737,7 @@ window.MdSgSourcegenPage = {
        그대로), 일시/크기는 coUtil 공통 헬퍼(cofYmdHm/cofFileSize) 사용. */
     const genHistGridColumns = [
       { key: 'genDate',     label: '생성일시', width: '150px', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
+      { key: 'selectedStacks', label: '선택 언어/스택', width: '180px', fmt: (v) => v || '-', cellTitle: (v) => v || '' },
       { key: 'zipFileNm',   label: '파일명', cellClass: 'sg-list-mono' },
       { key: 'ddlCount',    label: '테이블', width: '80px', align: 'center', fmt: (v) => v || 0 },
       { key: 'fileCount',   label: '파일수', width: '80px', align: 'center', fmt: (v) => v || 0 },
@@ -875,6 +876,20 @@ window.MdSgSourcegenPage = {
       if (opts) Object.assign(t, fnGateAutoSubPackage(opts));
       t.files = {}; t.error = ''; t.generatedAt = '';
       fnFillAutoName();
+    };
+
+    /* onSampleSelectChange — 헤더의 예제 DDL select(2026-08-30, 기존 버튼 그리드 대체) 변경 핸들러.
+       "값을 고르는 즉시 실행하고 되돌리는" 실행형 컨트롤이라, :value 를 상수 ''로만 바인딩해두면
+       Vue 가 다음 렌더에서 "값이 안 바뀌었다"고 보고 DOM 패치를 건너뛸 수 있어 select 표시가
+       고른 항목에 그대로 남을 위험이 있다 — evt.target.value 를 직접 되돌려 확실히 초기화한다. */
+    const onSampleSelectChange = async (evt) => {
+      const val = evt.target.value;
+      evt.target.value = '';
+      if (!val) return;
+      const [db, key] = val.split('::');
+      const grp = SG_SAMPLE_GROUPS.find(g => g.db === db);
+      const s = grp && grp.items.find(x => x.key === key);
+      if (s) await onLoadSample(s, db);
     };
 
     /* ── 대표이미지 — 수동 업로드 / 제거 / (미첨부 시) DDL 자동생성 ── */
@@ -1434,8 +1449,17 @@ window.MdSgSourcegenPage = {
       })),
     });
 
+    /* fnSelectedStacksLabel — 이번 생성에 고른 언어/스택(selectedStacks, prefix 배열)을
+       사람이 읽는 라벨로 바꿔 콤마로 이어붙인다(2026-08-30, 생성 이력 그리드 표시용).
+       SG_FILE_GROUPS 의 title 을 그대로 쓴다 — 팝오버 체크리스트 항목 이름과 항상 일치. */
+    const fnSelectedStacksLabel = () => selectedStacks
+      .map(p => SG_FILE_GROUPS.find(g => g.prefix === p)?.title || p)
+      .join(', ');
+
     /* fnArchiveZip — 생성 결과를 ZIP 으로 묶어 업로드하고 이력 1건을 남긴다.
-       [저장] 시 자동 보관과 [생성결과 보관] 버튼이 함께 쓴다. 실패하면 throw 한다(호출부에서 처리). */
+       [소스 생성] 직후 자동 보관과 [저장](신규 프로젝트 최초 저장) 시 자동 보관이 함께 쓴다
+       (2026-08-30: 수동 [생성결과 보관] 버튼은 제거 — 소스 생성 시 이미 자동으로 보관되어 불필요).
+       실패하면 throw 한다(호출부에서 처리). */
     const fnArchiveZip = async (projectId, memo) => {
       const blob = await fnBuildZipBlob();
       const zipNm = fnZipName();
@@ -1455,6 +1479,7 @@ window.MdSgSourcegenPage = {
         zipUrl: uploaded.cdnImgUrl || uploaded.attachUrl || null,
         genMemo: memo || null,
         ddlSnapshotJson: fnBuildDdlSnapshot(),
+        selectedStacks: fnSelectedStacksLabel() || null,
       }, '소스젠', '생성이력등록');
     };
 
@@ -1478,23 +1503,6 @@ window.MdSgSourcegenPage = {
       uiState.activeFile = '';
       if (cfReadonly.value) uiState.dtlMode = 'edit';
       props.showToast('DDL 탭을 불러왔습니다. [소스 생성]을 눌러 다시 생성해주세요.', 'success');
-    };
-
-    const onSaveZipToDb = async () => {
-      if (!form.projectId) { props.showToast('먼저 프로젝트를 저장해주세요.', 'error'); return; }
-      if (!cfTotalFileCount.value) { props.showToast('먼저 [생성] 을 실행해주세요.', 'error'); return; }
-      if (!await props.showConfirm('생성결과 보관', '생성된 소스를 ZIP 으로 묶어 첨부로 보관하시겠습니까?')) return;
-      uiState.saving = true;
-      try {
-        await fnArchiveZip(form.projectId, uiState.genMemo);
-        uiState.genMemo = '';
-        await fnLoadGenHists(form.projectId);
-        props.showToast('생성결과를 첨부로 보관했습니다.', 'success');
-      } catch (err) {
-        props.showToast(coUtil.cofErrMsg(err, '보관 중 오류가 발생했습니다.'), 'error', 0);
-      } finally {
-        uiState.saving = false;
-      }
     };
 
     const onDeleteGenHist = async (h) => {
@@ -1589,7 +1597,7 @@ window.MdSgSourcegenPage = {
       cfResultTabs, cfGroupedFiles, cfTree, cfTreeFlat,
       cfResultTreeFlat, cfResultScopeLabel, cfActiveEntry, cfScopeFileEntries, cfResultScopeGeneratedAt, cfResultScopeTabsCount,
       fnLangOf,
-      SG_SAMPLE_GROUPS, onLoadSample, codeBoxRef, thumbInputRef,
+      SG_SAMPLE_GROUPS, onLoadSample, onSampleSelectChange, codeBoxRef, thumbInputRef,
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
       onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
       SG_TEMPLATE_DOMAINS, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onDownloadTemplate,
@@ -1603,7 +1611,7 @@ window.MdSgSourcegenPage = {
       SG_STACK_SECTIONS, selectedStacks, onOpenStackPop, onCloseStackPop, onToggleStack, onGenerateConfirmed,
       SG_STACK_VERSION_OPTIONS, stackVersions, fnStackVersion, onChangeVersion,
       onSelectResultScope, onResultTreeToggle, onSelectFile, onCopyCode, onDownloadFile, onDownloadZip,
-      onSaveZipToDb, onDeleteGenHist, onSave, onDeleteProject,
+      onDeleteGenHist, onSave, onDeleteProject,
     };
   },
   template: /* html */`
@@ -1660,7 +1668,24 @@ window.MdSgSourcegenPage = {
   <!-- ═══ DDL 탭 ═══ -->
   <div class="sg-panel">
     <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(좌측 트리에서 테이블 선택. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
-      <span style="margin-left:auto;display:flex;gap:6px;">
+      <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+        <!-- 2026-08-30: [현재탭 초기화]/[전체 초기화] + 예제 DDL(버튼 그리드 → select 트리)을
+             DDL 편집 영역 하단에서 이 헤더로 이동. select 는 optgroup(DB 유형)으로 트리처럼
+             묶고, 값을 고르는 즉시 그 예제로 새 탭을 추가한 뒤 다시 placeholder 로 되돌린다
+             (값 자체를 기억할 필요 없는 "실행형" 선택이라 select 상태를 유지하지 않음). -->
+        <template v-if="!cfReadonly">
+          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" @click="onClearTab">현재탭 초기화</button>
+          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" @click="onClearAllTabs">전체 초기화</button>
+          <select class="form-control sg-sample-select" style="width:auto;max-width:220px;"
+            :value="''" @change="onSampleSelectChange($event)" title="예제 DDL — 선택하면 새 탭이 추가됩니다(빈 탭이면 그 자리를 채움)">
+            <option value="" disabled>예제 DDL 선택…</option>
+            <optgroup v-for="grp in SG_SAMPLE_GROUPS" :key="grp.db" :label="grp.dbLabel">
+              <option v-for="s in grp.items" :key="grp.db + '::' + s.key" :value="grp.db + '::' + s.key">
+                {{ s.label }} — {{ s.desc }}
+              </option>
+            </optgroup>
+          </select>
+        </template>
         <button type="button" class="sg-btn sg-btn-accent" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
         <button type="button" class="sg-btn sg-btn-accent" @click="onProjectUploadStart">📤 프로젝트업로드</button>
       </span>
@@ -1744,67 +1769,66 @@ window.MdSgSourcegenPage = {
       class="form-control sg-ddl-textarea" placeholder="CREATE TABLE schema.tbl ( ... );"></textarea>
     <div v-if="cfCurTab.error" class="sg-msg-error">{{ cfCurTab.error }}</div>
 
-    <div v-if="!cfReadonly" class="sg-samples">
-      <div class="sg-samples-cap">예제 DDL <span>— 클릭하면 새 탭이 추가되고(빈 탭이면 그 자리를 채움) DB 유형도 함께 맞춰집니다</span></div>
-      <div v-for="grp in SG_SAMPLE_GROUPS" :key="grp.db" class="sg-sample-row">
-        <span class="sg-sample-label" :class="'sg-db-' + grp.db.toLowerCase()">{{ grp.dbLabel }}</span>
-        <button v-for="s in grp.items" :key="s.key" class="sg-sample-btn"
-          :class="{ 'sg-sample-on': form.dbTypeCd === grp.db }"
-          :title="grp.dbLabel + ' · ' + s.desc + ' — 새 탭으로 추가'" @click="onLoadSample(s, grp.db)">
-          {{ s.label }}<span class="sg-sample-desc">{{ s.desc }}</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="sg-ddl-actions">
-      <div class="sg-ddl-actions-left">
-        <template v-if="!cfReadonly">
-          <button class="sg-btn sg-btn-ghost" @click="onClearTab">현재탭 초기화</button>
-          <button class="sg-btn sg-btn-ghost" @click="onClearAllTabs">전체 초기화</button>
-        </template>
-      </div>
-      <div class="sg-gen-wrap">
-        <button class="sg-btn sg-btn-dark" @click="onOpenStackPop" :disabled="uiState.generating">
-          {{ uiState.generating ? '생성 중…' : '⚙️ 소스 생성 (전체 탭)' }}
-        </button>
-        <template v-if="uiState.stackPopOpen">
-          <div class="sg-stack-backdrop" @click="onCloseStackPop"></div>
-          <div class="sg-stack-pop">
-            <div class="sg-stack-pop-title">생성할 언어/스택 선택</div>
-            <div class="sg-stack-pop-list">
-              <div v-for="sec in SG_STACK_SECTIONS" :key="sec.label" class="sg-stack-section">
-                <div class="sg-stack-section-title">{{ sec.label }}</div>
-                <div class="sg-stack-section-grid">
-                  <label v-for="g in sec.items" :key="g.prefix" class="sg-stack-item">
-                    <input type="checkbox" :checked="selectedStacks.includes(g.prefix)" @change="onToggleStack(g.prefix)" />
-                    <span class="sg-stack-item-label">{{ g.short || g.title }}</span>
-                    <select class="sg-stack-version" :value="fnStackVersion(g.prefix)"
-                      :disabled="!selectedStacks.includes(g.prefix)" @click.stop
-                      @change="onChangeVersion(g.prefix, $event.target.value)">
-                      <option v-for="v in SG_STACK_VERSION_OPTIONS" :key="v" :value="v">{{ v }}</option>
-                    </select>
-                  </label>
+    <!-- 2026-08-30: [메모]+[소스 생성] 을 하단 버튼란(화면 우측 구석)에서 이 DDL 편집 영역
+         바로 아래로 이동 — 버튼이 화면 가장자리에 있으면 언어/스택 팝오버가 그 버튼 중심으로
+         뜨다가 뷰포트 오른쪽 밖으로 잘려서 "모바일 앱"/"기타" 칸이 안 보이던 문제도 같이
+         해결된다(팝오버가 이제 화면 중앙에 더 가까운 위치에서 뜬다). -->
+    <div v-if="!cfReadonly" style="display:flex;margin-top:12px;">
+      <span style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+        <input v-model="uiState.genMemo" class="form-control" style="width:220px;"
+          placeholder="보관 메모(선택) — 예: v1 초안, 리뷰 반영" />
+        <div class="sg-gen-wrap">
+          <button class="sg-btn sg-btn-dark" @click="onOpenStackPop" :disabled="uiState.generating">
+            {{ uiState.generating ? '생성 중…' : '⚙️ 소스생성' }}
+          </button>
+          <template v-if="uiState.stackPopOpen">
+            <div class="sg-stack-backdrop" @click="onCloseStackPop"></div>
+            <div class="sg-stack-pop">
+              <div class="sg-stack-pop-title">생성할 언어/스택 선택</div>
+              <div class="sg-stack-pop-list">
+                <div v-for="sec in SG_STACK_SECTIONS" :key="sec.label" class="sg-stack-section">
+                  <div class="sg-stack-section-title">{{ sec.label }}</div>
+                  <div class="sg-stack-section-grid">
+                    <label v-for="g in sec.items" :key="g.prefix" class="sg-stack-item">
+                      <input type="checkbox" :checked="selectedStacks.includes(g.prefix)" @change="onToggleStack(g.prefix)" />
+                      <span class="sg-stack-item-label">{{ g.short || g.title }}</span>
+                      <select class="sg-stack-version" :value="fnStackVersion(g.prefix)"
+                        :disabled="!selectedStacks.includes(g.prefix)" @click.stop
+                        @change="onChangeVersion(g.prefix, $event.target.value)">
+                        <option v-for="v in SG_STACK_VERSION_OPTIONS" :key="v" :value="v">{{ v }}</option>
+                      </select>
+                    </label>
+                  </div>
                 </div>
               </div>
+              <div class="sg-stack-pop-actions">
+                <button type="button" class="sg-btn sg-btn-ghost" @click="onCloseStackPop">취소</button>
+                <button type="button" class="sg-btn sg-btn-dark" @click="onGenerateConfirmed" :disabled="!selectedStacks.length">생성 시작</button>
+              </div>
             </div>
-            <div class="sg-stack-pop-actions">
-              <button type="button" class="sg-btn sg-btn-ghost" @click="onCloseStackPop">취소</button>
-              <button type="button" class="sg-btn sg-btn-dark" @click="onGenerateConfirmed" :disabled="!selectedStacks.length">생성 시작</button>
-            </div>
-          </div>
-        </template>
-      </div>
-      <div class="sg-ddl-actions-right">
-        <button class="sg-btn sg-btn-green" @click="onDownloadZip" :disabled="!cfTotalFileCount">⬇ ZIP 다운로드</button>
-        <button v-if="!cfReadonly" class="sg-btn sg-btn-dark" @click="onSaveZipToDb"
-          :disabled="!cfTotalFileCount || uiState.saving">
-          {{ uiState.saving ? '보관 중…' : '📎 생성결과 보관' }}
-        </button>
-      </div>
+          </template>
+        </div>
+      </span>
     </div>
+
       </div>
       <!-- ═══ □ 우측: 편집 영역 ═══ -->
     </div>
+  </div>
+
+  <!-- ═══ 상단 액션(저장/소스생성/삭제/취소) — 2026-08-30: [생성 결과] 를 스크롤해서 내려가지
+       않아도 바로 보이도록 그 위로 이동. ZIP 다운로드만 [생성 결과] 확인 직후가 자연스러워
+       원래 위치(그 아래)에 그대로 둔다. ═══ -->
+  <div class="sg-detail-bottom-actions">
+    <template v-if="cfReadonly">
+      <button class="btn btn_edit" @click="onSwitchToEdit">수정</button>
+      <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
+    </template>
+    <template v-else>
+      <button class="btn btn_save" @click="onSave" :disabled="uiState.loading">저장</button>
+      <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
+      <button v-if="form.projectId" class="btn btn_cancel" @click="onCancelEdit">취소</button>
+    </template>
   </div>
 
   <!-- ═══ 생성 결과 뷰어 ═══ -->
@@ -1869,17 +1893,9 @@ window.MdSgSourcegenPage = {
     </div>
   </div>
 
-  <!-- ═══ 하단 액션 ═══ -->
-  <div class="sg-detail-bottom-actions">
-    <template v-if="cfReadonly">
-      <button class="btn btn_edit" @click="onSwitchToEdit">수정</button>
-      <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
-    </template>
-    <template v-else>
-      <button class="btn btn_save" @click="onSave" :disabled="uiState.loading">저장</button>
-      <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
-      <button v-if="form.projectId" class="btn btn_cancel" @click="onCancelEdit">취소</button>
-    </template>
+  <!-- ═══ ZIP 다운로드 (2026-08-30: 이 위치 유지 — 생성 결과를 확인한 직후 바로 다운로드) ═══ -->
+  <div class="sg-detail-bottom-actions" v-if="!cfReadonly">
+    <button class="sg-btn sg-btn-green" @click="onDownloadZip" :disabled="!cfTotalFileCount">⬇ ZIP 다운로드</button>
   </div>
 
   <!-- ═══ 이력 탭 — 생성 이력(DB 첨부) / 생성결과 다운로드 이력(클릭 로그) 통합, 2026-08-28 ═══ -->
@@ -1888,12 +1904,10 @@ window.MdSgSourcegenPage = {
     <fo-tab-bar :tabs="histTabs" :tab="uiState.histTab"
       @tab-select="id => uiState.histTab = id" />
     <template v-if="uiState.histTab==='gen'">
-      <div v-if="!cfReadonly" class="sg-memo-row">
-        <input v-model="uiState.genMemo" class="form-control" placeholder="보관 메모(선택) — 예: v1 초안, 리뷰 반영본" />
-      </div>
+      <!-- 보관 메모 입력은 2026-08-30 상단 액션바([소스 생성] 왼쪽)로 이동 — 여기 중복 배치 제거. -->
       <!-- fo-grid 전환(2026-08-25). 로컬 배열이라 pager 없음 — 번호는 show-row-no 기본값(idx+1)과 동일. -->
       <fo-grid :columns="genHistGridColumns" :rows="genHists" row-key="sourcegenHistId" bare
-        empty-text="보관된 생성결과가 없습니다. [생성] 후 [생성결과 보관] 을 눌러주세요." />
+        empty-text="보관된 생성결과가 없습니다. [소스 생성] 을 실행하면 자동으로 보관됩니다." />
     </template>
     <template v-else>
       <fo-grid :columns="templateDlHistGridColumns" :rows="templateDlHist" row-key="downloadHistId" bare

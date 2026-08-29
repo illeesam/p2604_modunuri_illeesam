@@ -657,6 +657,15 @@ window._boAreaCompUtil = {
     if (col.mono)  s += 'font-family:monospace;';
     // 링크 셀(col.link)만 손가락 커서 — 행 전체 cursor:pointer 폐지(링크 있는 셀만 클릭 가능 표시)
     if (col.link) s += 'cursor:pointer;';
+    /* pin:'left' 컬럼은 td 자체에 폭을 강제로 고정한다(2026-08-29 버그수정) — .bo-table 이
+       table-layout:auto 라 <th> 의 width 는 그저 힌트일 뿐이고 <td> 는 애초에 width 가 전혀
+       없었다. 그 결과 페이지마다 상품명 길이가 달라지면 실제 렌더 폭이 cfPinLeftOffset 계산이
+       가정한 col.width 와 어긋나서, 다음 고정 컬럼의 sticky left 위치가 틀어져 흰 여백/겹침이
+       보였다("페이지 누르다보면 흰색으로 표시"). width=max-width=min-width 를 모두 못박아
+       실제 렌더 폭을 sticky 오프셋 계산과 항상 일치시킨다. */
+    if (col.pin === 'left' && col.width) {
+      s += 'width:' + col.width + ';max-width:' + col.width + ';min-width:' + col.width + ';';
+    }
     // 모든 셀 기본 한 줄 말줄임(...). 편집/슬롯 셀은 col.noEllipsis 로 끌 수 있음.
     // col.style/cellStyle 의 width(또는 max-width) 가 있으면 그 폭에서 잘리고,
     // 폭 미지정이면 한 줄 유지(nowrap)만 — 줄바꿈으로 인한 행 높이 증가 방지.
@@ -1102,12 +1111,12 @@ window.BoGrid = {
     <table class="bo-table" :class="{ 'crud-grid': draggable || showSave, 'bo-table-narrow': narrow }">
       <thead>
         <tr>
-          <th v-if="selectable" :style="'width:36px;text-align:center;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(0, 6)">
+          <th v-if="selectable" :style="'width:36px;text-align:center;background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(0, 6)">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
-          <th v-if="draggable" :style="'width:28px;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(selectable ? 36 : 0, 6)">
+          <th v-if="draggable" :style="'width:28px;background:linear-gradient(180deg,#dbebfa,#b7d3f2);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(selectable ? 36 : 0, 6)">
           </th>
-          <th v-if="showRowNo" :style="'width:36px;text-align:center;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinNoLeft, 6)">
+          <th v-if="showRowNo" :style="'width:36px;text-align:center;background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinNoLeft, 6)">
             번호
           </th>
           <slot name="head">
@@ -1118,7 +1127,7 @@ window.BoGrid = {
                  컬럼(이름+ID 합성 텍스트 등)을 임의로 고정하면 auto 테이블 레이아웃에서 sticky 폭
                  계산이 어긋나 텍스트가 겹쳐 보이는 문제가 있어 자동고정 대신 명시적 opt-in만 허용. -->
             <th v-for="(col, ci) in columns" :key="col.key" :class="col.cls"
-            :style="thResizeStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinLeftOffset[col.key], 6, col.key === cfPinLeftLastKey) + 'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' : '')"
+            :style="thResizeStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinLeftOffset[col.key], 6, col.key === cfPinLeftLastKey) + 'background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' : '')"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.noHead ? false : !!fnColNm(col)" style="display:block;font-size:9px;font-weight:400;color:#9aa4b2;line-height:1.2;">{{ fnColNm(col) }}</span>
@@ -1130,7 +1139,7 @@ window.BoGrid = {
                 @mousedown.stop="onResizeStart($event, col)"></div>
             </th>
           </slot>
-          <th v-if="rowActions || $slots['head-actions']" :style="'min-width:40px;text-align:center;white-space:nowrap;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinRightStyle(6, true)">
+          <th v-if="rowActions || $slots['head-actions']" :style="'min-width:40px;text-align:center;white-space:nowrap;background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' + pinRightStyle(6, true)">
             <slot name="head-actions">
               관리
             </slot>
@@ -1651,15 +1660,15 @@ window.BoGridCrud = {
     <table class="bo-table crud-grid">
       <thead>
         <tr>
-          <th v-if="cfShowDrag" class="col-drag" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[0], 6, cfPinLeftSegs.lastShownIdx===0)">
+          <th v-if="cfShowDrag" class="col-drag" :style="'background:linear-gradient(180deg,#dbebfa,#b7d3f2);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[0], 6, cfPinLeftSegs.lastShownIdx===0)">
           </th>
-          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[1], 6, cfPinLeftSegs.lastShownIdx===1)">
+          <th v-if="cfShowNo" :style="'width:36px;text-align:' + (cfTreeMode ? 'left' : 'center') + ';background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[1], 6, cfPinLeftSegs.lastShownIdx===1)">
             번호
           </th>
-          <th v-if="showRowStatus" class="col-status" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[2], 6, cfPinLeftSegs.lastShownIdx===2)">
+          <th v-if="showRowStatus" class="col-status" :style="'background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[2], 6, cfPinLeftSegs.lastShownIdx===2)">
             상태
           </th>
-          <th v-if="showRowCheck" class="col-check" :style="'background:linear-gradient(180deg,#d0e6f9,#9fc6ef);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[3], 6, cfPinLeftSegs.lastShownIdx===3)">
+          <th v-if="showRowCheck" class="col-check" :style="'background:linear-gradient(180deg,#dbebfa,#b7d3f2);border-bottom:2px solid #4a8ac2;' + pinLeftStyle(cfPinLeftSegs.offsets[3], 6, cfPinLeftSegs.lastShownIdx===3)">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
           <th v-if="cfShowId" class="col-id">
@@ -1677,7 +1686,7 @@ window.BoGridCrud = {
               </span>
             </th>
           </slot>
-          <th class="col-act" :style="'text-align:center;background:linear-gradient(180deg,#d0e6f9,#9fc6ef);color:#1a4f7d;border-bottom:2px solid #4a8ac2;' + pinRightStyle(6, true)">
+          <th class="col-act" :style="'text-align:center;background:linear-gradient(180deg,#dbebfa,#b7d3f2);color:#1d4d78;border-bottom:2px solid #4a8ac2;' + pinRightStyle(6, true)">
             <slot name="head-actions">{{ actionHeader }}</slot>
           </th>
         </tr>
@@ -3225,7 +3234,7 @@ window.BoGroupTable = {
                 key: col.key, label: col.label, rowspan: totalRows, colspan: 1, title: col.headerTip || '',
                 thStyle: 'text-align:center;vertical-align:middle;'
                   + (col.width ? 'width:' + col.width + 'px;' : '')
-                  + (col.pin ? 'background:' + (col.thBg || 'linear-gradient(180deg,#d0e6f9,#9fc6ef)') + ';color:#1a4f7d;border-bottom:2px solid #4a8ac2;' : '')
+                  + (col.pin ? 'background:' + (col.thBg || 'linear-gradient(180deg,#dbebfa,#b7d3f2)') + ';color:#1d4d78;border-bottom:2px solid #4a8ac2;' : '')
                   + fnPinStyle(col, 5)
                   + (col.thStyle || ''),
               });

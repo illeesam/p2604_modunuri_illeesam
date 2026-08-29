@@ -242,7 +242,7 @@ window.OdClaimDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+        coUtil.cofValidationToast(errors, showToast);
         return;
       }
       const isNewClaim = cfIsNew.value;

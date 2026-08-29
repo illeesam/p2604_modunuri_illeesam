@@ -85,6 +85,11 @@ public class MbMemberService {
     @Transactional
     public MbMember create(MbMember body) {
         body.setMemberId(CmUtil.generateId("mb_member"));
+        /* simul_yn 이 DB 상 NOT NULL 인데 Entity 필드엔 default 를 못 둔다(VoUtil 선택적
+           복사 전제 — CLAUDE.md 정책). BO 등록 화면은 simulYn 을 안 보내니 null 로 들어와
+           INSERT 가 제약조건 위반으로 500 났다(2026-08-29). ZdSimulController 는 호출 전에
+           simulYn("Y") 를 이미 채워서 넘기므로, 여기서는 비어있을 때만 "N"으로 채운다. */
+        if (body.getSimulYn() == null) body.setSimulYn("N");
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

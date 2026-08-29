@@ -87,7 +87,7 @@ window.SyCodeDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+        coUtil.cofValidationToast(errors, showToast);
         return;
       }
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');

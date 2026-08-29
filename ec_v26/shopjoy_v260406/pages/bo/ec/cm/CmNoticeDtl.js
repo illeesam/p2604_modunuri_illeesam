@@ -124,7 +124,7 @@ window.CmNoticeDtl = {
         await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+        coUtil.cofValidationToast(errors, showToast);
         return;
       }
       const isNew = cfIsNew.value;

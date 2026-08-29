@@ -300,7 +300,7 @@ window.CmChattDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
+        coUtil.cofValidationToast(errors, showToast);
         return;
       }
       const ok = await showConfirm('등록', '등록하시겠습니까?');

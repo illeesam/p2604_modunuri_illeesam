@@ -189,7 +189,7 @@ window.SyUserDtl = {
         err.inner.forEach(e => { errors[e.path] = e.message; });
       }
       if (cfIsNew.value && !form.password) { errors.password = '신규 등록 시 비밀번호는 필수입니다.'; }
-      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
+      if (Object.keys(errors).length) { coUtil.cofValidationToast(errors, showToast); return; }
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {

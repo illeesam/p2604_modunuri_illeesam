@@ -102,7 +102,7 @@ window.MbMemberDtl = {
     const fnSaveStandalone = async () => {
       Object.keys(standaloneErrors).forEach(k => delete standaloneErrors[k]);
       if (!standaloneForm.loginId) standaloneErrors.loginId = '로그인ID를 입력해주세요.';
-      else if (!coUtil.cofIsValidEmail(standaloneForm.loginId)) standaloneErrors.loginId = '로그인ID는 이메일 형식이어야 합니다.';
+      else if (!coUtil.cofIsValidLoginId(standaloneForm.loginId)) standaloneErrors.loginId = '로그인ID는 영문 2자·숫자 1자·특수기호 1자 이상을 포함해 8자 이상이어야 합니다.';
       if (!standaloneForm.memberNm) standaloneErrors.memberNm = '이름을 입력해주세요.';
       if (!coUtil.cofIsValidEmail(standaloneForm.memberEmail)) standaloneErrors.memberEmail = '올바른 이메일 형식이 아닙니다.';
       if (!coUtil.cofIsValidMobile(standaloneForm.memberPhone)) standaloneErrors.memberPhone = '올바른 휴대전화 형식이 아닙니다. (예: 010-1234-5678)';
@@ -194,8 +194,8 @@ window.MbMemberDtl = {
     const columns = {};
     columns.baseForm = [
       { type: 'group', label: '기본정보' },
-      { key: 'loginId',        label: '로그인ID', type: 'text', required: true, placeholder: '로그인ID (이메일 형식)',
-        validate: (v) => v && !coUtil.cofIsValidEmail(v) ? '로그인ID는 이메일 형식이어야 합니다.' : null },
+      { key: 'loginId',        label: '로그인ID', type: 'text', required: true, placeholder: '영문 2자·숫자 1자·특수기호 1자 이상, 8자 이상',
+        validate: (v) => v && !coUtil.cofIsValidLoginId(v) ? '로그인ID는 영문 2자·숫자 1자·특수기호 1자 이상을 포함해 8자 이상이어야 합니다.' : null },
       { key: 'memberEmail',    label: '이메일',   type: 'text', placeholder: '수신용 이메일',
         validate: (v) => !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },

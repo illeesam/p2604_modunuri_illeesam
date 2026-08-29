@@ -1753,7 +1753,7 @@ window.PdProdDtl = {
       if (tabId === 'info' || tabId === 'detail') {
         Object.keys(errors).forEach(k => delete errors[k]);
         try { await schema.validate(form, { abortEarly: false }); }
-        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
         /* 카테고리는 별도 배열(prodCategories)이라 Yup 스키마로 못 잡음 — info 탭에서만 수동 검증 */
         if (tabId === 'info' && !prodCategories.length) {
           showToast('카테고리를 1개 이상 선택해주세요.', 'error');

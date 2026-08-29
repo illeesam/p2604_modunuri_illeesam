@@ -320,7 +320,7 @@ window.PmPlanDtl = {
       if (tabId === 'info') {
         Object.keys(errors).forEach(k => delete errors[k]);
         try { await schema.validate(form, { abortEarly: false }); }
-        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');

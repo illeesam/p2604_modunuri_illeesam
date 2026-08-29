@@ -1297,11 +1297,32 @@
   const cofRegexPhone = /^0\d{1,2}-?\d{3,4}-?\d{4}$/;
   /* cofRegexPassword — sy.04.사용자.md 비밀번호 정책: 8자 이상 + 대/소문자·숫자·특수문자 각 1개 이상 */
   const cofRegexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+  /* cofRegexLoginId — 회원 로그인ID 정책(2026-08-29 변경): 이메일 형식 강제 폐기 →
+     "영문 2자 이상 + 숫자 1자 이상 + 특수기호 1자 이상 + 총 8자 이상" 조합 규칙으로 대체.
+     (?=(?:.*[A-Za-z]){2,}) 는 영문자가 최소 2번 나타나는지 세는 lookahead(대/소문자 구분 없음). */
+  const cofRegexLoginId = /^(?=(?:.*[A-Za-z]){2,})(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
 
   function cofIsValidEmail(v) { return !v || cofRegexEmail.test(String(v).trim()); }
   function cofIsValidMobile(v) { return !v || cofRegexMobile.test(String(v).trim()); }
   function cofIsValidPhone(v) { return !v || cofRegexPhone.test(String(v).trim()); }
   function cofIsValidPassword(v) { return !v || cofRegexPassword.test(String(v)); }
+  function cofIsValidLoginId(v) { return !v || cofRegexLoginId.test(String(v)); }
+
+  /* cofValidationToast — 저장 시 폼 검증 실패 토스트 표준화(2026-08-29).
+   * 이전엔 실패한 필드가 몇 개든 "입력 내용을 확인해주세요." 하나만 떠서, 화면을 스크롤해
+   * 빨간 안내문구를 직접 찾아야 했다(탭이 여러 개인 화면은 특히 어느 탭이 문제인지도 안 보임).
+   * errors 반응형 객체({fieldKey: message, ...})는 이미 모든 Dtl 화면이
+   * `err.inner.forEach(e => { errors[e.path] = e.message; })` 로 채워두므로, 그 메시지들을
+   * 그대로 나열해 보여준다 — Yup 스키마 메시지는 대부분 이미 필드명을 포함하도록 작성돼 있어
+   * ("이름을 입력해주세요." 등) 별도 라벨 매핑 없이도 어떤 항목인지 바로 드러난다.
+   * @param errors    저장 직전 채워진 에러 객체(reactive({}))
+   * @param showToast 화면마다 있는 그 showToast 그대로 넘기면 됨
+   */
+  function cofValidationToast(errors, showToast) {
+    const msgs = [...new Set(Object.values(errors || {}).filter(Boolean))];
+    if (!msgs.length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
+    showToast(msgs.join(' / '), 'error');
+  }
 
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
@@ -1417,8 +1438,11 @@
   global.coUtil.REGEX_MOBILE = global.coUtil.REGEX_MOBILE || cofRegexMobile;
   global.coUtil.REGEX_PHONE = global.coUtil.REGEX_PHONE || cofRegexPhone;
   global.coUtil.REGEX_PASSWORD = global.coUtil.REGEX_PASSWORD || cofRegexPassword;
+  global.coUtil.REGEX_LOGIN_ID = global.coUtil.REGEX_LOGIN_ID || cofRegexLoginId;
   global.coUtil.cofIsValidEmail = global.coUtil.cofIsValidEmail || cofIsValidEmail;
   global.coUtil.cofIsValidMobile = global.coUtil.cofIsValidMobile || cofIsValidMobile;
   global.coUtil.cofIsValidPhone = global.coUtil.cofIsValidPhone || cofIsValidPhone;
   global.coUtil.cofIsValidPassword = global.coUtil.cofIsValidPassword || cofIsValidPassword;
+  global.coUtil.cofIsValidLoginId = global.coUtil.cofIsValidLoginId || cofIsValidLoginId;
+  global.coUtil.cofValidationToast = global.coUtil.cofValidationToast || cofValidationToast;
 })(typeof window !== 'undefined' ? window : this);
