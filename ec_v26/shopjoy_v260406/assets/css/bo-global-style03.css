@@ -79,8 +79,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_pdf:hover:not(:disabled) svg   { filter: drop-shadow(0 2px 4px rgba(226,55,44,.4)); }
 .btn_kakao     { background: #FEE500; color: #191919; box-shadow: 0 2px 6px rgba(254,229,0,.35); border: none; }
 .btn_kakao:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(254,229,0,.5); }
-.btn_link      { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
-.btn_link:hover:not(:disabled)      { background: #e2e7ef; border-color: #c2cad6; }
+.btn_link      { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; }
+.btn_link:hover:not(:disabled)      { background: #dbeafe; border-color: #60a5fa; }
 .btn_excel:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(82,196,26,.35); }
 .btn_excel_upload { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn_excel_upload:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(22,119,255,.35); }

@@ -593,9 +593,10 @@ window.foAppHeader = {
     <!-- 2026-08-30: 마우스오버 시 실제 전달값(shareTip) 미리보기 레이어 추가 — position:relative 로
          감싸서 자식 레이어를 이 버튼 기준으로 절대배치한다. -->
     <div style="position:relative;">
-      <button type="button" @click="handleBtnAction('settings-copy-link')"
-        @mouseenter="showShareTip('link')" @mouseleave="hideShareTip" title="링크 공유(URL만)"
-        style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">🔗</button>
+      <!-- 2026-08-30: BO(boAppBase.js)와 동일하게 공용 클래스(.btn_link, bo/fo-global-style0N.css)
+           사용 — 색을 인라인으로 따로 정하지 않고 BO/FO 공통 CSS 한 곳에서만 관리한다. -->
+      <button type="button" class="btn_link" @click="handleBtnAction('settings-copy-link')"
+        @mouseenter="showShareTip('link')" @mouseleave="hideShareTip" title="링크 공유(URL만)">🔗</button>
       <div v-if="shareTip.kind==='link'"
         style="position:absolute;top:calc(100% + 6px);right:0;z-index:200;min-width:260px;max-width:360px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);box-shadow:0 6px 20px rgba(0,0,0,0.14);font-size:12px;line-height:1.6;color:var(--text-secondary);">
         <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔗 전달값(클릭 시 클립보드로 복사)</div>
@@ -603,9 +604,8 @@ window.foAppHeader = {
       </div>
     </div>
     <div style="position:relative;">
-      <button type="button" @click="handleBtnAction('settings-share-kakao')"
-        @mouseenter="showShareTip('kakao')" @mouseleave="hideShareTip" title="카카오톡 공유"
-        style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">💬</button>
+      <button type="button" class="btn_kakao" @click="handleBtnAction('settings-share-kakao')"
+        @mouseenter="showShareTip('kakao')" @mouseleave="hideShareTip" title="카카오톡 공유">💬</button>
       <div v-if="shareTip.kind==='kakao'"
         style="position:absolute;top:calc(100% + 6px);right:0;z-index:200;min-width:260px;max-width:360px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);box-shadow:0 6px 20px rgba(0,0,0,0.14);font-size:12px;line-height:1.6;color:var(--text-secondary);">
         <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;">💬 전달값(window.coExtSdk.shareKakao 인자)</div>
@@ -614,10 +614,10 @@ window.foAppHeader = {
         <div style="word-break:break-all;"><b>imageUrl</b> = {{ shareTip.imageUrl }}</div>
       </div>
     </div>
-    <button type="button" @click="handleBtnAction('settings-export-pdf')" title="PDF 다운로드" :disabled="pdfExporting"
-      style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;">
-      <span v-if="pdfExporting" style="font-size:14px;">⏳</span>
-      <svg v-else width="15" height="17" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+    <!-- 2026-08-30: BO 와 동일하게 .btn_pdf 공용 클래스 사용(색/크기 인라인 지정 제거) -->
+    <button type="button" class="btn_pdf" @click="handleBtnAction('settings-export-pdf')" title="PDF 다운로드" :disabled="pdfExporting">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
         <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
         <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
         <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
