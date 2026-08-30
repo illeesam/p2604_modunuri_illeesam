@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ShopJoy 로딩 성능 레포트</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #f4f6fa; color: #1a1a2e; padding: 24px; }
+h1 { font-size: 20px; font-weight: 800; color: #9f2946; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #888; margin-bottom: 24px; }
+
+.step-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border-left: 4px solid #e8587a; }
+.step-title { font-size: 15px; font-weight: 700; color: #9f2946; margin-bottom: 8px; }
+.step-desc { font-size: 13px; color: #555; margin-bottom: 12px; line-height: 1.6; }
+code { background: #f0f2f5; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+pre { background: #1a1a2e; color: #e8e8e8; padding: 14px; border-radius: 8px; font-size: 12px; line-height: 1.7; overflow-x: auto; margin: 8px 0; }
+
+.input-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.input-group { display: flex; flex-direction: column; gap: 4px; }
+.input-group label { font-size: 12px; color: #666; font-weight: 600; }
+.input-group input { border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 160px; }
+.input-group input:focus { outline: none; border-color: #e8587a; box-shadow: 0 0 0 3px rgba(232,88,122,0.12); }
+
+textarea { width: 100%; height: 120px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; font-size: 12px; font-family: monospace; resize: vertical; }
+textarea:focus { outline: none; border-color: #e8587a; }
+
+.btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+.btn-primary { background: linear-gradient(135deg, #e8587a, #d64669); color: #fff; box-shadow: 0 2px 6px rgba(232,88,122,0.35); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(232,88,122,0.5); }
+.btn-secondary { background: #f0f2f5; color: #555; }
+.btn-secondary:hover { background: #e0e2e5; }
+
+/* 결과 레포트 */
+#report { display: none; }
+.report-header { background: linear-gradient(135deg, #fff0f4, #ffe4ec); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; border: 1px solid #ffc9d6; }
+.report-title { font-size: 18px; font-weight: 800; color: #9f2946; }
+.report-meta { font-size: 12px; color: #888; margin-top: 4px; }
+
+.compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+.compare-card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); text-align: center; }
+.compare-card.local  { border-top: 4px solid #52c41a; }
+.compare-card.http1  { border-top: 4px solid #faad14; }
+.compare-card.http2  { border-top: 4px solid #1890ff; }
+.compare-label { font-size: 12px; color: #888; font-weight: 600; margin-bottom: 6px; }
+.compare-value { font-size: 28px; font-weight: 800; }
+.compare-card.local  .compare-value { color: #52c41a; }
+.compare-card.http1  .compare-value { color: #faad14; }
+.compare-card.http2  .compare-value { color: #1890ff; }
+.compare-sub { font-size: 11px; color: #aaa; margin-top: 4px; }
+.compare-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+.badge-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+.badge-red   { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+.badge-blue  { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+
+.section-title { font-size: 14px; font-weight: 700; color: #333; margin: 20px 0 10px; padding-left: 8px; border-left: 3px solid #e8587a; }
+
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); font-size: 13px; }
+th { background: #f9f0f3; color: #9f2946; font-weight: 700; padding: 10px 14px; text-align: left; }
+td { padding: 9px 14px; border-bottom: 1px solid #f0f0f0; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fff5f7; }
+
+.bar-wrap { display: flex; align-items: center; gap: 8px; }
+.bar { height: 12px; border-radius: 6px; min-width: 4px; }
+.bar-local { background: #52c41a; }
+.bar-http1  { background: #faad14; }
+.bar-http2  { background: #1890ff; }
+.bar-label  { font-size: 12px; color: #555; white-space: nowrap; }
+
+.insight-card { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); display: flex; gap: 12px; align-items: flex-start; }
+.insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.insight-text { font-size: 13px; color: #444; line-height: 1.6; }
+.insight-text strong { color: #9f2946; }
+
+.print-btn { margin-top: 20px; }
+@media print {
+  .step-card, .print-btn, #input-section { display: none !important; }
+  #report { display: block !important; }
+  body { background: #fff; padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<h1>⚡ ShopJoy 로딩 성능 레포트</h1>
+<p class="subtitle">로컬 / HTTP/1.1(라이브) / HTTP/2(라이브) 3가지 환경 비교 측정 도구</p>
+
+<div id="input-section">
+
+  <!-- Step 1 -->
+  <div class="step-card">
+    <div class="step-title">Step 1 — 로컬 측정 (지금 이 환경)</div>
+    <div class="step-desc">
+      브라우저에서 <code>bo.html</code> 열기 → 개발자도구(F12) → Network 탭 → 새로고침(Ctrl+Shift+R)<br>
+      Network 탭 상단 <strong>Finish 시간</strong>과 <strong>총 요청 수</strong>를 아래에 입력하세요.
+    </div>
+    <pre>확인 위치: Network 탭 하단 상태바
+예) "156 requests | 2.1 MB transferred | Finish: 312 ms"</pre>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Finish 시간 (ms)</label>
+        <input type="number" id="local_finish" placeholder="예: 312" />
+      </div>
+      <div class="input-group">
+        <label>DOMContentLoaded (ms)</label>
+        <input type="number" id="local_dcl" placeholder="예: 180" />
+      </div>
+      <div class="input-group">
+        <label>총 전송량 (KB)</label>
+        <input type="number" id="local_size" placeholder="예: 2100" />
+      </div>
+      <div class="input-group">
+        <label>요청 수</label>
+        <input type="number" id="local_req" placeholder="예: 156" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step-card">
+    <div class="step-title">Step 2 — 라이브 HTTP/1.1 측정</div>
+    <div class="step-desc">
+      라이브 서버에서 <strong>HTTP/2 비활성화 상태</strong>로 <code>bo.html</code> 열기<br>
+      (또는 Chrome DevTools → Network 탭 → 우클릭 헤더 → Protocol 컬럼 추가 후 <code>http/1.1</code> 확인)<br>
+      HTTP/1.1 강제: 브라우저 주소창에 <code>http://</code> 로 접속하면 HTTP/1.1만 사용됨.
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Finish 시간 (ms)</label>
+        <input type="number" id="h1_finish" placeholder="예: 1850" />
+      </div>
+      <div class="input-group">
+        <label>DOMContentLoaded (ms)</label>
+        <input type="number" id="h1_dcl" placeholder="예: 980" />
+      </div>
+      <div class="input-group">
+        <label>총 전송량 (KB)</label>
+        <input type="number" id="h1_size" placeholder="예: 2100" />
+      </div>
+      <div class="input-group">
+        <label>서버 RTT (ms)</label>
+        <input type="number" id="h1_rtt" placeholder="예: 30" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-card">
+    <div class="step-title">Step 3 — 라이브 HTTP/2 측정</div>
+    <div class="step-desc">
+      HTTP/2 활성화 후 <code>https://</code> 로 접속 → 동일하게 측정<br>
+      Network 탭 Protocol 컬럼에서 <code>h2</code> 표시 확인 필수
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Finish 시간 (ms)</label>
+        <input type="number" id="h2_finish" placeholder="예: 420" />
+      </div>
+      <div class="input-group">
+        <label>DOMContentLoaded (ms)</label>
+        <input type="number" id="h2_dcl" placeholder="예: 280" />
+      </div>
+      <div class="input-group">
+        <label>총 전송량 (KB, gzip 후)</label>
+        <input type="number" id="h2_size" placeholder="예: 680" />
+      </div>
+      <div class="input-group">
+        <label>서버 RTT (ms)</label>
+        <input type="number" id="h2_rtt" placeholder="예: 30" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 메모 -->
+  <div class="step-card">
+    <div class="step-title">Step 4 — 측정 환경 메모 (선택)</div>
+    <div class="step-desc">네트워크 환경, 서버 사양, 측정 조건 등 자유롭게 입력</div>
+    <textarea id="memo" placeholder="예) 측정일: 2026-04-27 / 서버: Synology DS923+ / 네트워크: KT 500Mbps / 캐시 비우기 후 측정 / Chrome 124"></textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-primary" onclick="generateReport()">📊 레포트 생성</button>
+    <button class="btn btn-secondary" onclick="fillSample()">샘플 데이터로 미리보기</button>
+  </div>
+</div>
+
+<!-- 레포트 출력 영역 -->
+<div id="report">
+  <div class="report-header">
+    <div class="report-title">⚡ ShopJoy bo.html 로딩 성능 비교 레포트</div>
+    <div class="report-meta" id="report-meta"></div>
+  </div>
+
+  <!-- 핵심 수치 3개 -->
+  <div class="compare-grid">
+    <div class="compare-card local">
+      <div class="compare-label">🖥 로컬 (Live Server)</div>
+      <div class="compare-value" id="r-local-finish">—</div>
+      <div class="compare-sub">Finish 시간</div>
+      <span class="compare-badge badge-green">기준값</span>
+    </div>
+    <div class="compare-card http1">
+      <div class="compare-label">🌐 라이브 HTTP/1.1</div>
+      <div class="compare-value" id="r-h1-finish">—</div>
+      <div class="compare-sub">Finish 시간</div>
+      <span class="compare-badge badge-red" id="r-h1-badge">—</span>
+    </div>
+    <div class="compare-card http2">
+      <div class="compare-label">🚀 라이브 HTTP/2</div>
+      <div class="compare-value" id="r-h2-finish">—</div>
+      <div class="compare-sub">Finish 시간</div>
+      <span class="compare-badge badge-blue" id="r-h2-badge">—</span>
+    </div>
+  </div>
+
+  <!-- 상세 비교 테이블 -->
+  <div class="section-title">상세 수치 비교</div>
+  <table>
+    <thead>
+      <tr><th>항목</th><th>🖥 로컬</th><th>🌐 HTTP/1.1</th><th>🚀 HTTP/2</th></tr>
+    </thead>
+    <tbody id="detail-table"></tbody>
+  </table>
+
+  <!-- 막대 그래프 -->
+  <div class="section-title">Finish 시간 비교 (막대)</div>
+  <div id="bar-chart" style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.07);"></div>
+
+  <!-- 인사이트 -->
+  <div class="section-title">분석 인사이트</div>
+  <div id="insights"></div>
+
+  <!-- 측정 환경 -->
+  <div class="section-title">측정 환경</div>
+  <div style="background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.07);font-size:13px;color:#555;line-height:1.7;" id="memo-display"></div>
+
+  <div class="print-btn" style="display:flex;gap:10px;">
+    <button class="btn btn-primary" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('report').style.display='none';document.getElementById('input-section').style.display='block'">← 다시 입력</button>
+  </div>
+</div>
+
+<script>
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function s(id) { return document.getElementById(id).value || ''; }
+
+function fillSample() {
+  document.getElementById('local_finish').value = 98;
+  document.getElementById('local_dcl').value   = 62;
+  document.getElementById('local_size').value  = 2180;
+  document.getElementById('local_req').value   = 156;
+  document.getElementById('h1_finish').value   = 1920;
+  document.getElementById('h1_dcl').value      = 1140;
+  document.getElementById('h1_size').value     = 2180;
+  document.getElementById('h1_rtt').value      = 35;
+  document.getElementById('h2_finish').value   = 390;
+  document.getElementById('h2_dcl').value      = 245;
+  document.getElementById('h2_size').value     = 670;
+  document.getElementById('h2_rtt').value      = 35;
+  document.getElementById('memo').value        = '측정일: ' + new Date().toLocaleDateString('ko') + ' / 샘플 데이터 (실측 후 교체)';
+}
+
+function generateReport() {
+  const lf  = v('local_finish'), ld = v('local_dcl'),  ls = v('local_size'),  lr = v('local_req');
+  const h1f = v('h1_finish'),   h1d = v('h1_dcl'),    h1s = v('h1_size'),   h1r = v('h1_rtt');
+  const h2f = v('h2_finish'),   h2d = v('h2_dcl'),    h2s = v('h2_size'),   h2r = v('h2_rtt');
+
+  if (!lf || !h1f || !h2f) { alert('세 환경의 Finish 시간은 필수입니다.'); return; }
+
+  // 헤더
+  document.getElementById('report-meta').textContent =
+    '측정일: ' + new Date().toLocaleDateString('ko') + ' | bo.html 기준 | 요청 수: ' + (lr || '156') + '개';
+
+  // 핵심 수치
+  document.getElementById('r-local-finish').textContent = lf + 'ms';
+  document.getElementById('r-h1-finish').textContent    = h1f + 'ms';
+  document.getElementById('r-h2-finish').textContent    = h2f + 'ms';
+
+  const h1ratio = (h1f / lf).toFixed(1);
+  const h2ratio = (h2f / lf).toFixed(1);
+  const h1h2ratio = (h1f / h2f).toFixed(1);
+
+  document.getElementById('r-h1-badge').textContent = '로컬 대비 ' + h1ratio + '배';
+  document.getElementById('r-h2-badge').textContent = 'HTTP/1.1 대비 ' + h1h2ratio + '배 빠름';
+
+  // 상세 테이블
+  const rows = [
+    ['Finish 시간 (ms)',         lf, h1f, h2f],
+    ['DOMContentLoaded (ms)',   ld || '-', h1d || '-', h2d || '-'],
+    ['전송량 (KB)',              ls || '-', h1s || '-', h2s ? h2s + ' (gzip)' : '-'],
+    ['HTTP/2 여부',             '❌ (로컬)', '❌', '✅'],
+    ['gzip 여부',               '❌', '❌', '✅'],
+    ['서버 RTT (ms)',           '~0', h1r || '-', h2r || '-'],
+    ['HTTP/1.1 대비 개선',      '—', '—', h2f && h1f ? '+' + ((1 - h2f/h1f)*100).toFixed(0) + '%' : '—'],
+  ];
+
+  document.getElementById('detail-table').innerHTML = rows.map(r =>
+    `<tr>${r.map((c,i) => `<td${i===0?' style="font-weight:600;color:#555;"':''}>${c}</td>`).join('')}</tr>`
+  ).join('');
+
+  // 막대 그래프
+  const maxVal = Math.max(lf, h1f, h2f);
+  const barW = (v, color) => {
+    const pct = Math.round((v / maxVal) * 300);
+    return `<div class="bar-wrap" style="margin-bottom:14px;">
+      <div style="width:100px;font-size:12px;color:#555;font-weight:600;text-align:right;padding-right:10px;">${color.label}</div>
+      <div class="bar ${color.cls}" style="width:${pct}px;"></div>
+      <div class="bar-label">${v}ms</div>
+    </div>`;
+  };
+  document.getElementById('bar-chart').innerHTML =
+    barW(lf,  {label:'🖥 로컬',       cls:'bar-local'}) +
+    barW(h1f, {label:'🌐 HTTP/1.1',  cls:'bar-http1'}) +
+    barW(h2f, {label:'🚀 HTTP/2',    cls:'bar-http2'});
+
+  // 인사이트
+  const ins = [];
+  ins.push({ icon: '📊', text: `HTTP/1.1 라이브는 로컬 대비 <strong>${h1ratio}배</strong> 느립니다. 156개 파일의 네트워크 왕복(RTT) 누적이 주요 원인입니다.` });
+  ins.push({ icon: '🚀', text: `HTTP/2 적용 시 HTTP/1.1 대비 <strong>${h1h2ratio}배 빠른 ${h2f}ms</strong> — 멀티플렉싱으로 156개 파일을 1회 왕복에 전송합니다.` });
+  if (h2s && h1s) {
+    const saving = Math.round((1 - h2s/h1s)*100);
+    ins.push({ icon: '📦', text: `gzip 압축으로 전송량 <strong>${h1s}KB → ${h2s}KB (${saving}% 감소)</strong>. JS 파일이 많아 압축 효과가 큽니다.` });
+  }
+  if (h2f > lf * 2) {
+    ins.push({ icon: '💡', text: `HTTP/2 후에도 로컬 대비 <strong>${h2ratio}배</strong> 차이가 납니다. CDN(CloudFront 등) 도입 시 추가 개선 가능합니다.` });
+  } else {
+    ins.push({ icon: '✅', text: `HTTP/2 적용 후 로컬과의 격차가 <strong>${h2ratio}배</strong> 수준으로 양호합니다.` });
+  }
+  document.getElementById('insights').innerHTML = ins.map(i =>
+    `<div class="insight-card"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`
+  ).join('');
+
+  // 메모
+  document.getElementById('memo-display').textContent = s('memo') || '(입력 없음)';
+
+  // 표시
+  document.getElementById('input-section').style.display = 'none';
+  document.getElementById('report').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>쿠폰 관리 — PM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.form-label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select,.form-control{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+.search-actions,.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.form-actions{padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:transparent}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.tab-nav{display:flex;gap:4px;margin-bottom:14px}
+.tab-btn{padding:6px 14px;border-radius:20px;font-size:12px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:500}
+.tab-btn.active{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff;border-color:transparent}
+.channel-row{display:flex;gap:16px;align-items:center}
+.channel-row label{font-size:13px;display:flex;align-items:center;gap:4px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back-Office &gt; EC &gt; 프로모션 관리 &gt; <span>쿠폰 관리</span></div>
+  <h1>🎫 쿠폰 관리</h1>
+</div>
+<div class="container">
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_coupon" data-col="coupon_nm"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰명">쿠폰명</label>
+        <input type="text" placeholder="쿠폰명 입력">
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_coupon" data-col="coupon_status_cd"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰상태"
+          data-code-grp="COUPON_STATUS"
+          data-codes="ACTIVE:활성|INACTIVE:비활성|EXPIRED:만료">쿠폰상태</label>
+        <select>
+          <option value="">전체</option>
+          <option>ACTIVE — 활성</option>
+          <option>INACTIVE — 비활성</option>
+          <option>EXPIRED — 만료</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_coupon" data-col="coupon_type_cd"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰유형"
+          data-code-grp="COUPON_TYPE"
+          data-codes="RATE:정률할인|FIXED:정액할인|SHIPPING:배송비할인">쿠폰유형</label>
+        <select>
+          <option value="">전체</option>
+          <option>RATE — 정률할인</option>
+          <option>FIXED — 정액할인</option>
+          <option>SHIPPING — 배송비할인</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_coupon" data-col="mem_grade_cd"
+          data-tbl-cmt="쿠폰" data-col-cmt="적용회원등급"
+          data-code-grp="MEM_GRADE"
+          data-codes="BASIC:일반|SILVER:실버|GOLD:골드|VIP:VIP">회원등급</label>
+        <select>
+          <option value="">전체</option>
+          <option>BASIC — 일반</option>
+          <option>SILVER — 실버</option>
+          <option>GOLD — 골드</option>
+          <option>VIP — VIP</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_coupon" data-col="valid_from"
+          data-tbl-cmt="쿠폰" data-col-cmt="유효기간 시작일">유효기간 시작</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_coupon" data-col="valid_to"
+          data-tbl-cmt="쿠폰" data-col-cmt="유효기간 종료일">유효기간 종료</label>
+        <input type="date">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">쿠폰 목록</span><span class="list-count">총 24건</span></div>
+      <button class="btn btn-primary btn-sm">+ 쿠폰 등록</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="coupon_id" data-tbl-cmt="쿠폰" data-col-cmt="쿠폰ID">쿠폰ID</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="coupon_cd" data-tbl-cmt="쿠폰" data-col-cmt="쿠폰코드(UNIQUE)">쿠폰코드</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="coupon_nm" data-tbl-cmt="쿠폰" data-col-cmt="쿠폰명">쿠폰명</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="coupon_type_cd" data-tbl-cmt="쿠폰" data-col-cmt="쿠폰유형" data-code-grp="COUPON_TYPE" data-codes="RATE:정률|FIXED:정액|SHIPPING:배송비">유형</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="discount_rate" data-tbl-cmt="쿠폰" data-col-cmt="할인률(%)">할인률(%)</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="discount_amt" data-tbl-cmt="쿠폰" data-col-cmt="할인금액">할인금액</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="valid_from" data-tbl-cmt="쿠폰" data-col-cmt="유효기간 시작">유효기간</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="issue_cnt" data-tbl-cmt="쿠폰" data-col-cmt="발급수">발급수</span> / <span class="has-tip" data-table="pm_coupon" data-col="issue_limit" data-tbl-cmt="쿠폰" data-col-cmt="총발급한도">한도</span></th>
+            <th><span class="has-tip" data-table="pm_coupon" data-col="coupon_status_cd" data-tbl-cmt="쿠폰" data-col-cmt="쿠폰상태" data-code-grp="COUPON_STATUS" data-codes="ACTIVE:활성|INACTIVE:비활성|EXPIRED:만료">상태</span></th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CPN240001</td>
+            <td style="font-family:monospace">WELCOME10</td>
+            <td><a class="title-link">신규가입 10% 할인</a></td>
+            <td><span class="badge badge-blue">정률</span></td>
+            <td>10%</td>
+            <td>—</td>
+            <td>2024-01-01 ~ 2024-12-31</td>
+            <td>1,240 / 5,000</td>
+            <td><span class="badge badge-green">활성</span></td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CPN240002</td>
+            <td style="font-family:monospace">SHIP_FREE</td>
+            <td><a class="title-link">무료배송 쿠폰</a></td>
+            <td><span class="badge badge-purple">배송비</span></td>
+            <td>—</td>
+            <td>3,000원</td>
+            <td>2024-03-01 ~ 2024-06-30</td>
+            <td>870 / 2,000</td>
+            <td><span class="badge badge-orange">비활성</span></td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CPN240003</td>
+            <td style="font-family:monospace">VIP5000</td>
+            <td><a class="title-link">VIP 5천원 할인</a></td>
+            <td><span class="badge badge-orange">정액</span></td>
+            <td>—</td>
+            <td>5,000원</td>
+            <td>2024-01-01 ~ 2024-03-31</td>
+            <td>320 / 1,000</td>
+            <td><span class="badge badge-gray">만료</span></td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager">«</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+      <button class="pager">»</button>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="card">
+    <div class="tab-nav">
+      <button class="tab-btn active">기본정보</button>
+      <button class="tab-btn">적용대상</button>
+      <button class="tab-btn">발급설정</button>
+    </div>
+
+    <!-- 기본정보 탭 -->
+    <div class="section-title">기본정보</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_coupon" data-col="coupon_nm"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰명">쿠폰명</label>
+        <input class="form-control" type="text" placeholder="쿠폰명 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_coupon" data-col="coupon_cd"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰코드 (UNIQUE)">쿠폰코드</label>
+        <input class="form-control" type="text" placeholder="예: WELCOME10">
+        <span class="form-hint">영문/숫자 조합, 중복 불가</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_coupon" data-col="coupon_type_cd"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰유형"
+          data-code-grp="COUPON_TYPE"
+          data-codes="RATE:정률할인|FIXED:정액할인|SHIPPING:배송비할인">쿠폰유형</label>
+        <select class="form-control">
+          <option>RATE — 정률할인</option>
+          <option>FIXED — 정액할인</option>
+          <option>SHIPPING — 배송비할인</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_coupon" data-col="discount_rate"
+          data-tbl-cmt="쿠폰" data-col-cmt="할인률(%), 정률 유형일 때 사용">할인률 (%)</label>
+        <input class="form-control" type="number" placeholder="예: 10">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_coupon" data-col="discount_amt"
+          data-tbl-cmt="쿠폰" data-col-cmt="할인금액, 정액 유형일 때 사용">할인금액 (원)</label>
+        <input class="form-control" type="number" placeholder="예: 5000">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_coupon" data-col="min_order_amt"
+          data-tbl-cmt="쿠폰" data-col-cmt="최소주문금액">최소주문금액 (원)</label>
+        <input class="form-control" type="number" placeholder="예: 30000">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_coupon" data-col="max_discount_amt"
+          data-tbl-cmt="쿠폰" data-col-cmt="최대할인한도">최대할인한도 (원)</label>
+        <input class="form-control" type="number" placeholder="예: 20000">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_coupon" data-col="valid_from"
+          data-tbl-cmt="쿠폰" data-col-cmt="유효기간 시작">유효기간 시작</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_coupon" data-col="valid_to"
+          data-tbl-cmt="쿠폰" data-col-cmt="유효기간 종료">유효기간 종료</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_coupon" data-col="coupon_status_cd"
+          data-tbl-cmt="쿠폰" data-col-cmt="쿠폰상태"
+          data-code-grp="COUPON_STATUS"
+          data-codes="ACTIVE:활성|INACTIVE:비활성|EXPIRED:만료">쿠폰상태</label>
+        <select class="form-control">
+          <option>ACTIVE — 활성</option>
+          <option>INACTIVE — 비활성</option>
+          <option>EXPIRED — 만료</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="section-title">적용대상</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label has-tip"
+            data-table="pm_coupon" data-col="target_type_cd"
+            data-tbl-cmt="쿠폰" data-col-cmt="적용대상 유형"
+            data-code-grp="TARGET_TYPE"
+            data-codes="ALL:전체|MEMBER:특정회원|GRADE:등급">적용대상 유형</label>
+          <select class="form-control">
+            <option>ALL — 전체</option>
+            <option>MEMBER — 특정회원</option>
+            <option>GRADE — 등급</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip"
+            data-table="pm_coupon" data-col="mem_grade_cd"
+            data-tbl-cmt="쿠폰" data-col-cmt="적용회원등급"
+            data-code-grp="MEM_GRADE"
+            data-codes="BASIC:일반|SILVER:실버|GOLD:골드|VIP:VIP">적용회원등급</label>
+          <select class="form-control">
+            <option value="">등급 선택</option>
+            <option>BASIC — 일반</option>
+            <option>SILVER — 실버</option>
+            <option>GOLD — 골드</option>
+            <option>VIP — VIP</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="section-title">발급설정</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label has-tip"
+            data-table="pm_coupon" data-col="issue_limit"
+            data-tbl-cmt="쿠폰" data-col-cmt="총발급한도">총발급한도</label>
+          <input class="form-control" type="number" placeholder="예: 5000 (0=무제한)">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip"
+            data-table="pm_coupon" data-col="max_issue_per_mem"
+            data-tbl-cmt="쿠폰" data-col-cmt="회원당 최대발급">회원당 최대발급</label>
+          <input class="form-control" type="number" placeholder="예: 1">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip"
+            data-table="pm_coupon" data-col="self_cdiv_rate"
+            data-tbl-cmt="쿠폰" data-col-cmt="자사 분담율(%)">자사 분담율 (%)</label>
+          <input class="form-control" type="number" placeholder="예: 50">
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip"
+            data-table="pm_coupon" data-col="seller_cdiv_rate"
+            data-tbl-cmt="쿠폰" data-col-cmt="판매자 분담율(%)">판매자 분담율 (%)</label>
+          <input class="form-control" type="number" placeholder="예: 50">
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <label class="form-label" style="margin-bottom:8px;display:block">
+          <span class="has-tip"
+            data-table="pm_coupon" data-col="dvc_pc_yn / dvc_mweb_yn / dvc_mapp_yn"
+            data-tbl-cmt="쿠폰" data-col-cmt="채널별 적용여부 (PC/모바일웹/모바일앱)">채널별 적용여부</span>
+        </label>
+        <div class="channel-row">
+          <label><input type="checkbox" checked> PC</label>
+          <label><input type="checkbox" checked> 모바일웹</label>
+          <label><input type="checkbox" checked> 모바일앱</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">저장</button>
+    </div>
+
+    <div class="ddl-ref">
+      <strong>DDL 참조</strong>: <code>pm_coupon</code> — coupon_id, coupon_cd, coupon_nm, coupon_type_cd, discount_rate, discount_amt, min_order_amt, max_discount_amt, issue_limit, issue_cnt, max_issue_per_mem, valid_from, valid_to, coupon_status_cd, target_type_cd, mem_grade_cd, self_cdiv_rate, seller_cdiv_rate, dvc_pc_yn, dvc_mweb_yn, dvc_mapp_yn
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

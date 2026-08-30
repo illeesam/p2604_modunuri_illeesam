@@ -1,0 +1,341 @@
+﻿/* ShopJoy - Blog (블로그 목록) */
+window.Blog = {
+  name: 'Blog',
+  props: {
+    navigate: { type: Function, required: true },        // 페이지 이동
+    dtlId:    { type: String,   default: null },          // 진입 시 초기 카테고리(blogCateId) — 상세에서 카테고리 클릭 시 전달
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 ################################################## */
+
+    const { reactive, computed, onMounted } = Vue;
+    const uiState = reactive({ loading: false, error: null });
+
+    const searchParam = reactive({ searchValue: '', blogCateId: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
+
+    /* 카테고리 — 실 cm_blog_cate API 로 로드 ('전체' 가상 항목 prepend). blogCateId='' = 전체. blogCnt=글 수 */
+    const categories = reactive([{ blogCateId: '', blogCateNm: '전체', blogCnt: 0 }]);
+
+    const posts = reactive([]);
+    const latestPosts = reactive([]);   // 최신 글(사이드바) — 페이지와 무관하게 최신 4건
+
+    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100], pageCond: {} });
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Blog.js : handleBtnAction -> ', cmd, param);
+      // 홈으로 이동
+      if (cmd === 'page-goHome') {
+        return props.navigate('home');
+      // 카테고리 선택 (param: blogCateId, '' = 전체)
+      } else if (cmd === 'category-select') {
+        searchParam.blogCateId = param;
+        pager.pageNo = 1;
+        return handleSearchList();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}, e = {}) => {
+      console.log(' ■■ Blog.js : handleSelectAction -> ', cmd, param);
+      // 블로그 포스트 클릭 (param: postId)
+      if (cmd === 'blogs-rowView') {
+        if (e.ctrlKey || e.metaKey || e.button === 1) { return window.foApp.openNewWindow('blogView', param); }
+        return props.navigate('blogView', { dtlId: param });
+      // 페이지 번호 클릭
+      } else if (cmd === 'blogs-pager-setPage') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'blogs-pager-sizeChange') {
+        return onSizeChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+
+
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+
+
+    /* _blogThumb — 첨부 목록(files[])에서 대표 썸네일 1장 추출 (cm_blog_file: thumbUrl/imgUrl).
+     *   서버 경로 '/cdn/...' → 'assets/cdn/...' 는 coUtil.cofImgSrc 로 보정. */
+    const _blogThumb = (b) => {
+      const f = Array.isArray(b.files) && b.files.length ? b.files[0] : null;
+      const raw = (f && (f.thumbUrl || f.imgUrl)) || b.thumbUrl || b.imgUrl || '';
+      return raw ? coUtil.cofImgSrc(raw) : '';
+    };
+
+    /* _adaptBlog — CmBlogDto.Item → 화면 카드 기대 형태 (이벤트 어댑터와 동일 취지) */
+    const _adaptBlog = (b) => ({
+      id:       b.blogId,
+      title:    b.blogTitle || '',
+      excerpt:  b.blogSummary || coUtil.cofStripHtml(b.blogContent, 120),
+      author:   b.blogAuthor || '',
+      date:     coUtil.cofYmd(b.regDate),
+      category: b.blogCateId || '',
+      thumb:    _blogThumb(b),
+      readTime: coUtil.cofReadTime(b.blogContent),
+      viewCount: b.viewCount || 0,
+      fileCount: Array.isArray(b.files) ? b.files.length : 0,   // 첨부 개수 (목록 카드 표시)
+    });
+
+    /* handleSearchList — 목록 조회 (서버사이드 페이징). blogCateId '' 는 자동 제외 = 전체 */
+    const handleSearchList = async () => {
+      uiState.loading = true;
+      try {
+        const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)), pageNo: pager.pageNo, pageSize: pager.pageSize };
+        const res = await foApiSvc.cmBltn.getPage(params, '블로그', '목록조회');
+        const d = res.data?.data || {};
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage = d.pageTotalPage || 1;
+        posts.splice(0, posts.length, ...(d.pageList || []).map(_adaptBlog));
+        coUtil.cofBuildPagerNums(pager);
+        uiState.error = null;
+      } catch (e) {
+        console.error('[handleSearchList]', e);
+        posts.splice(0, posts.length);
+        uiState.error = e.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* setPage — 페이지 번호 변경 */
+    const setPage = (n) => {
+      if (n >= 1 && n <= pager.pageTotalPage && n !== pager.pageNo) {
+        pager.pageNo = n;
+        handleSearchList();
+      }
+    };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+
+    /* loadCategories — 좌측 카테고리 실 API 로드 ('전체' 항목 유지 + API 결과 append).
+     *   '전체' blogCnt = 각 카테고리 blogCnt 합계 */
+    const loadCategories = async () => {
+      try {
+        const res = await foApiSvc.cmBltn.getCate({}, '블로그', '카테고리조회');
+        const list = res.data?.data || [];
+        categories.splice(1, categories.length - 1, ...list); // [0]=전체 유지
+        categories[0].blogCnt = list.reduce((sum, c) => sum + (c.blogCnt || 0), 0);
+      } catch (e) {
+        console.error('[loadCategories]', e);
+      }
+    };
+
+    /* loadLatestPosts — 최신 글 4건 (페이지/검색과 무관, regDate DESC 1페이지) */
+    const loadLatestPosts = async () => {
+      try {
+        const res = await foApiSvc.cmBltn.getPage({ pageNo: 1, pageSize: 4 }, '블로그', '최신글조회');
+        const d = res.data?.data || {};
+        latestPosts.splice(0, latestPosts.length, ...(d.pageList || []).map(_adaptBlog));
+      } catch (e) {
+        console.error('[loadLatestPosts]', e);
+        latestPosts.splice(0, latestPosts.length);
+      }
+    };
+
+
+    /* onSearch — [조회] 클릭 / Enter (1페이지부터 서버 재조회) */
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
+
+    /* onReset — 초기화 (검색어·카테고리 비우고 1페이지 재조회) */
+    const onReset = async () => {
+      Object.assign(searchParam, searchParamInit);
+      pager.pageNo = 1;
+      await handleSearchList();
+    };
+
+
+
+
+
+    /* cfLatestPosts — 최신 글(사이드바). 별도 API 로 받은 latestPosts 사용 */
+    const cfLatestPosts = computed(() => latestPosts);
+
+    // ★ onMounted — 카테고리/최신글/목록 초기 조회 (진입 시 dtlId 있으면 해당 카테고리로 필터)
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
+      if (props.dtlId) { searchParam.blogCateId = props.dtlId; }
+      /* 공유된 링크(fo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      Object.keys(searchParam).forEach((k) => { if (_qs.has(k)) searchParam[k] = _qs.get(k); });
+      loadCategories();
+      loadLatestPosts();
+      handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
+    };
+    onMounted(initPage);
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 입력 */
+    // --- [컬럼 정의] ---
+    const columns = {};
+    columns.baseSearch = [
+      { key: 'searchValue', type: 'text', label: '검색', placeholder: '검색어를 입력하세요...' },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+      columns,
+      handleBtnAction, handleSelectAction, // dispatch
+      searchParam, uiState, pager, // 검색 / 상태 / 페이저
+      categories, posts, latestPosts, // 데이터
+      cfLatestPosts, // computed
+      onSearch, onReset,        // 헬퍼/이벤트
+    };
+  },
+  template: /* html */ `
+<fo-page title="News &amp; Blog" eyebrow="ShopJoy"
+  banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
+  banner-align="center 40%"
+  :share-query="searchParam"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'Blog' }]"
+  @nav="() => handleBtnAction('page-goHome')">
+  <!-- ===== ■. 검색 ====================================================== -->
+  <div style="display:flex;justify-content:center;margin-bottom:32px;">
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
+    <fo-search-area bar-style="max-width:640px;width:100%;justify-content:center;"
+      :columns="columns.baseSearch" :param="searchParam" :loading="uiState.loading"
+      @search="onSearch" @reset="onReset" />
+  </div>
+  <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 검색 ====================================================== -->
+  <!-- ===== ■. 레이아웃: 사이드바 + 본문 ========================================= -->
+  <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:clamp(16px,3vw,32px);align-items:start;" class="blog-grid">
+    <!-- ===== ■.■. 사이드바 ================================================== -->
+    <aside>
+      <!-- ===== ■.■.■. 카테고리 ================================================ -->
+      <div style="margin-bottom:28px;">
+        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
+          Prod Categories
+        </h3>
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li v-for="cat in categories" :key="cat.blogCateId || 'all'"
+            @click="handleBtnAction('category-select', cat.blogCateId)"
+            :style="{
+            display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px',
+            padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
+            color: searchParam.blogCateId===cat.blogCateId ? 'var(--blue)' : 'var(--text-secondary)',
+            fontWeight: searchParam.blogCateId===cat.blogCateId ? '700' : '400',
+            borderLeft: searchParam.blogCateId===cat.blogCateId ? '2px solid var(--blue)' : '2px solid transparent',
+            paddingLeft: '12px', transition:'all .15s',
+            }">
+            <span>{{ cat.blogCateNm }}</span>
+            <span style="font-size:0.78rem;color:var(--text-muted);font-weight:400;">({{ cat.blogCnt || 0 }})</span>
+          </li>
+        </ul>
+      </div>
+      <!-- ===== ■.■.■. 최신 글 ================================================ -->
+      <div>
+        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
+          Latest Posts
+        </h3>
+        <div v-for="p in cfLatestPosts" :key="p.id" title="Ctrl+클릭/휠클릭: 새창" @click="handleSelectAction('blogs-rowView', p.id, $event)"
+          @auxclick="$event.button===1 ? handleSelectAction('blogs-rowView', p.id, $event) : null"
+          style="display:flex;gap:10px;margin-bottom:14px;cursor:pointer;padding:6px 0;"
+          @mouseenter="$event.currentTarget.style.opacity='0.7'"
+          @mouseleave="$event.currentTarget.style.opacity='1'">
+          <div style="width:50px;height:50px;border-radius:6px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
+            <img v-if="p.thumb" :src="p.thumb" style="width:100%;height:100%;object-fit:cover;" />
+          </div>
+          <div style="min-width:0;">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+              {{ p.title }}
+            </div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px;">
+              {{ p.date }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <!-- ===== □.□. 사이드바 ================================================== -->
+    <!-- ===== ■.■. 포스트 목록 ================================================ -->
+    <div>
+      <div v-for="post in posts" :key="post.id"
+        class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
+        title="Ctrl+클릭/휠클릭: 새창" @click="handleSelectAction('blogs-rowView', post.id, $event)"
+        @auxclick="$event.button===1 ? handleSelectAction('blogs-rowView', post.id, $event) : null"
+        @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
+        @mouseleave="$event.currentTarget.style.boxShadow=''">
+        <!-- ===== ■.■.■.■. 썸네일 =============================================== -->
+        <div style="width:clamp(200px,30%,280px);min-height:180px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
+          <img v-if="post.thumb" :src="post.thumb" :alt="post.title" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
+            @mouseenter="$event.target.style.transform='scale(1.05)'" @mouseleave="$event.target.style.transform=''" />
+        </div>
+        <!-- ===== ■.■.■.■. 내용 ================================================ -->
+        <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">
+              {{ categories.find(c => c.blogCateId === post.category)?.blogCateNm || post.category }}
+            </span>
+          </div>
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;line-height:1.4;">
+            {{ post.title }}
+          </h2>
+          <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ post.excerpt }}
+          </p>
+          <div style="display:flex;align-items:center;gap:12px;font-size:0.75rem;color:var(--text-muted);">
+            <span>
+              By {{ post.author }}
+            </span>
+            <span>
+              ·
+            </span>
+            <span>
+              {{ post.date }}
+            </span>
+            <span>
+              ·
+            </span>
+            <span>
+              {{ post.readTime }} 읽기
+            </span>
+            <span v-if="post.fileCount > 0">
+              ·
+            </span>
+            <span v-if="post.fileCount > 0" style="display:inline-flex;align-items:center;gap:3px;">
+              📎 {{ post.fileCount }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 빈 상태 ================================================ -->
+      <div v-if="posts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+        <div style="font-size:2rem;margin-bottom:12px;">
+          📝
+        </div>
+        <div style="font-size:0.95rem;">
+          검색 결과가 없습니다.
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 페이지네이션 ============================================ -->
+      <div v-if="posts.length > 0" style="display:flex;justify-content:center;margin-top:24px;">
+        <fo-pager :pager="pager"
+          :on-set-page="n => handleSelectAction('blogs-pager-setPage', n)"
+          :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
+      </div>
+    </div>
+  </div>
+</fo-page>
+<!-- ===== □.□. 포스트 목록 ================================================ -->
+<!-- ===== □. 레이아웃: 사이드바 + 본문 ========================================= -->
+`
+};

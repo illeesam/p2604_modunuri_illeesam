@@ -1,0 +1,27 @@
+-- sy_role_menu 테이블 DDL
+-- 역할-메뉴 권한 매핑
+
+CREATE TABLE shopjoy_2604.sy_role_menu (
+    role_menu_id VARCHAR(21) NOT NULL CONSTRAINT sy_role_menu_pk_role_menu_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21) NOT NULL,
+    role_id      VARCHAR(21) NOT NULL,
+    menu_id      VARCHAR(21) NOT NULL,
+    perm_level   INTEGER     DEFAULT 1,
+    reg_by       VARCHAR(30),
+    reg_date     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    upd_by       VARCHAR(30),
+    upd_date     TIMESTAMP  ,
+    CONSTRAINT sy_role_menu_uk_role_id_menu_id_x2 UNIQUE (role_id, menu_id)
+);
+
+COMMENT ON TABLE  shopjoy_2604.sy_role_menu IS '역할-메뉴 권한 매핑';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.role_menu_id IS '역할메뉴ID';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.reg_site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.role_id IS '역할ID';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.menu_id IS '메뉴ID';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.perm_level IS '권한레벨 (1:조회/2:수정/3:삭제)';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.reg_by IS '등록자 (sy_user.user_id, ec_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.reg_date IS '등록일';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_role_menu.upd_date IS '수정일';
+CREATE INDEX sy_role_menu_ix01_menu_id ON shopjoy_2604.sy_role_menu USING btree (menu_id);

@@ -1,0 +1,119 @@
+/* ShopJoy - 전시 패널 컴포넌트
+ * 단일 패널 데이터를 받아 rows(위젯 목록)를 DispX04Widget으로 렌더링
+ */
+window.DispX03Panel = {
+  name: 'DispX03Panel',
+  props: {
+    params:      { type: Object, required: true },
+    dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
+    dispOpt:     { type: Object, default: () => ({ layout: 'vertical', showBadges: true }) },
+    panelItem:   { type: Object, required: true },     // 패널 객체 (rows[] 포함)
+    showHeader:  { type: Boolean, default: false },    // 패널 헤더 표시 여부
+  },
+  emits: ['widget-action'],
+  setup(props, { emit }) {
+    // ===== [01] 초기 변수 정의 ==================================================
+    const { computed, reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '' });
+    const codes = reactive({});
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX03Panel.js : handleBtnAction -> ', cmd, param);
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 위젯 선택 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX03Panel.js : handleSelectAction -> ', cmd, param);
+      // 위젯 클릭 액션 부모로 전파
+      if (cmd === 'widgets-action') {
+        return emit('widget-action', param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
+
+    /* mergedWidget — merged 위젯 */
+    const mergedWidget = (w) => ({
+      ...w,
+      status:       props.panelItem.status,
+      condition:    w.condition || props.panelItem.condition || '항상 표시',
+      authRequired: props.panelItem.authRequired || false,
+      authGrade:    props.panelItem.authGrade    || '',
+      // ✓ 필터링 관련 정보 병합 (패널-아이템 레벨)
+      dispYn:       w.dispYn !== undefined ? w.dispYn : 'Y',  // widget item의 dispYn 우선
+      useYn:        w.useYn !== undefined ? w.useYn : 'Y',    // widget 마스터의 useYn 우선
+      dispStartDt:   w.dispStartDt || '',
+      dispEndDt:     w.dispEndDt || '',
+      useStartDate:  w.useStartDate || '',
+      useEndDate:    w.useEndDate || '',
+      dispEnv:       w.dispEnv || '^PROD^',
+    });
+
+    const cfLayoutStyle = computed(() => {
+      const layout = props.dispOpt?.layout || 'vertical';
+      if (layout === 'horizontal') { return 'display:flex;gap:12px;overflow-x:auto;'; }
+      if (layout === 'grid') { return 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;'; }
+      return 'display:flex;flex-direction:column;gap:12px;';
+    });
+
+    // ===== [06] return (템플릿 노출) ==============================================
+
+    return {
+      uiState, codes, coUtil,                                               // 상태 / 공용유틸(템플릿 cofAnd)
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      mergedWidget, cfLayoutStyle,                                          // 헬퍼 / computed
+    };
+  },
+  template: /* html */`
+<div class="disp-panel" :data-area="panelItem.area">
+  <!-- ===== ■. 패널 헤더 (showHeader=true 일 때) ============================= -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
+  <div v-if="showHeader"
+    style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#f8f8f8;border-bottom:1px solid #efefef;">
+    <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;border-radius:3px;padding:0 5px;line-height:16px;flex-shrink:0;">
+      DispX03Panel #{{ String(panelItem.dispId).padStart(4,'0') }}
+    </span>
+    <span style="font-size:13px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+      {{ panelItem.name }}
+    </span>
+    <span style="font-size:10px;padding:1px 7px;border-radius:5px;flex-shrink:0;"
+      :style="panelItem.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">
+      {{ panelItem.status }}
+    </span>
+    <span v-if="coUtil.cofAnd(panelItem.condition, panelItem.condition!=='항상 표시')" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
+    {{ panelItem.condition }}
+  </span>
+</div>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 패널 타이틀 ================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<div v-if="coUtil.cofAnd(panelItem.titleYn==='Y', panelItem.title)" style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
+{{ panelItem.title }}
+</div>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 위젯 목록 =================================================== -->
+<!-- ===== ■. 영역 ====================================================== -->
+<div :style="cfLayoutStyle">
+  <disp-x04-widget
+      v-for="(w, wi) in (panelItem.rows || [])"
+      :key="wi"
+      :params="params"
+      :disp-dataset="dispDataset"
+      :disp-opt="dispOpt"
+      :widget-item="mergedWidget(w)"
+      @click-action="payload => handleSelectAction('widgets-action', payload)"
+      />
+  <div v-if="!coUtil.cofAnd(panelItem.rows, panelItem.rows?.length)" style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
+  위젯 없음
+</div>
+</div>
+</div>
+<!-- ===== □. 영역 ====================================================== -->
+`,
+};

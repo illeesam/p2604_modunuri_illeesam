@@ -1,0 +1,528 @@
+---
+정책명: 백엔드 API 기술 정책 (EcAdminApi)
+정책번호: base-기술-api
+관리자: 개발팀
+최종수정: 2026-06-13
+---
+
+# 백엔드 API 기술 정책 (EcAdminApi)
+
+## 1. 기술 스택
+
+| 기술 | 버전 | 비고 |
+|---|---|---|
+| Java | 17 | LTS |
+| Spring Boot | 3.x | |
+| MyBatis | 3.x | XML Mapper 방식 |
+| PostgreSQL | - | Schema: `shopjoy_2604` |
+| p6spy | - | SQL 로깅 |
+
+---
+
+## 2. 프로젝트 루트 패키지
+
+```
+com.shopjoy.ecadminapi
+├── base/       기계적으로 생성된 모듈 모음 (auto-generated)
+├── share/      bo / fo 양쪽에서 공통 사용하는 모듈 모음
+├── bo/         Back Office (관리자 Admin) 전용 모듈 모음
+├── fo/         Front Office (사용자 Front) 전용 모듈 모음
+├── auth/       인증 관련
+├── autorest/   자동 REST 생성
+└── common/     공통 설정 (config 등)
+```
+
+---
+
+## 3. 패키지별 역할 및 원칙
+
+### 3.1 `base/` — 자동 생성 기반 모듈
+
+- **정의**: DDL → 자동 생성 도구(AutoRest 등)가 기계적으로 만들어 낸 CRUD 모듈
+- **특징**: 1 테이블 : 1 세트(Controller/Service/Mapper/Entity) 1:1 매핑
+- **수정 금지**: 수동 비즈니스 로직 추가 금지 — 재생성 시 덮어씀
+- **🚫 외부 직접 호출 금지** — `/api/base/**` 는 클라이언트(BO/FO)에서 절대 호출 금지. 자세한 내용은 [§ 3.5 BASE URL 직접 호출 금지](#35--api-base--url-직접-호출-금지--)
+- **하위 구조**:
+
+```
+base/
+├── domain/
+│   ├── ec/          EC 도메인 (cm/dp/mb/od/pd/pm/st)
+│   │   ├── cm/      공통·커뮤니티 (채팅, 공지, 게시판 등)
+│   │   ├── dp/      전시 (Display)
+│   │   ├── mb/      회원 (Member)
+│   │   ├── od/      주문·클레임·배송 (Order)
+│   │   ├── pd/      상품 (Product)
+│   │   ├── pm/      프로모션 (Promotion: 쿠폰/캐시/적립금/이벤트)
+│   │   └── st/      정산 (Settle)
+│   └── sy/          SY 도메인 (시스템: 사이트/코드/사용자/권한/메뉴 등)
+└── (controller/service/mapper은 각 도메인 서브패키지 내 위치)
+```
+
+### 3.2 `share/` — bo/fo 공통 모듈
+
+- **정의**: Back Office와 Front Office 양쪽에서 호출하는 공통 비즈니스 로직
+- **예시**: 공통 조회 서비스, 코드 캐시, 파일 업로드, 알림 발송 등
+- **원칙**: bo/fo 어느 한 쪽에만 쓰인다면 해당 패키지로 이동
+
+```
+share/
+├── controller/
+├── service/
+└── mapper/
+```
+
+### 3.3 `bo/` — Back Office (관리자) 전용 모듈
+
+- **정의**: `bo.html` 관리자 화면에서만 호출하는 API 및 비즈니스 로직
+- **예시**: 관리자 대시보드, 일괄 처리, 정산 마감, 배치 트리거 등
+- **원칙**: Front에서 절대 호출하지 않는 기능만 여기에 위치
+
+```
+bo/
+├── ec/
+│   ├── cm/  ├── dp/  ├── mb/  ├── od/
+│   ├── pd/  ├── pm/  └── st/
+│   └── (각 서브패키지 안에 controller/ + service/)
+└── sy/
+    ├── controller/
+    └── service/
+```
+
+### 3.4 `fo/` — Front Office (사용자) 전용 모듈
+
+- **정의**: `index.html` 사용자 화면에서만 호출하는 API 및 비즈니스 로직
+- **예시**: 상품 목록/상세, 장바구니, 주문, 마이페이지 등 사용자 흐름
+- **원칙**: 관리자에서 절대 호출하지 않는 기능만 여기에 위치
+
+```
+fo/
+├── ec/
+│   └── controller/  +  service/
+└── sy/   (현재 비어있음)
+```
+
+### 3.4-A `co/` — 공통(Common) 모듈 ⭐
+
+- **정의**: BO·FO 양쪽에서 공통으로 사용하는 API (인증, 초기 데이터 로드, 공통 코드 등)
+- **URL 프리픽스**: `/api/co/...`
+- **하위 구조**:
+
+```
+co/
+├── auth/
+│   ├── controller/   BoAuthController, FoAuthController
+│   └── service/      BoAuthService, FoAuthService
+├── cm/
+│   ├── controller/   공통 초기화·외부연동·발송 (앱 스토어/지도/토스/업로드/메시지발송)
+│   ├── service/      CmAppStoreDataService, CmMapService, CmTossPayService, CmUploadService
+│   │                 CmMailSendService, CmKakaoSendService, CmSmsSendService, CmAlarmSendService, CmMsgSendService
+│   └── data/vo/      MapKeysRes, TossConfirmReq, SendResultVo, MsgSendReq 등
+└── sy/
+    └── controller/   CoSyCodeController, CoSyPathController, CoSySiteController, CoSyUserController
+```
+
+- **예시**: `/api/co/bo-auth/login`, `/api/co/sy/code/list`, `/api/co/cm/bo-app-store`, `/api/co/cm/send/mail`
+
+#### `co/cm` 의 책임 — 외부 연동·발송·공통 인프라 ⭐ (2026-06-13)
+
+BO·FO 양쪽이 공유하는 **외부 시스템 연동**과 **메시지 발송**은 `co/cm` 에 둔다. 특정 화면(주문/문의 등)에
+종속되지 않고 여러 업무에서 재사용되는 인프라성 기능이기 때문이다.
+
+| 기능 | 위치 |
+|---|---|
+| 지도 키 발급 (카카오/네이버맵) | `CmMapService` |
+| 토스 결제 승인/취소 | `CmTossPayService` |
+| 파일 업로드/이미지/동영상 | `CmUploadService` |
+| **메일 발송** (JavaMailSender) | `CmMailSendService` → `syh_send_email_log` |
+| **카카오 알림톡 발송** | `CmKakaoSendService` → `syh_send_msg_log` |
+| **SMS 발송** | `CmSmsSendService` → `syh_send_msg_log` |
+| **시스템 알림** | `CmAlarmSendService` → `sy_alarm` + `syh_alarm_send_hist` |
+| **발송 오케스트레이터** (템플릿 조회·치환 + 채널 조합) | `CmMsgSendService` |
+
+- 채널 서비스는 **1 채널 1 책임**으로 분리하고, 업무 시나리오(예: 문의접수 알림)는 오케스트레이터
+  `CmMsgSendService` 의 진입점 메서드(`sendContactReceived(...)`)로 묶는다.
+- 업무 서비스(예: `FoCmContactService`)는 자기 일(문의 저장)을 끝낸 뒤 `cmMsgSendService` 를 호출한다.
+  발송은 `try-catch` 로 감싸 **발송 실패가 본 업무를 깨지 않게** 한다.
+- 상세 정책 → [`sy/sy.16.메시지발송.md`](../sy/sy.16.메시지발송.md)
+
+---
+
+### 3.5 Controller → Service 참조 규칙 ⭐
+
+**핵심 원칙**: **`bo/` · `fo/` · `co/` Controller 는 `base/` Service 를 직접 주입할 수 없다.**
+반드시 같은 레이어(bo/fo/co)의 Service 를 경유해야 한다.
+
+#### 계층 구조
+
+```
+[클라이언트]
+    │  /api/bo/**  /api/fo/**  /api/co/**
+    ▼
+[bo / fo / co Controller]
+    │  반드시 같은 레이어 Service 호출
+    ▼
+[bo / fo / co Service]          ← 비즈니스 로직, 권한 검증, 감사 기록
+    │  base Mapper / Repository 직접 주입 허용
+    ▼
+[base Mapper / base Repository] ← 순수 SQL/JPA CRUD
+    │
+    ▼
+[PostgreSQL DB]
+```
+
+#### 올바른 패턴 (✅)
+
+```java
+// BO Controller → BO Service (같은 레이어)
+@RestController
+@RequestMapping("/api/bo/ec/cm/blog")
+@RequiredArgsConstructor
+public class BoCmBlogController {
+    private final BoCmBlogService service;   // ✅ bo Service 주입
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(service.getPageData(p)));
+    }
+}
+
+// BO Service → base Mapper / Repository (직접 주입 허용)
+@Service
+@RequiredArgsConstructor
+public class BoCmBlogService {
+    private final CmBlogMapper     cmBlogMapper;      // ✅ base Mapper 주입
+    private final CmBlogRepository cmBlogRepository;  // ✅ base Repository 주입
+
+    @Transactional(readOnly = true)
+    public PageResult<CmBlogDto> getPageData(Map<String, Object> p) {
+        PageHelper.addPaging(p);
+        return PageResult.of(
+            cmBlogMapper.selectPageList(p),
+            cmBlogMapper.selectPageCount(p),
+            PageHelper.getPageNo(), PageHelper.getPageSize(), p
+        );
+    }
+}
+```
+
+#### 금지 패턴 (❌)
+
+```java
+// ❌ BO Controller 가 base Service 를 직접 주입
+@RestController
+@RequestMapping("/api/bo/ec/cm/blog")
+@RequiredArgsConstructor
+public class BoCmBlogController {
+    private final CmBlogService baseService;   // ❌ base Service 직접 주입 금지
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<CmBlogDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(baseService.getPageData(p)));
+        // 권한 검증·감사 로그가 완전히 우회됨
+    }
+}
+```
+
+#### 금지하는 이유
+
+| 항목 | 설명 |
+|---|---|
+| **권한 검증 우회** | bo/fo Service 에서 수행하는 memberId 확인, 역할 체크가 건너뜀 |
+| **감사 로그 누락** | X-UI-Nm / X-Cmd-Nm 헤더 기반 감사 기록이 bo/fo 레이어에서 처리됨 |
+| **비즈니스 로직 분산** | 검증 없이 base Service 호출 시 도메인 규칙 미적용 상태로 DB 변경 가능 |
+| **재생성 안전성** | base 는 DDL 변경 시 재생성 대상 — 외부 Controller 의존이 있으면 재생성 후 깨짐 |
+
+#### 예외 — 단순 위임 시 bo/fo Service 생략 허용
+
+비즈니스 로직이 전혀 없는 **단순 CRUD 위임**의 경우, bo/fo Service 클래스를 따로 만들지 않고
+Controller 에서 **base Service 를 직접 주입**하는 것을 예외적으로 허용한다.
+
+단, 이 경우에도 **Controller 는 반드시 `bo/` 또는 `fo/` 패키지에 위치**해야 한다.
+
+```java
+// ✅ 예외 허용 — 단순 CRUD 위임, 비즈니스 로직 없음
+@RestController
+@RequestMapping("/api/bo/sy/vendor-user")
+@RequiredArgsConstructor
+public class BoSyVendorUserController {
+    private final SyVendorUserService baseService;  // ✅ 예외: 단순 위임 시 base Service 직접 주입 허용
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<PageResult<SyVendorUserDto>>> page(
+            @RequestParam Map<String, Object> p) {
+        return ResponseEntity.ok(ApiResponse.ok(baseService.getPageData(p)));
+    }
+}
+```
+
+**단순 위임 판단 기준**:
+
+| 조건 | 판단 |
+|---|---|
+| 권한 체크 필요 (memberId 확인, 역할 검증) | bo/fo Service 필수 |
+| DTO 가공 / 다중 테이블 조합 | bo/fo Service 필수 |
+| 트랜잭션 조합 (여러 엔티티 수정) | bo/fo Service 필수 |
+| 감사 이력 기록 필요 | bo/fo Service 필수 |
+| 순수 조회 CRUD, 별도 가공 없음 | base Service 직접 주입 허용 |
+
+**비즈니스 로직이 추가되는 시점**에 bo/fo Service 클래스를 신설한다 (사전 도입 불필요).
+
+---
+
+### 3.6 `/api/base/**` URL 직접 호출 금지 ⭐
+
+**원칙**: `base/` 패키지의 컨트롤러(`/api/base/**`)는 **내부 공통 레이어**다. 프론트엔드에서 직접
+호출하면 **반드시 안 된다**. BO 화면은 `/api/bo/**`, FO 화면은 `/api/fo/**` 컨트롤러를 거쳐야 한다.
+
+#### 금지하는 이유
+
+| 항목 | 설명 |
+|---|---|
+| **인증·인가** | `/api/bo/**` / `/api/fo/**` 만 SecurityConfig 의 BO_ONLY / FO_ONLY 인가 매처를 통과한다. `/api/base/**` 는 `denyAll()` 처리되어 클라이언트 호출 시 **403 Forbidden** 발생 |
+| **감사 로그** | UI명/명령명/파일명 등 BO·FO 컨텍스트 헤더 검증·기록은 `/bo`, `/fo` 레이어에서 수행 |
+| **API 책임 경계** | `base/` 는 자동 생성 CRUD 만 제공 — 인증·권한·비즈니스 규칙은 `bo/`, `fo/` 레이어 책임 |
+| **재생성 안전성** | `base/` 는 DDL 변경 시 재생성됨 — 외부 의존이 있으면 마이그레이션 깨짐 |
+
+#### 올바른 패턴
+
+```js
+// ❌ 금지 — BO 화면이 /api/base 직접 호출 → 403
+boApi.get('/base/sy/user-token-log/page')
+boApiSvc.stSettleConfig = {
+  getPage(p, ui, cmd) { return boApi.get('/base/ec/st/settle-config/page', ...) }
+};
+
+// ✅ 올바름 — /api/bo/** 컨트롤러를 통해 호출
+boApi.get('/bo/sy/user-token-log/page')
+boApiSvc.stSettleConfig = {
+  getPage(p, ui, cmd) { return boApi.get('/bo/ec/st/config/page', ...) }
+};
+```
+
+#### 신규 기능이 필요할 때
+
+`base/` 에만 엔드포인트가 있고 BO/FO Controller 가 없으면, **`bo/` 또는 `fo/` 패키지에 Controller 를 신규 작성**한 후 클라이언트에서 호출한다. Service 작성 여부는 §3.5의 단순 위임 판단 기준을 따른다.
+
+#### 점검 방법
+
+```bash
+# 프론트 BO 코드에 /base 잔존 점검 (0건이어야 함)
+grep -rn "['\"]/\?base/\|/api/base/" pages/bo services/boApiSvc.js base/boApp.js
+```
+
+---
+
+## 4. 신규 모듈 배치 기준
+
+```
+신규 기능 추가 시 판단 흐름:
+
+1. DDL에서 자동 생성 가능한 단순 CRUD인가?
+   → YES: base/ 에 생성 (수동 수정 금지, 조회/단순저장 위임용)
+   → NO: 다음 단계
+
+2. 외부 시스템 연동 / 발송 / 인증 / 공통 초기화 등
+   BO·FO 가 공유하는 인프라성 기능인가?
+   (메일·카톡·SMS·알림 발송, 결제, 지도, 파일업로드, 코드/사이트 조회 등)
+   → YES: co/ (URL /api/co/...). 발송·외부연동은 co/cm/service
+   → NO: 다음 단계
+
+3. Admin(관리자)에서만 사용하는가?
+   → YES: bo/ (URL /api/bo/...)
+
+4. Front(사용자)에서만 사용하는가?
+   → YES: fo/ (URL /api/fo/...)
+```
+
+> **요약 — 기능을 어디에 만드는가** ⭐
+> - **단순 CRUD(테이블 1:1 조회/저장)** → `base/` (자동 생성, 수정 금지). BO/FO 화면은 이걸 직접 호출하지 말고
+>   `bo/`·`fo/` Controller(필요 시 단순 위임)를 거친다 (§3.5/§3.6).
+> - **외부 연동·발송·공통 초기화** → `co/cm` (BO·FO 공용). 메일/카톡/SMS/알림 발송, 결제, 지도, 업로드.
+> - **관리자 전용 비즈니스 로직** → `bo/`. **사용자 전용 흐름** → `fo/`.
+> - 업무 서비스가 발송 같은 공통 인프라를 쓸 때는 해당 `co/cm` 서비스를 **주입해서 호출**한다(중복 구현 금지).
+
+---
+
+## 5. Mapper XML 경로
+
+Java 패키지 구조와 대응:
+
+```
+src/main/resources/mapper/
+├── base/
+│   ├── autorest/    자동 생성 Mapper XML
+│   ├── ec/          EC 도메인 (cm/dp/mb/od/pd/pm/st)
+│   └── sy/          SY 도메인
+├── share/
+├── bo/
+└── fo/
+```
+
+MyBatis 설정: `classpath:mapper/**/*.xml` 와일드카드로 전체 스캔
+
+---
+
+## 6. MyBatis 설정
+
+```
+src/main/java/com/shopjoy/ecadminapi/common/config/
+├── MyBatisConfig.java          DataSource, SqlSessionFactory 설정
+├── MyBatisQueryInterceptor.java  쿼리 인터셉터
+├── P6SpyFormatter.java         SQL 로그 포맷
+├── SecurityConfig.java         Spring Security
+└── WebConfig.java              CORS, MVC 설정
+```
+
+---
+
+## 7. API 응답 구조 ⭐
+
+### 7.1 ApiResponse — 단건/목록 응답
+
+```json
+{
+  "code": 200,
+  "message": "OK",
+  "data": { ... }
+}
+```
+
+`res.data.data` 로 실제 데이터에 접근한다.
+
+### 7.2 PageResult — 페이징 응답 ⭐
+
+`getPageData()` 계열 API는 `data` 필드 안에 `PageResult`를 반환한다.
+
+```json
+{
+  "code": 200,
+  "data": {
+    "pageList":       [...],      ← 현재 페이지 데이터 배열
+    "pageNo":         1,          ← 현재 페이지 번호 (1부터)
+    "pageSize":       20,         ← 페이지당 건수
+    "pageTotalCount": 153,        ← 전체 건수
+    "pageTotalPage":  8,          ← 전체 페이지 수 (최소 1)
+    "pageCond":       { ... }     ← 이번 조회에 사용된 검색 조건
+  }
+}
+```
+
+**프론트에서 올바르게 읽는 방법**:
+
+```js
+const res = await boApiSvc.mbMember.getPage({ searchValue, pageNo, pageSize });
+const d = res.data?.data || {};
+
+// ✅ 올바른 필드명
+const rows      = d.pageList       || [];   // 데이터 배열
+const total     = d.pageTotalCount || 0;    // 전체 건수
+const totalPage = d.pageTotalPage  || 1;    // 전체 페이지 수
+
+// ❌ 잘못된 필드명 — 항상 빈 값 반환
+// d.list         → undefined
+// d.totalCount   → undefined
+// d.total        → undefined
+// d.items        → undefined
+```
+
+> **주의**: 필드명을 `list`, `totalCount`, `total`로 잘못 읽으면 항상 빈 배열·0이 반환되어
+> "조회 결과 없음"처럼 보이지만 실제 API는 정상 응답한다.
+
+### 7.3 목록 조회는 항상 페이징 ⭐
+
+**원칙**: 모든 목록 조회는 `getPageData()` 로 페이징 응답을 반환한다. `getList()` 는 내부 호출 또는
+"전체 한 번에 받아 메모리에서 처리하는" 특수 목적(예: 코드그룹 캐시) 외에는 외부 노출 금지.
+
+**근거**:
+- 데이터가 적으면 페이징 의미 없어 보이지만, 누적되면 페이지네이션 없이는 화면 무거워짐
+- 응답 구조 일관 — 화면이 항상 `pageList / pageTotalCount` 형태로 처리
+- 백엔드도 `PageHelper` 한 곳에서 ThreadLocal 페이징 컨텍스트를 관리하여 표준화
+
+**기본값** (`PageHelper.DEFAULT_PAGE_NO/SIZE`):
+- `pageNo`   = `1`
+- `pageSize` = `20`
+
+호출 측에서 `pageNo/pageSize` 가 없거나 NULL 이어도 자동으로 기본값이 적용되므로, **클라이언트가
+페이징 파라미터를 보내지 않아도 페이징 응답이 나온다**.
+
+```java
+// ✅ FO/BO Service 표준 패턴
+@Transactional(readOnly = true)
+public Map<String, Object> getReviews(String prodId, Map<String, Object> p) {
+    Map<String, Object> param = (p != null) ? new HashMap<>(p) : new HashMap<>();
+    param.put("prodId", prodId);
+
+    PageResult<PdReviewDto> page = reviewService.getPageData(param);
+
+    Map<String, Object> result = new LinkedHashMap<>();
+    result.put("items",    page.getPageList());
+    result.put("total",    page.getPageTotalCount());
+    result.put("pageNo",   page.getPageNo());
+    result.put("pageSize", page.getPageSize());
+    return result;
+}
+```
+
+```java
+// ❌ 분기 금지 — pageSize 유무로 getList() / getPageData() 갈리지 않게
+if (param.containsKey("pageSize")) {
+    page = service.getPageData(param);
+} else {
+    list = service.getList(param);   // ← 이런 분기 금지
+}
+```
+
+**예외 — `getList()` 외부 노출 허용 케이스**:
+
+| 상황 | 사유 |
+|---|---|
+| 공통 코드 / 사이트 / 카테고리 트리 | 전체 캐싱 전제, 페이징 무의미 |
+| 단일 상품의 이미지 / 옵션 / SKU | 한 상품의 모든 항목을 반드시 같이 표시 |
+| 통계용 전체 스캔 (`COUNT(*)` 등) | 조회 대상이 본질적으로 리스트가 아님 |
+
+위 외에는 항상 `getPageData()` 를 사용한다.
+
+---
+
+### 7.4 DTO 연관 목록(중첩 컬렉션) 필드 네이밍 ⭐
+
+부모 DTO 의 `Item` 안에 자식 DTO 리스트(연관정보)를 담을 때, 필드명은 **`{부모도메인}{자식엔터티복수}`** 형태로 짓는다. 자식 엔터티의 타입(`OdOrderItemDto.Item`)만 보고도 어떤 부모에 속한 어떤 목록인지 한눈에 드러나야 하며, `items`·`pays`·`list` 처럼 부모 맥락이 없는 단어는 금지한다.
+
+```java
+// ✅ 표준 — 부모(order) 접두어 + 자식 복수형
+public static class Item {
+    private List<OdOrderItemDto.Item>   orderItems;   // 주문상품 목록
+    private List<OdPayDto.Item>         orderPays;    // 결제 목록
+    private List<OdDlivDto.Item>        orderDlivs;   // 배송 목록
+    private List<OdOrderDiscntDto.Item> orderDiscnts; // 주문할인 목록
+}
+
+// ❌ 금지 — 부모 맥락 없는 단어
+private List<OdOrderItemDto.Item>   items;     // 어느 도메인의 items 인지 불명확
+private List<OdPayDto.Item>         pays;
+private List<OdOrderDiscntDto.Item> discnts;
+```
+
+**기존 준수 사례** (이미 컨벤션을 따르는 DTO — 신규 작성 시 참고):
+
+| 부모 DTO | 연관 필드 | 자식 타입 |
+|---|---|---|
+| `OdOrderDto` | `orderItems` / `orderPays` / `orderDlivs` / `orderDiscnts` | `OdOrderItemDto` / `OdPayDto` / `OdDlivDto` / `OdOrderDiscntDto` |
+| `OdClaimDto` | `claimItems` | `OdClaimItemDto` |
+| `OdDlivDto` | `dlivItems` | `OdDlivItemDto` |
+| `PdProdDto` | `prodOpts` | `PdProdOptDto.Item` (pd_prod_opt 옵션값) |
+| `PmEventDto` | `eventItems` | `PmEventItemDto` |
+| `DpPanelDto` | `panelItems` | `DpPanelItemDto` |
+
+**프론트엔드 동기화**: DTO 는 JSON 으로 직렬화되어 화면에 그대로 전달되므로, 이 필드명을 변경하면 해당 응답을 소비하는 프론트 코드(`order.orderItems` 등)도 같은 이름으로 수정해야 한다. Service 의 `setXxx()` 채움 로직 → 프론트 소비처 순으로 일괄 정렬한다.
+
+---
+
+## 관련 정책
+- `base.인증-bo.md` — 관리자 인증/토큰 정책
+- `base.인증-fo.md` — 사용자 인증/토큰 정책
+- `sy.51.프로그램설계정책.md` — 화면 설계 기준
+- `sy.52.ddl단어사전규칙.md` — DDL 컬럼명 표준

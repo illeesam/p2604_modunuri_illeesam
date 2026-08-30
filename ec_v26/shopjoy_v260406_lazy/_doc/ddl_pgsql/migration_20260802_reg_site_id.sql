@@ -1,0 +1,207 @@
+-- =============================================================================
+-- Migration: reg_site_id 감사 컬럼 전체 테이블 추가
+-- 실행일: 2026-08-02
+-- 목적 : 등록 시점의 사이트 식별자를 감사(audit) 필드로 보존
+--        reg_by / reg_date 와 동일 패턴 — INSERT 시 EntitySaveListener 자동 주입,
+--        UPDATE 시에는 변경하지 않음(최초 등록 사이트 추적 보존).
+-- 대상 : reg_by 컬럼이 있는 모든 테이블 (169개)
+-- 도구 : C:\tmp\AddRegSiteId.java (JDBC 직접 실행)
+-- =============================================================================
+-- 결과 요약
+--   추가됨  : 169개 테이블
+--   스킵    : 10개 (reg_by 없는 테이블 — 감사 필드 없음)
+--
+-- 데이터 초기화 규칙
+--   · site_id 컬럼이 있는 테이블: SET reg_site_id = COALESCE(site_id, '2604010000000001')
+--   · site_id 컬럼이 없는 테이블: SET reg_site_id = '2604010000000001'
+-- =============================================================================
+
+-- 아래는 AddRegSiteId.java 가 실제로 수행한 DDL 을 참조용으로 기록한 것이며
+-- 재실행할 필요가 없다. (이미 DB 에 반영됨)
+
+-- ALTER TABLE shopjoy_2604.cm_blog            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_blog_cate       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_blog_file       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_blog_good       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_blog_reply      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_blog_tag        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_chatt           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_chatt_member    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_chatt_msg       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_dashboard       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_dashboard_item  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_dashboard_item_data ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_dashboard_menu  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_faq             ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_path            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_popup           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cm_popup_item      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.cmh_push_log       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.dp_area            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.dp_panel           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.dp_panel_item      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.dp_ui              ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.dp_widget          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.dp_widget_lib      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_device_token    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_like            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member_addr     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member_grade    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member_group    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member_group_map ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member_role     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mb_member_sns      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mbh_member_login_log ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.mbh_member_token_log ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_cart            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_claim           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_claim_item      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_dliv            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_dliv_item       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_order           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_order_discnt    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_order_item      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_order_item_discnt ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_pay             ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_pay_method      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_refund          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.od_refund_method   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_claim_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_claim_item_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_claim_item_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_claim_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_dliv_chg_hist  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_dliv_item_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_dliv_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_order_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_order_item_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_order_item_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_order_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_pay_chg_hist   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.odh_pay_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_category        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_category_prod   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_dliv_tmplt      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_bundle_item ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_content    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_img        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_opt        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_plan       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_qna        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_rel        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_set_item   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_sku        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_stock      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_prod_tag        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_restock_noti    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_review          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_review_attach   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_review_comment  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pd_tag             ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_chg_hist  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_content_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_sku_chg_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_sku_price_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_sku_stock_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_status_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pdh_prod_view_log  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_cache           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_coupon          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_coupon_issue    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_coupon_item     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_coupon_usage    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_discnt          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_discnt_item     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_discnt_usage    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_event           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_event_benefit   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_event_item      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_gift            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_gift_cond       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_gift_issue      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_plan            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_plan_item       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_save            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_save_issue      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_save_item       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_save_usage      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_voucher         ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.pm_voucher_issue   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_erp_voucher     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_erp_voucher_line ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_recon           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_adj      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_close    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_config   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_etc_adj  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_item     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_pay      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.st_settle_raw      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_alarm           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_attach          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_attach_grp      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_batch           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_bbm             ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_bbs             ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_brand           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_code            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_code_grp        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_contact         ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_dept            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_i18n            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_i18n_msg        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_menu            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_notice          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_path            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_prop            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_role            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_role_menu       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_site            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_template        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_user            ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_user_bookmark   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_user_pref       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_user_role       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_vendor          ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_vendor_brand    ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_vendor_content  ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_vendor_user     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_vendor_user_role ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.sy_voc             ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_alarm_send_hist ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_api_log        ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_batch_hist     ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_batch_log      ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_ext_test_log   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_send_email_log ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_send_msg_log   ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_user_login_log ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.syh_user_token_log ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zd_simul_log       ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_exmy1           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_exmy2           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_exmy3           ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_sample0         ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_sample1         ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_sample2         ADD COLUMN reg_site_id VARCHAR(21);
+-- ALTER TABLE shopjoy_2604.zz_sample3         ADD COLUMN reg_site_id VARCHAR(21);
+
+-- =============================================================================
+-- Java 코드 변경 내역
+-- =============================================================================
+-- 1. BaseEntity.java
+--    - regSiteId 필드 추가 (reg_by / reg_date 뒤에 위치)
+--    - @Column(name="reg_site_id", length=21), nullable=true
+--
+-- 2. EntitySaveListener.java
+--    - onCreate() (@PrePersist) 에서 e.getRegSiteId() == null 이면
+--      SecurityUtil.getSiteIdOrDefault() 로 주입
+--    - onUpdate() (@PreUpdate) 에서는 regSiteId 변경하지 않음 (최초 등록 사이트 보존)
+--
+-- 3. 뷰 엔티티 (VwSyCode, VwSyAttach 등) 는 READ-ONLY 이며
+--    베이스 테이블에서 reg_site_id 를 아직 SELECT 하지 않으므로 현재 노출 없음.
+--    향후 필요 시 VIEW 재생성 + 엔티티 필드 추가로 확장 가능.
+-- =============================================================================

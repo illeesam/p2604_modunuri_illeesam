@@ -1,0 +1,557 @@
+/* ShopJoy Admin - 회원로그인이력 */
+window.SyMemberLoginHist = {
+  name: 'SyMemberLoginHist',
+  props: {
+    navigate:     { type: Function, required: true },                       // 페이지 이동
+    showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
+    showToast:    { type: Function, default: () => {} },                    // 토스트 알림
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 #################################################### */
+
+    const { reactive, computed, onMounted } = Vue;
+
+    /* ===== 검색조건 + UI 상태 (searchParam 이 검색 + 탭 상태 겸함) ===== */
+    const searchParam = reactive({
+      srchOpen: false,
+      activeTab: 'log',
+      dateRange: '1week', dateRangeStart: '', dateRangeEnd: '',
+      searchType: '', searchValue: '', searchResultCd: '', searchIp: '',
+      searchUiNm: '', searchTraceId: '',
+    });
+
+    /* 초기 1주일 범위 설정 */
+    boUtil.bofApplyDateRange(searchParam, '1week');
+
+    const codes = reactive({ login_results: [], date_range_opts: [] });
+
+    /* ===== 페이지네이션 ===== */
+    const logGridPager = reactive({ pageType:'PAGE', pageNo:1, pageSize:100, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
+    /* 무한 스크롤 상태 — loading: 중복요청 가드 / hasMore: 더 받을 게 있는지 */
+    const uiState = reactive({ loading: false, hasMore: true });
+
+    /* ===== 목록 데이터 ===== */
+    const logs   = reactive([]);                  // 로그인 로그
+    const tokens = reactive([]);                  // 토큰 이력
+    const tabCounts = reactive({ log:0, token:0 });  // 탭별 카운트
+    // Hist 탭 정의 (표준 bo-tab-bar, 뷰모드 없음)
+    const histTabs = reactive([
+      { id: 'log',   label: '로그인 로그', get count() { return tabCounts.log; } },
+      { id: 'token', label: '토큰 이력',   get count() { return tabCounts.token; } },
+    ]);
+
+    /* ===== 행 펼치기 상태 ===== */
+    const expandedRows    = reactive(new Set());
+    const allExpanded     = reactive({ value: false });
+    /* 펼침 시 상세 API(getById) 조회 결과 캐시 — 한 번 조회한 행은 재펼침 시 재조회 안 함.
+       키: '{탭}:{logId}' (로그/토큰 탭이 logId 를 공유할 수 있어 탭 구분) */
+    const detailCache     = reactive({});
+    const detailLoading   = reactive(new Set());   // 조회 중인 캐시키 집합
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyMemberLoginHist.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        logGridPager.pageNo = 1;
+        return handleSearchList();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, { searchType:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
+        onDateRangeChange();
+        logGridPager.pageNo = 1;
+        return handleSearchList();
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-dateRange') {
+        return onDateRangeChange();
+      // 펼침 검색조건 토글
+      } else if (cmd === 'searchParam-toggleMore') {
+        searchParam.srchOpen = !searchParam.srchOpen;
+        return;
+      // 행 펼침 전체 토글
+      } else if (cmd === 'histList-toggleExpandAll') {
+        return toggleExpandAll();
+      // 로그 비우기
+      } else if (cmd === 'histList-clearLog') {
+        return handleClearLog();
+      // 페이지 번호 클릭
+      } else if (cmd === 'histList-pager-setPage') {
+        return setPage(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyMemberLoginHist.js : handleSelectAction -> ', cmd, param);
+      // 탭 변경 (log / token)
+      if (cmd === 'searchParam-tabChange') {
+        searchParam.activeTab = param;
+        logGridPager.pageNo = 1;
+        allExpanded.value = false;
+        return handleSearchList();
+      // 페이지 크기 변경
+      } else if (cmd === 'histList-pager-sizeChange') {
+        return onSizeChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭/액션 라우터. colKey 기준 분기 (행 액션 버튼·토글 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyMemberLoginHist.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'histList-cellClick') {
+        // 펼침 토글 아이콘 (_exp / colKey='btn_row_expand')
+        if (colKey === 'btn_row_expand') { return toggleRow(row.logId); }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* onDateRangeChange — 기간 옵션 변경 */
+    const onDateRangeChange = () => {
+      boUtil.bofApplyDateRange(searchParam);
+    };
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const cs = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await cs.saLoadCodes(['LOGIN_RESULT', 'DATE_RANGE_OPT'], {compNm: 'SyMemberLoginHist'});
+      codes.login_results   = cs?.sgGetGrpCodes('LOGIN_RESULT')   || [];
+      codes.date_range_opts = cs?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
+    };
+
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      logGridPager.pageTotalPage = coUtil.cofTotalPage(logGridPager);
+      const c = logGridPager.pageNo, l = logGridPager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
+      logGridPager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    };
+
+    /* fnCacheKey — 캐시 키 (탭+logId) */
+    const fnCacheKey = id => `${searchParam.activeTab}:${id}`;
+
+    /* fnFetchDetail — 행 상세 API(getById) 조회 후 캐시 적재. 이미 캐시/조회중이면 skip */
+    const fnFetchDetail = async (id) => {
+      if (id == null) { return; }
+      const key = fnCacheKey(id);
+      if (detailCache[key] || detailLoading.has(key)) { return; }   // 재펼침 시 재조회 안 함
+      detailLoading.add(key);
+      try {
+        const svc = searchParam.activeTab === 'log' ? boApiSvc.mbMemberLoginLog : boApiSvc.mbMemberTokenLog;
+        const res = await svc.getById(id, '회원로그인이력', '상세조회');
+        detailCache[key] = res.data?.data || res.data || {};
+      } catch (err) {
+        props.showToast(coUtil.cofErrMsg(err, '상세 조회 오류'), 'error', 0);
+      } finally {
+        detailLoading.delete(key);
+      }
+    };
+
+    /* toggleRow — 행 펼침 토글 (펼칠 때만 상세 조회) */
+    const toggleRow = (id) => {
+      if (expandedRows.has(id)) { expandedRows.delete(id); }
+      else { expandedRows.add(id); fnFetchDetail(id); }
+    };
+
+    /* isExpanded — 펼침 여부 */
+    const isExpanded      = id => expandedRows.has(id);
+
+    /* fnRowDetail — 펼침 상세 폼 데이터 (캐시 우선, 미조회 시 목록 row 폴백) */
+    const fnRowDetail = (row) => detailCache[fnCacheKey(row.logId)] || row;
+
+    /* fnRowDetailLoading — 해당 행 상세 조회중 여부 */
+    const fnRowDetailLoading = (row) => detailLoading.has(fnCacheKey(row.logId));
+
+    /* toggleExpandAll — 전체 펼침 토글 (펼칠 때 각 행 상세 조회) */
+    const toggleExpandAll = () => {
+      const list = searchParam.activeTab==='log' ? logs : tokens;
+      if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
+      else { list.forEach((r,i) => { const id = r.logId||i; expandedRows.add(id); fnFetchDetail(r.logId); }); allExpanded.value = true; }
+    };
+
+
+    /* ===== 엑셀 다운로드 =====
+       탭마다 대상 테이블이 달라 domain/areaNm 을 탭값으로 매핑한다.
+       domain 키는 백엔드 ExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+    const EXCEL_MAP = {
+      'log': { domain: 'memberLoginLog', areaNm: '회원 로그인 로그' },
+      'token': { domain: 'memberTokenLog', areaNm: '회원 토큰 이력' }
+    };
+    const cfExcelDomain = computed(() => (EXCEL_MAP[searchParam.activeTab] || EXCEL_MAP['log']).domain);
+    const cfExcelAreaNm = computed(() => (EXCEL_MAP[searchParam.activeTab] || EXCEL_MAP['log']).areaNm);
+
+    /* cfExcelColumns — 현재 탭의 그리드 헤더. 엑셀 컬럼/순서/라벨을 화면과 일치시키기 위해
+       모달에 넘긴다(안 넘기면 서버가 Entity 필드로 만들어 화면과 어긋난다). */
+    const cfExcelColumns = computed(() => {
+      if (searchParam.activeTab === 'log') { return columns.logGrid || []; }
+      if (searchParam.activeTab === 'token') { return columns.tokenGrid || []; }
+      return columns.logGrid || [];
+    });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다.
+       페이지 번호/크기는 의미가 없어 제거한다(서버가 조건 전체를 청크로 훑는다). */
+    const buildExcelParams = () => {
+      const p = { ...buildParams() };
+      delete p.pageNo; delete p.pageSize;
+      return p;
+    };
+
+    /* buildParams — 검색 파라미터 빌드 */
+    const buildParams = () => {
+      const p = {
+        pageNo: logGridPager.pageNo, pageSize: logGridPager.pageSize,
+        dateRangeStart:  searchParam.dateRangeStart   || undefined,
+        dateRangeEnd:    searchParam.dateRangeEnd     || undefined,
+        resultCd:   searchParam.searchResultCd || undefined,
+        ip:         searchParam.searchIp    || undefined,
+        uiNm:       searchParam.searchUiNm  || undefined,
+        traceId:    searchParam.searchTraceId || undefined,
+        searchType: searchParam.searchType || undefined,
+        searchValue: searchParam.searchValue   || undefined,
+      };
+      if (p.searchValue && !p.searchType) {
+        p.searchType = 'memberId,loginId';
+      }
+      return p;
+    };
+
+    /* handleSearchLog — 로그인 로그 조회 */
+    const handleSearchLog = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.mbMemberLoginLog.getPage(buildParams(), '회원로그인이력', '로그인로그조회', append ? { isProgress: false } : undefined);
+        const d = res.data?.data;
+        const list = d?.pageList || [];
+        logGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        tabCounts.log = logGridPager.pageTotalCount;
+        if (append) {
+          logs.push(...list);
+        } else {
+          logs.splice(0, logs.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        }
+        /* 더 받을 게 있는지 — 이번 응답이 한 페이지를 다 채웠고 총건수에 못 미치면 계속 */
+        uiState.hasMore = list.length >= logGridPager.pageSize && logs.length < logGridPager.pageTotalCount;
+        if (uiState.hasMore) { logGridPager.pageNo += 1; }
+      } catch (err) {
+        props.showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* handleSearchToken — 토큰 이력 조회 */
+    const handleSearchToken = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.mbMemberTokenLog.getPage(buildParams(), '회원로그인이력', '토큰이력조회', append ? { isProgress: false } : undefined);
+        const d = res.data?.data;
+        const list = d?.pageList || [];
+        logGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        tabCounts.token = logGridPager.pageTotalCount;
+        if (append) {
+          tokens.push(...list);
+        } else {
+          tokens.splice(0, tokens.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        }
+        /* 더 받을 게 있는지 — 이번 응답이 한 페이지를 다 채웠고 총건수에 못 미치면 계속 */
+        uiState.hasMore = list.length >= logGridPager.pageSize && tokens.length < logGridPager.pageTotalCount;
+        if (uiState.hasMore) { logGridPager.pageNo += 1; }
+      } catch (err) {
+        props.showToast(coUtil.cofErrMsg(err, '조회 오류'), 'error', 0);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* handleSearchList — 목록 조회 (탭별 디스패치) */
+    const handleSearchList = async (append = false) => {
+      if (!append) { logGridPager.pageNo = 1; uiState.hasMore = true; }
+      if (searchParam.activeTab === 'log') { await handleSearchLog(append); }
+      else { await handleSearchToken(append); }
+    };
+
+    /* onScrollEnd — 그리드 스크롤이 바닥 근처에 오면 다음 100건 */
+    const onScrollEnd = () => { handleSearchList(true); };
+
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      /* 공유된 링크(bo-page shareQuery)로 들어온 경우 URL 쿼리의 검색조건을 복원 */
+      const _qs = new URLSearchParams(window.location.search);
+      const _reserved = ['page','id','orderId','claimId','embed','dtlMode'];
+      Object.keys(searchParam).forEach((k) => { if (!_reserved.includes(k) && _qs.has(k)) searchParam[k] = _qs.get(k); });
+      await handleSearchList();
+    };
+    onMounted(initPage);
+
+    /* setPage — 페이지 번호 변경 */
+    const setPage      = n => { if (n>=1 && n<=logGridPager.pageTotalPage) { logGridPager.pageNo=n; handleSearchList(); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { logGridPager.pageNo=1; handleSearchList(); };
+
+    /* handleClearLog — 로그 전체 삭제 */
+    const handleClearLog = async () => {
+      const tabNm = searchParam.activeTab==='log' ? '회원로그인 로그' : '회원토큰 이력';
+      const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
+      if (!ok) { return; }
+      try {
+        if (searchParam.activeTab==='log') { await window.boApi.delete('/bo/ec/mb/member-login-log/all', coUtil.cofApiHdr('회원로그인이력', '로그비우기')); }
+        else { await window.boApi.delete('/bo/ec/mb/member-token-log/all', coUtil.cofApiHdr('회원로그인이력', '로그비우기')); }
+        props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
+        if (searchParam.activeTab==='log') { logs.splice(0); tabCounts.log=0; }
+        else                           { tokens.splice(0); tabCounts.token=0; }
+        logGridPager.pageTotalCount=0; logGridPager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
+      } catch (err) {
+        props.showToast(coUtil.cofErrMsg(err, '삭제 오류'), 'error', 0);
+      }
+    };
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logs : tokens);
+
+    /* fnResultBadge — 로그인결과 배지 */
+    const fnResultBadge = cd => ({'SUCCESS':'badge-green','LOGOUT':'badge-blue','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray','FAIL_DORMANT':'badge-purple'}[cd]||'badge-gray');
+
+    /* fnResultLabel — 로그인결과 라벨 */
+    const fnResultLabel = cd => ({'SUCCESS':'성공','LOGOUT':'로그아웃','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정','FAIL_DORMANT':'휴면계정'}[cd]||cd||'-');
+
+    /* fnActionBadge — 토큰액션 배지 */
+    const fnActionBadge = boUtil.bofTokenActionBadge;
+
+    /* fnActionLabel — 토큰액션 라벨 */
+    const fnActionLabel = boUtil.bofTokenActionLabel;
+
+    /* fnTypeBadge — 토큰유형 배지 */
+    const fnTypeBadge   = boUtil.bofTokenTypeBadge;
+
+    /* fnDecode — URI 디코드 */
+    const fnDecode = coUtil.cofDecodeUri;
+
+    /* fnRowExpanded — 행 펼침 여부 */
+    const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
+
+    /* fnRowClickStyle — 펼친 행 배경 강조 (펼침은 _exp 아이콘 클릭으로만) */
+    const fnRowClickStyle = (r, idx) => isExpanded(r.logId || idx) ? 'background:#fafbff;' : '';
+
+    // 기본 검색
+    const columns = {};
+    columns.baseSearch = [
+      { key: 'dateRange', type: 'dateRange', label: '등록기간',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
+        rangeOptions: () => codes.date_range_opts,
+        dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+      { key: 'searchResultCd', type: 'select', label: '로그인결과',
+        options: () => codes.login_results, nullLabel: '로그인결과 전체' },
+      { key: 'searchIp', type: 'text', label: 'IP 주소', placeholder: 'IP 주소', width: '140px' },
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
+        options: [{ value: 'memberId', label: '회원ID' }, { value: 'loginId', label: '로그인ID' }],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '170px' },
+    ];
+
+    /* moreSearchColumns — 펼침 영역(srchOpen=true) 두번째 검색바 */
+    columns.moreSearch = [
+      { key: 'searchUiNm',    type: 'text', label: 'x-헤더 화면명', placeholder: '화면명 (x-ui-nm)', width: '170px' },
+      { key: 'searchTraceId', type: 'text', label: 'Trace ID',  placeholder: 'Trace ID',         width: '200px' },
+    ];
+
+    // 로그 그리드
+    columns.logGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('histList-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
+      { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') },
+      { key: '_member', excelKeys: [{key:'memberNm',label:'회원명'},{key:'memberId',label:'회원ID'}],  label: '회원',
+        fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
+      { key: 'loginId',  label: '로그인ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
+      { key: 'resultCd', label: '결과', badge: (row) => fnResultBadge(row.resultCd), fmt: (v) => fnResultLabel(v) },
+      { key: 'failCnt',  label: '실패',      style: 'text-align:center;', align: 'center', cellStyle: (v, row) => row.failCnt > 0 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v > 0 ? v + '회' : '-' },
+      { key: 'ip',       label: 'IP', mono: true, fmt: (v) => v || '-' },
+      { key: '_browser', excelKeys: [{key:'browser',label:'브라우저'},{key:'os',label:'OS'},{key:'device',label:'기기'}], label: 'OS/브라우저', cellStyle: 'font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.browser + ' / ' + row.os, fmt: (v, row) => row.browser || row.device || '-' },
+      { key: '_uiNm', excelKeys: [{key:'uiNm',label:'화면'},{key:'cmdNm',label:'기능'}], label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
+      { key: 'traceId',  label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
+    ];
+
+    // 토큰 그리드
+    columns.tokenGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('histList-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
+      { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
+      { key: '_member',       label: '회원',
+        fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
+      { key: 'actionCd',      label: '액션', badge: (row) => fnActionBadge(row.actionCd), fmt: (v) => fnActionLabel(v) },
+      { key: 'tokenTypeCd',   label: '토큰유형', badge: (row) => fnTypeBadge(row.tokenTypeCd), cellStyle: 'font-size:11px', fmt: (v) => v || '-' },
+      { key: 'accessTokenExp',label: 'AT만료', cellStyle: 'color:#8e44ad', fmt: (v) => coUtil.cofYmdHms(v || '') || '-' },
+      { key: 'tokenExp',      label: 'RT만료', cellStyle: (v, row) => (row.actionCd === 'EXPIRE' || row.actionCd === 'REVOKE') ? 'color:#e74c3c' : '', fmt: (v) => coUtil.cofYmdHms(v || '') || '-' },
+      { key: 'ip',            label: 'IP', mono: true, fmt: (v) => v || '-' },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
+      { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
+      { key: 'revokeReasonCd',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
+    ];
+
+    /* logGridRowDetail — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=6, 라벨+값 그대로) */
+    columns.logGridRowDetail = [
+      { type: 'group', label: '로그인정보' },
+      { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') || '-' },
+      { key: '_ip',         label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
+      { key: '_os',         label: 'OS',         type: 'readonly', fmt: (v, row) => row.os || '-' },
+      { key: '_browser',    label: '브라우저',    type: 'readonly', fmt: (v, row) => row.browser || '-' },
+      { key: '_country',    label: '국가',       type: 'readonly', fmt: (v, row) => row.country || '-' },
+      { key: '_failCnt',    label: '연속실패',    type: 'readonly', fmt: (v, row) => row.failCnt > 0 ? (row.failCnt + '회') : '-' },
+      { key: '_result',     label: '결과',       type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnResultBadge(row.resultCd)}">${fnResultLabel(row.resultCd)}</span>` },
+      { type: 'group', label: '요청헤더 (X-*) · 계정정보' },
+      { key: '_uiNm',       label: 'x-ui-nm',    type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
+      { key: '_cmdNm',      label: 'x-cmd-nm',   type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
+      { key: '_fileNm',     label: 'x-file-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
+      { key: '_funcNm',     label: 'x-func-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
+      { key: '_lineNo',     label: 'x-line-no',  type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
+      { key: '_traceId',    label: 'x-trace-id', type: 'readonly', mono: true, fmt: (v, row) => row.traceId || '-' },
+      { key: '_memberId',   label: '회원ID',     type: 'readonly', fmt: (v, row) => row.memberId || '-' },
+      { key: '_loginId',    label: '로그인ID',   type: 'readonly', fmt: (v, row) => row.loginId || '-' },
+      { key: '_site',       label: '사이트',     type: 'readonly', fmt: (v, row) => row.siteNm || row.siteId || '-' },
+      { key: '_accessToken',label: 'AccessToken',type: 'readonly', mono: true, colSpan: 2, fmt: (v, row) => row.accessToken || '미발급' },
+      { key: '_atExp',      label: 'AT만료',     type: 'readonly', fmt: (v, row) => row.accessTokenExp || '-' },
+    ];
+
+    /* tokenGridRowDetail — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=6) */
+    columns.tokenGridRowDetail = [
+      { type: 'group', label: '토큰정보' },
+      { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
+      { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
+      { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.accessTokenExp || '') || '-' },
+      { key: '_rtExp',       label: 'RT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.tokenExp || '') || '-' },
+      { key: '_ip',          label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
+      { key: '_memberId',    label: '회원ID',   type: 'readonly', fmt: (v, row) => row.memberId || '-' },
+      { key: '_revokeReason',label: '폐기사유', type: 'readonly', visible: (row) => !!row.revokeReasonCd, fmt: (v, row) => row.revokeReasonCd || '-' },
+      { type: 'group', label: '요청헤더 (X-*) · 토큰값' },
+      { key: '_uiNm',        label: 'x-ui-nm',  type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
+      { key: '_cmdNm',       label: 'x-cmd-nm', type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
+      { key: '_fileNm',      label: 'x-file-nm',type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
+      { key: '_funcNm',      label: 'x-func-nm',type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
+      { key: '_lineNo',      label: 'x-line-no',type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
+      { key: '_traceId',     label: 'x-trace-id',type: 'readonly', mono: true, colSpan: 2, fmt: (v, row) => row.traceId || '-' },
+      { key: '_curToken',    label: '현재 토큰', type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => row.accessToken || '-' },
+      { key: '_prevToken',   label: '이전 토큰', type: 'readonly', mono: true, colSpan: 6, visible: (row) => !!row.prevToken, fmt: (v, row) => row.prevToken || '-' },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,   // 엑셀 다운로드
+      columns,
+      searchParam, logGridPager, uiState, histTabs, cfCurrentList, allExpanded,        // 상태 / 데이터
+      onScrollEnd,                                      // 무한 스크롤 (하단 도달 시 다음 100건)
+      cofCountText: coUtil.cofCountText,                // 하단 건수 문구 (템플릿에서 coUtil 직접 호출 금지)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
+      fnRowExpanded, fnRowClickStyle, fnRowDetail, fnRowDetailLoading, // 행 표시 / 펼침 상세
+    };
+  },
+  template: /* html */`
+<bo-page title="회원로그인이력" :share-query="searchParam"
+  desc-summary="회원의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다."
+  desc-detail="• 로그인 로그: mbh_member_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: mbh_member_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함)">
+  <!-- ===== ■. 검색 ====================================================== -->
+  <bo-container>
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
+    <bo-search-area :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+      <template #actions-after>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggleMore')" style="padding:0 8px;" :title="searchParam.srchOpen?'조건닫기':'조건더보기'">
+          {{ searchParam.srchOpen?'▲':'▼' }}
+        </button>
+      </template>
+    </bo-search-area>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+    <!-- ===== ■.■. 검색 영역 (펼침) ============================================ -->
+    <bo-search-area v-if="searchParam.srchOpen" :show-actions="false"
+      bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
+      :columns="columns.moreSearch" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" />
+    <!-- ===== □.□. 검색 영역 (펼침) ============================================ -->
+  </bo-container>
+  <!-- ===== □. 검색 ====================================================== -->
+  <!-- ===== ■. 탭 + 목록 (한 카드) ========================================= -->
+  <bo-container title="로그인/토큰 이력"
+    :count-text="cofCountText(logGridPager.pageTotalCount, cfCurrentList.length)">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+      <span style="font-size:11px;color:#aaa;">
+        행 클릭 시 상세정보 펼침
+      </span>
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('histList-toggleExpandAll')">
+        {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
+      </button>
+      <button class="btn btn-danger btn-sm" @click="handleBtnAction('histList-clearLog')">
+        로그비우기
+      </button>
+    </template>
+    <bo-tab-bar :tabs="histTabs" :tab="searchParam.activeTab" :show-modes="false"
+      @tab-select="id => handleSelectAction('searchParam-tabChange', id)" />
+  <!-- ===== ■. 로그인 로그 탭 ================================================ -->
+  <bo-grid v-if="searchParam.activeTab==='log'" bare
+    :columns="columns.logGrid" :rows="cfCurrentList" row-key="logId"
+    fit-bottom @scroll-end="onScrollEnd"
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
+    <template #row-expand="{ row, colspan }">
+      <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+        <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+        <bo-form-area plain-readonly :columns="columns.logGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
+      </td>
+    </template>
+  </bo-grid>
+  <bo-pager v-if="searchParam.activeTab==='log'" :pager="{ pageTotalCount: logGridPager.pageTotalCount }"
+    :show-pages="false" :loaded-count="cfCurrentList.length" />
+  <!-- ===== □. 로그인 로그 탭 ================================================ -->
+  <!-- ===== ■. 토큰 이력 탭 ================================================= -->
+  <bo-grid v-if="searchParam.activeTab==='token'" bare
+    :columns="columns.tokenGrid" :rows="cfCurrentList" row-key="logId"
+    fit-bottom @scroll-end="onScrollEnd"
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
+    <template #row-expand="{ row, colspan }">
+      <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+        <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+        <bo-form-area plain-readonly :columns="columns.tokenGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
+        <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
+          ℹ SHA-256 해시. 원문 복원 불가
+        </div>
+      </td>
+    </template>
+  </bo-grid>
+  <bo-pager v-if="searchParam.activeTab==='token'" :pager="{ pageTotalCount: logGridPager.pageTotalCount }"
+    :show-pages="false" :loaded-count="cfCurrentList.length" />
+  <!-- ===== □. 토큰 이력 탭 ================================================= -->
+  </bo-container>
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="회원로그인이력" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
+</bo-page>
+`,
+};

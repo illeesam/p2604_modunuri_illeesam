@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>적립금 | MY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-orange{background:#fed7aa;color:#9a3412}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-red{background:#fee2e2;color:#991b1b}
+.tab-bar{display:flex;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:56px}
+.tab-item{flex:1;text-align:center;padding:12px 0;font-size:13px;color:#9ca3af;font-weight:500;cursor:pointer;border-bottom:2px solid transparent}
+.tab-item.active{color:#be185d;border-bottom-color:#be185d;font-weight:700}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.balance-box{background:linear-gradient(135deg,#fdf2f8,#fce7f3);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px}
+.balance-label{font-size:13px;color:#9ca3af;margin-bottom:8px}
+.balance-amt{font-size:36px;font-weight:800;color:#be185d}
+.balance-sub{font-size:12px;color:#aaa;margin-top:6px}
+.cache-row{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid #f3f4f6;gap:12px}
+.cache-row:last-child{border-bottom:none}
+.cache-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cache-icon.earn{background:#d1fae5}
+.cache-icon.use{background:#fee2e2}
+.cache-icon.expire{background:#f3f4f6}
+.cache-body{flex:1}
+.cache-desc{font-size:14px;font-weight:500}
+.cache-date{font-size:12px;color:#9ca3af;margin-top:2px}
+.cache-expire{font-size:11px;color:#f59e0b;margin-top:2px}
+.cache-amt-plus{font-size:15px;font-weight:700;color:#065f46;text-align:right}
+.cache-amt-minus{font-size:15px;font-weight:700;color:#be185d;text-align:right}
+.cache-balance{font-size:12px;color:#9ca3af;text-align:right;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>💰 적립금</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 마이페이지</a>
+</div>
+<div class="breadcrumb">마이페이지 &gt; <span>적립금</span></div>
+
+<div class="section">
+  <!-- 잔액 박스 -->
+  <div class="balance-box">
+    <div class="balance-label">현재 적립금 잔액</div>
+    <div class="balance-amt has-tip"
+      data-table="mb_mem" data-col="cache_balance_amt"
+      data-tbl-cmt="회원 마스터" data-col-cmt="현재 적립금 잔액 (캐시 잔액)">
+      12,500원
+    </div>
+    <div class="balance-sub">유효기간 있는 적립금은 아래 내역에서 확인</div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tab-bar" style="position:relative;top:0;margin:-8px -20px 16px">
+    <div class="tab-item active">전체</div>
+    <div class="tab-item">적립</div>
+    <div class="tab-item">사용</div>
+    <div class="tab-item">소멸/조정</div>
+  </div>
+
+  <!-- 이력 목록 -->
+  <div class="cache-row">
+    <div class="cache-icon earn">➕</div>
+    <div class="cache-body">
+      <div class="cache-desc has-tip"
+        data-table="pm_cache" data-col="cache_desc"
+        data-tbl-cmt="적립금 이력" data-col-cmt="적립금 이력 설명">
+        구매 적립 (오가닉 코튼 티셔츠)
+      </div>
+      <div class="cache-date has-tip"
+        data-table="pm_cache" data-col="cache_date"
+        data-tbl-cmt="적립금 이력" data-col-cmt="이력 발생일시">
+        2026-04-18 15:20
+      </div>
+      <div class="cache-expire has-tip"
+        data-table="pm_cache" data-col="expire_date"
+        data-tbl-cmt="적립금 이력" data-col-cmt="적립금 소멸 예정일">
+        소멸예정: 2026-10-18
+      </div>
+    </div>
+    <div>
+      <div class="cache-amt-plus has-tip"
+        data-table="pm_cache" data-col="cache_amt"
+        data-tbl-cmt="적립금 이력" data-col-cmt="적립금 변동 금액 (+ 또는 -)">
+        +900원
+      </div>
+      <div class="cache-balance has-tip"
+        data-table="pm_cache" data-col="balance_amt"
+        data-tbl-cmt="적립금 이력" data-col-cmt="이력 처리 후 잔액">
+        잔액 12,500원
+      </div>
+      <div style="text-align:right;margin-top:2px">
+        <span class="badge badge-green" style="font-size:11px" data-table="pm_cache" data-col="cache_type_cd"
+          data-tbl-cmt="적립금 이력" data-col-cmt="적립금 유형"
+          data-code-grp="CACHE_TYPE"
+          data-codes="CHARGE:충전|EARN:구매적립|USE:사용|REFUND:환불|EXPIRE:소멸|ADJ:조정"
+          style="cursor:help;border-bottom:1px dashed #f9a8d4">
+          구매적립
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cache-row">
+    <div class="cache-icon use">➖</div>
+    <div class="cache-body">
+      <div class="cache-desc has-tip"
+        data-table="pm_cache" data-col="cache_desc"
+        data-tbl-cmt="적립금 이력" data-col-cmt="이력 설명">
+        주문 결제 사용 (2604160000003)
+      </div>
+      <div class="cache-date">2026-04-16 09:15</div>
+    </div>
+    <div>
+      <div class="cache-amt-minus">-2,000원</div>
+      <div class="cache-balance">잔액 11,600원</div>
+      <div style="text-align:right;margin-top:2px">
+        <span class="badge badge-red has-tip"
+          data-table="pm_cache" data-col="cache_type_cd"
+          data-tbl-cmt="적립금 이력" data-col-cmt="적립금 유형"
+          data-code-grp="CACHE_TYPE"
+          data-codes="CHARGE:충전|EARN:구매적립|USE:사용|REFUND:환불|EXPIRE:소멸|ADJ:조정">
+          사용
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cache-row">
+    <div class="cache-icon earn">💳</div>
+    <div class="cache-body">
+      <div class="cache-desc has-tip"
+        data-table="pm_cache" data-col="cache_desc"
+        data-tbl-cmt="적립금 이력" data-col-cmt="이력 설명">
+        적립금 충전
+      </div>
+      <div class="cache-date">2026-04-10 12:00</div>
+    </div>
+    <div>
+      <div class="cache-amt-plus">+10,000원</div>
+      <div class="cache-balance">잔액 13,600원</div>
+      <div style="text-align:right;margin-top:2px">
+        <span class="badge badge-blue has-tip"
+          data-table="pm_cache" data-col="cache_type_cd"
+          data-tbl-cmt="적립금 이력" data-col-cmt="적립금 유형"
+          data-code-grp="CACHE_TYPE"
+          data-codes="CHARGE:충전|EARN:구매적립|USE:사용|REFUND:환불|EXPIRE:소멸|ADJ:조정">
+          충전
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cache-row">
+    <div class="cache-icon expire">⏰</div>
+    <div class="cache-body">
+      <div class="cache-desc has-tip"
+        data-table="pm_cache" data-col="cache_desc"
+        data-tbl-cmt="적립금 이력" data-col-cmt="이력 설명">
+        유효기간 만료 소멸
+      </div>
+      <div class="cache-date">2026-03-31 23:59</div>
+    </div>
+    <div>
+      <div class="cache-amt-minus">-500원</div>
+      <div class="cache-balance">잔액 3,600원</div>
+      <div style="text-align:right;margin-top:2px">
+        <span class="badge badge-gray has-tip"
+          data-table="pm_cache" data-col="cache_type_cd"
+          data-tbl-cmt="적립금 이력" data-col-cmt="적립금 유형"
+          data-code-grp="CACHE_TYPE"
+          data-codes="CHARGE:충전|EARN:구매적립|USE:사용|REFUND:환불|EXPIRE:소멸|ADJ:조정">
+          소멸
+        </span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

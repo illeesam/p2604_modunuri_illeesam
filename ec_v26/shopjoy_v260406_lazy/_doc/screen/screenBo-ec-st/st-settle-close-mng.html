@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>정산 마감 관리 — ST</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#1565c0;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#1565c0;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #e3f2fd}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.form-label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select,.form-control{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.search-actions,.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.form-actions{padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#64b5f6,#1565c0);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.btn-confirm{background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9}
+.btn-lock{background:#fff3e0;color:#e65100;border:1px solid #ffe0b2}
+.btn-unlock{background:#f3e5f5;color:#6a1b9a;border:1px solid #e1bee7}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#1565c0;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#e3f2fd;color:#1565c0;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #42a5f5;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#f3f8ff}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.badge-teal{background:#e0f2f1;color:#00695c}
+.actions{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#1565c0;color:#fff;border-color:transparent}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #42a5f5;margin-top:8px}
+.ddl-ref strong{color:#1565c0}
+.has-tip{cursor:help;border-bottom:1px dashed #42a5f5}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#64b5f6;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.process-flow{display:flex;align-items:center;gap:8px;background:#e3f2fd;border-radius:8px;padding:12px 16px;margin-bottom:16px}
+.flow-step{background:#fff;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #bbdefb;text-align:center}
+.flow-step.active{background:#1565c0;color:#fff;border-color:#1565c0}
+.flow-arrow{color:#1565c0;font-size:16px}
+.info-note{background:#fff3e0;border-radius:8px;padding:12px 16px;font-size:12px;color:#e65100;border:1px solid #ffe0b2;margin-bottom:14px}
+.info-note ul{margin-left:16px;margin-top:4px}
+.info-note li{margin-bottom:2px}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-mini{background:#f8f9fa;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}
+.stat-mini .s-label{font-size:11px;color:#888;margin-bottom:4px}
+.stat-mini .s-val{font-size:18px;font-weight:700;color:#1565c0}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back-Office &gt; EC &gt; 정산 관리 &gt; <span>정산 마감</span></div>
+  <h1>🔒 정산 마감 관리</h1>
+</div>
+<div class="container">
+
+  <!-- 마감 흐름 -->
+  <div class="process-flow">
+    <div class="flow-step">1. 정산 집계</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">2. 정산 확정</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">3. 마감 처리</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">4. 지급 처리</div>
+  </div>
+
+  <!-- 안내 -->
+  <div class="info-note">
+    <strong>마감 처리 안내</strong>
+    <ul>
+      <li>OPEN(개설): 마감 레코드 생성, 수정 가능 상태</li>
+      <li>LOCKED(잠금): 데이터 잠금, 수정 불가. 관리자만 해제 가능</li>
+      <li>CONFIRMED(확정): 최종 확정, 지급 처리로 이관</li>
+    </ul>
+  </div>
+
+  <!-- 현황 요약 -->
+  <div class="stat-row">
+    <div class="stat-mini">
+      <div class="s-label">전체 마감</div>
+      <div class="s-val">36건</div>
+    </div>
+    <div class="stat-mini">
+      <div class="s-label">개설(OPEN)</div>
+      <div class="s-val" style="color:#e65100">12건</div>
+    </div>
+    <div class="stat-mini">
+      <div class="s-label">잠금(LOCKED)</div>
+      <div class="s-val" style="color:#6a1b9a">8건</div>
+    </div>
+    <div class="stat-mini">
+      <div class="s-label">확정(CONFIRMED)</div>
+      <div class="s-val" style="color:#2e7d32">16건</div>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label>사이트</label>
+        <select>
+          <option value="">전체</option>
+          <option>사이트 01</option>
+          <option>사이트 02</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="st_settle" data-col="settle_ym"
+          data-tbl-cmt="정산 마스터" data-col-cmt="정산년월(YYYYMM)">정산년월</label>
+        <input type="month">
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="st_settle_close" data-col="close_status_cd"
+          data-tbl-cmt="정산 마감 처리" data-col-cmt="마감상태"
+          data-code-grp="CLOSE_STATUS"
+          data-codes="OPEN:개설|LOCKED:잠금|CONFIRMED:확정">마감상태</label>
+        <select>
+          <option value="">전체</option>
+          <option>OPEN — 개설</option>
+          <option>LOCKED — 잠금</option>
+          <option>CONFIRMED — 확정</option>
+        </select>
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">마감 현황</span><span class="list-count">총 36건</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm">📥 엑셀</button>
+        <button class="btn btn-primary btn-sm">+ 마감 개설</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span class="has-tip" data-table="st_settle_close" data-col="close_id" data-tbl-cmt="정산 마감 처리" data-col-cmt="마감ID">마감ID</span></th>
+            <th><span class="has-tip" data-table="st_settle_close" data-col="settle_id" data-tbl-cmt="정산 마감 처리" data-col-cmt="정산ID">정산ID</span></th>
+            <th>업체명</th>
+            <th><span class="has-tip" data-table="st_settle" data-col="settle_ym" data-tbl-cmt="정산 마스터" data-col-cmt="정산년월">정산년월</span></th>
+            <th><span class="has-tip" data-table="st_settle" data-col="final_settle_amt" data-tbl-cmt="정산 마스터" data-col-cmt="최종정산금액">최종정산금액</span></th>
+            <th><span class="has-tip" data-table="st_settle_close" data-col="close_status_cd" data-tbl-cmt="정산 마감 처리" data-col-cmt="마감상태" data-code-grp="CLOSE_STATUS" data-codes="OPEN:개설|LOCKED:잠금|CONFIRMED:확정">마감상태</span></th>
+            <th><span class="has-tip" data-table="st_settle_close" data-col="close_date" data-tbl-cmt="정산 마감 처리" data-col-cmt="마감일시">마감일시</span></th>
+            <th><span class="has-tip" data-table="st_settle_close" data-col="close_user_id" data-tbl-cmt="정산 마감 처리" data-col-cmt="마감처리자">처리자</span></th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CLS240001</td>
+            <td><a class="title-link">STL240001</a></td>
+            <td>A패션 업체</td>
+            <td>2024-06</td>
+            <td style="text-align:right;font-family:monospace;font-weight:600">7,178,000원</td>
+            <td><span class="badge badge-orange">개설</span></td>
+            <td>2024-06-30 09:00</td>
+            <td>admin01</td>
+            <td class="actions">
+              <button class="btn btn-lock btn-sm">🔒 잠금</button>
+              <button class="btn btn-secondary btn-sm">상세</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CLS240002</td>
+            <td><a class="title-link">STL240002</a></td>
+            <td>B생활 업체</td>
+            <td>2024-06</td>
+            <td style="text-align:right;font-family:monospace;font-weight:600">2,790,000원</td>
+            <td><span class="badge badge-purple">잠금</span></td>
+            <td>2024-06-30 10:15</td>
+            <td>admin01</td>
+            <td class="actions">
+              <button class="btn btn-confirm btn-sm">✅ 확정</button>
+              <button class="btn btn-unlock btn-sm">🔓 잠금해제</button>
+              <button class="btn btn-secondary btn-sm">상세</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CLS240003</td>
+            <td><a class="title-link">STL240003</a></td>
+            <td>C전자 업체</td>
+            <td>2024-05</td>
+            <td style="text-align:right;font-family:monospace;font-weight:600">11,278,000원</td>
+            <td><span class="badge badge-green">확정</span></td>
+            <td>2024-05-31 14:30</td>
+            <td>admin02</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">상세</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CLS240004</td>
+            <td><a class="title-link">STL240004</a></td>
+            <td>D식품 업체</td>
+            <td>2024-06</td>
+            <td style="text-align:right;font-family:monospace;font-weight:600">4,320,000원</td>
+            <td><span class="badge badge-orange">개설</span></td>
+            <td>2024-06-30 08:00</td>
+            <td>admin01</td>
+            <td class="actions">
+              <button class="btn btn-lock btn-sm">🔒 잠금</button>
+              <button class="btn btn-secondary btn-sm">상세</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager">«</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">3</button>
+      <button class="pager">»</button>
+    </div>
+  </div>
+
+  <!-- 마감 상세 폼 -->
+  <div class="card">
+    <div class="section-title">마감 상세 / 처리</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="st_settle_close" data-col="close_id"
+          data-tbl-cmt="정산 마감 처리" data-col-cmt="마감ID">마감ID</label>
+        <input class="form-control" type="text" value="CLS240001" readonly style="background:#f8f9fa">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="st_settle_close" data-col="settle_id"
+          data-tbl-cmt="정산 마감 처리" data-col-cmt="정산ID (연결된 정산 마스터)">정산ID</label>
+        <input class="form-control" type="text" value="STL240001" readonly style="background:#f8f9fa">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="st_settle_close" data-col="close_date"
+          data-tbl-cmt="정산 마감 처리" data-col-cmt="마감일시">마감일시</label>
+        <input class="form-control" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="st_settle_close" data-col="close_user_id"
+          data-tbl-cmt="정산 마감 처리" data-col-cmt="마감처리자 (사용자ID)">마감처리자</label>
+        <input class="form-control" type="text" placeholder="처리자 ID">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="st_settle_close" data-col="close_status_cd"
+          data-tbl-cmt="정산 마감 처리" data-col-cmt="마감상태"
+          data-code-grp="CLOSE_STATUS"
+          data-codes="OPEN:개설|LOCKED:잠금|CONFIRMED:확정">마감상태</label>
+        <select class="form-control">
+          <option>OPEN — 개설</option>
+          <option>LOCKED — 잠금</option>
+          <option>CONFIRMED — 확정</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-lock">🔒 잠금 처리</button>
+      <button class="btn btn-unlock">🔓 잠금 해제</button>
+      <button class="btn btn-confirm">✅ 최종 확정</button>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">저장</button>
+    </div>
+
+    <div class="ddl-ref">
+      <strong>DDL 참조</strong>:<br>
+      <code>st_settle_close</code> — close_id, settle_id, close_date, close_user_id, close_status_cd<br>
+      <code>st_settle_pay</code> — pay_id, settle_id, pay_amt, pay_date, pay_status_cd (REQ:요청|CONFIRMED:확인|PAID:완료|DISPUTED:이의신청)
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

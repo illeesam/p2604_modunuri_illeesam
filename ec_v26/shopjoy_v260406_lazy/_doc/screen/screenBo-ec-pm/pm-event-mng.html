@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이벤트 관리 — PM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label,.form-label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select,.form-control{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.search-actions,.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.form-actions{padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.badge-teal{background:#e0f2f1;color:#00695c}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:transparent}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.preview-thumb{width:48px;height:32px;object-fit:cover;border-radius:4px;background:#eee;display:inline-block;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back-Office &gt; EC &gt; 프로모션 관리 &gt; <span>이벤트 관리</span></div>
+  <h1>🎉 이벤트 관리</h1>
+</div>
+<div class="container">
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_event" data-col="event_status_cd"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트상태"
+          data-code-grp="EVENT_STATUS"
+          data-codes="DRAFT:임시저장|WAITING:대기|ACTIVE:진행중|PAUSED:일시중단|ENDED:종료">이벤트상태</label>
+        <select>
+          <option value="">전체</option>
+          <option>DRAFT — 임시저장</option>
+          <option>WAITING — 대기</option>
+          <option>ACTIVE — 진행중</option>
+          <option>PAUSED — 일시중단</option>
+          <option>ENDED — 종료</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_event" data-col="event_type_cd"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트유형"
+          data-code-grp="EVENT_TYPE"
+          data-codes="PROMOTION:프로모션|FLASH:타임세일|CAMPAIGN:캠페인|COUPON:쿠폰증정">이벤트유형</label>
+        <select>
+          <option value="">전체</option>
+          <option>PROMOTION — 프로모션</option>
+          <option>FLASH — 타임세일</option>
+          <option>CAMPAIGN — 캠페인</option>
+          <option>COUPON — 쿠폰증정</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_event" data-col="start_date"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트 시작일">시작일</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label class="has-tip"
+          data-table="pm_event" data-col="end_date"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트 종료일">종료일</label>
+        <input type="date">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">이벤트 목록</span><span class="list-count">총 18건</span></div>
+      <button class="btn btn-primary btn-sm">+ 이벤트 등록</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span class="has-tip" data-table="pm_event" data-col="event_id" data-tbl-cmt="이벤트" data-col-cmt="이벤트ID">이벤트ID</span></th>
+            <th>배너</th>
+            <th><span class="has-tip" data-table="pm_event" data-col="event_nm" data-tbl-cmt="이벤트" data-col-cmt="이벤트명">이벤트명</span></th>
+            <th><span class="has-tip" data-table="pm_event" data-col="event_type_cd" data-tbl-cmt="이벤트" data-col-cmt="이벤트유형" data-code-grp="EVENT_TYPE" data-codes="PROMOTION:프로모션|FLASH:타임세일|CAMPAIGN:캠페인|COUPON:쿠폰증정">유형</span></th>
+            <th><span class="has-tip" data-table="pm_event" data-col="start_date" data-tbl-cmt="이벤트" data-col-cmt="이벤트 기간">이벤트 기간</span></th>
+            <th><span class="has-tip" data-table="pm_event" data-col="event_status_cd" data-tbl-cmt="이벤트" data-col-cmt="이벤트상태" data-code-grp="EVENT_STATUS" data-codes="DRAFT:임시저장|WAITING:대기|ACTIVE:진행중|PAUSED:일시중단|ENDED:종료">상태</span></th>
+            <th><span class="has-tip" data-table="pm_event" data-col="target_type_cd" data-tbl-cmt="이벤트" data-col-cmt="대상유형" data-code-grp="TARGET_TYPE" data-codes="ALL:전체|MEMBER:회원|GRADE:등급|GUEST:비회원">대상</span></th>
+            <th>조회수</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>EVT240001</td>
+            <td><span class="preview-thumb" style="background:#f8bbd0;border-radius:4px;width:48px;height:32px;display:inline-block;line-height:32px;font-size:10px;text-align:center;color:#c2185b">배너</span></td>
+            <td><a class="title-link">여름 시즌 최대 30% 세일</a></td>
+            <td><span class="badge badge-orange">프로모션</span></td>
+            <td>2024-07-01 ~ 2024-07-31</td>
+            <td><span class="badge badge-green">진행중</span></td>
+            <td><span class="badge badge-blue">전체</span></td>
+            <td>12,480</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+          <tr>
+            <td>EVT240002</td>
+            <td><span class="preview-thumb" style="background:#fff9c4;border-radius:4px;width:48px;height:32px;display:inline-block;line-height:32px;font-size:10px;text-align:center;color:#f9a825">배너</span></td>
+            <td><a class="title-link">타임세일 — 오후 2시~4시</a></td>
+            <td><span class="badge badge-red">타임세일</span></td>
+            <td>2024-06-15 ~ 2024-06-30</td>
+            <td><span class="badge badge-purple">대기</span></td>
+            <td><span class="badge badge-green">회원</span></td>
+            <td>3,210</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+          <tr>
+            <td>EVT240003</td>
+            <td><span class="preview-thumb" style="background:#e1f5fe;border-radius:4px;width:48px;height:32px;display:inline-block;line-height:32px;font-size:10px;text-align:center;color:#0277bd">배너</span></td>
+            <td><a class="title-link">6월 캠페인 — 환경의 날</a></td>
+            <td><span class="badge badge-teal">캠페인</span></td>
+            <td>2024-06-01 ~ 2024-06-30</td>
+            <td><span class="badge badge-gray">종료</span></td>
+            <td><span class="badge badge-blue">전체</span></td>
+            <td>8,940</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+              <button class="btn btn-danger btn-sm">삭제</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="pager">«</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">»</button>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="card">
+    <div class="section-title">이벤트 등록 / 수정</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_event" data-col="event_nm"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트명">이벤트명</label>
+        <input class="form-control" type="text" placeholder="이벤트명 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_event" data-col="event_type_cd"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트유형"
+          data-code-grp="EVENT_TYPE"
+          data-codes="PROMOTION:프로모션|FLASH:타임세일|CAMPAIGN:캠페인|COUPON:쿠폰증정">이벤트유형</label>
+        <select class="form-control">
+          <option>PROMOTION — 프로모션</option>
+          <option>FLASH — 타임세일</option>
+          <option>CAMPAIGN — 캠페인</option>
+          <option>COUPON — 쿠폰증정</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="event_title"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트 제목 (화면 표시용)">이벤트 제목</label>
+        <input class="form-control" type="text" placeholder="화면에 표시될 제목">
+      </div>
+      <div class="form-group full">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="img_url"
+          data-tbl-cmt="이벤트" data-col-cmt="배너이미지 URL">배너이미지 URL</label>
+        <input class="form-control" type="text" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_event" data-col="start_date"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트 시작일">이벤트 시작일</label>
+        <input class="form-control" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="pm_event" data-col="end_date"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트 종료일">이벤트 종료일</label>
+        <input class="form-control" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="notice_start"
+          data-tbl-cmt="이벤트" data-col-cmt="예고 기간 시작">예고 시작일</label>
+        <input class="form-control" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="notice_end"
+          data-tbl-cmt="이벤트" data-col-cmt="예고 기간 종료">예고 종료일</label>
+        <input class="form-control" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="event_status_cd"
+          data-tbl-cmt="이벤트" data-col-cmt="이벤트상태"
+          data-code-grp="EVENT_STATUS"
+          data-codes="DRAFT:임시저장|WAITING:대기|ACTIVE:진행중|PAUSED:일시중단|ENDED:종료">이벤트상태</label>
+        <select class="form-control">
+          <option>DRAFT — 임시저장</option>
+          <option>WAITING — 대기</option>
+          <option>ACTIVE — 진행중</option>
+          <option>PAUSED — 일시중단</option>
+          <option>ENDED — 종료</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="target_type_cd"
+          data-tbl-cmt="이벤트" data-col-cmt="대상유형"
+          data-code-grp="TARGET_TYPE"
+          data-codes="ALL:전체|MEMBER:회원|GRADE:등급|GUEST:비회원">대상유형</label>
+        <select class="form-control">
+          <option>ALL — 전체</option>
+          <option>MEMBER — 회원</option>
+          <option>GRADE — 등급</option>
+          <option>GUEST — 비회원</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="sort_ord"
+          data-tbl-cmt="이벤트" data-col-cmt="정렬순서">정렬순서</label>
+        <input class="form-control" type="number" placeholder="숫자 입력 (낮을수록 앞)">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="pm_event" data-col="use_yn"
+          data-tbl-cmt="이벤트" data-col-cmt="사용여부 (Y/N)">사용여부</label>
+        <select class="form-control">
+          <option>Y — 사용</option>
+          <option>N — 미사용</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">저장</button>
+    </div>
+    <div class="ddl-ref">
+      <strong>DDL 참조</strong>: <code>pm_event</code> — event_id, event_nm, event_type_cd, event_title, img_url, start_date, end_date, notice_start, notice_end, event_status_cd, target_type_cd, sort_ord, use_yn, view_cnt
+    </div>
+  </div>
+
+</div>
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-View 박스 선택 트랜잭션 목록</title>
+  <link rel="stylesheet" href="assets/css/bo-global-style01.css">
+  <style>
+    /* 팝업 전용 기본 */
+    body { margin: 0; background: #f5f6fa; font-size: 13px; }
+    #app { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+    .xv-header {
+      flex-shrink: 0; padding: 10px 16px; background: #fff; border-bottom: 1px solid #eee;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .xv-body { flex: 1; display: flex; overflow: hidden; }
+
+    /* 좌측 목록 */
+    .xv-list { width: 46.8%; overflow-y: auto; border-right: 1px solid #eee; background: #fff; }
+    .xv-list-row {
+      display: grid; grid-template-columns: 32px 64px 76px 60px 90px 52px 1.3fr 1fr; gap: 8px;
+      padding: 7px 12px; border-bottom: 1px solid #f5f5f5; cursor: pointer; font-size: 11.5px; align-items: center;
+    }
+    .xv-list-no { color: #bbb; text-align: right; font-family: monospace; }
+    .xv-list-app {
+      color: #4338ca; font-family: monospace; font-size: 10.5px; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .xv-method {
+      display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      font-family: monospace; text-align: center;
+    }
+    .xv-method-get  { background: #e0f2fe; color: #0369a1; }
+    .xv-method-post { background: #dcfce7; color: #16a34a; }
+    .xv-method-put, .xv-method-patch { background: #fef3c7; color: #b45309; }
+    .xv-method-delete { background: #fee2e2; color: #dc2626; }
+    .xv-list-row:hover { background: #fff8fa; }
+    .xv-list-row.selected { background: #fff0f4; border-left: 3px solid #e8587a; }
+    .xv-list-head { position: sticky; top: 0; background: #fafbfc; font-weight: 700; color: #888; font-size: 10.5px; z-index: 1; }
+
+    /* 우측 상세 */
+    .xv-detail { width: 53.2%; display: flex; flex-direction: column; overflow: hidden; background: #fbfbfc; }
+    .xv-detail-row { display: flex; padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+    .xv-detail-label { width: 96px; flex-shrink: 0; color: #888; }
+    .xv-detail-value { flex: 1; color: #222; word-break: break-all; }
+    .xv-detail-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+    /* 우측 상세 탭 */
+    .xv-dtab-bar { flex-shrink: 0; display: flex; gap: 4px; padding: 10px 16px 0; background: #fbfbfc; border-bottom: 1px solid #eee; }
+    .xv-dtab-btn {
+      padding: 7px 14px; font-size: 12px; font-weight: 700; color: #888; background: transparent;
+      border: none; border-bottom: 2px solid transparent; cursor: pointer; border-radius: 4px 4px 0 0;
+    }
+    .xv-dtab-btn:hover { color: #e8587a; background: #fff8fa; }
+    .xv-dtab-btn.active { color: #e8587a; border-bottom-color: #e8587a; }
+    .xv-dtab-btn .xv-dtab-badge {
+      display: inline-block; margin-left: 5px; padding: 1px 6px; border-radius: 8px;
+      font-size: 10px; font-weight: 700; background: #fee2e2; color: #dc2626;
+    }
+
+    /* 오류내용 탭 */
+    .xv-err-field { margin-bottom: 14px; }
+    .xv-err-field-label { font-size: 11px; color: #888; font-weight: 700; margin-bottom: 4px; }
+    .xv-err-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+      background: #fee2e2; color: #dc2626; font-family: monospace;
+    }
+    .xv-err-msg { font-size: 12.5px; color: #b91c1c; background: #fff5f5; border: 1px solid #fecaca; border-radius: 6px; padding: 10px 12px; }
+    .xv-err-stack {
+      font-family: monospace; font-size: 11px; color: #e2e2f0; background: #1e1e2e;
+      border-radius: 6px; padding: 12px; white-space: pre-wrap; word-break: break-all; line-height: 1.6;
+    }
+
+    /* 비고 3줄 구조(X-UI-Nm/Cmd-Nm | 파일/함수/라인 | trace/site/buyer/license/user-agent/authorization) */
+    .xv-remark-box { font-family: monospace; font-size: 11px; line-height: 1.9; }
+    .xv-remark-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .xv-remark-k { color: #888; }
+    .xv-remark-v { color: #333; font-weight: 700; }
+    .xv-remark-sep { color: #ddd; margin: 0 6px; }
+
+    /* 서버(app/ip/pod) 정보 뱃지 */
+    .xv-srv-badge {
+      display: inline-block; padding: 2px 8px; margin-right: 6px; border-radius: 4px;
+      font-size: 11px; font-family: monospace; background: #eef2ff; color: #4338ca;
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Vue 3 core -->
+<script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+<!-- PDF 다운로드용 — boUtil.bofExportPdf 와 동일 방식(html2canvas 캡처 → jsPDF), 이 팝업은
+     boUtil.js 등 앱 전체 로드체인과 무관한 독립 화면이라 로컬로 인라인 구현한다 -->
+<script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
+
+<script>
+  const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
+
+  const app = createApp({
+    setup() {
+      const rows = reactive([]);
+      const selectedIdx = ref(null);
+      const loading = ref(true);
+      const dtab = ref('detail'); /* 'detail' | 'error' */
+      const rootRef = ref(null);
+      const pdfExporting = ref(false);
+
+      /* exportPdf — boUtil.bofExportPdf 축약 복제본(A4 폭 맞춤 + 페이지 넘침 시 이어붙이기) */
+      const exportPdf = async () => {
+        if (!rootRef.value || !window.html2canvas || !window.jspdf) return;
+        pdfExporting.value = true;
+        try {
+          const canvas = await window.html2canvas(rootRef.value, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const margin = 8;
+          const pageW = 210 - margin * 2;
+          const pageH = 297 - margin * 2;
+          const imgW = pageW;
+          const imgH = (canvas.height * imgW) / canvas.width;
+          let heightLeft = imgH;
+          let y = margin;
+          pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
+          heightLeft -= pageH;
+          while (heightLeft > 0) {
+            y = margin - (imgH - heightLeft);
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
+            heightLeft -= pageH;
+          }
+          pdf.save('박스선택트랜잭션목록_' + Date.now() + '.pdf');
+        } catch (e) {
+          console.error('[xview-boxlist-pop] PDF export error', e);
+        } finally {
+          pdfExporting.value = false;
+        }
+      };
+
+      const cfSelected = computed(() => selectedIdx.value != null ? rows[selectedIdx.value] : null);
+      const cfHasError = computed(() => !!(cfSelected.value && cfSelected.value.errorInfo));
+
+      const selectRow = (idx) => {
+        selectedIdx.value = idx;
+        /* 오류 트랜잭션 선택 시 오류내용 탭으로, 아니면 상세 탭으로 자동 전환 */
+        dtab.value = (rows[idx] && rows[idx].errorInfo) ? 'error' : 'detail';
+      };
+      const selectDtab = (t) => { dtab.value = t; };
+
+      const fnStatusColor = (row) => row.statusColor || '#999';
+      const fnMethodClass = (row) => 'xv-method xv-method-' + (row.method || '').toLowerCase();
+
+      /* 응답시간을 초 단위 1자리(나머지 버림)로 표시 — 예: 6476ms → "6.4초" */
+      const fnSec = (rt) => (Math.floor((rt || 0) / 100) / 10).toFixed(1) + '초';
+
+      /* 상태 정렬 우선순위 — 오류 > 경고 > 보통 > 좋음(심각도 높은 순) */
+      const STATUS_ORDER = { '오류': 0, '경고': 1, '보통': 2, '좋음': 3 };
+      const fnStatusRank = (row) => STATUS_ORDER[row.status] ?? 99;
+
+      /* postMessage 로 부모(오프너)에서 실 데이터 수신 — URL 에는 데이터를 싣지 않으므로 건수 제한 없음
+       * 정렬: 1) 상태(오류>경고>보통>좋음) 2) 응답시간 내림차순 */
+      const _onMsg = (e) => {
+        if (e.origin !== window.location.origin) return;
+        if (!e.data || e.data.type !== 'xview-data') return;
+        const list = Array.isArray(e.data.rows) ? e.data.rows.slice() : [];
+        list.sort((a, b) => fnStatusRank(a) - fnStatusRank(b) || b.rt - a.rt);
+        rows.splice(0, rows.length, ...list);
+        if (rows.length) { selectRow(0); } else { selectedIdx.value = null; }
+        loading.value = false;
+      };
+
+      onMounted(() => {
+        window.addEventListener('message', _onMsg);
+        /* 오프너에게 준비 완료 신호 — 오프너가 이 신호를 받으면 xview-data 를 postMessage 로 회신 */
+        if (window.opener) window.opener.postMessage({ type: 'xview-ready' }, window.location.origin);
+      });
+      onUnmounted(() => { window.removeEventListener('message', _onMsg); });
+
+      return { rows, selectedIdx, loading, dtab, cfSelected, cfHasError, selectRow, selectDtab, fnStatusColor, fnMethodClass, fnSec,
+        rootRef, pdfExporting, exportPdf };
+    },
+    template: `
+<div ref="rootRef" style="display:flex;flex-direction:column;height:100%;">
+<div class="xv-header">
+  <span style="font-size:14px;font-weight:800;color:#e8587a;">🔥 박스 선택 트랜잭션 목록</span>
+  <span style="font-size:11px;color:#888;">{{ loading ? '불러오는 중...' : '총 ' + rows.length + '건 · 응답시간 내림차순' }}</span>
+  <span style="flex:1;"></span>
+  <button class="btn btn-sm" style="font-size:11px;" :disabled="pdfExporting" @click="exportPdf">
+    {{ pdfExporting ? 'PDF 생성 중...' : '📄 PDF 다운로드' }}</button>
+  <button class="btn btn_close" style="font-size:11px;" @click="window.close()">✕ 닫기</button>
+</div>
+<div class="xv-body">
+  <!-- 좌측: 목록 -->
+  <div class="xv-list">
+    <div class="xv-list-row xv-list-head">
+      <span>No.</span><span>시각</span><span>응답시간</span><span>상태</span><span>app</span><span>method</span><span>URL</span><span>비고</span>
+    </div>
+    <div v-if="loading" style="padding:40px;text-align:center;color:#aaa;">불러오는 중... (오프너 창에서 응답이 없으면 팝업 차단 설정을 확인하세요)</div>
+    <div v-else-if="!rows.length" style="padding:40px;text-align:center;color:#aaa;">선택된 범위에 트랜잭션이 없습니다.</div>
+    <div v-for="(row, idx) in rows" :key="idx"
+      class="xv-list-row" :class="{ selected: selectedIdx === idx }"
+      @click="selectRow(idx)">
+      <span class="xv-list-no">{{ idx + 1 }}</span>
+      <span style="color:#666;white-space:nowrap;">{{ row.time }}</span>
+      <span style="font-weight:700;" :style="{ color: fnStatusColor(row) }">{{ fnSec(row.rt) }}</span>
+      <span :style="{ color: fnStatusColor(row) }">{{ row.status }}</span>
+      <span class="xv-list-app" :title="row.appNm">{{ row.appNm || '-' }}</span>
+      <span :class="fnMethodClass(row)">{{ row.method || '-' }}</span>
+      <span style="font-family:monospace;color:#3b82f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.url }}</span>
+      <span style="color:#999;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.uiNm }}<template v-if="row.uiNm && row.cmdNm"> · </template>{{ row.cmdNm }}</span>
+    </div>
+  </div>
+
+  <!-- 우측: 선택된 행 상세정보 (탭: 트랜잭션 상세 / 오류내용) -->
+  <div class="xv-detail">
+    <template v-if="cfSelected">
+      <div class="xv-dtab-bar">
+        <button class="xv-dtab-btn" :class="{ active: dtab === 'detail' }" @click="selectDtab('detail')">트랜잭션 상세</button>
+        <button v-if="cfHasError" class="xv-dtab-btn" :class="{ active: dtab === 'error' }" @click="selectDtab('error')">
+          오류내용<span class="xv-dtab-badge">ERR</span>
+        </button>
+      </div>
+      <div class="xv-detail-body">
+        <!-- 트랜잭션 상세 탭 -->
+        <template v-if="dtab === 'detail'">
+          <div class="xv-detail-row"><span class="xv-detail-label">시각</span><span class="xv-detail-value">{{ cfSelected.time }}</span></div>
+          <div class="xv-detail-row"><span class="xv-detail-label">응답시간</span>
+            <span class="xv-detail-value" :style="{ color: fnStatusColor(cfSelected), fontWeight: 700 }">{{ cfSelected.rt }}ms</span></div>
+          <div class="xv-detail-row"><span class="xv-detail-label">상태</span>
+            <span class="xv-detail-value" :style="{ color: fnStatusColor(cfSelected), fontWeight: 700 }">{{ cfSelected.status }}</span></div>
+          <div class="xv-detail-row"><span class="xv-detail-label">method</span>
+            <span class="xv-detail-value"><span :class="fnMethodClass(cfSelected)">{{ cfSelected.method || '-' }}</span></span></div>
+          <div class="xv-detail-row"><span class="xv-detail-label">URL</span>
+            <span class="xv-detail-value" style="font-family:monospace;color:#3b82f6;">{{ cfSelected.url }}</span></div>
+          <div class="xv-detail-row"><span class="xv-detail-label">서버</span>
+            <span class="xv-detail-value">
+              <span class="xv-srv-badge">{{ cfSelected.appNm || '-' }}</span>
+              <span class="xv-srv-badge">{{ cfSelected.serverIp || '-' }}</span>
+              <span class="xv-srv-badge">{{ cfSelected.podNm || '-' }}</span>
+            </span></div>
+          <div class="xv-detail-row" style="align-items:flex-start;"><span class="xv-detail-label" style="padding-top:2px;">비고</span>
+            <span class="xv-detail-value xv-remark-box">
+              <div class="xv-remark-line">
+                <span class="xv-remark-k">x-ui-nm</span>: <span class="xv-remark-v">{{ cfSelected.uiNm || '-' }}</span><span class="xv-remark-sep">|</span>
+                <span class="xv-remark-k">x-cmd-nm</span>: <span class="xv-remark-v">{{ cfSelected.cmdNm || '-' }}</span>
+              </div>
+              <div class="xv-remark-line">
+                <span class="xv-remark-k">x-file-nm</span>: <span class="xv-remark-v">{{ cfSelected.fileNm || '-' }}</span><span class="xv-remark-sep">|</span>
+                <span class="xv-remark-k">x-func-nm</span>: <span class="xv-remark-v">{{ cfSelected.funcNm || '-' }}</span><span class="xv-remark-sep">|</span>
+                <span class="xv-remark-k">x-line-no</span>: <span class="xv-remark-v">{{ cfSelected.lineNo || '-' }}</span>
+              </div>
+              <div class="xv-remark-line">
+                <span class="xv-remark-k">x-trace-id</span>: <span class="xv-remark-v">{{ cfSelected.traceId || '-' }}</span><span class="xv-remark-sep">|</span>
+                <span class="xv-remark-k">x-site-id</span>: <span class="xv-remark-v">{{ cfSelected.siteId || '-' }}</span>
+              </div>
+              <div class="xv-remark-line">
+                <span class="xv-remark-k">x-buyer-id</span>: <span class="xv-remark-v">{{ cfSelected.buyerId || '-' }}</span><span class="xv-remark-sep">|</span>
+                <span class="xv-remark-k">x-license-code</span>: <span class="xv-remark-v">{{ cfSelected.licenseCode || '-' }}</span>
+              </div>
+              <div class="xv-remark-line">
+                <span class="xv-remark-k">x-user-agent</span>: <span class="xv-remark-v">{{ cfSelected.userAgent || '-' }}</span>
+              </div>
+              <div class="xv-remark-line">
+                <span class="xv-remark-k">authorization</span>: <span class="xv-remark-v">{{ cfSelected.authToken || '-' }}</span>
+              </div>
+            </span></div>
+        </template>
+
+        <!-- 오류내용 탭 -->
+        <template v-else-if="dtab === 'error' && cfHasError">
+          <div class="xv-err-field">
+            <div class="xv-err-field-label">HTTP 상태</div>
+            <span class="xv-err-badge">{{ cfSelected.errorInfo.httpStatus }} {{ cfSelected.errorInfo.errorCode }}</span>
+          </div>
+          <div class="xv-err-field">
+            <div class="xv-err-field-label">오류 메시지</div>
+            <div class="xv-err-msg">{{ cfSelected.errorInfo.message }}</div>
+          </div>
+          <div class="xv-err-field" v-if="cfSelected.errorInfo.stackTrace">
+            <div class="xv-err-field-label">스택트레이스</div>
+            <div class="xv-err-stack">{{ cfSelected.errorInfo.stackTrace }}</div>
+          </div>
+        </template>
+      </div>
+    </template>
+    <div v-else style="color:#aaa;text-align:center;padding:40px;">좌측 목록에서 트랜잭션을 선택하세요.</div>
+  </div>
+</div>
+</div>
+`,
+  });
+
+  app.mount('#app');
+</script>
+</body>
+</html>

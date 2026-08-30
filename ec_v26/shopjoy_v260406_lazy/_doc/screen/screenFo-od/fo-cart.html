@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>장바구니 | OD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:16px 20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3;display:flex;justify-content:space-between;align-items:center}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+.btn-primary{background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff}
+.btn-secondary{background:#f3f4f6;color:#555;border:1px solid #e5e7eb}
+.btn-full{width:100%;padding:16px;font-size:16px;border-radius:12px;border:none;cursor:pointer}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.cart-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #f3f4f6;align-items:flex-start}
+.cart-check{padding-top:2px}
+.cart-check input[type=checkbox]{width:18px;height:18px;accent-color:#ec4899}
+.cart-img{width:72px;height:72px;background:#f3f4f6;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px}
+.cart-body{flex:1}
+.cart-vendor{font-size:11px;color:#9ca3af;margin-bottom:3px}
+.cart-prod-nm{font-size:14px;font-weight:600;margin-bottom:4px;line-height:1.4}
+.cart-opt{font-size:12px;color:#9ca3af;margin-bottom:8px}
+.cart-price-row{display:flex;justify-content:space-between;align-items:center}
+.cart-price{font-size:16px;font-weight:700;color:#be185d}
+.qty-control{display:flex;align-items:center;gap:0;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.qty-btn{width:32px;height:32px;border:none;background:#f9fafb;cursor:pointer;font-size:16px;font-weight:600;color:#555}
+.qty-btn:hover{background:#fce7f3}
+.qty-val{width:36px;text-align:center;font-size:14px;font-weight:600;border:none;outline:none;background:#fff}
+.cart-delete{font-size:18px;color:#d1d5db;cursor:pointer;padding:4px;background:none;border:none;align-self:flex-start}
+.cart-delete:hover{color:#be185d}
+.select-all-row{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:1px solid #f3f4f6;background:#fff}
+.select-all-row input[type=checkbox]{width:18px;height:18px;accent-color:#ec4899}
+.select-all-row label{font-size:14px;cursor:pointer;flex:1}
+.select-all-row .sel-cnt{font-size:13px;color:#9ca3af}
+.amount-summary{background:#fff7ed;border-radius:12px;padding:16px;margin-bottom:16px}
+.amount-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:#555}
+.amount-row.total{font-size:17px;font-weight:800;border-top:1px solid #fed7aa;margin-top:8px;padding-top:12px;color:#c2410c}
+.amount-row.discount{color:#16a34a}
+.cart-empty{text-align:center;padding:60px 20px;color:#9ca3af}
+.cart-empty .empty-icon{font-size:48px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>🛒 장바구니</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 주문/결제</a>
+</div>
+<div class="breadcrumb">쇼핑 &gt; <span>장바구니</span></div>
+
+<!-- 전체선택 -->
+<div class="select-all-row">
+  <input type="checkbox" id="checkAll" checked>
+  <label for="checkAll">전체선택</label>
+  <span class="sel-cnt has-tip"
+    data-table="od_cart" data-col="cart_id"
+    data-tbl-cmt="장바구니" data-col-cmt="장바구니 항목 ID">
+    3개 선택됨
+  </span>
+  <button class="btn btn-secondary" style="padding:5px 12px;font-size:12px">선택 삭제</button>
+</div>
+
+<!-- 업체 A -->
+<div class="section" style="margin-top:0;padding-top:12px">
+  <div style="font-size:12px;font-weight:700;color:#555;padding-bottom:10px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:6px">
+    <span class="has-tip"
+      data-table="sy_vendor" data-col="vendor_nm"
+      data-tbl-cmt="업체(판매자)" data-col-cmt="업체명">
+      🏪 쇼핑조이 공식
+    </span>
+  </div>
+
+  <!-- 카트 아이템 1 -->
+  <div class="cart-item">
+    <div class="cart-check">
+      <input type="checkbox" checked class="has-tip"
+        data-table="od_cart" data-col="cart_id"
+        data-tbl-cmt="장바구니" data-col-cmt="장바구니 항목 ID (체크=선택)">
+    </div>
+    <div class="cart-img">👕</div>
+    <div class="cart-body">
+      <div class="cart-vendor has-tip"
+        data-table="od_cart" data-col="prod_id"
+        data-tbl-cmt="장바구니" data-col-cmt="상품 참조 ID">
+        상품코드: PD0001
+      </div>
+      <div class="cart-prod-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        오가닉 코튼 티셔츠
+      </div>
+      <div class="cart-opt has-tip"
+        data-table="od_cart" data-col="sku_id"
+        data-tbl-cmt="장바구니" data-col-cmt="SKU ID (옵션 조합)">
+        색상: 블랙 / 사이즈: M
+      </div>
+      <div class="cart-price-row">
+        <div class="qty-control">
+          <button class="qty-btn">−</button>
+          <input class="qty-val has-tip"
+            data-table="od_cart" data-col="qty"
+            data-tbl-cmt="장바구니" data-col-cmt="담은 수량"
+            value="2" readonly>
+          <button class="qty-btn">+</button>
+        </div>
+        <div class="cart-price has-tip"
+          data-table="pd_prod" data-col="sale_price"
+          data-tbl-cmt="상품 마스터" data-col-cmt="판매가">
+          45,000원
+        </div>
+      </div>
+    </div>
+    <button class="cart-delete">×</button>
+  </div>
+
+  <!-- 카트 아이템 2 -->
+  <div class="cart-item">
+    <div class="cart-check">
+      <input type="checkbox" checked>
+    </div>
+    <div class="cart-img">👖</div>
+    <div class="cart-body">
+      <div class="cart-vendor">상품코드: PD0002</div>
+      <div class="cart-prod-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        린넨 와이드 팬츠
+      </div>
+      <div class="cart-opt has-tip"
+        data-table="od_cart" data-col="sku_id"
+        data-tbl-cmt="장바구니" data-col-cmt="SKU ID">
+        색상: 네이비 / 사이즈: L
+      </div>
+      <div class="cart-price-row">
+        <div class="qty-control">
+          <button class="qty-btn">−</button>
+          <input class="qty-val" value="1" readonly>
+          <button class="qty-btn">+</button>
+        </div>
+        <div class="cart-price">69,000원</div>
+      </div>
+    </div>
+    <button class="cart-delete">×</button>
+  </div>
+
+  <!-- 카트 아이템 3 -->
+  <div class="cart-item" style="border-bottom:none">
+    <div class="cart-check">
+      <input type="checkbox" checked>
+    </div>
+    <div class="cart-img">👜</div>
+    <div class="cart-body">
+      <div class="cart-vendor">상품코드: PD0003</div>
+      <div class="cart-prod-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        시그니처 에코백
+      </div>
+      <div class="cart-opt" style="color:#16a34a;font-weight:600">옵션 없음</div>
+      <div class="cart-price-row">
+        <div class="qty-control">
+          <button class="qty-btn">−</button>
+          <input class="qty-val" value="1" readonly>
+          <button class="qty-btn">+</button>
+        </div>
+        <div class="cart-price">35,000원</div>
+      </div>
+    </div>
+    <button class="cart-delete">×</button>
+  </div>
+</div>
+
+<!-- 금액 요약 -->
+<div class="section">
+  <div class="amount-summary">
+    <div class="amount-row">
+      <span>상품금액</span>
+      <span class="has-tip"
+        data-table="od_order" data-col="total_amt"
+        data-tbl-cmt="주문 마스터" data-col-cmt="상품금액 합계 (주문 생성 시 계산)">
+        194,000원
+      </span>
+    </div>
+    <div class="amount-row">
+      <span>배송비</span>
+      <span class="has-tip"
+        data-table="od_order" data-col="outbound_shipping_fee"
+        data-tbl-cmt="주문 마스터" data-col-cmt="출고 배송비 (배송 정책에 따라 계산)">
+        3,000원
+      </span>
+    </div>
+    <div class="amount-row discount">
+      <span>쿠폰 할인</span>
+      <span class="has-tip"
+        data-table="od_order" data-col="coupon_discount_amt"
+        data-tbl-cmt="주문 마스터" data-col-cmt="쿠폰으로 인한 할인 금액">
+        -0원
+      </span>
+    </div>
+    <div class="amount-row total">
+      <span>실결제금액</span>
+      <span class="has-tip"
+        data-table="od_order" data-col="pay_amt"
+        data-tbl-cmt="주문 마스터" data-col-cmt="최종 실결제금액 (쿠폰/적립금 차감 후)">
+        197,000원
+      </span>
+    </div>
+  </div>
+
+  <a href="fo-order.html">
+    <button class="btn btn-full btn-primary">주문하기 (3개)</button>
+  </a>
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

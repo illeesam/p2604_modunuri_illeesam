@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>프로모션관리(PM) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.screen-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:4px solid #f48fb1;text-decoration:none;color:#333;display:block;transition:box-shadow .2s,transform .2s}
+.screen-card:hover{box-shadow:0 4px 16px rgba(244,143,177,.3);transform:translateY(-2px)}
+.card-no{font-size:11px;color:#f06292;font-weight:700;margin-bottom:6px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.card-desc{font-size:12px;color:#888;margin-bottom:10px}
+.card-tables{font-size:11px;color:#bbb;font-family:monospace}
+.card-arrow{font-size:18px;color:#f48fb1;margin-top:8px;text-align:right}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.info-box{background:#fce4ec;border-radius:8px;padding:14px 18px;font-size:13px;color:#880e4f}
+.info-box ul{margin-left:18px;margin-top:6px}
+.info-box li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back-Office &gt; EC &gt; <span>프로모션 관리 (PM)</span></div>
+  <h1>🎁 프로모션관리(PM) 화면 목록</h1>
+</div>
+<div class="container">
+  <div class="info-box">
+    <strong>프로모션 관리 (PM) 도메인</strong> — 쿠폰·적립금·이벤트·할인 정책을 관리합니다.
+    <ul>
+      <li>각 카드를 클릭하면 해당 화면으로 이동합니다.</li>
+      <li>필드에 마우스를 올리면 테이블명·컬럼명·코드 정보를 툴팁으로 확인할 수 있습니다.</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="section-title">화면 목록</div>
+    <div class="card-grid">
+      <a class="screen-card" href="pm-coupon-mng.html">
+        <div class="card-no">PM-01</div>
+        <div class="card-title">쿠폰 관리</div>
+        <div class="card-desc">쿠폰 발행·발급·사용관리</div>
+        <div class="card-tables">pm_coupon · pm_coupon_issue</div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="screen-card" href="pm-cache-mng.html">
+        <div class="card-no">PM-02</div>
+        <div class="card-title">적립금(캐시) 관리</div>
+        <div class="card-desc">충전금 적립·사용·소멸 이력</div>
+        <div class="card-tables">pm_cache</div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="screen-card" href="pm-event-mng.html">
+        <div class="card-no">PM-03</div>
+        <div class="card-title">이벤트 관리</div>
+        <div class="card-desc">이벤트 등록·기간·대상 관리</div>
+        <div class="card-tables">pm_event · pm_event_item</div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="screen-card" href="pm-discnt-mng.html">
+        <div class="card-no">PM-04</div>
+        <div class="card-title">할인 정책</div>
+        <div class="card-desc">정률/정액/배송비무료 할인</div>
+        <div class="card-tables">pm_discnt · pm_discnt_item</div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="screen-card" href="#">
+        <div class="card-no">PM-05</div>
+        <div class="card-title">적립금 정책</div>
+        <div class="card-desc">구매 적립금 지급·규칙</div>
+        <div class="card-tables">pm_save</div>
+        <div class="card-arrow" style="color:#ccc">준비중</div>
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

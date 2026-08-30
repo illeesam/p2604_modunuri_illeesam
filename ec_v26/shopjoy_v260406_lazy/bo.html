@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopJoy BO</title>
+  <script>
+    /* ═══════════════════════════════════════════════════════════════════
+       사이트 기본값 설정 (변경 시 이 한 줄만 수정)
+       ═══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_BO_SITE_NO = '01';
+    /* BO_SITE_NO — URL ?SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
+    (function(){
+      var _toSiteId = function(no){ return '260401' + String(no || '01').padStart(10, '0'); };
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        var v = qs.get('SITE_NO');
+        if (v) {
+          window.BO_SITE_NO = v;
+          try {
+            qs.delete('SITE_NO');
+            var newSearch = qs.toString();
+            history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash);
+          } catch(_){}
+        } else {
+          var saved = null;
+          try { saved = localStorage.getItem('modu-bo-sy-siteNo'); } catch(_){}
+          window.BO_SITE_NO = saved || DEFAULT_BO_SITE_NO;
+        }
+        /* 카멜 키로 항상 영속화 (로그인/접속만 해도 modu-bo-sy-siteNo / modu-bo-sy-siteId 생성) */
+        try {
+          localStorage.setItem('modu-bo-sy-siteNo', window.BO_SITE_NO);
+          localStorage.setItem('modu-bo-sy-siteId', _toSiteId(window.BO_SITE_NO));
+        } catch(_){}
+      } catch(e) { window.BO_SITE_NO = DEFAULT_BO_SITE_NO; }
+      /* BO_SITE_NO 기준 CSS 로드 */
+      document.write('<link rel="stylesheet" href="assets/css/bo-global-style' + window.BO_SITE_NO + '.css">');
+    })();
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영.
+     * ⚠️ 무한 리로드 방지: 실제로 "다른 값"으로 바뀌었고, 현재 탭의 BO_SITE_NO 와도 다를 때만 reload.
+     *   (이전 코드는 newValue!==oldValue 만 보고 reload → 같은 값 재기록/탭 핑퐁 시 무한 루프 발생) */
+    window.addEventListener('storage', function(e){
+      try {
+        if (e.key !== 'modu-bo-sy-siteNo') return;
+        var nv = e.newValue;
+        if (!nv) return;                                  // 삭제 이벤트(null)는 무시
+        if (nv === e.oldValue) return;                    // 값 변화 없으면 무시
+        if (nv === window.BO_SITE_NO) return;             // 현재 탭과 같은 값이면 reload 불필요 (핑퐁 차단)
+        location.reload();
+      } catch(_){}
+    });
+    /* 기본 페이지 자동 이동 — 쿼리에 page 없이 진입 시 대시보드(홈)로
+       (2026-08-22 해시(#page=)에서 쿼리스트링(?page=)으로 전환 — 주소창에 # 안 보이게) */
+    (function(){
+      try {
+        var qs = new URLSearchParams(window.location.search);
+        if (!qs.get('page')) {
+          qs.set('page', 'dashboard');
+          history.replaceState(null, '', window.location.pathname + '?' + qs.toString());
+        }
+      } catch(_){}
+    })();
+  </script>
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       📌 리소스 로드 우선순위 정렬 기준 (가나다순 보조)
+       ═══════════════════════════════════════════════════════════════════════════
+       ■ HEAD 섹션 (CDN 및 초기 리소스)
+         H1.1: CDN Core Runtime (Vue, axios 등 기본 런타임)
+         H1.2: 추가 라이브러리 (marked, yup, quill, barcode 등)
+         H1.3: 스타일 & 글꼴 (CSS, Google Fonts)
+
+       ■ BODY 섹션 - B2.x: 공통부 (필수 기초)
+         B2.1: 유틸 & 모니터링 (perfUtil, safeUtil)
+         B2.2: Axios & 유틸 래퍼 (boAxios, boUtil)
+         B2.3: 에러 핸들러
+         B2.4: Pinia 스토어 & 데이터 (가나다순)
+         B2.5: 데이터 유틸
+
+       ■ BODY 섹션 - B3.x: 컴포넌트부 (UI 기반)
+         B3.1: Base 컴포넌트 (Modal, Comp)
+         B3.2: 모달 설정 (BoModals)
+         B3.3: 전시 컴포넌트 계층 (DispX01~X04)
+         B3.4: 전시 위젯 라이브러리 (CoBarcodeWidget, CoCountdownWidget — FO·BO 공통)
+
+       ■ BODY 섹션 - B4.x: Page 관리 (비즈니스 로직)
+         B4.1: EC Domain - 회원(MB) - 가나다순
+         B4.2: EC Domain - 상품(PD) - 가나다순
+         B4.3: EC Domain - 주문/배송/클레임(OD) - 가나다순
+         B4.4: EC Domain - 프로모션(PM) - 가나다순
+         B4.5: EC Domain - 정산(ST) - 가나다순
+         B4.6: EC Domain - 커뮤니티(CM) - 가나다순
+         B4.7: EC Domain - 전시(DP) - 가나다순
+
+       ■ BODY 섹션 - B5.x: 시스템 & 관리
+         B5.1: SY Domain - 시스템(SY) - 가나다순
+         B5.2: 대시보드(Dashboard)
+         B5.3: 개발자 도구(ZD)
+
+       ■ BODY 섹션 - B99: 메인 앱 부트스트랩 (반드시 마지막)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ H1.1: CDN Core Runtime ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+
+  <!-- ■ H1.2: 추가 라이브러리 (편집기, QR/바코드, 마크다운, 차트) ■ -->
+  <script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>
+  <!-- echarts-gl: bar3D 등 진짜 입체(3D) 차트용 확장. echarts 코어 로드 직후, echarts 를 쓰는
+       co-echart/대시보드 위젯 스크립트보다 먼저 있어야 한다(2026-08-21) -->
+  <script src="assets/cdn/pkg/echarts-gl/2.1.0/echarts-gl.min.js"></script>
+  <!-- jsPDF + html2canvas: 화면 영역(차트·그리드)을 그대로 캡처해 PDF 로 내려받는 기능용.
+       한글 텍스트를 jsPDF 자체 폰트로 그리면 CJK 미지원이라 깨지므로, html2canvas 로 화면을
+       브라우저가 그린 대로 이미지화한 뒤 그 이미지를 jsPDF 에 얹는 방식을 쓴다(2026-08-21) -->
+  <script src="assets/cdn/pkg/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="assets/cdn/pkg/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="assets/cdn/pkg/quill/1.3.7/quill.min.js"></script>
+  <script src="assets/cdn/pkg/toastui-editor/3.2.2/toastui-editor-all.min.js"></script>
+  <script src="assets/cdn/pkg/toastui-editor/3.2.2/ko-kr.min.js"></script>
+  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="assets/cdn/pkg/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+  <script src="assets/cdn/pkg/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="assets/cdn/pkg/xlsx/0.20.3/xlsx.full.min.js"></script>
+
+  <!-- ■ H1.2a: 외부 SDK (소셜 로그인 / 결제 / 지도) — 키는 로그인 후 server init data 로 주입 ■ -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+          integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+          crossorigin="anonymous"></script>
+  <script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+
+  <!-- ■ H1.3: 스타일 & 글꼴 ■ -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/cdn/pkg/quill/1.3.7/quill.snow.css">
+  <link rel="stylesheet" href="assets/cdn/pkg/toastui-editor/3.2.2/toastui-editor.min.css">
+  <style>
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+
+    .tab-btn { transition: all 0.15s ease; }
+    .tab-btn.active { border-bottom-color: #ff6b9d !important; color: #ff6b9d; font-weight: 600; }
+    .tab-modes button { transition: all 0.15s ease; }
+    .tab-modes button.active { background: linear-gradient(135deg, #ff6b9d, #c44569) !important; color: white; border-color: #c44569; }
+
+    .dtl-tab-grid { grid-template-columns: 1fr; }
+    .dtl-tab-grid.cols-1 { grid-template-columns: 1fr; }
+    .dtl-tab-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .dtl-tab-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .dtl-tab-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .dtl-tab-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+    .dtl-tab-grid.cols-tab { grid-template-columns: 1fr; }
+    .dtl-tab-card-title { font-weight: 600; font-size: 13px; color: #374151; }
+
+    /* 2026-08-30 lazy 로드 실험 — 아직 한 번도 안 열어본(스크립트 미로드) 좌측 메뉴 항목을
+       살짝 흐리게 표시. 클릭해서 로드가 끝나면(loadedPages[pageId]=true) 자동으로 원래 밝기로
+       돌아온다(boAppBase.js cfIsPageLoaded 참조). active(현재 열린 탭) 상태는 항상 우선. */
+    .left-nav-item.left-nav-not-loaded:not(.active) { opacity: 0.55; }
+  </style>
+</head>
+<body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
+  <div id="app"></div>
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       B2.x: 공통부 (필수 기초)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ■ B2.1: 유틸 & 모니터링 ■ -->
+  <script src="lib/utils/safeUtil.js"></script>
+
+  <!-- ■ B2.2: Axios & Utility Wrappers ■ -->
+  <script src="lib/license/licenseBo.js"></script>
+  <!-- coUtil 먼저 — boApiAxios 인터셉터가 coUtil.cofShortApiUrl/cofCheckNmHeaders 등 사용 -->
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/boConsts.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
+  <!-- 알림 누적 스토어(FO·BO 공용) — boApiAxios 의 api-response-error 훅이 window.boNotiStore 를 참조 -->
+  <script src="lib/utils/coNotiStore.js"></script>
+  <!-- 외부 연동 상수(토스 테스트키 / SDK URL 등) — coExtSdk 보다 먼저 로드 -->
+  <script src="lib/env/boEnvConsts.js"></script>
+  <!-- 소셜 로그인 / 결제(Toss) / 지도(Naver, Kakao) 통합 헬퍼 — AppStore 키 의존 -->
+  <script src="lib/utils/coExtSdk.js"></script>
+  <!-- 인증 흐름 통합 (coAuth.socialLogin/pay — ctx 'fo'|'bo' 구분자) — coExtSdk 의존 -->
+  <script src="lib/utils/coAuth.js"></script>
+
+  <!-- ■ B2.2a: 공통 API 서비스 (2개 이상 화면 공유 엔드포인트) ■ -->
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
+  <script src="lib/services/mdCbApiSvc.js"></script>
+  <script src="lib/services/mdSgApiSvc.js"></script>
+
+  <!-- ■ B2.2b: 설정 카탈로그 ■ -->
+  <script src="lib/config/excelDomains.js"></script>
+
+  <!-- ■ B2.3: Base Pages (Error Handlers) ■ -->
+  <script src="pages/base/boError401.js"></script>
+  <script src="pages/base/boError404.js"></script>
+  <script src="pages/base/boError500.js"></script>
+
+  <!-- ■ B2.4: Pinia & Data Setup ■ -->
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
+  <script src="lib/stores/bo/boUserPrefStore.js"></script>
+
+  <!-- ■ B2.5: Data Utils ■ -->
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       B3.x: 컴포넌트부 (UI 기반)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ■ B3.1: Base Components ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/BoComp.js"></script>
+  <script src="components/comp/BoAreaComp.js"></script>
+  <script src="components/comp/CoEchartComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
+
+  <!-- ■ B3.2: Modal Setup — BO 전용 모달 ■ -->
+  <script src="components/modals/BoModals.js"></script>
+  <script src="components/modals/BoExcelDownModal.js"></script>
+  <script src="components/modals/BoCmPopupModal.js"></script>
+  <script src="components/modals/HelpBoModal.js"></script>
+  <script src="components/modals/CoExtHelpModal.js"></script>
+
+  <!-- ■ B3.3: Display Components Hierarchy ■ -->
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ B3.4: Display Widget Libraries (FO·BO 공통) ■ -->
+  <script src="components/comp/CoWidgetComp.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       B4.x/B5.x: Page 관리 — 2026-08-30 lazy-load 실험(shopjoy_v260406_lazy 전용).
+       여기 있던 페이지 컴포넌트 <script> 181개를 제거하고 lib/app/boAppPageScripts.js
+       (pageId → 경로 맵)로 옮겨 navigate() 시점에 동적으로 불러온다(components/comp,
+       modals, disp 는 그대로 eager).
+       2026-08-30 2차: CmDashboardWidgetUtil(대시보드 설정 7개 화면 공용 유틸)과
+       ZdSimulBase/Comps(zd 시뮬레이션 16개 화면 공용 베이스)도 "무슨 화면이든 예외 없이
+       lazy" 원칙에 맞춰 여기서 빼고, 해당 pageId들의 동반 파일로 boAppPageScripts.js 에
+       옮겼다(예: cmDashboardMng 클릭 시 CmDashboardWidgetUtil.js 도 같이 로드).
+       아래 두 줄만 예외로 남긴다(즉시 필요한 첫 화면/미사용 등록이라 lazy 로 옮길 대상이 아님):
+       - 기본 진입 화면인 대시보드 3종(DashboardBoEc01~03) — 로그인 직후 거의 항상 보임.
+         굳이 lazy 로 옮기면 로그인 성공 첫 화면조차 네트워크 왕복을 기다려야 해서(전체
+         세션의 100%가 겪는 경로) 오히려 체감 속도가 나빠진다 — 의도적으로 계속 eager 유지.
+       - SyDashboardMng — 어느 pageId 에도 연결 안 된 미사용 등록(옮겨도 효과 없음)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+  <script src="pages/bo/DashboardBoEc01.js"></script>
+  <script src="pages/bo/DashboardBoEc02.js"></script>
+  <script src="pages/bo/DashboardBoEc03.js"></script>
+  <script src="pages/bo/sy/SyDashboardMng.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       B99: 메인 앱 부트스트랩 (반드시 마지막)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+  <!-- ■ B99: Main App Bootstrap ■ -->
+  <script src="lib/app/boAppMenuData.js"></script>
+  <script src="lib/app/boAppCompPage.js"></script>
+  <!-- 2026-08-30 lazy-load 실험: pageId → 지연 로드 스크립트 경로 맵. boAppBase.js 의
+       navigate() 가 이 맵을 보고 처음 여는 화면만 동적으로 <script> 를 추가한다. -->
+  <script src="lib/app/boAppPageScripts.js"></script>
+  <script src="lib/app/boAppFunc.js"></script>
+  <script src="lib/app/boAppComp.js"></script>
+  <script src="lib/app/boAppBase.js"></script>
+</body>
+</html>

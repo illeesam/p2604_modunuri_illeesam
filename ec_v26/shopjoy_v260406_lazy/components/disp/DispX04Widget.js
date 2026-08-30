@@ -1,0 +1,690 @@
+/* ShopJoy - 전시 위젯 렌더러 컴포넌트 */
+window.DispX04Widget = {
+  name: 'DispX04Widget',
+  props: {
+    params:      { type: Object, required: true },
+    dispDataset: { type: Object, default: () => ({ displays: [], codes: [] }) },
+    dispOpt:     { type: Object, default: () => ({ showBadges: true }) },
+    widgetItem:  { type: Object, required: true },
+  },
+  emits: ['click-action'],
+  setup(props, { emit }) {
+    // ===== [01] 초기 변수 정의 ==================================================
+    const { computed, reactive } = Vue;
+    const uiState = reactive({ loading: false, error: '' });
+    const codes = reactive({});
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX04Widget.js : handleBtnAction -> ', cmd, param);
+      // 위젯 자체 클릭 → clickAction 발화
+      if (cmd === 'widget-click') {
+        return handleClick();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 위젯 내부 선택 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX04Widget.js : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
+
+    /* 노출 여부 판단 */
+    const cfVisible = computed(() => {
+      const w = props.widgetItem;
+      const pm = props.params;
+
+      if (!w) { return false; }
+
+      // 상태 체크
+      if (w.status !== '활성') { return false; }
+
+      // ━━━ 위젯 라이브러리 참조 (dp_widget_lib) ━━━
+      // 라이브러리는 마스터 템플릿이므로 useYn만 확인
+      if (w.widgetLibRefYn === 'Y') {
+        // ✓ 사용여부 체크 (widget lib 마스터)
+        if (w.useYn !== 'Y') { return false; }
+      }
+      // ━━━ 직접 생성 (dp_widget + dp_panel_item) ━━━
+      else {
+        // ✓ 사용여부 체크 (widget 마스터)
+        if (w.useYn !== 'Y') { return false; }
+        // ✓ 전시여부 체크 (panel item 레벨)
+        if (w.dispYn !== 'Y') { return false; }
+
+        // ✓ 사용기간 체크 (widget 마스터)
+        if (pm.date) {
+          const t  = pm.time || '00:00';
+          const dt = `${pm.date} ${t}`;
+          if (w.useStartDate && dt < `${w.useStartDate} 00:00`) { return false; }
+          if (w.useEndDate   && dt > `${w.useEndDate}   23:59`) { return false; }
+        }
+
+        // ✓ 전시기간 체크 (panel item 레벨)
+        if (pm.date) {
+          const t  = pm.time || '00:00';
+          const dt = `${pm.date}T${t}`;
+          if (w.dispStartDt && dt < coUtil.cofDatetimeNorm(w.dispStartDt)) { return false; }
+          if (w.dispEndDt   && dt > coUtil.cofDatetimeNorm(w.dispEndDt)) { return false; }
+        }
+
+        // ✓ 전시환경 체크 (panel item 레벨)
+        if (w.dispEnv && pm.dispEnv && !w.dispEnv.includes('^' + pm.dispEnv + '^')) { return false; }
+      }
+
+      const cond = w.condition;
+      if (cond === '항상 표시') { return true; }
+      const isLoggedIn = pm?.isLoggedIn || false;
+      const userGrade = pm?.userGrade || '';
+      if (cond === '로그인 필요') { return isLoggedIn; }
+      if (cond === '비로그인') { return !isLoggedIn; }
+      if (cond === '로그인+VIP') { return isLoggedIn && userGrade === 'VIP'; }
+      if (cond === '로그인+우수') { return isLoggedIn && (userGrade === '우수' || userGrade === 'VIP'); }
+      return true;
+    });
+
+    /* cfClickInfo — 위젯의 실제 클릭 동작 산출.
+     *   1순위: 명시적 clickAction(+clickTarget)
+     *   2순위: clickAction 미설정 시 위젯이 가진 링크/파일 URL 을 url 동작으로 폴백
+     *   → 링크 URL 만 입력한 배너도 클릭 가능하게 만든다 (미리보기·FO 공통) */
+    const cfClickInfo = computed(() => {
+      const w = widget.value;
+      if (w.clickAction && w.clickAction !== 'none') {
+        return { action: w.clickAction, target: w.clickTarget || '' };
+      }
+      const linkTarget = w.linkUrl || w.fileUrl || w.eventUrl || '';
+      if (linkTarget) { return { action: 'url', target: linkTarget }; }
+      return null;
+    });
+
+    /* handleClick — 처리.
+     *   항상 click-action 을 부모로 발화(emit)하되,
+     *   dispOpt.interactive===true (미리보기/시뮬레이션) 인 경우 위젯 자체가
+     *   기본 동작(외부 URL·페이지 이동 새 탭)을 직접 수행 → 부모 별도 배선 불필요.
+     *   event/modal 처럼 참조가 필요한 동작은 부모(emit 수신)에게 위임. */
+    const handleClick = () => {
+      const info = cfClickInfo.value;
+      if (!info) { return; }
+      const w = widget.value;
+      emit('click-action', { ...info, widget: w });
+      if (props.dispOpt && props.dispOpt.interactive) {
+        const target = (info.target || '').trim();
+        if (info.action === 'url' && target) {
+          const href = /^https?:\/\//i.test(target) ? target : ('https://' + target);
+          window.open(href, '_blank', 'noopener');
+        } else if (info.action === 'navigate' && target) {
+          const path = target.startsWith('#') ? target : ('#' + target.replace(/^\//, ''));
+          window.open('index.html' + path, '_blank');
+        }
+      }
+    };
+
+    /* 이름 기반 그라디언트 (일관성 있게 같은 이름 → 같은 색) */
+    const GRADIENTS = [
+      'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
+      'linear-gradient(135deg,#1a237e 0%,#3949ab 100%)',
+      'linear-gradient(135deg,#00acc1 0%,#0097a7 100%)',
+      'linear-gradient(135deg,#43a047 0%,#2e7d32 100%)',
+      'linear-gradient(135deg,#f57c00 0%,#e65100 100%)',
+      'linear-gradient(135deg,#5e35b1 0%,#4527a0 100%)',
+      'linear-gradient(135deg,#1565c0 0%,#0d47a1 100%)',
+    ];
+
+    /* nameGrad — 이름 그라데이션 */
+    const nameGrad = (name) => {
+      const h = (name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      return GRADIENTS[h % GRADIENTS.length];
+    };
+
+    /* 차트 데이터 — coUtil.cofChartBars 위임 (팔레트/막대 계산 공용) */
+    const chartColors = coUtil.cofChartColors();
+    const cfChartBars = computed(() => coUtil.cofChartBars(props.widgetItem.chartValues, props.widgetItem.chartLabels));
+
+    /* parseMarkdown — 파싱 Markdown */
+    const parseMarkdown = (md) => (window.marked ? window.marked.parse(md || '') : (md || ''));
+
+    /* getVideoEmbed — 조회 */
+    const getVideoEmbed = (w) => {
+      const url = (w.videoUrl || '').trim();
+      if (!url) { return null; }
+      if (w.videoType === 'youtube' || url.includes('youtube') || url.includes('youtu.be')) {
+        const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\?\/\s]+)/);
+        if (!m) { return null; }
+        const params = `controls=${w.videoControls !== false ? 1 : 0}&mute=1`;
+        return `https://www.youtube.com/embed/${m[1]}?${params}`;
+      }
+      if (w.videoType === 'vimeo' || url.includes('vimeo')) {
+        const m = url.match(/vimeo\.com\/(\d+)/);
+        if (!m) { return null; }
+        return `https://player.vimeo.com/video/${m[1]}`;
+      }
+      return url;
+    };
+
+    /* getMapEmbed — 조회 */
+    const getMapEmbed = (w) => {
+      if (!w.mapAddress && !w.mapLat) { return null; }
+      const q = (w.mapLat && w.mapLng)
+        ? `${w.mapLat},${w.mapLng}`
+        : encodeURIComponent(w.mapAddress || '');
+      return `https://maps.google.com/maps?q=${q}&z=${w.mapZoom || 14}&output=embed&hl=ko`;
+    };
+
+    /* parseApprovalLine — 파싱 Approval Line */
+    const parseApprovalLine = (json) => {
+      try { return JSON.parse(json || '[]'); }
+      catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
+    };
+
+    /* 백엔드 DTO(widgetTypeCd / widgetNm / useYn / widgetContent / widgetConfigJson)
+     * → 템플릿이 사용하는 옛 필드명(widgetType / name / status / textContent / 분리 필드들) 으로 정규화
+     * 매번 reactive 변경 감지를 위해 computed 로 매핑
+     */
+    const widget = computed(() => {
+      const src = props.widgetItem || {};
+
+      /* tryParse — try 파싱 */
+      const tryParse = (s) => { try { return JSON.parse(s); } catch (_) { return null; } };
+      const cfg = tryParse(src.widgetConfigJson) || tryParse(src.widgetConfigJson) || {};
+
+      /* fromCfg — 에서 Cfg */
+      const fromCfg = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null && cfg[k2] != null ? cfg[k2] : undefined);
+
+      // ===== [06] return (템플릿 노출) ==============================================
+
+
+      return {
+        ...src,
+        /* 핵심 정규화 */
+        widgetType:    src.widgetType    || src.widgetTypeCd || '',
+        name:          src.name          || src.widgetNm     || src.widgetTitle || '',
+        status:        src.status        || (src.useYn === 'Y' ? '활성' : (src.useYn === 'N' ? '비활성' : '활성')),
+        title:         src.title         || src.widgetTitle  || '',
+        titleYn:       src.titleYn       || src.titleShowYn  || 'N',
+        widgetLibRefYn: src.widgetLibRefYn || 'N',
+        useYn:         src.useYn         || 'Y',
+        /* 콘텐츠 / 설정값 (JSON 우선, 별칭 fallback) */
+        imageUrl:      src.imageUrl      || fromCfg('img_url', 'imageUrl') || src.thumbnailUrl || '',
+        altText:       src.altText       || fromCfg('alt') || '',
+        linkUrl:       src.linkUrl       || fromCfg('link_url', 'linkUrl') || '',
+        textContent:   src.textContent   || fromCfg('text') || src.widgetContent || '',
+        bgColor:       src.bgColor       || fromCfg('bg_color', 'bgColor') || '',
+        textColor:     src.textColor     || fromCfg('text_color', 'textColor') || '',
+        infoTitle:     src.infoTitle     || fromCfg('title') || src.widgetTitle || '',
+        infoBody:      src.infoBody      || fromCfg('content') || src.widgetContent || '',
+        couponCode:    src.couponCode    || fromCfg('coupon_id', 'couponCode') || '',
+        couponDesc:    src.couponDesc    || fromCfg('btn_label', 'desc') || '',
+        htmlContent:   src.htmlContent   || fromCfg('html') || src.widgetContent || '',
+        textareaContent: src.textareaContent || fromCfg('text') || src.widgetContent || '',
+        markdownContent: src.markdownContent || fromCfg('markdown') || src.widgetContent || '',
+        codeValue:     src.codeValue     || fromCfg('value') || '',
+        videoUrl:      src.videoUrl      || fromCfg('video_url', 'videoUrl') || '',
+        countdownTitle: src.countdownTitle || fromCfg('label') || '',
+        countdownTarget: src.countdownTarget || fromCfg('target_datetime', 'targetDatetime') || '',
+        embedCode:     src.embedCode     || fromCfg('embed_widget_id') || '',
+        fileUrl:       src.fileUrl       || fromCfg('file_url') || '',
+        fileLabel:     src.fileLabel     || fromCfg('btn_label') || '',
+        chartTitle:    src.chartTitle    || fromCfg('title') || '',
+        chartLabels:   src.chartLabels   || (Array.isArray(cfg.labels) ? cfg.labels.join(',') : ''),
+        chartValues:   src.chartValues   || (Array.isArray(cfg.values) ? cfg.values.join(',') : ''),
+        payAmount:     src.payAmount     || fromCfg('amount') || 0,
+        approvalDocType: src.approvalDocType || fromCfg('doc_type') || '',
+        approvalLine:  src.approvalLine  || fromCfg('approval_line') || '',
+      };
+    });
+
+    return {
+      uiState, codes, coUtil,                                               // 상태 / 공용유틸(템플릿 cofAnd/cofImgSrc)
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      widget, cfVisible, cfChartBars, chartColors, cfClickInfo,             // computed
+      nameGrad, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine, // 헬퍼
+    };
+  },
+  template: /* html */`
+<div v-if="cfVisible" class="disp-widget" :style="{ cursor: cfClickInfo ? 'pointer' : 'default' }" @click="handleBtnAction('widget-click')">
+<!-- ===== ■. 위젯 타이틀 ================================================== -->
+<div v-if="coUtil.cofAnd(widget.titleYn==='Y', widget.title)" style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
+{{ widget.title }}
+</div>
+<!-- ===== □. 위젯 타이틀 ================================================== -->
+<!-- ===== ■. 이미지 배너 ================================================== -->
+<template v-if="widget.widgetType==='image_banner'">
+  <div v-if="widget.imageUrl" style="border-radius:10px;overflow:hidden;">
+    <img :src="coUtil.cofImgSrc(widget.imageUrl)" :alt="widget.altText||'배너'" style="width:100%;display:block;max-height:220px;object-fit:cover;" />
+  </div>
+  <div v-else :style="'border-radius:10px;overflow:hidden;background:'+nameGrad(widget.name)+';padding:36px 20px;text-align:center;color:#fff;'"  >
+    <div style="font-size:32px;margin-bottom:10px;">
+      📦
+    </div>
+    <div style="font-size:17px;font-weight:700;letter-spacing:.3px;text-shadow:0 1px 4px rgba(0,0,0,.3);">
+      {{ widget.name }}
+    </div>
+    <div v-if="widget.linkUrl" style="font-size:12px;opacity:.7;margin-top:6px;">
+      → {{ widget.linkUrl }}
+    </div>
+    <div v-else-if="widget.altText" style="font-size:12px;opacity:.7;margin-top:6px;">
+      {{ widget.altText }}
+    </div>
+  </div>
+</template>
+<!-- ===== □. 이미지 배너 ================================================== -->
+<!-- ===== ■. 상품 슬라이더 ================================================= -->
+<template v-else-if="widget.widgetType==='product_slider'">
+  <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
+    <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:12px;">
+      🛒 {{ widget.name }}
+    </div>
+    <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;">
+      <div v-for="n in 4" :key="n" style="flex-shrink:0;width:110px;text-align:center;">
+        <div style="height:90px;background:linear-gradient(135deg,#f5f5f5,#ebebeb);border-radius:8px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:24px;">
+          👗
+        </div>
+        <div style="font-size:11px;color:#555;font-weight:600;">
+          상품 {{ n }}
+        </div>
+        <div style="font-size:11px;color:#e8587a;font-weight:700;margin-top:2px;">
+          ₩0,000
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ===== □. 상품 슬라이더 ================================================= -->
+<!-- ===== ■. 상품 ====================================================== -->
+<template v-else-if="widget.widgetType==='product'">
+  <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
+    <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:10px;">
+      📦 {{ widget.name }}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div v-for="n in 3" :key="n" style="width:90px;text-align:center;border:1px solid #f0f0f0;border-radius:8px;padding:8px;">
+        <div style="height:64px;background:#f9f9f9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:4px;">
+          📦
+        </div>
+        <div style="font-size:10px;color:#888;">
+          상품 {{ n }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ===== □. 상품 ====================================================== -->
+<!-- ===== ■. 조건 상품 =================================================== -->
+<template v-else-if="widget.widgetType==='cond_product'">
+  <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
+    <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:8px;">
+      🔍 {{ widget.name }}
+    </div>
+    <div style="font-size:11px;color:#888;background:#f9f9f9;border-radius:6px;padding:8px;">
+      <span v-if="widget.condSort">
+        정렬: {{ widget.condSort }}
+      </span>
+      <span v-if="widget.condLimit">
+        수량: {{ widget.condLimit }}
+      </span>
+      <span v-if="widget.condCategory">
+        카테: {{ widget.condCategory }}
+      </span>
+      <span v-if="widget.condBrand">
+        브랜드: {{ widget.condBrand }}
+      </span>
+      <span v-if="coUtil.cofAnd(!widget.condSort, !widget.condLimit)">
+      조건상품 렌더링
+    </span>
+  </div>
+</div>
+</template>
+<!-- ===== □. 조건 상품 =================================================== -->
+<!-- ===== ■. 차트 ====================================================== -->
+<template v-else-if="coUtil.cofAnd(widget.widgetType, widget.widgetType.startsWith('chart_'))">
+<div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
+  <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:14px;">
+    {{ widget.widgetType==='chart_bar'?'📊':widget.widgetType==='chart_line'?'📈':'🥧' }} {{ widget.chartTitle || widget.name }}
+  </div>
+  <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:5px;height:90px;">
+    <div v-for="(bar, i) in cfChartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div :style="{ height: bar.pct+'%', background: bar.color, borderRadius:'4px 4px 0 0', width:'100%', minHeight:'4px', transition:'height .3s' }">
+      </div>
+      <div style="font-size:10px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">
+        {{ bar.label }}
+      </div>
+    </div>
+  </div>
+  <div v-else style="height:60px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;">
+    차트 데이터 없음
+  </div>
+</div>
+</template>
+<!-- ===== □. 차트 ====================================================== -->
+<!-- ===== ■. 텍스트 배너 ================================================== -->
+<template v-else-if="widget.widgetType==='text_banner'">
+  <div :style="{ background: widget.bgColor||'#f5f5f5', color: widget.textColor||'#333', borderRadius:'10px', padding:'18px 20px', fontSize: (widget.fontSize||'14')+'px', lineHeight:'1.7' }">
+    <span v-if="widget.textContent" v-html="widget.textContent">
+    </span>
+    <span v-else style="opacity:.6;">
+      {{ widget.name }}
+    </span>
+  </div>
+</template>
+<!-- ===== □. 텍스트 배너 ================================================== -->
+<!-- ===== ■. 정보 카드 =================================================== -->
+<template v-else-if="widget.widgetType==='info_card'">
+  <div style="background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e8e8e8;box-shadow:0 1px 6px rgba(0,0,0,.06);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span v-if="widget.infoIcon" style="font-size:20px;">
+        {{ widget.infoIcon }}
+      </span>
+      <span style="font-size:15px;font-weight:700;color:#222;">
+        {{ widget.infoTitle || widget.name }}
+      </span>
+    </div>
+    <div style="font-size:13px;color:#555;white-space:pre-line;line-height:1.6;">
+      {{ widget.infoBody || '내용 없음' }}
+    </div>
+  </div>
+</template>
+<!-- ===== □. 정보 카드 =================================================== -->
+<!-- ===== ■. 팝업 ====================================================== -->
+<template v-else-if="widget.widgetType==='popup'">
+  <div style="background:#fff;border-radius:10px;padding:16px 20px;border:2px dashed #e8587a;text-align:center;">
+    <div style="font-size:22px;margin-bottom:6px;">
+      💬
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#e8587a;margin-bottom:4px;">
+      팝업
+    </div>
+    <div style="font-size:12px;color:#555;">
+      {{ widget.name }}
+    </div>
+    <div v-if="widget.popupWidth" style="font-size:11px;color:#aaa;margin-top:4px;">
+      {{ widget.popupWidth }}×{{ widget.popupHeight }}
+    </div>
+  </div>
+</template>
+<!-- ===== □. 팝업 ====================================================== -->
+<!-- ===== ■. 파일 ====================================================== -->
+<template v-else-if="widget.widgetType==='file'">
+  <div style="display:flex;align-items:center;gap:12px;background:#f8f9ff;border-radius:10px;padding:14px 18px;border:1px solid #dce3f8;">
+    <span style="font-size:24px;flex-shrink:0;">
+      📎
+    </span>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#1565c0;">
+        {{ widget.fileLabel || widget.name }}
+      </div>
+      <div v-if="widget.fileSize" style="font-size:11px;color:#aaa;margin-top:2px;">
+        {{ widget.fileSize }}
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ===== □. 파일 ====================================================== -->
+<!-- ===== ■. 파일 목록 =================================================== -->
+<template v-else-if="widget.widgetType==='file_list'">
+  <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e8e8e8;">
+    <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:8px;">
+      📁 {{ widget.name }}
+    </div>
+    <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5;">
+      <span style="font-size:16px;">
+        📄
+      </span>
+      <span style="font-size:12px;color:#555;">
+        파일 {{ n }}.pdf
+      </span>
+      <span style="margin-left:auto;font-size:11px;color:#1565c0;text-decoration:underline;cursor:pointer;">
+        다운로드
+      </span>
+    </div>
+  </div>
+</template>
+<!-- ===== □. 파일 목록 =================================================== -->
+<!-- ===== ■. 쿠폰 ====================================================== -->
+<template v-else-if="widget.widgetType==='coupon'">
+  <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#f06292,#e91e63);color:#fff;display:flex;align-items:center;padding:20px 24px;gap:18px;position:relative;">
+    <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">
+      ✏️
+    </div>
+    <div style="flex:1;">
+      <div v-if="widget.couponCode" style="font-size:11px;opacity:.75;letter-spacing:.5px;margin-bottom:3px;">
+        {{ widget.couponCode }}
+      </div>
+      <div style="font-size:16px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.2);">
+        {{ widget.couponDesc || widget.name }}
+      </div>
+      <div v-if="widget.discountRate" style="font-size:12px;opacity:.8;margin-top:3px;">
+        할인율: {{ widget.discountRate }}%
+      </div>
+    </div>
+    <!-- ===== ■.■.■. 점선 경계 =============================================== -->
+    <div style="position:absolute;top:0;bottom:0;right:70px;width:1px;border-left:2px dashed rgba(255,255,255,.4);">
+    </div>
+    <div style="font-size:13px;font-weight:700;width:60px;text-align:center;flex-shrink:0;">
+      받기
+    </div>
+  </div>
+</template>
+<!-- ===== □. 쿠폰 ====================================================== -->
+<!-- ===== ■. HTML 에디터 ================================================ -->
+<template v-else-if="widget.widgetType==='html_editor'">
+  <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+      <span style="font-size:11px;color:#888;">
+        📄 {{ widget.name }}
+      </span>
+    </div>
+    <div v-if="widget.htmlContent" style="padding:14px 16px;font-size:13px;line-height:1.7;min-height:40px;" v-html="widget.htmlContent">
+    </div>
+    <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">
+      HTML 내용 없음
+    </div>
+  </div>
+</template>
+<!-- ===== □. HTML 에디터 ================================================ -->
+<!-- ===== ■. 텍스트 영역 ================================================== -->
+<template v-else-if="widget.widgetType==='textarea'">
+  <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+      <span style="font-size:11px;color:#888;">
+        📋 {{ widget.name }}
+      </span>
+    </div>
+    <pre v-if="widget.textareaContent" style="margin:0;padding:14px 16px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;font-family:inherit;background:#fff;">{{ widget.textareaContent }}</pre>
+      <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">
+        내용 없음
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 텍스트 영역 ================================================== -->
+  <!-- ===== ■. Markdown ================================================ -->
+  <template v-else-if="widget.widgetType==='markdown'">
+    <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
+        <span style="font-size:11px;color:#888;">
+          📑 {{ widget.name }}
+        </span>
+      </div>
+      <div v-if="widget.markdownContent" style="padding:14px 16px;font-size:13px;line-height:1.7;" v-html="parseMarkdown(widget.markdownContent)">
+      </div>
+      <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">
+        Markdown 내용 없음
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. Markdown ================================================ -->
+  <!-- ===== ■. 바코드 / QR코드 ============================================== -->
+  <template v-else-if="widget.widgetType==='barcode'||widget.widgetType==='qrcode'||widget.widgetType==='barcode_qrcode'">
+    <co-barcode-widget :widget="widget" />
+  </template>
+  <!-- ===== □. 바코드 / QR코드 ============================================== -->
+  <!-- ===== ■. 동영상 플레이어 ================================================ -->
+  <template v-else-if="widget.widgetType==='video_player'">
+    <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
+      <div v-if="getVideoEmbed(widget)" style="position:relative;padding-top:56.25%;background:#000;">
+        <iframe :src="getVideoEmbed(widget)"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+          allowfullscreen allow="accelerometer;clipboard-write;encrypted-media;gyroscope;picture-in-picture">
+        </iframe>
+      </div>
+      <div v-else style="background:#1a1a2e;padding:40px 20px;text-align:center;color:#fff;">
+        <div style="font-size:40px;margin-bottom:8px;">
+          ▶
+        </div>
+        <div style="font-size:12px;opacity:.6;">
+          동영상 URL을 입력하세요
+        </div>
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 동영상 플레이어 ================================================ -->
+  <!-- ===== ■. 카운트다운 타이머 =============================================== -->
+  <template v-else-if="widget.widgetType==='countdown'">
+    <co-countdown-widget :widget="widget" />
+  </template>
+  <!-- ===== □. 카운트다운 타이머 =============================================== -->
+  <!-- ===== ■. 결제위젯 ==================================================== -->
+  <template v-else-if="widget.widgetType==='payment_widget'">
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:20px;">
+      <div style="font-size:22px;font-weight:900;color:#1a1a2e;margin-bottom:4px;letter-spacing:-.5px;">
+        {{ Number(widget.payAmount||0).toLocaleString() }}
+        <span style="font-size:14px;font-weight:600;margin-left:2px;">
+          {{ widget.payCurrency==='USD' ? 'USD' : '원' }}
+        </span>
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:14px;">
+        {{ widget.name }}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+        <div v-for="m in (widget.payMethods||'card').split(',')" :key="m"
+          style="padding:5px 10px;border:1px solid #e8e8e8;border-radius:16px;font-size:11px;background:#fafafa;color:#555;">
+          {{ {'card':'💳 카드','kakao':'💛 카카오페이','naver':'🟢 네이버페이','toss':'🔵 토스','bank':'🏦 계좌이체'}[m.trim()] || m.trim() }}
+        </div>
+      </div>
+      <button :style="'width:100%;padding:11px;background:'+(widget.payButtonColor||'#1677ff')+';color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;'">
+        {{ widget.payButtonLabel || '결제하기' }}
+      </button>
+    </div>
+  </template>
+  <!-- ===== □. 결제위젯 ==================================================== -->
+  <!-- ===== ■. 전자결재 ==================================================== -->
+  <template v-else-if="widget.widgetType==='approval_widget'">
+    <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
+      <div style="background:#1a237e;color:#fff;padding:10px 16px;font-size:13px;font-weight:700;">
+        ✅ {{ widget.approvalDocType || '전자결재' }}
+        <span v-if="widget.approvalTitle">
+          – {{ widget.approvalTitle }}
+        </span>
+      </div>
+      <div style="display:flex;border-bottom:1px solid #e8e8e8;overflow-x:auto;">
+        <div v-for="(ap, i) in parseApprovalLine(widget.approvalLine)" :key="i"
+          style="flex:1;min-width:72px;text-align:center;padding:10px 6px;border-right:1px solid #f0f0f0;">
+          <div style="font-size:10px;color:#aaa;margin-bottom:6px;">
+            {{ ap.role }}
+          </div>
+          <div style="width:36px;height:36px;border-radius:50%;background:#f5f5f5;border:1px solid #e0e0e0;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:16px;">
+            {{ ap.status==='approved'?'✅':ap.status==='rejected'?'❌':'👤' }}
+          </div>
+          <div style="font-size:11px;color:#333;font-weight:600;">
+            {{ ap.name || '(미정)' }}
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 14px;font-size:12px;color:#888;">
+        결재를 진행합니다.
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 전자결재 ==================================================== -->
+  <!-- ===== ■. 지도맵 ===================================================== -->
+  <template v-else-if="widget.widgetType==='map_widget'">
+    <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
+      <iframe v-if="getMapEmbed(widget)" :src="getMapEmbed(widget)"
+        style="width:100%;height:220px;border:none;display:block;"
+        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      <div v-else style="height:120px;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+        <span style="font-size:28px;">
+          🗺
+        </span>
+        <span style="font-size:12px;color:#aaa;">
+          주소 또는 위도/경도를 입력하세요
+        </span>
+      </div>
+      <div v-if="widget.mapAddress||widget.mapMarkerLabel"
+        style="padding:8px 12px;font-size:12px;color:#555;border-top:1px solid #f0f0f0;background:#fafafa;">
+        📍 {{ widget.mapMarkerLabel || widget.mapAddress }}
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 지도맵 ===================================================== -->
+  <!-- ===== ■. 이벤트 배너 ================================================== -->
+  <template v-else-if="widget.widgetType==='event_banner'">
+    <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#f50057,#c51162);padding:28px 24px;text-align:center;color:#fff;">
+      <div style="font-size:28px;margin-bottom:10px;">
+        🎉
+      </div>
+      <div style="font-size:17px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.3);">
+        {{ widget.eventTitle || widget.name }}
+      </div>
+      <div v-if="widget.eventUrl" style="font-size:12px;opacity:.7;margin-top:6px;">
+        → {{ widget.eventUrl }}
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 이벤트 배너 ================================================== -->
+  <!-- ===== ■. 캐시 배너 =================================================== -->
+  <template v-else-if="widget.widgetType==='cache_banner'">
+    <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#ff8f00,#f57f17);padding:22px 24px;color:#fff;display:flex;align-items:center;gap:18px;">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">
+        💰
+      </div>
+      <div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:.5px;text-shadow:0 1px 4px rgba(0,0,0,.3);">
+          +{{ widget.cacheAmount ? widget.cacheAmount.toLocaleString() : '0' }}P
+        </div>
+        <div v-if="widget.cacheDesc" style="font-size:12px;opacity:.8;margin-top:3px;">
+          {{ widget.cacheDesc }}
+        </div>
+        <div v-if="widget.cacheExpire" style="font-size:11px;opacity:.6;margin-top:2px;">
+          만료: {{ widget.cacheExpire }}
+        </div>
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 캐시 배너 =================================================== -->
+  <!-- ===== ■. 위젯 임베드 ================================================== -->
+  <template v-else-if="widget.widgetType==='widget_embed'">
+    <div style="background:#f8f8f8;border-radius:10px;padding:16px;border:1px dashed #ccc;text-align:center;">
+      <div style="font-size:20px;margin-bottom:6px;">
+        🧩
+      </div>
+      <div style="font-size:12px;color:#888;">
+        위젯 임베드: {{ widget.name }}
+      </div>
+    </div>
+  </template>
+  <!-- ===== □. 위젯 임베드 ================================================== -->
+  <!-- ===== ■. 기타 ====================================================== -->
+  <template v-else>
+    <div :style="'border-radius:10px;overflow:hidden;background:'+nameGrad(widget.name)+';padding:24px 20px;text-align:center;color:#fff;'">
+      <div style="font-size:24px;margin-bottom:8px;">
+        ▪
+      </div>
+      <div style="font-size:14px;font-weight:600;">
+        {{ widget.name }}
+      </div>
+      <div style="font-size:11px;opacity:.6;margin-top:4px;">
+        {{ widget.widgetType }}
+      </div>
+    </div>
+  </template>
+</div>
+<!-- ===== □. 기타 ====================================================== -->
+`,
+};

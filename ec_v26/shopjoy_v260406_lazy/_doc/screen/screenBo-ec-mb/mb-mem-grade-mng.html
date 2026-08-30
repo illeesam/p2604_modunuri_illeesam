@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원등급 관리 — mb_mem_grade</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600;color:#333}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-gold{background:#fff8e1;color:#f57f17}
+.badge-purple{background:#f3e5f5;color:#6a1b9a}
+.actions{display:flex;gap:4px;justify-content:center}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:12px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+textarea.form-control{resize:vertical;min-height:72px}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0}
+.ddl-ref{background:#f8f9fa;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+.ddl-ref strong{color:#c2185b}
+/* === Tooltip === */
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb"><a href="index.html" style="color:#999;text-decoration:none">회원관리(MB)</a> &gt; <span>회원등급 관리</span></div>
+  <h1>회원등급 관리 <small style="font-size:12px;color:#aaa;font-weight:400">mb_mem_grade</small></h1>
+</div>
+
+<div class="container">
+
+  <!-- 목록 -->
+  <div>
+    <div class="list-toolbar">
+      <div>
+        <span class="list-title">등급 목록</span>
+        <span class="list-count">총 4건</span>
+      </div>
+      <button class="btn btn-primary btn-sm">+ 등급 추가</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="has-tip"
+              data-table="mb_mem_grade" data-col="grade_cd"
+              data-tbl-cmt="회원 등급" data-col-cmt="등급 코드"
+              data-code-grp="MEMBER_GRADE"
+              data-codes="BASIC:일반|SILVER:실버|GOLD:골드|VIP:VIP">등급코드</th>
+            <th class="has-tip"
+              data-table="mb_mem_grade" data-col="grade_nm"
+              data-tbl-cmt="회원 등급" data-col-cmt="등급명">등급명</th>
+            <th class="has-tip"
+              data-table="mb_mem_grade" data-col="min_purchase_amt"
+              data-tbl-cmt="회원 등급" data-col-cmt="최소 구매금액 조건 (원)">최소구매금액</th>
+            <th class="has-tip"
+              data-table="mb_mem_grade" data-col="save_rate"
+              data-tbl-cmt="회원 등급" data-col-cmt="기본 적립율 (%)">적립율(%)</th>
+            <th class="has-tip"
+              data-table="mb_mem_grade" data-col="coupon_benefit"
+              data-tbl-cmt="회원 등급" data-col-cmt="쿠폰 혜택 설명">쿠폰 혜택</th>
+            <th class="has-tip"
+              data-table="mb_mem_grade" data-col="upgrade_condition"
+              data-tbl-cmt="회원 등급" data-col-cmt="업그레이드 조건 설명">업그레이드 조건</th>
+            <th>적용회원수</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-blue">BASIC</span></td>
+            <td>일반</td>
+            <td>0 원</td>
+            <td>1%</td>
+            <td>신규가입 쿠폰 1매</td>
+            <td>가입 즉시</td>
+            <td>102명</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gray">SILVER</span></td>
+            <td>실버</td>
+            <td>100,000 원</td>
+            <td>2%</td>
+            <td>월 1회 5% 할인 쿠폰</td>
+            <td>누적 구매 10만원 이상</td>
+            <td>58명</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gold">GOLD</span></td>
+            <td>골드</td>
+            <td>500,000 원</td>
+            <td>3%</td>
+            <td>월 2회 7% 할인 쿠폰</td>
+            <td>누적 구매 50만원 이상</td>
+            <td>34명</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-purple">VIP</span></td>
+            <td>VIP</td>
+            <td>1,000,000 원</td>
+            <td>5%</td>
+            <td>월 무제한 10% 할인 쿠폰</td>
+            <td>누적 구매 100만원 이상</td>
+            <td>11명</td>
+            <td class="actions">
+              <button class="btn btn-secondary btn-sm">수정</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="card">
+    <div class="section-title">📝 등급 등록 / 수정 폼</div>
+    <div class="form-grid cols-3">
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="mb_mem_grade" data-col="grade_cd"
+          data-tbl-cmt="회원 등급" data-col-cmt="등급 코드"
+          data-code-grp="MEMBER_GRADE"
+          data-codes="BASIC:일반|SILVER:실버|GOLD:골드|VIP:VIP">등급코드</label>
+        <select class="form-control">
+          <option value="">선택</option>
+          <option value="BASIC">BASIC — 일반</option>
+          <option value="SILVER">SILVER — 실버</option>
+          <option value="GOLD">GOLD — 골드</option>
+          <option value="VIP">VIP — VIP</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip"
+          data-table="mb_mem_grade" data-col="grade_nm"
+          data-tbl-cmt="회원 등급" data-col-cmt="등급명 (표시용)">등급명</label>
+        <input type="text" class="form-control" placeholder="예) 골드">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="mb_mem_grade" data-col="min_purchase_amt"
+          data-tbl-cmt="회원 등급" data-col-cmt="최소 구매금액 조건 (원)">최소 구매금액 (원)</label>
+        <input type="number" class="form-control" placeholder="0">
+        <div class="form-hint">해당 등급 유지를 위한 누적 구매금액 기준</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="mb_mem_grade" data-col="save_rate"
+          data-tbl-cmt="회원 등급" data-col-cmt="기본 적립율 (%)">기본 적립율 (%)</label>
+        <input type="number" class="form-control" placeholder="1" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="mb_mem_grade" data-col="coupon_benefit"
+          data-tbl-cmt="회원 등급" data-col-cmt="쿠폰 혜택 설명 (자유 텍스트)">쿠폰 혜택 설명</label>
+        <input type="text" class="form-control" placeholder="예) 월 2회 7% 할인 쿠폰">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip"
+          data-table="mb_mem_grade" data-col="upgrade_condition"
+          data-tbl-cmt="회원 등급" data-col-cmt="업그레이드 조건 설명 (자유 텍스트)">업그레이드 조건</label>
+        <input type="text" class="form-control" placeholder="예) 누적 구매 50만원 이상">
+      </div>
+    </div>
+    <div class="ddl-ref">
+      <strong>mb_mem_grade</strong> 테이블 — grade_cd (PK), grade_nm, min_purchase_amt, save_rate, coupon_benefit, upgrade_condition
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">💾 저장</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

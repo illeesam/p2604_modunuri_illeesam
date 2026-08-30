@@ -1,0 +1,603 @@
+/* ShopJoy Admin - 판촉적립금 상세/등록 */
+window._pmSaveDtlState = window._pmSaveDtlState || { tab: 'info', tabMode: 'tab' };
+window.PmSaveDtl = {
+  name: 'PmSaveDtl',
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 ################################################## */
+
+    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const vendors = reactive([]);
+    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, tab: window._pmSaveDtlState.tab || 'info', tabMode2: window._pmSaveDtlState.tabMode || 'tab'});
+    const tab = Vue.toRef(uiState, 'tab');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
+    const codes = reactive({ save_types: [], save_issue_types: [], save_units: [], promo_statuses: [], pm_prod_targets: [], pm_issue_grades: [] });
+
+    // 단건 조회
+    /* loadVendors — 로드 */
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmSaveDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 — 탭별 분기 자리(현재는 배열에 있는 탭 전부 handleSave() 공용.
+      // 특정 탭만 다른 로직이 필요해지면 그 탭만 배열에서 빼고 별도 분기로 추가하면 됨)
+      if (['info-form-save', 'target-form-save', 'visibility-form-save'].includes(cmd)) {
+        return handleSave();
+      // 폼 취소/닫기/수정전환 — 탭 무관 공통 동작(순수 네비게이션이라 탭별 분기 불필요)
+      } else if (['info-form-cancel', 'target-form-cancel', 'visibility-form-cancel'].includes(cmd)) {
+        return props.navigate('__cancelEdit__');
+      } else if (['info-form-close', 'target-form-close', 'visibility-form-close'].includes(cmd)) {
+        return props.navigate('__closeDtl__');
+      } else if (['info-form-edit', 'target-form-edit', 'visibility-form-edit'].includes(cmd)) {
+        return props.navigate('__switchToEdit__');
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        uiState.tab = param;
+        return;
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode2 = param;
+        return;
+      // 판매업체 모달 열기
+      } else if (cmd === 'vendorModal-open') {
+        uiState.showVendorModal = true;
+        return;
+      // 판매업체 모달 닫기
+      } else if (cmd === 'vendorModal-close') {
+        uiState.showVendorModal = false;
+        return;
+      // 판매업체 초기화
+      } else if (cmd === 'form-vendorClear') {
+        form.vendorId = '';
+        form.chargeStaff = '';
+        return;
+      // 공개대상 토글
+      } else if (cmd === 'form-visibilityToggle') {
+        return toggleVisibility(param);
+      // 미리보기 확인 토스트
+      } else if (cmd === 'form-previewConfirm') {
+        showToast('적립금을 확인하였습니다.', 'success');
+        return;
+      // 발급대상 추가 (피커 모달 오픈)
+      } else if (cmd === 'target-add') {
+        uiState.showTargetPicker = true;
+        return;
+      // 발급대상 삭제
+      } else if (cmd === 'target-remove') {
+        return _removeTarget(param);
+      // 발급대상 피커 닫기
+      } else if (cmd === 'target-close') {
+        uiState.showTargetPicker = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmSaveDtl.js : handleSelectAction -> ', cmd, param);
+      // 판매업체 선택
+      if (cmd === 'vendorModal-select') {
+        return selectVendor(param.vendorId, param.vendorNm);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 */
+    const handleGridCellAction = (gcmd, colKey, row, e = {}) => {
+      if (colKey === '_del') { return handleBtnAction('target-remove', e.rowIndex); }
+    };
+
+
+    /* _addTarget — 발급대상 추가 공통 헬퍼 (pm_save_item 즉시 저장, targetTypeCd 함께 기록) */
+    const _addTarget = async (row) => {
+      uiState.showTargetPicker = false;
+      if (!row) return;
+      const id = String(row.selId || '');
+      if (!id) return;
+      if (form.issueTargets.some(t => t.targetId === id && t.targetTypeCd === form.targetTypeCd)) {
+        showToast('이미 추가된 대상입니다.', 'error');
+        return;
+      }
+      try {
+        const res = await boApiSvc.pmSaveItem.create(
+          { saveId: cfCurId.value, targetTypeCd: form.targetTypeCd, targetId: id },
+          '적립금관리', '발급대상추가');
+        const saved = res.data?.data || res.data;
+        form.issueTargets.push({
+          saveItemId: saved.saveItemId, targetId: id, targetNm: row.selName || id, targetTypeCd: form.targetTypeCd,
+        });
+      } catch (err) {
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
+      }
+    };
+
+    /* _removeTarget — 발급대상 삭제 (pm_save_item 즉시 삭제) */
+    const _removeTarget = async (idx) => {
+      const row = form.issueTargets[idx];
+      if (!row) return;
+      try {
+        await boApiSvc.pmSaveItem.remove(row.saveItemId, '적립금관리', '발급대상삭제');
+        form.issueTargets.splice(idx, 1);
+      } catch (err) {
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
+      }
+    };
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PmSaveDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-vendor-pick') {
+        if (result == null) { uiState.showVendorModal = false; return; }
+        return selectVendor(result.selId, result.selName);
+      } else if (popCmd === 'cmPopup-target-prod-pick') {
+        return _addTarget(result);
+      } else if (popCmd === 'cmPopup-target-brand-pick') {
+        return _addTarget(result);
+      } else if (popCmd === 'cmPopup-target-category-pick') {
+        return _addTarget(result);
+      } else if (popCmd === 'cmPopup-vendor-target-pick') {
+        return _addTarget(result);
+      } else {
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
+      }
+    };
+    const loadVendors = async () => {
+      try {
+        const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
+        vendors.splice(0, vendors.length, ...(_vr.data?.data?.pageList || _vr.data?.data?.list || []));
+      } catch (e) { console.warn('[PmSaveDtl.js] vendor load failed', e); }
+    };
+
+    /* handleSearchDetail — 처리 */
+    const handleSearchDetail = async () => {
+      await loadVendors();
+      if (cfIsNew.value) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.pmSave.getById(props.dtlId, '적립금관리', '상세조회');
+        const s = res.data?.data || res.data;
+        if (s) { Object.assign(form, s); }
+        // 발급대상(pm_save_item) 별도 로드 — targetNm은 백엔드가 조인해주지 않아 targetId로 대체
+        try {
+          const cr = await boApiSvc.pmSaveItem.getList({ saveId: props.dtlId }, '적립금관리', '발급대상조회');
+          const list = cr.data?.data || cr.data || [];
+          form.issueTargets = list.map(c => ({
+            saveItemId: c.saveItemId, targetId: c.targetId, targetNm: c.targetId, targetTypeCd: c.targetTypeCd,
+          }));
+        } catch (e) { console.warn('[PmSaveDtl.js] save-item load failed', e); }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+    const cfIsNew = computed(() => !props.dtlId);
+
+watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
+
+        watch(() => uiState.tabMode2, v => { window._pmSaveDtlState.tabMode = v; });
+
+    /* showTab — 표시 */
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
+
+
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'info', label: '기본정보', icon: '📋' },
+      { id: 'target', label: '발급대상', icon: '🎯' },
+      { id: 'visibility', label: '공개대상', icon: '🔒' },
+      { id: 'preview', label: '미리보기', icon: '👁' },
+    ]);
+    /* 적립금 fnLoadCodes */
+
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['SAVE_TYPE_CD', 'SAVE_ISSUE_TYPE_CD', 'SAVE_UNIT', 'PROMO_STATUS', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE'], {compNm: 'PmSaveDtl'});
+      codes.save_types = codeStore.sgGetGrpCodes('SAVE_TYPE_CD');
+      codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE_CD');
+      codes.save_units = codeStore.sgGetGrpCodes('SAVE_UNIT');
+      codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
+      codes.pm_prod_targets = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
+      codes.pm_issue_grades = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
+    };
+
+    const _today = new Date();
+
+    /* _pad — 패딩 */
+    const _pad = n => String(n).padStart(2, '0');
+    const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
+    const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
+
+    /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
+     *   신규 등록 기본값(구매적립/365/활성/날짜)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */
+    const form = reactive({
+      saveId: null, saveNm: '', saveTypeCd: '', saveType: '', saveVal: '', saveUnit: '',
+      saveStatus: '', startDate: '', endDate: '',
+      expireDay: '', minOrderAmt: '', remark: '',
+      visibilityTargets: '^PUBLIC^',
+      vendorId: '', chargeStaff: '',
+      targetTypeCd: 'PRODUCT', issueTargets: [], issueGrades: [],
+    });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        saveTypeCd: 'EARN', saveType: '구매적립', saveVal: 0, saveUnit: '원', saveStatus: '활성',
+        startDate: DEFAULT_START, endDate: DEFAULT_END, expireDay: 365, minOrderAmt: 0,
+      });
+    };
+    const errors = reactive({});
+
+    const schema = yup.object({
+      saveNm: yup.string().required('적립금명을 입력해주세요.'),
+      saveVal: yup.number().min(0, '적립값은 0 이상이어야 합니다.').required('적립값을 입력해주세요.'),
+    });
+
+    // ★ onMounted
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
+      // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
+      await handleSearchDetail();
+    };
+    onMounted(initPage);
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleSearchDetail();
+    });
+
+    const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
+
+
+    /* toggleVisibility — 토글 */
+    const toggleVisibility = (code) => {
+      const list = window.visibilityUtil.parse(form.visibilityTargets);
+      const i = list.indexOf(code);
+      if (i >= 0) list.splice(i, 1); else list.push(code);
+      form.visibilityTargets = window.visibilityUtil.serialize(list);
+    };
+
+    const cfSelectedVendorNm = computed(() => {
+      if (!form.vendorId) { return '소속업체 선택'; }
+      const v = vendors.find(x => x.vendorId === form.vendorId);
+      return v ? v.vendorNm : '소속업체 선택';
+    });
+
+    /* selectVendor — 선택 */
+    const selectVendor = (vendorId, vendorNm) => {
+      form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
+      uiState.showVendorModal = false;
+    };
+
+    const cfCurId       = computed(() => props.dtlId || form.saveId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
+
+    /* _afterApiOk — 후 API 성공 */
+    const _afterApiOk  = (res, msg) => {
+      if (showToast) { showToast(msg, 'success'); }
+    };
+
+    /* _afterApiErr — 후 API 오류 */
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (showToast) { showToast(errMsg, 'error', 0); }
+    };
+
+    /* 적립금 저장 */
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* handleSave — 저장 */
+    const handleSave = async () => {
+      const tabId = uiState.tab;
+
+      if (!cfHasId.value && tabId !== 'info') {
+        showToast('먼저 기본정보 탭에서 등록해주세요.', 'error');
+        return;
+      }
+
+      if (tabId === 'info') {
+        Object.keys(errors).forEach(k => delete errors[k]);
+        try { await schema.validate(form, { abortEarly: false }); }
+        catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
+
+        const isCreate = !cfHasId.value;
+        const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
+        if (!ok) { return; }
+        try {
+          const payload = { ...form };
+          const res = isCreate
+            ? await boApiSvc.pmSave.create(payload, '적립금관리', '등록')
+            : await boApiSvc.pmSave.update(cfCurId.value, payload, '적립금관리', '기본정보저장');
+          if (isCreate) {
+            const newId = res.data?.data?.saveId || res.data?.saveId || null;
+            if (newId) { form.saveId = newId; }
+          }
+          _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
+        } catch (err) { _afterApiErr(err); }
+        return;
+      }
+
+      const ok = await showConfirm('저장', '저장하시겠습니까?');
+      if (!ok) { return; }
+      let payload = null;
+      switch (tabId) {
+        case 'visibility': payload = { visibilityTargets: form.visibilityTargets }; break;
+        default:           payload = {}; break;
+      }
+      try {
+        const res = await boApiSvc.pmSave.update(cfCurId.value, payload, '적립금관리', `${tabId}저장`);
+        _afterApiOk(res, '저장되었습니다.');
+      } catch (err) { _afterApiErr(err); }
+    };
+
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    const showTargetPicker = Vue.toRef(uiState, 'showTargetPicker');
+
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
+    /* fnShareUrl — 이 적립금 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'pmSaveDtl');
+      qs.set('id', form.saveId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    /* handleShareKakao — 카카오톡 공유(피드 카드, 상세보기 모드 전용) */
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `적립금 ${form.saveId} - ShopJoy BO`,
+          description: form.saveNm || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    /* handleCopyLink — 순수 URL만 클립보드에 복사 (카카오톡 카드 없음) */
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    /* pdfAreaRef — 적립금 상세 카드 캡처 대상. handleExportPdf — PDF 다운로드(상세보기 모드 전용) */
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`적립금상세_${form.saveId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
+    const cfIssueTargetsColumns = computed(() => [
+      { key: 'targetTypeCd', label: '구분', style: 'width:70px;', align: 'center',
+        fmt: v => (codes.pm_prod_targets.find(c => c.codeValue === v) || {}).codeLabel || v || '-' },
+      { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
+      { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
+      ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',
+        fmt: () => '✕', link: true, cellStyle: 'color:#e8587a;cursor:pointer;font-weight:700;' }] : []),
+    ]);
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    // --- [컬럼 정의] ---
+    const columns = {};
+    columns.targetForm = [
+      { key: 'targetTypeCd', label: '대상 구분', type: 'select',
+        options: () => codes.pm_prod_targets, nullLabel: null },
+      { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 2 },
+    ];
+    columns.infoForm = [
+      { type: 'group', label: '적립금정보' },
+      { key: 'saveNm',      label: '적립금명', type: 'text', required: true,
+        placeholder: '적립금명 입력' },
+      { key: 'saveTypeCd',  label: '적립금 유형', type: 'select', options: () => codes.save_types },
+      { key: 'saveType',    label: '적립유형', type: 'select', options: () => codes.save_issue_types },
+      { key: 'saveVal',     label: '적립값', type: 'number', required: true, placeholder: '적립값 입력' },
+      { key: 'saveUnit',    label: '적립단위', type: 'select', options: () => codes.save_units },
+      { key: 'expireDay',   label: '유효기간 (일)', type: 'number', placeholder: '365' },
+      { key: 'minOrderAmt', label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
+      { key: 'saveStatus',  label: '상태', type: 'select', options: () => codes.promo_statuses },
+      { key: 'startDate',   label: '시작일', type: 'date' },
+      { key: 'endDate',     label: '종료일', type: 'date' },
+      { key: 'remark',      label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력' },
+      { key: 'vendorId',    label: '판매업체', type: 'pick', placeholder: '업체 선택',
+        display: (f) => { const v = vendors.find(x => x.vendorId === f.vendorId); return v ? v.vendorNm : ''; },
+        onOpen: () => handleBtnAction('vendorModal-open'),
+        onClear: () => { form.chargeStaff = ''; } },
+      { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+      coUtil, // 템플릿 cofAnd 접근용
+      codes,  // 템플릿에서 codes.pm_issue_grades 등 참조
+      columns,
+      vendors, showVendorModal, form, errors,                // 상태 / 데이터
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, cfIssueTargetsColumns,         // computed
+      tabs, tab, tabMode2, showVendorModal, showTargetPicker, // toRef
+      showTab,               // 헬퍼
+      coUtil,                                                                       // 의존 (템플릿 cofAnd)
+      handleShareKakao, handleCopyLink,                                    // 카카오톡 공유 / 링크 복사 (상세보기)
+      pdfAreaRef, pdfExporting, handleExportPdf,                           // PDF 다운로드 (항상 노출)
+    };
+  },
+  template: /* html */`
+<div ref="pdfAreaRef">
+<!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+<bo-container :title="!active ? '적립금 상세' : (cfIsNew ? '적립금 등록' : (cfDtlMode ? '적립금 상세' : '적립금 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.saveId)">
+  <template #toolbar-actions>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </template>
+  <!-- ===== ■.■. 탭바 ==================================================== -->
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
+  <!-- ===== □. 탭바 ====================================================== -->
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+      <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false" :show-cancel="!cfIsNew" />
+      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
+      <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('info-form-edit')"
+        :save-click="() => handleBtnAction('info-form-save')"
+        :delete-click="() => handleBtnAction('info-form-delete')"
+        :cancel-click="() => handleBtnAction('info-form-cancel')"
+        :close-click="() => handleBtnAction('info-form-close')" />
+    </div>
+    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+    <!-- ===== ■.■. 발급대상 ================================================== -->
+    <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
+      <bo-form-area plain-readonly :columns="columns.targetForm" :form="form" :errors="{}" :cols="3" compact
+        :show-actions="false" :readonly="cfDtlMode" :show-cancel="!cfIsNew">
+        <template #issueGrades>
+          <bo-multi-check-select
+            v-model="form.issueGrades"
+            :options="codes.pm_issue_grades"
+            placeholder="전체 등급 (미선택 시 전체)"
+            :disabled="cfDtlMode" />
+          <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>
+        </template>
+      </bo-form-area>
+      <!-- 발급대상 목록 추가/삭제 -->
+      <div style="margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:#555;">
+            선택 대상 목록
+            <span style="color:#e8587a;margin-left:4px;">{{ form.issueTargets.length }}건</span>
+          </span>
+          <button v-if="!cfDtlMode" class="btn btn-sm" style="background:#e8587a;color:#fff;border:none;padding:3px 10px;border-radius:4px;font-size:12px;"
+            @click="handleBtnAction('target-add')">+ 대상 추가</button>
+        </div>
+        <bo-grid bare :columns="cfIssueTargetsColumns" :rows="form.issueTargets" row-key="targetId"
+          empty-text="[+ 대상 추가] 버튼으로 대상을 선택하세요."
+          @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
+      </div>
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled"
+        :edit-click="() => handleBtnAction('target-form-edit')"
+        :save-click="() => handleBtnAction('target-form-save')"
+        :delete-click="() => handleBtnAction('target-form-delete')"
+        :cancel-click="() => handleBtnAction('target-form-cancel')"
+        :close-click="() => handleBtnAction('target-form-close')" />
+    </div>
+    <!-- ===== □.□. 발급대상 ================================================== -->
+    <!-- ===== ■.■. 공개대상 ================================================== -->
+    <div class="dtl-pane" v-show="showTab('visibility')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
+      <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
+      <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
+        separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+        :disabled="cfDtlMode" min-width="320px" />
+      <bo-form-actions v-if="active" :readonly="cfDtlMode" :show-delete="false"
+        :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''"
+        :edit-click="() => handleBtnAction('visibility-form-edit')"
+        :save-click="() => handleBtnAction('visibility-form-save')"
+        :delete-click="() => handleBtnAction('visibility-form-delete')"
+        :cancel-click="() => handleBtnAction('visibility-form-cancel')"
+        :close-click="() => handleBtnAction('visibility-form-close')" />
+    </div>
+    <!-- ===== □.□. 공개대상 ================================================== -->
+    <!-- ===== ■.■. 미리보기 ================================================== -->
+    <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.saveNm || '적립금명' }}</div>
+        <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
+        <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #10b981;">
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            적립유형:
+            <span style="font-weight:700;color:#10b981;">{{ form.saveType }}</span>
+          </div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            적립값:
+            <span style="font-weight:700;color:#10b981;">{{ (form.saveVal||0).toLocaleString() }} {{ form.saveUnit || '원' }}</span>
+          </div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            유효기간:
+            <span style="font-weight:700;">{{ form.expireDay || 365 }}일</span>
+          </div>
+          <div style="font-size:13px;color:#666;">
+            최소주문금액:
+            <span style="font-weight:700;">{{ (form.minOrderAmt||0).toLocaleString() }}원</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" @click="handleBtnAction('form-previewConfirm')">적립금 확인</button>
+      </div>
+    </div>
+    <!-- ===== □.□. 미리보기 ================================================== -->
+  </div>
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+<!-- 발급대상 피커 모달 -->
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='PRODUCT')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :init-selected-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='VENDOR')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
+</bo-container>
+<!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+</div>
+`
+};

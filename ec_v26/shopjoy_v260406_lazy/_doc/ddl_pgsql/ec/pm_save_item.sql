@@ -1,0 +1,30 @@
+-- pm_save_item 테이블 DDL
+-- 적립금 대상 상품 (pm_save 하위 항목)
+
+CREATE TABLE shopjoy_2604.pm_save_item (
+    save_item_id   VARCHAR(21) NOT NULL CONSTRAINT pm_save_item_pk_save_item_id PRIMARY KEY,
+    save_id        VARCHAR(21) NOT NULL,
+    reg_site_id        VARCHAR(21) NOT NULL,
+    target_type_cd VARCHAR(20) NOT NULL,
+    target_id      VARCHAR(21) NOT NULL,
+    reg_by         VARCHAR(30),
+    reg_date       TIMESTAMP   DEFAULT now(),
+    upd_by         VARCHAR(30),
+    upd_date       TIMESTAMP
+);
+
+COMMENT ON TABLE  shopjoy_2604.pm_save_item IS '적립금 정책 대상 상품 (pm_save_policy 하위 항목)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.save_item_id IS 'PK: SAI+yyMMddHHmmss+rand4';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.save_id IS '적립금정책ID (pm_save_policy.save_policy_id) — FK 미적용, 형제 테이블(pm_coupon_item 등)과 동일 관례';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.reg_site_id IS 'FK: sy_site.site_id (NULL=전사 공통)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.target_type_cd IS '대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.target_id IS '대상 ID (상품·카테고리·브랜드 등)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.reg_by IS '등록자 ID';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.reg_date IS '등록일시';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.upd_by IS '수정자 ID';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.upd_date IS '수정일시';
+
+CREATE INDEX pm_save_item_ix01_reg_date ON shopjoy_2604.pm_save_item USING btree (reg_date DESC);
+CREATE INDEX pm_save_item_ix02_save_id ON shopjoy_2604.pm_save_item USING btree (save_id);
+CREATE INDEX pm_save_item_ix04_target_type_cd_target_id_x2 ON shopjoy_2604.pm_save_item USING btree (target_type_cd, target_id);
+CREATE INDEX pm_save_item_ix03_target_id ON shopjoy_2604.pm_save_item USING btree (target_id);

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>배송템플릿 관리 — PD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none}
+.search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-pink{background:#fce4ec;color:#c2185b}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px 0}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:transparent}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.form-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.form-grid.cols-1{grid-template-columns:1fr}
+.full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:#888;font-weight:500}
+.form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+.form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+.form-hint{font-size:11px;color:#aaa;margin-top:2px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid #f0f0f0;margin-top:16px}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+/* 역할 설명 박스 */
+.role-box{background:#e8f5e9;border-radius:10px;padding:16px 20px;border-left:4px solid #43a047;font-size:12px;color:#1b5e20;line-height:2}
+.role-box h3{font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:8px}
+.role-box li{margin-left:16px}
+/* 시나리오 박스 */
+.scenario-box{background:#e3f2fd;border-radius:10px;padding:16px 20px;border-left:4px solid #1976d2;font-size:12px;color:#0d47a1;line-height:1.9}
+.scenario-box h3{font-size:13px;font-weight:700;color:#1565c0;margin-bottom:8px}
+.scenario-box li{margin-left:16px;margin-bottom:2px}
+.scenario-box .hl{color:#e91e63;font-weight:700}
+.addr-grid{display:grid;grid-template-columns:120px 1fr 80px;gap:8px;align-items:end}
+.sub-section{margin-top:18px;padding-top:14px;border-top:2px dashed #fce4ec}
+.sub-section-title{font-size:12px;font-weight:700;color:#c2185b;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back Office &gt; 상품관리 &gt; <span>배송템플릿 관리</span></div>
+  <h1>배송템플릿 관리</h1>
+</div>
+
+<div class="container">
+
+  <!-- 배송템플릿 역할 설명 -->
+  <div class="role-box">
+    <h3>📦 배송템플릿 역할 (pd_dliv_tmplt)</h3>
+    <ul>
+      <li>상품(pd_prod)에 배송방법·배송비·반품지·반품비·교환비를 <strong>일괄 지정</strong>하는 마스터 설정</li>
+      <li>업체(vendor)별로 여러 템플릿 생성 가능 — 예: 기본택배 / 착불배송 / 직배송 등</li>
+      <li>주문 시 상품의 <strong>dliv_tmplt_id</strong> 기준으로 배송비 자동 계산</li>
+      <li>클레임(반품) 시 <strong>return_cost</strong>(편도), 클레임(교환) 시 <strong>exchange_cost</strong>(왕복) 적용</li>
+      <li>반품지 주소(return_addr*)는 반품 수거 기본주소로 클레임 생성 시 자동 입력</li>
+      <li>base_dliv_yn = Y인 템플릿이 해당 사이트·업체의 기본 배송 설정으로 적용</li>
+    </ul>
+  </div>
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip" data-table="sy_site" data-col="site_id" data-tbl-cmt="사이트" data-col-cmt="사이트ID">사이트</label>
+        <select><option>전체</option><option>사이트 01</option><option>사이트 02</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="pd_dliv_tmplt" data-col="vendor_id" data-tbl-cmt="배송템플릿" data-col-cmt="업체ID">업체</label>
+        <select><option>전체</option><option>업체A</option><option>업체B</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_method_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송방법" data-code-grp="DLIV_METHOD" data-codes="COURIER:택배|DIRECT:직배송|PICKUP:방문수령">배송방법</label>
+        <select><option>전체</option><option>택배(COURIER)</option><option>직배송(DIRECT)</option><option>방문수령(PICKUP)</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="pd_dliv_tmplt" data-col="use_yn" data-tbl-cmt="배송템플릿" data-col-cmt="사용여부 Y/N">사용여부</label>
+        <select><option>전체</option><option>사용(Y)</option><option>미사용(N)</option></select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_tmplt_nm" data-tbl-cmt="배송템플릿" data-col-cmt="템플릿명">템플릿명</label>
+        <input type="text" placeholder="템플릿명 검색">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">배송템플릿 목록</span><span class="list-count">총 3건</span></div>
+      <div>
+        <button class="btn btn-primary btn-sm">+ 템플릿 등록</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_tmplt_id" data-tbl-cmt="배송템플릿" data-col-cmt="배송템플릿ID">템플릿ID</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_tmplt_nm" data-tbl-cmt="배송템플릿" data-col-cmt="템플릿명">템플릿명</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="vendor_id" data-tbl-cmt="배송템플릿" data-col-cmt="업체ID">업체</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_method_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송방법" data-code-grp="DLIV_METHOD" data-codes="COURIER:택배|DIRECT:직배송|PICKUP:방문수령">배송방법</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_pay_type_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송비결제유형" data-code-grp="DLIV_PAY_TYPE" data-codes="PREPAY:선결제|COD:착불">결제방식</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_courier_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송 택배사 코드" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데">택배사</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="dliv_cost" data-tbl-cmt="배송템플릿" data-col-cmt="기본 배송비">기본배송비</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="free_dliv_min_amt" data-tbl-cmt="배송템플릿" data-col-cmt="무료배송 최소 주문금액 (0=무조건 유료)">무료배송</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="return_cost" data-tbl-cmt="배송템플릿" data-col-cmt="반품배송비 (편도)">반품비</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="exchange_cost" data-tbl-cmt="배송템플릿" data-col-cmt="교환배송비 (왕복=반품+재발송)">교환비</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="base_dliv_yn" data-tbl-cmt="배송템플릿" data-col-cmt="기본 배송지 여부 Y/N">기본여부</th>
+            <th class="has-tip" data-table="pd_dliv_tmplt" data-col="use_yn" data-tbl-cmt="배송템플릿" data-col-cmt="사용여부 Y/N">사용</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:11px;color:#888">TMPLT001</td>
+            <td><a class="title-link">기본 택배 배송</a></td>
+            <td>업체A</td>
+            <td><span class="badge badge-blue">택배</span></td>
+            <td><span class="badge badge-green">선결제</span></td>
+            <td>CJ대한통운</td>
+            <td>3,000원</td>
+            <td>50,000원 이상</td>
+            <td>3,000원</td>
+            <td>6,000원</td>
+            <td><span class="badge badge-pink">Y</span></td>
+            <td><span class="badge badge-green">Y</span></td>
+            <td><div class="actions"><button class="btn btn-sm btn-secondary">수정</button><button class="btn btn-sm btn-danger">삭제</button></div></td>
+          </tr>
+          <tr>
+            <td style="font-size:11px;color:#888">TMPLT002</td>
+            <td><a class="title-link">착불 배송</a></td>
+            <td>업체A</td>
+            <td><span class="badge badge-blue">택배</span></td>
+            <td><span class="badge badge-orange">착불</span></td>
+            <td>로젠</td>
+            <td>착불</td>
+            <td>—</td>
+            <td>4,000원</td>
+            <td>8,000원</td>
+            <td><span class="badge badge-gray">N</span></td>
+            <td><span class="badge badge-green">Y</span></td>
+            <td><div class="actions"><button class="btn btn-sm btn-secondary">수정</button><button class="btn btn-sm btn-danger">삭제</button></div></td>
+          </tr>
+          <tr>
+            <td style="font-size:11px;color:#888">TMPLT003</td>
+            <td><a class="title-link">무료 직배송</a></td>
+            <td>업체B</td>
+            <td><span class="badge badge-green">직배송</span></td>
+            <td><span class="badge badge-green">선결제</span></td>
+            <td>—</td>
+            <td>0원 (무료)</td>
+            <td>무조건 무료</td>
+            <td>5,000원</td>
+            <td>10,000원</td>
+            <td><span class="badge badge-pink">Y</span></td>
+            <td><span class="badge badge-green">Y</span></td>
+            <td><div class="actions"><button class="btn btn-sm btn-secondary">수정</button><button class="btn btn-sm btn-danger">삭제</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div class="pager active">1</div>
+      <div class="pager">2</div>
+      <div class="pager">&gt;</div>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="card">
+    <div class="section-title">배송템플릿 등록 / 수정</div>
+
+    <!-- 기본 설정 -->
+    <div class="sub-section-title">① 기본 설정</div>
+    <div class="form-grid cols-3">
+      <div class="form-group full">
+        <label class="form-label req has-tip" data-table="pd_dliv_tmplt" data-col="dliv_tmplt_nm" data-tbl-cmt="배송템플릿" data-col-cmt="템플릿명">템플릿명</label>
+        <input type="text" class="form-control" placeholder="예: 기본 택배 배송 (업체A)">
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="vendor_id" data-tbl-cmt="배송템플릿" data-col-cmt="업체ID">업체</label>
+        <select class="form-control"><option>업체A</option><option>업체B</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip" data-table="pd_dliv_tmplt" data-col="dliv_method_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송방법" data-code-grp="DLIV_METHOD" data-codes="COURIER:택배|DIRECT:직배송|PICKUP:방문수령">배송방법</label>
+        <select class="form-control">
+          <option>택배 (COURIER)</option>
+          <option>직배송 (DIRECT)</option>
+          <option>방문수령 (PICKUP)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label req has-tip" data-table="pd_dliv_tmplt" data-col="dliv_pay_type_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송비결제유형" data-code-grp="DLIV_PAY_TYPE" data-codes="PREPAY:선결제|COD:착불">결제유형</label>
+        <select class="form-control">
+          <option>선결제 (PREPAY)</option>
+          <option>착불 (COD)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="dliv_courier_cd" data-tbl-cmt="배송템플릿" data-col-cmt="배송 택배사 코드" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데">택배사</label>
+        <select class="form-control">
+          <option>CJ대한통운 (CJ)</option>
+          <option>로젠 (LOGEN)</option>
+          <option>우체국 (POST)</option>
+          <option>한진 (HANJIN)</option>
+          <option>롯데 (LOTTE)</option>
+        </select>
+        <div class="form-hint">직배송·방문수령 선택 시 택배사 미입력</div>
+      </div>
+      <div class="form-group" style="display:flex;flex-direction:column;gap:6px">
+        <label class="form-label">플래그</label>
+        <div style="display:flex;gap:16px">
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+            <input type="checkbox" checked>
+            <span class="has-tip" data-table="pd_dliv_tmplt" data-col="base_dliv_yn" data-tbl-cmt="배송템플릿" data-col-cmt="기본 배송지 여부 Y/N">기본 배송지 (base_dliv_yn)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+            <input type="checkbox" checked>
+            <span class="has-tip" data-table="pd_dliv_tmplt" data-col="use_yn" data-tbl-cmt="배송템플릿" data-col-cmt="사용여부 Y/N">사용여부 (use_yn)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배송비 설정 -->
+    <div class="sub-section">
+      <div class="sub-section-title">② 배송비 설정</div>
+      <div class="form-grid cols-3">
+        <div class="form-group">
+          <label class="form-label req has-tip" data-table="pd_dliv_tmplt" data-col="dliv_cost" data-tbl-cmt="배송템플릿" data-col-cmt="기본 배송비">기본 배송비 (dliv_cost)</label>
+          <input type="number" class="form-control" placeholder="0 = 무료">
+          <div class="form-hint">착불 선택 시 0 입력 권장</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="free_dliv_min_amt" data-tbl-cmt="배송템플릿" data-col-cmt="무료배송 최소 주문금액 (0=무조건 유료)">무료배송 최소금액 (free_dliv_min_amt)</label>
+          <input type="number" class="form-control" placeholder="0 = 무조건 유료">
+          <div class="form-hint">예: 50000 → 5만원 이상 주문 시 배송비 무료</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="island_extra_cost" data-tbl-cmt="배송템플릿" data-col-cmt="도서산간 추가배송비">도서산간 추가비 (island_extra_cost)</label>
+          <input type="number" class="form-control" placeholder="예: 3000">
+          <div class="form-hint">무료배송 조건을 만족해도 도서산간 추가비 별도 부과</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 반품/교환 설정 -->
+    <div class="sub-section">
+      <div class="sub-section-title">③ 반품/교환 비용 설정</div>
+      <div class="form-grid cols-3">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="return_cost" data-tbl-cmt="배송템플릿" data-col-cmt="반품배송비 (편도)">반품비 편도 (return_cost)</label>
+          <input type="number" class="form-control" placeholder="예: 3000">
+          <div class="form-hint">고객 귀책 반품 시 회원 부담 (편도)</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="exchange_cost" data-tbl-cmt="배송템플릿" data-col-cmt="교환배송비 (왕복=반품+재발송)">교환비 왕복 (exchange_cost)</label>
+          <input type="number" class="form-control" placeholder="예: 6000">
+          <div class="form-hint">수거비 + 재발송비 = 왕복 합산 금액</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="return_courier_cd" data-tbl-cmt="배송템플릿" data-col-cmt="반품 택배사 코드" data-code-grp="COURIER" data-codes="CJ:CJ대한통운|LOGEN:로젠|POST:우체국|HANJIN:한진|LOTTE:롯데">반품 택배사 (return_courier_cd)</label>
+          <select class="form-control">
+            <option>CJ대한통운 (CJ)</option>
+            <option>로젠 (LOGEN)</option>
+            <option>우체국 (POST)</option>
+          </select>
+          <div class="form-hint">반품 수거 시 사용할 택배사 (발송 택배사와 다를 수 있음)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 반품지 주소 -->
+    <div class="sub-section">
+      <div class="sub-section-title">④ 반품지 주소</div>
+      <div style="background:#fff3e0;border-radius:8px;padding:10px 14px;font-size:11px;color:#795548;margin-bottom:12px;border-left:3px solid #ff9800">
+        ⚠️ 반품지 주소는 클레임(반품/교환) 처리 시 수거지 주소로 자동 입력됩니다. 정확한 주소를 입력하세요.
+      </div>
+      <div class="form-grid cols-3">
+        <div class="form-group">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="return_tel_no" data-tbl-cmt="배송템플릿" data-col-cmt="반품지 전화번호">반품지 연락처 (return_tel_no)</label>
+          <input type="tel" class="form-control" placeholder="02-0000-0000">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label has-tip" data-table="pd_dliv_tmplt" data-col="return_addr_zip" data-tbl-cmt="배송템플릿" data-col-cmt="반품지 우편번호">반품지 주소</label>
+          <div style="display:flex;gap:8px;margin-bottom:6px">
+            <input type="text" class="form-control" style="max-width:120px" placeholder="우편번호">
+            <button class="btn btn-secondary btn-sm">🔍 주소검색</button>
+          </div>
+          <input type="text" class="form-control" style="margin-bottom:6px" placeholder="기본주소">
+          <input type="text" class="form-control" placeholder="상세주소">
+          <div class="form-hint">return_addr_zip · return_addr · return_addr_detail</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">💾 저장</button>
+    </div>
+  </div>
+
+  <!-- 배송비 계산 시나리오 박스 -->
+  <div class="scenario-box">
+    <h3>💡 배송비 계산 시나리오 (pd_dliv_tmplt 필드 적용 순서)</h3>
+    <ol style="margin-left:18px">
+      <li>주문금액 &lt; <span class="hl">free_dliv_min_amt</span> &nbsp;→&nbsp; <span class="hl">dliv_cost</span> 부과</li>
+      <li>주문금액 &ge; <span class="hl">free_dliv_min_amt</span> &nbsp;→&nbsp; 배송비 무료<br>
+        &nbsp;&nbsp;&nbsp;단, 도서산간 배송지 = 추가로 <span class="hl">island_extra_cost</span> 부과</li>
+      <li>반품 (고객 귀책): <span class="hl">return_cost</span>(편도)만큼 회원 부담</li>
+      <li>교환 (고객 귀책): <span class="hl">exchange_cost</span>(왕복) 회원 부담<br>
+        &nbsp;&nbsp;&nbsp;= 수거비(편도) + 재발송비(편도) 합산</li>
+      <li>판매자 귀책 (불량품·오배송): 반품·교환비 <strong>전액 판매자 부담</strong> → 회원 청구 없음</li>
+    </ol>
+  </div>
+
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

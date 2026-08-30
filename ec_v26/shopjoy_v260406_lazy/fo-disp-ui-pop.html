@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DispUi 미리보기 (사용자)</title>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       📌 리소스 로드 우선순위 정렬 기준
+       ═══════════════════════════════════════════════════════════════════════════
+       ■ HEAD 섹션 (CDN 및 초기 리소스)
+         H1.1: CDN Core Runtime (Vue)
+         H1.2: CDN Libraries (marked, axios, yup)
+         H1.3: Fonts & CSS (Google Fonts, fo-global-style)
+
+       ■ BODY 섹션 - B2.x: 공통부 (필수 기초)
+         B2.1: Axios & 유틸 래퍼
+
+       ■ BODY 섹션 - B3.x: 컴포넌트부 (UI 기반)
+         B3.1: Base 컴포넌트 & 에러 핸들러
+         B3.2: 전시 컴포넌트 계층 (DispX01~X04)
+
+       ■ BODY 섹션 - B4.x: Display UI Pages
+         B4.1: 전시 UI 페이지 (DispUi01~06)
+         B4.2: Display UI Page (DispUiPage)
+
+       ■ BODY 섹션 - B99: 메인 앱 부트스트랩 (반드시 마지막)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ H1.1: CDN Core Runtime ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <!-- 코드스토어(Pinia) — 전시 위젯에서 공통코드를 쓰게 되면 필요하다. vue-demi 가 선행이어야 한다 -->
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+
+  <!-- ■ H1.2: CDN Libraries ■ -->
+  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+
+  <!-- ■ H1.3: Fonts & CSS ■ -->
+  <link rel="stylesheet" href="assets/css/fo-global-style01.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+  <!-- 이 화면 전용 스타일 — 인라인이던 것을 분리(2026-08-25) -->
+  <link rel="stylesheet" href="assets/css/fo-disp-ui-pop-style.css">
+
+  <!-- ■ H2.1: Site Config & Init Scripts ■ -->
+  <script>
+    /* ═══════════════════════════════════════════════════════════════════
+       사이트 기본값 설정 (변경 시 이 한 줄만 수정)
+       ═══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_FO_SITE_NO = '01';
+    window.FO_SITE_NO = (typeof localStorage !== 'undefined' && (localStorage.getItem('modu-fo-sy-siteNo') || localStorage.getItem('modu-fo-sy-siteNo'))) || DEFAULT_FO_SITE_NO;
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
+    window.addEventListener('storage', function(e){
+      if ((e.key === 'modu-fo-sy-siteNo' || e.key === 'modu-bo-sy-siteNo') && e.newValue !== e.oldValue) {
+        location.reload();
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
+  <div id="app"></div>
+
+  <!-- ■ B2.1: Axios & Utility Wrappers ■ -->
+  <script src="lib/license/licenseFo.js"></script>
+  <!-- coUtil 먼저 — foApiAxios 인터셉터가 coUtil 헬퍼 사용 -->
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/utils/foApiAxios.js"></script>
+  <script src="lib/utils/foUtil.js"></script>
+  <!-- 코드그룹 지연 로딩(coApiSvc.syCode.getGrpsCodes → foCodeStore.saLoadCodes) -->
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/stores/fo/foCodeStore.js"></script>
+
+  <!-- ■ B3.1: Base Components & Error Handlers ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/CoWidgetComp.js"></script>
+  <script src="pages/base/foError404.js"></script>
+
+  <!-- ■ B3.2: Display Hierarchy Components ■ -->
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ B4.1: Display UI Pages (가나다순) ■ -->
+  <script src="pages/fo/xd/DispUi01.js"></script>
+  <script src="pages/fo/xd/DispUi02.js"></script>
+  <script src="pages/fo/xd/DispUi03.js"></script>
+  <script src="pages/fo/xd/DispUi04.js"></script>
+  <script src="pages/fo/xd/DispUi05.js"></script>
+  <script src="pages/fo/xd/DispUi06.js"></script>
+
+  <!-- ■ B4.2: Display UI Page ■ -->
+  <script src="pages/fo/xd/DispUiPage.js"></script>
+
+  <!-- ■ B99: Main App Bootstrap ■ -->
+  <script>
+    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+    /* ── 해시 라우팅 래퍼 ── */
+    const DispUiApp = {
+      name: 'DispUiApp',
+      setup() {
+        const PAGE_MAP = {
+          'DispUi01': 'disp-ui01',
+          'DispUi02': 'disp-ui02',
+          'DispUi03': 'disp-ui03',
+          'DispUi04': 'disp-ui04',
+          'DispUi05': 'disp-ui05',
+          'DispUi06': 'disp-ui06',
+        };
+        const PAGE_LABELS = [
+          { key: 'DispUi01', label: 'HOME', icon: '🏠' },
+          { key: 'DispUi02', label: 'CATEGORY/SEARCH', icon: '🔍' },
+          { key: 'DispUi03', label: 'PRODUCT/EVENT', icon: '📦' },
+          { key: 'DispUi04', label: 'MY_PAGE/FOOTER', icon: '👤' },
+          { key: 'DispUi05', label: 'DispUi05', icon: '📋' },
+          { key: 'DispUi06', label: 'DispUi06', icon: '📋' },
+        ];
+
+        const getPage = () => {
+          const h = location.hash.replace('#','');
+          const qs = new URLSearchParams(location.search);
+          if (h && PAGE_MAP[h]) return h;
+          if (qs.get('areas')) return 'DispUiPage';
+          return 'DispUi01'; /* 기본: DispUi01 */
+        };
+
+        const currentPage = ref(getPage());
+        const onHash = () => { currentPage.value = getPage(); };
+        onMounted(() => window.addEventListener('hashchange', onHash));
+        onUnmounted(() => window.removeEventListener('hashchange', onHash));
+
+        const isPage = (key) => currentPage.value === key;
+        const go = (key) => { location.hash = key; };
+
+        return { currentPage, isPage, go, PAGE_LABELS };
+      },
+      template: /* html */`
+<div>
+  <!-- 탭 네비게이션 (DispUiPage 모드가 아닐 때) -->
+  <div v-if="currentPage !== 'DispUiPage'"
+    style="display:flex;gap:0;background:#2d2d2d;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+    <button v-for="p in PAGE_LABELS" :key="p.key"
+      @click="go(p.key)"
+      style="flex:1;padding:10px 8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
+      :style="isPage(p.key)
+        ? 'background:#fff;color:#6a1b9a;border-bottom:3px solid #6a1b9a;'
+        : 'background:transparent;color:#aaa;border-bottom:3px solid transparent;'"
+    >{{ p.icon }} {{ p.label }}</button>
+  </div>
+
+  <!-- 페이지 렌더링 -->
+  <disp-ui-page   v-if="currentPage==='DispUiPage'" />
+  <disp-ui01      v-else-if="currentPage==='DispUi01'" />
+  <disp-ui02      v-else-if="currentPage==='DispUi02'" />
+  <disp-ui03      v-else-if="currentPage==='DispUi03'" />
+  <disp-ui04      v-else-if="currentPage==='DispUi04'" />
+  <disp-ui05      v-else-if="currentPage==='DispUi05'" />
+  <disp-ui06      v-else-if="currentPage==='DispUi06'" />
+</div>
+`,
+    };
+
+    const app = createApp(DispUiApp);
+    app.component('FoError404',        window.foError404);
+    app.component('DispX01Ui',       window.DispX01Ui);
+    app.component('DispX02Area',     window.DispX02Area);
+    app.component('DispX03Panel',    window.DispX03Panel);
+    app.component('DispX04Widget',   window.DispX04Widget);
+    app.component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' });
+    app.component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' });
+    app.component('DispUiPage',      window.DispUiPage);
+    ['DispUi01', 'DispUi02', 'DispUi03', 'DispUi04', 'DispUi05', 'DispUi06'].forEach(name => {
+      if (window[name]) app.component(name, window[name]);
+    });
+    app.mount('#app');
+    const loadingEl = document.getElementById('_boot_loading');
+    if (loadingEl) {
+      loadingEl.classList.add('done');
+      setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
+    }
+  </script>
+</body>
+</html>

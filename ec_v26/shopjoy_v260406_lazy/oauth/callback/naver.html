@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>네이버 로그인 처리 중...</title>
+  <style>
+    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center;
+           height: 100vh; margin: 0; background: #f8f9fa; }
+    .box { text-align: center; padding: 32px; background: #fff; border-radius: 12px;
+           box-shadow: 0 4px 20px rgba(0,0,0,.1); min-width: 320px; }
+    .logo { font-size: 32px; margin-bottom: 12px; }
+    .msg  { font-size: 14px; color: #555; margin-bottom: 8px; }
+    .token-box { font-size: 11px; font-family: monospace; background: #f0f4ff;
+                 border: 1px solid #c7d7ff; border-radius: 6px; padding: 8px 12px;
+                 word-break: break-all; color: #1e40af; margin: 12px 0; text-align: left; }
+    .copy-btn { background: #03c75a; color: #fff; border: none; border-radius: 6px;
+                padding: 8px 20px; font-size: 13px; cursor: pointer; margin-top: 4px; }
+    .copy-btn:hover { background: #02a44e; }
+    .error { color: #dc2626; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">🟢</div>
+  <div id="content">
+    <div class="msg">처리 중...</div>
+  </div>
+</div>
+<script>
+  (function () {
+    /* URL 해시 또는 쿼리에서 access_token 추출 */
+    var hash   = location.hash.replace(/^#/, '');
+    var query  = location.search.replace(/^\?/, '');
+    var params = {};
+    (hash || query).split('&').forEach(function (pair) {
+      var kv = pair.split('=');
+      params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
+    });
+
+    var token = params['access_token'];
+    var error = params['error'] || params['error_description'];
+    var el    = document.getElementById('content');
+
+    if (token) {
+      el.innerHTML =
+        '<div class="msg" style="color:#15803d;font-weight:600;">✅ 네이버 로그인 성공</div>' +
+        '<div class="msg" style="font-size:12px;">아래 Access Token을 복사해<br>테스트 화면에 붙여넣으세요.</div>' +
+        '<div class="token-box" id="tokenVal">' + token + '</div>' +
+        '<button class="copy-btn" onclick="copyToken()">📋 토큰 복사</button>' +
+        '<div id="copyMsg" style="font-size:11px;color:#888;margin-top:6px;"></div>';
+
+      /* opener 창(ZdTestSnsLoginNaver)에 토큰 전달 후 자동 닫기 */
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'NAVER_TOKEN', access_token: token }, '*');
+          setTimeout(function () { window.close(); }, 1500);
+          el.querySelector('.msg').textContent = '✅ 완료 — 이 창이 자동으로 닫힙니다.';
+        }
+      } catch (e) { /* opener 없으면 수동 복사 */ }
+
+    } else if (error) {
+      el.innerHTML =
+        '<div class="error">❌ 로그인 실패</div>' +
+        '<div class="msg" style="margin-top:8px;">' + (params['error_description'] || error) + '</div>';
+    } else {
+      el.innerHTML = '<div class="msg">파라미터를 읽을 수 없습니다.</div>';
+    }
+
+    window.copyToken = function () {
+      var t = document.getElementById('tokenVal');
+      if (!t) return;
+      navigator.clipboard.writeText(t.textContent).then(function () {
+        document.getElementById('copyMsg').textContent = '복사되었습니다!';
+      }).catch(function () {
+        /* fallback */
+        var r = document.createRange(); r.selectNode(t);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(r);
+        document.execCommand('copy');
+        document.getElementById('copyMsg').textContent = '복사되었습니다!';
+      });
+    };
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DispUi 미리보기 (관리자)</title>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       📌 리소스 로드 우선순위 정렬 기준
+       ═══════════════════════════════════════════════════════════════════════════
+       ■ HEAD 섹션 (CDN 및 초기 리소스)
+         H1.1: CDN Core Runtime (Vue)
+         H1.2: CDN Libraries (marked, axios, yup)
+         H1.3: Fonts & CSS (Google Fonts, bo-global-style)
+
+       ■ BODY 섹션 - B2.x: 공통부 (필수 기초)
+         B2.1: Axios & 유틸 래퍼
+
+       ■ BODY 섹션 - B3.x: 컴포넌트부 (UI 기반)
+         B3.1: Base 컴포넌트 & 에러 핸들러
+         B3.2: 전시 컴포넌트 계층 (DispX01~X04)
+
+       ■ BODY 섹션 - B4.x: Display UI Pages
+         B4.1: 전시 UI 페이지 (DispUi01~06)
+         B4.2: Display UI Page (DispUiPage)
+
+       ■ BODY 섹션 - B99: 메인 앱 부트스트랩 (반드시 마지막)
+  ═══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ■ H1.1: CDN Core Runtime ■ -->
+  <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+  <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+  <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+
+  <!-- ■ H1.2: CDN Libraries ■ -->
+  <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
+  <script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+  <script src="assets/cdn/pkg/yup/1.0.0.shim/yup.js"></script>
+
+  <!-- ■ H1.3: Fonts & CSS ■ -->
+  <link rel="stylesheet" href="assets/css/bo-global-style01.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+
+  <!-- ■ H2.1: Site Config & Init Scripts ■ -->
+  <script>
+    /* ═══════════════════════════════════════════════════════════════════
+       사이트 기본값 설정 (변경 시 이 한 줄만 수정)
+       ═══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_FO_SITE_NO = '01';
+    window.FO_SITE_NO = (typeof localStorage !== 'undefined' && (localStorage.getItem('modu-fo-sy-siteNo') || localStorage.getItem('modu-fo-sy-siteNo'))) || DEFAULT_FO_SITE_NO;
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
+    window.addEventListener('storage', function(e){
+      if ((e.key === 'modu-fo-sy-siteNo' || e.key === 'modu-bo-sy-siteNo') && e.newValue !== e.oldValue) {
+        location.reload();
+      }
+    });
+  </script>
+
+  <!-- ■ H3.1: Loading Indicator Styles ■ -->
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; color: #222; }
+    #_boot_loading { position:fixed; inset:0; z-index:99999;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+      background:#1a1d24; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; }
+    #_boot_loading .spin { width:44px; height:44px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.12); border-top-color:#e8587a;
+      animation:_bootspin .8s linear infinite; }
+    #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
+    @keyframes _bootspin { to { transform: rotate(360deg); } }
+    #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+  </style>
+</head>
+<body>
+  <div id="_boot_loading" role="status" aria-busy="true">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="txt">로딩 중…</div>
+  </div>
+  <div id="app"></div>
+
+  <!-- ■ B2.1: Axios & Utility Wrappers ■ -->
+  <script src="lib/license/licenseBo.js"></script>
+  <!-- coUtil 먼저 — boApiAxios 인터셉터가 coUtil 헬퍼 사용 -->
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/consts/coConsts.js"></script>
+  <script src="lib/consts/boConsts.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
+  <script src="lib/env/boEnvConsts.js"></script>
+
+  <!-- ■ B2.2: API 서비스 ■ -->
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
+
+  <!-- ■ B2.3: Pinia 스토어 (Preview 컴포넌트 boApp 의존용) ■ -->
+  <script src="lib/utils/safeUtil.js"></script>
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
+
+  <!-- ■ B3.1: Base Components & Error Handlers ■ -->
+  <script src="components/comp/BaseComp.js"></script>
+  <script src="components/comp/BoComp.js"></script>
+  <script src="components/comp/BoAreaComp.js"></script>
+  <script src="components/comp/CoWidgetComp.js"></script>
+  <script src="components/modals/BoModals.js"></script>
+  <script src="pages/base/boError404.js"></script>
+
+  <!-- ■ B3.2: Display Hierarchy Components ■ -->
+  <script src="components/disp/DispX01Ui.js"></script>
+  <script src="components/disp/DispX02Area.js"></script>
+  <script src="components/disp/DispX03Panel.js"></script>
+  <script src="components/disp/DispX04Widget.js"></script>
+
+  <!-- ■ B4.1: Display UI Pages (가나다순) ■ -->
+  <script src="pages/fo/xd/DispUi01.js"></script>
+  <script src="pages/fo/xd/DispUi02.js"></script>
+  <script src="pages/fo/xd/DispUi03.js"></script>
+  <script src="pages/fo/xd/DispUi04.js"></script>
+  <script src="pages/fo/xd/DispUi05.js"></script>
+  <script src="pages/fo/xd/DispUi06.js"></script>
+
+  <!-- ■ B4.2: Display UI Page ■ -->
+  <script src="pages/fo/xd/DispUiPage.js"></script>
+
+  <!-- ■ B4.3: 단독 미리보기 모드 컴포넌트 (인라인 정의 — 아래 B99 스크립트 내) ■ -->
+
+  <!-- ■ B99: Main App Bootstrap ■ -->
+  <script>
+    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+    /* ── URL 파라미터 파싱 ── */
+    const _qs = new URLSearchParams(location.search);
+    const _mode = _qs.get('mode') || '';   /* ui | area | panel | widget | widgetLib */
+    const _id   = _qs.get('id')   || '';
+
+    /* ── boApp shim ── */
+    window.boApp = window.boApp || {
+      showToast:    (msg, type) => console.log('[preview toast]', type, msg),
+      showConfirm:  ()          => Promise.resolve(false),
+      showRefModal: ()          => {},
+    };
+
+    /* ── sfGetBoCodeStore shim ── */
+    window.sfGetBoCodeStore = window.sfGetBoCodeStore || function() {
+      return { sgGetGrpCodes: () => [], sgGetCodeNmByVal: () => '', sgGetCodesByGroup: () => [], svCodes: {} };
+    };
+
+    /* ── Pinia 초기화 ── */
+    const _pinia = Pinia.createPinia();
+
+    /* ── Preview 모드 감지 ── */
+    const isPreviewMode = !!_mode && !!_id;
+
+    /* ── 단독 미리보기 컴포넌트 (ID 단건 조회 → 간결 표시) ── */
+    const MODE_LABELS = { ui: '전시UI', area: '전시영역', panel: '전시패널', widget: '전시위젯', widgetLib: '위젯라이브러리' };
+
+    const DispSinglePreview = {
+      name: 'DispSinglePreview',
+      props: { mode: String, previewId: String },
+      setup(props) {
+        const { ref, reactive, onMounted, computed } = Vue;
+        const item    = reactive({ data: null, loading: true, error: null });
+        const label   = MODE_LABELS[props.mode] || props.mode;
+        const tab     = ref('preview');  /* 'preview' | 'info' */
+
+        const fetchItem = async () => {
+          item.loading = true; item.error = null;
+          try {
+            let res;
+            if (props.mode === 'ui')         res = await boApiSvc.dpUi.getById(props.previewId, label, '조회');
+            else if (props.mode === 'area')   res = await boApiSvc.dpArea.getById(props.previewId, label, '조회');
+            else if (props.mode === 'panel')  res = await boApiSvc.dpPanel.getById(props.previewId, label, '조회');
+            else if (props.mode === 'widget') res = await boApiSvc.dpWidget.getById(props.previewId, label, '조회');
+            else if (props.mode === 'widgetLib') res = await boApiSvc.dpWidgetLib.getById(props.previewId, label, '조회');
+            item.data = res?.data?.data || null;
+          } catch (e) {
+            item.error = e.response?.data?.message || e.message || '조회 오류';
+          } finally {
+            item.loading = false;
+          }
+        };
+
+        onMounted(fetchItem);
+
+        /* 패널이면 contentJson rows → DispX03Panel panelItem으로 변환 */
+        /* rows 안 위젯 행에 렌더 필수 필드 보강 */
+        const _enrichRows = (rows, piList) => {
+          const sorted = (piList || []).slice().sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+          return rows.map((r, i) => {
+            const pi = sorted[i] || {};
+            return Object.assign({
+              status: '활성',
+              dispYn: 'Y',
+              useYn: 'Y',
+              condition: '항상 표시',
+              widgetLibRefYn: 'N',
+            }, r, {
+              panelItemId: r.panelItemId || pi.panelItemId || '',
+              widgetLibId: r.widgetLibId || pi.widgetLibId || '',
+            });
+          });
+        };
+
+        const cfPanelItem = computed(() => {
+          if (props.mode !== 'panel' || !item.data) return null;
+          const p = item.data;
+          const rows = _enrichRows(coUtil.cofParsePanelRows(p.contentJson), p.panelItems);
+          return {
+            dispId: p.panelId, name: p.panelNm, rows,
+            status: coUtil.cofPanelStatusLabel(p.dispPanelStatusCd),
+            dispYn: p.useYn === 'Y' ? 'Y' : 'N', useYn: p.useYn,
+            condition: p.condition || '항상 표시',
+          };
+        });
+
+        /* 패널 raw 배열 → panelItem 배열로 변환 (area/ui 공용) */
+        const fnToPanelItems = (panels) => (panels || []).map(p => {
+          const rows = _enrichRows(coUtil.cofParsePanelRows(p.contentJson), p.panelItems);
+          return {
+            dispId: p.panelId, name: p.panelNm, rows,
+            status: coUtil.cofPanelStatusLabel(p.dispPanelStatusCd),
+            dispYn: p.useYn === 'Y' ? 'Y' : 'N', useYn: p.useYn,
+            condition: p.condition || '항상 표시',
+            _raw: p,
+          };
+        });
+
+        /* area → 하위 패널 목록 */
+        const cfAreaPanels = computed(() => {
+          if (props.mode !== 'area' || !item.data) return [];
+          return fnToPanelItems(item.data.panels);
+        });
+
+        /* ui → 하위 영역+패널 목록 */
+        const cfUiAreas = computed(() => {
+          if (props.mode !== 'ui' || !item.data) return [];
+          return (item.data.areas || []).map(a => ({
+            _raw: a,
+            panels: fnToPanelItems(a.panels),
+          }));
+        });
+
+        /* widget/widgetLib → DispX04Widget widgetItem으로 변환 */
+        const cfWidgetItem = computed(() => {
+          if (!item.data) return null;
+          const d = item.data;
+          if (props.mode === 'widget') {
+            return {
+              widgetTypeCd: d.widgetTypeCd, widgetNm: d.widgetNm, widgetTitle: d.widgetTitle,
+              widgetContent: d.widgetContent, widgetConfigJson: d.widgetConfigJson,
+              thumbnailUrl: d.thumbnailUrl, useYn: d.useYn, dispYn: 'Y',
+              status: '활성', widgetLibRefYn: 'N',
+            };
+          }
+          if (props.mode === 'widgetLib') {
+            return {
+              widgetTypeCd: d.widgetTypeCd, widgetNm: d.widgetNm, widgetTitle: d.widgetNm,
+              widgetContent: d.widgetContent, widgetConfigJson: d.widgetConfigJson,
+              thumbnailUrl: d.thumbnailUrl, useYn: d.useYn, dispYn: 'Y',
+              status: '활성', widgetLibRefYn: 'Y',
+            };
+          }
+          return null;
+        });
+
+        /* ── 탭2 헬퍼 ── */
+
+        /* 데이터 정보: 키-값 목록 (배열/객체 타입 제외하고 스칼라만) */
+        const cfDataFields = computed(() => {
+          if (!item.data) return [];
+          return Object.entries(item.data)
+            .filter(([, v]) => v !== null && v !== undefined && typeof v !== 'object')
+            .map(([k, v]) => ({ key: k, val: String(v) }));
+        });
+
+        /* ── 소스 구조 빌더 헬퍼 ── */
+        const _yn = (v) => v === 'Y' ? '사용' : '미사용';
+        const _st = (cd) => cd === 'SHOW' ? '노출' : cd === 'HIDE' ? '숨김' : (cd || '-');
+
+        /* widgetType별 핵심 속성 키 목록 */
+        const _WIDGET_KEY_MAP = {
+          image_banner:    ['imageUrl','linkUrl','altText'],
+          product_slider:  ['productIds','displayCnt','autoPlay'],
+          product:         ['productIds','displayCnt'],
+          cond_product:    ['condType','condValue','displayCnt'],
+          chart_bar:       ['dataSource','title'],
+          chart_line:      ['dataSource','title'],
+          chart_pie:       ['dataSource','title'],
+          text_banner:     ['textContent','bgColor','textColor','fontSize'],
+          info_card:       ['title','content','iconUrl'],
+          popup:           ['popupUrl','width','height'],
+          file:            ['fileUrl','fileName'],
+          file_list:       ['folderId'],
+          coupon:          ['couponId','title'],
+          html_editor:     [],
+          textarea:        ['content'],
+          markdown:        ['content'],
+          barcode:         ['value','format'],
+          qrcode:          ['value'],
+          barcode_qrcode:  ['value','format'],
+          video_player:    ['videoUrl','autoPlay'],
+          countdown:       ['targetDate','title'],
+          payment_widget:  ['payType'],
+          approval_widget: ['workflowId'],
+          event_banner:    ['eventId','imageUrl'],
+          cache_banner:    ['cacheId','imageUrl'],
+          widget_embed:    ['widgetLibId'],
+          map_widget:      ['lat','lng','zoom'],
+        };
+
+        /* widgetConfigJson → 타입별 핵심 속성 추출 */
+        const _widgetAttrs = (cfgJson, typeCd) => {
+          let cfg = {};
+          try { cfg = typeof cfgJson === 'string' ? JSON.parse(cfgJson) : (cfgJson || {}); } catch(e2) { cfg = {}; }
+          const keys = _WIDGET_KEY_MAP[typeCd] || Object.keys(cfg).slice(0, 5);
+          const pairs = [];
+          keys.forEach(k => {
+            const v = cfg[k];
+            if (v !== null && v !== undefined && v !== '') {
+              const sv = typeof v === 'object'
+                ? JSON.stringify(v).slice(0, 35) + (JSON.stringify(v).length > 35 ? '…' : '')
+                : String(v).slice(0, 50);
+              pairs.push(`${k}="${sv}"`);
+            } else {
+              pairs.push(`${k}="~"`);  /* 빈 값도 표시 (두 번째 이미지 형식) */
+            }
+          });
+          return pairs.length ? ' ' + pairs.join(' ') : '';
+        };
+
+        /* 위젯 행(row) 한 줄 생성 */
+        const _widgetLine = (r, idx, indent) => {
+          const wid  = r.widgetId || r.panelItemId || r.widgetLibId || `#${idx+1}`;
+          const type = r.widgetTypeCd || r.type || '';
+          const attrs = _widgetAttrs(r.widgetConfigJson, type);
+          return (
+            `${indent}<!-- 정렬: ${idx+1} | 노출조건: ${r.condition || '항상 표시'} -->\n` +
+            `${indent}<DispX04Widget` +
+            ` id="${wid}"` +
+            ` widgetType="${type}"` +
+            ` widgetNm="${r.widgetNm || '~'}"` +
+            ` condition="${r.condition || '~'}"` +
+            ` sortOrder="${r.sortOrd !== undefined ? r.sortOrd : idx+1}"` +
+            `${attrs} />`
+          );
+        };
+
+        /* 패널 블록 생성 */
+        const _panelBlock = (rawPanel, panelItem, idx, indent1, indent2) => {
+          const rows = panelItem ? (panelItem.rows || []) : [];
+          const wLines = rows.map((r, wi) => _widgetLine(r, wi, indent2)).join('\n');
+          return (
+            `${indent1}<!-- 정렬: ${idx+1} | 상태: ${_st(rawPanel.dispPanelStatusCd)} | 노출조건: ${rawPanel.condition || '항상 표시'} | 인증필요: ${rawPanel.authRequired || '불필요'} | ${_yn(rawPanel.useYn)} -->\n` +
+            `${indent1}<DispX03Panel` +
+            ` id="${rawPanel.panelId || ''}"` +
+            ` name="${rawPanel.panelNm || ''}"` +
+            ` status="${_st(rawPanel.dispPanelStatusCd)}"` +
+            ` layoutType="${rawPanel.layoutTypeCd || ''}"` +
+            ` gridCols="${rawPanel.gridCols !== undefined ? rawPanel.gridCols : '-'}"` +
+            ` condition="${rawPanel.condition || '항상 표시'}"` +
+            ` authRequired="${rawPanel.authRequired || '~'}"` +
+            ` >\n` +
+            (wLines || `${indent2}<!-- 위젯 없음 -->`) +
+            `\n${indent1}</DispX03Panel>`
+          );
+        };
+
+        /* 소스 구조 문자열 생성 */
+        const cfSourceCode = computed(() => {
+          if (!item.data) return '';
+          const d = item.data;
+          const m = props.mode;
+
+          if (m === 'widgetLib') {
+            const attrs = _widgetAttrs(d.widgetConfigJson, d.widgetTypeCd);
+            return (
+              `<!-- 위젯라이브러리: ${d.widgetNm || ''} | 유형: ${d.widgetTypeCd || ''} | ${_yn(d.useYn)} -->\n` +
+              `<DispX04Widget\n` +
+              `  id="${d.widgetLibId || ''}"\n` +
+              `  widgetType="${d.widgetTypeCd || ''}"\n` +
+              `  widgetNm="${d.widgetNm || ''}"\n` +
+              `  widgetCode="${d.widgetCode || ''}"\n` +
+              `  useYn="${d.useYn || 'Y'}"\n` +
+              (attrs.trim() ? `  ${attrs.trim()}\n` : '') +
+              `/>`
+            );
+          }
+
+          if (m === 'widget') {
+            const attrs = _widgetAttrs(d.widgetConfigJson, d.widgetTypeCd);
+            return (
+              `<!-- 위젯: ${d.widgetNm || ''} | 유형: ${d.widgetTypeCd || ''} | ${_yn(d.useYn)} -->\n` +
+              `<DispX04Widget\n` +
+              `  id="${d.widgetId || ''}"\n` +
+              `  widgetType="${d.widgetTypeCd || ''}"\n` +
+              `  widgetNm="${d.widgetNm || ''}"\n` +
+              `  widgetTitle="${d.widgetTitle || ''}"\n` +
+              `  condition="${d.condition || '항상 표시'}"\n` +
+              `  sortOrder="${d.sortOrd || '-'}"\n` +
+              `  useYn="${d.useYn || 'Y'}"\n` +
+              (attrs.trim() ? `  ${attrs.trim()}\n` : '') +
+              `/>`
+            );
+          }
+
+          if (m === 'panel') {
+            const rows = coUtil.cofParsePanelRows(d.contentJson) || [];
+            const indent = '    ';
+            const widgetLines = rows.map((r, i) => _widgetLine(r, i, indent)).join('\n');
+            return (
+              `<!-- 전시패널: ${d.panelNm || ''} | 상태: ${_st(d.dispPanelStatusCd)} | ${_yn(d.useYn)} | 위젯 ${rows.length}개 -->\n` +
+              `<DispX03Panel\n` +
+              `  id="${d.panelId || ''}"\n` +
+              `  name="${d.panelNm || ''}"\n` +
+              `  panelCd="${d.panelCd || ''}"\n` +
+              `  status="${_st(d.dispPanelStatusCd)}"\n` +
+              `  layoutType="${d.layoutTypeCd || ''}"\n` +
+              `  gridCols="${d.gridCols !== undefined ? d.gridCols : '-'}"\n` +
+              `  condition="${d.condition || '항상 표시'}"\n` +
+              `  authRequired="${d.authRequired || '~'}"\n` +
+              `  useYn="${d.useYn || 'Y'}"\n` +
+              `>\n` +
+              (widgetLines || `${indent}<!-- 위젯 없음 -->`) +
+              `\n</DispX03Panel>`
+            );
+          }
+
+          if (m === 'area') {
+            const panels = cfAreaPanels.value;
+            const indent1 = '  ', indent2 = '    ';
+            const panelLines = panels.map((p, pi) =>
+              _panelBlock(p._raw, p, pi, indent1, indent2)
+            ).join('\n');
+            return (
+              `<!-- 전시영역: ${d.areaNm || ''} | 유형: ${d.areaTypeCd || ''} | ${_yn(d.useYn)} | 패널 ${panels.length}개 -->\n` +
+              `<DispX02Area\n` +
+              `  id="${d.areaId || ''}"\n` +
+              `  area="${d.areaCd || ''}"\n` +
+              `  areaLabel="${d.areaNm || ''}"\n` +
+              `  layoutType="${d.layoutTypeCd || ''}"\n` +
+              `  gridCols="${d.gridCols !== undefined ? d.gridCols : '-'}"\n` +
+              `  sortOrd="${d.sortOrd || '-'}"\n` +
+              `  useYn="${d.useYn || 'Y'}"\n` +
+              `>\n` +
+              (panelLines || `  <!-- 패널 없음 -->`) +
+              `\n</DispX02Area>`
+            );
+          }
+
+          if (m === 'ui') {
+            const areas = cfUiAreas.value;
+            const indent1 = '  ', indent2 = '    ', indent3 = '      ';
+            const totalPanels  = areas.reduce((s, a) => s + a.panels.length, 0);
+            const totalWidgets = areas.reduce((s, a) => a.panels.reduce((ss, p) => ss + (p.rows || []).length, s), 0);
+            const areaLines = areas.map((a, ai) => {
+              const pLines = a.panels.map((p, pi) =>
+                _panelBlock(p._raw, p, pi, indent2, indent3)
+              ).join('\n');
+              return (
+                `${indent1}<!-- 표시형식: ${a._raw.layoutTypeCd || '-'} , 정렬: ${a._raw.sortOrd !== undefined ? a._raw.sortOrd : ai+1} , area: "${a._raw.areaCd || ''}" -->\n` +
+                `${indent1}<DispX02Area` +
+                ` id="${a._raw.areaId || ''}"` +
+                ` area="${a._raw.areaCd || ''}"` +
+                ` areaLabel="${a._raw.areaNm || ''}"` +
+                ` layoutType="${a._raw.layoutTypeCd || ''}"` +
+                ` gridCols="${a._raw.gridCols !== undefined ? a._raw.gridCols : '-'}"` +
+                ` sortOrd="${a._raw.sortOrd !== undefined ? a._raw.sortOrd : '-'}"` +
+                ` useYn="${a._raw.useYn || 'Y'}" >\n` +
+                (pLines || `${indent2}<!-- 패널 없음 -->`) +
+                `\n${indent1}</DispX02Area>`
+              );
+            }).join('\n');
+            return (
+              `<!-- 전시개체 : 전시영역s: ${areas.length} · 전시패널s: ${totalPanels} · 전시위젯s: ${totalWidgets} -->\n` +
+              `<!-- disp조건 : 전시일시: ${d.useStartDate || '-'} | 상태: ${_yn(d.useYn)} | 노출조건 : - | 인증필요 : - | 등급제한 : - -->\n` +
+              `<DispX01Ui\n` +
+              `  id="${d.uiId || ''}"\n` +
+              `  uiNm="${d.uiNm || ''}"\n` +
+              `  uiCd="${d.uiCd || ''}"\n` +
+              `  deviceTypeCd="${d.deviceTypeCd || ''}"\n` +
+              `  useYn="${d.useYn || 'Y'}"\n` +
+              `>\n` +
+              (areaLines || `  <!-- 영역 없음 -->`) +
+              `\n</DispX01Ui>`
+            );
+          }
+          return '';
+        });
+
+        /* cfSourceCode → syntax-highlighted HTML (토큰별 직접 생성) */
+        const cfSourceCodeHtml = computed(() => {
+          const raw = cfSourceCode.value;
+          if (!raw) return '';
+
+          /* 이스케이프 헬퍼 */
+          const e = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+          /* 색상 팔레트 */
+          const C = {
+            comment : 'color:#6272a4;font-style:italic;',     /* 주석 — 회색보라 */
+            bracket : 'color:#569cd6;',                        /* < > /> */
+            tagDisp : 'color:#4ec9b0;font-weight:600;',        /* DispX0* 태그명 */
+            tagClose: 'color:#4ec9b0;',                        /* </DispX0* */
+            attrKey : 'color:#9cdcfe;',                        /* 속성명 */
+            attrEq  : 'color:#d4d4d4;',                        /* = */
+            attrVal : 'color:#ce9178;',                        /* "값" */
+            plain   : 'color:#d4d4d4;',                        /* 나머지 텍스트 */
+          };
+          const sp = (style, txt) => `<span style="${style}">${txt}</span>`;
+
+          /* 한 줄씩 파싱 */
+          const lines = raw.split('\n');
+          const out = lines.map(line => {
+            const trimmed = line.trimStart();
+            const indent  = line.slice(0, line.length - trimmed.length);
+            const indentHtml = e(indent);
+
+            /* ── 주석 줄 ── */
+            if (trimmed.startsWith('<!--')) {
+              return indentHtml + sp(C.comment, e(trimmed));
+            }
+
+            /* ── 닫는 태그 </DispX...> ── */
+            const closeMatch = trimmed.match(/^<\/(DispX\w+)>(.*)$/);
+            if (closeMatch) {
+              return indentHtml +
+                sp(C.bracket, '&lt;/') +
+                sp(C.tagClose, e(closeMatch[1])) +
+                sp(C.bracket, '&gt;') +
+                (closeMatch[2] ? sp(C.plain, e(closeMatch[2])) : '');
+            }
+
+            /* ── 여는/자기닫힘 태그 <DispX...  또는 일반 여는태그 > ── */
+            const openMatch = trimmed.match(/^<(DispX\w+)([\s\S]*?)(\s*\/?>)\s*$/);
+            if (openMatch) {
+              const tagName   = openMatch[1];
+              const attrsPart = openMatch[2];
+              const closer    = openMatch[3].trim();
+
+              /* 속성 파싱: key="value" */
+              const attrHtml = attrsPart.replace(
+                /([a-zA-Z_][a-zA-Z0-9_-]*)(\s*=\s*)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+                (_, k, eq, v) =>
+                  sp(C.attrKey, e(k)) +
+                  sp(C.attrEq,  e(eq)) +
+                  sp(C.attrVal, e(v))
+              );
+
+              const closerHtml = closer === '/>' ? sp(C.bracket, ' />') : sp(C.bracket, closer === '>' ? ' &gt;' : e(closer));
+
+              return indentHtml +
+                sp(C.bracket, '&lt;') +
+                sp(C.tagDisp, e(tagName)) +
+                attrHtml +
+                closerHtml;
+            }
+
+            /* ── 단독 > 닫기 (멀티라인 태그 끝) ── */
+            if (trimmed === '>') {
+              return indentHtml + sp(C.bracket, '&gt;');
+            }
+
+            /* ── 단독 /> (멀티라인 self-close 끝) ── */
+            if (trimmed === '/>') {
+              return indentHtml + sp(C.bracket, '/>');
+            }
+
+            /* ── 속성 전용 줄: key="value" 한 쌍 또는 여러 쌍 ── */
+            if (/^[a-zA-Z_][a-zA-Z0-9_-]*\s*=\s*"/.test(trimmed)) {
+              const attrHtml = trimmed.replace(
+                /([a-zA-Z_][a-zA-Z0-9_-]*)(\s*=\s*)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+                (_, k, eq, v) =>
+                  sp(C.attrKey, e(k)) +
+                  sp(C.attrEq,  e(eq)) +
+                  sp(C.attrVal, e(v))
+              );
+              return indentHtml + attrHtml;
+            }
+
+            /* ── 나머지 (일반 텍스트) ── */
+            return indentHtml + sp(C.plain, e(trimmed));
+          });
+
+          return out.join('\n');
+        });
+
+        /* 트리 노드 상태 (펼치기/접기) */
+        const treeOpen = reactive({});
+        const fnToggleTree = (key) => { treeOpen[key] = treeOpen[key] === false ? true : false; };
+        const fnIsOpen = (key) => treeOpen[key] !== false; /* 기본 펼침 */
+
+        /* 전체펼치기 / 전체접기 */
+        const fnAllTreeKeys = () => {
+          const keys = [];
+          const m = props.mode;
+          if (m === 'widget' || m === 'widgetLib') { keys.push('widget_preview'); }
+          else if (m === 'panel') {
+            keys.push('panel');
+            (cfPanelItem.value?.rows || []).forEach((_, ri) => keys.push('panel_w_' + ri));
+          } else if (m === 'area') {
+            keys.push('area');
+            (cfAreaPanels.value || []).forEach((p, pi) => {
+              keys.push('area_p_' + pi);
+              (p.rows || []).forEach((_, ri) => keys.push('area_p_' + pi + '_w_' + ri));
+            });
+          } else if (m === 'ui') {
+            keys.push('ui');
+            (cfUiAreas.value || []).forEach((area, ai) => {
+              keys.push('ui_a_' + ai);
+              (area.panels || []).forEach((p, pi) => {
+                keys.push('ui_a_' + ai + '_p_' + pi);
+                (p.rows || []).forEach((_, ri) => keys.push('ui_a_' + ai + '_p_' + pi + '_w_' + ri));
+              });
+            });
+          }
+          return keys;
+        };
+        const fnExpandAll  = () => { fnAllTreeKeys().forEach(k => { treeOpen[k] = true; }); };
+        const fnCollapseAll  = () => { fnAllTreeKeys().forEach(k => { treeOpen[k] = false; }); };
+        const fnAllExpanded  = () => { const keys = fnAllTreeKeys(); return keys.length > 0 && keys.every(k => treeOpen[k] !== false); };
+
+        /* 미리보기 탭 구조보기 토글 */
+        const showStructure = ref(false);
+        const deviceMode = ref('pc'); /* 'pc' | 'mobile' | 'tablet' */
+        const DEVICE_MODES = [
+          { key: 'pc',     label: 'PC',     icon: '🖥',  width: null,  maxWidth: '1280px' },
+          { key: 'mobile', label: '모바일', icon: '📱', width: '390px',  maxWidth: '390px' },
+          { key: 'tablet', label: '태블릿', icon: '📟', width: '768px',  maxWidth: '768px' },
+        ];
+        const cfDeviceStyle = Vue.computed(() => {
+          const m = DEVICE_MODES.find(d => d.key === deviceMode.value);
+          if (!m || !m.width) return {};
+          return { width: m.width, maxWidth: m.maxWidth, margin: '0 auto', boxShadow: '0 0 0 1px #ccc, 0 4px 24px rgba(0,0,0,0.12)', borderRadius: '8px', overflow: 'hidden' };
+        });
+
+        /* 트리 우측 미리보기 — 패널 목록 (area / ui 모드) */
+        const cfRenderPanels = computed(() => {
+          if (props.mode === 'panel' && cfPanelItem.value) return [cfPanelItem.value];
+          if (props.mode === 'area') return cfAreaPanels.value;
+          if (props.mode === 'ui') {
+            return cfUiAreas.value.reduce((acc, a) => acc.concat(a.panels), []);
+          }
+          return [];
+        });
+
+        /* 자동 새로고침 */
+        const AUTO_REFRESH_OPTIONS = [
+          { value: 0,     label: '선택' },
+          { value: 3,     label: '3초' },
+          { value: 5,     label: '5초' },
+          { value: 10,    label: '10초' },
+          { value: 20,    label: '20초' },
+          { value: 30,    label: '30초' },
+          { value: 60,    label: '1분' },
+          { value: 300,   label: '5분' },
+        ];
+        const autoRefreshSec = ref(0);
+        const autoRefreshRemain = ref(0);
+        let _autoTimer = null;
+        let _autoCountdown = null;
+        const fnStopAutoRefresh = () => {
+          if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+          if (_autoCountdown) { clearInterval(_autoCountdown); _autoCountdown = null; }
+          autoRefreshRemain.value = 0;
+        };
+        const fnStartAutoRefresh = (sec) => {
+          fnStopAutoRefresh();
+          if (!sec) return;
+          autoRefreshRemain.value = sec;
+          _autoCountdown = setInterval(() => {
+            autoRefreshRemain.value--;
+            if (autoRefreshRemain.value <= 0) autoRefreshRemain.value = sec;
+          }, 1000);
+          _autoTimer = setInterval(async () => {
+            const sy = window.scrollY;
+            await fetchItem();
+            Vue.nextTick(() => window.scrollTo(0, sy));
+          }, sec * 1000);
+        };
+        const onAutoRefreshChange = (e) => {
+          const sec = Number(e.target.value);
+          autoRefreshSec.value = sec;
+          fnStartAutoRefresh(sec);
+        };
+        Vue.onUnmounted(() => fnStopAutoRefresh());
+
+        return {
+          item, label, tab, mode: props.mode,
+          cfPanelItem, cfAreaPanels, cfUiAreas, cfWidgetItem,
+          cfDataFields, cfSourceCode, cfSourceCodeHtml,
+          cfRenderPanels,
+          treeOpen, fnToggleTree, fnIsOpen, fnExpandAll, fnCollapseAll, fnAllExpanded,
+          showStructure, deviceMode, DEVICE_MODES, cfDeviceStyle,
+          AUTO_REFRESH_OPTIONS, autoRefreshSec, autoRefreshRemain, onAutoRefreshChange,
+          fnReload: async () => { const sy = window.scrollY; await fetchItem(); Vue.nextTick(() => window.scrollTo(0, sy)); },
+        };
+      },
+      template: /* html */`
+<div style="min-height:100vh;background:#f5f5f5;">
+  <style>
+    .dsp-tab-bar { display:flex; gap:0; background:#1a1a2e; border-bottom:2px solid #2d2d4e; }
+    .dsp-tab { padding:10px 22px; font-size:13px; font-weight:600; color:#444; border:none;
+      background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; letter-spacing:0.3px; opacity:0.45; }
+    .dsp-tab.active { color:#fff; border-bottom-color:#e8587a; background:rgba(232,88,122,0.15); opacity:1; font-weight:700; text-shadow:0 0 8px rgba(232,88,122,0.6); }
+    .dsp-tab:hover:not(.active) { color:#aaa; opacity:0.7; }
+    .dsp-tree-node { font-family:monospace; font-size:12px; line-height:1.8; }
+    .dsp-tree-toggle { cursor:pointer; user-select:none; }
+    .dsp-tree-toggle:hover { opacity:0.75; }
+    .dsp-badge-ui     { background:#e8f4fd; color:#1565c0; border:1px solid #bbdefb; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
+    .dsp-badge-area   { background:#f3e5f5; color:#6a1b9a; border:1px solid #e1bee7; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
+    .dsp-badge-panel  { background:#e8f5e9; color:#1b5e20; border:1px solid #c8e6c9; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
+    .dsp-badge-widget { background:#fff3e0; color:#e65100; border:1px solid #ffe0b2; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
+    .dsp-prop-tag { background:#fff; color:#666; border:1px solid #ddd; border-radius:3px; padding:1px 6px; font-size:10px; white-space:nowrap; }
+    .dsp-data-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .dsp-data-table tr { border-bottom:1px solid #f0f0f0; }
+    .dsp-data-table td { padding:7px 12px; vertical-align:top; }
+    .dsp-data-table td:first-child { width:180px; color:#888; font-weight:500; white-space:nowrap; }
+    .dsp-data-table td:last-child { color:#333; word-break:break-all; }
+  </style>
+
+  <!-- 상단 헤더 + 탭바 -->
+  <div style="background:#1a1a2e;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.4);">
+    <div style="padding:10px 20px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;color:#fff;">🔍 {{ label }} 미리보기</span>
+      <span style="font-family:monospace;font-size:11px;color:#aaa;">#{{ previewId }}</span>
+      <span v-if="item.loading" style="font-size:11px;color:#ffd700;">로딩 중...</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <!-- 디바이스 모드 버튼 -->
+        <div style="display:flex;background:rgba(0,0,0,0.3);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);">
+          <button v-for="d in DEVICE_MODES" :key="d.key" @click="deviceMode=d.key"
+            :style="deviceMode===d.key
+              ? 'background:rgba(255,255,255,0.2);color:#fff;font-weight:700;'
+              : 'background:transparent;color:#888;font-weight:400;'"
+            style="border:none;padding:4px 11px;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;">
+            {{ d.icon }} {{ d.label }}
+          </button>
+        </div>
+        <!-- 자동 새로고침 -->
+        <div style="display:flex;align-items:center;gap:6px;">
+          <select @change="onAutoRefreshChange"
+            style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;outline:none;">
+            <option v-for="opt in AUTO_REFRESH_OPTIONS" :key="opt.value" :value="opt.value"
+              style="background:#1a1a2e;color:#fff;">
+              {{ opt.label }}
+            </option>
+          </select>
+          <span v-if="autoRefreshSec > 0"
+            style="font-size:11px;color:#aef;font-family:monospace;min-width:28px;text-align:right;">
+            {{ autoRefreshRemain }}s
+          </span>
+        </div>
+        <!-- 새로고침 -->
+        <button @click="fnReload()" :disabled="item.loading"
+          style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;"
+          onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+          <span :style="item.loading ? 'display:inline-block;animation:spin 0.6s linear infinite;' : ''">↺</span> 새로고침
+        </button>
+      </div>
+    </div>
+    <div class="dsp-tab-bar">
+      <button class="dsp-tab" :class="tab==='preview' ? 'active' : ''" @click="tab='preview'">
+        👁 미리보기
+      </button>
+      <button class="dsp-tab" :class="tab==='info' ? 'active' : ''" @click="tab='info'" :disabled="item.loading">
+        📋 정보 / 구조
+      </button>
+    </div>
+  </div>
+
+  <!-- 오류 -->
+  <div v-if="item.error" style="margin:40px auto;max-width:600px;background:#fff3f3;border:1px solid #f5c6cb;border-radius:8px;padding:24px;text-align:center;color:#c62828;">
+    <div style="font-size:32px;margin-bottom:12px;">⚠️</div>
+    <div style="font-weight:600;margin-bottom:8px;">조회 오류</div>
+    <div style="font-size:13px;">{{ item.error }}</div>
+  </div>
+  <!-- 로딩 -->
+  <div v-else-if="item.loading" style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:16px;">
+    <div style="width:40px;height:40px;border:3px solid #e0e0e0;border-top-color:#6a1b9a;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+    <div style="color:#888;font-size:13px;">{{ label }} 데이터를 불러오는 중...</div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  </div>
+
+  <!-- ═══════════════════════════════ 탭1: 미리보기 ═══════════════════════════════ -->
+  <template v-else-if="tab === 'preview'">
+    <!-- 디바이스 프레임 wrapper -->
+    <div :style="deviceMode==='pc' ? 'max-width:none;margin:0;padding:0 24px;' : 'padding:16px;background:#e8e8e8;min-height:60vh;'">
+      <div :style="cfDeviceStyle" style="background:#fff;">
+
+      <!-- 구조보기 토글 버튼 -->
+      <div style="display:flex;justify-content:flex-end;padding:10px 16px 4px;">
+        <button @click="showStructure = !showStructure"
+          :style="showStructure
+            ? 'background:#1a1a2e;color:#e8587a;border:1px solid #e8587a;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.3px;'
+            : 'background:transparent;color:#888;border:1px solid #ccc;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;letter-spacing:0.3px;'">
+          {{ showStructure ? '📐 구조보기 ON' : '📐 구조보기' }}
+        </button>
+      </div>
+
+      <!-- 패널 모드 -->
+      <template v-if="mode === 'panel' && cfPanelItem">
+        <!-- 구조 정보 (토글) -->
+        <div v-if="showStructure" style="background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:3px solid #7e57c2;">
+          <div style="display:flex;gap:16px;font-size:12px;color:#888;flex-wrap:wrap;align-items:center;">
+            <span style="font-weight:700;color:#333;font-size:13px;">{{ item.data.panelNm }}</span>
+            <span>코드: <b style="color:#444;font-family:monospace;">{{ item.data.panelCd || '-' }}</b></span>
+            <span>상태: <b :style="item.data.dispPanelStatusCd==='SHOW'?'color:#2e7d32':'color:#c62828'">{{ item.data.dispPanelStatusCd }}</b></span>
+            <span>사용: <b>{{ item.data.useYn === 'Y' ? '사용' : '미사용' }}</b></span>
+            <span>위젯 수: <b style="color:#1a237e;">{{ cfPanelItem.rows ? cfPanelItem.rows.length : 0 }}</b></span>
+          </div>
+        </div>
+        <!-- 순수 렌더링 -->
+        <disp-x03-panel :params="{}" :panel-item="cfPanelItem" :show-header="false"
+          :disp-opt="{ layout: 'vertical', showBadges: false }"
+          :disp-dataset="{ displays: [], codes: [] }" />
+      </template>
+
+      <!-- widget / widgetLib 모드 -->
+      <template v-else-if="(mode === 'widget' || mode === 'widgetLib') && cfWidgetItem">
+        <!-- 구조 정보 (토글) -->
+        <div v-if="showStructure" style="background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:3px solid #ff8a65;">
+          <div style="display:flex;gap:16px;font-size:12px;color:#888;flex-wrap:wrap;align-items:center;">
+            <span style="font-weight:700;color:#333;font-size:13px;">{{ item.data.widgetNm || item.data.widgetTitle }}</span>
+            <span>유형: <b style="color:#6a1b9a;font-family:monospace;">{{ item.data.widgetTypeCd }}</b></span>
+            <span v-if="item.data.widgetCode">코드: <b style="font-family:monospace;color:#444;">{{ item.data.widgetCode }}</b></span>
+            <span>사용: <b :style="item.data.useYn==='Y'?'color:#2e7d32':'color:#c62828'">{{ item.data.useYn === 'Y' ? '사용' : '미사용' }}</b></span>
+            <span v-if="item.data.widgetDesc || item.data.widgetLibDesc" style="color:#555;">{{ item.data.widgetDesc || item.data.widgetLibDesc }}</span>
+          </div>
+        </div>
+        <!-- 순수 렌더링 -->
+        <disp-x04-widget :params="{}" :widget-item="cfWidgetItem"
+          :disp-opt="{ showBadges: false }"
+          :disp-dataset="{ displays: [], codes: [] }" />
+      </template>
+
+      <!-- ui 모드 -->
+      <template v-else-if="mode === 'ui' && item.data">
+        <!-- 구조 정보 (토글) -->
+        <div v-if="showStructure" style="background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:3px solid #42a5f5;">
+          <div style="display:flex;gap:16px;font-size:12px;color:#888;flex-wrap:wrap;align-items:center;">
+            <span style="font-weight:700;color:#333;font-size:13px;">{{ item.data.uiNm }}</span>
+            <span>코드: <b style="color:#444;font-family:monospace;">{{ item.data.uiCd }}</b></span>
+            <span>디바이스: <b style="color:#6a1b9a;">{{ item.data.deviceTypeCd }}</b></span>
+            <span>사용: <b :style="item.data.useYn==='Y'?'color:#2e7d32':'color:#c62828'">{{ item.data.useYn === 'Y' ? '사용' : '미사용' }}</b></span>
+            <span>영역 수: <b style="color:#1a237e;">{{ cfUiAreas.length }}</b></span>
+            <span v-if="item.data.uiDesc" style="color:#555;">{{ item.data.uiDesc }}</span>
+          </div>
+        </div>
+        <!-- 순수 렌더링 -->
+        <div v-if="cfUiAreas.length === 0" style="background:#fff;border-radius:10px;padding:40px;text-align:center;color:#aaa;margin-top:8px;">
+          이 UI에 영역이 없습니다.
+        </div>
+        <template v-for="area in cfUiAreas" :key="area._raw.areaId">
+          <!-- 영역 구조 정보 (토글) -->
+          <div v-if="showStructure" style="background:#f5f0ff;border-radius:6px;padding:6px 14px;margin-top:10px;margin-bottom:4px;display:flex;gap:12px;align-items:center;border-left:3px solid #ab47bc;">
+            <span style="font-weight:700;color:#4a148c;font-size:12px;">{{ area._raw.areaNm }}</span>
+            <span style="font-family:monospace;font-size:11px;color:#aaa;">{{ area._raw.areaCd }}</span>
+            <span style="font-size:11px;color:#7b1fa2;">{{ area._raw.areaTypeCd }}</span>
+            <span style="font-size:11px;" :style="area._raw.useYn==='Y'?'color:#2e7d32':'color:#c62828'">{{ area._raw.useYn === 'Y' ? '사용' : '미사용' }}</span>
+            <span style="font-size:11px;color:#555;margin-left:auto;">패널 {{ area.panels.length }}개</span>
+          </div>
+          <!-- 패널 렌더링 -->
+          <div v-if="area.panels.length === 0" style="color:#bbb;font-size:13px;padding:8px 0 8px 4px;">이 영역에 패널이 없습니다.</div>
+          <template v-for="p in area.panels" :key="p.dispId">
+            <!-- 패널 구조 정보 (토글) -->
+            <div v-if="showStructure" style="background:#fafafa;padding:4px 12px;margin-top:6px;margin-bottom:2px;display:flex;gap:10px;align-items:center;font-size:11px;color:#888;border-left:2px solid #c8e6c9;border-radius:0 4px 4px 0;">
+              <span style="font-weight:600;color:#333;">{{ p.name }}</span>
+              <span style="font-family:monospace;color:#aaa;">{{ p._raw.panelCd || p.dispId }}</span>
+              <span :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32':'color:#c62828'">{{ p._raw.dispPanelStatusCd }}</span>
+              <span>위젯 {{ p.rows ? p.rows.length : 0 }}개</span>
+            </div>
+            <!-- 패널 순수 렌더링 -->
+            <disp-x03-panel :params="{}" :panel-item="p" :show-header="false"
+              :disp-opt="{ layout: 'vertical', showBadges: false }"
+              :disp-dataset="{ displays: [], codes: [] }" />
+          </template>
+        </template>
+      </template>
+
+      <!-- area 모드 -->
+      <template v-else-if="mode === 'area' && item.data">
+        <!-- 구조 정보 (토글) -->
+        <div v-if="showStructure" style="background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:3px solid #29b6f6;">
+          <div style="display:flex;gap:16px;font-size:12px;color:#888;flex-wrap:wrap;align-items:center;">
+            <span style="font-weight:700;color:#333;font-size:13px;">{{ item.data.areaNm }}</span>
+            <span>코드: <b style="color:#444;font-family:monospace;">{{ item.data.areaCd }}</b></span>
+            <span>유형: <b style="color:#6a1b9a;">{{ item.data.areaTypeCd }}</b></span>
+            <span>사용: <b :style="item.data.useYn==='Y'?'color:#2e7d32':'color:#c62828'">{{ item.data.useYn === 'Y' ? '사용' : '미사용' }}</b></span>
+            <span>패널 수: <b style="color:#1a237e;">{{ cfAreaPanels.length }}</b></span>
+          </div>
+        </div>
+        <div v-if="cfAreaPanels.length === 0" style="background:#fff;border-radius:10px;padding:40px;text-align:center;color:#aaa;margin-top:8px;">
+          이 영역에 패널이 없습니다.
+        </div>
+        <template v-for="p in cfAreaPanels" :key="p.dispId">
+          <!-- 패널 구조 정보 (토글) -->
+          <div v-if="showStructure" style="background:#f0f9ff;padding:4px 12px;margin-top:8px;margin-bottom:2px;display:flex;gap:10px;align-items:center;font-size:11px;color:#888;border-left:2px solid #c8e6c9;border-radius:0 4px 4px 0;">
+            <span style="font-weight:600;color:#333;">{{ p.name }}</span>
+            <span style="font-family:monospace;color:#aaa;">{{ p._raw.panelCd || p.dispId }}</span>
+            <span :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32':'color:#c62828'">{{ p._raw.dispPanelStatusCd }}</span>
+            <span>위젯 {{ p.rows ? p.rows.length : 0 }}개</span>
+          </div>
+          <!-- 패널 순수 렌더링 -->
+          <disp-x03-panel :params="{}" :panel-item="p" :show-header="false"
+            :disp-opt="{ layout: 'vertical', showBadges: false }"
+            :disp-dataset="{ displays: [], codes: [] }" />
+        </template>
+      </template>
+
+      <!-- 미지원 모드 안내 -->
+      <div v-if="!['panel','widget','widgetLib','ui','area'].includes(mode)"
+        style="text-align:center;padding:60px 0;color:#bbb;font-size:13px;">
+        이 모드는 미리보기를 지원하지 않습니다.
+      </div>
+
+      </div><!-- /cfDeviceStyle -->
+    </div><!-- /device-frame wrapper -->
+  </template>
+
+  <!-- ═══════════════════════════════ 탭2: 정보 / 구조 ═══════════════════════════════ -->
+  <template v-else-if="tab === 'info' && item.data">
+    <div :style="deviceMode==='pc' ? 'max-width:none;margin:24px 24px;' : (deviceMode==='tablet' ? 'max-width:768px;margin:24px auto;' : 'max-width:390px;margin:24px auto;')" style="padding:0;display:flex;flex-direction:column;gap:20px;">
+
+      <!-- ① 데이터 정보 -->
+      <div style="background:#fff;border-radius:10px;border:2px solid #c5cae9;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
+        <div style="background:#f0f4ff;padding:12px 20px;border-bottom:2px solid #c5cae9;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:14px;font-weight:700;color:#1a237e;">① 데이터 정보</span>
+          <span style="font-size:12px;color:#888;">{{ label }} 스칼라 필드</span>
+        </div>
+        <div style="padding:16px 20px;">
+          <table class="dsp-data-table">
+            <tbody>
+              <tr v-for="f in cfDataFields" :key="f.key">
+                <td>{{ f.key }}</td>
+                <td style="font-family:monospace;">{{ f.val }}</td>
+              </tr>
+              <tr v-if="cfDataFields.length === 0">
+                <td colspan="2" style="color:#aaa;font-style:italic;">스칼라 필드 없음</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ② 구조 트리 + 인라인 미리보기 -->
+      <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
+        <div style="background:#fff8f0;padding:10px 20px;border-bottom:2px solid #ffe0b2;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:14px;font-weight:700;color:#e65100;">② 구조 트리</span>
+          <span style="font-size:12px;color:#aaa;">▼/▶ 클릭으로 미리보기 펼치기/접기</span>
+          <div style="margin-left:auto;">
+            <button @click="fnAllExpanded() ? fnCollapseAll() : fnExpandAll()"
+              style="background:#fff;border:1px solid #ddd;border-radius:5px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;min-width:100px;">
+              {{ fnAllExpanded() ? '▶ 전체 접기' : '▼ 전체 펼치기' }}
+            </button>
+          </div>
+        </div>
+        <div style="padding:16px 20px;">
+
+          <!-- widgetLib / widget 단독 -->
+          <template v-if="mode === 'widgetLib' || mode === 'widget'">
+            <div style="border:1px solid #f57c00;border-radius:8px;overflow:hidden;">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#fff3e0;border-bottom:1px solid #f57c00;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('widget_preview')">
+                <span class="dsp-tree-toggle">{{ fnIsOpen('widget_preview') ? '▼' : '▶' }}</span>
+                <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
+                <span style="margin-left:8px;color:#e65100;font-weight:700;">{{ item.data.widgetNm || item.data.widgetTitle }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.widgetTypeCd" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ item.data.widgetTypeCd }}</span>
+                  <span v-if="item.data.widgetNm||item.data.widgetTitle" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ item.data.widgetNm||item.data.widgetTitle }}</span>
+                  <span style="font-size:10px;color:#ffb74d;font-family:monospace;">{{ item.data.widgetLibId || item.data.widgetId }}</span>
+                </span>
+              </div>
+              <div v-if="fnIsOpen('widget_preview')" style="padding:16px;background:#fff8f0;">
+                <disp-x04-widget v-if="cfWidgetItem" :params="{}" :disp-opt="{ showBadges: false }" :widget-item="cfWidgetItem" />
+                <div v-else style="color:#ccc;font-size:12px;">미리보기 없음</div>
+              </div>
+            </div>
+          </template>
+
+          <!-- panel 단독 -->
+          <template v-else-if="mode === 'panel' && cfPanelItem">
+            <div style="border:1px solid #7b1fa2;border-radius:8px;overflow:hidden;">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('panel')">
+                <span class="dsp-tree-toggle">{{ fnIsOpen('panel') ? '▼' : '▶' }}</span>
+                <span class="dsp-badge-panel" style="margin-left:6px;">DispX03Panel</span>
+                <span style="margin-left:8px;color:#4a148c;font-weight:700;">{{ item.data.panelNm }}</span>
+                <span style="margin-left:4px;font-size:11px;color:#7b1fa2;">{{ item.data.panelCd }}</span>
+                <span style="margin-left:4px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ item.data.panelId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.layoutType" class="dsp-prop-tag">{{ item.data.layoutType }}</span>
+                  <span class="dsp-prop-tag" :style="item.data.dispPanelStatusCd==='SHOW'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ item.data.dispPanelStatusCd }}</span>
+                  <span class="dsp-prop-tag">위젯 {{ (cfPanelItem?.rows||[]).length }}개</span>
+                </span>
+              </div>
+              <template v-if="fnIsOpen('panel')">
+                <div style="background:#fce4ec;">
+                  <div v-if="!(cfPanelItem.rows && cfPanelItem.rows.length)" style="color:#ccc;font-size:12px;padding:8px 14px;">위젯 없음</div>
+                  <div v-for="(row, ri) in (cfPanelItem.rows || [])" :key="ri" style="border-top:1px solid #e1bee7;">
+                    <div class="dsp-tree-node" style="padding:5px 14px 5px 30px;background:#f8bbd0;display:flex;align-items:center;flex-wrap:wrap;gap:4px;cursor:pointer;" @click="fnToggleTree('panel_w_'+ri)">
+                      <span class="dsp-tree-toggle">{{ fnIsOpen('panel_w_'+ri) ? '▼' : '▶' }}</span>
+                      <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
+                      <span style="margin-left:6px;color:#880e4f;font-weight:600;">[{{ ri+1 }}]</span>
+                      <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                        <span v-if="row.widgetTypeCd||row.type" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ row.widgetTypeCd||row.type }}</span>
+                        <span v-if="row.widgetNm" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ row.widgetNm }}</span>
+                        <span v-if="row.condition" class="dsp-prop-tag">{{ row.condition }}</span>
+                        <span v-if="row.sortOrd != null" class="dsp-prop-tag">순서 {{ row.sortOrd }}</span>
+                        <span style="font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                      </span>
+                    </div>
+                    <div v-if="fnIsOpen('panel_w_'+ri)" style="padding:10px 14px;background:#fff9fb;">
+                      <disp-x04-widget :params="{}" :disp-opt="{ showBadges: false }" :widget-item="row" />
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- area 단독 -->
+          <template v-else-if="mode === 'area'">
+            <div style="border:1px solid #1565c0;border-radius:8px;overflow:hidden;">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#e3f2fd;border-bottom:1px solid #1565c0;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('area')">
+                <span class="dsp-tree-toggle">{{ fnIsOpen('area') ? '▼' : '▶' }}</span>
+                <span class="dsp-badge-area" style="margin-left:6px;">DispX02Area</span>
+                <span style="margin-left:8px;color:#0d47a1;font-weight:700;">{{ item.data.areaNm }}</span>
+                <span style="margin-left:4px;font-size:11px;color:#1565c0;">{{ item.data.areaCd }}</span>
+                <span style="margin-left:4px;font-size:10px;color:#90caf9;font-family:monospace;">{{ item.data.areaId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.layoutType" class="dsp-prop-tag">{{ item.data.layoutType }}</span>
+                  <span class="dsp-prop-tag" :style="item.data.useYn==='Y'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ item.data.useYn==='Y' ? '사용' : '미사용' }}</span>
+                  <span class="dsp-prop-tag">패널 {{ cfAreaPanels.length }}개</span>
+                </span>
+              </div>
+              <template v-if="fnIsOpen('area')">
+                <div style="padding:10px;background:#e8f4fd;display:flex;flex-direction:column;gap:8px;">
+                  <div v-for="(p, pi) in cfAreaPanels" :key="p.dispId" style="border:1px solid #7b1fa2;border-radius:6px;overflow:hidden;background:#fff;">
+                    <div class="dsp-tree-node" style="padding:7px 12px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('area_p_'+pi)">
+                      <span class="dsp-tree-toggle">{{ fnIsOpen('area_p_'+pi) ? '▼' : '▶' }}</span>
+                      <span class="dsp-badge-panel" style="margin-left:6px;">DispX03Panel</span>
+                      <span style="margin-left:6px;color:#4a148c;font-weight:600;">{{ p.name }}</span>
+                      <span style="margin-left:4px;font-size:11px;color:#7b1fa2;">{{ p._raw.panelCd }}</span>
+                      <span style="margin-left:4px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ p._raw.panelId }}</span>
+                      <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                        <span v-if="p._raw.layoutType" class="dsp-prop-tag">{{ p._raw.layoutType }}</span>
+                        <span class="dsp-prop-tag" :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ p._raw.dispPanelStatusCd }}</span>
+                        <span class="dsp-prop-tag">위젯 {{ (p.rows||[]).length }}개</span>
+                      </span>
+                    </div>
+                    <template v-if="fnIsOpen('area_p_'+pi)">
+                      <div style="background:#fce4ec;">
+                        <div v-if="!(p.rows && p.rows.length)" style="color:#ccc;font-size:12px;padding:6px 12px;">위젯 없음</div>
+                        <div v-for="(row, ri) in (p.rows || [])" :key="ri" style="border-top:1px solid #e1bee7;">
+                          <div class="dsp-tree-node" style="padding:4px 12px 4px 28px;background:#f8bbd0;display:flex;align-items:center;flex-wrap:wrap;gap:4px;cursor:pointer;" @click="fnToggleTree('area_p_'+pi+'_w_'+ri)">
+                            <span class="dsp-tree-toggle">{{ fnIsOpen('area_p_'+pi+'_w_'+ri) ? '▼' : '▶' }}</span>
+                            <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
+                            <span style="margin-left:6px;color:#880e4f;font-weight:600;">[{{ ri+1 }}]</span>
+                            <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                              <span v-if="row.widgetTypeCd||row.type" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ row.widgetTypeCd||row.type }}</span>
+                              <span v-if="row.widgetNm" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ row.widgetNm }}</span>
+                              <span v-if="row.condition" class="dsp-prop-tag">{{ row.condition }}</span>
+                              <span v-if="row.sortOrd != null" class="dsp-prop-tag">순서 {{ row.sortOrd }}</span>
+                              <span style="font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                            </span>
+                          </div>
+                          <div v-if="fnIsOpen('area_p_'+pi+'_w_'+ri)" style="padding:10px 12px;background:#fff9fb;">
+                            <disp-x04-widget :params="{}" :disp-opt="{ showBadges: false }" :widget-item="row" />
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                  <div v-if="cfAreaPanels.length === 0" style="color:#ccc;font-size:12px;padding:4px 8px;">패널 없음</div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- ui: UI > 영역 > 패널 > 위젯 (3단 중첩) -->
+          <template v-else-if="mode === 'ui'">
+            <div style="border:1px solid #2e7d32;border-radius:8px;overflow:hidden;">
+              <!-- UI 헤더 — 초록 -->
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#e8f5e9;border-bottom:1px solid #2e7d32;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('ui')">
+                <span class="dsp-tree-toggle">{{ fnIsOpen('ui') ? '▼' : '▶' }}</span>
+                <span class="dsp-badge-ui" style="margin-left:6px;">DispX01Ui</span>
+                <span style="margin-left:8px;color:#1b5e20;font-weight:700;">{{ item.data.uiNm }}</span>
+                <span style="margin-left:4px;font-size:11px;color:#2e7d32;">{{ item.data.uiCd }}</span>
+                <span style="margin-left:4px;font-size:10px;color:#a5d6a7;font-family:monospace;">{{ item.data.uiId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.deviceTypeCd" class="dsp-prop-tag">{{ item.data.deviceTypeCd }}</span>
+                  <span class="dsp-prop-tag" :style="item.data.useYn==='Y'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ item.data.useYn==='Y' ? '사용' : '미사용' }}</span>
+                  <span class="dsp-prop-tag">영역 {{ cfUiAreas.length }}개</span>
+                </span>
+              </div>
+              <template v-if="fnIsOpen('ui')">
+                <div style="padding:8px;background:#c8e6c9;display:flex;flex-direction:column;gap:8px;">
+                  <div v-for="(area, ai) in cfUiAreas" :key="area._raw.areaId" style="border:1px solid #1565c0;border-radius:6px;overflow:hidden;background:#fff;">
+                    <!-- 영역 헤더 — 파랑 -->
+                    <div class="dsp-tree-node" style="padding:7px 12px;background:#e3f2fd;border-bottom:1px solid #1565c0;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('ui_a_'+ai)">
+                      <span class="dsp-tree-toggle">{{ fnIsOpen('ui_a_'+ai) ? '▼' : '▶' }}</span>
+                      <span class="dsp-badge-area" style="margin-left:6px;">DispX02Area</span>
+                      <span style="margin-left:6px;color:#0d47a1;font-weight:600;">{{ area._raw.areaNm }}</span>
+                      <span style="margin-left:4px;font-size:11px;color:#1565c0;">{{ area._raw.areaCd }}</span>
+                      <span style="margin-left:4px;font-size:10px;color:#90caf9;font-family:monospace;">{{ area._raw.areaId }}</span>
+                      <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                        <span v-if="area._raw.layoutType" class="dsp-prop-tag">{{ area._raw.layoutType }}</span>
+                        <span class="dsp-prop-tag" :style="area._raw.useYn==='Y'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ area._raw.useYn==='Y' ? '사용' : '미사용' }}</span>
+                        <span class="dsp-prop-tag">패널 {{ area.panels.length }}개</span>
+                      </span>
+                    </div>
+                    <template v-if="fnIsOpen('ui_a_'+ai)">
+                      <div style="padding:6px;background:#bbdefb;display:flex;flex-direction:column;gap:5px;">
+                        <div v-for="(p, pi) in area.panels" :key="p.dispId" style="border:1px solid #7b1fa2;border-radius:5px;overflow:hidden;background:#fff;">
+                          <!-- 패널 헤더 — 보라 -->
+                          <div class="dsp-tree-node" style="padding:6px 10px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('ui_a_'+ai+'_p_'+pi)">
+                            <span class="dsp-tree-toggle">{{ fnIsOpen('ui_a_'+ai+'_p_'+pi) ? '▼' : '▶' }}</span>
+                            <span class="dsp-badge-panel" style="margin-left:6px;">DispX03Panel</span>
+                            <span style="margin-left:6px;color:#4a148c;font-weight:600;">{{ p.name }}</span>
+                            <span style="margin-left:4px;font-size:11px;color:#7b1fa2;">{{ p._raw.panelCd }}</span>
+                            <span style="margin-left:4px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ p._raw.panelId }}</span>
+                            <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                              <span v-if="p._raw.layoutType" class="dsp-prop-tag">{{ p._raw.layoutType }}</span>
+                              <span class="dsp-prop-tag" :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ p._raw.dispPanelStatusCd }}</span>
+                              <span class="dsp-prop-tag">위젯 {{ (p.rows||[]).length }}개</span>
+                            </span>
+                          </div>
+                          <template v-if="fnIsOpen('ui_a_'+ai+'_p_'+pi)">
+                            <!-- 위젯들 — 핑크/오렌지 -->
+                            <div style="background:#fce4ec;">
+                              <div v-if="!(p.rows && p.rows.length)" style="color:#ccc;font-size:12px;padding:6px 10px;">위젯 없음</div>
+                              <div v-for="(row, ri) in (p.rows || [])" :key="ri" style="border-top:1px solid #e1bee7;">
+                                <div class="dsp-tree-node" style="padding:4px 10px 4px 26px;background:#f8bbd0;display:flex;align-items:center;flex-wrap:wrap;gap:4px;cursor:pointer;" @click="fnToggleTree('ui_a_'+ai+'_p_'+pi+'_w_'+ri)">
+                                  <span class="dsp-tree-toggle">{{ fnIsOpen('ui_a_'+ai+'_p_'+pi+'_w_'+ri) ? '▼' : '▶' }}</span>
+                                  <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
+                                  <span style="margin-left:6px;color:#880e4f;font-weight:600;">[{{ ri+1 }}]</span>
+                                  <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                                    <span v-if="row.widgetTypeCd||row.type" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ row.widgetTypeCd||row.type }}</span>
+                                    <span v-if="row.widgetNm" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ row.widgetNm }}</span>
+                                    <span v-if="row.condition" class="dsp-prop-tag">{{ row.condition }}</span>
+                                    <span v-if="row.sortOrd != null" class="dsp-prop-tag">순서 {{ row.sortOrd }}</span>
+                                    <span style="font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                                  </span>
+                                </div>
+                                <div v-if="fnIsOpen('ui_a_'+ai+'_p_'+pi+'_w_'+ri)" style="padding:10px;background:#fff9fb;">
+                                  <disp-x04-widget :params="{}" :disp-opt="{ showBadges: false }" :widget-item="row" />
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+                        </div>
+                        <div v-if="area.panels.length === 0" style="color:#90a4ae;font-size:12px;padding:4px 8px;">패널 없음</div>
+                      </div>
+                    </template>
+                  </div>
+                  <div v-if="cfUiAreas.length === 0" style="color:#90a4ae;font-size:12px;padding:4px 8px;">영역 없음</div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- 기타 모드 -->
+          <div v-else style="color:#aaa;font-size:13px;">이 모드는 트리 구조를 지원하지 않습니다.</div>
+
+        </div>
+      </div>
+
+      <!-- ③ 소스 구조 -->
+      <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
+        <div style="background:#1e2330;padding:10px 16px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;color:#7ec8e3;">&lt;/&gt; 소스 구조</span>
+          <span style="font-size:11px;color:#6b7a99;">DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget</span>
+          <button @click="(function(e){ var btn=e.target; if(navigator.clipboard){ navigator.clipboard.writeText(cfSourceCode).then(function(){ btn.textContent='✅ 복사됨'; setTimeout(function(){ btn.textContent='■ 전체 복사'; },1500); }); } }($event))"
+            style="margin-left:auto;background:#2d3748;color:#a0aec0;border:1px solid #4a5568;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;">■ 전체 복사</button>
+        </div>
+        <div style="padding:0;background:#1a1d2e;overflow:auto;max-height:520px;">
+          <pre style="font-size:12px;line-height:1.8;color:#cdd3de;background:transparent;padding:16px 20px;margin:0;white-space:pre;word-break:normal;font-family:'Consolas','Fira Mono','Courier New',monospace;" v-html="cfSourceCodeHtml"></pre>
+        </div>
+      </div>
+
+    </div>
+  </template>
+</div>
+`,
+    };
+
+    const DispUiApp = {
+      name: 'DispUiApp',
+      setup() {
+        /* ── Preview 모드: mode+id 파라미터가 있으면 DispSinglePreview만 렌더 ── */
+        if (isPreviewMode) {
+          return { isPreviewMode: true, previewMode: _mode, previewId: _id };
+        }
+
+        /* ── 기존 샘플 페이지 모드 ── */
+        const PAGE_MAP = {
+          'DispUi01': 'disp-ui01',
+          'DispUi02': 'disp-ui02',
+          'DispUi03': 'disp-ui03',
+          'DispUi04': 'disp-ui04',
+          'DispUi05': 'disp-ui05',
+          'DispUi06': 'disp-ui06',
+        };
+        const PAGE_LABELS = [
+          { key: 'DispUi01', label: 'HOME', icon: '🏠' },
+          { key: 'DispUi02', label: 'CATEGORY/SEARCH', icon: '🔍' },
+          { key: 'DispUi03', label: 'PRODUCT/EVENT', icon: '📦' },
+          { key: 'DispUi04', label: 'MY_PAGE/FOOTER', icon: '👤' },
+          { key: 'DispUi05', label: 'DispUi05', icon: '📋' },
+          { key: 'DispUi06', label: 'DispUi06', icon: '📋' },
+        ];
+
+        const getPage = () => {
+          const h = location.hash.replace('#','');
+          const qs = new URLSearchParams(location.search);
+          if (h && PAGE_MAP[h]) return h;
+          if (qs.get('areas')) return 'DispUiPage';
+          return 'DispUi01';
+        };
+
+        const currentPage = ref(getPage());
+        const onHash = () => { currentPage.value = getPage(); };
+        onMounted(() => window.addEventListener('hashchange', onHash));
+        onUnmounted(() => window.removeEventListener('hashchange', onHash));
+
+        const isPage = (key) => currentPage.value === key;
+        const go = (key) => { location.hash = key; };
+
+        return { isPreviewMode: false, previewMode: '', previewId: '', currentPage, isPage, go, PAGE_LABELS };
+      },
+      template: /* html */`
+<div>
+  <!-- ── Preview 모드: DispSinglePreview 전체화면 렌더 ── -->
+  <disp-single-preview v-if="isPreviewMode" :mode="previewMode" :preview-id="previewId" />
+
+  <!-- ── 기존 샘플 페이지 모드 ── -->
+  <template v-else>
+    <div v-if="currentPage !== 'DispUiPage'"
+      style="display:flex;gap:0;background:#2d2d2d;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+      <button v-for="p in PAGE_LABELS" :key="p.key"
+        @click="go(p.key)"
+        style="flex:1;padding:10px 8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
+        :style="isPage(p.key)
+          ? 'background:#fff;color:#6a1b9a;border-bottom:3px solid #6a1b9a;'
+          : 'background:transparent;color:#aaa;border-bottom:3px solid transparent;'"
+      >{{ p.icon }} {{ p.label }}</button>
+    </div>
+    <disp-ui-page   v-if="currentPage==='DispUiPage'" />
+    <disp-ui01      v-else-if="currentPage==='DispUi01'" />
+    <disp-ui02      v-else-if="currentPage==='DispUi02'" />
+    <disp-ui03      v-else-if="currentPage==='DispUi03'" />
+    <disp-ui04      v-else-if="currentPage==='DispUi04'" />
+    <disp-ui05      v-else-if="currentPage==='DispUi05'" />
+    <disp-ui06      v-else-if="currentPage==='DispUi06'" />
+  </template>
+</div>
+`,
+    };
+
+    const app = createApp(DispUiApp);
+    app.use(_pinia);
+    app.component('BoError404',        window.boError404);
+    app.component('DispX01Ui',         window.DispX01Ui);
+    app.component('DispX02Area',       window.DispX02Area);
+    app.component('DispX03Panel',      window.DispX03Panel);
+    app.component('DispX04Widget',     window.DispX04Widget);
+    app.component('CoBarcodeWidget',   window.CoBarcodeWidget   || { template: '<div/>' });
+    app.component('CoCountdownWidget', window.CoCountdownWidget  || { template: '<div/>' });
+    app.component('DispUiPage',        window.DispUiPage);
+    app.component('DispSinglePreview', DispSinglePreview);
+    ['DispUi01', 'DispUi02', 'DispUi03', 'DispUi04', 'DispUi05', 'DispUi06'].forEach(name => {
+      if (window[name]) app.component(name, window[name]);
+    });
+    /* BoComp/BoAreaComp/BoModals 등록 (DispX0* 내부적으로 사용) */
+    if (window.BoComp)     Object.entries(window.BoComp).forEach(([k,v])     => app.component(k, v));
+    if (window.BoAreaComp) Object.entries(window.BoAreaComp).forEach(([k,v]) => app.component(k, v));
+    if (window.BoModals)   Object.entries(window.BoModals).forEach(([k,v])   => app.component(k, v));
+    app.mount('#app');
+    const loadingEl = document.getElementById('_boot_loading');
+    if (loadingEl) {
+      loadingEl.classList.add('done');
+      setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
+    }
+  </script>
+</body>
+</html>

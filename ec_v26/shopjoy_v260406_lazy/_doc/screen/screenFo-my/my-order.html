@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>내 주문내역 | MY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.btn{display:inline-block;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;margin:2px}
+.btn-primary{background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff}
+.btn-secondary{background:#f3f4f6;color:#555;border:1px solid #e5e7eb}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-orange{background:#fed7aa;color:#9a3412}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-red{background:#fee2e2;color:#991b1b}
+.tab-bar{display:flex;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:56px;overflow-x:auto}
+.tab-item{flex-shrink:0;text-align:center;padding:12px 14px;font-size:12px;color:#9ca3af;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab-item.active{color:#be185d;border-bottom-color:#be185d;font-weight:700}
+.order-card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:12px}
+.order-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.order-no{font-size:12px;color:#9ca3af}
+.order-date{font-size:12px;color:#9ca3af}
+.order-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.order-img{width:60px;height:60px;background:#f3f4f6;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
+.order-info{flex:1}
+.order-prod-nm{font-size:14px;font-weight:600;margin-bottom:3px}
+.order-opt{font-size:12px;color:#9ca3af}
+.order-price{font-size:14px;font-weight:700;color:#be185d}
+.order-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:6px}
+.amount-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:#666}
+.amount-row.total{font-size:15px;font-weight:700;border-top:1px solid #fed7aa;margin-top:6px;padding-top:8px;color:#c2410c}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.track-info{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;margin-top:8px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>📦 내 주문내역</h1>
+  <a href="index.html" style="font-size:11px;color:#be185d;text-decoration:none">← 마이페이지</a>
+</div>
+<div class="breadcrumb">마이페이지 &gt; <span>내 주문내역</span></div>
+
+<div class="tab-bar">
+  <div class="tab-item active">전체</div>
+  <div class="tab-item">결제완료</div>
+  <div class="tab-item">배송중</div>
+  <div class="tab-item">배송완료</div>
+  <div class="tab-item">구매확정</div>
+  <div class="tab-item">취소</div>
+</div>
+
+<div class="section">
+
+  <!-- 주문카드 1: PAID -->
+  <div class="order-card">
+    <div class="order-card-header">
+      <span class="order-no has-tip"
+        data-table="od_order" data-col="order_id"
+        data-tbl-cmt="주문 마스터" data-col-cmt="주문ID (YYMMDDhhmmss+rand4)">
+        주문번호: 2604180000001
+      </span>
+      <span class="badge badge-blue has-tip"
+        data-table="od_order" data-col="order_status_cd"
+        data-tbl-cmt="주문 마스터" data-col-cmt="주문상태코드"
+        data-code-grp="ORDER_STATUS"
+        data-codes="PENDING:결제대기|PAID:결제완료|PREPARING:상품준비중|SHIPPED:배송중|DELIVERED:배송완료|COMPLT:구매확정|CANCELLED:취소">
+        결제완료
+      </span>
+    </div>
+    <div class="order-date has-tip"
+      data-table="od_order" data-col="order_date"
+      data-tbl-cmt="주문 마스터" data-col-cmt="주문일시">
+      주문일: 2026-04-18 14:32
+    </div>
+    <div class="order-item" style="margin-top:10px">
+      <div class="order-img">👕</div>
+      <div class="order-info">
+        <div class="order-prod-nm has-tip"
+          data-table="od_order_item" data-col="prod_nm"
+          data-tbl-cmt="주문 상품 항목" data-col-cmt="주문 시점 상품명 스냅샷">
+          오가닉 코튼 티셔츠
+        </div>
+        <div class="order-opt has-tip"
+          data-table="od_order_item" data-col="opt_nm"
+          data-tbl-cmt="주문 상품 항목" data-col-cmt="옵션명 스냅샷 (색상/사이즈 등)">
+          블랙 / M
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span class="order-opt has-tip"
+            data-table="od_order_item" data-col="order_qty"
+            data-tbl-cmt="주문 상품 항목" data-col-cmt="주문수량">
+            수량: 2개
+          </span>
+          <span class="order-price has-tip"
+            data-table="od_order_item" data-col="unit_price"
+            data-tbl-cmt="주문 상품 항목" data-col-cmt="주문 시점 단가">
+            45,000원
+          </span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <div class="amount-row">
+        <span>상품금액</span>
+        <span class="has-tip" data-table="od_order" data-col="total_amt"
+          data-tbl-cmt="주문 마스터" data-col-cmt="상품금액 합계">90,000원</span>
+      </div>
+      <div class="amount-row">
+        <span>배송비</span>
+        <span class="has-tip" data-table="od_order" data-col="outbound_shipping_fee"
+          data-tbl-cmt="주문 마스터" data-col-cmt="출고 배송비">3,000원</span>
+      </div>
+      <div class="amount-row total">
+        <span>실결제금액</span>
+        <span class="has-tip" data-table="od_order" data-col="pay_amt"
+          data-tbl-cmt="주문 마스터" data-col-cmt="실제 결제금액 (쿠폰/적립금 차감 후)">93,000원</span>
+      </div>
+    </div>
+    <div class="order-footer">
+      <button class="btn btn-secondary">주문상세보기</button>
+      <button class="btn btn-primary">취소신청</button>
+    </div>
+  </div>
+
+  <!-- 주문카드 2: SHIPPED -->
+  <div class="order-card">
+    <div class="order-card-header">
+      <span class="order-no has-tip"
+        data-table="od_order" data-col="order_id"
+        data-tbl-cmt="주문 마스터" data-col-cmt="주문ID">
+        주문번호: 2604160000003
+      </span>
+      <span class="badge badge-orange has-tip"
+        data-table="od_order" data-col="order_status_cd"
+        data-tbl-cmt="주문 마스터" data-col-cmt="주문상태코드"
+        data-code-grp="ORDER_STATUS"
+        data-codes="PENDING:결제대기|PAID:결제완료|PREPARING:상품준비중|SHIPPED:배송중|DELIVERED:배송완료|COMPLT:구매확정|CANCELLED:취소">
+        배송중
+      </span>
+    </div>
+    <div class="order-date has-tip"
+      data-table="od_order" data-col="order_date"
+      data-tbl-cmt="주문 마스터" data-col-cmt="주문일시">
+      주문일: 2026-04-16 09:15
+    </div>
+    <div class="order-item" style="margin-top:10px">
+      <div class="order-img">👖</div>
+      <div class="order-info">
+        <div class="order-prod-nm has-tip"
+          data-table="od_order_item" data-col="prod_nm"
+          data-tbl-cmt="주문 상품 항목" data-col-cmt="주문 시점 상품명 스냅샷">
+          린넨 와이드 팬츠
+        </div>
+        <div class="order-opt has-tip"
+          data-table="od_order_item" data-col="opt_nm"
+          data-tbl-cmt="주문 상품 항목" data-col-cmt="옵션명 스냅샷">
+          네이비 / L
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span class="order-opt">수량: 1개</span>
+          <span class="order-price has-tip"
+            data-table="od_order_item" data-col="unit_price"
+            data-tbl-cmt="주문 상품 항목" data-col-cmt="주문 시점 단가">
+            69,000원
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="track-info">
+      <div style="font-size:12px;font-weight:600;color:#15803d;margin-bottom:6px">🚚 배송 정보</div>
+      <div style="font-size:12px;color:#555">
+        <span>택배사: </span>
+        <span class="has-tip"
+          data-table="od_dliv" data-col="outbound_courier_cd"
+          data-tbl-cmt="배송 정보" data-col-cmt="출고 택배사 코드"
+          data-code-grp="COURIER_CD"
+          data-codes="CJ:CJ대한통운|LOTTE:롯데택배|HANJIN:한진택배|POST:우체국|LOGEN:로젠택배">
+          CJ대한통운
+        </span>
+      </div>
+      <div style="font-size:12px;color:#555;margin-top:3px">
+        <span>송장번호: </span>
+        <span class="has-tip"
+          data-table="od_dliv" data-col="outbound_tracking_no"
+          data-tbl-cmt="배송 정보" data-col-cmt="출고 운송장 번호">
+          123456789012
+        </span>
+      </div>
+    </div>
+    <div class="order-footer">
+      <button class="btn btn-secondary">배송추적</button>
+      <button class="btn btn-primary">교환/반품신청</button>
+    </div>
+  </div>
+
+  <!-- 주문카드 3: COMPLT -->
+  <div class="order-card">
+    <div class="order-card-header">
+      <span class="order-no has-tip"
+        data-table="od_order" data-col="order_id"
+        data-tbl-cmt="주문 마스터" data-col-cmt="주문ID">
+        주문번호: 2603280000010
+      </span>
+      <span class="badge badge-green has-tip"
+        data-table="od_order" data-col="order_status_cd"
+        data-tbl-cmt="주문 마스터" data-col-cmt="주문상태코드"
+        data-code-grp="ORDER_STATUS"
+        data-codes="PENDING:결제대기|PAID:결제완료|PREPARING:상품준비중|SHIPPED:배송중|DELIVERED:배송완료|COMPLT:구매확정|CANCELLED:취소">
+        구매확정
+      </span>
+    </div>
+    <div class="order-date has-tip"
+      data-table="od_order" data-col="order_date"
+      data-tbl-cmt="주문 마스터" data-col-cmt="주문일시">
+      주문일: 2026-03-28 18:44
+    </div>
+    <div class="order-item" style="margin-top:10px">
+      <div class="order-img">👜</div>
+      <div class="order-info">
+        <div class="order-prod-nm has-tip"
+          data-table="od_order_item" data-col="prod_nm"
+          data-tbl-cmt="주문 상품 항목" data-col-cmt="주문 시점 상품명 스냅샷">
+          시그니처 에코백
+        </div>
+        <div class="order-opt">옵션 없음</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span class="order-opt has-tip"
+            data-table="od_order_item" data-col="buy_confirm_yn"
+            data-tbl-cmt="주문 상품 항목" data-col-cmt="구매확정 여부 (Y/N)">
+            구매확정 완료
+          </span>
+          <span class="order-price">35,000원</span>
+        </div>
+      </div>
+    </div>
+    <div class="order-footer">
+      <button class="btn btn-secondary">주문상세보기</button>
+      <button class="btn btn-primary">리뷰 작성</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

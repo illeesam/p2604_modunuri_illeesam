@@ -1,0 +1,930 @@
+/* ShopJoy Admin - 쿠폰관리 상세/등록 (다중탭: 기본정보/미리보기/상세정보/발급목록/사용목록) */
+window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', tabMode: 'tab' };
+if (!window._pmCouponDtlState.tabMode) window._pmCouponDtlState.tabMode = 'tab';
+window.PmCouponDtl = {
+  name: 'PmCouponDtl',
+  props: {
+    navigate:     { type: Function, required: true }, // 페이지 이동
+    dtlId:        { type: String, default: null }, // 수정 대상 ID
+    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 #################################################### */
+
+    const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const vendors = reactive([]);
+    const uiState = reactive({ loading: false, showVendorModal: false, showMdModal: false, showTargetPicker: false, error: null, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
+    const tab = Vue.toRef(uiState, 'tab');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
+    const codes = reactive({
+      COUPON_STATUS_DTL: [], COUPON_TYPE: [],
+      PM_PROD_TARGET: [], PM_ISSUE_GRADE: [],
+      COUPON_USE_LIMIT: [], COUPON_ISSUE_DISP: [], COUPON_TARGET: [], COUPON_APPLY: [],
+      COUPON_DISC_TYPE: [], COUPON_APPLY_SCOPE_CD: [],
+    });
+
+    const form = reactive({
+      couponId: null, couponTypeCd: '', couponCd: '', couponNm: '', applyScopeCd: '',
+      discountType: '', discountVal: '', discountRate: null, discountAmt: null, minOrderAmt: '', maxDiscountAmt: '',
+      couponStatusCd: '', validFrom: '', validTo: '', issueLimit: '', useLimit: '',
+      targetTypeCd: 'PRODUCT', issueTargets: [],
+      issueMethods: '', issueCondition: '', memGradeCd: '', issueGrades: [],
+      useScope: '', useExclude: '', useRemark: '',
+      memo: '',
+      vendorId: '', chargeStaff: '', mdUserId: '', mdUserNm: '',
+    });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 (미선택/초기화 시엔 빈 폼 유지) */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        couponTypeCd: '상품할인쿠폰', discountType: 'amount', discountVal: 0,
+        minOrderAmt: 0, maxDiscountAmt: 0, couponStatusCd: '활성',
+        validFrom: DEFAULT_START, validTo: DEFAULT_END, issueLimit: 0, useLimit: 'unlimited',
+        targetTypeCd: 'PRODUCT', issueMethods: 'auto', issueCondition: 'all', useScope: 'all',
+      });
+    };
+    const errors = reactive({});
+
+    const _today = new Date();
+
+    /* _pad — 패딩 */
+    const _pad = n => String(n).padStart(2, '0');
+    const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
+    const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
+
+    const schema = yup.object({
+      couponNm: yup.string().required('쿠폰명을 입력해주세요.'),
+      couponCd: yup.string().required('쿠폰코드를 입력해주세요.'),
+      discountVal: yup.number().min(0).required('할인값을 입력해주세요.'),
+      validTo: yup.string().required('만료일을 입력해주세요.'),
+    });
+
+    const cfIsNew = computed(() => !props.dtlId);
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // view 모드 = 읽기전용 플래그
+    const cfIssueTargetsColumns = computed(() => [
+      { key: 'targetTypeCd', label: '구분', style: 'width:70px;', align: 'center',
+        fmt: v => (codes.PM_PROD_TARGET.find(c => c.codeValue === v) || {}).codeLabel || v || '-' },
+      { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
+      { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
+      ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',
+        fmt: () => '✕', link: true, cellStyle: 'color:#e8587a;cursor:pointer;font-weight:700;' }] : []),
+    ]);
+    const cfCurId       = computed(() => props.dtlId || form.couponId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    /* 신규: info 탭만 활성. 수정: info/detail 만 저장 의미 있음 (issued/used/preview 는 조회전용 → 비활성) */
+    const cfSaveDisabled = computed(() => {
+      const t = uiState.tab;
+      if (t === 'info') return false;                       // info 는 항상 활성
+      if (!cfHasId.value) return true;                      // info 외 탭은 ID 없으면 비활성
+      if (t === 'detail') return false;                     // detail 은 ID 있으면 활성
+      return true;                                          // issued / used / preview 는 비활성
+    });
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmCouponDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__closeDtl__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 삭제 (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기])
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
+      // 탭 전환 (info/detail/issued/used/preview)
+      } else if (cmd === 'tab-select') {
+        return onTabChange(param);
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode2 = param;
+        return;
+      // 미리보기 탭 변경
+      } else if (cmd === 'previewTab-change') {
+        return onPreviewTabChange(param);
+      // 판매업체 모달 열기
+      } else if (cmd === 'vendorModal-open') {
+        uiState.showVendorModal = true;
+        return;
+      // 판매업체 모달 닫기
+      } else if (cmd === 'vendorModal-close') {
+        uiState.showVendorModal = false;
+        return;
+      // 판매업체 초기화
+      } else if (cmd === 'form-vendorClear') {
+        form.vendorId = '';
+        form.chargeStaff = '';
+        return;
+      // 담당MD 모달 열기
+      } else if (cmd === 'mdModal-open') {
+        uiState.showMdModal = true;
+        return;
+      // 담당MD 초기화
+      } else if (cmd === 'form-mdClear') {
+        form.mdUserId = '';
+        form.mdUserNm = '';
+        return;
+      // 발급대상 추가 (상품피커 모달 오픈)
+      } else if (cmd === 'target-add') {
+        uiState.showTargetPicker = true;
+        return;
+      // 발급대상 삭제
+      } else if (cmd === 'target-remove') {
+        return _removeTarget(param);
+      // 발급대상 피커 닫기
+      } else if (cmd === 'target-close') {
+        uiState.showTargetPicker = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmCouponDtl.js : handleSelectAction -> ', cmd, param);
+      // 판매업체 선택
+      if (cmd === 'vendorModal-select') {
+        return selectVendor(param.vendorId, param.vendorNm);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 */
+    const handleGridCellAction = (gcmd, colKey, row, e = {}) => {
+      if (colKey === '_del') { return handleBtnAction('target-remove', e.rowIndex); }
+    };
+
+
+    /* _addTarget — 발급대상 추가 공통 헬퍼 (pm_coupon_item 즉시 저장, targetTypeCd 함께 기록) */
+    const _addTarget = async (row) => {
+      uiState.showTargetPicker = false;
+      if (!row) return;
+      const id = String(row.selId || '');
+      if (!id) return;
+      if (form.issueTargets.some(t => t.targetId === id && t.targetTypeCd === form.targetTypeCd)) {
+        showToast('이미 추가된 대상입니다.', 'error');
+        return;
+      }
+      try {
+        const res = await boApiSvc.pmCouponItem.create(
+          { couponId: cfCurId.value, targetTypeCd: form.targetTypeCd, targetId: id },
+          '쿠폰관리', '발급대상추가');
+        const saved = res.data?.data || res.data;
+        form.issueTargets.push({
+          couponItemId: saved.couponItemId, targetId: id, targetNm: row.selName || id, targetTypeCd: form.targetTypeCd,
+        });
+      } catch (err) {
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
+      }
+    };
+
+    /* _removeTarget — 발급대상 삭제 (pm_coupon_item 즉시 삭제) */
+    const _removeTarget = async (idx) => {
+      const row = form.issueTargets[idx];
+      if (!row) return;
+      try {
+        await boApiSvc.pmCouponItem.remove(row.couponItemId, '쿠폰관리', '발급대상삭제');
+        form.issueTargets.splice(idx, 1);
+      } catch (err) {
+        showToast(coUtil.cofErrMsg(err), 'error', 0);
+      }
+    };
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PmCouponDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-vendor-pick') {
+        if (result == null) { uiState.showVendorModal = false; return; }
+        return selectVendor(result.selId, result.selName);
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        if (result == null) { uiState.showMdModal = false; return; }
+        form.mdUserId = result.selId || '';
+        form.mdUserNm = result.selName || '';
+        uiState.showMdModal = false;
+        return;
+      } else if (popCmd === 'cmPopup-target-prod-pick') {
+        return _addTarget(result);
+      } else if (popCmd === 'cmPopup-target-brand-pick') {
+        return _addTarget(result);
+      } else if (popCmd === 'cmPopup-target-category-pick') {
+        return _addTarget(result);
+      } else if (popCmd === 'cmPopup-vendor-target-pick') {
+        return _addTarget(result);
+      } else {
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
+      }
+    };
+    // 단건 조회
+    /* loadVendors — 로드 */
+    const loadVendors = async () => {
+      try {
+        const vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '쿠폰관리', '조회');
+        vendors.splice(0, vendors.length, ...(vr.data?.data?.pageList || vr.data?.data?.list || []));
+      } catch (e) { console.warn('[PmCouponDtl] vendor load failed', e); }
+    };
+
+    /* handleSearchDetail — 처리 */
+    const handleSearchDetail = async () => {
+      await loadVendors();
+      if (cfIsNew.value) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.pmCoupon.getById(props.dtlId, '쿠폰관리', '상세조회');
+        const c = res.data?.data || res.data;
+        if (c) { Object.assign(form, { ...c }); }
+        // Entity discountRate/discountAmt → UI 단일 입력 매핑
+        if (c) {
+          if (c.discountRate != null && c.discountRate !== '') { form.discountType = 'percent'; form.discountVal = Number(c.discountRate) || 0; }
+          else { form.discountType = 'amount'; form.discountVal = Number(c.discountAmt) || 0; }
+        }
+        if (!form.validFrom) { form.validFrom = DEFAULT_START; }
+        if (!form.validTo) { form.validTo = DEFAULT_END; }
+        // 발급대상(pm_coupon_item) 별도 로드 — targetNm은 백엔드가 조인해주지 않아 targetId로 대체
+        try {
+          const cr = await boApiSvc.pmCouponItem.getList({ couponId: props.dtlId }, '쿠폰관리', '발급대상조회');
+          const list = cr.data?.data || cr.data || [];
+          form.issueTargets = list.map(t => ({
+            couponItemId: t.couponItemId, targetId: t.targetId, targetNm: t.targetId, targetTypeCd: t.targetTypeCd,
+          }));
+        } catch (e) { console.warn('[PmCouponDtl.js] coupon-item load failed', e); }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
+    watch(() => uiState.tabMode2, v => { window._pmCouponDtlState.tabMode = v; });
+
+    /* showTab — 표시 */
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
+
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'info',    label: '기본정보',  icon: '📋' },
+      { id: 'detail',  label: '상세정보',  icon: '📋' },
+      { id: 'issued',  label: '발급목록',  icon: '📊' },
+      { id: 'used',    label: '사용목록',  icon: '✅' },
+      { id: 'preview', label: '미리보기',  icon: '👁' },
+    ]);
+
+    /* 쿠폰 fnLoadCodes */
+
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['COUPON_STATUS_DTL', 'COUPON_TYPE_CD', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE', 'COUPON_USE_LIMIT', 'COUPON_ISSUE_DISP', 'COUPON_TARGET', 'COUPON_APPLY', 'COUPON_DISC_TYPE', 'COUPON_APPLY_SCOPE_CD'], {compNm: 'PmCouponDtl'});
+      codes.COUPON_STATUS_DTL    = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
+      codes.COUPON_TYPE          = codeStore.sgGetGrpCodes('COUPON_TYPE_CD');
+      codes.PM_PROD_TARGET       = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
+      codes.PM_ISSUE_GRADE       = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
+      codes.COUPON_USE_LIMIT       = codeStore.sgGetGrpCodes('COUPON_USE_LIMIT');
+      codes.COUPON_ISSUE_DISP      = codeStore.sgGetGrpCodes('COUPON_ISSUE_DISP');
+      codes.COUPON_TARGET          = codeStore.sgGetGrpCodes('COUPON_TARGET');
+      codes.COUPON_APPLY           = codeStore.sgGetGrpCodes('COUPON_APPLY');
+      codes.COUPON_DISC_TYPE       = codeStore.sgGetGrpCodes('COUPON_DISC_TYPE');
+      codes.COUPON_APPLY_SCOPE_CD  = codeStore.sgGetGrpCodes('COUPON_APPLY_SCOPE_CD');
+    };
+
+    /* handleInitForm — 처리 */
+    const handleInitForm = () => {
+      if (props.active && cfIsNew.value) {
+        if (!form.validFrom) { form.validFrom = DEFAULT_START; }
+        if (!form.validTo) { form.validTo = DEFAULT_END; }
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchDetail();
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
+      handleInitForm();
+    };
+    onMounted(initPage);
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleSearchDetail();
+      handleInitForm();
+    });
+
+    const cfSelectedVendorNm = computed(() => {
+      if (!form.vendorId) { return '소속업체 선택'; }
+      const v = vendors.find(x => x.vendorId === form.vendorId);
+      return v ? v.vendorNm : '소속업체 선택';
+    });
+
+    /* selectVendor — 선택 */
+    const selectVendor = (vendorId, vendorNm) => {
+      form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
+      uiState.showVendorModal = false;
+    };
+
+    /* 발급목록 */
+    const cfIssuedList = computed(() => form.issuedList || []);
+
+    /* 사용목록 */
+    const cfUsedList = computed(() => form.usedList || []);
+
+    /* 미리보기 형태 */
+    const onPreviewTabChange = (pt) => {
+      uiState.previewTab = pt;
+      Vue.nextTick(() => {
+        if (pt === 'barcode' && uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
+          try {
+            barcodeContainer.value.innerHTML = '';
+            JsBarcode(uiState.barcodeContainer, form.couponCd || 'SAMPLE', {
+              format: 'CODE128',
+              width: 2,
+              height: 60,
+              displayValue: true,
+            });
+          } catch(e) {}
+        }
+        if (pt === 'qrcode' && uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
+          qrcodeContainer.value.innerHTML = '';
+          try {
+            new QRCode(uiState.qrcodeContainer, {
+              text: form.couponCd ? `https://shopjoy.com/coupon/${form.couponCd}` : 'https://shopjoy.com/coupon/sample',
+              width: 150,
+              height: 150,
+              colorDark: '#222222',
+              colorLight: '#ffffff',
+            });
+          } catch(e) {}
+        }
+      });
+    };
+
+    /* renderBarcode — 렌더 */
+    const renderBarcode = () => {
+      if (uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
+        try {
+          barcodeContainer.value.innerHTML = '';
+          JsBarcode(uiState.barcodeContainer, form.couponCd || 'SAMPLE', {
+            format: 'CODE128',
+            width: 2,
+            height: 60,
+            displayValue: true,
+          });
+        } catch(e) {}
+      }
+    };
+
+    /* renderQRCode — 렌더 */
+    const renderQRCode = () => {
+      if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
+        try {
+          qrcodeContainer.value.innerHTML = '';
+          new QRCode(uiState.qrcodeContainer, {
+            text: form.couponCd ? `https://shopjoy.com/coupon/${form.couponCd}` : 'https://shopjoy.com/coupon/sample',
+            width: 150,
+            height: 150,
+            colorDark: '#222222',
+            colorLight: '#ffffff',
+          });
+        } catch(e) {}
+      }
+    };
+
+    /* 쿠폰 onTabChange */
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
+    /* onTabChange — 탭 변경 */
+    const onTabChange = (newTab) => {
+      uiState.tab = newTab;
+      if (newTab === 'preview') {
+        Vue.nextTick(() => {
+          renderBarcode();
+          renderQRCode();
+        });
+      }
+    };
+
+    /* _afterApiOk — 후 API 성공 */
+    const _afterApiOk  = (res, msg) => {
+      if (showToast) { showToast(msg, 'success'); }
+    };
+
+    /* _afterApiErr — 후 API 오류 */
+    const _afterApiErr = (err) => {
+      console.error('[handleSave]', err);
+      const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+      if (showToast) { showToast(errMsg, 'error', 0); }
+    };
+
+    /* handleSave — 저장 */
+    const handleSave = async () => {
+      const tabId = uiState.tab;
+
+      if (cfSaveDisabled.value) {
+        if (!cfHasId.value && tabId !== 'info') { showToast('먼저 기본정보 탭에서 등록해주세요.', 'error'); }
+        return;
+      }
+
+      if (tabId !== 'info' && tabId !== 'detail') return;   // 안전장치
+
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try { await schema.validate(form, { abortEarly: false }); }
+      catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); coUtil.cofValidationToast(errors, showToast); return; }
+
+      const isCreate = !cfHasId.value;
+      const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        const payload = { ...form };
+        // UI 단일 입력 → Entity discountRate / discountAmt 매핑
+        if (form.discountType === 'percent') { payload.discountRate = form.discountVal; payload.discountAmt = null; }
+        else { payload.discountAmt = form.discountVal; payload.discountRate = null; }
+        const res = isCreate
+          ? await boApiSvc.pmCoupon.create(payload, '쿠폰관리', '등록')
+          : await boApiSvc.pmCoupon.update(cfCurId.value, payload, '쿠폰관리', tabId === 'info' ? '기본정보저장' : '상세정보저장');
+        if (isCreate) {
+          const newId = res.data?.data?.couponId || res.data?.couponId || null;
+          if (newId) { form.couponId = newId; }
+        }
+        _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
+      } catch (err) { _afterApiErr(err); }
+    };
+
+    /* handleDelete — 보기모드 [삭제] (2026-08-22 정책: 보기모드 표준 버튼 = [수정][삭제][닫기]) */
+    const handleDelete = async () => {
+      if (cfIsNew.value || !form.couponId) { return; }
+      const ok = await showConfirm('삭제', `[${form.couponNm}]을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.pmCoupon.remove(form.couponId, '쿠폰관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        props.navigate('pmCouponMng', { reload: true });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
+    const barcodeContainer = Vue.toRef(uiState, 'barcodeContainer');
+    const previewTab = Vue.toRef(uiState, 'previewTab');
+    const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
+    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    const showMdModal = Vue.toRef(uiState, 'showMdModal');
+    const showTargetPicker = Vue.toRef(uiState, 'showTargetPicker');
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    /* BoGrid(bare) 컬럼 정의 — 발급목록 / 사용목록 (최대 10건 미리보기) */
+    const columns = {};
+    columns.issuedGrid = [
+      { key: 'code',       label: '쿠폰코드', fmt: v => v || '-' },
+      { key: 'target',     label: '발급대상', fmt: v => v || '-' },
+      { key: 'issuedDate', label: '발급일시', fmt: v => v || '-' },
+      { key: 'expiryDate', label: '유효기간', fmt: v => v || '-' },
+      { key: 'status',     label: '상태',
+        badge: row => row.status === '사용' ? 'badge-blue' : 'badge-green',
+        fmt: v => v || '미사용' },
+    ];
+    // 사용 그리드
+    columns.usedGrid = [
+      { key: 'code',        label: '쿠폰코드', fmt: v => v || '-' },
+      { key: 'userId',      label: '사용자', fmt: v => v || '-' },
+      { key: 'orderId',     label: '주문ID', fmt: v => v || '-' },
+      { key: 'orderAmt',    label: '주문금액', fmt: v => coUtil.cofWon(v) },
+      { key: 'discountAmt', label: '할인액',
+        cellStyle: 'color:#e8587a;font-weight:600',
+        fmt: v => '-' + coUtil.cofWon(v) },
+      { key: 'usedDate',    label: '사용일시', fmt: v => v || '-' },
+    ];
+    const cfIssuedTop = computed(() => cfIssuedList.value.slice(0, 10));
+    const cfUsedTop   = computed(() => cfUsedList.value.slice(0, 10));
+
+    /* fnShareUrl — 이 쿠폰 상세를 가리키는 독립 새창 딥링크 URL 생성 */
+    const fnShareUrl = () => {
+      const qs = new URLSearchParams();
+      qs.set('page', 'pmCouponDtl');
+      qs.set('id', form.couponId);
+      qs.set('embed', '1');
+      return `${window.location.origin}${window.location.pathname}?${qs.toString()}`;
+    };
+    const handleShareKakao = () => {
+      try {
+        window.coExtSdk.shareKakao({
+          title: `쿠폰 ${form.couponId} - ShopJoy BO`,
+          description: form.couponNm || form.couponCd || '',
+          imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
+          url: fnShareUrl(),
+        });
+      } catch (e) {
+        showToast(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
+      }
+    };
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(fnShareUrl());
+        showToast('링크가 복사되었습니다.', 'success');
+      } catch (e) {
+        showToast(e.message || '링크 복사에 실패했습니다.', 'error', 0);
+      }
+    };
+    const pdfAreaRef = ref(null);
+    const pdfExporting = ref(false);
+    const handleExportPdf = async () => {
+      pdfExporting.value = true;
+      try {
+        const filename = coUtil.cofBuildExportFilename(`쿠폰상세_${form.couponId}.pdf`);
+        await window.boUtil.bofExportPdf(pdfAreaRef.value, filename, showToast);
+      } finally {
+        pdfExporting.value = false;
+      }
+    };
+
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // 정보 영역 폼
+    columns.infoForm = [
+      { type: 'group', label: '기본정보 · 할인조건' },
+      { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
+        options: () => codes.COUPON_TYPE },
+      { key: 'applyScopeCd',   label: '적용범위', type: 'select', nullable: false,
+        options: () => codes.COUPON_APPLY_SCOPE_CD,
+        hint: '주문할인/상품할인/배송비할인 — 상품상세 프로모션탭의 "회원 적용가능 쿠폰" 분류 기준' },
+      { key: 'couponNm',       label: '쿠폰명', type: 'text', required: true, placeholder: '쿠폰명 입력' },
+      { key: 'couponCd',       label: '쿠폰코드', type: 'text', required: true,
+        placeholder: '코드 자동생성/직접입력', mono: true },
+      { key: 'couponStatusCd', label: '상태', type: 'select', options: () => codes.COUPON_STATUS_DTL },
+      { key: 'discountType',   label: '할인 유형', type: 'select', options: () => codes.COUPON_DISC_TYPE },
+      { key: 'discountVal',    label: '할인값', type: 'number', required: true },
+      { key: 'minOrderAmt',    label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
+      { key: 'maxDiscountAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
+      { type: 'group', label: '발급 · 담당정보' },
+      { key: 'validFrom',      label: '시작일', type: 'date' },
+      { key: 'validTo',        label: '만료일', type: 'date', required: true },
+      { key: 'issueLimit',     label: '총 발급수량', type: 'number', placeholder: '0 = 무제한' },
+      { key: 'useLimit',       label: '사용 제한', type: 'select', nullable: false,
+        options: () => codes.COUPON_USE_LIMIT },
+      { key: 'memo',           label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
+      { key: 'vendorId',       label: '판매업체', type: 'pick', placeholder: '업체 선택',
+        display: (f) => { const v = vendors.find(x => x.vendorId === f.vendorId); return v ? v.vendorNm : ''; },
+        onOpen: () => handleBtnAction('vendorModal-open'),
+        onClear: () => { form.chargeStaff = ''; } },
+      { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+      { key: 'mdUserId', label: '담당MD', type: 'slot', name: 'mdUser' },
+    ];
+
+    // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
+    // 발행 상세 폼
+    columns.detailIssueForm = [
+      { key: 'targetTypeCd',  label: '발급 대상 종류', type: 'select',
+        options: () => codes.PM_PROD_TARGET },
+      { key: 'issueMethods',   label: '지급 방법', type: 'select', nullable: false,
+        options: () => codes.COUPON_ISSUE_DISP },
+      { key: 'issueCondition', label: '지급 조건', type: 'select', nullable: false,
+        options: () => codes.COUPON_TARGET },
+      { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 3 },
+    ];
+    // 사용 상세 폼
+    columns.detailUseForm = [
+      { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
+        options: () => codes.COUPON_APPLY },
+      { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3,
+        placeholder: '쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)' },
+      { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3,
+        placeholder: '예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등' },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
+    return {
+      coUtil, // 템플릿 cofAnd 접근용
+      columns,
+      codes, form, errors, vendors,         // 상태 / 데이터
+      handleShareKakao, handleCopyLink,                                    // 카카오톡 공유 / 링크 복사 (상세보기)
+      pdfAreaRef, pdfExporting, handleExportPdf,                           // PDF 다운로드 (항상 노출)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, cfIssueTargetsColumns, tabs, // computed / reactive(tabs)
+      tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal, showMdModal, showTargetPicker, // toRef
+      showTab, coUtil, // 헬퍼 / 전역
+    };
+  },
+  template: /* html */`
+<div ref="pdfAreaRef">
+<bo-container :title="!active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : (cfDtlMode ? '쿠폰 상세' : '쿠폰 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.couponId)">
+  <template #toolbar-actions>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+    <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+    <button class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+      <span v-if="pdfExporting">⏳</span>
+      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+      </svg>
+    </button>
+  </template>
+  <!-- ===== ■. 영역 타이틀 (list-title) ====================================== -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 탭 영역 ==================================================== -->
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
+  <!-- ===== □. 탭 영역 ==================================================== -->
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+      <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        <!-- ===== ■.■.■.■. 메모: Quill 에디터 (보기모드는 렌더만) ==================== -->
+        <template #memo>
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:180px;line-height:1.6;overflow:auto;" v-html="form.memo || '-'"></div>
+          <base-html-editor v-else v-model="form.memo" height="200px" />
+        </template>
+        <!-- ===== ■.■.■.■. 담당MD picker ========================================= -->
+        <template #mdUser>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.mdUserNm || '-' }}</div>
+          <div v-else style="display:flex;align-items:center;gap:6px;">
+            <input :value="form.mdUserNm || ''" readonly placeholder="MD 선택" class="form-control"
+              style="background:#f9f9f9;cursor:pointer;" @click="handleBtnAction('mdModal-open')" />
+            <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+              <button type="button" class="btn btn-secondary btn-sm" title="선택"
+                style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
+                @click="handleBtnAction('mdModal-open')">🔍</button>
+              <button v-if="form.mdUserId" type="button" title="선택 해제"
+                style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
+                @click="handleBtnAction('form-mdClear')">x</button>
+            </span>
+          </div>
+        </template>
+      </bo-form-area>
+      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
+      <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :show="showMdModal" :on-callback="fnCallbackModal" />
+    </div>
+    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+    <!-- ===== ■.■. 미리보기 ================================================== -->
+    <div class="card" v-show="showTab('preview')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
+        <!-- ===== ■.■.■.■. 좌측 컬럼 ============================================= -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- ===== ■.■.■.■.■. 바코드 ============================================= -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(to right, #fff 0%, rgba(232,88,122,0.02) 100%);">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:80px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:8px;">
+              ShopJoy
+            </div>
+            <div style="position:absolute;top:-20px;right:-20px;font-size:60px;opacity:0.04;transform:rotate(-15deg);pointer-events:none;">
+              🎟️
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
+              📊 바코드
+            </div>
+            <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
+              <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
+              <div style="font-size:9px;">🏷️ {{ form.couponCd || 'SAMPLE' }}</div>
+              <div style="font-weight:600;color:#e8587a;margin:4px 0;">
+                {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
+              </div>
+              <div style="font-size:9px;color:#999;">📅 {{ form.validFrom }} ~ {{ form.validTo }}</div>
+              <div style="font-size:9px;color:#999;">💳 최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+            </div>
+            <div ref="barcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:1px solid #ddd;border-radius:4px;width:100%;position:relative;z-index:1;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:45px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
+                ShopJoy
+              </div>
+            </div>
+          </div>
+          <!-- ===== ■.■.■.■.■. SNS전송형태 ========================================= -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:6px;z-index:0;">
+              ShopJoy
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
+              💬 SNS전송형태 (카톡)
+            </div>
+            <div style="background:#fff;padding:12px;border:1px solid #e0e0e0;border-radius:6px;text-align:left;font-size:10px;line-height:1.6;color:#333;width:100%;position:relative;z-index:1;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
+                ShopJoy
+              </div>
+              <div style="font-weight:600;margin-bottom:6px;">🎁 {{ form.couponNm }}</div>
+              <div style="color:#666;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
+              <div style="color:#666;margin:3px 0;">
+                할인: {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
+              </div>
+              <div style="color:#666;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
+              <div style="color:#666;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+              <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
+            </div>
+          </div>
+          <!-- ===== ■.■.■.■.■. 이메일 내용 ========================================== -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">
+              📧 이메일 내용
+            </div>
+            <div style="background:linear-gradient(180deg, #f9f9f9 0%, #fafbfc 100%);padding:12px;border:1px solid #e8e8e8;border-radius:6px;text-align:left;font-size:9px;line-height:1.6;color:#333;width:100%;position:relative;overflow:hidden;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.07;pointer-events:none;white-space:nowrap;letter-spacing:6px;">
+                ShopJoy
+              </div>
+              <div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:0.03;transform:rotate(20deg);">📧</div>
+              <div style="background:linear-gradient(135deg, #e8587a 0%, #ff7a9a 100%);color:#fff;padding:8px;border-radius:4px;margin:-12px -12px 8px -12px;text-align:center;position:relative;z-index:1;">
+                <div style="font-weight:600;font-size:10px;">🛍️ ShopJoy 쿠폰 알림</div>
+              </div>
+              <div style="position:relative;z-index:1;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
+                  ShopJoy
+                </div>
+                <div style="font-weight:600;margin-bottom:8px;">제목: {{ form.couponNm }}</div>
+                <div style="color:#666;margin:4px 0;">보낸 사람: ShopJoy (noreply@shopjoy.com)</div>
+                <div style="color:#666;margin:6px 0;">안녕하세요, 송지선 회원님!</div>
+                <div style="color:#666;margin:6px 0;">ShopJoy에서 특별한 쿠폰을 준비했습니다.</div>
+                <div style="background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;margin:8px 0;">
+                  <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">🎁 {{ form.couponNm }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">
+                    할인: {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
+                  </div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰타입: {{ form.couponTypeCd }}</div>
+                </div>
+                <div style="color:#666;margin:6px 0;">지금 바로 ShopJoy에서 확인하세요!</div>
+                <div style="color:#999;font-size:8px;margin-top:8px;text-align:center;padding-top:8px;border-top:1px solid #e8e8e8;">
+                  © 2026 ShopJoy | 문의: 010-1234-5678 | demo@mail.com
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ===== ■.■.■.■. 우측 컬럼 ============================================= -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- ===== ■.■.■.■.■. QR코드 ============================================ -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
+            <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
+              📱 QR코드
+            </div>
+            <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
+              <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
+              <div style="font-family:monospace;font-size:9px;background:#f5f5f5;padding:4px;border-radius:3px;margin:4px 0;">
+                {{ form.couponCd || '---' }}
+              </div>
+              <div style="font-size:9px;">🏷️ {{ form.couponTypeCd }}</div>
+              <div style="font-size:9px;color:#999;">⏱️ {{ form.useLimit }}</div>
+            </div>
+            <div ref="qrcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;position:relative;z-index:1;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
+                ShopJoy
+              </div>
+            </div>
+          </div>
+          <!-- ===== ■.■.■.■.■. 종이형태 ============================================ -->
+          <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">
+              🎟 종이형태
+            </div>
+            <div style="width:100%;aspect-ratio:2/1.2;background:linear-gradient(135deg, #fff8f9 0%, #fff0f4 100%);border:2px solid #e8587a;border-radius:8px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(232,88,122,0.1);position:relative;overflow:hidden;">
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:35px;font-weight:900;color:#e8587a;opacity:0.06;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
+                ShopJoy
+              </div>
+              <div style="position:absolute;top:6px;right:6px;font-size:8px;color:#e8587a;opacity:0.3;font-weight:700;letter-spacing:2px;">
+                COUPON
+              </div>
+              <div>
+                <div style="font-size:9px;color:#999;">🛍️ ShopJoy</div>
+                <div style="font-size:11px;font-weight:700;color:#e8587a;margin:2px 0;">{{ form.couponNm }}</div>
+              </div>
+              <div style="text-align:center;background:rgba(255,255,255,0.5);padding:4px;border-radius:4px;">
+                <div style="font-size:13px;color:#333;font-weight:700;">
+                  {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
+                </div>
+                <div style="font-size:8px;color:#666;">{{ form.validFrom }} ~ {{ form.validTo }}</div>
+                <div style="font-size:7px;color:#999;margin-top:2px;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
+              </div>
+              <div style="display:flex;gap:6px;font-size:7px;color:#999;">
+                <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">
+                  바코드
+                </div>
+                <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">
+                  일련번호
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ===== □.□. 미리보기 ================================================== -->
+    <!-- ===== ■.■. 상세정보 ================================================== -->
+    <div class="card" v-show="showTab('detail')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+      <!-- ===== ■.■.■. 발급대상 ================================================ -->
+      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🎁 발급대상</h3>
+        <!-- 대상 목록 추가/삭제 -->
+        <div style="margin-top:12px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:12px;font-weight:700;color:#555;">
+              선택 대상 목록
+              <span style="color:#e8587a;margin-left:4px;">{{ form.issueTargets.length }}건</span>
+            </span>
+            <button v-if="!cfDtlMode" class="btn btn-sm" style="background:#e8587a;color:#fff;border:none;padding:3px 10px;border-radius:4px;font-size:12px;"
+              @click="handleBtnAction('target-add')">+ 대상 추가</button>
+          </div>
+          <bo-grid bare :columns="cfIssueTargetsColumns" :rows="form.issueTargets" row-key="targetId"
+            empty-text="대상을 추가해주세요."
+            @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 지급방법/조건 (BoFormArea 자동 렌더) ========================== -->
+      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
+        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+        <bo-form-area plain-readonly :columns="columns.detailIssueForm" :form="form" :errors="errors"
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+          <template #issueGrades>
+            <bo-multi-check-select
+              v-model="form.issueGrades"
+              :options="codes.PM_ISSUE_GRADE"
+              placeholder="전체 등급 (미선택 시 전체)"
+              :disabled="cfDtlMode" />
+            <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>
+          </template>
+        </bo-form-area>
+      </div>
+      <!-- ===== ■.■.■. 사용방법 (BoFormArea 자동 렌더) ============================= -->
+      <div>
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
+        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+        <bo-form-area plain-readonly :columns="columns.detailUseForm" :form="form" :errors="errors"
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+      </div>
+    </div>
+    <!-- ===== □.□. 상세정보 ================================================== -->
+    <!-- ===== ■.■. 발급목록 ================================================== -->
+    <div class="card" v-show="showTab('issued')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count"> {{ cfIssuedList.length }} </span></div>
+      <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+      <bo-grid v-else bare :columns="columns.issuedGrid" :rows="cfIssuedTop"></bo-grid>
+    </div>
+    <!-- ===== □.□. 발급목록 ================================================== -->
+    <!-- ===== ■.■. 사용목록 ================================================== -->
+    <div class="card" v-show="showTab('used')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count"> {{ cfUsedList.length }} </span></div>
+      <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+      <bo-grid v-else bare :columns="columns.usedGrid" :rows="cfUsedTop"></bo-grid>
+    </div>
+  </div>
+  <!-- ===== □.□. 사용목록 ================================================== -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
+  <bo-form-actions v-if="active" :readonly="cfDtlMode" :is-new="cfIsNew"
+    btn-style="min-width:120px;"
+    :save-disabled="cfSaveDisabled" :save-title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''"
+    :edit-click="() => handleBtnAction('form-edit')"
+    :save-click="() => handleBtnAction('form-save')"
+    :delete-click="() => handleBtnAction('form-delete')"
+    :cancel-click="() => handleBtnAction('form-cancel')"
+    :close-click="() => handleBtnAction('form-close')" />
+<!-- 발급대상 피커 모달 -->
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='PRODUCT')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :init-selected-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='VENDOR')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
+</bo-container>
+</div>
+<!-- ===== □. 본문 영역 =================================================== -->
+`
+};

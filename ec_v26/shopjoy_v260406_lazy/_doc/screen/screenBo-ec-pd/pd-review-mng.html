@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>리뷰 관리 — PD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:#888;font-weight:500}
+.field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none}
+.search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+.btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+.btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+.btn-orange{background:#fff3e0;color:#e65100;border:1px solid #ffcc02}
+.list-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:12px;color:#f06292;margin-left:6px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+tbody tr:hover{background:#fff9fb}
+.title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-gray{background:#f5f5f5;color:#757575}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-orange{background:#fff3e0;color:#e65100}
+.badge-red{background:#ffebee;color:#c62828}
+.badge-pink{background:#fce4ec;color:#c2185b}
+.actions{display:flex;gap:4px;justify-content:center}
+.pagination{display:flex;justify-content:center;gap:4px;padding:12px 0}
+.pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pager.active{background:#e91e63;color:#fff;border-color:transparent}
+.has-tip{cursor:help;border-bottom:1px dashed #f48fb1}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f48fb1;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+.stars{color:#ffc107;letter-spacing:1px}
+.stars .empty{color:#ddd}
+.review-content{max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.img-thumb{width:36px;height:36px;background:#f5f5f5;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+/* 상세 패널 */
+.review-detail{background:#fff9fb;border-radius:8px;padding:16px;border:1px solid #fce4ec;margin-top:16px}
+.review-detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.review-meta{font-size:12px;color:#888;margin-bottom:8px}
+.review-meta span{margin-right:12px}
+.review-body{font-size:13px;line-height:1.8;color:#333;border-top:1px solid #f0f0f0;padding-top:10px}
+.review-imgs{display:flex;gap:6px;margin-top:10px}
+.review-img{width:60px;height:60px;background:#f5f5f5;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:0}
+.stat-card{background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);text-align:center}
+.stat-card .num{font-size:22px;font-weight:700;color:#e91e63}
+.stat-card .lbl{font-size:11px;color:#888;margin-top:4px}
+.stat-card .sub{font-size:11px;color:#aaa;margin-top:2px}
+.rating-bar{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.rating-bar .star-lbl{font-size:12px;color:#555;min-width:20px;text-align:right}
+.rating-bar .bar-bg{flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.rating-bar .bar-fill{height:100%;border-radius:4px;background:linear-gradient(135deg,#f48fb1,#e91e63)}
+.rating-bar .count{font-size:11px;color:#888;min-width:30px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back Office &gt; 상품관리 &gt; <span>리뷰 관리</span></div>
+  <h1>리뷰 관리</h1>
+</div>
+
+<div class="container">
+
+  <!-- 통계 카드 -->
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="num">127</div>
+      <div class="lbl">전체 리뷰</div>
+      <div class="sub">이번달 +18</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">4.3</div>
+      <div class="lbl">평균 평점</div>
+      <div class="sub">★★★★☆</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">114</div>
+      <div class="lbl" style="color:#2e7d32">노출 중</div>
+      <div class="sub">ACTIVE</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">13</div>
+      <div class="lbl" style="color:#e65100">숨김/삭제</div>
+      <div class="sub">HIDDEN + DELETED</div>
+    </div>
+  </div>
+
+  <!-- 평점 분포 -->
+  <div class="card">
+    <div class="section-title">평점 분포</div>
+    <div style="max-width:400px">
+      <div class="rating-bar"><span class="star-lbl">5★</span><div class="bar-bg"><div class="bar-fill" style="width:60%"></div></div><span class="count">76건</span></div>
+      <div class="rating-bar"><span class="star-lbl">4★</span><div class="bar-bg"><div class="bar-fill" style="width:25%"></div></div><span class="count">32건</span></div>
+      <div class="rating-bar"><span class="star-lbl">3★</span><div class="bar-bg"><div class="bar-fill" style="width:10%"></div></div><span class="count">13건</span></div>
+      <div class="rating-bar"><span class="star-lbl">2★</span><div class="bar-bg"><div class="bar-fill" style="width:4%"></div></div><span class="count">5건</span></div>
+      <div class="rating-bar"><span class="star-lbl">1★</span><div class="bar-bg"><div class="bar-fill" style="width:1%"></div></div><span class="count">1건</span></div>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="card">
+    <div class="section-title">검색 조건</div>
+    <div class="search-grid">
+      <div class="field">
+        <label class="has-tip" data-table="pd_prod" data-col="prod_nm" data-tbl-cmt="상품" data-col-cmt="상품명">상품명</label>
+        <input type="text" placeholder="상품명 검색">
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="pd_review" data-col="rating" data-tbl-cmt="상품 리뷰" data-col-cmt="평점 (1~5)">평점</label>
+        <select>
+          <option>전체</option>
+          <option>⭐⭐⭐⭐⭐ 5점</option>
+          <option>⭐⭐⭐⭐ 4점</option>
+          <option>⭐⭐⭐ 3점 이하</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="has-tip" data-table="pd_review" data-col="review_status_cd" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 상태" data-code-grp="REVIEW_STATUS" data-codes="ACTIVE:노출|HIDDEN:숨김|DELETED:삭제">리뷰상태</label>
+        <select>
+          <option>전체</option>
+          <option>노출(ACTIVE)</option>
+          <option>숨김(HIDDEN)</option>
+          <option>삭제(DELETED)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>등록기간</label>
+        <div style="display:flex;gap:6px">
+          <input type="date">
+          <input type="date">
+        </div>
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">🔍 검색</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="card">
+    <div class="list-toolbar">
+      <div><span class="list-title">리뷰 목록</span><span class="list-count">총 127건</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm">📝 일괄 숨김</button>
+        <button class="btn btn-secondary btn-sm">📥 엑셀 다운로드</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox"></th>
+            <th class="has-tip" data-table="pd_review" data-col="review_id" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰ID">리뷰ID</th>
+            <th class="has-tip" data-table="pd_prod" data-col="prod_nm" data-tbl-cmt="상품" data-col-cmt="상품명">상품명</th>
+            <th class="has-tip" data-table="pd_review" data-col="member_id" data-tbl-cmt="상품 리뷰" data-col-cmt="회원ID">회원</th>
+            <th class="has-tip" data-table="pd_review" data-col="rating" data-tbl-cmt="상품 리뷰" data-col-cmt="평점 (1~5)">평점</th>
+            <th class="has-tip" data-table="pd_review" data-col="review_title" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 제목">제목</th>
+            <th class="has-tip" data-table="pd_review" data-col="review_content" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 내용">내용요약</th>
+            <th>이미지</th>
+            <th class="has-tip" data-table="pd_review" data-col="review_status_cd" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 상태" data-code-grp="REVIEW_STATUS" data-codes="ACTIVE:노출|HIDDEN:숨김|DELETED:삭제">상태</th>
+            <th>등록일</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-size:11px;color:#888">REV001</td>
+            <td><a class="title-link" style="max-width:120px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">오가닉 코튼 라운드넥 티셔츠</a></td>
+            <td>김민지</td>
+            <td>
+              <div class="stars">★★★★★</div>
+              <div style="font-size:11px;color:#f06292">5.0</div>
+            </td>
+            <td style="text-align:left;max-width:100px">소재가 정말 부드러워요</td>
+            <td><div class="review-content">세탁 후에도 변형 없고 착용감이 너무 좋아요. 재구매 의사 있습니다...</div></td>
+            <td><div class="img-thumb">🖼️</div></td>
+            <td><span class="badge badge-green">노출</span></td>
+            <td style="white-space:nowrap">2026-04-10</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-sm btn-secondary">상세</button>
+                <button class="btn btn-sm btn-orange">숨김</button>
+                <button class="btn btn-sm btn-danger">삭제</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-size:11px;color:#888">REV002</td>
+            <td><a class="title-link" style="max-width:120px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">린넨 와이드 쿨링 팬츠</a></td>
+            <td>이서연</td>
+            <td>
+              <div class="stars">★★★★<span class="empty">★</span></div>
+              <div style="font-size:11px;color:#f06292">4.0</div>
+            </td>
+            <td style="text-align:left;max-width:100px">시원하고 편해요</td>
+            <td><div class="review-content">여름에 딱이에요. 사이즈는 약간 크게 나온 편이라 주의...</div></td>
+            <td>—</td>
+            <td><span class="badge badge-green">노출</span></td>
+            <td style="white-space:nowrap">2026-04-08</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-sm btn-secondary">상세</button>
+                <button class="btn btn-sm btn-orange">숨김</button>
+                <button class="btn btn-sm btn-danger">삭제</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td style="font-size:11px;color:#888">REV003</td>
+            <td><a class="title-link" style="max-width:120px;display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">시그니처 에코백 패키지</a></td>
+            <td>박준혁</td>
+            <td>
+              <div class="stars"><span class="empty">★★★</span><span class="empty">★★</span></div>
+              <div style="font-size:11px;color:#f06292">1.0</div>
+            </td>
+            <td style="text-align:left;max-width:100px">품질이 기대 이하</td>
+            <td><div class="review-content">사진과 실물이 너무 다릅니다. 재질도 얇고 불량 같아 보여요...</div></td>
+            <td>—</td>
+            <td><span class="badge badge-gray">숨김</span></td>
+            <td style="white-space:nowrap">2026-04-06</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-sm btn-secondary">상세</button>
+                <button class="btn btn-sm btn-primary">노출</button>
+                <button class="btn btn-sm btn-danger">삭제</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div class="pager active">1</div>
+      <div class="pager">2</div>
+      <div class="pager">3</div>
+      <div class="pager">&gt;</div>
+    </div>
+  </div>
+
+  <!-- 상세 패널 -->
+  <div class="card">
+    <div class="section-title">리뷰 상세 (REV001)</div>
+    <div class="review-detail">
+      <div class="review-detail-header">
+        <div>
+          <div class="stars" style="font-size:18px">★★★★★</div>
+          <div style="font-size:13px;font-weight:700;margin-top:4px">소재가 정말 부드러워요</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-orange btn-sm">숨김 처리</button>
+          <button class="btn btn-danger btn-sm">삭제</button>
+        </div>
+      </div>
+      <div class="review-meta">
+        <span class="has-tip" data-table="pd_review" data-col="review_id" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰ID">리뷰ID: <strong>REV001</strong></span>
+        <span class="has-tip" data-table="pd_review" data-col="member_id" data-tbl-cmt="상품 리뷰" data-col-cmt="회원ID">회원: <strong>김민지</strong></span>
+        <span class="has-tip" data-table="pd_review" data-col="order_item_id" data-tbl-cmt="상품 리뷰" data-col-cmt="주문상품ID">주문상품ID: <strong>OI-2604-001</strong></span>
+        <span>등록: 2026-04-10 14:32</span>
+      </div>
+      <div class="review-meta" style="margin-top:4px">
+        <span>상품: <a class="title-link">오가닉 코튼 라운드넥 티셔츠 (화이트/M)</a></span>
+      </div>
+      <div class="review-body">
+        세탁 후에도 변형 없고 착용감이 너무 좋아요. 소재가 정말 부드럽고 오가닉 코튼이라 피부에도 편한 것 같습니다.<br>
+        색상도 사진과 동일하고 재구매 의사 있습니다. 배송도 빨랐어요!
+      </div>
+      <div class="review-imgs">
+        <div class="review-img">🖼️</div>
+        <div class="review-img">🖼️</div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0">
+        <div style="font-size:12px;font-weight:600;color:#c2185b;margin-bottom:6px">상태 변경</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select style="border:1px solid #ddd;border-radius:6px;padding:6px 10px;font-size:13px" class="has-tip" data-table="pd_review" data-col="review_status_cd" data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 상태" data-code-grp="REVIEW_STATUS" data-codes="ACTIVE:노출|HIDDEN:숨김|DELETED:삭제">
+            <option selected>노출(ACTIVE)</option>
+            <option>숨김(HIDDEN)</option>
+            <option>삭제(DELETED)</option>
+          </select>
+          <button class="btn btn-primary btn-sm">상태 저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

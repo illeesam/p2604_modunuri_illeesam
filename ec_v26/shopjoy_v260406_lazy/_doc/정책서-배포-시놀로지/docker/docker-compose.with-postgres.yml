@@ -1,0 +1,98 @@
+# ═══════════════════════════════════════════════════════════
+#  ShopJoy EcAdminApi + PostgreSQL - Docker Compose
+# ═══════════════════════════════════════════════════════════
+#  배치 위치: _apps/EcAdminApi/docker-compose.yml (덮어쓰기)
+#  용도: 앱 + DB 를 한 번에 운영하는 통합 구성
+#  실행 명령: docker compose up -d --build
+# ═══════════════════════════════════════════════════════════
+#  특징:
+#  - ecadminapi 와 postgres 가 같은 Compose 네트워크에서 실행
+#  - DB_HOST=postgres (서비스명) 으로 통신 → 172.17.0.1 불필요
+#  - postgres 가 healthy 상태일 때만 ecadminapi 시작
+# ═══════════════════════════════════════════════════════════
+
+services:
+  ecadminapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shopjoy/ecadminapi:latest
+    container_name: 210-ecadminApi
+
+    env_file:
+      - .env
+    environment:
+      # ⚠️ DB_HOST 를 postgres 서비스명으로 오버라이드 (.env 의 값보다 우선)
+      DB_HOST: postgres
+      DB_PORT: 5432   # 컨테이너 내부 포트 (외부 17632 와 다름)
+      JAVA_OPTS: "-Xms256m -Xmx1024m"
+
+    ports:
+      - "21080:3000"
+
+    volumes:
+      - /volume1/docker/ecadminapi/logs:/app/logs
+
+    # postgres 가 정상 기동된 후에만 시작
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  postgres:
+    image: postgres:17.2
+    container_name: 176-postgres-17.2
+
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # 한국어 로케일
+      LANG: ko_KR.utf8
+
+    ports:
+      - "17632:5432"   # 외부에서 직접 접근 시 (DBeaver 등)
+
+    volumes:
+      # 데이터 영속화 (Compose down 으로도 삭제되지 않음)
+      - postgres-data:/var/lib/postgresql/data
+      # 초기 SQL (DDL/시드) — 최초 실행 시에만 자동 적용
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    restart: unless-stopped
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ───── 영속 볼륨 ─────
+# Compose down -v 시에만 삭제됨 (-v 옵션 주의!)
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  default:
+    name: shopjoy-net

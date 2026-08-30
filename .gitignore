@@ -2,3 +2,6 @@ node_modules/
 
 # Claude generated images
 **/image/CLAUDE/
+
+# shopjoy_v260406 FO/BO lazy-loading 실험용 격리 사본(git 미추적 샌드박스, 검증 후 원본에 수동 반영)
+# ec_v26/shopjoy_v260406_lazy/

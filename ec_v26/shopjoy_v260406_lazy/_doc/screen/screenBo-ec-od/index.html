@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주문/배송/클레임(OD) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.sub{font-size:12px;color:#aaa;margin-top:4px}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.nav-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid #f48fb1;text-decoration:none;color:#333;display:block;transition:transform .15s,box-shadow .15s}
+.nav-card:hover{transform:translateY(-3px);box-shadow:0 4px 16px rgba(233,30,99,.12)}
+.card-no{font-size:11px;color:#aaa;font-weight:600;margin-bottom:6px}
+.card-title{font-size:16px;font-weight:700;color:#c2185b;margin-bottom:6px}
+.card-desc{font-size:12px;color:#666;margin-bottom:8px}
+.card-tables{font-size:11px;color:#888;background:#fff9fb;border-radius:4px;padding:4px 8px}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">관리자 &gt; <span>OD 화면 명세</span></div>
+  <h1>📦 주문/배송/클레임(OD) 화면 목록</h1>
+  <div class="sub">DDL 기준 화면 구조 — od_order · od_order_item · od_dliv · od_claim · od_pay</div>
+</div>
+<div class="container">
+  <div class="card-grid">
+    <a class="nav-card" href="od-order-mng.html">
+      <div class="card-no">01</div>
+      <div class="card-title">주문 관리</div>
+      <div class="card-desc">주문 목록·상세·상태변경·배송조회</div>
+      <div class="card-tables">od_order · od_order_item</div>
+    </a>
+    <a class="nav-card" href="od-dliv-mng.html">
+      <div class="card-no">02</div>
+      <div class="card-title">배송 관리</div>
+      <div class="card-desc">배송 목록·송장등록·상태변경</div>
+      <div class="card-tables">od_dliv · od_dliv_item</div>
+    </a>
+    <a class="nav-card" href="od-claim-mng.html">
+      <div class="card-no">03</div>
+      <div class="card-title">클레임 관리</div>
+      <div class="card-desc">취소/반품/교환 처리</div>
+      <div class="card-tables">od_claim · od_claim_item</div>
+    </a>
+    <a class="nav-card" href="od-pay-mng.html">
+      <div class="card-no">04</div>
+      <div class="card-title">결제 내역</div>
+      <div class="card-desc">결제·환불 내역 조회</div>
+      <div class="card-tables">od_pay</div>
+    </a>
+    <a class="nav-card" href="#" style="opacity:.6;pointer-events:none">
+      <div class="card-no">05</div>
+      <div class="card-title">장바구니 현황</div>
+      <div class="card-desc">미결제 장바구니 조회</div>
+      <div class="card-tables">od_cart</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>상품관리(PD) 화면 목록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+.page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+.breadcrumb{font-size:12px;color:#999;margin-bottom:4px}
+.breadcrumb span{color:#f06292;font-weight:600}
+h1{font-size:18px;font-weight:700}
+.sub{font-size:12px;color:#999;margin-top:4px}
+.container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.section-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce4ec}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.menu-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);text-decoration:none;color:#333;transition:box-shadow .2s,transform .2s;display:block;border-top:3px solid #f48fb1}
+.menu-card:hover{box-shadow:0 4px 16px rgba(240,98,146,.18);transform:translateY(-2px)}
+.card-no{font-size:11px;color:#f48fb1;font-weight:700;margin-bottom:6px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.card-desc{font-size:12px;color:#888;margin-bottom:10px;line-height:1.5}
+.card-tables{font-size:11px;color:#aaa;border-top:1px dashed #eee;padding-top:8px}
+.card-tables strong{color:#e91e63}
+.info-card{background:#fff3e0;border-radius:8px;padding:14px 18px;font-size:12px;color:#795548;border-left:4px solid #ff9800;line-height:1.8}
+.info-card strong{color:#e65100}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="breadcrumb">Back Office &gt; <span>상품관리 (PD)</span></div>
+  <h1>📦 상품관리(PD) 화면 목록</h1>
+  <div class="sub">DDL 기준 화면 구조 — pd_prod · pd_category · pd_dliv_tmplt · pd_review</div>
+</div>
+
+<div class="container">
+  <div class="info-card">
+    <strong>상품관리 도메인 안내</strong><br>
+    상품(pd_prod)을 중심으로 카테고리(pd_category), 배송템플릿(pd_dliv_tmplt), 리뷰(pd_review), 옵션/SKU(pd_prod_opt · pd_prod_opt_sku) 가 연결됩니다.<br>
+    상품 등록 시 카테고리·브랜드·업체를 지정하고, 배송템플릿으로 배송비·반품비·교환비를 일괄 설정합니다.
+  </div>
+
+  <div>
+    <div class="section-title">화면 목록</div>
+    <div class="card-grid">
+      <a class="menu-card" href="pd-prod-mng.html">
+        <div class="card-no">01</div>
+        <div class="card-title">상품 관리</div>
+        <div class="card-desc">상품 등록·수정·재고·옵션(SKU) 관리.<br>상태관리(DRAFT→ACTIVE→STOPPED/SOLD_OUT),<br>옵션 2축 SKU 재고·추가금액 관리.</div>
+        <div class="card-tables"><strong>연관 테이블:</strong> pd_prod · pd_prod_opt · pd_prod_opt_sku</div>
+      </a>
+      <a class="menu-card" href="pd-category-mng.html">
+        <div class="card-no">02</div>
+        <div class="card-title">카테고리 관리</div>
+        <div class="card-desc">3단계 계층 카테고리 구성.<br>대카테고리 &gt; 중카테고리 &gt; 소카테고리 트리 구조,<br>정렬순서·사용여부·표시경로 관리.</div>
+        <div class="card-tables"><strong>연관 테이블:</strong> pd_category</div>
+      </a>
+      <a class="menu-card" href="pd-dliv-tmplt-mng.html">
+        <div class="card-no">03</div>
+        <div class="card-title">배송템플릿 관리</div>
+        <div class="card-desc">상품별 배송비·반품지·교환비 설정.<br>배송방법·택배사·무료배송조건·도서산간추가비,<br>반품지 주소(우편번호·주소·연락처) 통합 관리.</div>
+        <div class="card-tables"><strong>연관 테이블:</strong> pd_dliv_tmplt</div>
+      </a>
+      <a class="menu-card" href="pd-review-mng.html">
+        <div class="card-no">04</div>
+        <div class="card-title">리뷰 관리</div>
+        <div class="card-desc">구매 리뷰 조회·상태관리.<br>평점(1~5)·리뷰내용 확인,<br>노출(ACTIVE)/숨김(HIDDEN)/삭제(DELETED) 상태변경.</div>
+        <div class="card-tables"><strong>연관 테이블:</strong> pd_review</div>
+      </a>
+      <a class="menu-card" href="#">
+        <div class="card-no">05</div>
+        <div class="card-title">상품 Q&amp;A</div>
+        <div class="card-desc">상품 문의 처리.<br>회원의 상품 관련 문의 답변,<br>공개/비공개·답변완료 상태 관리.</div>
+        <div class="card-tables"><strong>연관 테이블:</strong> pd_prod_qna</div>
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

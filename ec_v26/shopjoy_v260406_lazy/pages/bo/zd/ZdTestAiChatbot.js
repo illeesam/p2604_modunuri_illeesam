@@ -1,0 +1,252 @@
+﻿/**
+ * 개발도구 — AI 챗봇 (OpenAI / Claude) 테스트
+ */
+window.ZdTestAiChatbot = {
+  name: 'ZdTestAiChatbot',
+  props: {
+    navigate:  { type: Function, required: true }, // 페이지 이동
+    showToast: { type: Function, default: () => {} }, // 토스트 알림
+  },
+  setup(props) {
+
+    /* ##### [01] 초기 변수 정의 #################################################### */
+
+    const { reactive, onMounted, nextTick } = Vue;
+    const showToast = props.showToast || window.boApp?.showToast || (() => {});
+
+    const cfg = reactive({
+      provider:        'openai',  // openai | claude
+      openaiApiKey:    '',
+      openaiModel:     'gpt-4o-mini',
+      claudeApiKey:    '',
+      claudeModel:     'claude-sonnet-4-6',
+      systemPrompt:    '당신은 ShopJoy 쇼핑몰의 친절한 AI 고객 상담원입니다. 상품, 주문, 배송, 반품에 관한 질문에 간결하게 답변하세요.',
+      maxTokens:       512,
+      temperature:     0.7,
+    });
+
+    const form = reactive({ userMsg: '' });
+
+    const result = reactive({
+      messages:  [],  // { role: 'user'|'assistant'|'system', content, time }
+      status:    '',
+      error:     '',
+      usage:     null,
+    });
+
+    const uiState = reactive({ loading: false });
+
+    // ── AI 설정 폼 컬럼 ───────────────────────────────────
+    const cfgFormColumns = [
+      {
+        key: 'provider', label: 'Provider', type: 'select',
+        hint: 'provider',
+        options: [
+          { value: 'openai',  label: 'OpenAI (GPT)' },
+          { value: 'claude',  label: 'Anthropic (Claude)' },
+        ],
+      },
+      {
+        key: 'openaiApiKey', label: 'OpenAI API Key', type: 'text',
+        hint: 'openaiApiKey',
+        placeholder: 'sk-…',
+        visible: (f) => f.provider === 'openai',
+      },
+      {
+        key: 'openaiModel', label: '모델 (OpenAI)', type: 'text',
+        hint: 'openaiModel',
+        placeholder: 'gpt-4o-mini',
+        visible: (f) => f.provider === 'openai',
+      },
+      {
+        key: 'claudeApiKey', label: 'Anthropic API Key', type: 'text',
+        hint: 'claudeApiKey',
+        placeholder: 'sk-ant-…',
+        visible: (f) => f.provider === 'claude',
+      },
+      {
+        key: 'claudeModel', label: '모델 (Claude)', type: 'text',
+        hint: 'claudeModel',
+        placeholder: 'claude-sonnet-4-6',
+        visible: (f) => f.provider === 'claude',
+      },
+      {
+        key: 'systemPrompt', label: 'System Prompt', type: 'textarea',
+        hint: 'systemPrompt',
+        colSpan: 3,
+      },
+      {
+        key: 'maxTokens', label: 'Max Tokens', type: 'number',
+        hint: 'maxTokens',
+      },
+      {
+        key: 'temperature', label: 'Temperature', type: 'number',
+        hint: 'temperature',
+      },
+    ];
+
+    /* ##### [02] 초기 로드 #################################################### */
+
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
+      try {
+        const res = await boApiSvc.syProp?.getList?.({
+          propKeys: 'app.ai.openai.api-key,app.ai.openai.model,app.ai.claude.api-key,app.ai.claude.model',
+        }, 'AI 챗봇 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        const pickVal = (key) => { const rows = list.filter(p => p.propKey === key && p.propValue); const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0]; return pref?.propValue || ''; };
+        cfg.openaiApiKey = pickVal('app.ai.openai.api-key');
+        cfg.claudeApiKey = pickVal('app.ai.claude.api-key');
+        const oModel = pickVal('app.ai.openai.model'); if (oModel) cfg.openaiModel = oModel;
+        const cModel = pickVal('app.ai.claude.model'); if (cModel) cfg.claudeModel = cModel;
+      } catch (e) {
+        result.error = 'sy_prop 조회 실패: ' + (e.message || e);
+      }
+    };
+    onMounted(initPage);
+
+    /* ##### [03] 헬퍼 함수 #################################################### */
+
+    const scrollBottom = () => {
+      nextTick(() => {
+        const el = document.getElementById('zd-chat-messages');
+        if (el) el.scrollTop = el.scrollHeight;
+      });
+    };
+
+    const sendMessage = async () => {
+      if (!form.userMsg.trim()) return;
+      const userText = form.userMsg.trim();
+      form.userMsg = '';
+      result.messages.push({ role: 'user', content: userText, time: new Date().toLocaleTimeString() });
+      scrollBottom();
+      uiState.loading = true;
+      result.status   = '⏳ AI 응답 대기 중…';
+      result.error    = '';
+      try {
+        const res = await boApi.post('/co/ext/ai-chat/chat', {
+          provider:     cfg.provider,
+          model:        cfg.provider === 'openai' ? cfg.openaiModel : cfg.claudeModel,
+          systemPrompt: cfg.systemPrompt,
+          messages:     result.messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
+          maxTokens:    cfg.maxTokens,
+          temperature:  cfg.temperature,
+        }, coUtil.cofApiHdr('AI 챗봇 테스트', '메시지 전송'));
+        const d = res.data?.data || {};
+        result.messages.push({ role: 'assistant', content: d.content || '(응답 없음)', time: new Date().toLocaleTimeString() });
+        result.usage  = d.usage || null;
+        result.status = '✅ 응답 완료';
+        scrollBottom();
+      } catch (e) {
+        result.error = coUtil.cofErrMsg(e, '오류 발생');
+        result.messages.push({ role: 'system', content: '❌ ' + result.error, time: new Date().toLocaleTimeString() });
+        result.status = '❌ 오류';
+        showToast(result.error, 'error', 0);
+        scrollBottom();
+      }
+      uiState.loading = false;
+    };
+
+    const clearChat = () => { result.messages = []; result.usage = null; result.status = ''; result.error = ''; };
+
+    const saveKey = async () => {
+      try {
+        await boApi.put('/bo/sy/prop/bulk', [
+          { propKey: 'app.ai.openai.api-key', propValue: cfg.openaiApiKey },
+          { propKey: 'app.ai.openai.model',   propValue: cfg.openaiModel },
+          { propKey: 'app.ai.claude.api-key', propValue: cfg.claudeApiKey },
+          { propKey: 'app.ai.claude.model',   propValue: cfg.claudeModel },
+        ], coUtil.cofApiHdr('AI 챗봇 테스트', '키 저장'));
+        showToast('sy_prop 에 저장되었습니다.', 'success');
+      } catch (e) {
+        showToast(coUtil.cofErrMsg(e, '저장 실패'), 'error', 0);
+      }
+    };
+
+    const onKeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+
+    /* ##### [04] 액션 dispatch #################################################### */
+
+    const handleBtnAction = (cmd) => {
+      if (cmd === 'send')      return sendMessage();
+      if (cmd === 'clear')     return clearChat();
+      if (cmd === 'key-save')  return saveKey();
+    };
+
+    return { cfg, form, result, uiState, handleBtnAction, onKeydown, cfgFormColumns };
+  },
+
+  template: `
+<div>
+  <div class="page-title">AI 챗봇 테스트</div>
+
+  <!-- AI 설정 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar"><span class="list-title">AI 설정</span></div>
+    <div style="padding:12px">
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 채팅 창 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">채팅</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <span v-if="result.usage" style="font-size:11px;color:#888">
+          토큰: 입력 {{ result.usage.promptTokens || result.usage.input_tokens || '-' }} / 출력 {{ result.usage.completionTokens || result.usage.output_tokens || '-' }}
+        </span>
+        <button class="btn btn_reset btn-sm" @click="handleBtnAction('clear')">대화 초기화</button>
+      </div>
+    </div>
+    <div style="padding:12px">
+      <!-- 메시지 목록 -->
+      <div id="zd-chat-messages" style="height:360px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;padding:12px;background:#fafafa;display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+        <div v-if="!result.messages.length" style="color:#999;font-size:12px;text-align:center;margin:auto">
+          메시지를 입력하여 AI 와 대화를 시작하세요
+        </div>
+        <div v-for="(m, idx) in result.messages" :key="idx"
+          :style="m.role==='user'?'align-self:flex-end':m.role==='system'?'align-self:center':'align-self:flex-start'">
+          <div :style="m.role==='user'?'background:#2563eb;color:#fff;border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:420px;font-size:13px;white-space:pre-wrap':m.role==='system'?'background:#fef9c3;color:#92400e;border-radius:6px;padding:6px 10px;font-size:11px':' background:#fff;border:1px solid #e5e7eb;border-radius:2px 12px 12px 12px;padding:8px 12px;max-width:480px;font-size:13px;white-space:pre-wrap'">
+            {{ m.content }}
+          </div>
+          <div style="font-size:10px;color:#bbb;margin-top:2px;text-align:right">{{ m.time }}</div>
+        </div>
+        <div v-if="uiState.loading" style="align-self:flex-start">
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:2px 12px 12px 12px;padding:8px 12px;font-size:13px;color:#888">
+            ⏳ 생각 중…
+          </div>
+        </div>
+      </div>
+      <!-- 입력창 -->
+      <div style="display:flex;gap:6px">
+        <textarea class="form-control" v-model="form.userMsg" rows="2"
+          placeholder="메시지 입력 (Enter: 전송 / Shift+Enter: 줄바꿈)"
+          style="flex:1;font-size:13px;resize:none"
+          @keydown="onKeydown" :disabled="uiState.loading"></textarea>
+        <button class="btn btn_send btn-sm" style="align-self:flex-end" :disabled="uiState.loading || !form.userMsg.trim()" @click="handleBtnAction('send')">
+          전송
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 안내 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar"><span class="list-title">설정 안내</span></div>
+    <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
+      <b>OpenAI:</b> platform.openai.com → API Keys → sy_prop <code>app.ai.openai.api-key</code><br>
+      <b>Claude:</b> console.anthropic.com → API Keys → sy_prop <code>app.ai.claude.api-key</code><br><br>
+      <b>백엔드 API:</b> <code>POST /api/co/ext/ai-chat/chat</code><br>
+      provider=openai → OpenAI Chat Completions API 프록시<br>
+      provider=claude → Anthropic Messages API 프록시 (API 키 서버 보관, CORS 우회)
+    </div>
+  </div>
+
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.ai." default-prop-key-filter="app.ai" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" default-key-filter="app.ai" />
+</div>`,
+};

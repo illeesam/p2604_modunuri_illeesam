@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>리뷰 작성 | PD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fafafa;color:#333;max-width:600px;margin:0 auto}
+.fo-header{background:#fff;border-bottom:2px solid #f9a8d4;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.fo-header h1{font-size:16px;font-weight:700;color:#be185d}
+.breadcrumb{font-size:11px;color:#aaa;padding:8px 20px;background:#f9fafb}
+.breadcrumb span{color:#be185d;font-weight:600}
+.section{background:#fff;margin:8px 0;padding:20px}
+.section-title{font-size:14px;font-weight:700;color:#be185d;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #fce7f3}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:6px;font-weight:500}
+.field input,.field textarea{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:14px;outline:none}
+.field input:focus,.field textarea:focus{border-color:#f9a8d4}
+.field textarea{resize:vertical;min-height:120px}
+.btn{display:inline-block;padding:14px 20px;border-radius:10px;font-size:15px;font-weight:600;border:none;cursor:pointer;width:100%;margin-top:4px}
+.btn-primary{background:linear-gradient(135deg,#f9a8d4,#ec4899);color:#fff}
+.btn-secondary{background:#f3f4f6;color:#555;border:1px solid #e5e7eb}
+.has-tip{cursor:help;border-bottom:1px dashed #f9a8d4}
+.tip-box{display:none;position:fixed;z-index:9999;background:#1a1a2e;color:#fff;border-radius:8px;padding:10px 12px;font-size:11px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1.8;pointer-events:none}
+.tip-box.show{display:block}
+.tip-tbl{color:#f9a8d4;font-weight:700;font-size:12px}
+.tip-col{color:#80cbc4;margin-bottom:3px}
+.tip-comment{color:#e0e0e0}
+.tip-code-grp{color:#ffcc80;margin-top:4px;font-size:10px}
+.tip-codes{color:#b0bec5;font-size:10px;margin-top:2px}
+/* 별점 선택 */
+.star-select{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:4px;padding:8px 0}
+.star-select input[type=radio]{display:none}
+.star-select label{font-size:36px;cursor:pointer;color:#d1d5db;transition:.15s}
+.star-select input[type=radio]:checked ~ label,
+.star-select label:hover,
+.star-select label:hover ~ label{color:#f59e0b}
+.star-hint{font-size:12px;color:#9ca3af;margin-top:4px}
+/* 주문 상품 정보 카드 */
+.order-ref-card{background:#f9fafb;border-radius:10px;padding:12px;margin-bottom:16px;display:flex;gap:12px;align-items:center}
+.order-ref-img{width:56px;height:56px;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.order-ref-info{flex:1}
+.order-ref-nm{font-size:14px;font-weight:600}
+.order-ref-opt{font-size:12px;color:#9ca3af}
+.order-ref-date{font-size:12px;color:#9ca3af}
+/* 사진 첨부 */
+.photo-attach{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.photo-add-btn{width:80px;height:80px;border:2px dashed #e5e7eb;border-radius:10px;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#9ca3af}
+.photo-add-btn span{font-size:11px;margin-top:4px}
+.photo-preview{width:80px;height:80px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative}
+.photo-del-btn{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* 적립금 안내 */
+.earn-preview{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-top:16px}
+.earn-title{font-size:13px;font-weight:700;color:#15803d;margin-bottom:8px}
+.earn-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.earn-label{color:#555}
+.earn-val{font-weight:600;color:#15803d}
+</style>
+</head>
+<body>
+<div class="fo-header">
+  <h1>⭐ 리뷰 작성</h1>
+  <a href="fo-prod-view.html" style="font-size:11px;color:#be185d;text-decoration:none">← 상품상세</a>
+</div>
+<div class="breadcrumb">마이페이지 &gt; 주문내역 &gt; <span>리뷰 작성</span></div>
+
+<!-- 대상 상품 정보 -->
+<div class="section">
+  <div class="section-title">리뷰 작성 대상</div>
+  <div class="order-ref-card">
+    <div class="order-ref-img">👕</div>
+    <div class="order-ref-info">
+      <div class="order-ref-nm has-tip"
+        data-table="pd_prod" data-col="prod_nm"
+        data-tbl-cmt="상품 마스터" data-col-cmt="상품명">
+        오가닉 코튼 티셔츠
+      </div>
+      <div class="order-ref-opt has-tip"
+        data-table="od_order_item" data-col="opt_nm"
+        data-tbl-cmt="주문 상품 항목" data-col-cmt="구매 시 옵션명">
+        블랙 / M
+      </div>
+      <div class="order-ref-date has-tip"
+        data-table="od_order" data-col="order_date"
+        data-tbl-cmt="주문 마스터" data-col-cmt="구매 주문 일시">
+        구매일: 2026-03-28
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 리뷰 작성 폼 -->
+<div class="section">
+  <div class="section-title">리뷰 내용</div>
+
+  <!-- 별점 -->
+  <div class="field">
+    <label class="has-tip"
+      data-table="pd_review" data-col="rating"
+      data-tbl-cmt="상품 리뷰" data-col-cmt="별점 (1~5점)">
+      별점 *
+    </label>
+    <div class="star-select">
+      <input type="radio" name="rating" id="r5" value="5">
+      <label for="r5">★</label>
+      <input type="radio" name="rating" id="r4" value="4" checked>
+      <label for="r4">★</label>
+      <input type="radio" name="rating" id="r3" value="3">
+      <label for="r3">★</label>
+      <input type="radio" name="rating" id="r2" value="2">
+      <label for="r2">★</label>
+      <input type="radio" name="rating" id="r1" value="1">
+      <label for="r1">★</label>
+    </div>
+    <div class="star-hint" id="ratingHint">4점 - 만족해요</div>
+  </div>
+
+  <!-- 리뷰 제목 -->
+  <div class="field">
+    <label class="has-tip"
+      data-table="pd_review" data-col="review_title"
+      data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 제목 (선택)">
+      리뷰 제목
+    </label>
+    <input type="text" placeholder="리뷰 제목을 입력해주세요 (선택)">
+  </div>
+
+  <!-- 리뷰 본문 -->
+  <div class="field">
+    <label class="has-tip"
+      data-table="pd_review" data-col="review_content"
+      data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 본문 텍스트 (최소 10자)">
+      리뷰 내용 * <span style="color:#9ca3af;font-weight:400">(최소 10자)</span>
+    </label>
+    <textarea placeholder="상품을 사용해보신 후 솔직한 리뷰를 작성해주세요.&#10;다른 고객님들께 큰 도움이 됩니다! (최소 10자)"></textarea>
+    <div style="text-align:right;font-size:11px;color:#9ca3af;margin-top:4px">0 / 1000자</div>
+  </div>
+
+  <!-- 사진 첨부 -->
+  <div class="field">
+    <label class="has-tip"
+      data-table="pd_review_attach" data-col="attach_url"
+      data-tbl-cmt="리뷰 첨부파일" data-col-cmt="리뷰 이미지 URL (최대 5장)">
+      사진 첨부 <span style="color:#9ca3af;font-weight:400">(최대 5장)</span>
+    </label>
+    <div class="photo-attach">
+      <div class="photo-preview">
+        👗
+        <button class="photo-del-btn">×</button>
+      </div>
+      <div class="photo-add-btn">
+        📷
+        <span>추가</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:6px">
+      · JPG, PNG, GIF 파일 가능 / 장당 최대 10MB
+    </div>
+  </div>
+
+  <!-- 적립금 예상 안내 -->
+  <div class="earn-preview">
+    <div class="earn-title">🎁 리뷰 작성 시 적립금 지급</div>
+    <div class="earn-row">
+      <span class="earn-label">텍스트 리뷰</span>
+      <span class="earn-val has-tip"
+        data-table="pd_review" data-col="save_schd_amt"
+        data-tbl-cmt="상품 리뷰" data-col-cmt="리뷰 작성으로 지급 예정인 적립금">
+        200원
+      </span>
+    </div>
+    <div class="earn-row">
+      <span class="earn-label">사진 포함 리뷰</span>
+      <span class="earn-val">+300원 추가</span>
+    </div>
+    <div class="earn-row" style="border-top:1px solid #bbf7d0;margin-top:6px;padding-top:8px">
+      <span class="earn-label" style="font-weight:600">총 예상 적립금</span>
+      <span class="earn-val" style="font-size:15px">500원</span>
+    </div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:8px">
+      * 리뷰 승인 후 D+1 지급 (유효기간 6개월)
+    </div>
+  </div>
+
+  <!-- 버튼 -->
+  <div style="display:flex;gap:8px;margin-top:20px">
+    <button class="btn btn-secondary" style="flex:1;width:auto">취소</button>
+    <button class="btn btn-primary" style="flex:2;width:auto">리뷰 등록하기</button>
+  </div>
+</div>
+
+<!-- 리뷰 작성 규정 안내 -->
+<div class="section" style="font-size:12px;color:#9ca3af;line-height:2">
+  <div style="font-weight:600;margin-bottom:6px;color:#555">리뷰 작성 안내</div>
+  · 구매 후 30일 이내에 리뷰를 작성할 수 있습니다.<br>
+  · 욕설, 광고, 개인정보가 포함된 리뷰는 삭제될 수 있습니다.<br>
+  · 허위/허위 리뷰 작성 시 법적 제재를 받을 수 있습니다.<br>
+  · 적립금은 리뷰 승인 후 지급되며, 반품/취소 시 회수됩니다.
+</div>
+
+<div class="tip-box" id="tipBox"></div>
+<script>
+const ratingHints=['','정말 별로에요','아쉬워요','보통이에요','만족해요','정말 좋아요!'];
+document.querySelectorAll('.star-select input[type=radio]').forEach(r=>{
+  r.addEventListener('change',()=>{
+    document.getElementById('ratingHint').textContent=r.value+'점 - '+ratingHints[r.value];
+  });
+});
+const tb=document.getElementById('tipBox');
+document.querySelectorAll('.has-tip').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{
+    const d=el.dataset;
+    let h=`<div class="tip-tbl">${d.table||''}</div><div class="tip-col">.${d.col||''}</div>`;
+    if(d.tblCmt) h+=`<div class="tip-comment">📋 ${d.tblCmt}</div>`;
+    if(d.colCmt) h+=`<div class="tip-comment">📌 ${d.colCmt}</div>`;
+    if(d.codeGrp) h+=`<div class="tip-code-grp">코드그룹: ${d.codeGrp}</div>`;
+    if(d.codes) h+=`<div class="tip-codes">${d.codes.split('|').map(c=>'· '+c).join('<br>')}</div>`;
+    tb.innerHTML=h; tb.classList.add('show'); mv(e);
+  });
+  el.addEventListener('mousemove',mv);
+  el.addEventListener('mouseleave',()=>tb.classList.remove('show'));
+});
+function mv(e){const x=e.clientX+14,y=e.clientY+14,w=tb.offsetWidth||260;tb.style.left=(x+w>window.innerWidth?x-w-28:x)+'px';tb.style.top=y+'px';}
+</script>
+</body>
+</html>

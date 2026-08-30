@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>전시 패널 관리</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+  .page-header{background:#fff;border-bottom:1px solid #eee;padding:16px 24px}
+  .breadcrumb{font-size:12px;color:#999}
+  .breadcrumb span{color:#f06292;font-weight:600}
+  h1{font-size:18px;font-weight:700;color:#222}
+  .container{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+  .search-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .search-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11px;color:#888;font-weight:500}
+  .field input,.field select{border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:13px;outline:none}
+  .field input:focus,.field select:focus{border-color:#f06292}
+  .search-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+  .btn{padding:7px 16px;border-radius:6px;font-size:13px;border:none;cursor:pointer;font-weight:500}
+  .btn-primary{background:linear-gradient(135deg,#f48fb1,#e91e63);color:#fff}
+  .btn-secondary{background:#f5f5f5;color:#555;border:1px solid #ddd}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn-danger{background:#ffebee;color:#c62828;border:1px solid #ffcdd2}
+  .btn-preview{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+  .list-toolbar{display:flex;align-items:center;justify-content:space-between}
+  .list-title{font-size:14px;font-weight:600;color:#333}
+  .list-count{font-size:12px;color:#f06292;margin-left:6px}
+  .toolbar-actions{display:flex;gap:8px}
+  .table-card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:#fce4ec;color:#c2185b;font-weight:600;padding:10px 12px;text-align:center;border-bottom:2px solid #f48fb1;white-space:nowrap}
+  tbody td{padding:9px 12px;border-bottom:1px solid #f5f5f5;text-align:center;vertical-align:middle}
+  tbody tr:hover{background:#fff9fb}
+  .title-link{color:#1976d2;text-decoration:none;font-weight:500;cursor:pointer}
+  .title-link:hover{text-decoration:underline}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-green{background:#e8f5e9;color:#2e7d32}
+  .badge-gray{background:#f5f5f5;color:#757575}
+  .badge-blue{background:#e3f2fd;color:#1565c0}
+  .badge-orange{background:#fff3e0;color:#e65100}
+  .badge-red{background:#ffebee;color:#c62828}
+  .badge-purple{background:#f3e5f5;color:#6a1b9a}
+  .actions{display:flex;gap:4px;justify-content:center}
+  .pagination{display:flex;justify-content:center;align-items:center;gap:4px;padding:12px}
+  .pager{width:28px;height:28px;border-radius:6px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .pager.active{background:#e91e63;color:#fff;border-color:#e91e63}
+
+  /* 폼 */
+  .form-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+  .form-card-title{font-size:14px;font-weight:700;color:#c2185b;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #fce4ec;display:flex;align-items:center;justify-content:space-between}
+  .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .form-row-full{grid-column:1/-1}
+  .form-group{display:flex;flex-direction:column;gap:4px}
+  .form-label{font-size:12px;color:#888;font-weight:500}
+  .form-label.req::after{content:'*';color:#e91e63;margin-left:3px}
+  .form-control{border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;width:100%}
+  .form-control:focus{border-color:#f06292}
+  .form-hint{font-size:11px;color:#aaa;margin-top:2px}
+  textarea.form-control{resize:vertical;min-height:72px}
+  .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0}
+  .date-range{display:flex;align-items:center;gap:8px}
+  .date-range input{flex:1}
+  .date-range span{color:#aaa;font-size:13px}
+  .sub-section{margin-top:16px}
+  .sub-title{font-size:13px;font-weight:600;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .hierarchy-info{background:#fff9fb;border:1px solid #fce4ec;border-radius:8px;padding:12px 16px;font-size:12px;color:#888;margin-bottom:4px}
+  .hierarchy-info strong{color:#e91e63}
+  .ddl-ref{background:#f8f9fa;border-radius:8px;padding:10px 14px;font-size:11px;color:#888;border-left:3px solid #f48fb1;margin-top:8px}
+  .ddl-ref strong{color:#c2185b}
+
+  /* 상태 변경 선택 */
+  .status-select-row{display:flex;align-items:center;gap:10px;background:#fff3e0;border:1px solid #ffcc02;border-radius:8px;padding:10px 14px;font-size:13px}
+  .status-select-row select{border:1px solid #ddd;border-radius:6px;padding:5px 8px;font-size:12px}
+
+  /* 위젯 배치 드래그 영역 */
+  .widget-slot{display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px dashed #ddd;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:8px;cursor:move}
+  .widget-slot:hover{border-color:#f48fb1;background:#fff9fb}
+  .widget-slot-handle{color:#ccc;font-size:18px;cursor:grab}
+  .widget-slot-type{background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+  .widget-slot-nm{flex:1;font-weight:500}
+  .widget-slot-vis{font-size:11px;color:#888}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="breadcrumb">전시관리 &gt; <span>전시패널관리</span></div>
+  <h1>전시 패널 관리</h1>
+</div>
+
+<div class="container">
+
+  <!-- 검색 -->
+  <div class="search-card">
+    <div class="search-grid">
+      <div class="field">
+        <label>패널 상태 (disp_panel_status_cd)</label>
+        <select>
+          <option>전체</option>
+          <option>ACTIVE — 활성</option>
+          <option>DRAFT — 초안</option>
+          <option>INACTIVE — 비활성</option>
+          <option>SCHEDULED — 예약</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>공개대상</label>
+        <select>
+          <option>전체</option>
+          <option>PUBLIC 포함</option>
+          <option>MEMBER 포함</option>
+          <option>VIP 포함</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>사용여부</label>
+        <select>
+          <option>전체</option>
+          <option>Y — 사용</option>
+          <option>N — 미사용</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>패널명 검색</label>
+        <input type="text" placeholder="패널명 입력">
+      </div>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-secondary">초기화</button>
+      <button class="btn btn-primary">검색</button>
+    </div>
+  </div>
+
+  <!-- 상태 일괄 변경 -->
+  <div class="status-select-row">
+    <input type="checkbox"> <strong>선택 항목 일괄 처리:</strong>
+    <select>
+      <option>상태 선택</option>
+      <option>ACTIVE — 활성화</option>
+      <option>DRAFT — 초안으로</option>
+      <option>INACTIVE — 비활성</option>
+    </select>
+    <button class="btn btn-secondary btn-sm">적용</button>
+    <span style="color:#aaa;font-size:12px">※ disp_panel_status_cd_before 자동 기록</span>
+  </div>
+
+  <!-- 툴바 -->
+  <div class="list-toolbar">
+    <div>
+      <span class="list-title">패널 목록</span>
+      <span class="list-count">총 24건</span>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn btn-secondary btn-sm">CSV 내보내기</button>
+      <button class="btn btn-primary btn-sm">+ 패널 등록</button>
+    </div>
+  </div>
+
+  <!-- 목록 -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox"></th>
+          <th>No</th>
+          <th>패널명 (panel_nm)</th>
+          <th>유형 (panel_type_cd)</th>
+          <th>상태 (disp_panel_status_cd)</th>
+          <th>공개대상</th>
+          <th>표시경로 (disp_path)</th>
+          <th>사용여부</th>
+          <th>사용기간</th>
+          <th>위젯수</th>
+          <th>등록일</th>
+          <th>액션</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>1</td>
+          <td><a class="title-link">메인 슬라이드 배너</a></td>
+          <td><span class="badge badge-blue">SLIDE</span></td>
+          <td><span class="badge badge-green">ACTIVE</span></td>
+          <td><span style="font-size:11px;color:#666">^PUBLIC^MEMBER^</span></td>
+          <td>FRONT.모바일.상단</td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td>2026-01-01 ~ 06-30</td>
+          <td><a class="title-link">위젯 3개</a></td>
+          <td>2026-01-01</td>
+          <td class="actions">
+            <button class="btn btn-preview btn-sm">미리보기</button>
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>2</td>
+          <td><a class="title-link">봄 이벤트 배너</a></td>
+          <td><span class="badge badge-orange">BANNER</span></td>
+          <td><span class="badge badge-orange">SCHEDULED</span></td>
+          <td><span style="font-size:11px;color:#666">^PUBLIC^</span></td>
+          <td>FRONT.이벤트</td>
+          <td><span class="badge badge-green">Y</span></td>
+          <td>2026-03-01 ~ 05-31</td>
+          <td><a class="title-link">위젯 1개</a></td>
+          <td>2026-02-15</td>
+          <td class="actions">
+            <button class="btn btn-preview btn-sm">미리보기</button>
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="checkbox"></td>
+          <td>3</td>
+          <td><a class="title-link">VIP 전용 추천상품</a></td>
+          <td><span class="badge badge-purple">PRODUCT</span></td>
+          <td><span class="badge badge-gray">DRAFT</span></td>
+          <td><span style="font-size:11px;color:#c2185b">^VIP^</span></td>
+          <td>FRONT.VIP존</td>
+          <td><span class="badge badge-gray">N</span></td>
+          <td>미설정</td>
+          <td><a class="title-link">위젯 2개</a></td>
+          <td>2026-03-10</td>
+          <td class="actions">
+            <button class="btn btn-preview btn-sm">미리보기</button>
+            <button class="btn btn-secondary btn-sm">수정</button>
+            <button class="btn btn-danger btn-sm">삭제</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button class="pager">◀</button>
+      <button class="pager active">1</button>
+      <button class="pager">2</button>
+      <button class="pager">▶</button>
+    </div>
+  </div>
+
+  <!-- 등록/수정 폼 -->
+  <div class="form-card">
+    <div class="form-card-title">
+      패널 등록 / 수정
+      <button class="btn btn-preview btn-sm">🔍 미리보기</button>
+    </div>
+
+    <div class="hierarchy-info">
+      계층: dp_area → dp_area_panel → <strong>dp_panel</strong> (패널 마스터) → <strong>dp_panel_item</strong> (위젯 배치) → dp_widget_lib
+    </div>
+
+    <div class="form-grid" style="margin-top:14px">
+      <div class="form-group">
+        <label class="form-label req">패널명 (panel_nm)</label>
+        <input class="form-control" value="메인 슬라이드 배너">
+      </div>
+      <div class="form-group">
+        <label class="form-label">패널유형 (panel_type_cd)</label>
+        <select class="form-control">
+          <option>SLIDE — 슬라이드</option>
+          <option>BANNER — 배너</option>
+          <option>PRODUCT — 상품</option>
+          <option>TEXT — 텍스트</option>
+          <option>GRID — 그리드</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">패널 상태 (disp_panel_status_cd)</label>
+        <select class="form-control">
+          <option>ACTIVE — 활성</option>
+          <option>DRAFT — 초안</option>
+          <option>INACTIVE — 비활성</option>
+          <option>SCHEDULED — 예약</option>
+        </select>
+        <span class="form-hint">이전 상태: disp_panel_status_cd_before 자동 기록</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">사이트 (site_id)</label>
+        <select class="form-control">
+          <option>사이트01</option>
+          <option>사이트02</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">공개대상 (visibility_targets)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" checked> PUBLIC</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" checked> MEMBER</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox"> VIP</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox"> STAFF</label>
+        </div>
+        <span class="form-hint">인코딩 형식: ^PUBLIC^MEMBER^ (캐럿 구분)</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">표시경로 (disp_path)</label>
+        <input class="form-control" value="FRONT.모바일메인.상단">
+      </div>
+      <div class="form-group">
+        <label class="form-label">사용여부 (use_yn)</label>
+        <select class="form-control">
+          <option>Y — 사용</option>
+          <option>N — 미사용</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">사용기간</label>
+        <div class="date-range">
+          <input class="form-control" type="date" value="2026-01-01">
+          <span>~</span>
+          <input class="form-control" type="date" value="2026-06-30">
+        </div>
+      </div>
+    </div>
+
+    <!-- 위젯 배치 (dp_panel_item) -->
+    <div class="sub-section">
+      <div class="sub-title">
+        위젯 배치 (dp_panel_item) — 드래그로 순서 변경
+        <button class="btn btn-secondary btn-sm">+ 위젯 추가</button>
+      </div>
+
+      <div class="widget-slot">
+        <span class="widget-slot-handle">⠿</span>
+        <span style="color:#999;font-size:12px">1</span>
+        <span class="widget-slot-type">image_banner</span>
+        <span class="widget-slot-nm">봄 메인 슬라이드 이미지</span>
+        <span class="widget-slot-vis">^PUBLIC^MEMBER^</span>
+        <span class="badge badge-green" style="font-size:10px">disp_yn Y</span>
+        <span style="font-size:11px;color:#aaa">2026-01-01~06-30</span>
+        <button class="btn btn-secondary btn-sm">수정</button>
+        <button class="btn btn-danger btn-sm">제거</button>
+      </div>
+      <div class="widget-slot">
+        <span class="widget-slot-handle">⠿</span>
+        <span style="color:#999;font-size:12px">2</span>
+        <span class="widget-slot-type">event_banner</span>
+        <span class="widget-slot-nm">봄 이벤트 배너 (라이브러리 참조)</span>
+        <span class="widget-slot-vis">^PUBLIC^</span>
+        <span class="badge badge-blue" style="font-size:10px">lib_ref Y</span>
+        <span style="font-size:11px;color:#aaa">2026-03-01~05-31</span>
+        <button class="btn btn-secondary btn-sm">수정</button>
+        <button class="btn btn-danger btn-sm">제거</button>
+      </div>
+      <div class="widget-slot">
+        <span class="widget-slot-handle">⠿</span>
+        <span style="color:#999;font-size:12px">3</span>
+        <span class="widget-slot-type">product_slider</span>
+        <span class="widget-slot-nm">추천 상품 슬라이더</span>
+        <span class="widget-slot-vis">^MEMBER^VIP^</span>
+        <span class="badge badge-gray" style="font-size:10px">disp_yn N</span>
+        <span style="font-size:11px;color:#aaa">미설정</span>
+        <button class="btn btn-secondary btn-sm">수정</button>
+        <button class="btn btn-danger btn-sm">제거</button>
+      </div>
+    </div>
+
+    <div class="ddl-ref">
+      <strong>관련 DDL:</strong> dp_panel (panel_id PK · disp_panel_status_cd · visibility_targets · content_json TEXT) · dp_panel_item (panel_item_id PK · panel_id FK · widget_lib_id FK · item_sort_ord)<br>
+      <strong>주요 컬럼:</strong> disp_panel_status_cd(ACTIVE/DRAFT/INACTIVE/SCHEDULED) · disp_panel_status_cd_before · visibility_targets(^캐럿구분^) · widget_lib_ref_yn · disp_env · disp_yn(배치자동)
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary">취소</button>
+      <button class="btn btn-primary">저장</button>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
