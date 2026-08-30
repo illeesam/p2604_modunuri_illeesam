@@ -9,31 +9,14 @@ window.foRegisterComponents = function (app) {
     .component('FoError404',    window.foError404)
     .component('FoError401',    window.foError401)
     .component('FoError500',    window.foError500)
-    /* ── pages/ (사용자 페이스 - FO_SITE_NO 기준 동적) ── */
-    .component('Home'+window.FO_SITE_NO,        window['Home'+window.FO_SITE_NO])
-    .component('Prod'+window.FO_SITE_NO+'List', window['Prod'+window.FO_SITE_NO+'List'])
-    .component('Prod'+window.FO_SITE_NO+'View', window['Prod'+window.FO_SITE_NO+'View'])
-    .component('Cart',         window.Cart)
-    .component('Order',        window.Order)
-    .component('Contact',      window.Contact)
-    .component('Faq',          window.Faq)
-    .component('Login',        window.Login)
-    .component('EventPage',    window.EventPage)
-    .component('EventView',    window.EventView)
-    .component('BlogPage',     window.Blog)
-    .component('BlogView',     window.BlogView)
-    .component('BlogEdit',     window.BlogEdit)
-    .component('LikePage',     window.Like)
-    .component('LocationPage', window.Location)
-    .component('AboutPage',    window.About)
-    /* ── pages/fo/my/ (마이페이지) ── */
+    /* ── pages/fo/*, pages/fo/my/* — 2026-08-30 lazy-load 전환. Home{N}/Prod{N}List/Prod{N}View
+       포함 전부 foAppBase.js 의 fnEnsurePageLoaded/fnEnsureClassLoaded 가
+       lib/app/foAppLazyClasses.js 를 보고 최초 진입 시에만 loadModule() 로 로드하고 여기 등록한다
+       (SEO 는 Spring Boot 쪽 메타태그 서버사이드 주입으로 별도 해결 — index.html B4.3/B4.4/B5.x
+       주석 참조). Home{N}/Prod{N}List/Prod{N}View 는 foHomeComp 등을 ref 로 바꾼 뒤에야 lazy 전환이
+       가능해졌다(예전엔 setup() 시점에 단 한 번만 평가되는 plain const 라 구조적으로 불가능했음).
+       MyDateFilter 는 이미 eager 인 foMyLayout.js 안에 정의돼 있어(별도 파일 아님) lazy 대상 아님 ── */
     .component('MyDateFilter', window.MyDateFilter)
-    .component('MyOrder',      window.MyOrder)
-    .component('MyClaim',      window.MyClaim)
-    .component('MyCoupon',     window.MyCoupon)
-    .component('MyCache',      window.MyCache)
-    .component('MyContact',    window.MyContact)
-    .component('MyChatt',      window.MyChatt)
     /* ── pages/co/ec/ (FO/BO 공용) ── */
     .component('OdOrderKanban', window.OdOrderKanban)
     /* ── components/disp/ (전시 컴포넌트) ── */

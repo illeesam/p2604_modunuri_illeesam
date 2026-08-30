@@ -36,10 +36,20 @@
     var host = global.location.hostname || 'localhost';
     return 'http://' + host + ':3000/' + p;
   }
+  /* seoUrl — 백엔드의 SEO 메타태그 서버사이드 주입 랜딩(/prodDtl/{prodId} 등, FoSeoController) 절대 URL.
+     cdnUrl() 과 host:port 조립은 동일(둘 다 /api 밖 backend 루트 경로) — 용도 구분을 위해 이름만 분리.
+     BO 화면(PdProdDtl 등)의 "API 미리보기" 버튼처럼 서버사이드 주입 결과를 직접 확인할 때 사용 */
+  function seoUrl(path) {
+    if (/^https?:\/\//i.test(path)) return path;
+    var p = String(path || '').replace(/^\//, '');
+    var host = global.location.hostname || 'localhost';
+    return 'http://' + host + ':3000/' + p;
+  }
   global.appBase = global.appBase || appBase;
   global.pageUrl = global.pageUrl || pageUrl;
   global.apiUrl  = global.apiUrl  || apiUrl;
   global.cdnUrl  = global.cdnUrl  || cdnUrl;
+  global.seoUrl  = global.seoUrl  || seoUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[bo]';

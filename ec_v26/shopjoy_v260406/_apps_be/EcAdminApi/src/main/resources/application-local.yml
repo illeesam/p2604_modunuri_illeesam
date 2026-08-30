@@ -173,6 +173,14 @@ app:
   # app.mail.from / from-nm 은 sy_prop(app.mail.*) 에서 주입
   # app.license.secret / enabled 는 sy_prop(app.license.*) 에서 주입
 
+  # FoSeoController/FoSeoService — SEO 메타태그 서버사이드 주입(/prodDtl/{prodId}) 용.
+  # dir: index.html 이 있는 FO 프로젝트 루트(템플릿 읽기용, gradle 기본 작업 디렉토리 기준 상대경로)
+  # base-url: FO 정적 서버 공개 URL — 절대 og:image URL 구성 + (로컬처럼 백엔드와 포트가 달라
+  #   history.replaceState 가 cross-origin 으로 막힐 때의 전체 이동 폴백에 사용
+  frontend:
+    dir: ${FRONTEND_DIR:../../}
+    base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5502}
+
   redis:
     enabled: false            # true 로 변경 시 Redis 활성화
     primary:

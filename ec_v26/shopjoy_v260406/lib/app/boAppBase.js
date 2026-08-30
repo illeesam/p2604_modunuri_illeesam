@@ -15,6 +15,9 @@
 
       /* ── 페이지 & 라우팅 ── */
       const page = ref('dashboard');
+      // navLoading — 메뉴 클릭 후 fnEnsurePageLoaded() 로 화면 스크립트를 받아오는 동안만 true.
+      // 상단 진행바(#_nav_loading_bar) 노출용. 2026-08-30 추가.
+      const navLoading = ref(false);
       const cfDashboardComp = 'DashboardBoEc' + (window.BO_SITE_NO || '01');
       const errorMessage = ref('');
       /* 최근 500(서버오류)/네트워크 에러 목록 — 백엔드 다운 등으로 여러 API 가 동시에 실패했을 때
@@ -165,8 +168,86 @@
           Array.from(autoKeptTabIds).forEach((id) => { if (!liveIds.has(id)) autoKeptTabIds.delete(id); });
         }
       );
-      /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppCompPage.js) ── */
+      /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppLazyClasses.js, scripts/generateBoLazyClasses.js 산출물) ── */
       const PAGE_COMP_MAP = window.BO_APP_COMP_PAGE;
+
+      /* ── Lazy 로드 2차 개정 (2026-08-30, shopjoy_v260406_lazy 전용) ──────────────────
+         1차는 "어떤 화면이 어떤 화면을 인라인 임베드하는지"를 lib/app/boAppPageScripts.js 에
+         사람이(또는 스크립트가) 미리 적어둬야 했다 — 새 임베드가 생겨도 그 파일을 안 고치면
+         조용히 깨지는 유지보수 부담이 있었다("상품관리 [수정] 눌렀는데 상세가 안 뜬다" 버그가
+         바로 이 누락 때문이었음). 이번엔 그 매핑 자체를 없애고, 로더가 **파일 내용을 직접
+         읽어서 자동으로 알아낸다**:
+           1) 진입 클래스를 loadModule()(네이티브 동적 import())로 실행한다
+           2) 방금 실행되어 window[cls] 에 올라온 component 객체의 template 문자열(이미 메모리에
+              있음 — 별도 fetch 불필요)에서 <kebab-tag> 커스텀 태그를 정규식으로 스캔
+           3) lib/app/boAppLazyClasses.js(클래스명→경로, 유일하게 남은 맵 — 이건 "이 클래스가
+              어느 파일에 있는지"일 뿐 "누가 누굴 쓰는지"는 안 담고 있어 임베드 관계가 바뀌어도
+              손댈 필요 없다)에 있는 클래스면, 그 파일도 재귀적으로 같은 방식으로 로드+스캔
+           4) 더 이상 새 태그가 안 나올 때까지 반복
+         (2026-08-30 수정: 처음엔 "스캔용 fetch(text) + 실행용 import()" 로 파일마다 네트워크
+         요청이 2번 나가는 구조였다 — 로드+스캔을 한 함수로 합쳐 요청을 1회로 줄였다) */
+      const loadedPages = reactive({}); // { [pageId]: true } — 로드 완료 여부(메뉴 흐림 해제에도 사용)
+      const LAZY_CLASS_FILES = window.BO_LAZY_CLASS_FILES || {}; // 클래스명 -> 스크립트 경로(유일한 맵)
+      const kebabToPascal = (k) => k.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+      /* loadModule — 네이티브 동적 import(). 브라우저 모듈 로더는 "bare specifier"(접두어 없는
+         "pages/bo/...js" 같은 경로)를 import map 없이는 거부한다. 맵(boAppLazyClasses.js)의 경로는
+         기존 <script src="pages/..."> 관례를 그대로 따르므로, 상대경로 표기 규칙에 기대지 않고
+         new URL()로 매번 완전한 절대 URL을 만들어 넘긴다 — document.baseURI 는 항상 현재 문서
+         위치를 정확히 반영한다(bo.html 은 history.replaceState 축약을 안 쓰지만 동일하게 안전). */
+      const loadModule = (src) => import(new URL(src, document.baseURI).href);
+      const _boLoadingClasses = {}; // { [cls]: Promise } — 동일 클래스 동시 요청 중복 방지(파일당 네트워크 1회 보장)
+      /* fnCollectFiles — cls 를 import(1회 네트워크 요청)하고, 별도 fetch(text) 없이 이미 메모리에
+         올라온 component.template 문자열을 그대로 정규식 스캔해 자식 <kebab-tag> 를 재귀 발견한다.
+         (이전엔 스캔용 fetch(src) + 실행용 import(src) 로 파일마다 네트워크 요청이 2번 나갔었음 —
+         2026-08-30 수정. 스캔·로드를 분리하지 않고 한 함수로 합쳐서 요청을 1회로 줄인다.
+         visited 는 클래스 기준 순환 방지(A가 B를, B가 다시 A를 임베드해도 무한루프 안 남). */
+      const fnCollectFiles = (cls, visited) => {
+        if (visited.has(cls)) return Promise.resolve();
+        visited.add(cls);
+        const src = LAZY_CLASS_FILES[cls];
+        if (!src) return Promise.resolve();
+        if (_boLoadingClasses[cls]) return _boLoadingClasses[cls];
+        _boLoadingClasses[cls] = (async () => {
+          if (!window[cls]) await loadModule(src);
+          // 방어 체크 — import 는 성공했는데 window[cls] 가 여전히 없으면(예: 압축 시
+          // property mangling 이 켜져서 window.ClassName 의 ClassName 이 다른 이름으로
+          // 바뀐 경우) 화면이 그냥 조용히 빈 채로 뜨는 대신 명확한 에러를 바로 던진다 —
+          // "실수해도 티가 안 나는" 상태를 없애기 위한 방어. 2026-08-30 추가.
+          if (!window[cls]) {
+            throw new Error(`[lazy] ${src} 를 로드했지만 window.${cls} 가 정의되지 않았습니다 — `
+              + `압축 시 property mangling 이 켜져있는지 확인하세요(반드시 꺼야 합니다).`);
+          }
+          app.component(cls, window[cls]);
+          const tmpl = String(window[cls]?.template || '');
+          const tags = [...new Set([...tmpl.matchAll(/<([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\b/g)].map((m) => m[1]))];
+          const depClasses = tags.map(kebabToPascal).filter((c) => LAZY_CLASS_FILES[c]);
+          await Promise.all(depClasses.map((dc) => fnCollectFiles(dc, visited)));
+        })().catch((e) => {
+          // 실패한 Promise 를 캐시에 영구히 남겨두면(네트워크 순단 등 일시적 오류여도)
+          // 재시도(같은 메뉴 다시 클릭)가 계속 같은 실패를 반환한다 — 캐시를 지워서
+          // 다음 시도가 진짜로 다시 로드를 시도하게 한다. 2026-08-30 추가.
+          delete _boLoadingClasses[cls];
+          throw e;
+        });
+        return _boLoadingClasses[cls];
+      };
+      /* fnEnsurePageLoaded — pg 의 진입 클래스부터 필요한 파일을 전부 자동 발견해 실행/등록한다.
+         entryCls 가 LAZY_CLASS_FILES 에 없으면(대시보드 등 eager 예외) 이미 로드된 것으로
+         취급. 실패하면 throw(호출부인 navigate/readHash 가 토스트로 안내). */
+      const fnEnsurePageLoaded = async (pg) => {
+        if (loadedPages[pg]) return;
+        const kebab = PAGE_COMP_MAP[pg];
+        const entryCls = pg === 'dashboard' ? 'DashboardBoEc' + (window.BO_SITE_NO || '01') : kebabToPascal(kebab || '');
+        if (!LAZY_CLASS_FILES[entryCls]) { loadedPages[pg] = true; return; } // eager 대상 — 이미 로드돼 있음
+        await fnCollectFiles(entryCls, new Set());
+        loadedPages[pg] = true;
+      };
+      /* cfIsPageLoaded — 좌측 메뉴 흐림 표시용. lazy 대상이 아닌 pageId 는 항상 "로드됨" 취급. */
+      const cfIsPageLoaded = (pg) => {
+        const kebab = PAGE_COMP_MAP[pg];
+        const entryCls = pg === 'dashboard' ? null : kebabToPascal(kebab || '');
+        return !entryCls || !LAZY_CLASS_FILES[entryCls] || !!loadedPages[pg];
+      };
 
       /* addTab — 독립화면(새창/URL 직접 접근 등)으로 열려 setup() 도중(readHash 경유) 바로
          호출되는 경로가 있다. 그 시점엔 파일 뒤쪽에서 선언되는 값이 아직 없을 수 있으므로,
@@ -463,21 +544,36 @@
         const id = rawOrderId;
         const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
         const newClaimId = p.get('claimId') || null;
+        let handledValidPage = false; // 2026-08-30 lazy 로드: true 면 아래 폴백(대시보드 강제 추가)을 건너뛴다
         if (pg && ALL_PAGES.includes(pg)) {
           const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
           if (!isLoggedIn && pg !== 'dashboard') {
             if (showNotification) showToast('로그인이 필요합니다.', 'error');
             if (page.value !== 'dashboard') page.value = 'dashboard';
-            return;
+            return handledValidPage;
           }
-          // 동일 값 set 으로 인한 reactive 무한 갱신 방지
-          if (page.value !== pg) page.value = pg;
+          handledValidPage = true;
+          /* 2026-08-30 lazy 로드 버그수정: activeTop 은 PAGE_TO_TOP[pg] 룩업만으로 정해지는
+             순수 라우팅 메타데이터라 스크립트 로드와 무관하다 — async .then() 안에 있으면
+             onMounted/fnEnsureDashMenusLoaded 가 "아직 이전 값(대개 기본값 'home')"을 보고
+             엉뚱하게 대시보드 메뉴 API(list/menu-tree 4건)를 쏴버린다("상품관리로 딥링크
+             진입했는데 대시보드 API 가 호출된다" 버그) — 여기서 즉시(동기) 반영한다. */
           const newTop = PAGE_TO_TOP[pg];
           if (newTop && activeTop.value !== newTop) activeTop.value = newTop;
-          /* pg==='dashboard' 는 PAGE_LABELS 상 라벨이 '대시보드'(범용) 라 그대로 두면
-             예전에 항상 붙어있던 'EC대시보드' 라벨과 달라진다 — 명시적으로 덮어써서
-             ?page=dashboard 직접 진입 시에도 라벨이 그대로 유지되게 한다. */
-          addTab(toTabId(pg, newDtlId), pg === 'dashboard' ? 'EC대시보드' : undefined);
+          /* 2026-08-30 lazy 로드: URL 로 직접 들어온(북마크/새로고침/새창) 화면도 스크립트가
+             아직 없을 수 있다 — readHash 자체를 async 로 바꾸면 setup() 최상위에서 top-level
+             await 가 필요해져 파급이 너무 커서, 여기만 fire-and-forget 으로 분리한다. 로드가
+             끝난 뒤에 page/탭을 채우므로, 그 사이엔 이전 화면(보통 로그인 스피너 뒤 기본값)이
+             잠깐 유지된다. */
+          fnEnsurePageLoaded(pg).then(() => {
+            if (page.value !== pg) page.value = pg;
+            /* pg==='dashboard' 는 PAGE_LABELS 상 라벨이 '대시보드'(범용) 라 그대로 두면
+               예전에 항상 붙어있던 'EC대시보드' 라벨과 달라진다 — 명시적으로 덮어써서
+               ?page=dashboard 직접 진입 시에도 라벨이 그대로 유지되게 한다. */
+            addTab(toTabId(pg, newDtlId), pg === 'dashboard' ? 'EC대시보드' : undefined);
+          }).catch((e) => {
+            showToast(e.message || '화면을 불러오지 못했습니다.', 'error', 0);
+          });
         }
         if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
         if (kanbanClaimId.value !== newClaimId) kanbanClaimId.value = newClaimId;
@@ -493,12 +589,15 @@
             history.replaceState(null, '', window.location.pathname + '?' + cleaned);
           }
         }
+        return handledValidPage;
       };
-      readHash(false);
+      const _hadValidInitialPage = readHash(false);
       /* readHash(false) 가 끝났는데도 탭이 하나도 없으면(=URL 에 유효한 page 가 없었거나,
          비로그인 상태라 dashboard 로 강제 폴백만 되고 addTab 은 안 탄 경우) EC대시보드를
-         기본 탭으로 채운다 — bo.html 을 파라미터 없이 열 때의 기존 동작 유지. */
-      if (!openTabs.length) { addTab('dashboard', 'EC대시보드'); }
+         기본 탭으로 채운다 — bo.html 을 파라미터 없이 열 때의 기존 동작 유지.
+         2026-08-30 lazy 로드: _hadValidInitialPage 면(유효한 page 라 스크립트를 비동기로
+         받아오는 중) 여기서 대시보드로 선점하면 안 된다 — 로드가 끝나면 addTab 이 알아서 채운다. */
+      if (!openTabs.length && !_hadValidInitialPage) { addTab('dashboard', 'EC대시보드'); }
 
       /* standaloneDtlMode — Dtl 을 독립 새창(embed)으로 열었을 때만 쓰는 view/edit 토글.
          Mng 안에 인라인으로 끼워질 땐 Mng 자신의 detailPanel.openMode 가 이 역할을 하므로
@@ -527,7 +626,7 @@
            [닫기]는 취소가 아니라 그냥 닫혀야 한다는 피드백으로 신설).
          - __cancelEdit__(그 외 전부): bo-form-area 표준 컴포넌트들의 [취소](편집중)/[닫기](보기중)가
            똑같이 이 신호를 보낸다 — 편집중이면 보기로 되돌리고, 보기중이면(더 되돌릴 게 없으니) 닫는다. */
-      const navigate = (pg, opts = {}) => {
+      const navigate = async (pg, opts = {}) => {
         if (typeof pg === 'string' && /^__.+__$/.test(pg)) {
           if (pg === '__switchToEdit__') { standaloneDtlMode.value = 'edit'; return; }
           if (pg === '__closeDtl__') {
@@ -549,6 +648,18 @@
         if (!isLoggedIn && pg !== 'dashboard') {
           showToast('로그인이 필요합니다.', 'error');
           return;
+        }
+        /* 2026-08-30 lazy 로드 실험: 이 화면 스크립트가 아직 없으면 여기서 받아온다.
+           실패하면(네트워크 오류 등) 화면 전환 자체를 하지 않고 토스트로만 안내 — 기존 화면이
+           그대로 남아있어야 "빈 화면"이 되지 않는다. */
+        navLoading.value = true;
+        try {
+          await fnEnsurePageLoaded(pg);
+        } catch (e) {
+          showToast(e.message || '화면을 불러오지 못했습니다.', 'error', 0);
+          return;
+        } finally {
+          navLoading.value = false;
         }
         page.value = pg;
         // Kanban: orderId/claimId 파라미터 지원 (opts.orderId 우선, 없으면 opts.id 폴백)
@@ -2133,6 +2244,7 @@
         isApiLoading,
         apiProgressLabel,
         page,
+        navLoading,
         dtlId,
         initSearchValue,
         navigate,
@@ -2157,6 +2269,8 @@
         cfEffectiveKeptIds,
         toggleKeep,
         PAGE_COMP_MAP,
+        loadedPages,      // 2026-08-30 lazy 로드: { [pageId]: true } — 좌측 메뉴 흐림 해제에 사용
+        cfIsPageLoaded,   // 2026-08-30 lazy 로드: 좌측 메뉴 항목이 아직 로드 전인지 판정
         ctxMenu,
         showCtxMenu,
         closeCtxMenu,
@@ -2299,6 +2413,10 @@
 
     template: /* html */ `
 <div @click="onRootClick">
+  <!-- lazy 로드 진행바 — 메뉴 클릭 후 화면 스크립트를 받아오는 동안(느린 네트워크에서 처음
+       여는 화면일 때만 눈에 띔) 사용자에게 "지금 받아오는 중" 을 알려준다. 이미 로드된
+       화면은 fnEnsurePageLoaded 가 즉시 resolve 되어 거의 안 보인다. 2026-08-30 추가. -->
+  <div id="_nav_loading_bar" :class="{ active: navLoading }"></div>
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav" v-if="!cfEmbed">
     <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" :title="cfLeftMenuOpen ? '사이드바 접기' : '사이드바 펼치기'">{{ cfLeftMenuOpen ? '‹' : '›' }}</button>
@@ -2537,7 +2655,9 @@
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
         <template v-for="item in (activeTop === 'home' ? [] : (LEFT_MENUS[activeTop] || []))" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
-          <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
+          <!-- 2026-08-30 lazy 로드 실험: 아직 안 열어본(스크립트 미로드) 메뉴는 흐리게 표시 -->
+          <div v-else class="left-nav-item left-nav-sub-item"
+            :class="{active: cfActiveTabId===item.id, 'left-nav-not-loaded': !cfIsPageLoaded(item.id)}"
             @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : navigate(item.id)"
             @auxclick="$event.button===1 ? openNewWindow(item.id) : null"
             :title="'Ctrl+클릭: 새창'">
@@ -2598,7 +2718,9 @@
         <!-- 동적 대시보드 아래에 붙는 메뉴 (대시보드 관리 그룹) -->
         <template v-for="item in (LEFT_MENUS_TAIL[activeTop] || [])" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
-          <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
+          <!-- 2026-08-30 lazy 로드 실험: 아직 안 열어본(스크립트 미로드) 메뉴는 흐리게 표시 -->
+          <div v-else class="left-nav-item left-nav-sub-item"
+            :class="{active: cfActiveTabId===item.id, 'left-nav-not-loaded': !cfIsPageLoaded(item.id)}"
             @click="($event.ctrlKey || $event.metaKey) ? openNewWindow(item.id) : navigate(item.id)"
             @auxclick="$event.button===1 ? openNewWindow(item.id) : null"
             :title="'Ctrl+클릭: 새창'">

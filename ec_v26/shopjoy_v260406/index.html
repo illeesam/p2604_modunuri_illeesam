@@ -140,6 +140,15 @@
     #_boot_loading .txt { font-size:14px; color:#cfd3dc; letter-spacing:0.02em; font-weight:500; }
     @keyframes _bootspin { to { transform: rotate(360deg); } }
     #_boot_loading.done { opacity:0; transition:opacity .25s; pointer-events:none; }
+    /* lazy-load(2026-08-30) 전 메뉴 흐림 표시 — bo.html 좌측메뉴와 동일 취지(테마 무관 공통 규칙) */
+    .sidebar-link.sidebar-link-not-loaded:not(.active) { opacity:0.55; }
+    .nav-link.nav-link-not-loaded:not(.active) { opacity:0.55; }
+    /* lazy 로드 네비게이션 진행바 — 메뉴/링크 클릭 후 화면 스크립트를 받아오는 동안만 표시
+       (foAppBase.js navLoading 참조). bo.html #_nav_loading_bar 와 동일 취지. */
+    #_nav_loading_bar { position:fixed; top:0; left:0; height:3px; z-index:100000;
+      background:linear-gradient(90deg,#ff6b9d,#c44569); width:0%; opacity:0; pointer-events:none; }
+    #_nav_loading_bar.active { opacity:1; animation:_navbarpulse 1.1s ease-in-out infinite; }
+    @keyframes _navbarpulse { 0%{width:15%;} 50%{width:70%;} 100%{width:92%;} }
   </style>
 </head>
 <body>
@@ -223,73 +232,43 @@
   <script src="pages/base/foError404.js"></script>
   <script src="pages/base/foError500.js"></script>
 
-  <!-- ■ B4.2: Dynamic Site Pages (by FO_SITE_NO) ■ -->
-  <script>
-    /* FO_SITE_NO 기준 동적 페이지 스크립트 로드 */
-    (function(){
-      var n = window.FO_SITE_NO;
-      ['Home'+n, 'Prod'+n+'List', 'Prod'+n+'View'].forEach(function(name){
-        document.write('<script src="pages/fo/' + name + '.js"><\/script>');
-      });
-    })();
-  </script>
-
-  <!-- ■ B4.3: Main Pages (가나다순) ■ -->
-  <script src="pages/fo/About.js"></script>
-  <script src="pages/fo/Blog.js"></script>
-  <script src="pages/fo/BlogEdit.js"></script>
-  <script src="pages/fo/BlogView.js"></script>
-  <script src="pages/fo/Cart.js"></script>
-  <script src="pages/fo/Contact.js"></script>
-  <script src="pages/fo/Event.js"></script>
-  <script src="pages/fo/EventView.js"></script>
-  <script src="pages/fo/Faq.js"></script>
-  <script src="pages/fo/Like.js"></script>
-  <script src="pages/fo/Location.js"></script>
-  <script src="pages/fo/Login.js"></script>
-  <script src="pages/fo/Order.js"></script>
-
-  <!-- ■ B4.4: My Pages (마이페이지 - 가나다순) ■ -->
-  <script src="pages/fo/my/MyCache.js"></script>
-  <script src="pages/fo/my/MyClaim.js"></script>
-  <script src="pages/fo/my/MyContact.js"></script>
-  <script src="pages/fo/my/MyChatt.js"></script>
-  <script src="pages/fo/my/MyCoupon.js"></script>
-  <script src="pages/fo/my/MyOrder.js"></script>
+  <!-- pages/co/ec/ (FO/BO 공용) — FO 자체 템플릿에선 <od-order-kanban> 태그를 쓰지 않아
+       lazy 전환 효과가 없는 미사용 등록. 그대로 eager 유지 -->
   <script src="pages/co/ec/od/OdOrderKanban.js"></script>
 
-  <!-- ■ B5.1: Display UI Pages (가나다순) ■ -->
-  <script src="pages/fo/xd/DispUi01.js"></script>
-  <script src="pages/fo/xd/DispUi02.js"></script>
-  <script src="pages/fo/xd/DispUi03.js"></script>
-  <script src="pages/fo/xd/DispUi04.js"></script>
-  <script src="pages/fo/xd/DispUi05.js"></script>
-  <script src="pages/fo/xd/DispUi06.js"></script>
-
-  <!-- ■ B5.2: Sample Pages (가나다순) ■ -->
-  <script src="pages/fo/xs/Sample01.js"></script>
-  <script src="pages/fo/xs/Sample02.js"></script>
-  <script src="pages/fo/xs/Sample03.js"></script>
-  <script src="pages/fo/xs/Sample04.js"></script>
-  <script src="pages/fo/xs/Sample05.js"></script>
-  <script src="pages/fo/xs/Sample06.js"></script>
-  <script src="pages/fo/xs/Sample07.js"></script>
-  <!-- <script src="pages/fo/xs/Sample08.js"></script> -->
-  <!-- <script src="pages/fo/xs/Sample09.js"></script> -->
-  <!-- <script src="pages/fo/xs/Sample10.js"></script> -->
-  <script src="pages/fo/xs/Sample11.js"></script>
-  <script src="pages/fo/xs/Sample12.js"></script>
-  <script src="pages/fo/xs/Sample13.js"></script>
-  <script src="pages/fo/xs/Sample14.js"></script>
-  <script src="pages/fo/xs/Sample21.js"></script>
-  <script src="pages/fo/xs/Sample22.js"></script>
-  <script src="pages/fo/xs/Sample23.js"></script>
-
-  <!-- ■ B5.3: Developer Tools ■ -->
-  <script src="pages/fo/xs/XsLocalStorage.js"></script>
-  <script src="pages/fo/xs/XsStore.js"></script>
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       B4.2/B4.3/B4.4/B5.x: Page 관리 — 2026-08-30 lazy-load 실험(shopjoy_v260406_lazy 전용,
+       bo.html 과 동일 원리). 여기 있던 페이지 컴포넌트 <script> 42개(FO_SITE_NO 동적 Home/
+       Prod{N}List/Prod{N}View 3개 포함, document.write 블록째)를 제거했다.
+       foAppBase.js 의 fnEnsurePageLoaded/fnEnsureClassLoaded 가 진입 파일을 loadModule()
+       (네이티브 동적 import(), shopjoy_v260828_mfe 의 loadModule 과 같은 방식)로 실행하고, 이미
+       메모리에 올라온 component.template 문자열에서 <kebab-tag> 를 스캔해 필요한 파일을
+       재귀적으로 자동 발견한다.
+       ※ 2026-08-30 한때 Contact/Faq/EventPage/EventView/BlogPage/BlogView/AboutPage/
+       LocationPage(8개, SEO 노출 대상 공개 콘텐츠)를 크롤러 지연 우려로 eager 로 되돌렸다가,
+       Spring Boot 쪽 메타태그 서버사이드 주입 엔드포인트(/prodDtl/{prodId} 류)로 title/
+       description/OG 태그 정확성 문제를 별도 해결하기로 하면서 다시 lazy 로 전환했다 — 본문
+       데이터 자체가 이미 API 호출로 나중에 채워지는 구조라(컴포넌트 eager 여부와 무관) JS 파일
+       하나 더 fetch하는 지연은 상대적으로 미미하다고 판단.
+       ※ 2026-08-30 Home{N}/Prod{N}List/Prod{N}View 도 한때 구조적 예외(eager 고정)였다 — foHomeComp
+       등이 setup() 시점에 단 한 번만 평가되는 plain const 라 lazy 전환이 불가능했는데, 그 세 값을
+       ref 로 바꾸고 fnEnsurePageLoaded 가 로드 완료 후 값을 채워주도록 고쳐서 lazy 전환했다.
+       FO_SITE_NO 별 동적 이름(Home01 등)이라 매핑은 lib/app/foAppLazyClasses.js 하단 IIFE 참조.
+       대상: Home{N}/Prod{N}List/Prod{N}View(3) + Cart/Order/Contact/Faq/Login/EventPage/
+       EventView/BlogPage/BlogView/BlogEdit/LikePage/LocationPage/AboutPage(13) + My*(6) +
+       DispUi01~06(6) + Sample01~07,11~14,21~23(13) + XsStore/XsLocalStorage(2) = 43.
+       예외로 eager 유지:
+       - Login — <login v-if="uiState.showLogin"> 로 어느 화면에서든 트리거되는 모달이라
+         onShowLogin() 안에서 fnEnsureClassLoaded('Login') 로 트리거 시점에 개별 로드한다
+         (page 기반이 아니라서 foAppLazyClasses.js 맵엔 있지만 index.html 스크립트만 제거).
+       - Sample08~10 — 기존부터 <script> 자체가 주석 처리되어 죽어있던 페이지(운영 상태 그대로
+         유지 — lazy 맵에도 넣지 않음. 넣으면 죽어있던 페이지가 되살아나는 부작용이 생김).
+       - OdOrderKanban — FO 자체 템플릿 어디에서도 <od-order-kanban> 태그를 쓰지 않는(BO 전용)
+         미사용 등록이라 옮겨도 효과 없음 — 그대로 eager 유지.
+  ═══════════════════════════════════════════════════════════════════════ -->
 
   <!-- ■ B99: Main App Bootstrap (must be last) ■ -->
+  <script src="lib/app/foAppLazyClasses.js"></script>
   <script src="lib/app/foAppStyles.js"></script>
   <script src="lib/app/foAppFunc.js"></script>
   <script src="lib/app/foAppComp.js"></script>

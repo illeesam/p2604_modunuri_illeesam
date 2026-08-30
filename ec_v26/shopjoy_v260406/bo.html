@@ -160,6 +160,18 @@
     .dtl-tab-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
     .dtl-tab-grid.cols-tab { grid-template-columns: 1fr; }
     .dtl-tab-card-title { font-weight: 600; font-size: 13px; color: #374151; }
+
+    /* 2026-08-30 lazy 로드 실험 — 아직 한 번도 안 열어본(스크립트 미로드) 좌측 메뉴 항목을
+       살짝 흐리게 표시. 클릭해서 로드가 끝나면(loadedPages[pageId]=true) 자동으로 원래 밝기로
+       돌아온다(boAppBase.js cfIsPageLoaded 참조). active(현재 열린 탭) 상태는 항상 우선. */
+    .left-nav-item.left-nav-not-loaded:not(.active) { opacity: 0.55; }
+
+    /* 2026-08-30 lazy 로드 네비게이션 진행바 — 메뉴 클릭 후 화면 스크립트를 받아오는 동안만
+       상단에 표시(boAppBase.js navLoading 참조). 이미 로드된 화면은 즉시 전환되어 거의 안 보임. */
+    #_nav_loading_bar { position:fixed; top:0; left:0; height:3px; z-index:100000;
+      background:linear-gradient(90deg,#ff6b9d,#c44569); width:0%; opacity:0; pointer-events:none; }
+    #_nav_loading_bar.active { opacity:1; animation:_navbarpulse 1.1s ease-in-out infinite; }
+    @keyframes _navbarpulse { 0%{width:15%;} 50%{width:70%;} 100%{width:92%;} }
   </style>
 </head>
 <body>
@@ -247,232 +259,39 @@
   <script src="components/comp/CoWidgetComp.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
-       B4.x: Page 관리 (비즈니스 로직 - EC Domain)
+       B4.x/B5.x: Page 관리 — 2026-08-30 lazy-load 실험(shopjoy_v260406_lazy 전용).
+       여기 있던 페이지 컴포넌트 <script> 181개를 제거했다. 이제 "어떤 화면이 어떤 화면을
+       인라인 임베드하는지" 사람이 매핑 파일을 관리하지 않는다 — boAppBase.js 의
+       fnEnsurePageLoaded 가 진입 파일의 소스 텍스트를 fetch 로 읽어 <kebab-tag> 를 스캔해서
+       필요한 파일을 재귀적으로 자동 발견하고, loadModule()(네이티브 동적 import(), MFE
+       프로젝트 shopjoy_v260828_mfe 의 loadModule 과 같은 방식)로 실행한다
+       (components/comp, modals, disp 는 그대로 eager).
+       예외 4개만 eager 로 남긴다(자동탐지가 원리상 못 찾거나, 찾아도 lazy 로 옮기면 손해):
+       - 대시보드 3종(DashboardBoEc01~03) — 로그인 직후 100% 세션이 거치는 첫 화면이라
+         lazy 로 옮기면 그 첫 화면조차 네트워크 왕복을 기다려야 해서 오히려 손해.
+       - SyDashboardMng — 어느 pageId 에도 연결 안 된 미사용 등록(옮겨도 효과 없음).
+       - ZdSimulBase.js / CmDashboardWidgetUtil.js — 템플릿 태그가 아니라 순수 JS 호출
+         (window.ZdSimulBase.xxx(), cmDashWidgetUtil.xxx())로만 쓰여서 소스 텍스트를
+         스캔해도 태그가 안 보인다 — 자동탐지가 원리상 발견할 수 없는 유일한 예외 케이스.
   ═══════════════════════════════════════════════════════════════════════════ -->
-  <!-- ■ B4.1: EC Domain - 회원(MB) ■ -->
-  <script src="pages/bo/ec/mb/MbMemGradeMng.js"></script>
-  <script src="pages/bo/ec/mb/MbMemGroupMng.js"></script>
-  <script src="pages/bo/ec/mb/MbMemberDtl.js"></script>
-  <script src="pages/bo/ec/mb/MbMemberHist.js"></script>
-  <script src="pages/bo/ec/mb/MbMemberMng.js"></script>
-  <script src="pages/bo/ec/mb/MbCustInfoMng.js"></script>
-
-  <!-- ■ B4.2: EC Domain - 상품(PD) ■ -->
-  <script src="pages/bo/ec/pd/PdCategoryDtl.js"></script>
-  <script src="pages/bo/ec/pd/PdCategoryMng.js"></script>
-  <script src="pages/bo/ec/pd/PdCategoryProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdOptCodeMngPage.js"></script>
-  <script src="pages/bo/ec/pd/PdDlivTmpltMng.js"></script>
-  <script src="pages/bo/ec/pd/PdGiftProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdGroupProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdOptionProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdProdDtl.js"></script>
-  <script src="pages/bo/ec/pd/PdProdHist.js"></script>
-  <script src="pages/bo/ec/pd/PdProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdQnaMng.js"></script>
-  <script src="pages/bo/ec/pd/PdRestockNotiMng.js"></script>
-  <script src="pages/bo/ec/pd/PdReviewMng.js"></script>
-  <script src="pages/bo/ec/pd/PdSetProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdSingleProdMng.js"></script>
-  <script src="pages/bo/ec/pd/PdTagMng.js"></script>
-
-  <!-- ■ B4.3: EC Domain - 주문/배송/클레임(OD) ■ -->
-  <script src="pages/bo/ec/od/OdClaimCalcModal.js"></script>
-  <script src="pages/bo/ec/od/OdClaimDtl.js"></script>
-  <script src="pages/bo/ec/od/OdClaimHist.js"></script>
-  <script src="pages/bo/ec/od/OdClaimMng.js"></script>
-  <script src="pages/bo/ec/od/OdDlivDtl.js"></script>
-  <script src="pages/bo/ec/od/OdDlivHist.js"></script>
-  <script src="pages/bo/ec/od/OdDlivMng.js"></script>
-  <script src="pages/bo/ec/od/OdCartMng.js"></script>
-  <script src="pages/co/ec/od/OdOrderKanban.js"></script>
-  <script src="pages/bo/ec/od/OdOrderDtl.js"></script>
-  <script src="pages/bo/ec/od/OdOrderHist.js"></script>
-  <script src="pages/bo/ec/od/OdOrderMng.js"></script>
-  <script src="pages/bo/ec/od/OdOrderItemMng.js"></script>
-  <script src="pages/bo/ec/od/OdOrderItemDtl.js"></script>
-
-  <!-- ■ B4.4: EC Domain - 프로모션(PM) ■ -->
-  <script src="pages/bo/ec/pm/PmCacheDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmCacheMng.js"></script>
-  <script src="pages/bo/ec/pm/PmCouponDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmCouponMng.js"></script>
-  <script src="pages/bo/ec/pm/PmDiscntDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmDiscntMng.js"></script>
-  <script src="pages/bo/ec/pm/PmEventDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmEventMng.js"></script>
-  <script src="pages/bo/ec/pm/PmGiftDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmGiftMng.js"></script>
-  <script src="pages/bo/ec/pm/PmPlanDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmPlanMng.js"></script>
-  <script src="pages/bo/ec/pm/PmSaveDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmSaveMng.js"></script>
-  <script src="pages/bo/ec/pm/PmVoucherDtl.js"></script>
-  <script src="pages/bo/ec/pm/PmVoucherMng.js"></script>
-
-  <!-- ■ B4.5: EC Domain - 정산(ST) ■ -->
-  <script src="pages/bo/ec/st/StConfigMng.js"></script>
-  <script src="pages/bo/ec/st/StDlivFeePolicyMng.js"></script>
-  <script src="pages/bo/ec/st/StErpGenMng.js"></script>
-  <script src="pages/bo/ec/st/StErpReconMng.js"></script>
-  <script src="pages/bo/ec/st/StErpViewMng.js"></script>
-  <script src="pages/bo/ec/st/StRawMng.js"></script>
-  <script src="pages/bo/ec/st/StReconClaimMng.js"></script>
-  <script src="pages/bo/ec/st/StReconOrderMng.js"></script>
-  <script src="pages/bo/ec/st/StReconPayMng.js"></script>
-  <script src="pages/bo/ec/st/StReconVendorMng.js"></script>
-  <script src="pages/bo/ec/st/StSettleAdjMng.js"></script>
-  <script src="pages/bo/ec/st/StSettleCloseMng.js"></script>
-  <script src="pages/bo/ec/st/StSettleEtcAdjMng.js"></script>
-  <script src="pages/bo/ec/st/StSettlePayMng.js"></script>
-  <script src="pages/bo/ec/st/StStatusMng.js"></script>
-
-  <!-- ■ B4.6: EC Domain - 커뮤니티(CM) ■ -->
-  <script src="pages/bo/ec/cm/CmBlogMng.js"></script>
-  <script src="pages/bo/ec/cm/CmChattDtl.js"></script>
-  <script src="pages/bo/ec/cm/CmChattMng.js"></script>
-  <script src="pages/bo/ec/cm/CmChattKanban.js"></script>
-  <script src="pages/bo/ec/cm/CmNoticeDtl.js"></script>
-  <script src="pages/bo/ec/cm/CmNoticeMng.js"></script>
-  <script src="pages/bo/ec/cm/CmFaqDtl.js"></script>
-  <script src="pages/bo/ec/cm/CmFaqMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardWidgetUtil.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardItemMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardDataMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardLayoutMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardMyMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardMenuMng.js"></script>
-  <script src="pages/bo/ec/cm/CmDashboardSysMenuMng.js"></script>
-  <script src="pages/bo/ec/cm/CmPopupMng.js"></script>
-
-  <!-- ■ B4.7: EC Domain - 전시(DP) ■ -->
-  <script src="pages/bo/ec/dp/DpDispAreaDtl.js"></script>
-  <script src="pages/bo/ec/dp/DpDispAreaMng.js"></script>
-  <script src="pages/bo/ec/dp/DpDispAreaPreview.js"></script>
-  <script src="pages/bo/ec/dp/DpDispPanelDtl.js"></script>
-  <script src="pages/bo/ec/dp/DpDispPanelMng.js"></script>
-  <script src="pages/bo/ec/dp/DpDispPanelPreview.js"></script>
-  <script src="pages/bo/ec/dp/DpDispUiDtl.js"></script>
-  <script src="pages/bo/ec/dp/DpDispUiMng.js"></script>
-  <script src="pages/bo/ec/dp/DpDispUiPreview.js"></script>
-  <script src="pages/bo/ec/dp/DpDispWidgetDtl.js"></script>
-  <script src="pages/bo/ec/dp/DpDispWidgetLibDtl.js"></script>
-  <script src="pages/bo/ec/dp/DpDispWidgetLibMng.js"></script>
-  <script src="pages/bo/ec/dp/DpDispWidgetLibPreview.js"></script>
-  <script src="pages/bo/ec/dp/DpDispWidgetMng.js"></script>
-  <script src="pages/bo/ec/dp/DpDispWidgetPreview.js"></script>
-
-  <!-- ■ B4.x: MD 모듈 관리 - 코바늘(CB) — pages/bo/md/{모듈}/ ■ -->
-  <script src="pages/bo/md/cb/MdCbSymbolMng.js"></script>
-  <script src="pages/bo/md/cb/MdCbYarnMng.js"></script>
-  <script src="pages/bo/md/cb/MdCbPatternMng.js"></script>
-  <!-- ■ B4.x: MD 모듈 관리 - 소스젠(SG) — pages/bo/md/{모듈}/ ■ -->
-  <script src="pages/bo/md/sg/MdSgProjectMng.js"></script>
-  <script src="pages/bo/md/sg/MdSgGenHistMng.js"></script>
-  <script src="pages/bo/md/sg/MdSgDownloadHistMng.js"></script>
-  <script src="pages/bo/md/sg/MdSgStackMng.js"></script>
-
-  <!-- ═══════════════════════════════════════════════════════════════════════════
-       B5.x: 시스템 & 관리
-  ═══════════════════════════════════════════════════════════════════════════ -->
-  <!-- ■ B5.1: SY Domain - 시스템(SY) ■ -->
-  <script src="pages/bo/sy/SyAlarmDtl.js"></script>
-  <script src="pages/bo/sy/SyAlarmMng.js"></script>
-  <script src="pages/bo/sy/SyAttachMng.js"></script>
-  <script src="pages/bo/sy/SyAttachDtl.js"></script>
-  <script src="pages/bo/sy/SyBbmDtl.js"></script>
-  <script src="pages/bo/sy/SyBbmMng.js"></script>
-  <script src="pages/bo/sy/SyBbsDtl.js"></script>
-  <script src="pages/bo/sy/SyBbsMng.js"></script>
-  <script src="pages/bo/sy/SyBatchDtl.js"></script>
-  <script src="pages/bo/sy/SyBatchHist.js"></script>
-  <script src="pages/bo/sy/SyBatchMng.js"></script>
-  <script src="pages/bo/sy/SyVendorUserMng.js"></script>
-  <script src="pages/bo/sy/SyBrandMng.js"></script>
-  <script src="pages/bo/sy/SyCodeDtl.js"></script>
-  <script src="pages/bo/sy/SyCodeMng.js"></script>
-  <script src="pages/bo/sy/SyContactDtl.js"></script>
-  <script src="pages/bo/sy/SyContactMng.js"></script>
-  <script src="pages/bo/sy/SyDeptMng.js"></script>
-  <script src="pages/bo/sy/SyI18nMng.js"></script>
-  <script src="pages/bo/sy/SyMenuMng.js"></script>
-  <script src="pages/bo/sy/SyMemberLoginHist.js"></script>
-  <script src="pages/bo/sy/SyPathMng.js"></script>
-  <script src="pages/bo/sy/SyPostman.js"></script>
-  <script src="pages/bo/sy/SyPropMng.js"></script>
-  <script src="pages/bo/sy/SyRoleMng.js"></script>
-  <script src="pages/bo/sy/SySiteDtl.js"></script>
-  <script src="pages/bo/sy/SySiteMng.js"></script>
-  <script src="pages/bo/sy/SyTemplateDtl.js"></script>
-  <script src="pages/bo/sy/SyTemplateMng.js"></script>
-  <script src="pages/bo/sy/SyUserDtl.js"></script>
-  <script src="pages/bo/sy/SyApiLogMng.js"></script>
-  <script src="pages/bo/sy/SyExceldownMng.js"></script>
-  <script src="pages/bo/sy/SyExceldownDtl.js"></script>
-  <script src="pages/bo/sy/SySendMsgLogMng.js"></script>
-  <script src="pages/bo/sy/SyUserLoginHist.js"></script>
-  <script src="pages/bo/sy/SyUserMng.js"></script>
-  <script src="pages/bo/sy/SyVendorDtl.js"></script>
-  <script src="pages/bo/sy/SyVendorMng.js"></script>
-  <script src="pages/bo/sy/SyVendorInfoMng.js"></script>
-
-  <!-- ■ B5.2: Dashboard Pages (가나다순) ■ -->
-  <script src="pages/bo/DashboardBoAppMonitor.js"></script>
   <script src="pages/bo/DashboardBoEc01.js"></script>
   <script src="pages/bo/DashboardBoEc02.js"></script>
   <script src="pages/bo/DashboardBoEc03.js"></script>
   <script src="pages/bo/sy/SyDashboardMng.js"></script>
-
-  <!-- ■ B5.3: Developer Tools (ZD) ■ -->
-  <script src="pages/bo/zd/ZdInfDashboard.js"></script>
-  <script src="pages/bo/zd/ZdLocalStorage.js"></script>
-  <script src="pages/bo/zd/ZdStore.js"></script>
-  <script src="pages/bo/zd/ZdTestSnsLoginKakao.js"></script>
-  <script src="pages/bo/zd/ZdTestSnsLoginGoogle.js"></script>
-  <script src="pages/bo/zd/ZdTestPayTossWidget.js"></script>
-  <script src="pages/bo/zd/ZdTestPayTossBrandpay.js"></script>
-  <script src="pages/bo/zd/ZdTestPayKakaopay.js"></script>
-  <script src="pages/bo/zd/ZdTestPayNaverpay.js"></script>
-  <script src="pages/bo/zd/ZdTestMapKakao.js"></script>
-  <script src="pages/bo/zd/ZdTestMapNaver.js"></script>
-  <script src="pages/bo/zd/ZdTestMapGoogle.js"></script>
-  <script src="pages/bo/zd/ZdTestMailSmtp.js"></script>
-  <script src="pages/bo/zd/ZdTestSms.js"></script>
-  <script src="pages/bo/zd/ZdTestPushAlimFcm.js"></script>
-  <script src="pages/bo/zd/ZdTestPushAlimApns.js"></script>
-  <script src="pages/bo/zd/ZdTestSnsLoginNaver.js"></script>
-  <script src="pages/bo/zd/ZdTestAiChatbot.js"></script>
-  <script src="pages/bo/zd/ZdTestChattingKakaoChannel.js"></script>
-  <script src="pages/bo/zd/ZdTestShareKakao.js"></script>
-  <script src="pages/bo/zd/ZdTestChattingWebSocket.js"></script>
-  <script src="pages/bo/zd/ZdTestAppMsgSendReceiv.js"></script>
-  <!-- ■ B-SIM: 시뮬레이션 ■ -->
   <script src="pages/bo/zd/ZdSimulBase.js"></script>
-  <script src="pages/bo/zd/ZdSimulComps.js"></script>
-  <script src="pages/bo/zd/ZdSimulMemberMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulCouponMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulDiscntMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulSaveMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulPlanMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulEventMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulProdMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulOrderMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulClaimMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulKanbanMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulSettleMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulUserMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulVendorMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulVoucherMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulLogMng.js"></script>
-  <script src="pages/bo/zd/ZdSimulNotiMng.js"></script>
+  <script src="pages/bo/ec/cm/CmDashboardWidgetUtil.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
        B99: 메인 앱 부트스트랩 (반드시 마지막)
   ═══════════════════════════════════════════════════════════════════════════ -->
   <!-- ■ B99: Main App Bootstrap ■ -->
   <script src="lib/app/boAppMenuData.js"></script>
-  <script src="lib/app/boAppCompPage.js"></script>
+  <!-- 2026-08-30 lazy-load 3차 개정: 구 boAppCompPage.js(BO_APP_COMP_PAGE) 를
+       scripts/generateBoLazyClasses.js 로 흡수 — 이제 BO_APP_COMP_PAGE(페이지 라우팅)와
+       BO_LAZY_CLASS_FILES(클래스명→경로, 자동탐지 로더 전용) 둘 다 이 파일 하나에서 나온다.
+       새 BO 화면 추가 시 사람이 손댈 파일은 scripts/generateBoLazyClasses.js 하나뿐 —
+       이 파일(boAppLazyClasses.js) 자체는 그 스크립트의 산출물이라 손으로 고치지 않는다. -->
+  <script src="lib/app/boAppLazyClasses.js"></script>
   <script src="lib/app/boAppFunc.js"></script>
   <script src="lib/app/boAppComp.js"></script>
   <script src="lib/app/boAppBase.js"></script>

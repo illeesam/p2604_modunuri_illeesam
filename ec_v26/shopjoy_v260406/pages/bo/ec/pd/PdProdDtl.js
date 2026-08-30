@@ -85,6 +85,9 @@ window.PdProdDtl = {
       // 사용자 페이스 미리보기 (새창)
       } else if (cmd === 'form-preview') {
         return onPreview();
+      // SEO 테스트 — SEO 메타태그 서버사이드 주입(/prodDtl/{prodId}) 응답 확인용(테스트 기간 유지)
+      } else if (cmd === 'form-seo-test') {
+        return onSeoTest();
       // 프로모션 탭 재조회
       } else if (cmd === 'promo-coupon-reload') {
         if (!cfCurProdId.value) return;
@@ -2049,6 +2052,13 @@ window.PdProdDtl = {
       /* FO 라우팅은 쿼리스트링 기반(?page=) — 2026-08-22 해시(#)에서 전환(SEO용) */
       window.open(`${window.pageUrl('index.html')}?page=prodView&prodid=${cfCurProdId.value}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
+    /* onSeoTest — SEO 메타태그 서버사이드 주입(FoSeoController, GET /prodDtl/{prodId}) 이 실제로
+       내려주는 raw HTML(title/description/OG 태그 + 핸드오프 스크립트)을 새창으로 확인.
+       2026-08-30 SEO 작업 테스트 검증용 — 테스트 기간 동안 유지, 끝나면 제거 검토 */
+    const onSeoTest = () => {
+      if (!cfHasProdId.value) { showToast('상품 등록 후 테스트 가능합니다.', 'error'); return; }
+      window.open(window.seoUrl('/prodDtl/' + cfCurProdId.value), '_blank', 'width=900,height=700,scrollbars=yes');
+    };
     /* 공통코드 그룹 미리보기 모달 (BoCodeGrpModal) */
     const codeGrpModal = reactive({ show: false, codeGrp: '', title: '' });
 
@@ -2380,6 +2390,11 @@ window.PdProdDtl = {
     <button v-if="active ? (!cfIsNew) : false" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
       title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
       👁 미리보기
+    </button>
+    <!-- SEO 테스트 — SEO 메타태그 서버사이드 주입(/prodDtl/{prodId}) 응답 확인용. 테스트 기간 동안 유지 -->
+    <button v-if="active ? (!cfIsNew) : false" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
+      title="SEO 메타태그 서버사이드 주입 응답(raw HTML) 확인" @click="handleBtnAction('form-seo-test')">
+      🧪 SEO 테스트
     </button>
     <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
     <button v-if="active ? (cfDtlMode ? !cfIsNew : false) : false" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>

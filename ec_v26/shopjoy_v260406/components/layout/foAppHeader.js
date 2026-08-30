@@ -3,7 +3,7 @@ window.foAppHeader = {
   name: 'FoAppHeader',
   props: ['page', 'theme', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate',
           'toggleTheme', 'appCartCount', 'appLikeCount', 'appAuth', 'onAppShowLogin', 'onAppLogout',
-          'appShowSettings', 'appShowApiLog', 'appApiLogs', 'appApiToast'],
+          'appShowSettings', 'appShowApiLog', 'appApiLogs', 'appApiToast', 'isPageLoaded'],
   emits: ['modu-fo-toggle-sidebar', 'modu-fo-toggle-mobile', 'modu-fo-toggle-settings', 'modu-fo-toggle-api-log', 'modu-fo-toggle-api-toast'],
   setup(props, { emit }) {
     // ===== [01] 초기 변수 정의 ====================================================
@@ -286,6 +286,8 @@ window.foAppHeader = {
     onUnmounted(() => unbindUserMenuOutside());
 
     const cfTopMenu = computed(() => window.sfGetFoMenuStore?.()?.svTopMenu || []);
+    /* fnIsLoaded — lazy-load(2026-08-30) 전이면 메뉴명을 흐리게 표시(bo.html 좌측메뉴와 동일 취지) */
+    const fnIsLoaded = (menuId) => (props.isPageLoaded ? props.isPageLoaded(menuId) : true);
 
     // ===== [06] return (템플릿 노출) ==============================================
 
@@ -294,7 +296,7 @@ window.foAppHeader = {
       handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch
       pdfExporting, cfCompareCount,                                        // 링크/카카오공유/PDF (설정 드롭다운) / 상품비교 개수
       pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
-      cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,                    // computed - 인증/메뉴
+      cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu, fnIsLoaded,        // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
       boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
       cfFoActive: computed(() => window.useFoAppStore?.()?.svActive || '-'),
@@ -388,7 +390,7 @@ window.foAppHeader = {
       <!-- ===== ■.■.■. Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) ======= -->
       <template v-if="foSiteNo==='01' ? ((m.menuId ? ((m.menuId.startsWith('dispUi') || m.menuId==='divider-disp')) : false)) : false"></template>
       <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
-      <button v-else @click="handleSelectAction('nav-select-menu', m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
+      <button v-else @click="handleSelectAction('nav-select-menu', m.menuId)" class="nav-link" :class="{active: page===m.menuId, 'nav-link-not-loaded': !fnIsLoaded(m.menuId)}">
         <span>{{ m.menuNm }}</span>
       </button>
     </template>

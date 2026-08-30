@@ -1,0 +1,12 @@
+{
+  "name": "shopjoy-dev-scripts",
+  "private": true,
+  "description": "빌드/의존성 없음 — VS Code NPM SCRIPTS 패널에서 개발용 점검 스크립트를 우클릭 실행하기 위한 최소 package.json",
+  "scripts": {
+    "check-orphans": "node scripts/checkOrphanScreens.js",
+    "gen-bo-lazy": "node scripts/generateBoLazyClasses.js",
+    "gen-fo-lazy": "node scripts/generateFoLazyClasses.js",
+    "gen-lazy": "npm run gen-bo-lazy && npm run gen-fo-lazy",
+    "verify-lazy": "node scripts/verifyLazyClassIntegrity.js"
+  }
+}

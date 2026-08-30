@@ -1,7 +1,7 @@
 /* ShopJoy - AppSidebar */
 window.foAppSidebar = {
   name: 'FoAppSidebar',
-  props: ['page', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate', 'appCartCount', 'appAuth'],
+  props: ['page', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate', 'appCartCount', 'appAuth', 'isPageLoaded'],
   emits: ['modu-fo-toggle-sidebar', 'modu-fo-close-mobile'],
   setup(props, { emit }) {
 
@@ -156,6 +156,9 @@ window.foAppSidebar = {
       return page === menuId;
     };
 
+    /* fnIsLoaded — lazy-load(2026-08-30) 전이면 메뉴명을 흐리게 표시(bo.html 좌측메뉴와 동일 취지) */
+    const fnIsLoaded = (menuId) => (props.isPageLoaded ? props.isPageLoaded(menuId) : true);
+
     const foSiteNo = window.FO_SITE_NO || '01';
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
@@ -166,7 +169,7 @@ window.foAppSidebar = {
     return {
       uiState, codes,                                                       // 상태
       handleBtnAction, handleSelectAction,                                  // dispatch
-      isMenuActive, showSamples, foSiteNo, cfSidebarMenu,                   // 헬퍼/computed
+      isMenuActive, fnIsLoaded, showSamples, foSiteNo, cfSidebarMenu,       // 헬퍼/computed
       SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, MODULE_ITEMS, MODULE_GROUPS,  // 메뉴 정의
     };
   },
@@ -184,7 +187,7 @@ window.foAppSidebar = {
         <template v-for="item in section.items" :key="item.menuId">
           <button v-if="!item.authRequired || (appAuth ? (appAuth.user) : false)" type="button"
             @click.stop="handleSelectAction('nav-select-menu', item.menuId)"
-            class="sidebar-link" :class="{active: isMenuActive(page, item.menuId)}"
+            class="sidebar-link" :class="{active: isMenuActive(page, item.menuId), 'sidebar-link-not-loaded': !fnIsLoaded(item.menuId)}"
             :data-tip="item.menuNm" :aria-label="item.menuNm">
             <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">{{ item.icon }}</span>
             <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">
@@ -234,7 +237,7 @@ window.foAppSidebar = {
     <template v-if="uiState.devToolsOpen">
       <button v-for="item in DEV_TOOLS_ITEMS" :key="item.menuId || item.siteNo" type="button"
         @click.stop="handleSelectAction('nav-select-devTools', item)"
-        class="sidebar-link" :class="{active: item.menuId ? page === item.menuId : false}"
+        class="sidebar-link" :class="{active: item.menuId ? page === item.menuId : false, 'sidebar-link-not-loaded': item.menuId ? !fnIsLoaded(item.menuId) : false}"
         :data-tip="item.menuNm || item.siteNm" :aria-label="item.menuNm || item.siteNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">{{ item.menuId ? '🔧' : '🌐' }}</span>
         <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm || item.siteNm }}</span>
@@ -256,7 +259,7 @@ window.foAppSidebar = {
     <template v-if="uiState.sample0Open">
       <button v-for="item in SAMPLE0_ITEMS" :key="item.menuId" type="button"
         @click.stop="handleSelectAction('nav-select-menu', item.menuId)"
-        class="sidebar-link" :class="{active: page === item.menuId}"
+        class="sidebar-link" :class="{active: page === item.menuId, 'sidebar-link-not-loaded': !fnIsLoaded(item.menuId)}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">📄</span>
         <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
@@ -275,7 +278,7 @@ window.foAppSidebar = {
     <template v-if="uiState.sample1Open">
       <button v-for="item in SAMPLE1_ITEMS" :key="item.menuId" type="button"
         @click.stop="handleSelectAction('nav-select-menu', item.menuId)"
-        class="sidebar-link" :class="{active: page === item.menuId}"
+        class="sidebar-link" :class="{active: page === item.menuId, 'sidebar-link-not-loaded': !fnIsLoaded(item.menuId)}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">📄</span>
         <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
@@ -296,7 +299,7 @@ window.foAppSidebar = {
     <template v-if="uiState.sample2Open">
       <button v-for="item in SAMPLE2_ITEMS" :key="item.menuId" type="button"
         @click.stop="handleSelectAction('nav-select-menu', item.menuId)"
-        class="sidebar-link" :class="{active: page === item.menuId}"
+        class="sidebar-link" :class="{active: page === item.menuId, 'sidebar-link-not-loaded': !fnIsLoaded(item.menuId)}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:0.9rem;flex-shrink:0;">📄</span>
         <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;">{{ item.menuNm }}</span>
@@ -315,7 +318,7 @@ window.foAppSidebar = {
     <template v-if="uiState.dispUiOpen">
       <button v-for="item in DISP_UI_ITEMS" :key="item.menuId" type="button"
         @click.stop="handleSelectAction('nav-select-menu', item.menuId)"
-        class="sidebar-link" :class="{active: page === item.menuId}"
+        class="sidebar-link" :class="{active: page === item.menuId, 'sidebar-link-not-loaded': !fnIsLoaded(item.menuId)}"
         :data-tip="item.menuNm" :aria-label="item.menuNm">
         <span class="sidebar-link-icon" style="font-size:1rem;flex-shrink:0;">🖼</span>
         <span v-if="appSidebarOpen" style="flex:1;overflow:hidden;text-overflow:ellipsis;">{{ item.menuNm }}</span>

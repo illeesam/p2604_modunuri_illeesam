@@ -176,7 +176,10 @@ window.Prod01View = {
           title: prod.prodNm || 'ShopJoy 상품',
           description: prod.advrtStmt || '',
           imageUrl,
-          url: window.location.origin + window.location.pathname + '?page=prodView&prodid=' + encodeURIComponent(prod.prodId),
+          // SEO 메타태그 서버사이드 주입 랜딩(FoSeoController)으로 연결 — 카톡에서 클릭시 이동은
+          // 이 URL을 거쳐 실제 SPA(?page=prodView)로 조용히 넘어간다(코드 자체 미리보기는 이미
+          // title/description/imageUrl 을 위에서 직접 넘겨서 정확하므로 이 URL과 무관)
+          url: window.seoUrl('/prodDtl/' + encodeURIComponent(prod.prodId)),
         });
       } catch (e) {
         window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);

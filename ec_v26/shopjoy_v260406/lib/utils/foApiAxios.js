@@ -25,8 +25,18 @@
     var host = global.location.hostname || 'localhost';
     return 'http://' + host + ':3000/api/' + p;
   }
+  /* seoUrl — 백엔드의 SEO 메타태그 서버사이드 주입 랜딩(/prodDtl/{prodId} 등, FoSeoController) 절대 URL.
+     apiUrl() 과 동일하게 로컬은 프론트/백엔드 포트가 달라 호스트명+3000 을 직접 조립한다.
+     카카오톡 공유(coExtSdk.shareKakao) 의 클릭시 이동 URL 등, "링크를 그대로 공유"할 때 사용 */
+  function seoUrl(path) {
+    if (/^https?:\/\//i.test(path)) return path;
+    var p = String(path || '').replace(/^\//, '');
+    var host = global.location.hostname || 'localhost';
+    return 'http://' + host + ':3000/' + p;
+  }
   global.appBase = global.appBase || appBase;
   global.pageUrl = global.pageUrl || pageUrl;
+  global.seoUrl  = global.seoUrl  || seoUrl;
   global.apiUrl  = global.apiUrl  || apiUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */

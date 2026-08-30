@@ -47,6 +47,9 @@
 
     /* ── Navigation ── */
     const page = ref('home');
+    // navLoading — 메뉴/링크 클릭 후 fnEnsurePageLoaded() 로 화면 스크립트를 받아오는 동안만
+    // true. 상단 진행바(#_nav_loading_bar) 노출용. 2026-08-30 추가.
+    const navLoading = ref(false);
     const errorMessage = ref('');
 
     /* 페이지 전환마다 title/description 을 사이트 공통값으로 초기화 — 상품상세 등 개별
@@ -148,8 +151,90 @@
       return { prod, color, size, qty };
     };
 
+    /* ── B4/B5 페이지 lazy-load 엔진 (2026-08-30, bo.html/boAppBase.js 와 동일 원리) ──
+       FO 는 BO 의 PAGE_COMP_MAP 같은 pageId→kebab 매핑 테이블이 없어 FO_PAGE_TO_CLASS 를
+       lib/app/foAppLazyClasses.js 에 별도로 둔다. 등록명(태그 기준)과 window 전역명이 다른
+       페이지도 있어(예: <blog-page> 태그 → 등록명 BlogPage → 실제 파일은 window.Blog) 그 차이는
+       FO_REG_TO_GLOBAL 로 흡수한다. "누가 누구를 임베드하는지"는 관리하지 않는다 — loadModule()로
+       실행된 뒤 이미 메모리에 올라온 component.template 문자열에서 <kebab-tag> 를 재귀적으로
+       스캔해 자동 발견한다(별도 fetch(text) 없음 — 2026-08-30 수정, 파일당 네트워크 요청 1회). */
+    const loadedPages = reactive({}); // { [pageId]: true } — 로드 완료 여부(메뉴 흐림 해제에도 사용)
+    const loadedClasses = reactive({}); // { [className]: true } — page 가 아닌 단위(Login 모달 등)
+    // ENTRY_COMP_REFS — home/prodList/prodView 전용. foHomeComp 등은 :is 로 직접 바인딩하는 ref 라
+    // (다른 페이지처럼 kebab-tag 로 등록되는 게 아니라) 로드 완료 후 값 자체를 갱신해줘야 한다.
+    // foHomeComp 등 선언부(아래쪽, FO_SITE_NO 기준 동적 이름)에서 이 객체를 채운다.
+    const ENTRY_COMP_REFS = {}; // { home: foHomeComp, prodList: foProdListComp, prodView: foProdViewComp }
+    const FO_LAZY_CLASS_FILES = window.FO_LAZY_CLASS_FILES || {};
+    const FO_REG_TO_GLOBAL = window.FO_REG_TO_GLOBAL || {};
+    const FO_PAGE_TO_CLASS = window.FO_PAGE_TO_CLASS || {};
+    const kebabToPascal = (k) => k.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+    /* loadModule — 네이티브 동적 import(). 브라우저 모듈 로더는 "bare specifier"(접두어 없는
+       "pages/fo/Blog.js" 같은 경로)를 import map 없이는 거부한다. 맵(foAppLazyClasses.js)의 경로는
+       기존 <script src="pages/..."> 관례를 그대로 따르므로, 상대경로 표기 규칙에 기대지 않고
+       new URL()로 매번 완전한 절대 URL을 만들어 넘긴다 — document.baseURI 는 index.html 의
+       history.replaceState 축약(?SITE_NO 제거 등) 이후에도 항상 현재 문서 위치를 정확히 반영한다. */
+    const loadModule = (src) => import(new URL(src, document.baseURI).href);
+    const _foLoadingClasses = {}; // { [cls]: Promise } — 동일 클래스 동시 요청 중복 방지(파일당 네트워크 1회 보장)
+    /* fnCollectClasses — cls 를 import(1회 네트워크 요청)하고, 별도 fetch(text) 없이 이미 메모리에
+       올라온 component.template 문자열을 그대로 정규식 스캔해 자식 <kebab-tag> 를 재귀 발견한다.
+       (이전엔 스캔용 fetch(src) + 실행용 import(src) 로 파일마다 네트워크 요청이 2번 나갔었음 —
+       2026-08-30 수정. 스캔·로드를 분리하지 않고 한 함수로 합쳐서 요청을 1회로 줄인다) */
+    const fnCollectClasses = (cls, visited) => {
+      if (visited.has(cls)) return Promise.resolve();
+      visited.add(cls);
+      const src = FO_LAZY_CLASS_FILES[cls];
+      if (!src) return Promise.resolve();
+      if (_foLoadingClasses[cls]) return _foLoadingClasses[cls];
+      const globalName = FO_REG_TO_GLOBAL[cls] || cls;
+      _foLoadingClasses[cls] = (async () => {
+        if (!window[globalName]) await loadModule(src);
+        // 방어 체크 — import 는 성공했는데 window[globalName] 이 여전히 없으면(예: 압축 시
+        // property mangling 이 켜져서 원래 이름이 다른 이름으로 바뀐 경우) 화면이 그냥
+        // 조용히 빈 채로 뜨는 대신 명확한 에러를 바로 던진다 — "실수해도 티가 안 나는"
+        // 상태를 없애기 위한 방어. 2026-08-30 추가.
+        if (!window[globalName]) {
+          throw new Error(`[lazy] ${src} 를 로드했지만 window.${globalName} 가 정의되지 않았습니다 — `
+            + `압축 시 property mangling 이 켜져있는지 확인하세요(반드시 꺼야 합니다).`);
+        }
+        app.component(cls, window[globalName]);
+        loadedClasses[cls] = true;
+        const tmpl = String(window[globalName]?.template || '');
+        const tags = [...new Set([...tmpl.matchAll(/<([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\b/g)].map((m) => m[1]))];
+        const depClasses = tags.map(kebabToPascal).filter((c) => FO_LAZY_CLASS_FILES[c]);
+        await Promise.all(depClasses.map((dc) => fnCollectClasses(dc, visited)));
+      })().catch((e) => {
+        // 실패한 Promise 를 캐시에 영구히 남겨두면(네트워크 순단 등 일시적 오류여도)
+        // 재시도(같은 메뉴 다시 클릭)가 계속 같은 실패를 반환한다 — 캐시를 지워서
+        // 다음 시도가 진짜로 다시 로드를 시도하게 한다. 2026-08-30 추가.
+        delete _foLoadingClasses[cls];
+        delete loadedClasses[cls];
+        throw e;
+      });
+      return _foLoadingClasses[cls];
+    };
+    /* fnEnsureClassLoaded — page 단위가 아닌 개별 클래스(예: Login 모달)를 트리거 시점에 로드 */
+    const fnEnsureClassLoaded = async (entryCls) => {
+      if (!entryCls || loadedClasses[entryCls]) return;
+      if (!FO_LAZY_CLASS_FILES[entryCls]) { loadedClasses[entryCls] = true; return; }
+      await fnCollectClasses(entryCls, new Set());
+    };
+    const fnEnsurePageLoaded = async (pg) => {
+      if (loadedPages[pg]) return;
+      const entryCls = FO_PAGE_TO_CLASS[pg];
+      if (!entryCls) { loadedPages[pg] = true; return; } // 미등록(error* 등, 항상 eager)
+      await fnEnsureClassLoaded(entryCls);
+      // home/prodList/prodView 전용 — foHomeComp 등 :is 바인딩 ref 를 로드 완료 값으로 갱신
+      // (ENTRY_COMP_REFS 는 foHomeComp 등이 선언되는 시점에 채워진다 — 아래쪽 선언 참조)
+      if (ENTRY_COMP_REFS[pg] && window[entryCls]) ENTRY_COMP_REFS[pg].value = window[entryCls];
+      loadedPages[pg] = true;
+    };
+    const cfIsPageLoaded = (pg) => {
+      const entryCls = FO_PAGE_TO_CLASS[pg];
+      return !entryCls || !FO_LAZY_CLASS_FILES[entryCls] || !!loadedPages[pg];
+    };
+
     /* navigate */
-    const navigate = (id, opts = {}) => {
+    const navigate = async (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
       if (opts && opts.instantOrder !== undefined) instantOrder.value = opts.instantOrder;
       else if (id !== 'order') instantOrder.value = null;
@@ -163,6 +248,15 @@
       else viewEditId.value = null;
       if (uiState.mobileOpen) uiState.mobileOpen = false;
       if (!fnCanEnterPage(id)) { return; }   // 마이페이지는 로그인 필요
+      navLoading.value = true;
+      try {
+        await fnEnsurePageLoaded(id);
+      } catch (e) {
+        showToast('화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error');
+        return;
+      } finally {
+        navLoading.value = false;
+      }
       page.value = id;
       window.scrollTo(0, 0);
       try { document.querySelector('.layout-main')?.scrollTo(0, 0); } catch (e) {}
@@ -544,7 +638,11 @@
     const auth = window.foAuth.state;
 
     /* onShowLogin */
-    const onShowLogin = () => { uiState.showLogin = true; };
+    const onShowLogin = () => {
+      fnEnsureClassLoaded('Login')
+        .then(() => { uiState.showLogin = true; })
+        .catch((e) => showToast('로그인 화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error'));
+    };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
 
     /* fnCanEnterPage — 마이페이지는 로그인 상태에서만 진입 허용.
@@ -587,18 +685,31 @@
       'sample21','sample22','sample23',
       'xsStore', 'xsLocalStorage',
       'error401','error404','error500'];
+    /* _bootPageLoadPromise — 최초 진입 페이지(위 URL 복원이 정하는 hPage, 없으면 기본 'home')의
+       lazy 로드 Promise. 아래 "Loading done" 블록이 이걸 기다렸다가 부팅 스피너를 걷어낸다
+       (page.value 는 lazy 페이지면 이 Promise 완료 후에야 바뀌므로, 스피너 쪽도 page.value 가
+       아니라 이 Promise 를 기준으로 삼아야 "잠깐 home 이 보였다가 바뀌는" 깜빡임이 안 생긴다). */
+    let _bootPageLoadPromise = Promise.resolve();
     try {
       const rawQuery = String(window.location.search || '').replace(/^\?/, '');
       const hasPageParam = rawQuery.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawQuery) : null;
 
+      let hPage = null;
       if (hasPageParam) {
-        const hPage = params.get('page');
-        if (hPage && validPages.includes(hPage) && fnCanEnterPage(hPage)) page.value = hPage;
+        hPage = params.get('page');
+        if (hPage && validPages.includes(hPage) && fnCanEnterPage(hPage)) {
+          // lazy 페이지일 수 있어 로드 완료 후 page.value 전환(fire-and-forget) — 아래 동반 상태
+          // 복원(instantOrder/cartIds/viewEditId)은 page.value 가 아닌 hPage 기준으로 미리 처리한다
+          _bootPageLoadPromise = fnEnsurePageLoaded(hPage).then(() => { page.value = hPage; });
+        }
         else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
+      } else {
+        // URL 에 page= 자체가 없는 최초 방문 — page.value 기본값('home')을 그대로 로드
+        _bootPageLoadPromise = fnEnsurePageLoaded(page.value);
       }
-      /* 바로구매 URL 파라미터 복원 */
-      if (page.value === 'order' && hasPageParam) {
+      /* 바로구매 URL 파라미터 복원 — hPage 기준(page.value 는 아직 비동기 반영 전일 수 있음) */
+      if (hPage === 'order' && hasPageParam) {
         instantOrder.value = _instantOrderFromParams(params);
         const cids = params.get('cartIds');
         if (cids) cartIds.splice(0, cartIds.length, ...cids.split(',').filter(Boolean));
@@ -626,8 +737,12 @@
         const rawQuery = String(window.location.search || '').replace(/^\?/, '');
         const params = new URLSearchParams(rawQuery);
         const hPage = params.get('page');
-        // 동일 값 set 으로 인한 reactive 무한 갱신 방지
-        if (hPage && validPages.includes(hPage) && page.value !== hPage && fnCanEnterPage(hPage)) page.value = hPage;
+        // 동일 값 set 으로 인한 reactive 무한 갱신 방지. lazy 페이지일 수 있어 로드 완료 후 전환
+        if (hPage && validPages.includes(hPage) && page.value !== hPage && fnCanEnterPage(hPage)) {
+          fnEnsurePageLoaded(hPage).then(() => { page.value = hPage; }).catch((e) => {
+            showToast('화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error');
+          });
+        }
         else if (hPage && !validPages.includes(hPage) && page.value !== 'notFound') page.value = 'notFound';
         if (hPage === 'order') {
           instantOrder.value = _instantOrderFromParams(params);
@@ -703,19 +818,34 @@
       window.removeEventListener('popstate', onAppPopState);
     });
 
-    /* ── Loading done ── */
+    /* FO_SITE_NO 기준 동적 컴포넌트 참조 — 2026-08-30 lazy 전환. Home{N}/Prod{N}List/Prod{N}View 는
+       <kebab-tag> 가 아니라 :is 로 직접 바인딩되어 자동탐지 스캔이 못 찾으므로
+       lib/app/foAppLazyClasses.js 하단 IIFE 가 FO_SITE_NO 기준으로 두 맵에 직접 등록해둔다.
+       예전엔 setup() 시점에 단 한 번만 평가되는 plain const 라(반응형 재평가 없음) 구조적으로
+       lazy 전환이 불가능했는데, ref 로 바꿔서 fnEnsurePageLoaded 가 로드 완료 후 .value 를 채워주는
+       방식(ENTRY_COMP_REFS)으로 전환했다. Vue 템플릿은 top-level ref 를 자동 언랩하므로
+       `:is="foHomeComp"` 표기는 그대로 유지된다. */
+    const _N = window.FO_SITE_NO;
+    const foHomeComp     = ref(window['Home' + _N] || null);
+    const foProdListComp = ref(window['Prod' + _N + 'List'] || null);
+    const foProdViewComp = ref(window['Prod' + _N + 'View'] || null);
+    ENTRY_COMP_REFS.home     = foHomeComp;
+    ENTRY_COMP_REFS.prodList = foProdListComp;
+    ENTRY_COMP_REFS.prodView = foProdViewComp;
+
+    /* ── Loading done — 진입 페이지(lazy 대상)가 로드 완료될 때까지 부팅 스피너를 유지한다.
+       실패해도(네트워크 등) 스피너는 반드시 걷어낸다(finally) — 화면이 영영 안 뜨는 것보단
+       빈 페이지라도 뜨는 게 낫다. */
     const loadingEl = document.getElementById('_boot_loading') || document.getElementById('vue-app-loading');
-    if (loadingEl) {
+    const _hideBootLoading = () => {
+      if (!loadingEl) return;
       loadingEl.classList.add('done');
       loadingEl.classList.add('vue-app-loading--done');
       setTimeout(() => { if (loadingEl.parentNode) loadingEl.parentNode.removeChild(loadingEl); }, 350);
-    }
-
-    /* FO_SITE_NO 기준 동적 컴포넌트 참조 */
-    const _N = window.FO_SITE_NO;
-    const foHomeComp     = window['Home' + _N];
-    const foProdListComp = window['Prod' + _N + 'List'];
-    const foProdViewComp = window['Prod' + _N + 'View'];
+    };
+    _bootPageLoadPromise.catch((e) => {
+      showToast('화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error');
+    }).finally(_hideBootLoading);
 
     const SIDEBAR_HIDDEN_PAGES = new Set([
       'home', 'prodList', 'prodView', 'cart', 'order',
@@ -753,7 +883,7 @@
     };
     return {
       theme, toggleTheme,
-      page, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
+      page, navLoading, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
       toasts, showToast, removeToast, removeAllToasts, toggleToastDetail, toggleAllToastDetail, toastShowDetail, toast, onToastAction,
       isApiLoading,
       apiProgressLabel,
@@ -767,6 +897,7 @@
       config: window.SITE_CONFIG,
       auth, uiState, onShowLogin, onLogout,
       foInitReady,
+      loadedPages, cfIsPageLoaded, fnEnsurePageLoaded, fnEnsureClassLoaded,
       foHomeComp, foProdListComp, foProdViewComp,
       foApiLogs, showApiLog, showSettings, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
@@ -786,6 +917,11 @@
 
   template: /* html */ `
 <div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);transition:padding-right .15s;" :style="{ paddingRight: cfApiLogDockPad }">
+
+  <!-- lazy 로드 진행바 — 메뉴/링크 클릭 후 화면 스크립트를 받아오는 동안(느린 네트워크에서
+       처음 여는 화면일 때만 눈에 띔) 사용자에게 "지금 받아오는 중" 을 알려준다. 이미 로드된
+       화면은 fnEnsurePageLoaded 가 즉시 resolve 되어 거의 안 보인다. 2026-08-30 추가. -->
+  <div id="_nav_loading_bar" :class="{ active: navLoading }"></div>
 
   <!-- API Progress Bar + Dim + Loading Indicator -->
   <transition name="fo-dim">
@@ -812,6 +948,7 @@
     :app-auth="auth" :on-app-show-login="onShowLogin" :on-app-logout="onLogout"
     :app-show-settings="showSettings" :app-show-api-log="showApiLog"
     :app-api-logs="foApiLogs" :app-api-toast="apiToastEnabled"
+    :is-page-loaded="cfIsPageLoaded"
     @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-toggle-mobile="toggleMobileMenu"
     @modu-fo-toggle-settings="showSettings=!showSettings"
     @modu-fo-toggle-api-log="onToggleApiLog"
@@ -823,6 +960,7 @@
       v-show="cfShowSidebar || uiState.mobileOpen"
       :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
       :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
+      :is-page-loaded="cfIsPageLoaded"
       @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
