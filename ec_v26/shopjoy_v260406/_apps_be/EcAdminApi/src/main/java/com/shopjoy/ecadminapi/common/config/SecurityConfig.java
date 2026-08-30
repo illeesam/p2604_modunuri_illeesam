@@ -54,7 +54,7 @@ import java.util.Map;
  *   /api/bo/**   → BO만 (USER)
  *   /api/base/** → 완전 차단 (denyAll) — 내부 공통 레이어, 외부 직접 호출 금지
  *   /api/ext/**  → EXT(외부 시스템)만
- *   /prodDtl/**  → 누구나 (permitAll) — SEO 메타태그 서버사이드 주입 랜딩(FoSeoController), 크롤러/링크공유용
+ *   /foui/**     → 누구나 (permitAll) — SEO 메타태그 서버사이드 주입 랜딩(FoSeoController: prodDtl/eventDtl/blogDtl), 크롤러/링크공유용
  *
  * 어노테이션 방식 (개별 메서드 예외 처리):
  *   @BoOnly  → BO만
@@ -115,7 +115,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()           // CORS preflight
                 .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll() // static 리소스
-                .requestMatchers(HttpMethod.GET, "/prodDtl/**").permitAll() // SEO 메타태그 서버사이드 주입 랜딩(FoSeoController) — 크롤러/링크공유용, 인증 불필요
+                .requestMatchers(HttpMethod.GET, "/foui/**").permitAll() // SEO 메타태그 서버사이드 주입 랜딩(FoSeoController: prodDtl/eventDtl/blogDtl) — 크롤러/링크공유용, 인증 불필요
                 .requestMatchers("/actuator/**").permitAll()       // Spring Boot Actuator (헬스체크·메트릭 등)
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll() // Swagger UI
 

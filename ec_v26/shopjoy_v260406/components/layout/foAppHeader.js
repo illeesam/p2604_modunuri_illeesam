@@ -19,12 +19,41 @@ window.foAppHeader = {
     const pdfExporting = ref(false);
     /* cfCompareCount — 상품비교함 담긴 개수 (foAppBase.js window.foApp.compareList, reactive 공유) */
     const cfCompareCount = computed(() => window.foApp?.compareList?.length || 0);
+    /* fnPublicShareUrl — 상품상세/이벤트상세/블로그상세처럼 백엔드 SEO 랜딩(FoSeoController,
+       /foui/{prodDtl,eventDtl,blogDtl}/{id})이 있는 화면이면 그 랜딩 URL(백엔드 포트, 크롤러/
+       카톡 미리보기가 실제 데이터를 읽을 수 있음)을, 그 외 화면(장바구니/주문/FAQ/개발도구 등
+       SEO 랜딩이 없는 화면)은 현재 프론트 URL(location.href) 그대로 반환한다.
+       링크복사·카카오공유·호버 미리보기(shareTip) 셋 다 이 값을 그대로 쓴다 — 값을 따로
+       계산하면 실제 클릭 시 동작과 어긋날 수 있어 계산 로직을 한 곳에만 둔다.
+       페이지별 id 파라미터 이름(prodid/eventId/dtlId)은 foAppBase.js 라우팅과 동일 기준.
+       2026-08-30 추가. */
+    /* FO_STATIC_SEO_PAGES — ID 없이 화면 자체로 고정되는 SEO 랜딩(FoSeoController, 2026-08-30
+       확장분). prodView/eventView/blogView 처럼 항목별 ID 가 필요한 화면은 아래에서 별도 분기. */
+    const FO_STATIC_SEO_PAGES = { home: 'home', prodList: 'prodList', contact: 'contact', faq: 'faq', event: 'event', blog: 'blog' };
+    const fnPublicShareUrl = () => {
+      const q = new URLSearchParams(window.location.search);
+      if (props.page === 'prodView' && q.get('prodid')) {
+        return window.seoUrl('/foui/prodDtl/' + encodeURIComponent(q.get('prodid')));
+      }
+      if (props.page === 'eventView' && q.get('eventId')) {
+        return window.seoUrl('/foui/eventDtl/' + encodeURIComponent(q.get('eventId')));
+      }
+      if (props.page === 'blogView' && q.get('dtlId')) {
+        return window.seoUrl('/foui/blogDtl/' + encodeURIComponent(q.get('dtlId')));
+      }
+      if (FO_STATIC_SEO_PAGES[props.page]) {
+        return window.seoUrl('/foui/' + FO_STATIC_SEO_PAGES[props.page]);
+      }
+      return window.location.href;
+    };
     const handleShareKakao = () => {
       try {
         window.coExtSdk.shareKakao({
-          title: (document.title || 'ShopJoy') + ' - ShopJoy',
+          // 2026-08-30 버그수정: document.title 이 이미 "{화면명} - ShopJoy" 형태라(foAppBase.js
+          // FO_PAGE_TITLES) 여기서 또 ' - ShopJoy' 를 붙이면 "FAQ - ShopJoy - ShopJoy" 로 중복됐다.
+          title: document.title || 'ShopJoy - 쇼핑의 즐거움',
           imageUrl: window.location.origin + '/assets/img/shopjoy-share-og.png',
-          url: window.location.href,
+          url: fnPublicShareUrl(),
         });
       } catch (e) {
         window.foApp?.showToast?.(e.message || '카카오톡 공유를 열 수 없습니다.', 'error', 0);
@@ -32,12 +61,25 @@ window.foAppHeader = {
     };
     const handleCopyLink = async () => {
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(fnPublicShareUrl());
         window.foApp?.showToast?.('링크가 복사되었습니다.', 'success');
       } catch (e) {
         window.foApp?.showToast?.(e.message || '링크 복사에 실패했습니다.', 'error', 0);
       }
     };
+    /* shareTip — 링크공유/카카오공유 아이콘에 마우스오버 시 실제로 넘어가는 값을 미리 보여주는
+       레이어. kind: 'link'|'kakao'|null. 클릭 시 실행되는 handleCopyLink/handleShareKakao 와
+       완전히 같은 값(fnPublicShareUrl)을 그대로 보여준다. 2026-08-30 추가. */
+    const shareTip = reactive({ kind: null, title: '', url: '', imageUrl: '' });
+    const showShareTip = (kind) => {
+      shareTip.kind = kind;
+      shareTip.url = fnPublicShareUrl();
+      if (kind === 'kakao') {
+        shareTip.title = document.title || 'ShopJoy - 쇼핑의 즐거움';
+        shareTip.imageUrl = window.location.origin + '/assets/img/shopjoy-share-og.png';
+      }
+    };
+    const hideShareTip = () => { shareTip.kind = null; };
     const handleExportPdf = async () => {
       pdfExporting.value = true;
       try {
@@ -295,6 +337,7 @@ window.foAppHeader = {
       uiState, codes, userMenuRoot, addrSearchModal,                        // 상태 / refs
       handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch
       pdfExporting, cfCompareCount,                                        // 링크/카카오공유/PDF (설정 드롭다운) / 상품비교 개수
+      shareTip, showShareTip, hideShareTip,                                // 공유 아이콘 호버 시 실제 전달값 미리보기 레이어
       pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
       cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu, fnIsLoaded,        // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
@@ -547,10 +590,30 @@ window.foAppHeader = {
 
     <!-- ===== □.□. 설정 아이콘 ================================================ -->
     <!-- ===== ■.■. 링크복사 / 카카오공유 / PDF (최상단 우측 고정 아이콘) ============================ -->
-    <button type="button" @click="handleBtnAction('settings-copy-link')" title="링크 공유(URL만)"
-      style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">🔗</button>
-    <button type="button" @click="handleBtnAction('settings-share-kakao')" title="카카오톡 공유"
-      style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">💬</button>
+    <!-- 2026-08-30: 마우스오버 시 실제 전달값(shareTip) 미리보기 레이어 추가 — position:relative 로
+         감싸서 자식 레이어를 이 버튼 기준으로 절대배치한다. -->
+    <div style="position:relative;">
+      <button type="button" @click="handleBtnAction('settings-copy-link')"
+        @mouseenter="showShareTip('link')" @mouseleave="hideShareTip" title="링크 공유(URL만)"
+        style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">🔗</button>
+      <div v-if="shareTip.kind==='link'"
+        style="position:absolute;top:calc(100% + 6px);right:0;z-index:200;min-width:260px;max-width:360px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);box-shadow:0 6px 20px rgba(0,0,0,0.14);font-size:12px;line-height:1.6;color:var(--text-secondary);">
+        <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;">🔗 전달값(클릭 시 클립보드로 복사)</div>
+        <div style="word-break:break-all;"><b>url</b> = {{ shareTip.url }}</div>
+      </div>
+    </div>
+    <div style="position:relative;">
+      <button type="button" @click="handleBtnAction('settings-share-kakao')"
+        @mouseenter="showShareTip('kakao')" @mouseleave="hideShareTip" title="카카오톡 공유"
+        style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;font-size:13px;color:var(--text-secondary);transition:all 0.2s;">💬</button>
+      <div v-if="shareTip.kind==='kakao'"
+        style="position:absolute;top:calc(100% + 6px);right:0;z-index:200;min-width:260px;max-width:360px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);box-shadow:0 6px 20px rgba(0,0,0,0.14);font-size:12px;line-height:1.6;color:var(--text-secondary);">
+        <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;">💬 전달값(window.coExtSdk.shareKakao 인자)</div>
+        <div style="word-break:break-all;"><b>title</b> = {{ shareTip.title }}</div>
+        <div style="word-break:break-all;"><b>url</b> = {{ shareTip.url }}</div>
+        <div style="word-break:break-all;"><b>imageUrl</b> = {{ shareTip.imageUrl }}</div>
+      </div>
+    </div>
     <button type="button" @click="handleBtnAction('settings-export-pdf')" title="PDF 다운로드" :disabled="pdfExporting"
       style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;flex-shrink:0;">
       <span v-if="pdfExporting" style="font-size:14px;">⏳</span>

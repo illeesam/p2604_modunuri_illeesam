@@ -1,7 +1,12 @@
 package com.shopjoy.ecadminapi.fo.seo.service;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
 import com.shopjoy.ecadminapi.fo.ec.service.FoPdProdService;
+import com.shopjoy.ecadminapi.fo.ec.service.FoPmEventService;
+import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +25,14 @@ import java.util.regex.Pattern;
  * <p>FO 는 순수 CSR(클라이언트 렌더링) SPA 라 index.html 자체엔 상품별 콘텐츠가 없다 —
  * &lt;title&gt;/description/OG 태그가 사이트 전체에 고정값 하나뿐이라, 검색결과나 카카오톡 등
  * (SDK 를 거치지 않는) 순수 URL 공유 시 링크 미리보기가 항상 동일한 일반 브랜드 정보만
- * 보여준다. {@code FoSeoController}(/prodDtl/{prodId}) 가 이 서비스로 "실제 index.html 을 읽고
- * 해당 상품 정보로 &lt;title&gt;/description/OG 메타태그만 치환한 HTML"을 만들어 응답한다.
- * 본문 콘텐츠 자체는 여전히 클라이언트에서 API 로 채우는 CSR 그대로 — 이 계층은 딱
- * 메타태그(+ 실제 앱으로의 핸드오프 스크립트 한 줄)만 책임진다.</p>
+ * 보여준다. {@code FoSeoController}(/foui/prodDtl,eventDtl,blogDtl/{id}) 가 이 서비스로
+ * "실제 index.html 을 읽고 해당 상품/이벤트/블로그 정보로 &lt;title&gt;/description/OG
+ * 메타태그만 치환한 HTML"을 만들어 응답한다. 본문 콘텐츠 자체는 여전히 클라이언트에서 API 로
+ * 채우는 CSR 그대로 — 이 계층은 딱 메타태그(+ 실제 앱으로의 핸드오프 스크립트 한 줄)만
+ * 책임진다.</p>
  *
- * <p>2026-08-30, FE lazy-load 실험(shopjoy_v260406_lazy) 논의 중 발견된 SEO 갭 대응.</p>
+ * <p>2026-08-30, FE lazy-load 실험(shopjoy_v260406_lazy) 논의 중 발견된 SEO 갭 대응.
+ * 상품상세로 시작해서 같은 날 이벤트상세/블로그상세로 확장.</p>
  */
 @Slf4j
 @Service
@@ -33,6 +40,8 @@ import java.util.regex.Pattern;
 public class FoSeoService {
 
     private final FoPdProdService foPdProdService;
+    private final FoPmEventService foPmEventService;
+    private final FoCmBlogService foCmBlogService;
 
     /** index.html 이 있는 FO 프로젝트 루트(템플릿 읽기용) — application-{profile}.yml 의 app.frontend.dir */
     @Value("${app.frontend.dir}")
@@ -72,7 +81,120 @@ public class FoSeoService {
         String innerAppPath = "/?page=prodView&prodid=" + prodId;
         // fullFrontendUrl: cross-origin 폴백 전체이동 대상 + 절대 og:url 구성용
         String fullFrontendUrl = frontendBaseUrl + innerAppPath;
-        return buildHtml(title, desc, image, fullFrontendUrl, innerAppPath);
+        return buildHtml(title, desc, image, fullFrontendUrl, innerAppPath, "product");
+    }
+
+    /**
+     * getEventHtml — 이벤트상세 SEO 메타 주입 HTML 생성. getProdHtml 과 동일 패턴
+     * (이벤트 조회 실패해도 기본 메타로 안전 폴백).
+     */
+    public String getEventHtml(String eventId) {
+        String title = DEFAULT_TITLE;
+        String desc = DEFAULT_DESC;
+        String image = null;
+        try {
+            PmEventDto.Item event = foPmEventService.getById(eventId);
+            if (event != null) {
+                if (isNotBlank(event.getEventNm())) title = event.getEventNm() + " - ShopJoy";
+                if (isNotBlank(event.getEventDesc())) desc = event.getEventDesc();
+                if (isNotBlank(event.getImgUrl())) image = toAbsoluteUrl(event.getImgUrl());
+            }
+        } catch (Exception e) {
+            log.warn("[FoSeoService] 이벤트 조회 실패 — 기본 메타로 폴백. eventId={}, msg={}", eventId, e.getMessage());
+        }
+        String innerAppPath = "/?page=eventView&eventId=" + eventId;
+        String fullFrontendUrl = frontendBaseUrl + innerAppPath;
+        return buildHtml(title, desc, image, fullFrontendUrl, innerAppPath, "website");
+    }
+
+    /**
+     * getBlogHtml — 블로그상세 SEO 메타 주입 HTML 생성. getProdHtml 과 동일 패턴
+     * (블로그 조회 실패해도 기본 메타로 안전 폴백). 대표이미지는 첨부파일 목록의 첫 번째
+     * 항목(썸네일 우선, 없으면 원본)을 사용 — 블로그 자체엔 이미지 필드가 따로 없음.
+     */
+    public String getBlogHtml(String blogId) {
+        String title = DEFAULT_TITLE;
+        String desc = DEFAULT_DESC;
+        String image = null;
+        try {
+            CmBlogDto.Item blog = foCmBlogService.getById(blogId);
+            if (blog != null) {
+                if (isNotBlank(blog.getBlogTitle())) title = blog.getBlogTitle() + " - ShopJoy";
+                if (isNotBlank(blog.getBlogSummary())) desc = blog.getBlogSummary();
+                if (blog.getFiles() != null && !blog.getFiles().isEmpty()) {
+                    CmBlogFileDto.Item first = blog.getFiles().get(0);
+                    String rel = isNotBlank(first.getThumbUrl()) ? first.getThumbUrl() : first.getImgUrl();
+                    if (isNotBlank(rel)) image = toAbsoluteUrl(rel);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("[FoSeoService] 블로그 조회 실패 — 기본 메타로 폴백. blogId={}, msg={}", blogId, e.getMessage());
+        }
+        String innerAppPath = "/?page=blogView&dtlId=" + blogId;
+        String fullFrontendUrl = frontendBaseUrl + innerAppPath;
+        return buildHtml(title, desc, image, fullFrontendUrl, innerAppPath, "article");
+    }
+
+    /**
+     * getStaticHtml — 특정 항목(ID)이 없는 정적/목록형 화면(홈·상품목록·고객센터·FAQ·이벤트목록·
+     * 블로그목록)의 SEO 메타 주입 HTML. getProdHtml 등과 달리 DB 단건 조회가 없으므로 title/desc
+     * 는 고정 문자열이고, extraDescSupplier 로만 선택적으로 "부가정보"(진행중 이벤트 건수 등)를
+     * 덧붙인다 — 실패해도 기본 desc 로 안전 폴백(Supplier 예외를 여기서 흡수).
+     */
+    private String getStaticHtml(String pageId, String title, String desc, java.util.function.Supplier<String> extraDescSupplier) {
+        String finalDesc = desc;
+        if (extraDescSupplier != null) {
+            try {
+                String extra = extraDescSupplier.get();
+                if (isNotBlank(extra)) finalDesc = desc + " " + extra;
+            } catch (Exception e) {
+                log.warn("[FoSeoService] {} 부가정보 조회 실패 — 기본 설명으로 폴백. msg={}", pageId, e.getMessage());
+            }
+        }
+        String innerAppPath = "/?page=" + pageId;
+        String fullFrontendUrl = frontendBaseUrl + innerAppPath;
+        return buildHtml(title, finalDesc, null, fullFrontendUrl, innerAppPath, "website");
+    }
+
+    /** getHomeHtml — 홈 SEO 랜딩 (정적). DEFAULT_TITLE 자체가 이미 "ShopJoy - 쇼핑의 즐거움" 완성형이라
+        (다른 화면처럼) " - ShopJoy" 를 덧붙이지 않는다 — 붙이면 "ShopJoy - ShopJoy" 로 중복된다. */
+    public String getHomeHtml() {
+        return getStaticHtml("home", DEFAULT_TITLE, DEFAULT_DESC, null);
+    }
+
+    /** getProdListHtml — 상품목록 SEO 랜딩 (정적 — 카테고리 필터가 다양해 건수 집계는 생략) */
+    public String getProdListHtml() {
+        return getStaticHtml("prodList", "상품 목록 - ShopJoy", "다양한 상품을 만나보세요.", null);
+    }
+
+    /** getContactHtml — 고객센터 SEO 랜딩 (정적) */
+    public String getContactHtml() {
+        return getStaticHtml("contact", "고객센터 - ShopJoy", "궁금하신 점을 문의해주세요.", null);
+    }
+
+    /** getFaqHtml — FAQ SEO 랜딩 (정적) */
+    public String getFaqHtml() {
+        return getStaticHtml("faq", "FAQ - ShopJoy", "자주 묻는 질문을 확인해보세요.", null);
+    }
+
+    /** getEventListHtml — 이벤트 목록 SEO 랜딩. 부가정보: 현재 진행중 이벤트 건수(getList 가
+        FoPmEventService 내부에서 currentYn=Y 를 강제하므로 그대로 "진행중" 건수가 된다). */
+    public String getEventListHtml() {
+        return getStaticHtml("event", "이벤트 - ShopJoy", "다양한 이벤트를 만나보세요.", () -> {
+            int cnt = foPmEventService.getList(new PmEventDto.Request()).size();
+            return cnt > 0 ? "현재 진행중인 이벤트 " + cnt + "건." : null;
+        });
+    }
+
+    /** getBlogListHtml — 블로그 목록 SEO 랜딩. 부가정보: 공개 블로그 게시글 총 건수. */
+    public String getBlogListHtml() {
+        return getStaticHtml("blog", "블로그 - ShopJoy", "다양한 소식을 만나보세요.", () -> {
+            CmBlogDto.Request req = new CmBlogDto.Request();
+            req.setUseYn("Y");
+            req.setBlogTypeCd("BLOG");
+            int cnt = foCmBlogService.getList(req).size();
+            return cnt > 0 ? "게시글 " + cnt + "건." : null;
+        });
     }
 
     /** toAbsoluteUrl — 상대경로 이미지를 og:image 규격(절대 URL)으로 변환 */
@@ -81,8 +203,9 @@ public class FoSeoService {
         return frontendBaseUrl + "/" + rel.replaceFirst("^/", "");
     }
 
-    /** buildHtml — index.html 템플릿을 읽어 메타태그 치환 + 실제 앱 핸드오프 스크립트 삽입 */
-    private String buildHtml(String title, String desc, String image, String fullFrontendUrl, String innerAppPath) {
+    /** buildHtml — index.html 템플릿을 읽어 메타태그 치환 + 실제 앱 핸드오프 스크립트 삽입.
+        ogType: "product"(상품상세) / "article"(블로그상세) / "website"(이벤트상세 등 그 외) */
+    private String buildHtml(String title, String desc, String image, String fullFrontendUrl, String innerAppPath, String ogType) {
         String html = readTemplate();
         String safeTitle = escapeHtml(title);
         String safeDesc = escapeHtml(desc);
@@ -94,7 +217,7 @@ public class FoSeoService {
         StringBuilder inject = new StringBuilder();
         inject.append("\n  <meta property=\"og:title\" content=\"").append(safeTitle).append("\">\n");
         inject.append("  <meta property=\"og:description\" content=\"").append(safeDesc).append("\">\n");
-        inject.append("  <meta property=\"og:type\" content=\"product\">\n");
+        inject.append("  <meta property=\"og:type\" content=\"").append(escapeHtml(ogType)).append("\">\n");
         inject.append("  <meta property=\"og:url\" content=\"").append(escapeHtml(fullFrontendUrl)).append("\">\n");
         if (image != null) {
             inject.append("  <meta property=\"og:image\" content=\"").append(escapeHtml(image)).append("\">\n");

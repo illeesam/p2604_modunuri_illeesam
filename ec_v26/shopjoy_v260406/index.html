@@ -246,7 +246,7 @@
        재귀적으로 자동 발견한다.
        ※ 2026-08-30 한때 Contact/Faq/EventPage/EventView/BlogPage/BlogView/AboutPage/
        LocationPage(8개, SEO 노출 대상 공개 콘텐츠)를 크롤러 지연 우려로 eager 로 되돌렸다가,
-       Spring Boot 쪽 메타태그 서버사이드 주입 엔드포인트(/prodDtl/{prodId} 류)로 title/
+       Spring Boot 쪽 메타태그 서버사이드 주입 엔드포인트(/foui/prodDtl|eventDtl|blogDtl/{id} 류)로 title/
        description/OG 태그 정확성 문제를 별도 해결하기로 하면서 다시 lazy 로 전환했다 — 본문
        데이터 자체가 이미 API 호출로 나중에 채워지는 구조라(컴포넌트 eager 여부와 무관) JS 파일
        하나 더 fetch하는 지연은 상대적으로 미미하다고 판단.
