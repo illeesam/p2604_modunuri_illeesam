@@ -168,43 +168,76 @@
       /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppCompPage.js) ── */
       const PAGE_COMP_MAP = window.BO_APP_COMP_PAGE;
 
-      /* ── Lazy 로드 (2026-08-30 실험, shopjoy_v260406_lazy 전용) ──────────────────
-         bo.html 이 190여 개 페이지 컴포넌트 <script> 를 전부 즉시 로드하던 것을, navigate()
-         로 처음 그 화면에 들어갈 때만 동적으로 불러오도록 바꾼다. 대상 목록은
-         lib/app/boAppPageScripts.js(pageId → 스크립트 경로 배열)에 있고, 거기 없는
-         pageId(대시보드처럼 eager 로 남긴 화면 등)는 loadedPages 를 바로 true 로 채워
-         "이미 로드됨" 취급한다(좌측 메뉴 흐림 표시에도 이 값을 그대로 쓴다). */
-      const loadedPages = reactive({});      // { [pageId]: true } — 로드 완료 여부(메뉴 흐림 해제에도 사용)
-      const _loadingScriptPromises = {};     // { [scriptSrc]: Promise } — 같은 파일을 여러 pageId 가 공유할 때 중복 요청 방지
-      const fnLoadScriptOnce = (src) => {
-        if (_loadingScriptPromises[src]) return _loadingScriptPromises[src];
-        _loadingScriptPromises[src] = new Promise((resolve, reject) => {
-          const el = document.createElement('script');
-          el.src = src;
-          el.onload = () => resolve();
-          el.onerror = () => reject(new Error('화면 스크립트를 불러오지 못했습니다: ' + src));
-          document.head.appendChild(el);
+      /* ── Lazy 로드 2차 개정 (2026-08-30, shopjoy_v260406_lazy 전용) ──────────────────
+         1차는 "어떤 화면이 어떤 화면을 인라인 임베드하는지"를 lib/app/boAppPageScripts.js 에
+         사람이(또는 스크립트가) 미리 적어둬야 했다 — 새 임베드가 생겨도 그 파일을 안 고치면
+         조용히 깨지는 유지보수 부담이 있었다("상품관리 [수정] 눌렀는데 상세가 안 뜬다" 버그가
+         바로 이 누락 때문이었음). 이번엔 그 매핑 자체를 없애고, 로더가 **파일 내용을 직접
+         읽어서 자동으로 알아낸다**:
+           1) 진입 클래스의 소스를 fetch 로 텍스트째 읽는다(아직 실행 전)
+           2) 그 안에서 <kebab-tag> 커스텀 태그를 정규식으로 스캔
+           3) lib/app/boAppLazyClasses.js(클래스명→경로, 유일하게 남은 맵 — 이건 "이 클래스가
+              어느 파일에 있는지"일 뿐 "누가 누굴 쓰는지"는 안 담고 있어 임베드 관계가 바뀌어도
+              손댈 필요 없다)에 있는 클래스면, 그 파일도 재귀적으로 같은 방식으로 스캔
+           4) 더 이상 새 태그가 안 나올 때까지 반복 → 이렇게 모은 파일 전부를 실행
+         실행은 loadModule()(네이티브 동적 import()) 사용 — shopjoy_v260828_mfe 의
+         loadModule 과 같은 방식. 브라우저가 같은 URL의 import() 를 알아서 캐싱/중복요청
+         방지해주므로 별도 dedup 캐시를 안 짜도 된다(스캔용 fetch 만 자체 캐시). */
+      const loadedPages = reactive({}); // { [pageId]: true } — 로드 완료 여부(메뉴 흐림 해제에도 사용)
+      const LAZY_CLASS_FILES = window.BO_LAZY_CLASS_FILES || {}; // 클래스명 -> 스크립트 경로(유일한 맵)
+      const kebabToPascal = (k) => k.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+      const loadModule = (src) => import(src); // shopjoy_v260828_mfe 의 loadModule() 과 동일 개념(네이티브 동적 import)
+      const _scanCache = {}; // { [src]: Promise<string[]> } — 같은 파일을 여러 경로에서 동시에 스캔할 때 중복 fetch 방지
+      /* fnScanForDeps — src 파일의 소스 텍스트를 읽어(아직 실행은 안 함) 그 안에 등장하는
+         커스텀 태그 중 LAZY_CLASS_FILES 에 있는(=우리가 아는 lazy 클래스) 것만 클래스명
+         배열로 돌려준다. 실패하면 throw. */
+      const fnScanForDeps = (src) => {
+        if (_scanCache[src]) return _scanCache[src];
+        _scanCache[src] = fetch(src).then(async (res) => {
+          if (!res.ok) throw new Error('화면 스크립트를 찾을 수 없습니다: ' + src);
+          const text = await res.text();
+          const tags = [...new Set([...text.matchAll(/<([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\b/g)].map((m) => m[1]))];
+          return tags.map(kebabToPascal).filter((cls) => LAZY_CLASS_FILES[cls]);
         });
-        return _loadingScriptPromises[src];
+        return _scanCache[src];
       };
-      /* fnEnsurePageLoaded — pg 에 해당하는 스크립트(들)를 처음 한 번만 로드하고, 로드 직후
-         그 파일이 정의한 컴포넌트를 app 에 등록한다(파일명 = 클래스명 컨벤션을 그대로 이용 —
-         boAppCompPage.js 의 kebab 태그와도 항상 일치함을 사전에 전수 검증함).
-         실패하면 throw(호출부인 navigate 가 토스트로 안내하고 페이지 전환을 중단). */
+      /* fnCollectFiles — entryCls 부터 재귀적으로 스캔해 실행해야 할 파일 집합(collected)을
+         채운다. visited 는 클래스 기준 순환 방지(A가 B를, B가 다시 A를 임베드해도 무한루프
+         안 남). */
+      const fnCollectFiles = async (cls, collected, visited) => {
+        if (visited.has(cls)) return;
+        visited.add(cls);
+        const src = LAZY_CLASS_FILES[cls];
+        if (!src || collected.has(src)) return;
+        collected.add(src);
+        const depClasses = await fnScanForDeps(src);
+        await Promise.all(depClasses.map((dc) => fnCollectFiles(dc, collected, visited)));
+      };
+      /* fnEnsurePageLoaded — pg 의 진입 클래스부터 필요한 파일을 전부 자동 발견해 실행/등록한다.
+         entryCls 가 LAZY_CLASS_FILES 에 없으면(대시보드 등 eager 예외) 이미 로드된 것으로
+         취급. 실패하면 throw(호출부인 navigate/readHash 가 토스트로 안내). */
       const fnEnsurePageLoaded = async (pg) => {
         if (loadedPages[pg]) return;
-        const files = window.BO_APP_PAGE_SCRIPTS && window.BO_APP_PAGE_SCRIPTS[pg];
-        if (!files) { loadedPages[pg] = true; return; } // 맵에 없음 = eager 로드 대상이라 이미 로드돼 있음
-        await Promise.all(files.map(fnLoadScriptOnce));
-        files.forEach((src) => {
+        const kebab = PAGE_COMP_MAP[pg];
+        const entryCls = pg === 'dashboard' ? 'DashboardBoEc' + (window.BO_SITE_NO || '01') : kebabToPascal(kebab || '');
+        if (!LAZY_CLASS_FILES[entryCls]) { loadedPages[pg] = true; return; } // eager 대상 — 이미 로드돼 있음
+        const collected = new Set();
+        const visited = new Set();
+        await fnCollectFiles(entryCls, collected, visited);
+        await Promise.all([...collected].map(async (src) => {
           const cls = src.split('/').pop().replace(/\.js$/, '');
+          if (window[cls]) return; // 다른 화면을 통해 이미 로드된 공유 파일(예: ZdSimulComps.js)
+          await loadModule(src);
           if (window[cls]) app.component(cls, window[cls]);
-        });
+        }));
         loadedPages[pg] = true;
       };
-      /* cfIsPageLoaded — 좌측 메뉴 흐림 표시용. lazy 대상이 아닌 pageId(맵에 없음)는 항상
-         "로드됨" 취급 — 애초에 흐리게 보일 이유가 없다. */
-      const cfIsPageLoaded = (pg) => !window.BO_APP_PAGE_SCRIPTS || !window.BO_APP_PAGE_SCRIPTS[pg] || !!loadedPages[pg];
+      /* cfIsPageLoaded — 좌측 메뉴 흐림 표시용. lazy 대상이 아닌 pageId 는 항상 "로드됨" 취급. */
+      const cfIsPageLoaded = (pg) => {
+        const kebab = PAGE_COMP_MAP[pg];
+        const entryCls = pg === 'dashboard' ? null : kebabToPascal(kebab || '');
+        return !entryCls || !LAZY_CLASS_FILES[entryCls] || !!loadedPages[pg];
+      };
 
       /* addTab — 독립화면(새창/URL 직접 접근 등)으로 열려 setup() 도중(readHash 경유) 바로
          호출되는 경로가 있다. 그 시점엔 파일 뒤쪽에서 선언되는 값이 아직 없을 수 있으므로,

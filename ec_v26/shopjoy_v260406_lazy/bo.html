@@ -253,23 +253,26 @@
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
        B4.x/B5.x: Page 관리 — 2026-08-30 lazy-load 실험(shopjoy_v260406_lazy 전용).
-       여기 있던 페이지 컴포넌트 <script> 181개를 제거하고 lib/app/boAppPageScripts.js
-       (pageId → 경로 맵)로 옮겨 navigate() 시점에 동적으로 불러온다(components/comp,
-       modals, disp 는 그대로 eager).
-       2026-08-30 2차: CmDashboardWidgetUtil(대시보드 설정 7개 화면 공용 유틸)과
-       ZdSimulBase/Comps(zd 시뮬레이션 16개 화면 공용 베이스)도 "무슨 화면이든 예외 없이
-       lazy" 원칙에 맞춰 여기서 빼고, 해당 pageId들의 동반 파일로 boAppPageScripts.js 에
-       옮겼다(예: cmDashboardMng 클릭 시 CmDashboardWidgetUtil.js 도 같이 로드).
-       아래 두 줄만 예외로 남긴다(즉시 필요한 첫 화면/미사용 등록이라 lazy 로 옮길 대상이 아님):
-       - 기본 진입 화면인 대시보드 3종(DashboardBoEc01~03) — 로그인 직후 거의 항상 보임.
-         굳이 lazy 로 옮기면 로그인 성공 첫 화면조차 네트워크 왕복을 기다려야 해서(전체
-         세션의 100%가 겪는 경로) 오히려 체감 속도가 나빠진다 — 의도적으로 계속 eager 유지.
-       - SyDashboardMng — 어느 pageId 에도 연결 안 된 미사용 등록(옮겨도 효과 없음)
+       여기 있던 페이지 컴포넌트 <script> 181개를 제거했다. 이제 "어떤 화면이 어떤 화면을
+       인라인 임베드하는지" 사람이 매핑 파일을 관리하지 않는다 — boAppBase.js 의
+       fnEnsurePageLoaded 가 진입 파일의 소스 텍스트를 fetch 로 읽어 <kebab-tag> 를 스캔해서
+       필요한 파일을 재귀적으로 자동 발견하고, loadModule()(네이티브 동적 import(), MFE
+       프로젝트 shopjoy_v260828_mfe 의 loadModule 과 같은 방식)로 실행한다
+       (components/comp, modals, disp 는 그대로 eager).
+       예외 4개만 eager 로 남긴다(자동탐지가 원리상 못 찾거나, 찾아도 lazy 로 옮기면 손해):
+       - 대시보드 3종(DashboardBoEc01~03) — 로그인 직후 100% 세션이 거치는 첫 화면이라
+         lazy 로 옮기면 그 첫 화면조차 네트워크 왕복을 기다려야 해서 오히려 손해.
+       - SyDashboardMng — 어느 pageId 에도 연결 안 된 미사용 등록(옮겨도 효과 없음).
+       - ZdSimulBase.js / CmDashboardWidgetUtil.js — 템플릿 태그가 아니라 순수 JS 호출
+         (window.ZdSimulBase.xxx(), cmDashWidgetUtil.xxx())로만 쓰여서 소스 텍스트를
+         스캔해도 태그가 안 보인다 — 자동탐지가 원리상 발견할 수 없는 유일한 예외 케이스.
   ═══════════════════════════════════════════════════════════════════════════ -->
   <script src="pages/bo/DashboardBoEc01.js"></script>
   <script src="pages/bo/DashboardBoEc02.js"></script>
   <script src="pages/bo/DashboardBoEc03.js"></script>
   <script src="pages/bo/sy/SyDashboardMng.js"></script>
+  <script src="pages/bo/zd/ZdSimulBase.js"></script>
+  <script src="pages/bo/ec/cm/CmDashboardWidgetUtil.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
        B99: 메인 앱 부트스트랩 (반드시 마지막)
@@ -277,9 +280,10 @@
   <!-- ■ B99: Main App Bootstrap ■ -->
   <script src="lib/app/boAppMenuData.js"></script>
   <script src="lib/app/boAppCompPage.js"></script>
-  <!-- 2026-08-30 lazy-load 실험: pageId → 지연 로드 스크립트 경로 맵. boAppBase.js 의
-       navigate() 가 이 맵을 보고 처음 여는 화면만 동적으로 <script> 를 추가한다. -->
-  <script src="lib/app/boAppPageScripts.js"></script>
+  <!-- 2026-08-30 lazy-load 2차 개정: 클래스명 → 스크립트 경로 맵(자동탐지 로더 전용).
+       boAppBase.js 의 fnEnsurePageLoaded 가 진입 클래스부터 재귀적으로 <kebab-tag> 를
+       스캔해 이 맵과 대조하면서 필요한 파일을 스스로 찾아낸다. -->
+  <script src="lib/app/boAppLazyClasses.js"></script>
   <script src="lib/app/boAppFunc.js"></script>
   <script src="lib/app/boAppComp.js"></script>
   <script src="lib/app/boAppBase.js"></script>

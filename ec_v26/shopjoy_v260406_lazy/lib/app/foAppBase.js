@@ -148,8 +148,68 @@
       return { prod, color, size, qty };
     };
 
+    /* ── B4/B5 페이지 lazy-load 엔진 (2026-08-30, bo.html/boAppBase.js 와 동일 원리) ──
+       FO 는 BO 의 PAGE_COMP_MAP 같은 pageId→kebab 매핑 테이블이 없어 FO_PAGE_TO_CLASS 를
+       lib/app/foAppLazyClasses.js 에 별도로 둔다. 등록명(태그 기준)과 window 전역명이 다른
+       페이지도 있어(예: <blog-page> 태그 → 등록명 BlogPage → 실제 파일은 window.Blog) 그 차이는
+       FO_REG_TO_GLOBAL 로 흡수한다. "누가 누구를 임베드하는지"는 관리하지 않는다 — 진입 파일의
+       소스 텍스트를 fetch 로 읽어 <kebab-tag> 를 재귀적으로 스캔해 자동 발견한다. */
+    const loadedPages = reactive({}); // { [pageId]: true } — 로드 완료 여부(메뉴 흐림 해제에도 사용)
+    const loadedClasses = reactive({}); // { [className]: true } — page 가 아닌 단위(Login 모달 등)
+    const FO_LAZY_CLASS_FILES = window.FO_LAZY_CLASS_FILES || {};
+    const FO_REG_TO_GLOBAL = window.FO_REG_TO_GLOBAL || {};
+    const FO_PAGE_TO_CLASS = window.FO_PAGE_TO_CLASS || {};
+    const kebabToPascal = (k) => k.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+    const loadModule = (src) => import(src); // shopjoy_v260828_mfe 의 loadModule() 과 동일 개념(네이티브 동적 import)
+    const _foScanCache = {}; // { [src]: Promise<string[]> }
+    const fnScanForDeps = (src) => {
+      if (_foScanCache[src]) return _foScanCache[src];
+      _foScanCache[src] = fetch(src).then(async (res) => {
+        if (!res.ok) throw new Error('화면 스크립트를 찾을 수 없습니다: ' + src);
+        const text = await res.text();
+        const tags = [...new Set([...text.matchAll(/<([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\b/g)].map((m) => m[1]))];
+        return tags.map(kebabToPascal).filter((cls) => FO_LAZY_CLASS_FILES[cls]);
+      });
+      return _foScanCache[src];
+    };
+    const fnCollectClasses = async (cls, collected, visited) => {
+      if (visited.has(cls)) return;
+      visited.add(cls);
+      const src = FO_LAZY_CLASS_FILES[cls];
+      if (!src || collected.has(cls)) return;
+      collected.add(cls);
+      const depClasses = await fnScanForDeps(src);
+      await Promise.all(depClasses.map((dc) => fnCollectClasses(dc, collected, visited)));
+    };
+    /* fnEnsureClassLoaded — page 단위가 아닌 개별 클래스(예: Login 모달)를 트리거 시점에 로드 */
+    const fnEnsureClassLoaded = async (entryCls) => {
+      if (!entryCls || loadedClasses[entryCls]) return;
+      if (!FO_LAZY_CLASS_FILES[entryCls]) { loadedClasses[entryCls] = true; return; }
+      const collected = new Set();
+      const visited = new Set();
+      await fnCollectClasses(entryCls, collected, visited);
+      await Promise.all([...collected].map(async (cls) => {
+        const globalName = FO_REG_TO_GLOBAL[cls] || cls;
+        if (!window[globalName]) await loadModule(FO_LAZY_CLASS_FILES[cls]);
+        if (window[globalName]) app.component(cls, window[globalName]);
+        loadedClasses[cls] = true;
+      }));
+      loadedClasses[entryCls] = true;
+    };
+    const fnEnsurePageLoaded = async (pg) => {
+      if (loadedPages[pg]) return;
+      const entryCls = FO_PAGE_TO_CLASS[pg];
+      if (!entryCls) { loadedPages[pg] = true; return; } // eager 페이지(home/prodList/prodView/error*) 또는 미등록
+      await fnEnsureClassLoaded(entryCls);
+      loadedPages[pg] = true;
+    };
+    const cfIsPageLoaded = (pg) => {
+      const entryCls = FO_PAGE_TO_CLASS[pg];
+      return !entryCls || !FO_LAZY_CLASS_FILES[entryCls] || !!loadedPages[pg];
+    };
+
     /* navigate */
-    const navigate = (id, opts = {}) => {
+    const navigate = async (id, opts = {}) => {
       if (opts && opts.replace) replaceNextHash = true;
       if (opts && opts.instantOrder !== undefined) instantOrder.value = opts.instantOrder;
       else if (id !== 'order') instantOrder.value = null;
@@ -163,6 +223,12 @@
       else viewEditId.value = null;
       if (uiState.mobileOpen) uiState.mobileOpen = false;
       if (!fnCanEnterPage(id)) { return; }   // 마이페이지는 로그인 필요
+      try {
+        await fnEnsurePageLoaded(id);
+      } catch (e) {
+        showToast('화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error');
+        return;
+      }
       page.value = id;
       window.scrollTo(0, 0);
       try { document.querySelector('.layout-main')?.scrollTo(0, 0); } catch (e) {}
@@ -544,7 +610,11 @@
     const auth = window.foAuth.state;
 
     /* onShowLogin */
-    const onShowLogin = () => { uiState.showLogin = true; };
+    const onShowLogin = () => {
+      fnEnsureClassLoaded('Login')
+        .then(() => { uiState.showLogin = true; })
+        .catch((e) => showToast('로그인 화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error'));
+    };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
 
     /* fnCanEnterPage — 마이페이지는 로그인 상태에서만 진입 허용.
@@ -592,13 +662,20 @@
       const hasPageParam = rawQuery.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawQuery) : null;
 
+      let hPage = null;
       if (hasPageParam) {
-        const hPage = params.get('page');
-        if (hPage && validPages.includes(hPage) && fnCanEnterPage(hPage)) page.value = hPage;
+        hPage = params.get('page');
+        if (hPage && validPages.includes(hPage) && fnCanEnterPage(hPage)) {
+          // lazy 페이지일 수 있어 로드 완료 후 page.value 전환(fire-and-forget) — 아래 동반 상태
+          // 복원(instantOrder/cartIds/viewEditId)은 page.value 가 아닌 hPage 기준으로 미리 처리한다
+          fnEnsurePageLoaded(hPage).then(() => { page.value = hPage; }).catch((e) => {
+            showToast('화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error');
+          });
+        }
         else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
       }
-      /* 바로구매 URL 파라미터 복원 */
-      if (page.value === 'order' && hasPageParam) {
+      /* 바로구매 URL 파라미터 복원 — hPage 기준(page.value 는 아직 비동기 반영 전일 수 있음) */
+      if (hPage === 'order' && hasPageParam) {
         instantOrder.value = _instantOrderFromParams(params);
         const cids = params.get('cartIds');
         if (cids) cartIds.splice(0, cartIds.length, ...cids.split(',').filter(Boolean));
@@ -626,8 +703,12 @@
         const rawQuery = String(window.location.search || '').replace(/^\?/, '');
         const params = new URLSearchParams(rawQuery);
         const hPage = params.get('page');
-        // 동일 값 set 으로 인한 reactive 무한 갱신 방지
-        if (hPage && validPages.includes(hPage) && page.value !== hPage && fnCanEnterPage(hPage)) page.value = hPage;
+        // 동일 값 set 으로 인한 reactive 무한 갱신 방지. lazy 페이지일 수 있어 로드 완료 후 전환
+        if (hPage && validPages.includes(hPage) && page.value !== hPage && fnCanEnterPage(hPage)) {
+          fnEnsurePageLoaded(hPage).then(() => { page.value = hPage; }).catch((e) => {
+            showToast('화면을 불러오지 못했습니다: ' + (e && e.message || e), 'error');
+          });
+        }
         else if (hPage && !validPages.includes(hPage) && page.value !== 'notFound') page.value = 'notFound';
         if (hPage === 'order') {
           instantOrder.value = _instantOrderFromParams(params);
@@ -767,6 +848,7 @@
       config: window.SITE_CONFIG,
       auth, uiState, onShowLogin, onLogout,
       foInitReady,
+      loadedPages, cfIsPageLoaded, fnEnsurePageLoaded, fnEnsureClassLoaded,
       foHomeComp, foProdListComp, foProdViewComp,
       foApiLogs, showApiLog, showSettings, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
@@ -812,6 +894,7 @@
     :app-auth="auth" :on-app-show-login="onShowLogin" :on-app-logout="onLogout"
     :app-show-settings="showSettings" :app-show-api-log="showApiLog"
     :app-api-logs="foApiLogs" :app-api-toast="apiToastEnabled"
+    :is-page-loaded="cfIsPageLoaded"
     @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-toggle-mobile="toggleMobileMenu"
     @modu-fo-toggle-settings="showSettings=!showSettings"
     @modu-fo-toggle-api-log="onToggleApiLog"
@@ -823,6 +906,7 @@
       v-show="cfShowSidebar || uiState.mobileOpen"
       :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
       :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
+      :is-page-loaded="cfIsPageLoaded"
       @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
