@@ -25,6 +25,10 @@ public class MdSgDownloadHistDto {
         private String zipFileNm;        // ZIP 파일명 스냅샷
         private Integer ddlCount;        // DDL 탭 수
         private Integer fileCount;       // 생성 파일 수
+        private String attachId;         // ZIP 첨부ID(재다운로드용, 2026-08-30)
+        private String zipUrl;           // ZIP 다운로드 URL(재다운로드용, 2026-08-30)
+        private String selectedStacks;   // 선택 언어/스택 라벨 목록(소스젠 결과일 때만, 2026-08-30)
+        private String genMemo;          // 연결된 생성 이력의 보관 메모 스냅샷(소스젠 결과일 때만, 2026-08-30)
         private String regBy;            // 등록자 (다운로드한 FO 회원ID)
         private LocalDateTime regDate;   // 등록일 (=다운로드 일시)
         private String memberNm;         // 다운로드한 회원명 (조인)

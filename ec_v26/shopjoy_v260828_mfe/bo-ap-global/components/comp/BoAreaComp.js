@@ -2949,9 +2949,11 @@ i
  * (:show-actions="false" + 화면이 직접 그리는) 화면들이 거의 동일한 13줄을 반복 작성하던 것을
  * 이 컴포넌트로 분리했다 — BoFormArea 도 내부적으로 이 컴포넌트를 사용한다(§ 아래).
  *
- * 표준(정책서 §Dtl 보기/편집모드 표준 버튼, 2026-08-22 확정):
+ * 표준(정책서 §Dtl 보기/편집모드 표준 버튼, 2026-08-30 개정 — 패턴 A):
  *   보기모드: [수정][삭제(showDelete)][닫기]
- *   편집모드: [저장][삭제(showDelete, 기존만)][취소(showCancel, 신규는 숨김)][닫기]
+ *   편집모드: [저장][취소(showCancel, 신규는 숨김)][닫기] — [삭제]는 보기모드에만 있다
+ *   (2026-08-22엔 편집모드에도 [삭제]가 있었으나, 저장/취소 옆 오조작 위험 때문에 제거하고
+ *   "지우고 싶으면 편집 들어가지 말고 보기에서 지우도록" 통일했다.)
  *
  * 사용 예 (Dtl 화면에서 bo-form-area 뒤에 단독 배치 — 표준 권장 패턴, 2026-08-25):
  *   <bo-form-actions v-if="active" :readonly="cfReadonly" :is-new="cfIsNew"
@@ -2971,9 +2973,9 @@ i
 window.BoFormActions = {
   name: 'BoFormActions',
   props: {
-    readonly:     { type: Boolean, default: false },  // true=보기모드([수정][삭제][닫기]), false=편집모드([저장][삭제][취소][닫기])
+    readonly:     { type: Boolean, default: false },  // true=보기모드([수정][삭제][닫기]), false=편집모드([저장][취소][닫기]) — 삭제는 보기모드 전용(2026-08-30)
     compact:      { type: Boolean, default: false },  // true=btn-sm
-    showDelete:   { type: Boolean, default: true },   // [삭제] 노출 여부(신규 등록 등 삭제 대상 없을 때 false)
+    showDelete:   { type: Boolean, default: true },   // 보기모드 [삭제] 노출 여부(신규 등록 등 삭제 대상 없을 때 false). 편집모드엔 영향 없음(항상 미노출)
     showCancel:   { type: Boolean, default: true },   // 편집모드 [취소] 노출 여부(신규 등록은 되돌아갈 보기화면이 없어 false)
     isNew:        { type: Boolean, default: false },  // true 면 showDelete/showCancel 을 강제로 false 로 덮음(둘 다 !cfIsNew 로 주는
                                                          // 반복이 실사용의 다수라 축약용으로 추가 — :is-new="cfIsNew" 한 줄로 대체)
@@ -3031,11 +3033,11 @@ window.BoFormActions = {
     </button>
   </template>
   <template v-else>
+    <!-- 2026-08-30: 패턴 A 확정 — 편집모드 [삭제] 제거. 보기모드에만 [삭제] 유지(cfShowDelete
+         는 그쪽 분기에서만 참조). 편집 중엔 저장/취소와 나란히 두면 오조작 위험이 있어, "지우고
+         싶으면 편집 들어가지 말고 보기에서 지우도록" 통일(정책서 §Dtl 보기/편집모드 표준 버튼). -->
     <button class="btn btn_save" :class="compact?'btn-sm':''" :style="btnStyle" :disabled="saveDisabled" :title="saveTitle" @click="fire('save')">
       {{ saveLabel }}
-    </button>
-    <button v-if="cfShowDelete" class="btn btn_delete" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('delete')">
-      {{ deleteLabel }}
     </button>
     <button v-if="cfShowCancel" class="btn btn_cancel" :class="compact?'btn-sm':''" :style="btnStyle" @click="fire('cancel')">
       {{ cancelLabel }}

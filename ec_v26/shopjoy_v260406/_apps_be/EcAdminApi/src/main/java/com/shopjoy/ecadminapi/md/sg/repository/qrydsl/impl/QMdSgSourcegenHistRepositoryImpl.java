@@ -46,6 +46,7 @@ public class QMdSgSourcegenHistRepositoryImpl implements QMdSgSourcegenHistRepos
                         mdSgSourcegenHist.zipUrl,            // ZIP 다운로드 URL
                         mdSgSourcegenHist.genMemo,           // 생성 메모
                         mdSgSourcegenHist.selectedStacks,    // 선택된 언어/스택 라벨 목록
+                        mdSgSourcegenHist.downloadCount,     // 다운로드 횟수
                         mdSgSourcegenHist.ddlSnapshotJson,   // DDL 탭 스냅샷(JSON)
                         mdSgSourcegenHist.useYn,             // 사용여부
                         projectEx.projectNm.as("projectNm"),      // 소스젠명 (조인)

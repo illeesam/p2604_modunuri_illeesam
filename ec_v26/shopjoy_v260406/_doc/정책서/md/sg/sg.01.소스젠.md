@@ -179,18 +179,62 @@ DDL 입력창 아래 `[샘플]` 버튼으로 예제를 바로 넣어볼 수 있�
 (`fnZipPath()` — 원본 `bdZipPath` 이식).
 
 ```
-sourcegen_be_jpa/src_jpa/main/java/{패키지경로}/domain/Xxx.java
-sourcegen_be_mybatis/src_mybatis/main/java/{패키지경로}/...
-sourcegen_be_mybatis/src_mybatis/main/resources/mapper/XxxMapper.xml
-sourcegen_fe_vue3/frontend-vue3/src/views/XxxView.vue
-sourcegen_full_nextjs15/fullstack-nextjs/...
-ddl/{테이블명}.sql          ← DDL 은 루트 (전 스택 공용 메타)
-_misc/...                   ← 분류 안 된 파일 (fallback)
+be_jpa/src/main/java/{패키지경로}/domain/Xxx.java
+be_mybatis/src/main/java/{패키지경로}/...
+be_mybatis/src/main/resources/mapper/XxxMapper.xml
+be_nestjs10/src/main.ts            ← 자체 src/ + 루트 설정파일(package.json 등) 그대로 유지
+fe_vue3/src/views/XxxView.vue
+fe_vue3_cdn/src/with-common/...
+fe_vue3_cdn/src/standalone/...
+fe_react_native/App.tsx            ← 루트 파일
+fe_react_native/src/screens/...    ← 자체 src/
+fe_flutter/pubspec.yaml            ← 루트 파일
+fe_flutter/lib/main.dart           ← Flutter 고유 lib/ 그대로(강제 src/ 아님)
+full_nextjs15/app/...              ← Next.js 고유 app/ 그대로(강제 src/ 아님)
+ddl/{테이블명}.sql                 ← DDL 은 루트 (전 스택 공용 메타)
+_misc/...                          ← 분류 안 된 파일 (fallback)
 ```
 
 > `SG_ZIP_PATHS` 배열은 **긴 prefix 를 먼저** 둬야 한다.
 > `frontend_react_cdn_standalone/` 이 `frontend_react/` 보다 뒤에 있으면
 > 앞 규칙에 먼저 걸려 CDN 판이 일반 React 폴더로 잘못 들어간다.
+>
+> **2026-08-30 (src 통일, 2차 — 최종)**: 스택마다 제각각이던 소스 폴더명(`src_jpa`/`src_mybatis`/
+> `src_python`/`src_csharp_efcore`/`src_csharp_dapper`/`src_nestjs`/`src_expressjs`,
+> `frontend-vue3/`, `frontend-react/` 등)을 `src` 하나로 통일하는 1차 작업 중
+> `be_svelte/src/src/App.svelte` 처럼 **경로가 겹치는 버그**가 발견됐다 — nestjs/expressjs/
+> svelte/react_native 는 생성기 자체가 이미 파일 절반을 자기 `src/` 폴더 밑에 만들고
+> (`main.ts`, `App.svelte` 등) 나머지 절반(`package.json` 등)은 프로젝트 루트에 두는 구조라,
+> 여기서 또 `src/` 로 감싸면 이미 `src/` 가 붙은 파일은 겹치고 루트여야 할 설정파일까지
+> `src/` 안으로 잘못 들어갔다. `flutter`(`lib/`)·`android`(`app/src/...`)·`ios`(`Sources/`)·
+> `csharp`·`python`·`nuxt`/`nextjs`(`app/`·`server/`·`lib/`)도 전부 자기 스택 고유의 올바른
+> 폴더 구조 + 루트 설정파일을 이미 갖고 있어 똑같은 문제였다 — 이 12개 스택은 **`src` 통일
+> 대상에서 제외**하고 모듈 폴더만 감싼 원래 형태로 되돌렸다(생성기의 내부 경로가 그대로
+> 최종 경로가 됨). `src` 통일은 자체 서브폴더 구조/루트파일이 없는 것만 안전하다 — 단일
+> 파일만 나오는 CDN 계열(Vue3 CDN with-common/standalone, React/Svelte/PyScript CDN
+> standalone)과, 애초에 flat 하게 파일 몇 개만 나오는 Vue3 SFC/React. Vue3 CDN 만 같은 모듈
+> 안에 with-common/standalone 두 변형이 공존해 `src` 하나로 합칠 수 없으므로 `src/with-common/`,
+> `src/standalone/` 로 한 단계 더 나눠 유지한다.
+>
+> **2026-08-30 (모듈 폴더 접두어 제거)**: 모든 모듈 폴더 앞의 `sourcegen_` 접두어도
+> 제거했다(예: `sourcegen_be_jpa` → `be_jpa`) — ZIP 자체가 이미 소스젠 산출물이라는 게
+> 자명해서 폴더마다 반복할 필요가 없었다.
+
+### 6-1. ZIP 다운로드 파일명
+
+`fnZipName()` — `sourcegen_{id + projectId}_cre{생성시각 yyyyMMdd_HHmmss}.zip`
+(`projectId` 가 없는 저장 전 신규 프로젝트는 `id...` 부분을 통째로 생략).
+
+```
+sourcegen_id260830080112ab34_cre20260830_085238.zip   ← 저장된 프로젝트
+sourcegen_cre20260830_085238.zip                       ← 저장 전(신규) 프로젝트
+```
+
+> **2026-08-30**: 예전엔 `sourcegen_{프로젝트명}_{현재시각}.zip` 형식이었는데, 프로젝트명이
+> 자동생성 규칙(`fnFillAutoName`)으로 이미 `테이블명_YYYYMMDD_hhmm` 처럼 타임스탬프를 포함하고
+> 있어 뒤에 또 현재시각이 붙으면 `sourcegen_sy_alarm_20260830_0801_20260830_085238.zip` 처럼
+> 시각이 두 번 겹쳐 보였다 — 사람이 바꿀 수 있는 프로젝트명 대신 불변인 `projectId` 를 쓰고,
+> 시각 앞에 `cre`(생성시각)를 붙이는 형식으로 정리했다.
 
 ---
 

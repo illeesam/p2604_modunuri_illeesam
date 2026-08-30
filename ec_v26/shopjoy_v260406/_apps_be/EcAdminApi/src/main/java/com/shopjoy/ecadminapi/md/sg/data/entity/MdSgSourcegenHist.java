@@ -86,4 +86,8 @@ public class MdSgSourcegenHist extends BaseEntity {
     @Column(name = "use_yn", length = 1)
     @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
+
+    @Comment("이 생성 결과 ZIP 을 [다운로드] 로 내려받은 횟수(2026-08-30)")
+    @Column(name = "download_count")
+    private Integer downloadCount;
 }

@@ -669,14 +669,15 @@ Vue `app.component('EcOrderMng', window.EcOrderMng)` → 템플릿에서 `<ec-or
 
 목록 행의 "수정" 클릭 → Mng 하단에 Dtl 인라인 임베드. `loadDetail(id)` / `closeDetail()` / `inlineNavigate`로 분리 제어. 탭/뷰모드는 `window._ec{X}DtlState`로 행 전환에도 유지.
 
-### Dtl 보기/편집모드 표준 버튼 + 독립 새창(embed) 지원 ⭐⭐ (2026-08-22 확정)
+### Dtl 보기/편집모드 표준 버튼 + 독립 새창(embed) 지원 ⭐⭐ (2026-08-30 개정 — 패턴 A)
 
 **표준 버튼 구성**:
-- **보기모드**(`readonly`/`dtlMode==='view'`): **[수정][삭제][닫기]** 3개 (기존 [수정][닫기] 2개에서 확장 — 보기 상태에서도 삭제를 바로 하도록 통일)
-- **편집모드**(`!readonly`/`dtlMode==='edit'`, 신규 등록 포함): **[저장][삭제(기존 레코드만)][취소][닫기]** — [취소]는 편집을 취소하고 보기로 되돌리고, **[닫기]는 모드 무관 무조건 닫는다**(편집 중이라고 [닫기]가 사라지거나 취소와 같은 동작을 하면 안 됨)
-- `bo-form-area`(공용 컴포넌트, `components/comp/BoAreaComp.js`)가 `:readonly`/`:show-actions`만 주면 이 버튼 세트를 자동 렌더한다. `@save`/`@cancel`/`@edit`/`@close`/`@delete` 5개 이벤트 전부 연결 필수(연결 안 하면 버튼은 보여도 클릭 시 조용히 무시됨). 신규 등록(레코드 없음)에는 `:show-delete="false"`로 삭제 버튼 숨김.
-- `bo-form-area`를 안 쓰고 버튼을 직접 그리는 화면(예: `MbMemberDtl.js`)도 동일하게 4-세트(보기 3개/편집 4개)를 수동으로 맞춰야 한다.
-- **신규 등록 상태에는 [취소] 불필요** ⭐ (2026-08-22) — 되돌아갈 "기존 값"이 없으므로 신규 등록 편집 화면은 [저장][닫기] 2개만 노출. `bo-form-area`에 `showCancel` prop(기본 `true`) 추가 — Dtl 쪽에서 `:show-cancel="!cfIsNew"` 로 신규일 때만 꺼서 사용. (`showDelete` 도 동일하게 신규일 때 `:show-delete="!cfIsNew"` 로 끄는 것이 표준 — 저장 전 레코드는 삭제할 대상이 없음.)
+- **보기모드**(`readonly`/`dtlMode==='view'`): **[수정][삭제][닫기]** 3개
+- **편집모드**(`!readonly`/`dtlMode==='edit'`, 신규 등록 포함): **[저장][취소][닫기]** — **[삭제]는 편집모드에 없다.** [취소]는 편집을 취소하고 보기로 되돌리고, **[닫기]는 모드 무관 무조건 닫는다**(편집 중이라고 [닫기]가 사라지거나 취소와 같은 동작을 하면 안 됨)
+- **2026-08-30 변경 이유(패턴 A 확정)**: 2026-08-22엔 편집모드에도 [삭제]가 있었다([저장][삭제][취소][닫기] 4개). [저장]/[취소] 옆에 [삭제]가 나란히 있으면 편집 중 오조작(저장/삭제 버튼 혼동) 위험이 있어 — "지우고 싶으면 편집 들어가지 말고 보기에서 지우도록" 통일. 삭제는 보기모드에서만 하도록 확정.
+- `bo-form-area`(공용 컴포넌트, `components/comp/BoAreaComp.js`)가 `:readonly`/`:show-actions`만 주면 이 버튼 세트를 자동 렌더한다(내부적으로 `BoFormActions`(같은 파일) 위임 — 편집모드 [삭제] 제거는 그 컴포넌트 한 곳만 고치면 `bo-form-area`를 쓰는 BO Dtl 전체에 자동 반영됨). `@save`/`@cancel`/`@edit`/`@close`/`@delete` 5개 이벤트 전부 연결 필수(연결 안 하면 버튼은 보여도 클릭 시 조용히 무시됨). 신규 등록(레코드 없음)에는 `:show-delete="false"`로 삭제 버튼 숨김.
+- `bo-form-area`를 안 쓰고 버튼을 직접 그리는 화면(예: `MbMemberDtl.js`, `MdSgSourcegenPage.js`, `MdCbCobanulPage.js`, `DpDispWidgetDtl.js`, `DpDispWidgetLibDtl.js`)도 동일하게 맞춰야 한다 — **보기 3개([수정][삭제][닫기]) / 편집 2~3개([저장][취소][닫기], 신규면 [취소] 생략)**.
+- **신규 등록 상태에는 [취소] 불필요** ⭐ (2026-08-22) — 되돌아갈 "기존 값"이 없으므로 신규 등록 편집 화면은 [저장][닫기] 2개만 노출. `bo-form-area`에 `showCancel` prop(기본 `true`) 추가 — Dtl 쪽에서 `:show-cancel="!cfIsNew"` 로 신규일 때만 꺼서 사용. `showDelete`는 보기모드에만 영향을 주며(편집모드는 항상 미노출), 신규일 때 `:show-delete="!cfIsNew"` 로 끄는 것이 표준 — 저장 전 레코드는 삭제할 대상이 없음.
 
 **독립 새창을 신규 등록 모드로 열기 — `dtlMode=new` URL 파라미터** ⭐ (2026-08-22):
 - 목록 화면의 `[+ 신규]` 버튼도 Ctrl+클릭/휠클릭 시 새창으로 열리게 한다. 이때 `id` 가 없으므로 `standaloneDtlMode` 를 추론(id 유무)에만 맡기면 애매해질 수 있어, 명시적으로 `openNewWindow(pgId, id, dtlMode)` 세 번째 인자에 `'new'` 를 넘긴다.
@@ -887,12 +888,16 @@ Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dli
   - `:orientation` (String) — `'horizontal'`(기본) 또는 `'vertical'` (탭 세로 배치)
 - Emits: `@tab-select="id => ..."`, `@mode-select="m => ..."`
 - 탭 정의는 **`computed` 금지 → `reactive([...])` 사용**. 동적 카운트는 `get count() { return list.length; }` getter 패턴
+- ⛔ **단, 그 리스트가 서버사이드 페이징 대상이면 `list.length` 대신 `pager.pageTotalCount` 를 써야 한다** (2026-08-30 추가) —
+  서버사이드 페이징 도입 후 `list`(reactive 배열/ref)는 "현재 페이지에 실린 행"만 담으므로(`pageSize` 개, 예: 10개),
+  `.length` 는 항상 페이지 크기 근처의 틀린 값을 보여준다("전체 27건인데 탭 배지는 10"). 페이징이 없는(전체 로드) 리스트만 `.length` 사용.
 - 변수명: 정적 탭 정의는 `tabs` (cf prefix 없음), 여러 reactive 값 조합으로만 가능한 경우만 `cfTabs`/`storeTabs` 등 computed
 - 예시:
 ```js
 const tabs = reactive([
   { id: 'info',  label: '기본정보', icon: '📋' },
-  { id: 'items', label: '배송항목', icon: '📦', get count() { return dlivItems.length; } },
+  { id: 'items', label: '배송항목', icon: '📦', get count() { return dlivItems.length; } },     // 페이징 없음(전체 로드) → .length OK
+  { id: 'hist',  label: '생성 이력', icon: '🕒', get count() { return histPager.pageTotalCount; } }, // 페이징 있음 → pager 값 사용
   { id: 'hist',  label: '회원 이력', icon: '🕒', get visible() { return !cfIsNew.value && !!form.memberId; } },
 ]);
 // template:

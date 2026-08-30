@@ -36,6 +36,12 @@
 /* 이력 목록의 소스젠명 — 클릭하면 해당 소스젠으로 이동 */
 .sg-hist-link { color:#e0466c; cursor:pointer; }
 .sg-hist-link:hover { text-decoration:underline; }
+/* 생성 이력 [다운로드] — 2026-08-30: 관리열의 다른 버튼(불러오기/삭제)과 달리 박스형 버튼이 아닌
+   [생성결과 다운로드 이력]의 href 링크와 동일한 텍스트 링크 느낌으로 보이게. <button> 에 적용되므로
+   브라우저 기본 버튼 테두리/배경/패딩을 리셋한다. */
+.sg-hist-table .sg-hist-link { text-decoration:underline; background:none; border:none; padding:0;
+  margin:0 2px; font:inherit; font-size:10.5px; }
+.sg-hist-table .sg-hist-link:hover { color:#c22f56; }
 
 /* ── 목록: 카드형 ── */
 .sg-card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
@@ -143,8 +149,15 @@
 .sg-ddl-tree { flex:0 0 240px; min-width:0; border:1px solid var(--border,#eaeaea); border-radius:10px;
   background:#fafafa; max-height:660px; overflow-y:auto; display:flex; flex-direction:column; }
 .sg-ddl-editor { flex:1; min-width:0; }
-.sg-ddl-tree-toolbar { display:flex; gap:5px; padding:8px; border-bottom:1px solid var(--border,#eee);
+/* 2026-08-30: 트리 폭이 좁아(240px) 버튼 3개+체크박스가 한 줄에 다 안 들어오므로 2줄 구성으로
+   변경 — 첫 줄(버튼행)은 가로 flex 그대로, 체크박스(sg-thumb-chk)는 둘째 줄로 내려간다. */
+.sg-ddl-tree-toolbar { display:flex; flex-direction:column; gap:6px; padding:8px; border-bottom:1px solid var(--border,#eee);
   position:sticky; top:0; background:#fafafa; z-index:2; }
+.sg-ddl-tree-toolbar-row { display:flex; gap:5px; align-items:center; }
+/* 2026-08-30: 좌측 트리(DDL 입력 대상 테이블) 총 개수. 버튼행(첫 줄) 우측 끝에 뒀더니 버튼
+   3개에 밀려 잘려 보여서 둘째 줄(체크박스 행) 맨 앞으로 이동 — margin-left:auto 제거(더 이상
+   행 끝으로 밀 필요 없이 맨 앞에 그대로 둔다). */
+.sg-ddl-tree-count { font-size:11px; color:var(--text-secondary,#999); white-space:nowrap; }
 .sg-btn-xs { height:24px; padding:0 8px; font-size:11px; }
 .sg-tree-new-folder { padding:8px; border-bottom:1px solid var(--border,#eee); display:flex;
   flex-direction:column; gap:6px; background:rgba(201,169,110,0.06); }
@@ -160,9 +173,12 @@
 .sg-tree-row.active { background:var(--accent,#c9a96e); color:#fff; font-weight:700; }
 .sg-tree-row.active .sg-tree-mini-btn { color:#fff; }
 .sg-tree-row-folder { font-weight:600; color:var(--text-primary,#444); }
-.sg-tree-toggle { flex:0 0 auto; width:11px; color:#999; font-size:9px; }
+/* 2026-08-30: 접기/펼치기 화살표가 너무 작아 보인다는 요청으로 확대(9px→14px) + 색 진하게 */
+.sg-tree-toggle { flex:0 0 auto; width:14px; color:#777; font-size:14px; font-weight:700; line-height:1; }
 .sg-tree-icon { flex:0 0 auto; font-size:12px; }
 .sg-tree-label { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+/* 2026-08-30: 좌측 DDL 입력 트리 — 폴더 옆 하위 테이블(하위 폴더까지 재귀 포함) 개수 표시 */
+.sg-tree-count { flex:0 0 auto; font-size:10px; color:var(--text-muted,#aaa); font-weight:400; }
 .sg-tree-actions { flex:0 0 auto; display:none; gap:2px; }
 .sg-tree-row:hover .sg-tree-actions { display:flex; }
 .sg-tree-mini-btn { border:none; background:transparent; cursor:pointer; font-size:11px;
@@ -186,16 +202,27 @@
 .sg-opt-row select:disabled { background:#f6f6f7; color:var(--text-secondary,#777); border-color:#e6e6e6; }
 
 /* DDL 입력 — 코드 편집기 느낌(다크 배경 + 모노스페이스). 생성 결과 뷰어(.sg-code-pane, Prism 다크 테마)와
-   톤을 맞춰서 "지금 SQL 코드를 다루고 있다"는 게 한눈에 느껴지게 한다(2026-08-25). */
-.sg-ddl-textarea { width:100%; min-height:420px; resize:vertical; padding:13px 15px;
-  border:1px solid #3a3a4a; border-radius:10px; background:#1e1e2e; box-sizing:border-box;
-  color:#cdd3de;
-  font-family:'Consolas','Monaco','D2Coding',monospace; font-size:12.5px; line-height:1.7; tab-size:4;
-  transition:border-color .15s, box-shadow .15s; }
-.sg-ddl-textarea::placeholder { color:#6b7280; }
-.sg-ddl-textarea:focus { border-color:var(--accent,#c9a96e); outline:none;
-  box-shadow:0 0 0 3px rgba(201,169,110,0.25); }
-.sg-ddl-textarea:read-only { background:#f6f6f7; color:var(--text-secondary,#777); border-color:#e6e6e6; }
+   톤을 맞춰서 "지금 SQL 코드를 다루고 있다"는 게 한눈에 느껴지게 한다(2026-08-25).
+   2026-08-30: 편집모드도 Prism 컬러가 보이게 오버레이 에디터 방식으로 변경 — 이제 실제
+   <textarea>(.sg-ddl-textarea)는 안 쓰고 삭제. 구조: .sg-ddl-edit-wrap(테두리·배경 담당,
+   position:relative) 안에 .sg-ddl-code(<pre>, 항상 렌더 — 색 담당)와 편집모드에서만 추가되는
+   .sg-ddl-textarea-overlay(투명 <textarea>, 입력 담당)가 position:absolute; inset:0; 로 완전히
+   겹친다. 두 레이어는 font-size/line-height/padding/tab-size 가 한 글자라도 다르면 커서와
+   글자 줄이 어긋나므로 반드시 같은 값을 쓴다(padding-left 47.5px = Prism line-numbers 플러그인의
+   기본 3.8em × 이 폰트사이즈 12.5px). */
+.sg-ddl-edit-wrap { position:relative; min-height:420px; max-height:640px; resize:vertical; overflow:auto;
+  border:1px solid #3a3a4a; border-radius:10px; background:#1e1e2e; }
+.sg-ddl-edit-wrap .sg-ddl-code { position:absolute; inset:0; pointer-events:none; border-radius:0; }
+.sg-ddl-code { margin:0 !important; overflow:auto; border-radius:10px;
+  font-size:12.5px !important; line-height:1.5 !important; tab-size:4; }
+.sg-ddl-code code { font-family:'Consolas','Monaco','D2Coding',monospace; font-size:12.5px !important; line-height:1.5 !important; }
+.sg-ddl-textarea-overlay { position:absolute; inset:0; margin:0; border:none; border-radius:0;
+  box-sizing:border-box; resize:none; background:transparent; color:transparent; caret-color:#fff;
+  padding:12.5px 12.5px 12.5px 47.5px; font-family:'Consolas','Monaco','D2Coding',monospace;
+  font-size:12.5px; line-height:1.5; tab-size:4; white-space:pre; overflow:auto; }
+.sg-ddl-textarea-overlay::placeholder { color:#6b7280; }
+.sg-ddl-textarea-overlay:focus { outline:none; box-shadow:inset 0 0 0 2px rgba(201,169,110,0.4); }
+.sg-ddl-textarea-overlay::selection { background:rgba(201,169,110,0.35); }
 .sg-msg-error { margin-top:8px; padding:8px 12px; border-radius:7px; font-size:12px;
   background:rgba(198,40,40,0.08); color:#c62828; border:1px solid rgba(198,40,40,0.25); }
 /* 3열 배치 — 좌:탭 초기화류(내용 없으면 빈 칸) / 중앙:소스 생성(항상 가운데) / 우:다운로드·보관.
@@ -297,23 +324,19 @@
 @media (max-width:760px) { .sg-result-body { grid-template-columns:1fr; } .sg-code-pane { grid-column:auto; }
   .sg-ddl-layout { flex-direction:column; } .sg-ddl-tree { flex:1 1 auto; max-height:280px; width:100%; } }
 .sg-result-col-title { font-size:11px; font-weight:800; color:var(--text-secondary,#777);
-  margin-bottom:6px; letter-spacing:.02em; }
+  margin-bottom:6px; letter-spacing:.02em; display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+/* 소스목록 헤더 우측 총개수(2026-08-30) */
+.sg-result-col-count { font-weight:400; color:var(--text-secondary,#999); }
 .sg-result-tree-col, .sg-files-col { display:flex; flex-direction:column; min-width:0; }
 .sg-result-tree { max-height:560px; overflow-y:auto; border:1px solid var(--border,#eaeaea);
   border-radius:10px; background:#fafafa; padding:7px; }
 .sg-files { max-height:560px; overflow-y:auto; border:1px solid var(--border,#eaeaea); border-radius:10px;
   background:#fafafa; padding:7px; }
-/* 구분자 — 언어/스택 그룹 경계를 뚜렷하게(2026-08-26: 점선→실선 2px + 진한 색, 글자도 더 굵고 크게) */
-.sg-file-grp { font-size:11.5px; font-weight:900; color:var(--text-primary,#333); text-transform:uppercase;
-  letter-spacing:.03em; padding:10px 8px 6px; border-top:2px solid var(--accent,#c9a96e); margin-top:8px; }
-.sg-file-grp:first-child { border-top:none; margin-top:0; padding-top:4px; }
-.sg-file-btn { display:block; width:100%; text-align:left; padding:5px 8px; font-size:11.5px;
-  font-family:monospace; border:none; background:transparent; color:var(--text-secondary,#666);
-  cursor:pointer; border-radius:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.sg-file-btn:hover { background:rgba(201,169,110,0.1); color:var(--text-primary,#333); }
-/* font-weight 를 굵게 바꾸지 않는다(2026-08-26) — 고정폭(monospace) 글꼴에서 굵기가 바뀌면 글자
-   폭이 늘어나 보여 선택할 때마다 "커졌다 작아졌다" 하는 것처럼 보였다. 배경색만으로 선택 표시. */
-.sg-file-btn.active { background:var(--accent,#c9a96e); color:#fff; }
+/* 2026-08-30: "생성된 소스목록"이 스택 구분 헤더(.sg-file-grp)로 나눈 평탄 버튼(.sg-file-btn)
+   목록에서 실제 경로 폴더 트리(.sg-tree-row, cfGenFileTreeFlat)로 바뀌면서 그 둘은 삭제 —
+   파일명만 이 안에서 monospace 유지(기존 .sg-file-btn 느낌 보존). */
+.sg-files .sg-tree-label { font-family:monospace; font-size:11.5px; }
+/* .sg-file-no(파일 항목 일련번호)는 2026-08-30 번호 표시 제거 요청으로 사용처가 없어져 삭제 */
 
 .sg-code-pane { border:1px solid var(--border,#eaeaea); border-radius:10px; overflow:hidden; background:var(--bg-card,#fff); }
 .sg-file-info { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--bg-base,#faf9f7);
@@ -338,13 +361,24 @@
 .sg-memo-row { margin-bottom:10px; }
 .sg-hist-table { width:100%; border-collapse:collapse; font-size:12.5px; }
 .sg-hist-table { border:1px solid var(--border,#eee); border-radius:10px; overflow:hidden; }
-.sg-hist-table thead th { background:#faf9f7; padding:10px 12px; text-align:left;
+.sg-hist-table thead th { background:#faf9f7; padding:6px 10px; text-align:left;
   font-size:11.5px; font-weight:700; color:var(--text-secondary,#777);
   border-bottom:1px solid var(--border,#eee); white-space:nowrap; }
-.sg-hist-table tbody td { padding:10px 12px; border-bottom:1px solid #f4f4f4; color:var(--text-primary,#333); }
+/* 2026-08-30: 10px→4px — genHist/templateDlHist 그리드(fo-grid)에 이 클래스를 래퍼로
+   쓰기 시작하면서(:pager 도입과 함께), 이 규칙이 .fo-grid-table td 기본 패딩(8px)보다
+   우선 적용돼 행이 유독 높아 보였다("행간 height 큰데"). */
+.sg-hist-table tbody td { padding:4px 10px; border-bottom:1px solid #f4f4f4; color:var(--text-primary,#333); }
 .sg-hist-table tbody tr:last-child td { border-bottom:none; }
 .sg-hist-table tbody tr:hover { background:#fbfaf8; }
 .sg-hist-table .btn { margin:0 2px; }
+/* 2026-08-30: 관리열 버튼(다운로드/불러오기/삭제)이 한 줄로 나열되면 컬럼이 너무 넓어져
+   ("파일명 컬럼 제거해서 생긴 자리를 선택 언어/스택 컬럼이 대신 넓게 쓰면 좋겠다"는 요청과
+   맞물림) — 좁은 폭으로 감싸 자동으로 2줄까지 줄바꿈시킨다. */
+.sg-hist-actions { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; width:76px; margin:0 auto; }
+/* 2026-08-30: btn_detail/btn_row_delete 는 전역 FO 버튼 기본 크기(padding 10px 24px 급)라
+   이 좁은 관리열 안에서는 여전히 커 보였다("버튼 작게 해줘") — 이 영역 안에서만 축소.
+   (전역 .btn-xs 는 FO 쪽에 정의가 없어 붙여도 효과 없었음 — 그래서 직접 지정) */
+.sg-hist-actions .btn { margin:0; padding:3px 8px; font-size:10.5px; border-radius:6px; }
 
 .sg-detail-bottom-actions { display:flex; gap:8px; justify-content:center; margin:22px 0 8px;
   padding-top:20px; border-top:1px solid var(--border,#e8e8e8); }

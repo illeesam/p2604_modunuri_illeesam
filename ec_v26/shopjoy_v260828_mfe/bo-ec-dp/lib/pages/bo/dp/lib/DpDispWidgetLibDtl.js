@@ -796,9 +796,7 @@ export default {
         📋 전시위젯Lib 내용복사
       </button>
       <button @click="handleBtnAction('form-save')"   class="btn btn_save" style="font-size:13px;">저장</button>
-      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn_delete" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
-        삭제
-      </button>
+      <!-- 2026-08-30: 패턴 A — 편집모드 [삭제] 제거(보기모드에만 유지) -->
       <button v-if="!cfIsNew" @click="handleBtnAction('form-cancel')" class="btn btn_cancel" style="font-size:13px;">취소</button>
       <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </div>

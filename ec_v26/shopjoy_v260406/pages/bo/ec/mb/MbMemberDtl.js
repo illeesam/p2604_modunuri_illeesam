@@ -248,11 +248,15 @@ window.MbMemberDtl = {
   <div v-if="cfDtlId" class="form-actions">
     <template v-if="!cfActive">
       <button class="btn btn_edit" @click="handleBtnAction('form-switch-edit')">수정</button>
+      <!-- 2026-08-30: 정책 표준(보기모드 [수정][삭제][닫기])에 맞춰 누락돼 있던 [삭제] 추가.
+           패턴 A 전환으로 편집모드에서 [삭제]를 뺐으니, 보기모드에 없으면 이 화면에서 회원
+           삭제 자체가 아예 불가능해지는 회귀라 여기서 같이 채운다. -->
+      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
     <template v-if="cfActive">
       <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-      <button v-if="!cfIsNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+      <!-- 2026-08-30: 패턴 A — 편집모드 [삭제] 제거(보기모드에만 유지) -->
       <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>

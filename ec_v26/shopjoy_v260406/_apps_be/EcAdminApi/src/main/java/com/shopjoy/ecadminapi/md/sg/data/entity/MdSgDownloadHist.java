@@ -57,4 +57,24 @@ public class MdSgDownloadHist extends BaseEntity {
     @Comment("다운로드 시점 생성 파일 수")
     @Column(name = "file_count")
     private Integer fileCount;
+
+    @Comment("다운로드한 ZIP 첨부ID (sy_attach.attach_id) — 2026-08-30 재다운로드 지원을 위해 보관, null 가능(과거 이력)")
+    @Column(name = "attach_id", length = 21)
+    @Size(max = 21, message = "attachId 는 21자 이내여야 합니다.")
+    private String attachId;
+
+    @Comment("ZIP 다운로드 URL — 2026-08-30 재다운로드 지원을 위해 보관, null 가능(과거 이력)")
+    @Column(name = "zip_url", length = 500)
+    @Size(max = 500, message = "zipUrl 는 500자 이내여야 합니다.")
+    private String zipUrl;
+
+    @Comment("다운로드 시점 선택 언어/스택 라벨 목록(콤마 구분) — 소스젠 결과 다운로드일 때만 값 있음, 템플릿 다운로드는 null(2026-08-30)")
+    @Column(name = "selected_stacks", length = 500)
+    @Size(max = 500, message = "selectedStacks 는 500자 이내여야 합니다.")
+    private String selectedStacks;
+
+    @Comment("연결된 생성 이력의 보관 메모 스냅샷 — 소스젠 결과 다운로드일 때만 값 있음(2026-08-30)")
+    @Column(name = "gen_memo", length = 500)
+    @Size(max = 500, message = "genMemo 는 500자 이내여야 합니다.")
+    private String genMemo;
 }

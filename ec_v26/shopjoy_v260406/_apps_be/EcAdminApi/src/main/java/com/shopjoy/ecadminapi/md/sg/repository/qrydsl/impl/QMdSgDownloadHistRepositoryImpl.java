@@ -38,6 +38,10 @@ public class QMdSgDownloadHistRepositoryImpl implements QMdSgDownloadHistReposit
                         mdSgDownloadHist.zipFileNm,        // ZIP 파일명 스냅샷
                         mdSgDownloadHist.ddlCount,         // DDL 탭 수
                         mdSgDownloadHist.fileCount,        // 생성 파일 수
+                        mdSgDownloadHist.attachId,         // ZIP 첨부ID(재다운로드용)
+                        mdSgDownloadHist.zipUrl,           // ZIP 다운로드 URL(재다운로드용)
+                        mdSgDownloadHist.selectedStacks,   // 선택 언어/스택 라벨 목록
+                        mdSgDownloadHist.genMemo,          // 연결된 생성 이력의 보관 메모 스냅샷
                         mdSgDownloadHist.regBy, mdSgDownloadHist.regDate,
                         memberEx.memberNm.as("memberNm"),  // 다운로드한 회원명 (조인)
                         mdSgDownloadHist.siteId

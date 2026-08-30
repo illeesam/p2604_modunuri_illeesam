@@ -48,6 +48,9 @@
     getList(projectId, uiNm, cmdNm)      { return chkId(projectId, uiNm, cmdNm) || client().get(`/md/sg/project/${projectId}/gen-hists`, hdr(uiNm, cmdNm)); },
     create(projectId, body, uiNm, cmdNm) { return chkId(projectId, uiNm, cmdNm) || client().post(`/md/sg/project/${projectId}/gen-hists`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)             { return chkId(_id, uiNm, cmdNm) || client().delete(`/md/sg/project/gen-hists/${_id}`, hdr(uiNm, cmdNm)); },
+    /* incrementDownload — [다운로드] 클릭마다 download_count 1 증가(2026-08-30). 로그성 호출 — 실패해도
+       다운로드 자체를 막으면 안 되므로 호출부에서 catch 로 무시 */
+    incrementDownload(_id, uiNm, cmdNm)  { return chkId(_id, uiNm, cmdNm) || client().patch(`/md/sg/project/gen-hists/${_id}/download`, {}, hdr(uiNm, cmdNm)); },
   };
 
   /* ── downloadHist: FO [⬇ ZIP 다운로드] 클릭 기록 (파일 재보관 없이 로그만) ─ */

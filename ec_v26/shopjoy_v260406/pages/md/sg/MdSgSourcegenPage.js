@@ -45,15 +45,9 @@ const SG_STACK_SECTIONS = [
   { label: '기타',      items: SG_FILE_GROUPS.filter(g => g.prefix === 'ddl/') },
 ];
 
-/* fnCategoryLabel — 결과 뷰어 파일트리 구분자에 붙일 영문 구획 라벨(2026-08-26).
-   SG_STACK_SECTIONS 와 동일 분류 기준(prefix)을 재사용 — 팝오버 구획과 항상 일치시킨다. */
-function fnCategoryLabel(prefix) {
-  if (prefix.startsWith('backend_')) return 'Backend';
-  if (SG_MOBILE_PREFIXES.includes(prefix)) return 'Mobile';
-  if (prefix.startsWith('frontend_')) return 'Frontend';
-  if (prefix.startsWith('fullstack_')) return 'Fullstack';
-  return 'Etc';
-}
+/* fnCategoryLabel(결과 뷰어 파일트리 구분자용 영문 구획 라벨)은 2026-08-30 "생성된 소스목록"이
+   스택 구분 헤더 없는 실제 경로 트리(cfGenFileTree)로 바뀌면서 유일한 호출부(cfGroupedFiles)가
+   삭제되어 함께 제거. */
 
 /* fnBuildTree / fnFlattenTree — subPackage(점(.)으로 구분한 경로) 기준 트리 빌더 + 평탄화(2026-08-26).
    DDL 입력 좌측 트리(전체 탭 대상)와 생성 결과 좌측 트리(생성 결과 있는 탭만 대상) 양쪽에서 공용으로
@@ -77,14 +71,62 @@ function fnBuildTree(tabList) {
   });
   return root;
 }
+/* fnCountTabs — 폴더 노드 하나 밑에(하위 폴더까지 재귀 포함) 딸린 테이블(탭) 총수(2026-08-30,
+   좌측 트리 폴더명 옆 "항목 개수" 표시용). */
+function fnCountTabs(node) {
+  return node.tabs.length + node.children.reduce((s, c) => s + fnCountTabs(c), 0);
+}
 function fnFlattenTree(root, collapsedMap) {
+  const out = [];
+  const walk = (node, depth) => {
+    node.children.forEach(child => {
+      out.push({ kind: 'folder', depth, path: child.path, name: child.name, count: fnCountTabs(child) });
+      if (!collapsedMap[child.path]) walk(child, depth + 1);
+    });
+    node.tabs.forEach(t => out.push({ kind: 'tab', depth, tab: t }));
+  };
+  walk(root, 0);
+  return out;
+}
+
+/* fnBuildFileTree / fnFlattenFileTree — "생성된 소스목록"을 언어/스택 그룹 헤더("Backend - JPA" 등)
+   구분 없이, 실제 생성 경로(entry.realPath — fnZipPath 로 계산한 진짜 ZIP 내부 경로) 그대로 폴더
+   트리로 보여주기 위한 빌더(2026-08-30). fnBuildTree/fnFlattenTree 와 구조는 같되 경로 구분자가
+   점(.)이 아닌 슬래시(/)이고, 리프가 탭이 아니라 파일 엔트리라는 점만 다르다.
+   여러 테이블이 만든 파일의 실제 경로가 우연히 같으면(예: 테이블마다 동일한 backend_jpa/util/
+   VoUtil.java → 같은 실제 경로) 같은 트리 리프 하나로 자연히 합쳐진다(실제 ZIP 도 마찬가지로
+   나중 것이 앞의 것을 덮어쓸 뿐 파일 1개만 남으므로 "실제 생성된 파일정보"와 일치). */
+function fnBuildFileTree(entries) {
+  const root = { path: '', name: '', children: [], files: [] };
+  const nodeMap = { '': root };
+  const ensureNode = (path) => {
+    if (nodeMap[path]) return nodeMap[path];
+    const segs = path.split('/');
+    const name = segs[segs.length - 1];
+    const parent = ensureNode(segs.slice(0, -1).join('/'));
+    const node = { path, name, children: [], files: [] };
+    parent.children.push(node);
+    nodeMap[path] = node;
+    return node;
+  };
+  const seen = new Set();
+  entries.forEach(e => {
+    if (seen.has(e.realPath)) return;
+    seen.add(e.realPath);
+    const segs = e.realPath.split('/');
+    const dir = segs.slice(0, -1).join('/');
+    (dir ? ensureNode(dir) : root).files.push(e);
+  });
+  return root;
+}
+function fnFlattenFileTree(root, collapsedMap) {
   const out = [];
   const walk = (node, depth) => {
     node.children.forEach(child => {
       out.push({ kind: 'folder', depth, path: child.path, name: child.name });
       if (!collapsedMap[child.path]) walk(child, depth + 1);
     });
-    node.tabs.forEach(t => out.push({ kind: 'tab', depth, tab: t }));
+    node.files.forEach(entry => out.push({ kind: 'file', depth, entry }));
   };
   walk(root, 0);
   return out;
@@ -120,40 +162,54 @@ function fnLoadStackVersions() {
 
 /* SG_ZIP_PATHS — 파일맵 키 → ZIP 안의 실제 경로 (원본 bdZipPath 이식).
    각 스택을 모듈 폴더로 한 단계 더 감싸 JPA/MyBatis 등이 서로 덮어쓰지 않게 한다.
-   순서가 중요: 더 긴 prefix 를 먼저 둬야 한다(frontend_react_cdn_standalone/ 이 frontend_react/ 보다 먼저). */
+   순서가 중요: 더 긴 prefix 를 먼저 둬야 한다(frontend_react_cdn_standalone/ 이 frontend_react/ 보다 먼저).
+   2026-08-30: "src" 로 통일 시도(1차) 후 `sourcegen_fe_svelte/src/src/App.svelte` 처럼 경로가
+   중복되는 버그 발견 → 원인 파악 후 대상 축소(2차). nestjs/expressjs/svelte/react_native 는
+   생성기 자체가 이미 파일 절반을 자기 "src/" 폴더 밑에 만들고(main.ts, App.svelte 등) 나머지
+   절반(package.json 등)은 프로젝트 루트에 두는데, 여기서 또 "src/" 로 감싸면 이미 src/ 가 붙은
+   파일은 "src/src/..." 로 겹치고 루트여야 할 설정파일까지 src/ 안으로 잘못 들어간다.
+   flutter(lib/)·android(app/src/...)·ios(Sources/)·csharp·python·nuxt/nextjs(app/·server/·lib/)도
+   전부 자기 스택 고유의 올바른 폴더 구조 + 루트 설정파일을 이미 갖고 있어 똑같은 문제 — 이 12개는
+   "src" 통일 대상에서 제외하고 모듈 폴더만 감싼 원래 형태로 되돌렸다.
+   "src" 통일은 내부에 자체 서브폴더 구조/루트파일이 없는 것만 안전하다: 단일 파일만 나오는 CDN
+   계열(vue3cdn with-common/standalone, react/svelte/pyscript cdn standalone)과, 애초에 flat 하게
+   파일 몇 개만 나오는 vue3/react. Vue3 CDN 은 같은 모듈 안에 with-common/standalone 두 변형이
+   공존해 "src" 하나로 합칠 수 없으므로 src/ 밑에 한 단계 더(with-common, standalone)로 유지.
+   2026-08-30: 모듈 폴더명 앞의 "sourcegen_" 접두어도 제거(예: sourcegen_be_jpa → be_jpa) —
+   ZIP 자체가 이미 소스젠 산출물이라는 게 자명해서 폴더마다 반복할 필요가 없었다. */
 const SG_ZIP_PATHS = [
-  { p: 'backend_python/',                  to: 'sourcegen_be_python/src_python/' },
-  { p: 'backend_csharp_efcore/',           to: 'sourcegen_be_csharp_efcore/src_csharp_efcore/' },
-  { p: 'backend_csharp_dapper/',           to: 'sourcegen_be_csharp_dapper/src_csharp_dapper/' },
-  { p: 'backend_nestjs/',                  to: 'sourcegen_be_nestjs10/src_nestjs/' },
-  { p: 'backend_expressjs/',               to: 'sourcegen_be_expressjs4/src_expressjs/' },
-  { p: 'frontend_vue3cdn_with_common/',    to: 'sourcegen_fe_vue3_cdn/with-common/' },
-  { p: 'frontend_vue3cdn_standalone/',     to: 'sourcegen_fe_vue3_cdn/standalone/' },
-  { p: 'frontend_vue3/',                   to: 'sourcegen_fe_vue3/frontend-vue3/src/views/' },
-  { p: 'frontend_react_cdn_standalone/',   to: 'sourcegen_fe_react_cdn/' },
-  { p: 'frontend_react_native/',           to: 'sourcegen_fe_react_native/frontend-react-native/' },
-  { p: 'frontend_react/',                  to: 'sourcegen_fe_react/frontend-react/src/pages/' },
-  { p: 'frontend_svelte_cdn_standalone/',  to: 'sourcegen_fe_svelte_cdn/' },
-  { p: 'frontend_svelte/',                 to: 'sourcegen_fe_svelte/frontend-svelte/' },
-  { p: 'frontend_pyscript_cdn_standalone/',to: 'sourcegen_fe_pyscript_cdn/' },
-  { p: 'frontend_flutter/',                to: 'sourcegen_fe_flutter/frontend-flutter/' },
-  { p: 'frontend_android/',                to: 'sourcegen_fe_android_compose/frontend-android/' },
-  { p: 'frontend_ios/',                    to: 'sourcegen_fe_ios_swiftui/frontend-ios/' },
-  { p: 'fullstack_nuxt/',                  to: 'sourcegen_full_nuxt4/fullstack-nuxt/' },
-  { p: 'fullstack_nextjs/',                to: 'sourcegen_full_nextjs15/fullstack-nextjs/' },
+  { p: 'backend_python/',                  to: 'be_python/' },
+  { p: 'backend_csharp_efcore/',           to: 'be_csharp_efcore/' },
+  { p: 'backend_csharp_dapper/',           to: 'be_csharp_dapper/' },
+  { p: 'backend_nestjs/',                  to: 'be_nestjs10/' },
+  { p: 'backend_expressjs/',               to: 'be_expressjs4/' },
+  { p: 'frontend_vue3cdn_with_common/',    to: 'fe_vue3_cdn/src/with-common/' },
+  { p: 'frontend_vue3cdn_standalone/',     to: 'fe_vue3_cdn/src/standalone/' },
+  { p: 'frontend_vue3/',                   to: 'fe_vue3/src/views/' },
+  { p: 'frontend_react_cdn_standalone/',   to: 'fe_react_cdn/src/' },
+  { p: 'frontend_react_native/',           to: 'fe_react_native/' },
+  { p: 'frontend_react/',                  to: 'fe_react/src/pages/' },
+  { p: 'frontend_svelte_cdn_standalone/',  to: 'fe_svelte_cdn/src/' },
+  { p: 'frontend_svelte/',                 to: 'fe_svelte/' },
+  { p: 'frontend_pyscript_cdn_standalone/',to: 'fe_pyscript_cdn/src/' },
+  { p: 'frontend_flutter/',                to: 'fe_flutter/' },
+  { p: 'frontend_android/',                to: 'fe_android_compose/' },
+  { p: 'frontend_ios/',                    to: 'fe_ios_swiftui/' },
+  { p: 'fullstack_nuxt/',                  to: 'full_nuxt4/' },
+  { p: 'fullstack_nextjs/',                to: 'full_nextjs15/' },
 ];
 
 /* fnZipPath — 파일맵 키를 ZIP 내부 경로로 변환. JPA/MyBatis 는 패키지 경로가 끼어들어 별도 처리. */
 function fnZipPath(fn, pkgPath) {
   if (fn.startsWith('ddl/')) return fn;                       // DDL 은 ZIP 루트 (모든 스택 공용 메타)
   if (fn.startsWith('backend_jpa/')) {
-    return `sourcegen_be_jpa/src_jpa/main/java/${pkgPath}/` + fn.substring('backend_jpa/'.length);
+    return `be_jpa/src/main/java/${pkgPath}/` + fn.substring('backend_jpa/'.length);
   }
   if (fn.startsWith('backend_mybatis/mapper/') && fn.endsWith('.xml')) {
-    return 'sourcegen_be_mybatis/src_mybatis/main/resources/mapper/' + fn.substring('backend_mybatis/mapper/'.length);
+    return 'be_mybatis/src/main/resources/mapper/' + fn.substring('backend_mybatis/mapper/'.length);
   }
   if (fn.startsWith('backend_mybatis/')) {
-    return `sourcegen_be_mybatis/src_mybatis/main/java/${pkgPath}/` + fn.substring('backend_mybatis/'.length);
+    return `be_mybatis/src/main/java/${pkgPath}/` + fn.substring('backend_mybatis/'.length);
   }
   const hit = SG_ZIP_PATHS.find(m => fn.startsWith(m.p));
   if (hit) return hit.to + fn.substring(hit.p.length);
@@ -661,7 +717,7 @@ window.MdSgSourcegenPage = {
     showConfirm: { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
-    const { reactive, ref, computed, onMounted } = Vue;
+    const { reactive, ref, computed, watch, onMounted } = Vue;
 
     /* ── 1) 상태 선언 (ref/reactive 를 computed/watch 보다 먼저) ── */
     const uiState = reactive({
@@ -674,6 +730,7 @@ window.MdSgSourcegenPage = {
       resultScopeKind: 'root', // 결과 뷰어 범위 'root'(전체) | 'folder'(경로 하위 전부) | 'tab'(테이블 1개)
       resultScopePath: '',     // resultScopeKind==='folder' 일 때 그 경로
       resultTreeCollapsed: {}, // 결과 뷰어 좌측 트리 — 접힌 폴더 경로 집합
+      genFileTreeCollapsed: {}, // 2026-08-30: "생성된 소스목록"(실제 경로 트리) — 접힌 폴더 경로 집합
       treeNewFolderParent: null, // 트리 [+ 새 폴더] 입력 중인 부모 경로(''=최상위, null=입력 안 함)
       treeNewFolderText: '',     // 트리 [+ 새 폴더] 입력값
       treeRenamePath: null,      // 트리 노드 이름변경 입력 중인 대상 경로(null=입력 안 함)
@@ -690,6 +747,7 @@ window.MdSgSourcegenPage = {
       stackPopOpen: false,       // [소스 생성] 언어/스택 선택 팝오버 표시 여부
       uploadModalOpen: false,    // 프로젝트업로드 모달 표시 여부
       uploadDbType: 'POSTGRESQL', // 업로드 파일의 DDL 방언(파싱 기준 사전선택) 'ORACLE' | 'POSTGRESQL'
+      uploadReplaceExisting: true, // 2026-08-30: 체크(기본) → 기존 DDL 탭 전체 교체 / 해제 → 기존 탭에 누적 추가
       uploading: false,          // 업로드 파일 처리중
       autoFolderByPrefix: true,  // 테이블약어로 폴더생성하기 — 기본 ON(현재 동작). 끄면 새 탭은
                                  // subPackage 미지정(루트)으로만 추가되고 폴더 배치는 드래그로 직접 한다(2026-08-28).
@@ -723,36 +781,74 @@ window.MdSgSourcegenPage = {
     const tabs = reactive([fnNewTab()]);   // 신규 프로젝트는 빈 탭 1개로 시작
 
     const genHists = reactive([]);   // 생성 이력(첨부 ZIP) 목록
+    /* genHistPager / templateDlHistPager — 2026-08-30: 서버사이드 페이징 도입(정책: 클라이언트
+       사이드 페이징 금지). 이전엔 genHists 는 아예 페이징 없이 프로젝트의 전체 이력을,
+       templateDlHist 는 항상 1페이지(10건)만 고정으로 불러와 2페이지 이상을 볼 방법이 없었다. */
+    const genHistPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50] });
+    const templateDlHistPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50] });
     /* templateDlHistGridColumns — [다운로드 이력](화면 최하단, 프로젝트 무관 전역 로그) 컬럼 정의.
        genHistGridColumns 와 동일한 fo-grid 패턴. projectNm 에 소스생성/템플릿 구분이 섞여 온다
        (템플릿 다운로드는 "[템플릿] " 접두어 — fnLogTemplateDownload 참조). */
     const templateDlHistGridColumns = [
       { key: 'regDate',    label: '일시', width: '150px', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
       { key: 'projectNm',  label: '구분', width: '160px', fmt: (v) => v || '(제목없음)' },
-      { key: 'zipFileNm',  label: '파일명', cellClass: 'sg-list-mono' },
+      // 2026-08-30: 소스젠 결과 다운로드일 때만 값 있음(템플릿 다운로드는 '-') — genHistGridColumns 와 동일하게 축소 폰트
+      // 2026-08-30: noEllipsis + white-space:normal — 길면 한 줄 말줄임 대신 개행해서 전부 보이게.
+      // width 고정 해제(파일명 컬럼 제거로 생긴 여유 폭을 이 컬럼이 그대로 흡수하게).
+      { key: 'selectedStacks', label: '선택 언어/스택', fmt: (v) => v || '-', cellTitle: (v) => v || '',
+        noEllipsis: true, cellStyle: 'font-size:10.5px;line-height:1.5;white-space:normal;word-break:break-word;' },
+      // 파일명(zipFileNm)은 2026-08-30 화면에서 안 보여도 된다는 요청으로 컬럼 자체 제거(데이터는 여전히 저장됨)
       { key: 'fileCount',  label: '건수', width: '80px', align: 'center', fmt: (v) => v || 0 },
+      { key: 'genMemo',    label: '메모', width: '140px', fmt: (v) => v || '-' },
+      // 2026-08-30: 누가 다운로드했는지 — memberNm(FO 회원 조인) 이 없으면 regBy(ID) 로 폴백
+      { key: 'memberNm',   label: '다운로드자', width: '100px', fmt: (v, row) => v || row?.regBy || '-' },
     ];
+    /* 재다운로드(2026-08-30) — attachId/zipUrl 이 있는 행(이 컬럼 추가 이후 기록)만 노출.
+       plain href 링크라 클릭해도 이 그리드에 새 로그를 남기지 않는다(요청사항: "이때는
+       다운로드 이력 저장 안 해도 되"). */
+    templateDlHistGridColumns.push({ type: 'actions', actions: [
+      // cls: 'btn btn-xs btn-secondary' 는 FO 전역 CSS에 정의가 없어 브라우저 기본 링크 모양으로
+      // 보이던 것뿐 — 의도한 모양(텍스트 링크)을 명시적으로 sg-hist-link 로 고정(2026-08-30).
+      { label: '다운로드', cls: 'sg-hist-link', href: (row) => row.zipUrl, visible: (row) => !!row.zipUrl },
+    ] });
 
     /* genHistGridColumns — fo-grid 전환(2026-08-25). 번호는 idx+1(페이저 없는 로컬 배열이라
        그대로), 일시/크기는 coUtil 공통 헬퍼(cofYmdHm/cofFileSize) 사용. */
     const genHistGridColumns = [
       { key: 'genDate',     label: '생성일시', width: '150px', fmt: (v) => coUtil.cofYmdHm(v) || '-' },
-      { key: 'selectedStacks', label: '선택 언어/스택', width: '180px', fmt: (v) => v || '-', cellTitle: (v) => v || '' },
-      { key: 'zipFileNm',   label: '파일명', cellClass: 'sg-list-mono' },
+      // 2026-08-30: noEllipsis + white-space:normal — 길면 한 줄 말줄임 대신 개행해서 전부 보이게.
+      // width 고정 해제(파일명 컬럼 제거로 생긴 여유 폭을 이 컬럼이 그대로 흡수하게).
+      { key: 'selectedStacks', label: '선택 언어/스택', fmt: (v) => v || '-', cellTitle: (v) => v || '',
+        noEllipsis: true, cellStyle: 'font-size:10.5px;line-height:1.5;white-space:normal;word-break:break-word;' }, // 항목명+버전이 여러 개 이어붙어 길어질 수 있어 축소
+      // 파일명(zipFileNm)은 2026-08-30 화면에서 안 보여도 된다는 요청으로 컬럼 자체 제거(데이터는 여전히 저장됨)
       { key: 'ddlCount',    label: '테이블', width: '80px', align: 'center', fmt: (v) => v || 0 },
       { key: 'fileCount',   label: '파일수', width: '80px', align: 'center', fmt: (v) => v || 0 },
       { key: 'zipFileSize', label: '크기', width: '90px', align: 'right', fmt: (v) => coUtil.cofFileSize(v) },
+      { key: 'downloadCount', label: '다운로드수', width: '90px', align: 'center', fmt: (v) => v || 0 },
       { key: 'genMemo',     label: '메모', fmt: (v) => v || '-' },
+      // 2026-08-30: 누가 생성했는지 — regUserNm(BO 관리자 조인) 우선, 없으면 memberNm(FO 회원 조인), 그것도 없으면 regBy(ID)
+      { key: 'regUserNm',   label: '생성자', width: '100px', fmt: (v, row) => v || row?.memberNm || row?.regBy || '-' },
     ];
 
     const cfReadonly = computed(() => uiState.dtlMode === 'view');
+    /* cfShowZipDownload — 2026-08-30: [ZIP 다운로드] 는 항상 "전체" 를 묶어서 내려받으므로
+       (fnBuildZipBlob 이 tabs 전체를 순회), 좌측 트리에서 특정 테이블/폴더만 보고 있을 때
+       버튼을 보여주면 "지금 보고 있는 것만" 다운로드될 거라 오해하기 쉽다 — "생성 결과 — 전체"
+       를 보고 있을 때만 노출한다.
+       2026-08-30 추가: cfTotalFileCount(생성 결과) 가 0 이면 버튼 자체를 숨긴다 — 예전엔
+       [생성 결과] 패널이 안 보이는데도(v-if="cfTotalFileCount") 이 버튼만 비활성 상태로 계속
+       떠 있어 "패널이 보일 때만 나와야 한다"는 요청. 이제 [생성 결과] 패널과 노출 조건이
+       같아져 항상 같이 보이거나 같이 사라진다. */
+    const cfShowZipDownload = computed(() => !cfReadonly.value && uiState.resultScopeKind === 'root' && cfTotalFileCount.value > 0);
 
     /* type:'actions' — 관리 버튼모음도 별도 배열로 분리하지 않고 genHistGridColumns 항목 하나로 선언
        (#row-actions 슬롯 대체, 2026-08-25). cfReadonly 선언 직후에 둔다 — 삭제 버튼이 그 값을 읽는다. */
     genHistGridColumns.push({ type: 'actions', actions: [
-      { label: '다운로드', cls: 'btn btn-sm btn-secondary', href: (row) => row.zipUrl, visible: (row) => !!row.zipUrl },
-      { label: '불러오기', cls: 'btn btn-sm btn_detail', onClick: (row) => onLoadSnapshot(row), visible: (row) => !!row.ddlSnapshotJson },
-      { label: '삭제',     cls: 'btn btn-sm btn_row_delete', onClick: (row) => onDeleteGenHist(row), visible: () => !cfReadonly.value },
+      // 2026-08-30: href(단순 링크) → onClick(다운로드수 증가 후 열기). cls 는 박스형 버튼이 아닌
+      // [생성결과 다운로드 이력] 의 href 링크와 같은 텍스트 링크 모양(sg-hist-link)으로 통일.
+      { label: '다운로드', cls: 'sg-hist-link', onClick: (row) => onDownloadGenHistZip(row), visible: (row) => !!row.zipUrl },
+      { label: '불러오기', cls: 'btn btn-xs btn_detail', onClick: (row) => onLoadSnapshot(row), visible: (row) => !!row.ddlSnapshotJson },
+      { label: '삭제',     cls: 'btn btn_row_delete', onClick: (row) => onDeleteGenHist(row), visible: () => !cfReadonly.value }, // btn_row_delete 는 xs 크기 내장(병기 불필요)
     ] });
     const cfIsNew = computed(() => !form.projectId);
     const cfCurTab = computed(() => tabs.find(t => t.tabId === uiState.activeTabId) || tabs[0]);
@@ -790,27 +886,32 @@ window.MdSgSourcegenPage = {
     });
     /* cfScopeFileEntries — 범위 안 모든 탭의 파일을 하나의 평탄 목록으로. 테이블이 2개 이상이면
        같은 상대경로 파일(예: backend_jpa/util/VoUtil.java)이 테이블마다 있을 수 있어 key 를
-       tabId 로 구분하고, 화면 라벨도 다중일 때만 "테이블명/파일경로" 로 풀어서 보여준다. */
+       tabId 로 구분한다. realPath(2026-08-30) — fnZipPath 로 계산한 실제 ZIP 내부 경로(=실제
+       생성 경로). 소스목록 트리/소스정보 파일경로 표시에 이 값을 쓴다(내부 논리 키인 fn 대신). */
     const cfScopeFileEntries = computed(() => {
       const tabsInScope = cfResultScopeTabs.value;
       const multi = tabsInScope.length > 1;
       const out = [];
       tabsInScope.forEach(t => {
+        const pkgPath = fnEffectivePkg(form.basePackage, t.subPackage).replace(/\./g, '/');
         Object.keys(t.files).forEach(fn => {
-          out.push({ key: t.tabId + '::' + fn, fn, tableNm: t.tableNm || '(이름없음)', content: t.files[fn], multi });
+          out.push({ key: t.tabId + '::' + fn, fn, tableNm: t.tableNm || '(이름없음)', content: t.files[fn], multi,
+            realPath: fnZipPath(fn, pkgPath) });
         });
       });
       return out;
     });
-    /* cfGroupedFiles — 결과 뷰어 좌측 파일목록 (그룹 → 파일 목록).
-       구분자 제목은 "{구획} - {스택}" 형식(예: "Backend - JPA", "Frontend - Vue3 CDN (with common)")
-       — 팝오버 구획 헤더 없이 단독 노출되는 자리라 구획 정보를 제목에 직접 포함시킨다(2026-08-26). */
-    const cfGroupedFiles = computed(() => {
-      const entries = cfScopeFileEntries.value;
-      return SG_FILE_GROUPS
-        .map(g => ({ title: fnCategoryLabel(g.prefix) + ' - ' + (g.short || g.title), files: entries.filter(e => e.fn.startsWith(g.prefix)) }))
-        .filter(g => g.files.length > 0);
-    });
+    /* cfGenFileTree / cfGenFileTreeFlat — "생성된 소스목록"(2026-08-30, 구 cfGroupedFiles 대체).
+       기존엔 "Backend - JPA" 같은 스택 구분 헤더로 나눈 평탄 버튼 목록이었는데, 실제 생성되는
+       파일 구조 그대로(구분 헤더 없이) 폴더 트리로 보여달라는 요청 — fnBuildFileTree 가 이미
+       실제 경로(realPath) 기준으로 트리를 쌓으므로 스택별 폴더(be_jpa 등)가 자연히
+       구분되어 보인다. */
+    const cfGenFileTree = computed(() => fnBuildFileTree(cfScopeFileEntries.value));
+    const cfGenFileTreeFlat = computed(() => fnFlattenFileTree(cfGenFileTree.value, uiState.genFileTreeCollapsed));
+    /* cfGenFileCount — 트리에 실제로 나열되는(중복 제거된) 파일 리프 수. 여러 테이블이 만든 동일
+       실제경로 파일(공용 유틸 등)은 트리에서 1개로 합쳐지므로 cfScopeFileEntries.length 와 다를 수
+       있다 — "소스목록" 옆 총개수는 이 값을 써야 화면에 실제로 보이는 항목 수와 일치한다. */
+    const cfGenFileCount = computed(() => cfGenFileTreeFlat.value.filter(r => r.kind === 'file').length);
     /* cfActiveEntry — 현재 선택된 파일(uiState.activeFile = "tabId::경로") 하나 찾기 */
     const cfActiveEntry = computed(() => cfScopeFileEntries.value.find(e => e.key === uiState.activeFile) || null);
     const cfResultScopeTabsCount = computed(() => cfResultScopeTabs.value.length);
@@ -957,6 +1058,31 @@ window.MdSgSourcegenPage = {
       const codeEl = codeBoxRef.value.querySelector('code');
       if (codeEl) Prism.highlightElement(codeEl);
     };
+    /* ddlCodeBoxRef / fnHighlightDdl — 2026-08-30: DDL 입력 영역을 [소스정보] 코드뷰어처럼
+       Prism 하이라이트로 보여준다. 보기모드는 <pre> 단독, 편집모드는 그 위에 투명 <textarea>
+       를 겹친 오버레이 에디터(위 템플릿 주석 참조) — 어느 쪽이든 같은 ref/함수를 공유한다. */
+    const ddlCodeBoxRef = ref(null);
+    const fnHighlightDdl = async () => {
+      await Vue.nextTick();
+      if (typeof Prism === 'undefined' || !ddlCodeBoxRef.value) return;
+      const codeEl = ddlCodeBoxRef.value.querySelector('code');
+      if (codeEl) Prism.highlightElement(codeEl);
+    };
+    /* 탭 전환·타이핑뿐 아니라 [수정]→[취소](edit→view) 모드 전환에도 다시 하이라이트해야 한다 —
+       cfReadonly 만 바뀌고 ddlText 값 자체는 그대로인 경우(취소는 서버 재조회로 tabs 를 통째로
+       새 객체로 교체하지만 텍스트 내용은 동일)까지 값 비교만으로는 "변경 없음"으로 보여 감지가
+       안 됐다("수정 클릭 후 취소 클릭하면 컬러가 흑백으로 바뀐다" 버그). 매 평가마다 새 배열을
+       반환해 Vue 가 항상 "변경됨"으로 보고 재실행하게 한다(fnHighlightDdl 은 멱등이라 여분 호출
+       비용 낮음). */
+    watch(() => [cfReadonly.value, cfCurTab.value ? cfCurTab.value.ddlText : null],
+      () => fnHighlightDdl(), { immediate: true });
+    /* onDdlScroll — 편집모드 오버레이에서 투명 textarea 를 스크롤하면 그 아래 하이라이트된
+       <pre> 도 같은 위치로 맞춰 스크롤해야 색 입혀진 글자가 커서를 계속 따라간다. */
+    const onDdlScroll = (e) => {
+      if (!ddlCodeBoxRef.value) return;
+      ddlCodeBoxRef.value.scrollTop = e.target.scrollTop;
+      ddlCodeBoxRef.value.scrollLeft = e.target.scrollLeft;
+    };
 
     /* ── 3) 데이터 로드 ── */
     const fnLoadProject = async (projectId) => {
@@ -979,15 +1105,24 @@ window.MdSgSourcegenPage = {
         subPackage: d.subPackage || '',
       })) : [fnNewTab()]));
 
-      await fnLoadGenHists(p.projectId);
+      await fnLoadGenHists(p.projectId, true);
       uiState.dtlMode = 'view';  // 목록에서 들어온 진입은 항상 보기모드 — [수정] 클릭 시에만 편집
       uiState.activeTabId = tabs[0].tabId;
     };
 
-    const fnLoadGenHists = async (projectId) => {
-      const res = await mdSgApiSvc.genHist.getList(projectId, '소스젠', '생성이력조회');
-      genHists.splice(0, genHists.length, ...(res.data?.data || []));
+    /* fnLoadGenHists — 2026-08-30: getList(전체 로드) → getPage(서버사이드 페이징)로 전환.
+       projectId 가 바뀌는 호출(행 전환 등)은 1페이지로 되돌린다. */
+    const fnLoadGenHists = async (projectId, resetPage) => {
+      if (resetPage) genHistPager.pageNo = 1;
+      const res = await mdSgApiSvc.genHist.getPage(
+        { projectId, pageNo: genHistPager.pageNo, pageSize: genHistPager.pageSize }, '소스젠', '생성이력조회');
+      const d = res.data?.data || {};
+      genHists.splice(0, genHists.length, ...(d.pageList || []));
+      genHistPager.pageTotalCount = d.pageTotalCount || 0;
+      genHistPager.pageTotalPage = d.pageTotalPage || 1;
     };
+    const onSetPageGenHist = (n) => { genHistPager.pageNo = n; fnLoadGenHists(form.projectId); };
+    const onSizeChangeGenHist = () => { fnLoadGenHists(form.projectId, true); };
 
     /* ── 4) 화면 이동 / 모드 전환 ── */
     const onBackToList = () => { location.href = 'fo-md-sg-sourcegen.html?view=list'; };
@@ -996,6 +1131,7 @@ window.MdSgSourcegenPage = {
         dbTypeCd: 'POSTGRESQL', thumbnailUrl: '', thumbnailAttachId: null });
       tabs.splice(0, tabs.length, fnNewTab());
       genHists.splice(0, genHists.length);
+      Object.assign(genHistPager, { pageNo: 1, pageTotalCount: 0, pageTotalPage: 1 });
       uiState.dtlMode = 'edit';
       uiState.activeTabId = tabs[0].tabId;
       uiState.activeFile = '';
@@ -1029,9 +1165,13 @@ window.MdSgSourcegenPage = {
       return starts.map((s, i) => text.slice(s, i + 1 < starts.length ? starts[i + 1] : text.length).trim());
     };
 
-    /* onProjectUploadFile — 파일 선택 즉시 파싱해서 트리에 테이블(탭)로 추가한다(기존 탭은 유지 —
-       "업로드"는 가져오기이지 초기화가 아니다). txt/sql 은 그대로 읽고, zip 은 안의 txt/sql 파일들을
-       전부 읽어 합친다. */
+    /* onProjectUploadFile — 파일 선택 즉시 파싱해서 트리에 반영한다. txt/sql 은 그대로 읽고,
+       zip 은 안의 txt/sql 파일들을 전부 읽어 합친다.
+       2026-08-30: 기존엔 기존 탭에 계속 추가만 해서 같은 파일을 다시 올리면 좌측 트리에 같은
+       테이블이 중복으로 쌓였다("좌측 소스정보 지우고 다시 만들어주면 되" 요청) — 모달의
+       [기존정보 초기화] 체크박스(uiState.uploadReplaceExisting, 기본 체크)로 동작을 고른다:
+       체크 시 업로드 내용으로 전체 교체(+이미 입력된 내용이 있으면 확인), 해제 시 기존 방식대로
+       기존 탭 뒤에 누적 추가(확인 불필요 — 데이터를 지우지 않으므로). */
     const onProjectUploadFile = async (e) => {
       const file = e.target.files?.[0];
       e.target.value = '';
@@ -1065,7 +1205,15 @@ window.MdSgSourcegenPage = {
           });
         });
         if (!newTabs.length) throw new Error('CREATE TABLE 구문을 찾지 못했습니다.');
-        newTabs.forEach(t => tabs.push(t));
+        if (uiState.uploadReplaceExisting) {
+          if (cfFilledTabs.value.length &&
+            !await props.showConfirm('프로젝트 업로드', '업로드한 내용으로 현재 DDL 탭을 전부 교체하시겠습니까?\n(현재 입력된 내용은 사라집니다)')) {
+            return;
+          }
+          tabs.splice(0, tabs.length, ...newTabs);
+        } else {
+          newTabs.forEach(t => tabs.push(t));
+        }
         form.dbTypeCd = uiState.uploadDbType;
         uiState.activeTabId = newTabs[0].tabId;
         uiState.uploadModalOpen = false;
@@ -1119,6 +1267,25 @@ window.MdSgSourcegenPage = {
       }
     };
 
+    /* onDownloadCurrentDdl — [현재정보다운로드](2026-08-30). 지금 편집 중인 DDL 탭 전체를
+       [프로젝트업로드]가 그대로 다시 읽어들일 수 있는 .sql 텍스트로 내보낸다 — 저장 여부와
+       무관하게(신규/미저장 상태에서도) 지금 화면 상태를 백업하거나 다른 프로젝트/환경으로
+       옮기고 싶을 때 쓴다. 스키마·테이블·클래스명 등은 DDL 텍스트(COMMENT ON) 안에 이미 다
+       담겨 있어(화면 상단 필드는 이걸 자동 추출한 값) ddlText 만 이어붙이면 충분히 왕복된다. */
+    const onDownloadCurrentDdl = () => {
+      if (!cfFilledTabs.value.length) { props.showToast('다운로드할 DDL 이 없습니다. 먼저 테이블을 입력해주세요.', 'error'); return; }
+      const text = cfFilledTabs.value.map(t => (t.ddlText || '').trim()).filter(Boolean).join('\n\n');
+      const nm = ((form.projectNm && form.projectNm.trim()) || 'sourcegen').replace(/[^\w가-힣.-]+/g, '_');
+      const fileName = `${nm}_${fnDownloadTs()}.sql`;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      props.showToast(`${cfFilledTabs.value.length}개 테이블의 DDL 을 다운로드했습니다.`, 'success');
+    };
+
     /* fnLogTemplateDownload — 템플릿 ZIP 다운로드도 fnLogDownload 와 같은 md_sg_download_hist 에
        남긴다(2026-08-26) — 로그성 호출이라 실패해도 무시. 성공하면 모달 하단 이력 목록을 새로고침. */
     const fnLogTemplateDownload = (domain, zipNm) => {
@@ -1129,7 +1296,7 @@ window.MdSgSourcegenPage = {
         zipFileNm: zipNm,
         ddlCount: domain.files.length,
         fileCount: domain.files.length,
-      }, '소스젠', 'ZIP다운로드').then(fnLoadTemplateDlHist).catch(() => { /* 로그 실패는 무시 */ });
+      }, '소스젠', 'ZIP다운로드').then(() => fnLoadTemplateDlHist(true)).catch(() => { /* 로그 실패는 무시 */ });
     };
 
     /* templateDlHist — 화면 최하단 [다운로드 이력] 패널에 보여줄 최근 다운로드 이력(공용 로그 최근 N건).
@@ -1137,18 +1304,31 @@ window.MdSgSourcegenPage = {
        다운로드(fnLogDownload)와 템플릿 ZIP 다운로드(fnLogTemplateDownload)가 같은 md_sg_download_hist
        테이블을 쓰므로 둘 다 여기 섞여 보인다 — projectNm 에 "[템플릿] " 접두어로 구분. */
     const templateDlHist = ref([]);
-    const fnLoadTemplateDlHist = async () => {
+    /* fnLoadTemplateDlHist — 2026-08-30: pageNo 고정 1건 조회 → templateDlHistPager 기반
+       서버사이드 페이징으로 전환(이전엔 2페이지 이상을 볼 방법이 아예 없었다). */
+    const fnLoadTemplateDlHist = async (resetPage) => {
+      if (resetPage) templateDlHistPager.pageNo = 1;
       try {
-        const res = await mdSgApiSvc.downloadHist.getPage({ pageNo: 1, pageSize: 10 }, '소스젠', '다운로드이력조회');
-        templateDlHist.value = res.data?.data?.pageList || [];
+        const res = await mdSgApiSvc.downloadHist.getPage(
+          { pageNo: templateDlHistPager.pageNo, pageSize: templateDlHistPager.pageSize }, '소스젠', '다운로드이력조회');
+        const d = res.data?.data || {};
+        templateDlHist.value = d.pageList || [];
+        templateDlHistPager.pageTotalCount = d.pageTotalCount || 0;
+        templateDlHistPager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) { /* 조회 실패는 조용히 무시 — 목록이 비어 보일 뿐 모달 사용에 지장 없음 */ }
     };
+    const onSetPageDlHist = (n) => { templateDlHistPager.pageNo = n; fnLoadTemplateDlHist(); };
+    const onSizeChangeDlHist = () => { fnLoadTemplateDlHist(true); };
 
     /* histTabs — 화면 하단 [이력] 탭 정의 (생성 이력 / 생성결과 다운로드 이력 통합, 2026-08-28).
-       탭 정의는 computed 금지 → reactive + getter 카운트 표준 패턴. */
+       탭 정의는 computed 금지 → reactive + getter 카운트 표준 패턴.
+       2026-08-30 버그수정: genHists/templateDlHist 는 서버사이드 페이징 도입 이후 "현재 페이지에
+       실린 행"만 담고 있어(pageSize=10), .length 를 쓰면 배지가 항상 페이지 크기(10) 근처로
+       보였다("총 15건인데 배지는 10") — 전체 건수는 pager.pageTotalCount 에 있으므로 그걸 쓴다.
+       페이징 있는 목록의 탭 배지는 항상 이 값을 참조할 것(정책서 sy.51 §Dtl 탭 뷰모드 참고). */
     const histTabs = reactive([
-      { id: 'gen',      label: '생성 이력', icon: '📎', get count() { return genHists.length; } },
-      { id: 'download', label: '생성결과 다운로드 이력', icon: '⬇', get count() { return templateDlHist.value.length; } },
+      { id: 'gen',      label: '생성 이력', icon: '📎', get count() { return genHistPager.pageTotalCount; } },
+      { id: 'download', label: '생성결과 다운로드 이력', icon: '⬇', get count() { return templateDlHistPager.pageTotalCount; } },
     ]);
 
     /* ── 5) DDL 탭 편집 + 좌측 트리(subPackage 계층) ──
@@ -1178,20 +1358,17 @@ window.MdSgSourcegenPage = {
       tabs.push(t);
       uiState.activeTabId = t.tabId;
     };
-    /* onDeleteTab — 탭(테이블) 1개 삭제 */
-    const onDeleteTab = async (tabId) => {
-      const t = tabs.find(x => x.tabId === tabId);
-      if (!t) return;
-      if ((t.ddlText || '').trim() && !await props.showConfirm('테이블 삭제', `[${t.tableNm || '이 테이블'}] 을 목록에서 삭제하시겠습니까?`)) return;
-      const idx = tabs.indexOf(t);
-      if (idx >= 0) tabs.splice(idx, 1);
+    /* onDeleteTab — 탭(테이블) 1개 삭제. 2026-08-30: 항목(리프)은 confirm 없이 바로 삭제하도록
+       변경 — 폴더 삭제(여러 테이블이 한꺼번에 사라짐)와 달리 테이블 1개 삭제는 되돌리기 쉽고
+       (다시 추가하면 그만) 매번 확인창을 띄우는 게 번거롭다는 요청. */
+    const onDeleteTab = (tabId) => {
+      const idx = tabs.findIndex(x => x.tabId === tabId);
+      if (idx < 0) return;
+      tabs.splice(idx, 1);
       fnEnsureNotEmpty();
     };
-    const onClearTab = async () => {
-      const t = cfCurTab.value;
-      if (!await props.showConfirm('현재 테이블 초기화', `[${t.tableNm || '현재 테이블'}] 의 DDL 을 지우시겠습니까?`)) return;
-      Object.assign(t, { ddlText: '', schemaNm: '', tableNm: '', classNm: '', endpoint: '', swaggerTag: '', files: {}, error: '', generatedAt: '' });
-    };
+    /* onClearTab(현재탭 초기화)은 2026-08-30 버튼 제거와 함께 삭제 — 좌측 트리 툴바의
+       [초기화](onClearAllTabs) 로 통합. */
     const onClearAllTabs = async () => {
       if (!await props.showConfirm('전체 초기화', '모든 DDL 탭과 생성 결과를 지우시겠습니까?')) return;
       tabs.splice(0, tabs.length, fnNewTab());
@@ -1232,9 +1409,12 @@ window.MdSgSourcegenPage = {
       }
       uiState.treeRenamePath = null; uiState.treeRenameText = '';
     };
+    /* onDeleteFolder — 2026-08-30: 폴더 안에 지워질 테이블(자식 노드)이 있을 때만 confirm.
+       비어 있는 폴더(자식 없음)는 바로 삭제 — 잃을 내용이 없으므로 확인이 불필요하다. */
     const onDeleteFolder = async (path) => {
       const affected = tabs.filter(t => t.subPackage === path || (t.subPackage || '').startsWith(path + '.'));
-      if (!await props.showConfirm('폴더 삭제', `[${path}] 폴더와 그 안의 테이블 ${affected.length}개를 모두 삭제하시겠습니까?`)) return;
+      if (affected.length &&
+        !await props.showConfirm('폴더 삭제', `[${path}] 폴더와 그 안의 테이블 ${affected.length}개를 모두 삭제하시겠습니까?`)) return;
       affected.forEach(t => { const i = tabs.indexOf(t); if (i >= 0) tabs.splice(i, 1); });
       fnEnsureNotEmpty();
     };
@@ -1323,15 +1503,18 @@ window.MdSgSourcegenPage = {
         fnHighlight();
         const failed = tabs.filter(t => t.error).length;
 
-        /* 정상 생성(okCount>0) 시 결과를 [생성 이력]에 자동 보관 — 이미 저장된 프로젝트일 때만
-           가능(첨부는 projectId 에 매달림). 신규(미저장) 프로젝트는 [저장] 시 보관된다(onSave 참조).
+        /* 정상 생성(okCount>0) 시 결과를 [생성 이력]에 자동 보관.
+           2026-08-30: 신규(미저장, projectId 없음) 프로젝트도 [저장]을 먼저 누르지 않아도
+           fnAutoCreateProject 로 조용히 자동 저장한 뒤 보관한다(예전엔 이미 저장된 프로젝트만
+           가능 — [저장] 을 눌러야만 이력이 남았음).
            보관 자체가 실패해도 생성은 이미 끝났으므로 되돌리지 않고 안내만 한다. */
         let archived = false;
-        if (okCount && form.projectId) {
+        if (okCount) {
           try {
-            await fnArchiveZip(form.projectId, uiState.genMemo);
+            const projectId = form.projectId || await fnAutoCreateProject();
+            await fnArchiveZip(projectId, uiState.genMemo);
             uiState.genMemo = '';
-            await fnLoadGenHists(form.projectId);
+            await fnLoadGenHists(projectId, true); // 방금 생긴 이력은 항상 1페이지 맨 위 — 1페이지로 되돌려서 바로 보이게
             archived = true;
           } catch (e) {
             props.showToast('생성은 완료됐지만 이력 보관에 실패했습니다: ' + coUtil.cofErrMsg(e, ''), 'error', 0);
@@ -1359,6 +1542,7 @@ window.MdSgSourcegenPage = {
       fnHighlight();
     };
     const onResultTreeToggle = (path) => { uiState.resultTreeCollapsed[path] = !uiState.resultTreeCollapsed[path]; };
+    const onGenFileTreeToggle = (path) => { uiState.genFileTreeCollapsed[path] = !uiState.genFileTreeCollapsed[path]; };
     const onSelectFile = (key) => { uiState.activeFile = key; fnHighlight(); };
     const onCopyCode = async () => {
       const code = cfActiveEntry.value?.content || '';
@@ -1396,12 +1580,18 @@ window.MdSgSourcegenPage = {
     };
 
     /* fnZipName — "sourcegen_프로젝트명_yyyyMMdd_HHmmss.zip" */
+    /* fnZipName — 2026-08-30: 예전엔 "sourcegen_{프로젝트명}_{현재시각}.zip" 이었는데, 프로젝트명이
+       자동생성 규칙(fnFillAutoName)으로 이미 "테이블명_YYYYMMDD_hhmm" 처럼 타임스탬프를 포함하고
+       있어 뒤에 또 현재시각이 붙으면 "sourcegen_sy_alarm_20260830_0801_20260830_085238.zip" 처럼
+       시각이 두 번 겹쳐 보였다("id20260830_cre20260830_085238" 형태로 정리해달라는 요청) — 사람이
+       바꿀 수 있는 프로젝트명 대신 불변인 projectId 를 쓰고, 시각 앞에 cre(생성시각)를 붙인다.
+       projectId 가 없는(저장 전 신규) 프로젝트는 id 부분 자체를 생략한다. */
     const fnZipName = () => {
       const d = new Date();
       const p = n => String(n).padStart(2, '0');
       const ts = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
-      const nm = (form.projectNm || 'project').replace(/[^\w가-힣.-]+/g, '_');
-      return `sourcegen_${nm}_${ts}.zip`;
+      const idPart = form.projectId ? `id${form.projectId}_` : '';
+      return `sourcegen_${idPart}cre${ts}.zip`;
     };
 
     const onDownloadZip = async () => {
@@ -1414,15 +1604,27 @@ window.MdSgSourcegenPage = {
         a.href = url; a.download = zipName;
         a.click();
         URL.revokeObjectURL(url);
-        fnLogDownload(zipName);
+        fnLogDownload(zipName, blob);
       } catch (err) {
         props.showToast(err.message || 'ZIP 생성 중 오류가 발생했습니다.', 'error', 0);
       }
     };
 
     /* fnLogDownload — [⬇ ZIP 다운로드] 클릭 기록(다운로드이력관리 화면용, 2026-08-26).
+       2026-08-30: 로그만 남기던 것에서 ZIP 도 공통 업로드 API 로 함께 올려 attachId/zipUrl 을
+       같이 저장 — 이 이력 그리드에서도 재다운로드가 가능해진다(genHist 와 같은 방식).
+       업로드까지 실패해도 다운로드 자체는 이미 끝났으니 그냥 로그만(파일 없이) 남긴다.
        로그성 호출 — 실패해도 방금 끝난 다운로드 자체에는 영향 주지 않는다(await 없이 fire-and-forget). */
-    const fnLogDownload = (zipName) => {
+    const fnLogDownload = async (zipName, blob) => {
+      let attachId = null, zipUrl = null;
+      try {
+        const fd = new FormData();
+        fd.append('files', blob, zipName);
+        fd.append('businessCode', 'md_sg_gen');
+        const upRes = await coApiSvc.cmUpload.uploadMulti(fd, '소스젠', 'ZIP다운로드업로드');
+        const uploaded = (upRes.data?.data?.files || [])[0];
+        if (uploaded) { attachId = uploaded.attachId || null; zipUrl = uploaded.cdnImgUrl || uploaded.attachUrl || null; }
+      } catch (e) { /* 업로드 실패해도 로그는 남긴다(재다운로드만 안 될 뿐) */ }
       mdSgApiSvc.downloadHist.create({
         projectId: form.projectId || null,
         projectNm: form.projectNm || null,
@@ -1430,7 +1632,10 @@ window.MdSgSourcegenPage = {
         zipFileNm: zipName,
         ddlCount: cfFilledTabs.value.length,
         fileCount: cfTotalFileCount.value,
-      }, '소스젠', 'ZIP다운로드').then(fnLoadTemplateDlHist).catch(() => { /* 로그 실패는 무시 — 다운로드 자체는 이미 완료됨 */ });
+        attachId, zipUrl,
+        selectedStacks: fnSelectedStacksLabel() || null,
+        genMemo: uiState.genMemo || null,
+      }, '소스젠', 'ZIP다운로드').then(() => fnLoadTemplateDlHist(true)).catch(() => { /* 로그 실패는 무시 — 다운로드 자체는 이미 완료됨 */ });
     };
 
     /* ── 8) 생성 결과를 DB 에 첨부로 보관 ──
@@ -1451,10 +1656,57 @@ window.MdSgSourcegenPage = {
 
     /* fnSelectedStacksLabel — 이번 생성에 고른 언어/스택(selectedStacks, prefix 배열)을
        사람이 읽는 라벨로 바꿔 콤마로 이어붙인다(2026-08-30, 생성 이력 그리드 표시용).
-       SG_FILE_GROUPS 의 title 을 그대로 쓴다 — 팝오버 체크리스트 항목 이름과 항상 일치. */
+       SG_FILE_GROUPS 의 title 을 그대로 쓴다 — 팝오버 체크리스트 항목 이름과 항상 일치.
+       각 항목 뒤에 그 시점 버전(fnStackVersion, 팝오버에서 고른 v1/v2...)도 같이 남긴다 —
+       나중에 이 이력을 볼 때 "그때 어떤 버전으로 생성했는지"까지 알 수 있어야 하므로. */
     const fnSelectedStacksLabel = () => selectedStacks
-      .map(p => SG_FILE_GROUPS.find(g => g.prefix === p)?.title || p)
+      .map(p => (SG_FILE_GROUPS.find(g => g.prefix === p)?.title || p) + ' ' + fnStackVersion(p))
       .join(', ');
+
+    /* fnParseSelectedStacksLabel — fnSelectedStacksLabel 의 역변환(2026-08-30, [불러오기] 시
+       "생성 결과"까지 자동 재생성하기 위함). "Backend (JPA) v1, Vue3 CDN (standalone) v1" 형태를
+       SG_FILE_GROUPS 항목(prefix)+버전 배열로 되돌린다. 생성 결과 파일 자체는 ZIP 으로만 보관돼
+       있어 개별 파일 단위로 직접 복원할 수 없으므로(다중 테이블/스택이 하나의 폴더 구조로 합쳐져
+       역매핑이 불가) 유일한 방법은 "그 시점과 같은 스택 선택으로 다시 생성"하는 것 — 라벨을 못
+       읽으면(과거 이력 등) 빈 배열을 돌려주고 호출부가 기존처럼 수동 생성으로 폴백한다. */
+    const fnParseSelectedStacksLabel = (label) => {
+      if (!label) return [];
+      return label.split(',').map(s => s.trim()).filter(Boolean).map(part => {
+        const m = part.match(/^(.*)\s+(v\d+)$/);
+        const grp = SG_FILE_GROUPS.find(g => g.title === (m ? m[1] : part));
+        return grp ? { prefix: grp.prefix, version: m ? m[2] : 'v1' } : null;
+      }).filter(Boolean);
+    };
+
+    /* fnAutoCreateProject — [소스 생성] 시점에 아직 저장 전(신규, projectId 없음)이어도 생성
+       이력을 남길 수 있도록 프로젝트를 조용히 자동 생성한다(2026-08-30, "저장 안 해도 소스생성
+       되고 이력에 표시되면 좋겠다" 요청). genHist.create/downloadHist 는 projectId 에 매달리는
+       구조라 신규 상태로는 이력을 남길 수 없었던 제약을 해소.
+       onSave 와 달리 [저장] 버튼을 직접 누른 게 아니므로 showConfirm 없이 자동 진행한다 —
+       "처리 버튼은 confirm 필수" 정책은 사용자가 명시적으로 누르는 저장/삭제류 버튼 대상이고,
+       이건 [소스 생성] 클릭의 부수 효과(파일 생성이 이미 그 자체로 결과를 만드는 동작)일 뿐이다.
+       DDL 행도 함께 저장해 이후 프로젝트 목록에서 재진입해도 DDL 탭이 비어 보이지 않게 한다.
+       실패하면 throw(호출부인 onGenerate 가 "이력 보관 실패" 로 안내). */
+    const fnAutoCreateProject = async () => {
+      fnFillAutoName();
+      if (!form.projectNm || !form.projectNm.trim()) form.projectNm = 'sourcegen' + fnTsSuffix();
+      const body = {
+        projectNm: form.projectNm, projectDesc: form.projectDesc,
+        basePackage: form.basePackage, dbTypeCd: form.dbTypeCd,
+        thumbnailUrl: form.thumbnailUrl || null, thumbnailAttachId: form.thumbnailAttachId || null,
+      };
+      const res = await mdSgApiSvc.project.create(body, '소스젠', '자동등록');
+      const projectId = res.data?.data?.projectId;
+      form.projectId = projectId;
+      history.replaceState(null, '', 'fo-md-sg-sourcegen.html?view=editor&projectId=' + encodeURIComponent(projectId));
+      const rows = cfFilledTabs.value.map((t, i) => ({
+        tabNo: i + 1, ddlText: t.ddlText, schemaNm: t.schemaNm, tableNm: t.tableNm,
+        classNm: t.classNm, endpoint: t.endpoint, swaggerTag: t.swaggerTag, subPackage: t.subPackage || null,
+        sortOrd: i, useYn: 'Y',
+      }));
+      await mdSgApiSvc.ddl.saveList(projectId, rows, '소스젠', 'DDL저장');
+      return projectId;
+    };
 
     /* fnArchiveZip — 생성 결과를 ZIP 으로 묶어 업로드하고 이력 1건을 남긴다.
        [소스 생성] 직후 자동 보관과 [저장](신규 프로젝트 최초 저장) 시 자동 보관이 함께 쓴다
@@ -1483,15 +1735,22 @@ window.MdSgSourcegenPage = {
       }, '소스젠', '생성이력등록');
     };
 
-    /* onLoadSnapshot — [생성결과 보관 이력]의 [불러오기]. 그 시점의 DDL 탭 입력값을 에디터로 복원한다
-       (생성된 소스 자체가 아니라 "다시 생성할 수 있는 재료"를 되돌리는 것 — 복원 후 [소스 생성]을 다시
-       눌러야 실제 파일이 나온다). 현재 편집 중인 탭 내용을 덮어쓰므로 확인을 받는다. */
+    /* onLoadSnapshot — [생성결과 보관 이력]의 [불러오기]. 그 시점의 DDL 탭 입력값을 에디터로 복원한다.
+       2026-08-30: row.selectedStacks(그 시점 선택 언어/스택 라벨)를 읽을 수 있으면 복원 직후 같은
+       스택 선택으로 [소스 생성]까지 자동 실행해 "생성 결과"도 같이 복원한다("생성 결과 정보도
+       불러올 수 있어?" 요청 — 생성된 소스 파일 자체는 ZIP 으로만 보관돼 있어 파일 단위 복원은
+       불가능하고, 같은 조건으로 다시 생성하는 것이 유일한 방법). 라벨을 못 읽으면(과거 이력 등)
+       기존처럼 DDL만 복원하고 사용자가 직접 [소스 생성]을 눌러야 한다. */
     const onLoadSnapshot = async (row) => {
       if (!row.ddlSnapshotJson) { props.showToast('이 이력에는 불러올 DDL 스냅샷이 없습니다.', 'error'); return; }
       let snap;
       try { snap = JSON.parse(row.ddlSnapshotJson); } catch (e) { props.showToast('스냅샷 데이터를 읽을 수 없습니다.', 'error'); return; }
+      const parsedStacks = fnParseSelectedStacksLabel(row.selectedStacks);
       if (!await props.showConfirm('생성결과 불러오기',
-        `${coUtil.cofYmdHm(row.genDate) || ''} 생성 시점의 DDL 탭 입력값으로 되돌리시겠습니까?\n(현재 편집 중인 DDL 탭 내용은 덮어써집니다 — 다시 생성하려면 [소스 생성]을 눌러주세요)`)) return;
+        `${coUtil.cofYmdHm(row.genDate) || ''} 생성 시점의 DDL 탭 입력값으로 되돌리시겠습니까?` +
+        (parsedStacks.length
+          ? '\n(현재 편집 중인 DDL 탭 내용은 덮어써지고, 그 시점 선택 언어/스택으로 자동 재생성됩니다)'
+          : '\n(현재 편집 중인 DDL 탭 내용은 덮어써집니다 — 다시 생성하려면 [소스 생성]을 눌러주세요)'))) return;
       if (snap.basePackage) form.basePackage = snap.basePackage;
       if (snap.dbTypeCd) form.dbTypeCd = snap.dbTypeCd;
       const restored = (snap.tabs || []).map(s => fnNewTab({
@@ -1502,7 +1761,43 @@ window.MdSgSourcegenPage = {
       uiState.activeTabId = tabs[0].tabId;
       uiState.activeFile = '';
       if (cfReadonly.value) uiState.dtlMode = 'edit';
-      props.showToast('DDL 탭을 불러왔습니다. [소스 생성]을 눌러 다시 생성해주세요.', 'success');
+      if (parsedStacks.length) {
+        selectedStacks.splice(0, selectedStacks.length, ...parsedStacks.map(p => p.prefix));
+        parsedStacks.forEach(p => { stackVersions[p.prefix] = p.version; });
+        await onGenerate(); // 자체 성공/실패 토스트를 띄우므로 별도 안내 불필요
+      } else {
+        props.showToast('DDL 탭을 불러왔습니다. [소스 생성]을 눌러 다시 생성해주세요.', 'success');
+      }
+    };
+
+    /* onDownloadGenHistZip — 생성 이력 그리드 [다운로드] 클릭(2026-08-30). 실제 파일 열기는
+       카운트 증가 요청과 무관하게 바로 진행(증가 API 가 느리거나 실패해도 다운로드는 막지
+       않는다) — row.downloadCount 는 서버가 돌려준 최신값으로 낙관적 갱신한다.
+       이 재다운로드도 "다운로드 이벤트"이므로 [생성결과 다운로드 이력] 에도 1건 남긴다 —
+       파일을 다시 올릴 필요 없이 이 이력이 이미 갖고 있는 attachId/zipUrl 을 그대로 복사한다
+       (2026-08-30 — 기존엔 상단 [ZIP 다운로드] 클릭만 로그에 남고 여기서 다시 받으면 로그가
+       안 늘어 "4번 눌렀는데 이력이 그대로"였다). */
+    const onDownloadGenHistZip = async (row) => {
+      window.open(row.zipUrl, '_blank');
+      try {
+        const res = await mdSgApiSvc.genHist.incrementDownload(row.sourcegenHistId, '소스젠', '재다운로드');
+        row.downloadCount = res.data?.data ?? ((row.downloadCount || 0) + 1);
+      } catch (e) { /* 카운트 실패는 무시 — 다운로드 자체는 이미 열림 */ }
+      try {
+        await mdSgApiSvc.downloadHist.create({
+          projectId: form.projectId || null,
+          projectNm: form.projectNm || null,
+          basePackage: form.basePackage || null,
+          zipFileNm: row.zipFileNm,
+          ddlCount: row.ddlCount,
+          fileCount: row.fileCount,
+          attachId: row.attachId || null,
+          zipUrl: row.zipUrl || null,
+          selectedStacks: row.selectedStacks || null,
+          genMemo: row.genMemo || null,
+        }, '소스젠', '생성이력재다운로드');
+        await fnLoadTemplateDlHist(true);
+      } catch (e) { /* 로그 실패는 무시 — 다운로드 자체는 이미 열림 */ }
     };
 
     const onDeleteGenHist = async (h) => {
@@ -1555,7 +1850,7 @@ window.MdSgSourcegenPage = {
           try {
             await fnArchiveZip(projectId, uiState.genMemo);
             uiState.genMemo = '';
-            await fnLoadGenHists(projectId);
+            await fnLoadGenHists(projectId, true);
             archived = true;
           } catch (e) {
             props.showToast('저장은 완료됐지만 생성결과 보관에 실패했습니다: '
@@ -1592,18 +1887,19 @@ window.MdSgSourcegenPage = {
     });
 
     return {
-      uiState, form, tabs, genHists, genHistGridColumns,
-      cfReadonly, cfIsNew, cfCurTab, cfTotalFileCount, cfFilledTabs,
-      cfResultTabs, cfGroupedFiles, cfTree, cfTreeFlat,
+      uiState, form, tabs, genHists, genHistGridColumns, genHistPager, onSetPageGenHist, onSizeChangeGenHist,
+      templateDlHistPager, onSetPageDlHist, onSizeChangeDlHist,
+      cfReadonly, cfShowZipDownload, cfIsNew, cfCurTab, cfTotalFileCount, cfFilledTabs,
+      cfResultTabs, cfGenFileTreeFlat, cfGenFileCount, onGenFileTreeToggle, cfTree, cfTreeFlat,
       cfResultTreeFlat, cfResultScopeLabel, cfActiveEntry, cfScopeFileEntries, cfResultScopeGeneratedAt, cfResultScopeTabsCount,
       fnLangOf,
-      SG_SAMPLE_GROUPS, onLoadSample, onSampleSelectChange, codeBoxRef, thumbInputRef,
+      SG_SAMPLE_GROUPS, onLoadSample, onSampleSelectChange, codeBoxRef, ddlCodeBoxRef, thumbInputRef,
       onOpenThumbPicker, onThumbFileChange, onRemoveThumb,
-      onDdlInput, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
-      SG_TEMPLATE_DOMAINS, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onDownloadTemplate,
+      onDdlInput, onDdlScroll, onBackToList, onNewProject, onSwitchToEdit, onCancelEdit,
+      SG_TEMPLATE_DOMAINS, onTemplateModalOpen, onTemplateModalClose, onTemplateDbTab, onDownloadTemplate, onDownloadCurrentDdl,
       templateDlHist, templateDlHistGridColumns, histTabs,
       onProjectUploadStart, onProjectUploadDbPick, onProjectUploadFile, onOpenUploadPicker, uploadFileInputRef,
-      onSelectTab, onClearTab, onClearAllTabs, onGenerate,
+      onSelectTab, onClearAllTabs, onGenerate,
       onAddTab, onDeleteTab, onTreeToggle,
       onAddFolderStart, onAddFolderCancel, onAddFolderConfirm,
       onRenameNodeStart, onRenameNodeCancel, onRenameNodeConfirm, onDeleteFolder,
@@ -1667,15 +1963,18 @@ window.MdSgSourcegenPage = {
 
   <!-- ═══ DDL 탭 ═══ -->
   <div class="sg-panel">
-    <div class="sg-panel-title">소스젠 목록 (DDL 입력) <span class="sg-panel-sub">(좌측 트리에서 테이블 선택. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
+    <!-- 2026-08-30: 패널 제목을 항상 "목록" 고정 표기하지 않고, cfIsNew/cfReadonly 상태에 맞춰
+         소스젠 신규(등록 전)/소스젠 상세(보기모드)/소스젠 편집(수정모드)으로 구분 표시 -->
+    <div class="sg-panel-title">{{ cfIsNew ? '소스젠 신규' : (cfReadonly ? '소스젠 상세' : '소스젠 편집') }} (DDL 입력) <span class="sg-panel-sub">(좌측 트리에서 테이블 선택. 입력하면 스키마·테이블·클래스명이 자동 추출됩니다)</span>
       <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-        <!-- 2026-08-30: [현재탭 초기화]/[전체 초기화] + 예제 DDL(버튼 그리드 → select 트리)을
-             DDL 편집 영역 하단에서 이 헤더로 이동. select 는 optgroup(DB 유형)으로 트리처럼
-             묶고, 값을 고르는 즉시 그 예제로 새 탭을 추가한 뒤 다시 placeholder 로 되돌린다
-             (값 자체를 기억할 필요 없는 "실행형" 선택이라 select 상태를 유지하지 않음). -->
+        <!-- 2026-08-30: [현재탭 초기화]/[전체 초기화] 버튼 제거(좌측 트리 툴바의 [초기화] 버튼과
+             중복 — 그쪽이 전체 초기화를 이미 담당). 예제 DDL(버튼 그리드 → select 트리)만 유지.
+             select 는 optgroup(DB 유형)으로 트리처럼 묶고, 값을 고르는 즉시 그 예제로 새 탭을
+             추가한 뒤 다시 placeholder 로 되돌린다(값 자체를 기억할 필요 없는 "실행형" 선택이라
+             select 상태를 유지하지 않음). -->
+        <!-- 2026-08-30: 템플릿다운로드/현재정보다운로드/프로젝트업로드도 편집모드 전용으로
+             통일 — 보기모드는 조회만 하는 화면이라 이 3개(전부 DDL 을 "바꾸는" 도구)는 필요 없다. -->
         <template v-if="!cfReadonly">
-          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" @click="onClearTab">현재탭 초기화</button>
-          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" @click="onClearAllTabs">전체 초기화</button>
           <select class="form-control sg-sample-select" style="width:auto;max-width:220px;"
             :value="''" @change="onSampleSelectChange($event)" title="예제 DDL — 선택하면 새 탭이 추가됩니다(빈 탭이면 그 자리를 채움)">
             <option value="" disabled>예제 DDL 선택…</option>
@@ -1685,9 +1984,10 @@ window.MdSgSourcegenPage = {
               </option>
             </optgroup>
           </select>
+          <button type="button" class="sg-btn sg-btn-accent" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
+          <button type="button" class="sg-btn sg-btn-accent" @click="onDownloadCurrentDdl">💾 현재정보다운로드</button>
+          <button type="button" class="sg-btn sg-btn-accent" @click="onProjectUploadStart">📤 프로젝트업로드</button>
         </template>
-        <button type="button" class="sg-btn sg-btn-accent" @click="onTemplateModalOpen">📥 프로젝트템플릿다운로드</button>
-        <button type="button" class="sg-btn sg-btn-accent" @click="onProjectUploadStart">📤 프로젝트업로드</button>
       </span>
     </div>
 
@@ -1695,12 +1995,21 @@ window.MdSgSourcegenPage = {
       <!-- ═══ 좌측: subPackage 기준 트리 (폴더=subPackage 경로, 리프=테이블) ═══ -->
       <div class="sg-ddl-tree">
         <div class="sg-ddl-tree-toolbar">
-          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddFolderStart('')">+ 폴더</button>
-          <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddTab('')">+ 테이블</button>
-          <label class="sg-thumb-chk" style="margin-left:8px;"
-            title="켜두면 새/샘플 테이블이 테이블명 접두어(예: sy_code -> sy)로 자동 폴더 배치됩니다. 끄면 루트에 추가되며, 폴더 배치는 드래그로 직접 합니다">
-            <input type="checkbox" v-model="uiState.autoFolderByPrefix" :disabled="cfReadonly" /> 테이블약어로 폴더생성하기
-          </label>
+          <!-- 2026-08-30: 트리 폭(240px 고정)에 버튼+체크박스가 한 줄로는 다 안 들어와 텍스트가
+               잘렸다 — 체크박스는 둘째 줄로 내리고, 비어난 첫 줄 자리에 [초기화] 버튼 추가 -->
+          <div class="sg-ddl-tree-toolbar-row">
+            <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddFolderStart('')">+ 폴더</button>
+            <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onAddTab('')">+ 테이블</button>
+            <button type="button" class="sg-btn sg-btn-ghost sg-btn-xs" :disabled="cfReadonly" @click="onClearAllTabs">초기화</button>
+          </div>
+          <div class="sg-ddl-tree-toolbar-row">
+            <!-- 2026-08-30: 첫 줄에 있던 총개수가 버튼 3개에 밀려 잘려 보여서 둘째 줄 맨 앞으로 이동 -->
+            <span class="sg-ddl-tree-count">{{ tabs.length }}개</span>
+            <label class="sg-thumb-chk"
+              title="켜두면 새/샘플 테이블이 테이블명 접두어(예: sy_code -> sy)로 자동 폴더 배치됩니다. 끄면 루트에 추가되며, 폴더 배치는 드래그로 직접 합니다">
+              <input type="checkbox" v-model="uiState.autoFolderByPrefix" :disabled="cfReadonly" /> 테이블약어폴더구분
+            </label>
+          </div>
         </div>
         <div v-if="uiState.treeNewFolderParent !== null" class="sg-tree-new-folder">
           <div class="sg-tree-new-folder-parent">{{ uiState.treeNewFolderParent || '최상위' }} 아래에</div>
@@ -1734,6 +2043,7 @@ window.MdSgSourcegenPage = {
               </template>
               <template v-else>
                 <span class="sg-tree-label">{{ row.name }}</span>
+                <span class="sg-tree-count">{{ row.count }}</span>
                 <span v-if="!cfReadonly" class="sg-tree-actions">
                   <button type="button" class="sg-tree-mini-btn" title="이 폴더에 테이블 추가" @click.stop="onAddTab(row.path)">＋</button>
                   <button type="button" class="sg-tree-mini-btn" title="이름변경(점으로 깊이 조절)" @click.stop="onRenameNodeStart(row.path)">✎</button>
@@ -1765,8 +2075,21 @@ window.MdSgSourcegenPage = {
       <div class="sg-opt-row"><label>Swagger Tag</label><input v-model="cfCurTab.swaggerTag" :readonly="cfReadonly" placeholder="(Class Name 과 동일)" /></div>
     </div>
 
-    <textarea v-model="cfCurTab.ddlText" :readonly="cfReadonly" @input="onDdlInput" rows="22"
-      class="form-control sg-ddl-textarea" placeholder="CREATE TABLE schema.tbl ( ... );"></textarea>
+    <!-- 2026-08-30: 편집모드도 보기모드와 같은 Prism 컬러로 보이게(요청: "편집 의 소스 코드
+         스타일 보기모드처럼 같게 해줘") — 오버레이 에디터 기법(Prism 공식 예제/
+         react-simple-code-editor 와 동일): 실제 입력은 완전히 투명한 <textarea>가 받고, 그
+         아래 하이라이트된 <pre> 가 겹쳐서 색만 보여준다. 두 레이어는 폰트·줄높이·패딩이 한
+         글자도 다르면 커서와 글자 줄이 어긋나므로 CSS(.sg-ddl-code / .sg-ddl-textarea-overlay)
+         에서 반드시 같은 값을 맞춘다. 보기모드는 textarea 없이 <pre> 만 그대로 노출(투명 처리
+         불필요 — 읽기 전용이므로). :key 로 탭 전환마다 새로 그려 highlightElement 가 다시
+         걸리게 한다(ddlCodeBoxRef watch 참조 — watch 는 이제 모드 무관하게 항상 재하이라이트). -->
+    <div class="sg-ddl-edit-wrap">
+      <pre ref="ddlCodeBoxRef" :key="cfCurTab.tabId" aria-hidden="true"
+        class="sg-code sg-ddl-code line-numbers language-sql"><code class="language-sql">{{ cfCurTab.ddlText }}</code></pre>
+      <textarea v-if="!cfReadonly" v-model="cfCurTab.ddlText" @input="onDdlInput" @scroll="onDdlScroll"
+        class="sg-ddl-textarea-overlay" spellcheck="false" wrap="off"
+        placeholder="CREATE TABLE schema.tbl ( ... );"></textarea>
+    </div>
     <div v-if="cfCurTab.error" class="sg-msg-error">{{ cfCurTab.error }}</div>
 
     <!-- 2026-08-30: [메모]+[소스 생성] 을 하단 버튼란(화면 우측 구석)에서 이 DDL 편집 영역
@@ -1826,7 +2149,7 @@ window.MdSgSourcegenPage = {
     </template>
     <template v-else>
       <button class="btn btn_save" @click="onSave" :disabled="uiState.loading">저장</button>
-      <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
+      <!-- 2026-08-30: 패턴 A — 편집모드 [삭제] 제거(보기모드에만 유지, 프로젝트 전체 표준 변경) -->
       <button v-if="form.projectId" class="btn btn_cancel" @click="onCancelEdit">취소</button>
     </template>
   </div>
@@ -1834,7 +2157,7 @@ window.MdSgSourcegenPage = {
   <!-- ═══ 생성 결과 뷰어 ═══ -->
   <div class="sg-panel" v-if="cfTotalFileCount">
     <div class="sg-panel-title">
-      생성 결과 — {{ cfResultScopeLabel }}
+      {{ uiState.resultScopeKind === 'root' ? '생성 결과' : '생성 결과 — ' + cfResultScopeLabel }}
       <span class="sg-panel-sub">({{ cfScopeFileEntries.length }}개 파일 / 테이블 {{ cfResultScopeTabsCount }}개 / 전체 {{ cfTotalFileCount }}개)</span>
       <span v-if="cfResultScopeGeneratedAt" class="sg-gen-at">생성: {{ cfResultScopeGeneratedAt }}</span>
     </div>
@@ -1863,22 +2186,32 @@ window.MdSgSourcegenPage = {
           </div>
         </div>
       </div>
-      <!-- ═══ ② 소스목록: 선택 범위의 파일 목록(스택별 그룹) ═══ -->
+      <!-- ═══ ② 생성된 소스목록: 실제 생성 경로(realPath) 그대로의 폴더 트리 ═══
+           2026-08-30: 스택 구분 헤더("Backend - JPA" 등) 없이, 실제 ZIP 에 담기는 경로 그대로
+           보여달라는 요청 — 폴더 자체가 be_jpa/… 처럼 스택별로 자연히 나뉘어 보인다. -->
       <div class="sg-files-col">
-        <div class="sg-result-col-title">소스목록</div>
+        <div class="sg-result-col-title">생성된 소스목록 <span class="sg-result-col-count">{{ cfGenFileCount }}개</span></div>
         <div class="sg-files">
-          <template v-for="grp in cfGroupedFiles" :key="grp.title">
-            <div class="sg-file-grp">{{ grp.title }}</div>
-            <button class="sg-file-btn" v-for="e in grp.files" :key="e.key"
-              :class="{ active: uiState.activeFile===e.key }" @click="onSelectFile(e.key)"
-              :title="e.fn">{{ e.multi ? e.tableNm + '/' + e.fn : e.fn }}</button>
-          </template>
+          <div v-for="row in cfGenFileTreeFlat" :key="row.kind + ':' + (row.kind==='folder' ? row.path : row.entry.key)"
+            class="sg-tree-row" :class="[row.kind==='folder' ? 'sg-tree-row-folder' : 'sg-tree-row-tab',
+              { active: row.kind==='file' && uiState.activeFile===row.entry.key }]"
+            :style="{ paddingLeft: (row.depth*16+8) + 'px' }"
+            :title="row.kind==='file' ? row.entry.realPath : row.path"
+            @click="row.kind==='folder' ? onGenFileTreeToggle(row.path) : onSelectFile(row.entry.key)">
+            <template v-if="row.kind==='folder'">
+              <span class="sg-tree-toggle">{{ uiState.genFileTreeCollapsed[row.path] ? '▸' : '▾' }}</span>
+              <span class="sg-tree-icon">📁</span><span class="sg-tree-label">{{ row.name }}</span>
+            </template>
+            <template v-else>
+              <span class="sg-tree-icon">📄</span><span class="sg-tree-label">{{ row.entry.realPath.split('/').pop() }}</span>
+            </template>
+          </div>
         </div>
       </div>
       <!-- ═══ ③ 소스정보: 선택 파일 코드 뷰어 ═══ -->
       <div class="sg-code-pane">
         <div class="sg-file-info" v-if="cfActiveEntry">
-          <span class="sg-file-path">{{ cfActiveEntry.multi ? cfActiveEntry.tableNm + '/' + cfActiveEntry.fn : cfActiveEntry.fn }}</span>
+          <span class="sg-file-path">{{ cfActiveEntry.realPath }}</span>
           <div class="sg-file-actions">
             <span v-if="uiState.copied" class="sg-copied">✓ 복사됨</span>
             <button class="btn btn-sm btn-secondary" @click="onCopyCode">복사</button>
@@ -1893,9 +2226,10 @@ window.MdSgSourcegenPage = {
     </div>
   </div>
 
-  <!-- ═══ ZIP 다운로드 (2026-08-30: 이 위치 유지 — 생성 결과를 확인한 직후 바로 다운로드) ═══ -->
-  <div class="sg-detail-bottom-actions" v-if="!cfReadonly">
-    <button class="sg-btn sg-btn-green" @click="onDownloadZip" :disabled="!cfTotalFileCount">⬇ ZIP 다운로드</button>
+  <!-- ═══ ZIP 다운로드 (2026-08-30: 이 위치 유지 — 생성 결과를 확인한 직후 바로 다운로드).
+       cfShowZipDownload 가 이미 cfTotalFileCount>0 을 포함하므로 :disabled 는 불필요(항상 true 상태로만 렌더). ═══ -->
+  <div class="sg-detail-bottom-actions" v-if="cfShowZipDownload">
+    <button class="sg-btn sg-btn-green" @click="onDownloadZip">⬇ ZIP 다운로드</button>
   </div>
 
   <!-- ═══ 이력 탭 — 생성 이력(DB 첨부) / 생성결과 다운로드 이력(클릭 로그) 통합, 2026-08-28 ═══ -->
@@ -1905,13 +2239,38 @@ window.MdSgSourcegenPage = {
       @tab-select="id => uiState.histTab = id" />
     <template v-if="uiState.histTab==='gen'">
       <!-- 보관 메모 입력은 2026-08-30 상단 액션바([소스 생성] 왼쪽)로 이동 — 여기 중복 배치 제거. -->
-      <!-- fo-grid 전환(2026-08-25). 로컬 배열이라 pager 없음 — 번호는 show-row-no 기본값(idx+1)과 동일. -->
-      <fo-grid :columns="genHistGridColumns" :rows="genHists" row-key="sourcegenHistId" bare
-        empty-text="보관된 생성결과가 없습니다. [소스 생성] 을 실행하면 자동으로 보관됩니다." />
+      <!-- 2026-08-30: 서버사이드 페이징 적용(정책: 클라이언트 사이드 페이징 금지) — :pager 를 주면
+           fo-grid 가 번호를 페이지 기준으로 자동 계산한다. class="sg-hist-table" 은 행간을
+           좁히는 스코프 CSS(전역 .fo-grid-table 에는 영향 없음). -->
+      <div class="sg-list-count">총 {{ genHistPager.pageTotalCount }}개</div>
+      <fo-grid class="sg-hist-table" :columns="genHistGridColumns" :rows="genHists" :pager="genHistPager" row-key="sourcegenHistId" bare
+        empty-text="보관된 생성결과가 없습니다. [소스 생성] 을 실행하면 자동으로 보관됩니다.">
+        <!-- 2026-08-30: 파일명 컬럼 제거로 넓어진 관리열을 좁은 폭 + 2줄 wrap 으로 다시 축소
+             (columns 의 type:'actions' 항목은 그대로 두되 #row-actions 슬롯이 항상 우선이므로
+             렌더는 이쪽 마크업이 담당 — visible/onClick 조건은 그 배열과 동일하게 맞춘다). -->
+        <template #row-actions="{ row }">
+          <div class="sg-hist-actions">
+            <a v-if="row.zipUrl" class="sg-hist-link" @click="onDownloadGenHistZip(row)">다운로드</a>
+            <button v-if="row.ddlSnapshotJson" type="button" class="btn btn-xs btn_detail" @click="onLoadSnapshot(row)">불러오기</button>
+            <button v-if="!cfReadonly" type="button" class="btn btn_row_delete" @click="onDeleteGenHist(row)">삭제</button>
+          </div>
+        </template>
+      </fo-grid>
+      <fo-pager :pager="genHistPager" :on-set-page="onSetPageGenHist" :on-size-change="onSizeChangeGenHist" />
     </template>
     <template v-else>
-      <fo-grid :columns="templateDlHistGridColumns" :rows="templateDlHist" row-key="downloadHistId" bare
-        empty-text="다운로드 이력이 없습니다." />
+      <div class="sg-list-count">총 {{ templateDlHistPager.pageTotalCount }}개</div>
+      <fo-grid class="sg-hist-table" :columns="templateDlHistGridColumns" :rows="templateDlHist" :pager="templateDlHistPager" row-key="downloadHistId" bare
+        empty-text="다운로드 이력이 없습니다.">
+        <!-- 생성이력 그리드와 관리열 폭을 맞추기 위해 같은 wrapper 재사용(버튼은 1개뿐이라 실제로는 줄바꿈 안 됨).
+             plain href 링크 — 클릭해도 이 그리드에 새 로그를 남기지 않는다(기존 동작 그대로). -->
+        <template #row-actions="{ row }">
+          <div class="sg-hist-actions">
+            <a v-if="row.zipUrl" class="sg-hist-link" :href="row.zipUrl" target="_blank" rel="noopener">다운로드</a>
+          </div>
+        </template>
+      </fo-grid>
+      <fo-pager :pager="templateDlHistPager" :on-set-page="onSetPageDlHist" :on-size-change="onSizeChangeDlHist" />
     </template>
   </div>
 
@@ -1949,6 +2308,11 @@ window.MdSgSourcegenPage = {
       업로드할 파일의 DDL 방언을 먼저 선택해주세요(파싱 기준). txt / sql / zip(txt·sql 포함) 파일만 가능하며,
       한 파일에 CREATE TABLE 이 여러 개 있어도 테이블 단위로 나눠 좌측 트리에 추가됩니다.
     </div>
+    <!-- 2026-08-30: 기본 체크(교체) — 체크 해제 시 기존 탭에 누적 추가(예전 동작) -->
+    <label class="sg-thumb-chk" style="margin-bottom:12px;"
+      title="체크: 업로드 내용으로 좌측 트리를 전부 교체합니다. 해제: 기존 탭은 그대로 두고 뒤에 누적 추가합니다">
+      <input type="checkbox" v-model="uiState.uploadReplaceExisting" /> 기존정보 초기화
+    </label>
     <input ref="uploadFileInputRef" type="file" accept=".txt,.sql,.zip" style="display:none" @change="onProjectUploadFile" />
     <button type="button" class="sg-btn sg-btn-dark" style="width:100%;justify-content:center;"
       :disabled="uiState.uploading" @click="onOpenUploadPicker">

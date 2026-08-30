@@ -109,4 +109,10 @@ public class MdSgProjectController {
         mdSgSourcegenHistService.delete(sourcegenHistId);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
+
+    /** incrementGenHistDownload — 생성 이력 그리드의 [다운로드] 클릭마다 download_count 1 증가(2026-08-30) */
+    @PatchMapping("/gen-hists/{sourcegenHistId}/download")
+    public ResponseEntity<ApiResponse<Integer>> incrementGenHistDownload(@PathVariable("sourcegenHistId") String sourcegenHistId) {
+        return ResponseEntity.ok(ApiResponse.ok(mdSgSourcegenHistService.incrementDownloadCount(sourcegenHistId)));
+    }
 }

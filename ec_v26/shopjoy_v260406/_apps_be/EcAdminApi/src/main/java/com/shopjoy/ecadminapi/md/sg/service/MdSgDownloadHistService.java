@@ -18,7 +18,9 @@ import java.util.List;
 
 /**
  * MdSgDownloadHist — 소스젠 FO 화면 [⬇ ZIP 다운로드] 클릭 기록.
- * 파일 자체는 재보관하지 않고 클릭 로그만 남긴다(BO 에서 조회만, 재다운로드 기능 없음).
+ * 2026-08-30: attachId/zipUrl 을 함께 남기면(공통 업로드 API 로 올린 결과) 이 로그에서도
+ * 재다운로드가 가능하다 — 다만 과거 이력(이 컬럼 추가 전 기록)은 null 이라 재다운로드 버튼이
+ * 안 뜬다(정상. 그 시점엔 파일을 안 올렸으므로 복구할 방법이 없음).
  */
 @Service
 @RequiredArgsConstructor

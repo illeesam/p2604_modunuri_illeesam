@@ -1877,7 +1877,7 @@ window.MdSgSourcegenPage = {
     </template>
     <template v-else>
       <button class="btn btn_save" @click="onSave" :disabled="uiState.loading">저장</button>
-      <button v-if="form.projectId" class="btn btn_delete" @click="onDeleteProject">삭제</button>
+      <!-- 2026-08-30: 패턴 A — 편집모드 [삭제] 제거(보기모드에만 유지, 프로젝트 전체 표준 변경) -->
       <button v-if="form.projectId" class="btn btn_cancel" @click="onCancelEdit">취소</button>
     </template>
   </div>

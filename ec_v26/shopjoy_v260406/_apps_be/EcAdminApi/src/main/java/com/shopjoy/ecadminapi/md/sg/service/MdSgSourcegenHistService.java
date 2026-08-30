@@ -64,6 +64,22 @@ public class MdSgSourcegenHistService {
         return saved;
     }
 
+    /** incrementDownloadCount — 생성 이력 그리드의 [다운로드] 클릭마다 호출(2026-08-30).
+     *  로그성 카운터라 실패해도 다운로드 자체를 막지 않는다(호출부에서 실패를 무시). */
+    @Transactional
+    public int incrementDownloadCount(String id) {
+        CmUtil.requireId(id, "id", this);
+        // [쿼리 메서드] 소스젠 생성 이력 단건 조회
+        MdSgSourcegenHist entity = mdSgSourcegenHistRepository.findById(id)
+            .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+        int next = (entity.getDownloadCount() == null ? 0 : entity.getDownloadCount()) + 1;
+        entity.setDownloadCount(next);
+        // [쿼리 메서드] 소스젠 생성 이력 저장
+        mdSgSourcegenHistRepository.save(entity);
+        em.flush();
+        return next;
+    }
+
     @Transactional
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);

@@ -11,6 +11,8 @@ CREATE TABLE shopjoy_2604.md_sg_download_hist (
     zip_file_nm      VARCHAR(300),
     ddl_count        INTEGER      DEFAULT 0,
     file_count       INTEGER      DEFAULT 0,
+    attach_id        VARCHAR(21),
+    zip_url          VARCHAR(500),
     reg_by           VARCHAR(30),
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30),
@@ -27,6 +29,8 @@ COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.base_package IS 'Base Package
 COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.zip_file_nm IS '다운로드한 ZIP 파일명 스냅샷';
 COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.ddl_count IS '다운로드 시점 DDL 탭 수';
 COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.file_count IS '다운로드 시점 생성 파일 수';
+COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.attach_id IS '다운로드한 ZIP 첨부ID (sy_attach.attach_id) — 2026-08-30 재다운로드 지원을 위해 보관, null 가능(과거 이력)';
+COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.zip_url IS 'ZIP 다운로드 URL — 2026-08-30 재다운로드 지원을 위해 보관, null 가능(과거 이력)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.reg_by IS '등록자 (다운로드한 FO 회원ID)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.reg_date IS '등록일 (=다운로드 일시)';
 COMMENT ON COLUMN shopjoy_2604.md_sg_download_hist.upd_by IS '수정자';
