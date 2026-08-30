@@ -179,7 +179,7 @@ app:
   #   history.replaceState 가 cross-origin 으로 막힐 때의 전체 이동 폴백에 사용
   frontend:
     dir: ${FRONTEND_DIR:../../}
-    base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5502}
+    base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5501}
 
   redis:
     enabled: false            # true 로 변경 시 Redis 활성화

@@ -52,10 +52,33 @@
     const navLoading = ref(false);
     const errorMessage = ref('');
 
-    /* 페이지 전환마다 title/description 을 사이트 공통값으로 초기화 — 상품상세 등 개별
-       페이지가 자기 데이터로 다시 덮어쓴다(foUtil.fofSetPageMeta). 새로 들어온 페이지가
-       커스텀 meta 를 안 쓰는 화면이면 이전 페이지의 값이 안 남고 공통값으로 정리된다 */
-    watch(page, () => foUtil.fofResetPageMeta());
+    /* FO_PAGE_TITLES — 브라우저 탭 제목(document.title) 매핑. 여기 없는 pageId(home 포함)는
+       사이트 공통값(index.html 의 정적 <title>)으로 리셋된다.
+       2026-08-30: 이전엔 페이지 전환마다 무조건 공통값 하나로만 리셋해서, 장바구니/주문/FAQ 등
+       상품상세·이벤트상세 이외의 화면은 탭 제목이 절대 안 바뀌던 문제를 보완
+       ("주문·결제 화면인데 탭 제목이 그대로"). */
+    const FO_PAGE_TITLES = {
+      prodList: '상품 목록', prodView: '상품 상세',
+      cart: '장바구니', order: '주문 · 결제',
+      contact: '고객센터', faq: 'FAQ',
+      event: '이벤트', eventView: '이벤트 상세',
+      blog: '블로그', blogView: '블로그 상세', blogEdit: '블로그 글쓰기',
+      like: '위시리스트', location: '위치안내', about: '회사소개',
+      myOrder: '주문내역', myClaim: '클레임내역', myCoupon: '쿠폰함',
+      myCache: '적립금 · 캐시', myContact: '문의내역', myChatt: '채팅상담',
+      dispUi01: '전시 UI 01', dispUi02: '전시 UI 02', dispUi03: '전시 UI 03',
+      dispUi04: '전시 UI 04', dispUi05: '전시 UI 05', dispUi06: '전시 UI 06',
+      error401: '접근 제한', error404: '페이지를 찾을 수 없음', error500: '오류가 발생했습니다',
+    };
+    /* 페이지 전환마다 title/description 을 위 표(없으면 사이트 공통값)로 초기화 — 상품상세 등
+       개별 페이지는 자기 데이터로 다시 덮어쓴다(foUtil.fofSetPageMeta). 이 watch 는 Vue
+       pre-flush 라 새 페이지 컴포넌트의 onMounted 보다 항상 먼저 실행되므로, 상품명 등
+       구체적인 제목이 이 표의 값을 순서대로 덮어써서 최종 반영된다. */
+    watch(page, (v) => {
+      const label = FO_PAGE_TITLES[v];
+      if (label) foUtil.fofSetPageMeta({ title: label + ' - ShopJoy' });
+      else foUtil.fofResetPageMeta();
+    });
 
     /* X- 헤더 배열을 압축 포맷으로 변환 (→ lib/app/foAppFunc.js) */
     const _fmtXHeaders = window.foAppFunc.fmtXHeaders;

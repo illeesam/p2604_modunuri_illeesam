@@ -89,7 +89,7 @@ app:
   # FoSeoController/FoSeoService — SEO 메타태그 서버사이드 주입(/prodDtl/{prodId}) 용 (application-local.yml 참조)
   frontend:
     dir: ${FRONTEND_DIR:../../}
-    base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5502}
+    base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5501}
 
   redis:
     enabled: false            # true 로 변경 시 Redis 활성화
