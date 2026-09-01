@@ -1,0 +1,217 @@
+# shopjoy-be-illeesam-synol-deploy.yml — 2026-09-02 신설 (구 deploy-ec-admin.yml 을
+# docker run 단독 방식에서 docker compose 기반으로 전환 + 이름변경).
+#
+# main에 push 되면 트리거는 되지만, 실제 빌드+배포는 커밋 메시지에 "deploy" 또는 "배포"라는
+# 단어가 들어있을 때만 진행한다(shopjoy-fe-illeesam-*-deploy.yml 과 동일 규칙).
+# (workflow_dispatch로 수동 실행할 땐 이 단어 체크 없이 무조건 진행됨)
+#
+# 빌드 검증(shopjoy-be-illeesam-synol-build.yml)과는 별개 워크플로 — 그쪽은 배포 안 하고
+# Gradle 컴파일 성공 여부만 확인함.
+#
+# 흐름: Gradle 빌드(GitHub 러너, 빠름) → Docker 이미지 빌드 → 이미지 tar.gz 압축 →
+#   docker-compose.yml + nginx 설정 3종과 함께 NAS 로 전송 → NAS 에서 docker load(이미지
+#   임포트, 재빌드 안 함 — NAS 의 약한 CPU 로 Gradle/Docker 빌드를 시키지 않기 위함) →
+#   docker compose up -d (ecadminapi + nginx 스택 기동/갱신) → 헬스체크.
+#
+# NAS 배포 경로: /volume1/docker/shopjoy/backend/ (docker-compose.yml + nginx 설정 위치)
+#   ⚠ .env 파일은 이 워크플로가 만들지 않는다 — /volume1/docker/shopjoy/backend/.env 를
+#     최초 1회 NAS 에 수동으로 준비해둬야 한다(JWT_SECRET 등 민감정보를 리포에 커밋하지 않기 위함).
+#
+# 필요 시크릿(리포지토리 Settings → Secrets and variables → Actions):
+#   SYNOLOGY_HOST / SYNOLOGY_PORT / SYNOLOGY_USER / SYNOLOGY_PASSWORD / SYNOLOGY_SSH_KEY
+
+name: shopjoy-be-illeesam-synol-deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/**'
+      - 'ec_v26/shopjoy_v260406/_doc/정책서-배포-시놀로지/docker/docker-compose.yml'
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # 커밋 메시지에 deploy/Deploy/DEPLOY/배포 중 하나라도 있어야 진행.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.message, 'deploy') ||
+      contains(github.event.head_commit.message, 'Deploy') ||
+      contains(github.event.head_commit.message, 'DEPLOY') ||
+      contains(github.event.head_commit.message, '배포')
+
+    steps:
+      # ─────────────────────────────────────────
+      # [1] 체크아웃 + 환경 확인
+      # ─────────────────────────────────────────
+      - name: "[1-1] 소스코드 체크아웃"
+        uses: actions/checkout@v4
+
+      - name: "[1-2] 체크아웃 확인"
+        run: |
+          echo "브랜치  : ${{ github.ref_name }}"
+          echo "커밋SHA : ${{ github.sha }}"
+          echo "커밋메시지: ${{ github.event.head_commit.message }}"
+          echo "작성자  : ${{ github.actor }}"
+          echo "시각    : $(date '+%Y-%m-%d %H:%M:%S')"
+
+      # ─────────────────────────────────────────
+      # [2] JDK 설정 + Gradle 빌드
+      # ─────────────────────────────────────────
+      - name: "[2-1] JDK 17 설정"
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: "[2-2] Gradle 빌드 (테스트 제외)"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: |
+          chmod +x gradlew
+          ./gradlew bootJar -x test --no-daemon
+          ls -lh build/libs/
+
+      # ─────────────────────────────────────────
+      # [3] Docker 이미지 빌드 + 압축
+      # ─────────────────────────────────────────
+      - name: "[3-1] Docker 이미지 빌드 (docker-compose.yml 의 image: 태그와 일치시킴)"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: |
+          docker build \
+            --tag shopjoy/ecadminapi:latest \
+            --tag shopjoy/ecadminapi:${{ github.sha }} \
+            --build-arg BUILD_DATE=$(date '+%Y-%m-%d') \
+            --build-arg GIT_COMMIT=${{ github.sha }} \
+            .
+          docker images | grep shopjoy/ecadminapi
+
+      - name: "[3-2] Docker 이미지 tar.gz 압축"
+        working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+        run: |
+          docker save shopjoy/ecadminapi:latest | gzip > ecadminapi-image.tar.gz
+          echo "압축파일 크기: $(du -sh ecadminapi-image.tar.gz | cut -f1)"
+
+      # ─────────────────────────────────────────
+      # [4] 배포용 설정파일 한 곳에 모으기 (docker-compose.yml + nginx 설정 3종)
+      # ─────────────────────────────────────────
+      - name: "[4-1] 설정파일 모음 (deploy_pkg/)"
+        run: |
+          mkdir -p ec_v26/shopjoy_v260406/deploy_pkg
+          cp "ec_v26/shopjoy_v260406/_doc/정책서-배포-시놀로지/docker/docker-compose.yml" ec_v26/shopjoy_v260406/deploy_pkg/
+          cp ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/nginx.conf ec_v26/shopjoy_v260406/deploy_pkg/
+          cp ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/locations.conf ec_v26/shopjoy_v260406/deploy_pkg/
+          cp ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/security-headers.conf ec_v26/shopjoy_v260406/deploy_pkg/
+          ls -la ec_v26/shopjoy_v260406/deploy_pkg/
+
+      # ─────────────────────────────────────────
+      # [5] Synology NAS 로 전송 (SCP)
+      # ─────────────────────────────────────────
+      - name: "[5-1] 설정파일 전송"
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          source: "ec_v26/shopjoy_v260406/deploy_pkg/docker-compose.yml,ec_v26/shopjoy_v260406/deploy_pkg/nginx.conf,ec_v26/shopjoy_v260406/deploy_pkg/locations.conf,ec_v26/shopjoy_v260406/deploy_pkg/security-headers.conf"
+          target: "/volume1/docker/shopjoy/backend/"
+          strip_components: 3
+
+      - name: "[5-2] Docker 이미지 전송"
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          source: "ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/ecadminapi-image.tar.gz"
+          target: "/volume1/docker/shopjoy/backend/"
+          strip_components: 4
+
+      # ─────────────────────────────────────────
+      # [6] NAS 에서 이미지 로드 + docker compose 배포
+      # ─────────────────────────────────────────
+      - name: "[6-1] 이미지 로드 + docker compose up -d"
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          script: |
+            cd /volume1/docker/shopjoy/backend
+
+            echo "[6-1-1] 전송된 파일 확인"
+            ls -lh .
+
+            if [ ! -f .env ]; then
+              echo "⚠ .env 파일이 없습니다 — 최초 1회 수동으로 준비해야 합니다. 배포를 계속하되"
+              echo "  ecadminapi 컨테이너는 필수 환경변수(JWT_SECRET 등) 없이 뜨지 못할 수 있습니다."
+            fi
+
+            echo ""
+            echo "[6-1-2] 새 이미지 로드 (재빌드 없음 — NAS 는 미리 빌드된 이미지만 import)"
+            sudo docker load < ecadminapi-image.tar.gz
+
+            echo ""
+            echo "[6-1-3] docker compose 로 스택 기동/갱신 (변경된 서비스만 재생성됨)"
+            sudo docker compose up -d
+
+            echo ""
+            echo "[6-1-4] 임시 압축파일 정리"
+            rm -f ecadminapi-image.tar.gz
+
+            echo ""
+            echo "[6-1-5] 컨테이너 상태 확인"
+            sleep 5
+            sudo docker compose ps
+
+            echo ""
+            echo "[6-1-6] ecadminapi 초기 로그"
+            sudo docker compose logs --tail 30 ecadminapi
+
+      # ─────────────────────────────────────────
+      # [7] 외부 헬스체크
+      # ─────────────────────────────────────────
+      - name: "[7-1] GitHub Runner → 외부 HTTP 헬스체크"
+        if: always()
+        run: |
+          # actuator 는 server.servlet.context-path 가 없어 백엔드 루트(/actuator/health)에
+          # 있다. nginx location /api/ 는 프록시 시 URI 를 그대로 넘기므로(/api/actuator/health
+          # 로 백엔드에 전달됨) 21000(nginx) 경유로는 안 맞는다 — 21080(디버그용 직결 포트)으로
+          # 직접 확인한다. nginx 자체 응답 확인은 정적 파일 하나(/index.html)로 별도 체크.
+          echo ">> nginx 정적서빙 확인 (21000)"
+          curl -s -o /dev/null -w "   HTTP Status: %{http_code}\n" --max-time 10 --connect-timeout 5 \
+            "http://illeesam.synology.me:21000/index.html" || echo "   curl실패"
+
+          echo ""
+          echo ">> 백엔드 actuator 헬스체크 (21080, 디버그 직결)"
+          URL="http://illeesam.synology.me:21080/actuator/health"
+          HTTP_CODE=$(curl -s -o /tmp/body.txt -w "%{http_code}" --max-time 10 --connect-timeout 5 "$URL" || echo "curl실패")
+          echo "   HTTP Status: $HTTP_CODE"
+          [ -s /tmp/body.txt ] && cat /tmp/body.txt | head -20 | sed 's/^/     /'
+
+      # ─────────────────────────────────────────
+      # [8] 결과 요약
+      # ─────────────────────────────────────────
+      - name: "[8-1] 배포 결과 요약"
+        if: always()
+        run: |
+          echo "레포    : ${{ github.repository }}"
+          echo "커밋SHA : ${{ github.sha }}"
+          echo "결과    : ${{ job.status }}"
+          echo "--------------------------------------"
+          echo "외부 URL(nginx)     : http://illeesam.synology.me:21000"
+          echo "백엔드 디버그 URL   : http://illeesam.synology.me:21080 (외부 미공개 권장)"
+          echo "헬스체크(디버그 직결): http://illeesam.synology.me:21080/actuator/health"
+          echo "--------------------------------------"
+          echo "Synology SSH 수동 확인 명령어"
+          echo "  cd /volume1/docker/shopjoy/backend"
+          echo "  sudo docker compose ps"
+          echo "  sudo docker compose logs -f ecadminapi"
+          echo "  sudo docker compose restart ecadminapi"
+          echo "  sudo docker compose down          # 스택 전체 정지"
