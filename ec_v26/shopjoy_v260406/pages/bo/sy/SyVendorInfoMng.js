@@ -40,10 +40,14 @@ window.SyVendorInfoMng = {
     const dlivPager  = _mkPager();   // 배송템플릿 페이저
 
     /* 탭별 메타 (api / 데이터배열 / 페이저 / 로딩키) */
+    /* 필드명은 pager(단수) — 바로 위 outer 목록용 baseGridPager(29줄)와 이름이 겹치면 안 되므로
+       구분. loadTabData/setTabPage/onTabSizeChange 가 전부 m.pager 로 읽는다(2026-08-30 버그수정 —
+       이 필드가 baseGridPager 로 잘못 선언돼 있어서 m.pager.pageNo 가 undefined 를 읽어
+       "Cannot read properties of undefined (reading 'pageNo')" 로 그리드 행 클릭 시 크래시났었음). */
     const TAB_META = {
-      brand: { api: () => boApiSvc.syBrand,     rows: brands,     baseGridPager: brandPager, loadKey: 'brand', cmdNm: '브랜드조회' },
-      price: { api: () => boApiSvc.pmDiscnt,    rows: discnts,    baseGridPager: pricePager, loadKey: 'price', cmdNm: '가격정책조회' },
-      dliv:  { api: () => boApiSvc.pdDlivTmplt, rows: dlivTmplts, baseGridPager: dlivPager,  loadKey: 'dliv',  cmdNm: '배송템플릿조회' },
+      brand: { api: () => boApiSvc.syBrand,     rows: brands,     pager: brandPager, loadKey: 'brand', cmdNm: '브랜드조회' },
+      price: { api: () => boApiSvc.pmDiscnt,    rows: discnts,    pager: pricePager, loadKey: 'price', cmdNm: '가격정책조회' },
+      dliv:  { api: () => boApiSvc.pdDlivTmplt, rows: dlivTmplts, pager: dlivPager,  loadKey: 'dliv',  cmdNm: '배송템플릿조회' },
     };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */

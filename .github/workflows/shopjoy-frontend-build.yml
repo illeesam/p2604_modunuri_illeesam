@@ -1,0 +1,59 @@
+# shopjoy-frontend-build.yml — 2026-08-30 추가.
+#
+# FO/BO 프론트(ec_v26/shopjoy_v260406) 관련 파일이 바뀔 때마다 minify 빌드 + lazy 클래스
+# 정합성 검증을 자동으로 돌린다. 순수 검증(CI) 게이트만 한다 — NAS 배포까지 이 워크플로가
+# 하진 않는다(배포는 사람이 로컬에서 npm run build 확인 후 rsync, README-배포운영정책-
+# docker-compose.md §11.3 참조). 그래서 이 워크플로엔 NAS 접속 정보/시크릿이 전혀 필요 없다.
+#
+# 여기서 실패하면(exit 1) = verify-dist 가 뭔가를 못 찾았다는 뜻 — lazy 클래스 매핑이 깨진
+# PR 을 병합 전에 잡아준다.
+name: ShopJoy Frontend Build & Verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ec_v26/shopjoy_v260406/pages/**'
+      - 'ec_v26/shopjoy_v260406/lib/**'
+      - 'ec_v26/shopjoy_v260406/components/**'
+      - 'ec_v26/shopjoy_v260406/assets/**'
+      - 'ec_v26/shopjoy_v260406/scripts/**'
+      - 'ec_v26/shopjoy_v260406/*.html'
+      - 'ec_v26/shopjoy_v260406/package.json'
+  pull_request:
+    paths:
+      - 'ec_v26/shopjoy_v260406/pages/**'
+      - 'ec_v26/shopjoy_v260406/lib/**'
+      - 'ec_v26/shopjoy_v260406/components/**'
+      - 'ec_v26/shopjoy_v260406/assets/**'
+      - 'ec_v26/shopjoy_v260406/scripts/**'
+      - 'ec_v26/shopjoy_v260406/*.html'
+      - 'ec_v26/shopjoy_v260406/package.json'
+
+defaults:
+  run:
+    working-directory: ec_v26/shopjoy_v260406
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ec_v26/shopjoy_v260406/package-lock.json
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: lazy 등록 종합점검 (등록누락/이중등록/중복명/도달불가)
+        run: npm run check-orphans
+
+      - name: lazy 클래스 정합성 검증 (원본 소스 기준)
+        run: npm run verify-lazy
+
+      - name: minify 빌드 + dist 정합성 검증
+        run: npm run build

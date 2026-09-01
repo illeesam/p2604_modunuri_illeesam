@@ -118,6 +118,13 @@ dist-ssr/
 stats.html
 stats.json
 
+# ─── npm 의존성 / minify 빌드 산출물 (2026-08-30 추가) ────────────────────
+# node_modules: package.json 의 esbuild 등 devDependencies 설치 결과 — npm install 로 재생성됨
+# dist/: npm run build:minify 산출물 — 원본 pages/lib/components 로부터 매번 재생성 가능,
+#   앱 자체는 여전히 빌드 없이 원본으로 동작하므로 dist/ 는 배포 시에만 선택적으로 쓰는 파생물
+node_modules/
+dist/
+
 # ─── 큰 바이너리 / 미디어 임시 ────────────────────────────────────────────
 *.zip
 *.tar

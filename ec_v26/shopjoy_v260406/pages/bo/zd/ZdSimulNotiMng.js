@@ -17,8 +17,14 @@
  * 오류정보생성(mode='error') 은 수신자 개념 없이 내 알림함에 바로 오류를 쌓는다.
  * 오류 알림은 DB 에 저장하지 않는다 — 서버가 죽었을 때 발생하는 정보라 그때 DB 쓰기가 불가능하다.
  * ───────────────────────────────────────────────────────────────────────── */
-(function (global) {
-  'use strict';
+/* 2026-08-30: (function(global){...})(window) IIFE 래퍼 제거 — 이 프로젝트 다른 파일 전부가
+   쓰는 표준 패턴(전역객체에 클래스를 직접 대입)으로 통일. 이유: esbuild 등으로 minify 하면
+   지역 파라미터 global 이 임의 이름(예: N)으로 치환돼, 정규식 기반 정적 스캔 도구
+   (scripts 아래 lazy 맵 생성/검증 스크립트들)가 전역 등록 대입문을 못 찾는 유일한 예외
+   파일이었다 — 기능은 동일(치환된 이름도 결국 같은 window 를 가리켜 런타임엔 문제없음)
+   하지만 도구 호환을 위해 애초에 이 패턴 자체를 쓰지 않는 쪽으로 정리한다.
+   (주의: 이 주석 문단 자체에 실제 코드처럼 보이는 "전역객체.대문자시작이름 =" 형태의
+   문구를 쓰지 말 것 — 아래 스캔 정규식이 주석/코드를 구분하지 못해 유령 항목이 생긴다.) */
 
   /* 모드 메타 — 화면 제목/설명/발송 API/알림 유형/템플릿 유형을 한 곳에서 관리 */
   const MODE_META = {
@@ -75,7 +81,7 @@
       message: 'Network Error — timeout of 8000ms exceeded' },
   ];
 
-  global.ZdSimulNotiMng = {
+  window.ZdSimulNotiMng = {
     name: 'ZdSimulNotiMng',
     props: {
       navigate:    { type: Function, required: true },                       // 페이지 이동
@@ -87,7 +93,7 @@
 
       /* ##### [01] 초기 변수 정의 #################################################### */
       const { reactive, computed, onMounted } = Vue;
-      const store = global.boNotiStore;
+      const store = window.boNotiStore;
 
       const uiState = reactive({ sending: false, pickModal: '', tplLoading: false, tplId: null, recvTab: 'user' });
       const codes   = reactive({});
@@ -592,4 +598,3 @@
 </bo-page>
 `,
   };
-})(window);

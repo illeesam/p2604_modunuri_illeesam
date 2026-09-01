@@ -1,0 +1,15 @@
+# Docker 빌드 컨텍스트에서 제외 — 이미지 크기·빌드 컨텍스트 전송 시간 절감용.
+# 2026-08-30 추가(그동안 없어서 COPY . . 이 .git/.idea/build/ 등 불필요한 걸 전부 포함시켰음).
+.git
+.gradle
+.idea
+.claude
+build
+bin
+out
+LOG_DIR_IS_UNDEFINED
+*.log
+*.md
+.reloadtrigger
+uploads
+logs

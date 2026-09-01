@@ -10,7 +10,13 @@
  * boAppBase.js/foAppBase.js 의 자동탐지가 알아서 찾는다.
  * lib/app/foAppLazyClasses.js 는 이 스크립트의 산출물이라 절대 손으로 고치지 않는다.
  *
- * 사용법: node scripts/generateFoLazyClasses.js
+ * 사용법: node scripts/generateFoLazyClasses.js   (= npm run gen-fo-lazy)
+ *
+ * 실행하면 콘솔에 [1]~[3] 단계 + [완료] 요약이 순서대로 찍힌다:
+ *   [1] 대상 파일 수집 (pages/fo 스캔 → eager/제외목록/사이트별동적파일 제외 → lazy 대상 확정)
+ *   [2] 각 파일에서 window.ClassName= 등록명 추출 (+ FO_REG_TO_GLOBAL 역매핑 적용)
+ *   [3] foAppLazyClasses.js 파일 생성 (+ FO_SITE_NO 별 Home/Prod 동적 항목 주입)
+ *   [완료] lazy 클래스 M개
  */
 const fs = require('fs');
 const path = require('path');
@@ -88,7 +94,10 @@ function eagerScriptSrcs(htmlFile, prefix) {
    언더스코어 접두어 내부 상태 변수는 클래스가 아니므로 제외(PascalCase, 대문자 시작만 인정). */
 function extractGlobalNames(filePath) {
   const src = fs.readFileSync(path.join(ROOT, filePath), 'utf8');
-  const matches = [...src.matchAll(/^[ \t]*(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=/gm)];
+  // 2026-08-30 수정: ^[ \t]*(줄 시작) 앵커는 minify 된 코드(여러 문장이 한 줄에 붙음)에서
+  // 깨진다 — verifyLazyClassIntegrity.js 와 동일 수정. (generateFoLazyClasses 는 항상 원본
+  // 소스만 스캔하므로 영향은 없지만, 세 스크립트가 같은 정규식을 공유하도록 통일해둔다.)
+  const matches = [...src.matchAll(/(?<![\w.$])(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=(?!=)/g)];
   return [...new Set(matches.map((m) => m[1]))];
 }
 
@@ -97,10 +106,19 @@ function stringifyMap(obj, indent = '  ') {
 }
 
 function generate() {
-  const onDisk = walkJsFiles('pages/fo');
-  const eager = eagerScriptSrcs('index.html', 'pages/fo/');
-  const lazyFiles = onDisk.filter((f) => !eager.has(f) && !FO_EXCLUDE_FROM_LAZY.has(f) && !FO_DYNAMIC_SITE_FILE.test(f));
+  console.log('FO lazy 클래스 맵 재생성 시작 (lib/app/foAppLazyClasses.js)');
 
+  console.log('\n[1] 대상 파일 수집');
+  const onDisk = walkJsFiles('pages/fo');
+  console.log(`  ㄴ pages/fo 재귀 스캔: ${onDisk.length}개 .js 파일`);
+  const eager = eagerScriptSrcs('index.html', 'pages/fo/');
+  console.log(`  ㄴ index.html 에 이미 eager <script> 로 걸린 파일 제외: ${eager.size}개`);
+  console.log(`  ㄴ 죽어있는 화면(FO_EXCLUDE_FROM_LAZY) 제외: ${FO_EXCLUDE_FROM_LAZY.size}개`);
+  const lazyFiles = onDisk.filter((f) => !eager.has(f) && !FO_EXCLUDE_FROM_LAZY.has(f) && !FO_DYNAMIC_SITE_FILE.test(f));
+  console.log(`  ㄴ 사이트별 동적 파일(Home0N/Prod0NList/View, 아래 [3]에서 별도 주입) 제외`);
+  console.log(`  ㄴ 남은 lazy 대상 파일: ${lazyFiles.length}개`);
+
+  console.log('\n[2] 각 파일에서 window.ClassName= 등록명 추출');
   // REG_TO_GLOBAL 의 값(window 전역명) 기준으로 "이미 다른 이름으로 등록될 파일"을 역매핑
   const globalToReg = {};
   Object.entries(FO_REG_TO_GLOBAL).forEach(([reg, glob]) => { globalToReg[glob] = reg; });
@@ -115,10 +133,12 @@ function generate() {
       map[regName] = f;
     });
   });
+  console.log(`  ㄴ 등록명 ${Object.keys(map).length}개 추출 완료(FO_REG_TO_GLOBAL 역매핑 ${Object.keys(globalToReg).length}건 적용)`);
   if (skipped.length) {
-    console.warn('[FO] window.ClassName= 패턴을 못 찾아 건너뜀(수동 확인 필요):', skipped);
+    console.warn(`  ㄴ ⚠️  window.ClassName= 패턴을 못 찾아 건너뜀(수동 확인 필요) ${skipped.length}개:`, skipped);
   }
 
+  console.log('\n[3] foAppLazyClasses.js 파일 생성 (+ FO_SITE_NO 별 Home/Prod 동적 항목 주입)');
   const out = `/* ShopJoy FO - lazy-load 대상 클래스 맵 (scripts/generateFoLazyClasses.js 로 자동 생성 — 손으로 고치지 말 것!)
    FO 화면을 추가할 때 사람이 손대는 파일은 scripts/generateFoLazyClasses.js 하나뿐이다:
      1) 화면 소스 작성 (pages/fo/...)
@@ -167,7 +187,8 @@ ${stringifyMap(FO_PAGE_TO_CLASS_STATIC)}
 })();
 `;
   fs.writeFileSync(path.join(ROOT, 'lib/app/foAppLazyClasses.js'), out);
-  console.log(`[FO] foAppLazyClasses.js 재생성 완료 — ${Object.keys(map).length}개 클래스`);
+  console.log(`  ㄴ 파일 기록 완료: lib/app/foAppLazyClasses.js`);
+  console.log(`\n[완료] lazy 클래스 ${Object.keys(map).length}개(사이트별 동적 3개는 부팅 시점에 추가로 붙음)`);
 }
 
 generate();

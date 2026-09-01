@@ -346,9 +346,107 @@ docker network inspect shopjoy-net
 
 ---
 
+## 11. Nginx 정적 자산 서빙 + 압축/캐시 (2026-08-30 추가)
+
+지금까지 FO/BO 정적 파일(`bo.html`, `index.html`, `pages/`, `lib/`, `components/`, `assets/` 등)을
+실제로 서빙하는 계층이 없었다 — `ecadminapi` 컨테이너는 백엔드 JAR만 담고 있고, 정적 파일을
+읽는 로직(`FoSeoController` 등)은 파일시스템 경로(`app.frontend.dir`)에만 의존했다. 이 절은 그
+공백을 메우는 nginx 서비스 도입 방법이다.
+
+### 11.1 구성 요약
+
+```
+공개 진입점(21000) → nginx → ┬─ 정적 파일(FO/BO 소스) 직접 서빙 + gzip 압축 + 캐시 헤더
+                              └─ /api/**, /foui/**, /cdn/** → ecadminapi(3000) 프록시
+```
+
+- `docker-compose.yml`(위 §4) 에 `nginx` 서비스 추가됨 — 이미지 `nginx:1.27-alpine`
+- 설정 본문은 `_apps_be/EcAdminApi/nginx.conf` (레포에 포함, 이 compose 파일과 같은 디렉터리에
+  배치하면 `./nginx.conf` 상대경로로 그대로 마운트됨)
+- 압축: gzip (JS/CSS/JSON/SVG 등 텍스트 계열만, 1KB 이상)
+- 캐시 정책 (파일 유형별 — "빌드 없음"이라 파일명에 버전 해시가 없다는 전제로 설계):
+
+| 대상 | Cache-Control | 이유 |
+|---|---|---|
+| `assets/cdn/pkg/**` (버전이 경로에 박힌 CDN 라이브러리) | `max-age=31536000, immutable` | 버전 바뀌면 경로 자체가 바뀜 — 무한 캐시 안전 |
+| 이미지/폰트 (`png/jpg/svg/woff2` 등) | `max-age=604800` (7일) | 자주 안 바뀜, 배포 반영 지연은 최대 7일 감수 |
+| 앱 JS/CSS/HTML (`pages/`, `lib/`, `components/`, `*.html`) | `no-cache` | 버전 해시가 없어 오래 캐시하면 배포 후에도 구버전 실행 위험 — 매 요청 서버에 재검증(ETag, 변경 없으면 304) |
+| `/api/**`, `/foui/**` | 백엔드가 직접 설정(프록시만) | `FoSeoController` 는 이미 `max-age=300` 자체 설정 |
+| `/cdn/**` (업로드 이미지) | `max-age=86400` (1일) | 같은 URL이 재업로드로 바뀔 수 있어 짧게만 |
+
+### 11.2 프론트 소스 배치 (최초 1회)
+
+2026-08-30 갱신: esbuild minify 빌드(`npm run build`, `scripts/buildMinify.js`)가 도입되면서
+nginx 가 서빙할 대상은 **원본 소스가 아니라 그 산출물(`dist/`)**로 바뀌었다(§11.3 참조).
+NAS 에는 그 `dist/` 내용이 도착할 빈 디렉터리만 미리 준비해두면 된다 — git 체크아웃 불필요:
+
+```bash
+# NAS SSH 접속 후
+mkdir -p /volume1/docker/shopjoy/frontend
+```
+
+`docker-compose.yml` 의 nginx 볼륨마운트(`/volume1/docker/shopjoy/frontend:/usr/share/nginx/html:ro`)는
+이 디렉터리를 그대로 가리킨다 — 이후 §11.3 의 `rsync` 가 이 안의 내용을 채운다.
+
+### 11.3 배포 반영 (소스 변경 시)
+
+**빌드는 로컬(또는 CI)에서, NAS 에는 검증된 산출물만 전송한다** — 순서가 중요하다:
+
+```bash
+# ① 로컬에서 빌드 + 검증 (dist/ 는 로컬에만 있는 산출물 — 여기서 실패해도 운영엔 영향 없음)
+npm run build
+#    내부적으로: dist/ 선삭제(옛 파일 잔존 방지) → esbuild minify → verify-dist
+#    verify-dist 가 실패(exit 1)하면 절대 ②로 넘어가지 말 것 — 그 dist/ 는 배포 불가 상태
+
+# ② 검증 통과한 dist/ 만 NAS로 동기화 (--delete: 로컬에 없는 옛 파일을 정리, 빈 순간 없이 반영)
+rsync -avz --delete dist/ user@NAS:/volume1/docker/shopjoy/frontend/
+```
+
+`npm run build`가 ①에서 멈추면(빌드 실패든 verify-dist 실패든) **②를 실행하지 않으므로 운영
+서버는 직전에 배포된 상태로 계속 정상 서비스된다** — "지우고 나서 실패하면 배포할 게 없어지는"
+상황이 아니다(운영 디렉터리는 ② 시점에만, 그것도 rsync 로만 바뀐다).
+
+캐시 정책은 여전히 `no-cache`(§11.1) 이므로 — minify 로 파일 내용은 바뀌어도 파일명 자체엔
+버전 해시가 없어 이전과 동일하게 브라우저가 매 요청 서버에 재검증한다. ② 이후 즉시 반영되고
+nginx 재시작/reload 도 불필요하다.
+
+`nginx.conf` 자체를 고친 경우에만 재적용 필요:
+```bash
+docker compose exec nginx nginx -s reload   # 무중단 재적용
+```
+
+### 11.4 포트 정책
+
+- **21000** — 신규 공개 진입점(nginx). 방화벽/공유기 포트포워딩은 **이 포트로만** 연결할 것
+- **21080** — 기존 백엔드 직접 포트. nginx 도입 후엔 디버깅 전용으로만 남겨두고 **외부 공개 금지**
+  (21080 을 그대로 열어두면 nginx 의 압축/캐시/정적서빙을 우회해 API 로 직행하게 됨)
+
+### 11.5 검증
+
+```bash
+# gzip 압축 확인 — Content-Encoding: gzip 이 보여야 함
+curl -sI -H "Accept-Encoding: gzip" http://<NAS>:21000/lib/app/boAppBase.js | grep -i content-encoding
+
+# 캐시 헤더 확인
+curl -sI http://<NAS>:21000/lib/app/boAppBase.js | grep -i cache-control        # no-cache 여야 함
+curl -sI http://<NAS>:21000/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js | grep -i cache-control  # immutable 이어야 함
+
+# API 프록시 확인
+curl -sI http://<NAS>:21000/api/co/sy/code/list | head -1
+
+# SEO 랜딩 확인
+curl -s http://<NAS>:21000/foui/prodDtl/<실제상품ID> | grep -i "<title>"
+```
+
+> ⚠️ 이번 세션에선 로컬에 nginx/docker 실행 환경이 없어 `nginx -t` 로 실제 문법 검증을 못 했다.
+> NAS 배포 전에 반드시 `docker compose exec nginx nginx -t` 로 한 번 확인할 것.
+
+---
+
 ## 다음 단계
 
 - **다중 환경 분리**: `docker-compose.dev.yml`, `docker-compose.prod.yml`
-- **CI/CD 자동화**: GitHub Actions에서 `docker compose build && push`
+- **CI/CD 자동화**: GitHub Actions에서 `docker compose build && push`(+ 프론트 git pull 자동화)
 - **모니터링 추가**: Prometheus + Grafana 컨테이너 추가
-- **리버스 프록시**: Nginx 컨테이너 추가하여 HTTPS 종단 처리
+- ~~**리버스 프록시**: Nginx 컨테이너 추가하여 HTTPS 종단 처리~~ → §11 로 1차 완료(HTTPS 종단은
+  아직 미포함 — Let's Encrypt/certbot 연동은 별도 작업 필요)

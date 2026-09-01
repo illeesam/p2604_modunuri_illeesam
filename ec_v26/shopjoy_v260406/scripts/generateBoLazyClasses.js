@@ -14,10 +14,13 @@
  *   3) 남은 파일 각각을 열어서 실제로 `window.ClassName = `(또는 IIFE 파라미터 별칭
  *      `global.ClassName = `) 로 뭘 등록하는지 직접 읽는다
  *
- * 사용법: node scripts/generateBoLazyClasses.js
- * 
- * PS C:\_pjt_github\p2604_modunuri_illeesam\ec_v26\shopjoy_v260406_lazy> node scripts/generateBoLazyClasses.js
-    [BO] boAppLazyClasses.js 재생성 완료 — 페이지 182개, 클래스 191개
+ * 사용법: node scripts/generateBoLazyClasses.js   (= npm run gen-bo-lazy)
+ *
+ * 실행하면 콘솔에 [1]~[3] 단계 + [완료] 요약이 순서대로 찍힌다:
+ *   [1] 대상 파일 수집 (pages/bo+pages/co 스캔 → eager 제외 → lazy 대상 확정)
+ *   [2] 각 파일에서 window.ClassName= 등록명 추출
+ *   [3] boAppLazyClasses.js 파일 생성
+ *   [완료] 페이지 N개, lazy 클래스 M개
  */
 const fs = require('fs');
 const path = require('path');
@@ -240,7 +243,10 @@ function eagerScriptSrcs(htmlFile, prefix) {
    (PascalCase, 대문자 시작만 클래스로 인정). */
 function extractGlobalNames(filePath) {
   const src = fs.readFileSync(path.join(ROOT, filePath), 'utf8');
-  const matches = [...src.matchAll(/^[ \t]*(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=/gm)];
+  // 2026-08-30 수정: ^[ \t]*(줄 시작) 앵커는 minify 된 코드(여러 문장이 한 줄에 붙음)에서
+  // 깨진다 — verifyLazyClassIntegrity.js 와 동일 수정. (generateBoLazyClasses 는 항상 원본
+  // 소스만 스캔하므로 영향은 없지만, 세 스크립트가 같은 정규식을 공유하도록 통일해둔다.)
+  const matches = [...src.matchAll(/(?<![\w.$])(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=(?!=)/g)];
   return [...new Set(matches.map((m) => m[1]))];
 }
 
@@ -249,13 +255,20 @@ function stringifyMap(obj, indent = '  ') {
 }
 
 function generate() {
+  console.log('BO lazy 클래스 맵 재생성 시작 (lib/app/boAppLazyClasses.js)');
+
+  console.log('\n[1] 대상 파일 수집');
   const onDisk = [...walkJsFiles('pages/bo'), ...walkJsFiles('pages/co')];
+  console.log(`  ㄴ pages/bo + pages/co 재귀 스캔: ${onDisk.length}개 .js 파일`);
   const eager = new Set([
     ...eagerScriptSrcs('bo.html', 'pages/bo/'),
     ...eagerScriptSrcs('bo.html', 'pages/co/'),
   ]);
+  console.log(`  ㄴ bo.html 에 이미 eager <script> 로 걸린 파일 제외 대상: ${eager.size}개`);
   const lazyFiles = onDisk.filter((f) => !eager.has(f));
+  console.log(`  ㄴ 남은 lazy 대상 파일: ${lazyFiles.length}개`);
 
+  console.log('\n[2] 각 파일에서 window.ClassName= 등록명 추출');
   const classMap = {};
   const skipped = [];
   lazyFiles.forEach((f) => {
@@ -263,10 +276,12 @@ function generate() {
     if (names.length) names.forEach((cls) => { classMap[cls] = f; });
     else skipped.push(f);
   });
+  console.log(`  ㄴ 클래스명 ${Object.keys(classMap).length}개 추출 완료(파일 1개가 여러 클래스를 등록하는 경우 포함)`);
   if (skipped.length) {
-    console.warn('[BO] window.ClassName= 패턴을 못 찾아 건너뜀(수동 확인 필요):', skipped);
+    console.warn(`  ㄴ ⚠️  window.ClassName= 패턴을 못 찾아 건너뜀(수동 확인 필요) ${skipped.length}개:`, skipped);
   }
 
+  console.log('\n[3] boAppLazyClasses.js 파일 생성');
   // BO_APP_COMP_PAGE.dashboard 는 window.BO_SITE_NO 를 런타임에 읽어야 하므로, 문자열로
   // 정적으로 못 굳히고 표현식('dashboard-bo-ec' + (window.BO_SITE_NO || '01'))으로 출력한다.
   const pageEntries = Object.keys(BO_APP_COMP_PAGE).sort().map((k) => {
@@ -301,7 +316,8 @@ ${stringifyMap(classMap)}
 };
 `;
   fs.writeFileSync(path.join(ROOT, 'lib/app/boAppLazyClasses.js'), out);
-  console.log(`[BO] boAppLazyClasses.js 재생성 완료 — 페이지 ${Object.keys(BO_APP_COMP_PAGE).length}개, 클래스 ${Object.keys(classMap).length}개`);
+  console.log(`  ㄴ 파일 기록 완료: lib/app/boAppLazyClasses.js`);
+  console.log(`\n[완료] 페이지(pageId) ${Object.keys(BO_APP_COMP_PAGE).length}개, lazy 클래스 ${Object.keys(classMap).length}개`);
 }
 
 generate();

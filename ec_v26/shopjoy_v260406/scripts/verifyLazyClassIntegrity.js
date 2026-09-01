@@ -26,11 +26,16 @@ const TARGET_DIR = argDirIdx >= 0 && process.argv[argDirIdx + 1]
    window.X= 또는 global.X=(IIFE 파라미터 별칭) 대입에서 클래스명을 전부 추출한다. */
 function extractGlobalNames(absFilePath) {
   const src = fs.readFileSync(absFilePath, 'utf8');
-  const matches = [...src.matchAll(/^[ \t]*(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=/gm)];
+  // 2026-08-30 수정: 원래 ^[ \t]* (줄 시작) 앵커였으나, minify 된 코드는 여러 문장이 한 줄에
+  // 붙어(`];window.X={...`) window.X= 가 더 이상 줄 시작이 아니게 된다 — build:minify 도입 후
+  // dist/ 검증(verify-dist)에서 정상 파일 48개가 오탐으로 잡혔던 원인. "식별자 문자가 아닌 것
+  // 뒤에 오는 window./global." 로 조건을 바꿔 줄 위치와 무관하게 매치한다.
+  const matches = [...src.matchAll(/(?<![\w.$])(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=(?!=)/g)];
   return new Set(matches.map((m) => m[1]));
 }
 
-function verifyMap(label, map, regToGlobal) {
+function verifyMap(stepLabel, label, map, regToGlobal) {
+  console.log(`\n[${stepLabel}] ${label} 검증 — 맵의 각 항목이 실제 파일에 여전히 존재하는지 확인 (대상: ${TARGET_DIR})`);
   let ok = 0;
   const failed = [];
   Object.entries(map).forEach(([regName, relPath]) => {
@@ -47,24 +52,24 @@ function verifyMap(label, map, regToGlobal) {
       failed.push({ regName, relPath, reason: `window.${expectedGlobal}= 을 못 찾음(발견된 이름: ${[...found].join(', ') || '없음'})` });
     }
   });
-  console.log(`\n=== ${label} (검사 대상: ${TARGET_DIR}) ===`);
-  console.log(`정상: ${ok}개 / 전체: ${Object.keys(map).length}개`);
+  console.log(`  ㄴ 맵 전체 ${Object.keys(map).length}개 항목을 하나씩 파일 열어서 대조`);
   if (failed.length) {
-    console.log(`⚠️  불일치 ${failed.length}개:`);
+    console.log(`  결과: ⚠️  불일치 ${failed.length}개 (정상 ${ok}개)`);
     failed.forEach((f) => console.log(`   - ${f.regName} (${f.relPath}): ${f.reason}`));
   } else {
-    console.log('✅ 전부 일치');
+    console.log(`  결과: ✅ 전부 일치 (${ok}개)`);
   }
   return failed.length;
 }
 
+console.log('lazy 클래스 정합성 검증 시작');
 global.window = { FO_SITE_NO: process.env.FO_SITE_NO || '01', BO_SITE_NO: process.env.BO_SITE_NO || '01' };
 require(path.join(ROOT, 'lib/app/boAppLazyClasses.js'));
 require(path.join(ROOT, 'lib/app/foAppLazyClasses.js'));
 
-const boFail = verifyMap('BO_LAZY_CLASS_FILES', global.window.BO_LAZY_CLASS_FILES, null);
-const foFail = verifyMap('FO_LAZY_CLASS_FILES', global.window.FO_LAZY_CLASS_FILES, global.window.FO_REG_TO_GLOBAL);
+const boFail = verifyMap('1', 'BO_LAZY_CLASS_FILES', global.window.BO_LAZY_CLASS_FILES, null);
+const foFail = verifyMap('2', 'FO_LAZY_CLASS_FILES', global.window.FO_LAZY_CLASS_FILES, global.window.FO_REG_TO_GLOBAL);
 
 const total = boFail + foFail;
-console.log(`\n=== 총 ${total}개 불일치 ===`);
+console.log(`\n[종합] 총 ${total}개 불일치`);
 process.exit(total > 0 ? 1 : 0);
