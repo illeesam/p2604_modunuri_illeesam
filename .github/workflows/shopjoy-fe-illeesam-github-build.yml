@@ -1,0 +1,58 @@
+# shopjoy-fe-illeesam-github-build.yml — 2026-09-02 (구 shopjoy-frontend-build.yml 이름변경)
+#
+# FO/BO 프론트(ec_v26/shopjoy_v260406) 관련 파일이 바뀔 때마다 minify 빌드 + lazy 클래스
+# 정합성 검증을 자동으로 돌린다. 순수 검증(CI) 게이트만 한다 — 실제 배포는 하지 않는다.
+# shopjoy-fe-illeesam-github-deploy.yml(GitHub Pages 배포) 앞단 게이트 역할.
+#
+# 여기서 실패하면(exit 1) = verify-dist 가 뭔가를 못 찾았다는 뜻 — lazy 클래스 매핑이 깨진
+# PR 을 병합 전에 잡아준다.
+name: shopjoy-fe-illeesam-github-build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ec_v26/shopjoy_v260406/pages/**'
+      - 'ec_v26/shopjoy_v260406/lib/**'
+      - 'ec_v26/shopjoy_v260406/components/**'
+      - 'ec_v26/shopjoy_v260406/assets/**'
+      - 'ec_v26/shopjoy_v260406/scripts/**'
+      - 'ec_v26/shopjoy_v260406/*.html'
+      - 'ec_v26/shopjoy_v260406/package.json'
+  pull_request:
+    paths:
+      - 'ec_v26/shopjoy_v260406/pages/**'
+      - 'ec_v26/shopjoy_v260406/lib/**'
+      - 'ec_v26/shopjoy_v260406/components/**'
+      - 'ec_v26/shopjoy_v260406/assets/**'
+      - 'ec_v26/shopjoy_v260406/scripts/**'
+      - 'ec_v26/shopjoy_v260406/*.html'
+      - 'ec_v26/shopjoy_v260406/package.json'
+
+defaults:
+  run:
+    working-directory: ec_v26/shopjoy_v260406
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ec_v26/shopjoy_v260406/package-lock.json
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: lazy 등록 종합점검 (등록누락/이중등록/중복명/도달불가)
+        run: npm run check-orphans
+
+      - name: lazy 클래스 정합성 검증 (원본 소스 기준)
+        run: npm run verify-lazy
+
+      - name: minify 빌드 + dist 정합성 검증
+        run: npm run build

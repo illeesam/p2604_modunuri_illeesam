@@ -1,0 +1,95 @@
+# shopjoy-fe-illeesam-github-deploy.yml — 2026-09-02 (구 shopjoy-frontend-deploy-pages.yml 이름변경)
+#
+# GitHub Actions로 빌드 후 dist/ 만 GitHub Pages에 배포.
+#
+# main에 push 되면 일단 트리거는 되지만, 실제 빌드+배포는 커밋 메시지에 "deploy" 또는
+# "배포"라는 단어가 들어있을 때만 진행한다(아래 build 잡의 if 조건). 그 단어가 없는
+# 평범한 커밋은 이 워크플로가 곧바로 스킵 처리된다 — 매 push마다 배포하고 싶지 않을 때 사용.
+# (workflow_dispatch로 수동 실행할 땐 이 단어 체크 없이 무조건 진행됨)
+#
+# 예) git commit -m "OO 기능 deploy" 또는 git commit -m "긴급 배포: OO 수정"
+#
+# npm run build(esbuild 압축 + lazy 정합성 검증) → dist/ 산출물만 GitHub Pages에 올린다.
+# 원본 소스(pages/lib/components 등)는 Pages에 노출되지 않는다.
+# 빌드 검증(shopjoy-fe-illeesam-github-build.yml)과는 별개 워크플로 — 그쪽은 배포 안 하고 검증만 함.
+# 같은 dist/ 를 Synology NAS 에도 따로 배포하려면 shopjoy-fe-illeesam-synol-deploy.yml 참조.
+#
+# ⚠ 최초 1회 수동 설정 필요: 리포지토리 Settings → Pages → Build and deployment →
+#   Source 를 "GitHub Actions" 로 선택해야 이 워크플로가 실제로 Pages에 반영됨.
+#
+# verify-dist(=npm run build 안에 포함) 가 실패하면 이 워크플로도 실패 처리되어
+# Pages 배포가 진행되지 않는다 — 깨진 dist가 그대로 배포되는 일은 없음.
+
+name: shopjoy-fe-illeesam-github-deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ec_v26/shopjoy_v260406/pages/**'
+      - 'ec_v26/shopjoy_v260406/lib/**'
+      - 'ec_v26/shopjoy_v260406/components/**'
+      - 'ec_v26/shopjoy_v260406/assets/**'
+      - 'ec_v26/shopjoy_v260406/scripts/**'
+      - 'ec_v26/shopjoy_v260406/*.html'
+      - 'ec_v26/shopjoy_v260406/package.json'
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: ec_v26/shopjoy_v260406
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 같은 브랜치에 대해 배포가 겹치지 않도록 직렬화 (진행 중인 배포는 취소하지 않고 대기)
+concurrency:
+  group: "pages-deploy"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 커밋 메시지에 deploy/Deploy/DEPLOY/배포 중 하나라도 있어야 진행.
+    # workflow_dispatch(수동 실행)는 head_commit 이 없으므로 항상 통과.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.message, 'deploy') ||
+      contains(github.event.head_commit.message, 'Deploy') ||
+      contains(github.event.head_commit.message, 'DEPLOY') ||
+      contains(github.event.head_commit.message, '배포')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ec_v26/shopjoy_v260406/package-lock.json
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: minify 빌드 + dist 정합성 검증 (실패 시 배포 중단)
+        run: npm run build
+
+      - name: Pages 설정
+        uses: actions/configure-pages@v5
+
+      - name: dist/ 를 Pages 아티팩트로 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ec_v26/shopjoy_v260406/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages에 배포
+        id: deployment
+        uses: actions/deploy-pages@v4

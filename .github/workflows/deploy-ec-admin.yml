@@ -214,11 +214,16 @@ jobs:
             echo ""
             echo "[07-06] 새 컨테이너 실행"
             echo "--------------------------------------"
+            # 2026-09-02 수정: 컨테이너 내부는 application-prod.yml server.port=3000 으로
+            # 리스닝하는데, 예전엔 호스트/컨테이너 둘 다 31000 으로 잘못 매핑돼 있었음
+            # (nginx.conf 쪽에서 이미 같은 문제를 발견해 EXPOSE 31000 이 실제 바인딩과
+            # 무관한 오래된 메모라고 문서화해둔 것과 동일 원인). 외부에서 접속하는 포트
+            # 번호(31000)는 그대로 유지하고, 컨테이너 내부 쪽만 3000 으로 바로잡는다.
             echo "${{ secrets.SYNOLOGY_PASSWORD }}" | sudo -S docker run -d \
               --name ec-admin-api \
               --restart unless-stopped \
               --env-file /volume1/docker/ec-admin-api/.env \
-              -p 31000:31000 \
+              -p 31000:3000 \
               ec-admin-api:latest
             echo "[07-06] 컨테이너 실행 완료"
 
