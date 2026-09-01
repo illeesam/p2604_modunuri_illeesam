@@ -9,7 +9,9 @@ import lombok.Getter;
  * 응답 형태:
  * { "ok": true,  "status": 200, "data": { ... } }
  * { "ok": false, "status": 400, "message": "오류 메시지",
- *   "descErrStack": "...", "descErrUserInfo": "userId=... | ..." }
+ *   "descErrStack": "...", "descErrUserInfo": "userId=... | ...",
+ *   "descCorsHint": "Origin 'http://x' 은(는) 허용 목록에 없습니다. 허용: [...]" }
+ *   (descCorsHint 는 prod 가 아니고 Origin 이 허용 목록에 없을 때만 채워짐)
  *
  * null 필드는 JSON에서 생략된다 (@JsonInclude NON_NULL).
  * 정적 팩토리 메서드로만 생성하고, debug 필드는 withDebug()로 체이닝한다.
@@ -35,6 +37,10 @@ public class ApiResponse<T> {
 
     /** 오류 발생 시점 사용자·요청 정보 (오류 시에만 포함) */
     private String descErrUserInfo;
+
+    /** CORS 힌트 — 요청 Origin 이 허용 목록에 없을 때만, prod 가 아닐 때만 채워진다.
+        2026-08-30 추가. {@link com.shopjoy.ecadminapi.common.exception.GlobalExceptionHandler#buildCorsHint} 참조. */
+    private String descCorsHint;
 
     /**
      * 전 필드를 받는 private 생성자. 외부 생성은 정적 팩토리 메서드로만 허용한다.
@@ -130,6 +136,20 @@ public class ApiResponse<T> {
     public ApiResponse<T> withDebug(String stack, String userInfo) {
         this.descErrStack    = stack;
         this.descErrUserInfo = userInfo;
+        return this;
+    }
+
+    /**
+     * CORS 힌트를 현재 응답에 채워 자기 자신을 반환한다(체이닝용).
+     *
+     * <p>{@code null}이면(=prod 이거나, Origin 헤더가 없거나, Origin 이 이미 허용 목록에
+     * 있는 경우) {@code @JsonInclude(NON_NULL)} 에 의해 JSON 에서 그대로 생략된다.</p>
+     *
+     * @param hint CORS 허용 목록 안내 문자열, 해당 없으면 null
+     * @return descCorsHint 가 채워진 자기 자신 (체이닝용)
+     */
+    public ApiResponse<T> withCorsHint(String hint) {
+        this.descCorsHint = hint;
         return this;
     }
 }

@@ -33,19 +33,24 @@ public class WebConfig implements WebMvcConfigurer {
     /**
      * MVC 전역 CORS 매핑을 등록한다.
      *
+     * <p>2026-08-30: 원래 origin 패턴이 '*'(진짜 와일드카드)였는데, SecurityConfig 의
+     * corsConfigurationSource() 는 이미 CorsOriginPolicy.ALLOWED_ORIGIN_PATTERNS 로 제한돼
+     * 있어서 두 CORS 설정이 서로 어긋나 있었다 — 실제로는 Security 필터 체인 쪽이 먼저 평가돼
+     * 지금까지 문제가 드러나진 않았지만, 두 설정이 다른 채로 두는 건 유지보수 리스크라 같은
+     * 상수를 쓰도록 통일한다.</p>
+     *
      * @param registry 스프링이 제공하는 {@link CorsRegistry}
-     *                 모든 경로(/**)에 origin 패턴 '*' + 자격증명 허용 + 7200초 preflight
-     *                 캐시를 적용한다(maxAge=7200 은 Chrome preflight 캐시 상한)
+     *                 CorsOriginPolicy 목록의 origin + 자격증명 허용 + 7200초 preflight 캐시를 적용
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOriginPatterns("*")
+            .allowedOriginPatterns(CorsOriginPolicy.ALLOWED_ORIGIN_PATTERNS.toArray(new String[0]))
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true)
             .maxAge(7200);  // 2시간 — Chrome 상한, preflight 빈도 최소화
-        log.info("[WebConfig] CORS 설정 완료 — allowedOriginPatterns=*, maxAge=7200s");
+        log.info("[WebConfig] CORS 설정 완료 — SecurityConfig 와 동일 origin 정책(CorsOriginPolicy), maxAge=7200s");
     }
 
     /**

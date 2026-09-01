@@ -1,13 +1,16 @@
 package com.shopjoy.ecadminapi.common.exception;
 
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecadminapi.common.config.CorsOriginPolicy;
 import com.shopjoy.ecadminapi.common.config.MyBatisQueryInterceptor;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.MyBatisSystemException;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +35,13 @@ import java.util.Map;
  * 일관된 {@link ApiResponse} (ok=false) 형태로 변환한다. 모든 오류 응답에는
  * {@code descErrStack}(app 패키지로 필터링된 스택 추적)과
  * {@code descErrUserInfo}(사용자·요청 정보)를 {@link ApiResponse#withDebug} 로 덧붙인다.</p>
+ *
+ * <p>2026-08-30: 단, <b>prod 프로파일의 FO(/api/fo/**) 요청</b>은 예외 — 스택 추적과
+ * 사용자·요청 정보(IP·토큰 뒷자리 포함)를 비운 가벼운 응답을 내려준다({@link #isLightweightDebug}).
+ * BO 는 프로파일 무관 항상 전체 디버그 정보를 받는다(관리자 화면의 "최근 서버오류" 패널이
+ * descErrStack 을 그대로 파싱해서 보여주므로 이 정보가 필요) — FO(일반 고객)에게까지 내부
+ * 클래스명·IP·토큰 조각이 나가는 걸 막는 게 목적이라 BO 는 건드리지 않는다. local/dev
+ * 프로파일에서는 FO 도 지금처럼 전체 정보를 받는다(개발 편의).</p>
  *
  * <p>핸들러 매핑 요약:
  * <ul>
@@ -49,7 +60,10 @@ import java.util.Map;
  */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final Environment environment;
 
     /**
      * {@code @Valid}/{@code @Validated} 바인딩 검증 실패를 400 응답으로 변환한다.
@@ -77,7 +91,7 @@ public class GlobalExceptionHandler {
         log.error("MethodArgumentNotValidException [400]: {}", message, ex);
         return ResponseEntity.badRequest()
             .body(ApiResponse.error(400, message, errors)
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -106,7 +120,7 @@ public class GlobalExceptionHandler {
         log.error("ConstraintViolationException [400]: {}", message, ex);
         return ResponseEntity.badRequest()
             .body(ApiResponse.error(400, message, errors)
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -123,7 +137,7 @@ public class GlobalExceptionHandler {
         log.error("CmAuthException: {}", ex.getMessage(), ex);
         return ResponseEntity.status(ex.getHttpStatus())
             .body(ApiResponse.<Void>error(ex.getHttpStatus().value(), ex.getMessage())
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -141,7 +155,7 @@ public class GlobalExceptionHandler {
         log.error("CmBizException: {}", ex.getMessage(), ex);
         return ResponseEntity.status(ex.getHttpStatus())
             .body(ApiResponse.<Void>error(ex.getHttpStatus().value(), ex.getMessage())
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -160,7 +174,7 @@ public class GlobalExceptionHandler {
         log.error("BadCredentialsException [401]: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.<Void>error(401, "아이디 또는 비밀번호가 올바르지 않습니다.")
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -180,7 +194,7 @@ public class GlobalExceptionHandler {
         log.error("AuthenticationException [401]: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.<Void>error(401, "인증이 필요합니다.")
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -205,7 +219,7 @@ public class GlobalExceptionHandler {
         log.error("AccessDeniedException [403]: {} | {}", msg, buildUserInfo(req));
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(ApiResponse.<Void>error(403, msg)
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -223,7 +237,7 @@ public class GlobalExceptionHandler {
         log.error("IllegalArgumentException: {}", ex.getMessage(), ex);
         return ResponseEntity.badRequest()
             .body(ApiResponse.<Void>error(400, ex.getMessage())
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -244,7 +258,7 @@ public class GlobalExceptionHandler {
         log.error("NoResourceFoundException: {}", msg, ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponse.<Void>error(404, msg)
-                .withDebug(ex.getMessage(), buildUserInfo(req)));
+                .withDebug(isLightweightDebug(req) ? "" : ex.getMessage(), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -290,7 +304,7 @@ public class GlobalExceptionHandler {
         log.error("MyBatisSystemException [{}]: {}", mapperInfo, rootMsg, ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.<Void>error(500, msg.toString())
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     /**
@@ -308,39 +322,149 @@ public class GlobalExceptionHandler {
         log.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.<Void>error(500, "서버 오류가 발생했습니다.")
-                .withDebug(buildStack(ex), buildUserInfo(req)));
+                .withDebug(buildStack(ex, req), buildUserInfoForResponse(req)).withCorsHint(buildCorsHint(req)));
     }
 
     // ── Private helpers ──────────────────────────────────────────
 
     /**
+     * prod 프로파일의 FO(/api/fo/**) 요청이면 true — 이 경우 스택/사용자정보를 비운
+     * 가벼운 오류 응답을 내려준다(2026-08-30 추가). BO 는 프로파일 무관 항상 false
+     * (관리자 "최근 서버오류" 패널이 descErrStack 을 그대로 써야 하므로).
+     *
+     * @param req 요청 URI 판별용 현재 요청
+     * @return prod 프로파일이면서 /api/fo/ 로 시작하는 요청이면 true
+     */
+    private boolean isLightweightDebug(HttpServletRequest req) {
+        boolean isProd = environment.matchesProfiles("prod");
+        boolean isFo = CmUtil.nvlStr(req.getRequestURI(), "").contains("/api/fo/");
+        return isProd && isFo;
+    }
+
+    /**
+     * CORS 진단 힌트를 만든다 — 2026-08-30 추가.
+     *
+     * <p>브라우저의 실제 CORS 위반(특히 preflight 거부)은 Spring 이 필터 단계에서 예외 없이
+     * 바로 403 을 써버려서 이 {@code @RestControllerAdvice} 까지 애초에 도달하지 않는다 —
+     * 그래서 "CORS 오류 자체"를 여기서 잡는 건 불가능하다. 대신 이 핸들러를 타는 <b>모든</b>
+     * 오류 응답에 대해 "지금 이 요청의 Origin 이 CORS 허용 목록에 있는지"를 부가 정보로
+     * 알려준다 — 뭔가 안 되는 상황에서 "혹시 CORS 문제인가?" 를 코드 안 안 보고 바로 확인할 수
+     * 있게 하는 게 목적. prod 는 허용 목록 자체를 공격자에게 노출할 이유가 없어 항상 null.</p>
+     *
+     * @param req 현재 요청 (Origin 헤더 추출용)
+     * @return Origin 이 허용 목록에 없을 때만 안내 문자열, 그 외(prod / Origin 헤더 없음 /
+     *         이미 허용된 Origin)는 null(JSON 에서 생략됨)
+     */
+    private String buildCorsHint(HttpServletRequest req) {
+        if (environment.matchesProfiles("prod")) return null;
+        String origin = req.getHeader("Origin");
+        if (origin == null || origin.isBlank()) return null; // 크로스오리진 요청이 아님(같은 오리진이거나 서버간 호출)
+        if (isOriginAllowed(origin)) return null; // 이미 허용 목록에 있음 — CORS 문제 아님
+        return "Origin '" + origin + "' 은(는) CORS 허용 목록에 없습니다. 허용된 Origin 패턴: "
+            + String.join(", ", CorsOriginPolicy.ALLOWED_ORIGIN_PATTERNS);
+    }
+
+    /**
+     * origin 이 {@link CorsOriginPolicy#ALLOWED_ORIGIN_PATTERNS} 의 패턴 중 하나와 일치하는지
+     * 확인한다. 패턴은 정확히 두 형태뿐이라(끝이 {@code :*} 인 포트 와일드카드, 또는 완전
+     * 문자열) 정규식 없이 단순 비교로 충분하다 — SecurityConfig 의 실제 CORS 판정 로직과
+     * 완전히 동일하진 않을 수 있어(Spring 내부는 더 정교하다) 이건 어디까지나 "대략 맞는지"
+     * 보여주는 진단용 힌트지, 판정 자체를 대신하지 않는다.
+     *
+     * @param origin 요청의 Origin 헤더 값
+     * @return 허용 패턴 중 하나라도 일치하면 true
+     */
+    private boolean isOriginAllowed(String origin) {
+        for (String pattern : CorsOriginPolicy.ALLOWED_ORIGIN_PATTERNS) {
+            if (pattern.endsWith(":*")) {
+                if (origin.startsWith(pattern.substring(0, pattern.length() - 1))) return true;
+            } else if (pattern.equals(origin)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 스택 필터링 화이트리스트 기준 패키지 — 2026-08-30: 블랙리스트(프레임워크 패키지명을
+     * 하나하나 나열)에서 화이트리스트로 전환. 새 라이브러리가 추가될 때마다 블랙리스트에
+     * 빠진 패키지가 계속 새는 문제가 있었다 — 화이트리스트는 "우리 코드 패키지"라는 기준
+     * 하나만 유지하면 되므로 더 안전하다.
+     *
+     * <p>이 클래스({@code GlobalExceptionHandler})의 패키지({@code com.shopjoy.ecadminapi.common.exception})
+     * 에서 앞 3단계({@code com.shopjoy.ecadminapi})만 뽑아 기준으로 쓴다 — 문자열로
+     * 하드코딩하지 않고 클래스 자신의 패키지에서 유도하므로, 프로젝트 루트 패키지가
+     * 바뀌어도 이 상수를 손으로 고칠 필요가 없다.</p>
+     */
+    private static final String APP_BASE_PACKAGE = resolveBasePackage(GlobalExceptionHandler.class, 3);
+
+    /**
+     * 클래스의 패키지명에서 앞 {@code levels} 단계만 잘라낸다.
+     * 예) {@code com.shopjoy.ecadminapi.common.exception}, levels=3 → {@code com.shopjoy.ecadminapi}
+     *
+     * @param clazz  패키지를 뽑아올 클래스
+     * @param levels 유지할 패키지 단계 수(클래스 패키지가 이보다 얕으면 전체를 반환)
+     * @return 앞 {@code levels} 단계로 자른 패키지명
+     */
+    private static String resolveBasePackage(Class<?> clazz, int levels) {
+        String[] parts = clazz.getPackage().getName().split("\\.");
+        int n = Math.min(levels, parts.length);
+        return String.join(".", Arrays.copyOfRange(parts, 0, n));
+    }
+
+    /**
      * 예외 스택 추적을 디버그용 문자열로 가공한다.
      *
-     * <p>첫 줄(예외 클래스 + 메시지)은 항상 포함하고, 이후 라인 중
-     * org.apache / org.springframework / jakarta.servlet / java.base / com.fasterxml
-     * 프레임워크 프레임은 제거해 애플리케이션 코드 흐름만 남긴다.
+     * <p>첫 줄(예외 클래스 + 메시지)은 항상 포함하고, 이후 라인은 {@link #APP_BASE_PACKAGE}
+     * (이 클래스 패키지의 앞 3단계, 예: {@code com.shopjoy.ecadminapi}) 소속 프레임만
+     * 화이트리스트로 남긴다 — 그 외(Spring/서블릿/JDK/서드파티 라이브러리 등) 프레임은 전부
+     * 제거해 애플리케이션 코드 흐름만 남긴다. 그리고 바로 위 줄과 완전히 같은 줄이 연달아
+     * 나오면(AOP 프록시 래핑 등으로 흔함) 하나만 남기고 나머지는 건너뛴다.
      * 결과는 {@code descErrStack} 으로 응답에 실린다.</p>
      *
-     * @param ex 스택을 추출할 예외
-     * @return 필터링된 멀티라인 스택 문자열 (각 줄 끝 개행 포함)
+     * <p>{@link #isLightweightDebug} 가 true(prod + FO) 면 스택을 만들지 않고 빈 문자열을
+     * 바로 반환한다.</p>
+     *
+     * @param ex  스택을 추출할 예외
+     * @param req 경량 응답 여부 판별용 현재 요청
+     * @return 필터링·중복제거된 멀티라인 스택 문자열 (각 줄 끝 개행 포함), 경량 응답 대상이면 빈 문자열
      */
-    private String buildStack(Exception ex) {
+    private String buildStack(Exception ex, HttpServletRequest req) {
+        if (isLightweightDebug(req)) return "";
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
         String fullStack = sw.toString();
 
-        StringBuilder filtered = new StringBuilder();
-        // 첫 줄(예외 클래스 + 메시지)은 항상 포함
         String[] lines = fullStack.split("\n");
-        if (lines.length > 0) filtered.append(lines[0]).append("\n");
-        for (int i = 1; i < lines.length; i++) {
+        StringBuilder filtered = new StringBuilder();
+        String prevLine = null;
+        for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
-            if (!line.contains("org.apache") && !line.contains("org.springframework") &&
-                !line.contains("jakarta.servlet") && !line.contains("java.base") && !line.contains("com.fasterxml")) {
-                filtered.append(line).append("\n");
-            }
+            // 첫 줄(예외 클래스 + 메시지)은 패키지 필터 없이 항상 포함, 이후 줄은 화이트리스트 통과분만
+            boolean keep = (i == 0) || line.contains(APP_BASE_PACKAGE);
+            if (!keep) continue;
+            if (line.equals(prevLine)) continue; // 바로 위 줄과 동일하면 중복 스킵
+            filtered.append(line).append("\n");
+            prevLine = line;
         }
         return filtered.toString();
+    }
+
+    /**
+     * {@link #buildUserInfo} 를 "API 응답 본문(descErrUserInfo)"에 실을 때만 거치는 래퍼.
+     *
+     * <p>{@link #isLightweightDebug} 가 true(prod + FO) 면 빈 문자열을 반환해 IP·토큰 뒷자리
+     * 같은 정보가 고객에게 나가는 걸 막는다. <b>서버 로그(log.error)는 이 래퍼를 거치지 않고
+     * {@link #buildUserInfo} 를 직접 호출</b>하므로 — 운영자가 볼 로그 파일은 FO/prod 여도
+     * 항상 전체 정보가 남는다(디버깅용 정보를 숨겨야 할 대상은 "고객에게 보이는 응답"이지
+     * "서버가 자기 로그에 남기는 것"이 아니므로 구분했다).</p>
+     *
+     * @param req 사용자/요청 정보를 추출할 현재 요청
+     * @return 경량 응답 대상이면 빈 문자열, 아니면 {@link #buildUserInfo} 결과 그대로
+     */
+    private String buildUserInfoForResponse(HttpServletRequest req) {
+        if (isLightweightDebug(req)) return "";
+        return buildUserInfo(req);
     }
 
     /**
@@ -350,7 +474,8 @@ public class GlobalExceptionHandler {
      * 쿼리스트링/커스텀 헤더(X-UI-Nm, X-Cmd-Nm)/Authorization 을 모은다.
      * 쿼리스트링은 200자 초과 시 말줄임표로 절단하고, 토큰은 보안상 마지막 10자만
      * "~" 접두로 노출한다. siteId 는 현재 고정 "01". 결과는 {@code descErrUserInfo} 로
-     * 응답·로그에 함께 실린다.</p>
+     * 응답·로그에 함께 실린다. <b>항상 전체 정보를 반환</b>한다 — 응답 본문에 실을 때
+     * 가볍게 걸러야 하면 {@link #buildUserInfoForResponse} 를 대신 쓸 것.</p>
      *
      * @param req 사용자/요청 정보를 추출할 현재 요청
      * @return "siteId=.. | userId=.. | ... | token=~xxxxxxxxxx" 형태의 단일 라인 문자열

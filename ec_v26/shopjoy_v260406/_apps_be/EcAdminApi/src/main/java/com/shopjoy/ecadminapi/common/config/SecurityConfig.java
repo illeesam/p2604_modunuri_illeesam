@@ -31,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -75,6 +76,7 @@ public class SecurityConfig {
 //    private final LicenseFilter   licenseFilter;
     private final UserDetailsService userDetailsService;
     private final ErrorLogQueue   errorLogQueue;
+    private final CorsHintLoggingFilter corsHintLoggingFilter; // 2026-08-30: CORS 거부 진단 로그(prod 제외) — CorsFilter 판정엔 관여 안 함
 
     /** 접근 거부 로그 ID 생성용 시각 포맷(yyMMddHHmmss). 뒤에 4자리 난수를 붙여 유니크 ID 구성. */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
@@ -211,7 +213,11 @@ public class SecurityConfig {
             )
             .authenticationProvider(authenticationProvider())
 //            .addFilterBefore(licenseFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            // 2026-08-30: Spring Security 의 CorsFilter(위 .cors(...) 가 내부에서 등록) 바로 앞에
+            // 순수 관찰용 로깅 필터를 끼워 넣는다 — CORS 판정/응답엔 절대 관여 안 하고 항상
+            // chain.doFilter() 로 넘기기만 하므로 실제 CORS 허용/차단 동작에 영향 없음.
+            .addFilterBefore(corsHintLoggingFilter, CorsFilter.class);
 
         SecurityFilterChain chain = http.build();
         log.info("[SecurityConfig] SecurityFilterChain 등록 완료 — JWT Stateless, JwtAuthFilter 활성");
@@ -231,7 +237,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "https://localhost:*", "http://127.0.0.1:*", "https://127.0.0.1:*", "http://illeesam.synology.me:*", "https://illeesam.synology.me:*", "http://illeesam.netlify.app", "https://illeesam.netlify.app"));
+        config.setAllowedOriginPatterns(CorsOriginPolicy.ALLOWED_ORIGIN_PATTERNS); // 2026-08-30: WebConfig 와 공유(CorsOriginPolicy 참조)
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
