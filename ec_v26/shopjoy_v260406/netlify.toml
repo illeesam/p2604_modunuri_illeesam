@@ -1,0 +1,13 @@
+## Netlify 빌드/배포 설정
+## - Netlify 사이트의 "Base directory"가 ec_v26/shopjoy_v260406 로 설정돼 있다는 전제로,
+##   이 파일도 그 폴더 안에 둔다(Netlify는 Base directory 안의 netlify.toml을 우선 읽음).
+## - command: package.json의 build 스크립트 = build:minify(esbuild 압축, dist/ 생성) → verify-dist(정합성 검증)
+##   verify-dist가 실패(exit 1)하면 빌드 자체가 실패 처리되어 배포되지 않음(안전장치).
+## - publish: 압축 산출물 dist/ 를 실제 서비스 루트로 지정.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
