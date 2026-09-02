@@ -16,16 +16,18 @@
     appTitle: 'ShopJoy',
     appCiImage: 'assets/img/ci/fo-ci.svg',
 
-    /* 지금 실제로 떠 있는 운영 서버(Synology NAS, nginx 21000)를 그대로 가리킨다 — 이 값 덕분에
-     * GitHub Pages처럼 백엔드가 같이 안 뜨는 곳에 프론트를 올려도 API가 정상 호출된다.
+    /* 지금 실제로 떠 있는 운영 서버(Synology NAS, DSM 리버스 프록시 경유 HTTPS)를 그대로
+     * 가리킨다 — 이 값 덕분에 GitHub Pages처럼 백엔드가 같이 안 뜨는 곳에 프론트를 올려도
+     * API가 정상 호출된다. 2026-09-04: 서브도메인(21000.illeesam.synology.me)+443(HTTPS)
+     * 방식으로 전환(secure context 필요 — crypto.subtle 등). 포트는 443 기본값이라 비워둔다.
      * ⚠ 별도의 진짜 운영 도메인/서버가 생기면 그때 이 값을 그 주소로 바꿀 것. */
-    baseApiHost: 'illeesam.synology.me',
-    baseApiPort: '21000',
+    baseApiHost: '21000.illeesam.synology.me',
+    baseApiPort: '',
 
-    /* 첨부파일도 같은 nginx(21000)가 /cdn/** 로 서빙 — baseApi와 동일 주소.
+    /* 첨부파일도 같은 nginx가 /cdn/** 로 서빙 — baseApi와 동일 주소.
      * 나중에 진짜 CDN/S3로 옮기면 이 두 값만 그 주소로 바꾸면 됨. */
-    cdnApiHost: 'illeesam.synology.me',
-    cdnApiPort: '21000',
+    cdnApiHost: '21000.illeesam.synology.me',
+    cdnApiPort: '',
 
     /* ── 토스페이먼츠 ── */
     toss: {

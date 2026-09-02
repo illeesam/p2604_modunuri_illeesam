@@ -88,6 +88,9 @@ logs/
 # .env.test.local
 # .env.production.local
 # .env.*.local
+
+# scripts/deploySynology.js 가 읽는 NAS 접속정보(SSH 비밀번호 포함) — 로컬 전용, 커밋 금지
+scripts/.synology-deploy.env
 *.pem
 *.key
 *.crt

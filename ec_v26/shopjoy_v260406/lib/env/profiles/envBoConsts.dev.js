@@ -16,15 +16,18 @@
     appTitle: 'ShopJoy BO',
     appCiImage: 'assets/img/ci/bo-ci.svg',
 
-    /* nginx(21000, 공개 진입점)가 프론트+API 를 같이 서빙하는 Synology NAS 실주소.
-     * 포트는 21080(디버그 직결, 외부 공개 금지) 아니고 반드시 21000(정식 경로). */
-    baseApiHost: 'illeesam.synology.me',
-    baseApiPort: '21000',
+    /* 2026-09-04: DSM 리버스 프록시(서브도메인 21000.illeesam.synology.me, 443)로 전환.
+     * 예전엔 illeesam.synology.me:21000(평문 HTTP)을 직접 가리켰는데, HTTPS(secure context)가
+     * 필요해서(crypto.subtle 등) 서브도메인+443 방식으로 옮겼다. 포트는 443(HTTPS 기본 포트라
+     * 안 적어도 자동)이라 비워둔다. ⚠ 이 값을 바꾸면 예전 http://illeesam.synology.me:21000
+     * 직접 접속으로는 API 가 더 이상 안 붙는다(의도된 트레이드오프 — 이제 정식 진입점은 HTTPS). */
+    baseApiHost: '21000.illeesam.synology.me',
+    baseApiPort: '',
 
-    /* 첨부파일도 같은 nginx(21000)가 /cdn/** 로 서빙 — baseApi와 동일 주소.
+    /* 첨부파일도 같은 nginx가 /cdn/** 로 서빙 — baseApi와 동일 주소.
      * 나중에 진짜 CDN/S3로 옮기면 이 두 값만 그 주소로 바꾸면 됨. */
-    cdnApiHost: 'illeesam.synology.me',
-    cdnApiPort: '21000',
+    cdnApiHost: '21000.illeesam.synology.me',
+    cdnApiPort: '',
 
     /* ── 토스페이먼츠 ── */
     toss: {

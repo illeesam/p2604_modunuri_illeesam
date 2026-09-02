@@ -43,6 +43,12 @@
   <script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
   <script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
   <script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+  <!-- crypto-js — coUtil.cofSha256(로그인 비밀번호 해싱)의 secure-context 폴백(2026-09-04 추가).
+       window.crypto.subtle 는 HTTPS/localhost 에서만 존재해서, 이 NAS처럼 평문 HTTP 도메인으로
+       접속하면 crypto.subtle 이 undefined 라 로그인이 무조건 깨진다 — window.CryptoJS 가 있으면
+       cofSha256 이 이걸 우선 쓰도록 이미 짜여 있었는데(coUtil.js), 정작 이 라이브러리가 로드된
+       적이 없어서 그 분기가 죽어있었다(실제 NAS 배포 중 발견). -->
+  <script src="assets/cdn/pkg/crypto-js/4.2.0/crypto-js.min.js"></script>
 
   <!-- ■ H1.2: CDN Libraries ■ -->
   <script src="assets/cdn/pkg/postcode/2/postcode.v2.js"></script>
