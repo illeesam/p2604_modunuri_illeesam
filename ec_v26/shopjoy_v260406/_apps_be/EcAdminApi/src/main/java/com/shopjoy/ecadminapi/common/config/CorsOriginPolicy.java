@@ -22,6 +22,12 @@ public final class CorsOriginPolicy {
         "http://localhost:*", "https://localhost:*",
         "http://127.0.0.1:*", "https://127.0.0.1:*",
         "http://illeesam.synology.me:*", "https://illeesam.synology.me:*",
+        // 2026-09-05: DSM 리버스 프록시가 서브도메인 단위로 서비스를 나누는 구성(21000.illeesam.synology.me
+        // 등, 13번 문서 참조)이라 "*.illeesam.synology.me" 도 별도로 허용해야 함 — 위 "illeesam.synology.me:*"
+        // 패턴은 포트만 와일드카드일 뿐 도메인 앞에 서브도메인이 붙은 origin(예: https://21000.illeesam.synology.me,
+        // 포트 없음/443)은 매칭하지 않는다. 이 NAS는 앞으로도 같은 패턴(NNNNN.illeesam.synology.me)으로
+        // 서브도메인을 계속 늘려갈 구성이라 서브도메인 전체를 와일드카드로 열어둔다.
+        "http://*.illeesam.synology.me", "https://*.illeesam.synology.me",
         "http://illeesam.netlify.app", "https://illeesam.netlify.app"
     );
 }

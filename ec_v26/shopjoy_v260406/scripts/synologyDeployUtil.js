@@ -1,4 +1,4 @@
-/* synologyDeployUtil.js — deployBeDevSynology.js / deployFeDevSynology.js 가 공유하는
+/* synologyDeployUtil.js — deployDevSynolBe.js / deployDevSynolFe.js 가 공유하는
  * SSH/SFTP 헬퍼. NAS 접속정보 로드 + SFTP 업로드 + SSH 명령 실행을 여기 한 곳에 모아서
  * 두 스크립트가 똑같은 접속 로직을 중복해서 들고 있지 않게 한다(직접 실행 대상 아님).
  *

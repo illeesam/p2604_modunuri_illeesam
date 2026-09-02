@@ -1,9 +1,10 @@
-/* deployFeDevSynology.js — 내 컴퓨터에서 직접 SSH로 프론트(FO/BO 화면)를 Synology NAS(dev)에
+/* deployDevSynolFe.js — 내 컴퓨터에서 직접 SSH로 프론트(FO/BO 화면)를 Synology NAS(dev)에
  * 빌드+전송까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
- * deploy:dev-github 참조 — git push 로 GitHub 서버가 대신 빌드+배포, GitHub Pages 도 같이 됨).
- * 백엔드는 별도 scripts/deployBeDevSynology.js(= npm run deploy:be-dev-synol).
+ * deploy:dev-github-be/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포, GitHub Pages 도 같이 됨).
+ * 백엔드는 별도 scripts/deployDevSynolBe.js(= npm run deploy:dev-synol-be).
+ * 백엔드+프론트 둘 다 한 번에 하려면 npm run deploy:dev-synol-full.
  *
- * 사용법: node scripts/deployFeDevSynology.js   (= npm run deploy:fe-dev-synol)
+ * 사용법: node scripts/deployDevSynolFe.js   (= npm run deploy:dev-synol-fe)
  * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synologyDeployUtil.js 상단 주석 참조.
  *
  * 무엇을 하는지는 _apps_be/EcAdminApi/_doc/12_illeesam_synology_FE_수동배포가이드.md 의
@@ -13,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const { ROOT, run, withSsh, requireCreds } = require('./synologyDeployUtil');
 
-requireCreds('scripts/deployFeDevSynology.js');
+requireCreds('scripts/deployDevSynolFe.js');
 
 const REMOTE_FRONTEND_DIR = '/volume1/docker/shopjoy/frontend';
 const REMOTE_SHOPJOY_DIR = '/volume1/docker/shopjoy';

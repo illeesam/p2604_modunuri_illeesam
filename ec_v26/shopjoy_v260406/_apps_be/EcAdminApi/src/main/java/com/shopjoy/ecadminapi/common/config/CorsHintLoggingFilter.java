@@ -53,11 +53,21 @@ public class CorsHintLoggingFilter extends OncePerRequestFilter {
 
     /** {@link CorsOriginPolicy#ALLOWED_ORIGIN_PATTERNS} 와 동일한 단순 매칭 로직
         (GlobalExceptionHandler 의 동명 메서드와 같은 판정 기준 — 판정 자체를 대신하지 않는
-        진단용 근사치라는 점도 동일). */
+        진단용 근사치라는 점도 동일). 실제 판정은 Spring Security 의 CorsFilter(AntPathMatcher
+        기반)가 하므로, 여기 로직은 그 결과를 "대략" 미리 알려주는 용도일 뿐이다. */
     private boolean isOriginAllowed(String origin) {
         for (String pattern : CorsOriginPolicy.ALLOWED_ORIGIN_PATTERNS) {
             if (pattern.endsWith(":*")) {
+                // "https://host:*" — 포트만 와일드카드
                 if (origin.startsWith(pattern.substring(0, pattern.length() - 1))) return true;
+            } else if (pattern.contains("://*.")) {
+                // "https://*.domain" — 서브도메인 와일드카드 (2026-09-05: 21000.illeesam.synology.me 등)
+                int schemeEnd = pattern.indexOf("://*.") + 3; // "://" 뒤 위치
+                String scheme = pattern.substring(0, schemeEnd);      // 예: "https://"
+                String suffix = pattern.substring(schemeEnd + 1);     // 예: "*." 제거 → ".illeesam.synology.me"
+                if (origin.startsWith(scheme) && origin.endsWith(suffix) && origin.length() > scheme.length() + suffix.length()) {
+                    return true;
+                }
             } else if (pattern.equals(origin)) {
                 return true;
             }

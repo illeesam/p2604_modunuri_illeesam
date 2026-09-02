@@ -59,6 +59,10 @@ illeesam.synology.me     (기본 인증서) Synology DDNS Certificate
 
 > ⚠ **"주제 대체 이름"이 반드시 `21000.illeesam.synology.me`와 정확히 일치해야 합니다.** `illeesam.synology.me`(서브도메인 없이)로 나오면 STEP 1-3에서 이름/도메인을 헷갈린 것이니, 그 인증서는 삭제(선택 → 작업 → 삭제)하고 다시 만드세요.
 
+**실제 화면 예시** (제대로 발급됐을 때 — 굵은 글씨와 "주제 대체 이름"이 둘 다 `21000.illeesam.synology.me`로 일치):
+
+![인증서 발급 결과 — 주제 대체 이름이 21000.illeesam.synology.me로 정확히 일치](images/20260902_203944.jpg)
+
 ---
 
 ## STEP 2 — 리버스 프록시 규칙 생성
@@ -78,6 +82,10 @@ illeesam.synology.me     (기본 인증서) Synology DDNS Certificate
 | **대상** | 프로토콜 | `HTTP` |
 | **대상** | 호스트 이름 | `localhost` |
 | **대상** | 포트 | `21000` |
+
+**실제 입력 화면 예시**:
+
+![리버스 프록시 규칙 생성 폼 — 소스 HTTPS/21000.illeesam.synology.me/443, 대상 HTTP/localhost/21000](images/20260902_204114.jpg)
 
 **저장** 클릭.
 
@@ -104,6 +112,10 @@ illeesam.synology.me     (기본 인증서) Synology DDNS Certificate
 FTPS                        →  illeesam.synology.me
 FileStation - 7001          →  illeesam.synology.me
 ```
+
+**실제 화면 예시** (`21000.illeesam.synology.me` 행이 같은 이름의 인증서로 이미 자동 매칭돼 있는 상태):
+
+![인증서-서비스 매칭 화면 — 21000.illeesam.synology.me 행이 21000.illeesam.synology.me 인증서로 매칭됨](images/20260902_204633.jpg)
 
 **3-1.** `21000.illeesam.synology.me` 행을 찾습니다(STEP 2에서 만든 리버스 프록시가 자동으로 이 목록에 서비스로 나타납니다)
 
@@ -136,6 +148,36 @@ $ curl "https://21000.illeesam.synology.me/api/co/sy/code/page?pageNo=1&pageSize
 $ curl "https://21000.illeesam.synology.me/api/fo/ec/pd/prod/page"
 HTTP/1.1 200 OK
 ```
+
+---
+
+## 백엔드(EcAdminApi)는 왜 이 설정이 필요 없는가
+
+이 문서의 STEP 1~3은 **프론트(nginx)에서만** 진행합니다 — 백엔드(EcAdminApi) 컨테이너 자체에는 인증서를 따로 발급하거나 붙이지 않습니다.
+
+**이유**: HTTPS(TLS)는 "요청이 최초로 들어오는 지점" 딱 한 곳에서만 풀리면 됩니다(TLS 종료, termination). 이 구성에서 그 지점은 DSM 리버스 프록시(STEP 2)입니다.
+
+```
+브라우저 → (HTTPS, 인증서 검증) → DSM 리버스 프록시(443) → (평문 HTTP) → nginx(21000) → (평문 HTTP, 컨테이너 내부망) → ecadminapi(3000)
+                                        ↑ 여기서만 암호화가 풀림                              ↑ 여기부터는 외부에 노출 안 되므로 평문이어도 안전
+```
+
+- DSM 리버스 프록시 ~ nginx 구간, nginx ~ ecadminapi 구간은 전부 **이 NAS 내부(로컬/컨테이너 네트워크)**만 지나가고 외부 인터넷에 직접 노출되지 않습니다. 그래서 이 구간은 평문 HTTP로 둬도 도청 위험이 없습니다.
+- 백엔드에 인증서를 또 붙이면 "인증서 2개를 따로 발급·갱신 관리"해야 하는 불필요한 복잡도만 늘어납니다.
+- 백엔드를 직접 테스트하는 `http://illeesam.synology.me:21080/actuator/health`(디버깅 전용 포트)도 이런 이유로 계속 평문 HTTP로 열려 있습니다 — 공개 배포용 정식 경로는 항상 nginx(HTTPS, `21000`/`21000.illeesam.synology.me`)를 거칩니다.
+
+### ⚠ 다른 서버에 백엔드가 있는 경우 주의사항
+
+이 문서의 "백엔드는 HTTPS 필요 없음" 논리는 **백엔드와 nginx가 같은 내부망(같은 NAS/같은 Docker 네트워크) 안에 있을 때만** 성립합니다. 아래 상황이라면 그대로 적용하면 안 됩니다.
+
+| 상황 | 이 문서 논리가 성립하는가 | 필요한 조치 |
+|---|---|---|
+| 백엔드가 **다른 서버/다른 클라우드**(예: 별도 AWS EC2, 별도 NAS)에 있고, nginx가 인터넷 구간을 거쳐 그 백엔드를 호출 | ❌ 성립 안 함 — 위 그림의 "내부망" 전제가 깨짐 | nginx ↔ 백엔드 구간도 HTTPS(또는 최소 VPN/사설망)로 별도 보호 필요 |
+| 백엔드가 **같은 NAS**지만 Docker 컨테이너가 아니라 **NAS 밖 다른 장비**로 옮겨질 예정 | ❌ 더 이상 성립 안 함 | 이전 시점에 이 문서를 다시 검토, 위와 동일하게 nginx ↔ 백엔드 구간 보호 필요 |
+| GitHub Pages(순수 정적 호스팅)에서 이 백엔드를 API로 호출하는 경우 | ⚠ 별도 사안 — GitHub Pages는 nginx를 거치지 않고 **브라우저가 백엔드(또는 nginx)를 직접 호출** | nginx(`21000.illeesam.synology.me`)가 이미 HTTPS이므로 그 주소로 호출하면 되지만, `21080`(백엔드 직결 디버깅 포트)로 직접 호출하면 평문 HTTP라 브라우저가 막을 수 있음(Mixed Content) — `prod`/`dev` 프로파일이 항상 nginx의 HTTPS 주소를 가리키게 하는 이유이기도 함(15번 문서 참조) |
+| 여러 사이트/여러 프로젝트가 **같은 백엔드를 공유**하되 그중 일부가 이 NAS 밖에서 접속 | ⚠ 부분적으로 성립 | 그 "밖에서 접속하는 경로"만 HTTPS로 별도 노출(예: 지금처럼 서브도메인 리버스 프록시 하나 더 추가) — 지금 구성은 그렇게 확장 가능(서브도메인+포트 조합을 얼마든지 늘릴 수 있음) |
+
+**한 줄 요약**: "백엔드는 HTTPS가 아예 필요 없다"가 아니라, **"지금처럼 백엔드가 nginx와 같은 내부망 안에 갇혀 있고 외부에서 직접 닿을 수 없을 때만"** 생략해도 안전합니다. 백엔드가 외부에서 직접 호출 가능한 구조로 바뀌는 순간(공유기 포트포워딩을 21080에도 열거나, 백엔드를 별도 서버로 분리하는 등) 이 전제가 깨지므로, 그 시점엔 이 문서를 다시 참고해 백엔드 쪽도 HTTPS를 적용해야 합니다.
 
 ---
 

@@ -56,7 +56,7 @@ https://21000.illeesam.synology.me/bo.html
 
 ## 방식 B — `npm run deploy:dev-github` (GitHub Actions 경유, Synology + GitHub Pages 둘 다)
 
-**사전 준비**가 아직이라면 [21_illeesam_synology_GithubActions_배포가이드.md](21_illeesam_synology_GithubActions_배포가이드.md) 참조(시크릿 등록, GitHub Pages 활성화 등).
+**사전 준비**가 아직이라면 [21_illeesam_synology_GithubActions_FE_배포가이드.md](21_illeesam_synology_GithubActions_FE_배포가이드.md) 참조(시크릿 등록, GitHub Pages 활성화 등).
 
 **명령어**:
 ```
@@ -70,6 +70,31 @@ https://21000.illeesam.synology.me/bo.html
 **테스트 방법**: GitHub 리포지토리 → `Actions` 탭에서 두 워크플로 모두 확인 → 완료 후 위 URL로 최종 확인.
 
 **커밋 없이 수동 실행**: GitHub `Actions` 탭 → `shopjoy-fe-illeesam-synol-deploy` 또는 `shopjoy-fe-illeesam-github-deploy` → `Run workflow` 버튼.
+
+---
+
+## 관련 파일
+
+| 파일 | 역할 |
+|---|---|
+| [`scripts/deployFeDevSynology.js`](../../../scripts/deployFeDevSynology.js) | 실제 배포 로직 — `npm run build:dev` → `dist/` 압축(tar.gz) → SFTP 전송 → NAS에서 기존 파일 삭제 후 압축 해제 → index.html/bo.html 200 확인 |
+| [`scripts/synologyDeployUtil.js`](../../../scripts/synologyDeployUtil.js) | (14번 문서와 동일 공유 파일) SSH/SFTP 공통 로직 |
+| [`scripts/buildMinify.js`](../../../scripts/buildMinify.js) | `npm run build:dev` 내부에서 실행되는 실제 빌드 로직(esbuild minify + `lib/env/profiles/*.dev.js` 프로파일 적용) |
+| `scripts/.synology-deploy.env` | (14번 문서와 동일 공유 파일) NAS 접속정보 — `.gitignore` 처리돼 있어 깃허브에 안 올라감 |
+| `package.json`의 `deploy:fe-dev-synol`, `build:dev` | 각각 배포 트리거 / 내부에서 쓰이는 빌드 스크립트 |
+| `.github/workflows/shopjoy-fe-illeesam-synol-deploy.yml` | (방식 B) NAS에 프론트 배포하는 GitHub Actions 워크플로 |
+| `.github/workflows/shopjoy-fe-illeesam-github-deploy.yml` | (방식 B) GitHub Pages에 프론트 배포하는 워크플로(같은 push로 동시 실행) |
+
+**`deployFeDevSynology.js` 핵심 로직 요약**:
+```
+1. npm run build:dev                              → dist/ 생성(minify + dev 프로파일 API 주소 적용)
+2. tar -czf dist.tar.gz -C dist .
+3. SFTP: dist.tar.gz → NAS /volume1/docker/shopjoy/
+4. SSH:  기존 frontend/ 폴더 비우고 압축 해제(완전 교체)
+5. SSH:  curl로 index.html/bo.html HTTP 상태코드 확인(200 기대)
+```
+
+> nginx가 이 `frontend/` 폴더를 어떻게 서빙하는지(볼륨 마운트, MIME 타입 등)는 [12번 문서](12_illeesam_synology_FE_수동배포가이드.md)의 "참고" 절 참조.
 
 ---
 
