@@ -35,14 +35,23 @@ function checkUrl(pathname) {
   });
 }
 
+// 2026-09-05: 스크립트 전체(빌드~헬스체크까지) 소요시간을 마지막에 보여주기 위한 시작시각.
+const startedAt = Date.now();
+function fmtElapsed() {
+  const sec = Math.round((Date.now() - startedAt) / 1000);
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
 (async () => {
   try {
     console.log('=== 프론트(FO/BO 화면) 배포 시작 ===\n');
 
-    console.log('[1] dev 프로파일로 빌드');
+    console.log('[FE-1] dev 프로파일로 빌드');
     run('npm run build:dev', ROOT);
 
-    console.log('\n[2] dist/ 압축');
+    console.log('\n[FE-2] dist/ 압축');
     const tarPath = path.join(ROOT, 'dist.tar.gz');
     run(`tar -czf dist.tar.gz -C dist .`, ROOT);
     console.log(`  결과: ✅ dist.tar.gz (${(fs.statSync(tarPath).size / 1024 / 1024).toFixed(1)}MB)`);
@@ -69,7 +78,7 @@ function checkUrl(pathname) {
 
     fs.rmSync(tarPath, { force: true });
 
-    console.log('\n[헬스체크 2/2] 외부 HTTPS 접속 확인 (이 컴퓨터 → https://21000.illeesam.synology.me)');
+    console.log('\n[FE-3] 헬스체크 2/2 — 외부 HTTPS 접속 확인 (이 컴퓨터 → https://21000.illeesam.synology.me)');
     const [idxStatus, boStatus, apiStatus] = await Promise.all([
       checkUrl('/index.html'),
       checkUrl('/bo.html'),
@@ -88,11 +97,11 @@ function checkUrl(pathname) {
       console.log('    /api/... 만 200이 아니면: 백엔드가 안 떠 있을 수 있음 → npm run deploy:dev-synol-be, 14번 문서 참조');
     }
 
-    console.log(`\n[완료] 프론트 배포 끝${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
+    console.log(`\n[FE-완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
     console.log('  HTTP  : http://illeesam.synology.me:21000/index.html , /bo.html');
     console.log('  HTTPS : https://21000.illeesam.synology.me/index.html , /bo.html  (로그인은 이쪽 필수)');
   } catch (e) {
-    console.error(`\n❌ 배포 실패: ${e.message}`);
+    console.error(`\n[FE-실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     process.exit(1);
   }
 })();

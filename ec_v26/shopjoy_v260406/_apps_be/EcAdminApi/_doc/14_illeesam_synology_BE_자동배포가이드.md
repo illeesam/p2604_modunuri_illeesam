@@ -43,7 +43,7 @@ SYNOLOGY_PASSWORD=실제비밀번호
 | 4 | NAS에서 `docker compose up -d --force-recreate ecadminapi` (재기동) |
 | 5 | `docker compose ps`를 healthy 될 때까지 최대 5분 폴링 |
 
-**결과값**: 콘솔에 각 단계가 그대로 출력되고, 마지막에 `[완료] 백엔드 배포 끝` 이 나오면 성공입니다.
+**결과값**: 콘솔에 각 단계가 그대로 출력되고, 마지막에 `[BE-완료] 백엔드 배포 끝` 이 나오면 성공입니다.
 
 **테스트 방법**: 브라우저 주소창에 아래 URL 입력.
 ```
