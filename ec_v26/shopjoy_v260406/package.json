@@ -12,7 +12,10 @@
     "build:minify": "node scripts/buildMinify.js",
     "build:check": "node scripts/buildMinify.js --check",
     "verify-dist": "node scripts/verifyLazyClassIntegrity.js --dir dist",
-    "build": "npm run build:minify && npm run verify-dist"
+    "build": "npm run build:local",
+    "build:local": "node scripts/buildMinify.js --profile=local && npm run verify-dist",
+    "build:dev": "node scripts/buildMinify.js --profile=dev && npm run verify-dist",
+    "build:prod": "node scripts/buildMinify.js --profile=prod && npm run verify-dist"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"
@@ -21,7 +24,7 @@
   "//": "──────────────────────────────────────────────────────────────────────",
   "// scriptsGuide": "JSON은 주석 문법이 없어 npm 이 무시하는 커스텀 필드로 설명을 남긴다.",
   "// 사용법": "npm run <스크립트명> (예: npm run check-orphans). VS Code 는 NPM SCRIPTS 패널에서 우클릭 실행도 가능.",
-  "// 순서": "scripts 는 실행 흐름 순서로 정렬돼 있다 — ①점검(check-orphans) ②맵생성(gen-*) ③맵검증(verify-lazy) ④정리(clean) ⑤빌드(build:*)/검증(verify-dist)/통합(build).",
+  "// 순서": "scripts 는 실행 흐름 순서로 정렬돼 있다 — ①점검(check-orphans) ②맵생성(gen-*) ③맵검증(verify-lazy) ④정리(clean) ⑤빌드(build:*)/검증(verify-dist)/프로파일별 통합(build, build:local/dev/prod).",
   "scriptsGuide": {
     "check-orphans": "[① 종합점검] BO+FO 전체를 4가지 관점에서 자동 진단한다 — ①등록누락(화면 파일은 있는데 어디에도 안 걸림) ②eager/lazy 이중등록(부팅 시 아직 안 실린 lazy 클래스를 eager 체인이 참조 — 체인 크래시 지뢰) ③클래스명 중복정의(서로 다른 두 파일이 같은 window.ClassName= 정의) ④도달불가(lazy 맵엔 있지만 어느 pageId/메뉴에서도 정적으로 못 찾음 — 근사치라 사람 확인 필요). 새 화면 추가·리팩터 후 습관적으로 돌릴 것.",
 
@@ -33,14 +36,20 @@
 
     "verify-lazy": "[③ 정합성검증] lib/app/{bo,fo}AppLazyClasses.js 맵에 적힌 '클래스명→경로'가 실제 원본 소스 파일 내용과 지금도 일치하는지 확인한다(파일마다 window.ClassName= 이 진짜 있는지). gen-*-lazy 를 깜빡 안 돌렸을 때 잡아주는 이중 안전망 — 결과 0건 불일치가 정상.",
 
-    "clean": "[④ 정리] dist/ 폴더를 통째로 삭제한다(Node 내장 fs.rmSync 사용 — OS 상관없이 동작, rm -rf 같은 셸 명령 의존 없음). build:minify 가 어차피 매번 dist/ 를 선삭제하고 다시 만들기 때문에 평소엔 이걸 따로 돌릴 필요는 없다 — dist/ 를 완전히 비워서 '진짜 처음부터' 확인하고 싶을 때, 또는 디스크 정리 용도로 쓴다.",
+    "clean": "[④ 정리] dist/ 폴더를 통째로 삭제한다(Node 내장 fs.rmSync 사용 — OS 상관없이 동작, rm -rf 같은 셸 명령 의존 없음). build:* 가 어차피 매번 dist/ 를 선삭제하고 다시 만들기 때문에 평소엔 이걸 따로 돌릴 필요는 없다 — dist/ 를 완전히 비워서 '진짜 처음부터' 확인하고 싶을 때, 또는 디스크 정리 용도로 쓴다.",
 
-    "build:minify": "[⑤ 빌드] esbuild 로 pages/lib/components 아래 .js 파일 전부를 '번들링 없이' 파일당 개별 압축(공백/주석 제거 + 지역변수명만 축약)해서 dist/ 에 원본과 동일한 디렉터리 구조로 만든다. window.ClassName= 같은 전역 프로퍼티명은 손 안 댐(lazy 로딩이 그 이름에 의존하므로). 앱 자체 소스(pages/lib/components 원본)는 전혀 안 바뀐다 — dist/ 는 배포용 산출물일 뿐, 로컬 개발(Live Server)은 여전히 원본을 그대로 씀.",
+    "build:minify": "[⑤ 빌드-저수준] esbuild 로 pages/lib/components 아래 .js 파일 전부를 '번들링 없이' 파일당 개별 압축(공백/주석 제거 + 지역변수명만 축약)해서 dist/ 에 원본과 동일한 디렉터리 구조로 만든다. window.ClassName= 같은 전역 프로퍼티명은 손 안 댐(lazy 로딩이 그 이름에 의존하므로). --profile=dev|prod 를 안 주면 local 프로파일(lib/env/{bo,fo}EnvConsts.js 원본 그대로)로 빌드된다 — 보통은 이걸 직접 쓰기보다 build:local/build:dev/build:prod 를 쓴다. 앱 자체 소스(pages/lib/components 원본)는 전혀 안 바뀐다 — dist/ 는 배포용 산출물일 뿐, 로컬 개발(Live Server)은 여전히 원본을 그대로 씀.",
 
     "build:check": "[⑤ 빌드-미리보기] build:minify 와 완전히 동일하게 압축을 계산하지만 dist/ 에 실제로 파일을 쓰지 않는다(dry-run) — 압축 후 예상 용량 절감률만 미리 확인하고 싶을 때.",
 
     "verify-dist": "[⑤ 정합성검증] verify-lazy 와 같은 검사를 dist/(압축 산출물) 기준으로 돌린다 — minify 후에도 window.ClassName= 이 여전히 찾아지는지 확인하는 배포 전 최종 게이트. 여기서 실패가 나오면 절대 그 dist/ 를 배포하면 안 된다.",
 
-    "build": "[⑤ 전체빌드] build:minify → verify-dist 를 순서대로 실행한다. 배포 직전에 이 명령 하나만 돌리면 압축 + 검증까지 한 번에 끝난다. 이 명령이 실패(exit 1)하면 dist/ 를 배포하지 말 것."
+    "build": "[⑤ 기본빌드] build:local 의 별칭(하위호환용) — 프로파일을 안 정했을 때의 기본값. 실제 배포 전에는 build:dev 또는 build:prod 를 명시적으로 쓸 것.",
+
+    "build:local": "[⑤ 프로파일빌드-local] build:minify(--profile=local) → verify-dist. lib/env/{bo,fo}EnvConsts.js 원본(로컬 Live Server 기준, apiOrigin='http://호스트명:3000')을 그대로 쓴다 — Live Server 로 직접 열어 로컬 백엔드(3000)와 붙여 확인할 때.",
+
+    "build:dev": "[⑤ 프로파일빌드-dev] build:minify(--profile=dev) → verify-dist. lib/env/profiles/{bo,fo}EnvConsts.dev.js 로 dist/lib/env/{bo,fo}EnvConsts.js 를 덮어쓴다(apiOrigin=''  상대경로 — nginx가 프론트+백엔드를 같은 origin 에서 프록시하는 배포용, 예: Synology NAS). 이 명령이 실패(exit 1)하면 dist/ 를 배포하지 말 것.",
+
+    "build:prod": "[⑤ 프로파일빌드-prod] build:minify(--profile=prod) → verify-dist. lib/env/profiles/{bo,fo}EnvConsts.prod.js 로 dist/lib/env/{bo,fo}EnvConsts.js 를 덮어쓴다. 기본은 dev와 동일하게 apiOrigin=''(nginx 동일 origin 배포 가정) — 프론트를 백엔드와 분리된 곳(GitHub Pages 등)에 올릴 거면 배포 전에 lib/env/profiles/{bo,fo}EnvConsts.prod.js 의 apiOrigin 을 실제 백엔드 절대주소로 직접 채워넣어야 한다. 이 명령이 실패(exit 1)하면 dist/ 를 배포하지 말 것."
   }
 }

@@ -30,8 +30,17 @@
  * (CDN 패키지는 이미 자체적으로 프로덕션 빌드본이라 다시 압축해도 이득이 거의 없고, 복잡한
  * 서드파티 코드를 esbuild 로 재가공하면 미묘하게 깨질 리스크만 있어 건드리지 않는다).
  *
- * 사용법: node scripts/buildMinify.js   (= npm run build:minify)
- *        node scripts/buildMinify.js --check   (실제로 파일을 안 쓰고 개수만 리포트 — dry run)
+ * 환경(local/dev/prod) 프로파일(2026-09-03 추가):
+ *   lib/env/env{Bo,Fo}Consts.js 는 API 서버를 어느 origin으로 부를지(apiOrigin) 등을 담고
+ *   있는데, 배포 환경마다 값이 다르다(로컬 Live Server=백엔드 절대주소, nginx 뒤에 떠 있는
+ *   배포=상대경로). "런타임에 지금이 무슨 환경인지 감지"하는 대신, 빌드할 때 이미 정해서
+ *   lib/env/profiles/env{Bo,Fo}Consts.{dev,prod}.js 중 해당하는 걸 dist/lib/env/ 자리에
+ *   덮어쓴다 — --profile 인자로 고른다(생략 시 'local' = 원본 그대로, 즉 아무 것도 안 덮어씀).
+ *
+ * 사용법: node scripts/buildMinify.js                    (= npm run build:local, local 프로파일)
+ *        node scripts/buildMinify.js --profile=dev       (= npm run build:dev)
+ *        node scripts/buildMinify.js --profile=prod      (= npm run build:prod)
+ *        node scripts/buildMinify.js --check              (실제로 파일을 안 쓰고 개수만 리포트 — dry run)
  */
 const fs = require('fs');
 const path = require('path');
@@ -42,6 +51,11 @@ const OUT_DIR = path.join(ROOT, 'dist');
 const SRC_DIRS = ['pages', 'lib', 'components'];
 const COPY_DIRS = ['assets'];               // 가공 없이 그대로 복사할 디렉터리(CSS/CDN/이미지 등)
 const DRY_RUN = process.argv.includes('--check');
+
+const PROFILE_ARG = process.argv.find((a) => a.startsWith('--profile='));
+const PROFILE = PROFILE_ARG ? PROFILE_ARG.split('=')[1] : 'local';
+const VALID_PROFILES = ['local', 'dev', 'prod'];
+const ENV_TARGETS = ['envBoConsts', 'envFoConsts']; // lib/env/ 아래 프로파일 교체 대상 파일명(확장자 제외)
 
 /* walkFiles — dir 아래 지정 확장자 파일을 재귀적으로 전부 모아 ROOT 기준 상대경로(슬래시 통일)로 반환 */
 function walkFiles(dir, ext) {
@@ -61,7 +75,12 @@ function walkFiles(dir, ext) {
 const walkJsFiles = (dir) => walkFiles(dir, '.js');
 
 async function main() {
+  if (!VALID_PROFILES.includes(PROFILE)) {
+    console.error(`❌ 알 수 없는 --profile 값: '${PROFILE}' (사용 가능: ${VALID_PROFILES.join(', ')})`);
+    process.exit(1);
+  }
   console.log(DRY_RUN ? 'minify 빌드 미리보기(--check, 실제 파일 안 씀) 시작' : 'minify 빌드 시작 (dist/ 생성)');
+  console.log(`  프로파일: ${PROFILE}${PROFILE === 'local' ? ' (원본 lib/env/*.js 그대로 사용)' : ' (lib/env/profiles/*.' + PROFILE + '.js 로 교체 예정)'}`);
 
   console.log('\n[1] dist/ 정리(선삭제)');
   /* dist/ 선삭제 — 소스에서 파일을 지운 경우 dist/ 에 옛 산출물이 계속 남아있다가(덮어쓰기만
@@ -159,10 +178,38 @@ async function main() {
     console.log('  ㄴ (--check 모드라 스킵)');
   }
 
+  /* [4] 프로파일 env 파일 교체 — local 이면 원본을 그대로 뒀으니 스킵.
+     dev/prod 면 lib/env/profiles/env{Bo,Fo}Consts.<profile>.js 를 찾아서 dist/lib/env/ 의
+     같은 이름 자리에 덮어쓴다(위 [2]단계가 이미 원본 lib/env/*.js 를 dist 에 복사해둔 뒤라,
+     이 단계가 "그 위에 프로파일 버전으로 교체"하는 순서가 되어야 한다). */
+  console.log(`\n[4] 프로파일 env 파일 적용 (${PROFILE})`);
+  if (PROFILE === 'local') {
+    console.log('  ㄴ local 프로파일 — 원본 lib/env/*.js 를 그대로 사용(교체 없음)');
+  } else if (!DRY_RUN) {
+    for (const name of ENV_TARGETS) {
+      const profilePath = path.join(ROOT, 'lib/env/profiles', `${name}.${PROFILE}.js`);
+      if (!fs.existsSync(profilePath)) {
+        console.error(`❌ 프로파일 파일 없음: lib/env/profiles/${name}.${PROFILE}.js`);
+        process.exit(1);
+      }
+      const src = fs.readFileSync(profilePath, 'utf8');
+      const result = await esbuild.transform(src, {
+        minify: true, loader: 'js', target: 'es2019', legalComments: 'none',
+      });
+      const outPath = path.join(OUT_DIR, 'lib/env', `${name}.js`);
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      fs.writeFileSync(outPath, result.code, 'utf8');
+      console.log(`  ㄴ lib/env/profiles/${name}.${PROFILE}.js → dist/lib/env/${name}.js 로 교체`);
+    }
+    console.log('  결과: ✅ 프로파일 적용 완료');
+  } else {
+    console.log('  ㄴ (--check 모드라 스킵)');
+  }
+
   if (DRY_RUN) {
     console.log('\n[완료] --check 모드 — 실제 dist/ 파일은 안 씀(압축률 미리보기만)');
   } else {
-    console.log(`\n[완료] dist/ 에 JS ${files.length - failCount}개 + HTML/assets 기록 완료`);
+    console.log(`\n[완료] dist/ 에 JS ${files.length - failCount}개 + HTML/assets 기록 완료 (프로파일: ${PROFILE})`);
     console.log('   다음: npm run verify-dist 로 lazy 클래스 매핑이 minify 후에도 살아있는지 확인할 것');
     console.log('   그 다음: dist/bo.html 또는 dist/index.html 을 Live Server 로 열어 직접 확인 가능');
   }

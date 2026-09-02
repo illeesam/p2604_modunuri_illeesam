@@ -19,31 +19,54 @@
     var p = String(path || '').replace(/^\//, '');
     return global.location.origin + appBase() + '/' + p;
   }
+  /* originFrom — host(+port)를 실제 URL origin 문자열로 조립 (2026-09-04, host+port 분리 도입).
+   * host 가 비어있으면 빈 문자열(=상대경로, 지금 페이지와 같은 origin) 반환. 프로토콜은 지금
+   * 페이지와 동일하게 맞춘다(location.protocol) — 별도 필드 없이 http/https 모두 대응. */
+  function originFrom(host, port) {
+    if (!host) return '';
+    return global.location.protocol + '//' + host + (port ? ':' + port : '');
+  }
+  /* backendOrigin — 백엔드를 어느 origin으로 부를지 결정 (2026-09-03, 09-04 host+port 분리).
+   * "런타임에 지금이 무슨 환경인지 감지"하지 않는다 — lib/env/envBoConsts.js(local 원본) /
+   * lib/env/profiles/envBoConsts.{dev,prod}.js(배포 빌드 시 npm run build:dev|build:prod 가
+   * dist/lib/env/envBoConsts.js 자리에 덮어씀) 의 baseApiHost/baseApiPort 값을 그대로 읽어 쓴다.
+   *   - local(원본)  : 호스트명 + 포트 3000 — Live Server(5501)와 백엔드(3000)가 다른 포트라 필요
+   *   - dev/prod(프로파일): NAS 실주소 + 21000(nginx) — 프론트+API 를 같은 nginx가 서빙
+   * (예전엔 항상 host+':3000'으로 절대경로를 만들어서, nginx 뒤에 떠 있는 배포에서 3000번 포트가
+   * 외부에 안 열려 있어 API 호출이 전부 실패했었다 — 2026-09-02 NAS 배포 중 발견) */
+  function backendOrigin() {
+    var env = global.envBoConsts;
+    if (env && typeof env.baseApiHost === 'string') return originFrom(env.baseApiHost, env.baseApiPort);
+    /* envBoConsts.js 아직 미로드(로드 순서 문제) 등 예외 상황의 안전망 — 로컬 개발 가정 폴백 */
+    var host = global.location.hostname || 'localhost';
+    return 'http://' + host + ':3000';
+  }
   function apiUrl(path) {
     if (/^https?:\/\//i.test(path)) return path;
     var p = String(path || '').replace(/^\//, '');
-    var host = global.location.hostname || 'localhost';
-    return 'http://' + host + ':3000/api/' + p;
+    return backendOrigin() + '/api/' + p;
   }
   /* cdnUrl — /cdn/** 정적 리소스(첨부파일 등) 절대 URL.
-   * apiUrl() 과 host:port 는 같지만 /api 세그먼트가 없다(WebConfig 가 /cdn/** 를 /api 밖에 매핑).
-   * 과거 fnTriggerDownload 류가 window.boEnvConsts.apiHost(존재하지 않는 필드) 로 절대경로를
+   * envBoConsts.cdnApiHost 를 우선 쓰고(2026-09-03 — 첨부파일을 백엔드와 다른 origin/진짜 CDN으로
+   * 분리 배포하게 될 때를 대비), 비어있으면(기본값) backendOrigin() 과 동일하게 취급한다 —
+   * 지금처럼 백엔드가 /cdn/** 도 같이 서빙하는 구조의 기본 동작.
+   * 과거 fnTriggerDownload 류가 window.envBoConsts.apiHost(존재하지 않는 필드) 로 절대경로를
    * 만들려다 항상 '' 로 떨어져, 상대경로가 프론트(Live Server) origin 으로 잘못 풀리는 버그가 있었다
    * (다운로드한 파일이 실제로는 backend 의 xlsx 가 아니라 프론트 서버의 엉뚱한 응답이었음, 2026-08-16). */
   function cdnUrl(path) {
     if (/^https?:\/\//i.test(path)) return path;
     var p = String(path || '').replace(/^\//, '');
-    var host = global.location.hostname || 'localhost';
-    return 'http://' + host + ':3000/' + p;
+    var env = global.envBoConsts;
+    var origin = (env && env.cdnApiHost) ? originFrom(env.cdnApiHost, env.cdnApiPort) : backendOrigin();
+    return origin + '/' + p;
   }
   /* seoUrl — 백엔드의 SEO 메타태그 서버사이드 주입 랜딩(/foui/prodDtl|eventDtl|blogDtl/{id} 등, FoSeoController) 절대 URL.
-     cdnUrl() 과 host:port 조립은 동일(둘 다 /api 밖 backend 루트 경로) — 용도 구분을 위해 이름만 분리.
+     cdnUrl() 과 origin 조립은 동일(둘 다 /api 밖 backend 루트 경로) — 용도 구분을 위해 이름만 분리.
      BO 화면(PdProdDtl 등)의 "API 미리보기" 버튼처럼 서버사이드 주입 결과를 직접 확인할 때 사용 */
   function seoUrl(path) {
     if (/^https?:\/\//i.test(path)) return path;
     var p = String(path || '').replace(/^\//, '');
-    var host = global.location.hostname || 'localhost';
-    return 'http://' + host + ':3000/' + p;
+    return backendOrigin() + '/' + p;
   }
   global.appBase = global.appBase || appBase;
   global.pageUrl = global.pageUrl || pageUrl;

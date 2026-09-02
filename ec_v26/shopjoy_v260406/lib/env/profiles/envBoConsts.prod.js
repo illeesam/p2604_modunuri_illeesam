@@ -1,27 +1,36 @@
-/* ShopJoy - 외부 연동 상수 모음 (FO / foEnvConsts)
+/* ShopJoy - 외부 연동 상수 모음 (BO / envBoConsts) — prod 프로파일
  * ─────────────────────────────────────────────────────────────────────────
- * 코드 곳곳에 흩어지기 쉬운 외부 SDK/서비스의 고정 상수(테스트 키, SDK URL,
- * OAuth 엔드포인트, 택배 추적 URL 등)를 한 곳에 모은다.
- *   · 운영용 비밀키/클라이언트키는 여기에 두지 않는다 → 사이트 설정(AppStore svXxxKey)에서 주입.
- *   · 여기에 두는 것은 "공개 가능한 상수" 만: 토스 공식 문서 테스트 키, 표준 SDK URL, 공개 트래킹 URL.
- *   · 🔑 각 키의 발급처(외부 콘솔) → 저장 위치(AppStore svXxx) → 사용처 표는 lib/utils/coExtSdk.js 상단 참조.
+ * ⭐ 이 파일은 원본이 아니라 "빌드용 프로파일"이다. `npm run build:prod` 실행 시
+ * scripts/buildMinify.js 가 이 파일을 dist/lib/env/envBoConsts.js 자리에 그대로
+ * 복사해서 원본(lib/env/envBoConsts.js, local 프로파일)을 덮어쓴다.
+ * 원본 파일과 구조가 동일해야 한다 — 필드를 추가/삭제하면 여기도 맞춰 수정할 것.
+ * 원본(local)에 있는 각 필드의 설명 주석은 원본 파일 참조, 여기서는 prod 전용 값만 표시.
  *
- * 전역: window.foEnvConsts (FO 전용 — index.html 에서 로드)
- * 로드 순서: coExtSdk.js / 각 페이지보다 먼저 (index.html)
+ * 전역: window.envBoConsts (BO 전용 — bo.html 에서 로드)
+ * 용도: docker-compose 로 nginx+백엔드를 같은 스택에 띄우는 정식 운영 배포.
  * ───────────────────────────────────────────────────────────────────────── */
 (function () {
-  window.foEnvConsts = {
-    /* ── 실행 모드 ── ('local' | 'dev' | 'prod')
-     * 환경별 분기(테스트키 폴백 허용·디버그 로그·API 베이스 등)에 사용. */
-    runMode: 'local',  // local, dev, prod
+  window.envBoConsts = {
+    runMode: 'prod',  // local, dev, prod
+
+    appTitle: 'ShopJoy BO',
+    appCiImage: 'assets/img/ci/bo-ci.svg',
+
+    /* 지금 실제로 떠 있는 운영 서버(Synology NAS, nginx 21000)를 그대로 가리킨다 — 이 값 덕분에
+     * GitHub Pages처럼 백엔드가 같이 안 뜨는 곳에 프론트를 올려도 API가 정상 호출된다.
+     * ⚠ 별도의 진짜 운영 도메인/서버가 생기면 그때 이 값을 그 주소로 바꿀 것. */
+    baseApiHost: 'illeesam.synology.me',
+    baseApiPort: '21000',
+
+    /* 첨부파일도 같은 nginx(21000)가 /cdn/** 로 서빙 — baseApi와 동일 주소.
+     * 나중에 진짜 CDN/S3로 옮기면 이 두 값만 그 주소로 바꾸면 됨. */
+    cdnApiHost: 'illeesam.synology.me',
+    cdnApiPort: '21000',
 
     /* ── 토스페이먼츠 ── */
     toss: {
-      /* 공식 문서용 테스트 클라이언트 키 (결제위젯). svTossClientKey 미설정 시 폴백.
-       * 실 결제는 사이트 설정의 tossClientKey(운영키)가 있어야 함. */
       TEST_CLIENT_KEY: 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm',
       TEST_SECRET_KEY: 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',
-      /* v2 표준 SDK (index.html 에서 <script> 로드) */
       SDK_V2_URL: 'https://js.tosspayments.com/v2/standard',
     },
 
@@ -29,7 +38,6 @@
     oauth: {
       GOOGLE_USERINFO_URL: 'https://www.googleapis.com/oauth2/v3/userinfo',
       NAVER_AUTHORIZE_URL: 'https://nid.naver.com/oauth2.0/authorize',
-      /* 카카오는 Kakao JS SDK(Kakao.Auth.login) 사용 — 사용자정보 REST 엔드포인트 (SDK 미사용/직접 호출 시 폴백) */
       KAKAO_USERINFO_URL: 'https://kapi.kakao.com/v2/user/me',
     },
 

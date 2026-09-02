@@ -111,7 +111,7 @@ window.SyExceldownDtl = {
     /* fnTriggerDownload — 브라우저 다운로드만 실행 (API 호출 없음).
        단일/전체 다운로드가 카운트 처리 방식이 서로 달라(단일=매번 +1, 전체=한 번에 +1)
        실제 파일 내려받기 동작만 여기로 분리했다.
-       ⚠ window.boEnvConsts.apiHost 는 존재하지 않는 필드라 항상 '' 로 떨어져, 상대경로가
+       ⚠ window.envBoConsts.apiHost 는 존재하지 않는 필드라 항상 '' 로 떨어져, 상대경로가
        프론트(Live Server, 5501) origin 으로 풀리는 버그가 있었다 — 백엔드(3000)엔 그 경로가
        없어 404 HTML 을 .xlsx 로 저장해버림("파일 형식이 잘못되어..." 오류의 실제 원인, 2026-08-16
        확인). window.cdnUrl() 로 항상 백엔드 절대경로를 만든다. */

@@ -9,15 +9,21 @@
 #
 # 예) git commit -m "OO 기능 deploy" 또는 git commit -m "긴급 배포: OO 수정"
 #
-# npm run build(esbuild 압축 + lazy 정합성 검증) → dist/ 산출물만 GitHub Pages에 올린다.
-# 원본 소스(pages/lib/components 등)는 Pages에 노출되지 않는다.
+# npm run build:prod(esbuild 압축 + prod 프로파일 env 적용 + lazy 정합성 검증) → dist/ 산출물만
+# GitHub Pages에 올린다. 원본 소스(pages/lib/components 등)는 Pages에 노출되지 않는다.
 # 빌드 검증(shopjoy-fe-illeesam-github-build.yml)과는 별개 워크플로 — 그쪽은 배포 안 하고 검증만 함.
 # 같은 dist/ 를 Synology NAS 에도 따로 배포하려면 shopjoy-fe-illeesam-synol-deploy.yml 참조.
+#
+# ⚠⚠ GitHub Pages는 순수 정적 호스팅이라 백엔드가 같이 안 떠 있다(NAS 배포와 결정적으로 다른 점).
+#   lib/env/profiles/env{Bo,Fo}Consts.prod.js 의 apiOrigin 기본값은 ''(상대경로) 인데, 이대로
+#   두면 API 요청이 GitHub Pages 자기 자신(백엔드 없음)으로 나가 전부 실패한다. 이 배포를 실제
+#   쓰려면 그 두 파일의 apiOrigin 을 실제 백엔드 절대주소(예: 'http://illeesam.synology.me:21000')
+#   로 미리 채워넣고 커밋해야 한다.
 #
 # ⚠ 최초 1회 수동 설정 필요: 리포지토리 Settings → Pages → Build and deployment →
 #   Source 를 "GitHub Actions" 로 선택해야 이 워크플로가 실제로 Pages에 반영됨.
 #
-# verify-dist(=npm run build 안에 포함) 가 실패하면 이 워크플로도 실패 처리되어
+# verify-dist(=npm run build:prod 안에 포함) 가 실패하면 이 워크플로도 실패 처리되어
 # Pages 배포가 진행되지 않는다 — 깨진 dist가 그대로 배포되는 일은 없음.
 
 name: shopjoy-fe-illeesam-github-deploy
@@ -72,8 +78,8 @@ jobs:
       - name: 의존성 설치
         run: npm ci
 
-      - name: minify 빌드 + dist 정합성 검증 (실패 시 배포 중단)
-        run: npm run build
+      - name: "minify 빌드(prod 프로파일) + dist 정합성 검증 (실패 시 배포 중단)"
+        run: npm run build:prod
 
       - name: Pages 설정
         uses: actions/configure-pages@v5

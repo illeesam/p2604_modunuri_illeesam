@@ -42,14 +42,14 @@ window.ZdInfDashboard = {
     /* ── 참고자료 행 ──
      * svc / app / level / kind / val / applied / note / propKey / color
      * propKey : 실제 적용 키명 (sy_prop 키 또는 yml 경로)
-     * _where  : propKey 자동 추론 — sy_prop / yml / foEnvConsts / boEnvConsts / (없음)
+     * _where  : propKey 자동 추론 — sy_prop / yml / envFoConsts / envBoConsts / (없음)
      */
     const _mkR = (svc, app, level, kind, val, applied, note, propKey, color, configUrl) => {
       let _where = '';
       if (propKey) {
-        /* 토스 테스트키·SDK URL은 fo/boEnvConsts.js 하드코딩 */
-        if (propKey === '__foEnvConsts__')       _where = 'foEnvConsts';
-        else if (propKey === '__boEnvConsts__')  _where = 'boEnvConsts';
+        /* 토스 테스트키·SDK URL은 fo/envBoConsts.js 하드코딩 */
+        if (propKey === '__envFoConsts__')       _where = 'envFoConsts';
+        else if (propKey === '__envBoConsts__')  _where = 'envBoConsts';
         /* spring.mail.* 은 yml 설정 + sy_prop 양쪽 */
         else if (propKey.startsWith('spring.'))  _where = 'sy_prop + yml';
         /* app.* 는 모두 sy_prop */
@@ -116,9 +116,9 @@ window.ZdInfDashboard = {
       _mkR('Google', 'Play Console','Lv1',      'Console URL','developer.android.com/distribute/console', '참고', '', '', 'blue', 'https://play.google.com/console'),
       /* ── 토스페이먼츠 ── */
       _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (sy_prop)',    'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨', '결제위젯 연동',                               'app.pay.toss.widget-client-key', 'green',  'https://developers.tosspayments.com/'),
-      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (하드코딩)',   'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨', 'foEnvConsts.toss.TEST_CLIENT_KEY (폴백)',     '__foEnvConsts__',               'green',  'https://developers.tosspayments.com/'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (하드코딩)',   'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨', 'envFoConsts.toss.TEST_CLIENT_KEY (폴백)',     '__envFoConsts__',               'green',  'https://developers.tosspayments.com/'),
       _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (sy_prop)',        'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨', '결제 연동하기 가이드',                        'app.pay.toss.secret-key',        'yellow', 'https://developers.tosspayments.com/'),
-      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (하드코딩)',       'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨', 'fo/boEnvConsts.toss.TEST_SECRET_KEY (폴백)', '__foEnvConsts__',               'yellow', 'https://developers.tosspayments.com/'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (하드코딩)',       'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨', 'fo/envBoConsts.toss.TEST_SECRET_KEY (폴백)', '__envFoConsts__',               'yellow', 'https://developers.tosspayments.com/'),
       /* ── SMTP/Gmail ── */
       _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '계정',       'illeesam4@gmail.com', '사용중', '',                        'spring.mail.username', 'blue',   'https://myaccount.google.com/apppasswords'),
       _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '비밀번호',   'sxxx5xx4x!',          '사용중', '구글 계정 비밀번호',       '',                     'red'),
@@ -1009,8 +1009,8 @@ window.ZdInfDashboard = {
                     <td style="text-align:center;">
                       <span v-if="r._where === 'sy_prop'"       class="badge badge-blue"   style="font-size:10px;">sy_prop</span>
                       <span v-else-if="r._where === 'sy_prop + yml'" class="badge badge-purple" style="font-size:10px;">sy_prop+yml</span>
-                      <span v-else-if="r._where === 'foEnvConsts'" class="badge badge-orange" style="font-size:10px;">foEnvConsts</span>
-                      <span v-else-if="r._where === 'boEnvConsts'" class="badge badge-orange" style="font-size:10px;">boEnvConsts</span>
+                      <span v-else-if="r._where === 'envFoConsts'" class="badge badge-orange" style="font-size:10px;">envFoConsts</span>
+                      <span v-else-if="r._where === 'envBoConsts'" class="badge badge-orange" style="font-size:10px;">envBoConsts</span>
                       <span v-else style="color:#d1d5db;font-size:11px;">-</span>
                     </td>
                     <td style="text-align:center;">

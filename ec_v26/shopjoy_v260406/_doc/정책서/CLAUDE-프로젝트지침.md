@@ -141,7 +141,7 @@ index.html
 ├─ head: FO_SITE_NO 결정 + fo-global-style{NO}.css 동적 로드 (document.write)
 ├─ lib/utils/perfUtil.js + safeUtil.js
 ├─ lib/license/licenseFo.js
-├─ lib/utils/foApiAxios.js + coUtil.js + foUtil.js + lib/env/foEnvConsts.js + coExtSdk.js + coAuth.js
+├─ lib/utils/foApiAxios.js + coUtil.js + foUtil.js + lib/env/envFoConsts.js + coExtSdk.js + coAuth.js
 ├─ lib/services/coApiSvc.js + foApiSvc.js
 ├─ lib/app/foAppConfig.js        (window.SITE_CONFIG, window.FO_SITE_NO 소비)
 ├─ lib/stores/fo/foAppInitStore.js + foAppStore.js + foAuthStore.js + foCodeStore.js
@@ -176,7 +176,7 @@ index.html
 bo.html
 ├─ head: Vue, Yup, Quill, bo-global-style0N.css
 ├─ lib/utils/safeUtil.js + lib/license/licenseBo.js
-├─ lib/utils/boApiAxios.js (window.boApi) + coUtil.js + boUtil.js + lib/env/boEnvConsts.js + coExtSdk.js + coAuth.js
+├─ lib/utils/boApiAxios.js (window.boApi) + coUtil.js + boUtil.js + lib/env/envBoConsts.js + coExtSdk.js + coAuth.js
 ├─ lib/services/coApiSvc.js + boApiSvc.js
 ├─ lib/config/excelDomains.js
 ├─ pages/base/boError401.js + boError404.js + boError500.js

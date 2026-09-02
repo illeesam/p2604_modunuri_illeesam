@@ -19,6 +19,16 @@ services:
     # ───── 컨테이너 식별 ─────
     container_name: 210-ecadminApi
 
+    # ───── 호스트(NAS 자신) 접근 — 2026-09-02 추가 ─────
+    # Postgres(17632)가 이 NAS의 별도 컨테이너로 떠 있는 구성에서, 앱 컨테이너가 DB_HOST
+    # 기본값(illeesam.synology.me = 이 NAS 자신의 공인 DDNS)으로 접속하면 컨테이너 네트워크
+    # 밖으로 나갔다가 다시 자기 자신으로 들어오는 NAT 헤어핀 경로를 타게 되어 라우터/방화벽에
+    # 따라 SocketTimeoutException 으로 실패하기 쉽다(실측 확인). host.docker.internal 로
+    # 호스트를 직접 가리키면 이 왕복을 건너뛴다 — .env 의 DB_HOST=host.docker.internal 과 짝.
+    # (DB 가 이 NAS가 아니라 정말 외부 서버라면 이 설정은 있어도 무해 — 안 쓰면 그만이다.)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
     # ───── 환경변수 ─────
     # .env 파일을 자동으로 읽어 컨테이너에 주입
     env_file:

@@ -85,8 +85,8 @@
   };
 
   /* _env — env 상수 안전 접근 (path: 'toss.SDK_V2_URL'). 미로드 시 fallback.
-   * coExtSdk 는 공통(co) 레이어이므로 FO(foEnvConsts)/BO(boEnvConsts) 중 로드된 쪽을 사용 */
-  const _envConsts = () => window.foEnvConsts || window.boEnvConsts;
+   * coExtSdk 는 공통(co) 레이어이므로 FO(envFoConsts)/BO(envBoConsts) 중 로드된 쪽을 사용 */
+  const _envConsts = () => window.envFoConsts || window.envBoConsts;
   const _env = (path, fallback) => {
     try {
       let v = _envConsts();
@@ -445,7 +445,7 @@
   let _tossInstance = null;
 
   /* 토스 공식 문서용 테스트 클라이언트 키 (결제위젯). svTossClientKey 미설정 시 폴백.
-   * 상수는 foEnvConsts/boEnvConsts 에서 가져옴 (미로드 시 안전 폴백). 실 결제는 사이트 설정의 tossClientKey 필요. */
+   * 상수는 envFoConsts/envBoConsts 에서 가져옴 (미로드 시 안전 폴백). 실 결제는 사이트 설정의 tossClientKey 필요. */
   const TOSS_TEST_CLIENT_KEY = _env('toss.TEST_CLIENT_KEY', 'test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax');
 
   /* 마지막 getTossPayments 호출이 테스트 키 폴백을 썼는지 (호출자 안내용) */
