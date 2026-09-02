@@ -9,6 +9,28 @@
 |---|---|---|---|
 | 1 | FileZilla 같은 SFTP 프로그램으로 `/volume1/docker/...` 경로 접속 시 "그런 폴더 없음" 에러 | Synology SFTP는 접속 즉시 `/volume1`을 최상위 루트(`/`)로 취급함 — SFTP 프로그램 안의 `/`가 실제로는 `/volume1` | SFTP 프로그램에서는 `/volume1/docker/shopjoy/backend`가 아니라 **`/docker/shopjoy/backend`**로 접속 (`ssh`/`scp`/SSH 터미널은 실제 경로 `/volume1/...` 그대로 사용 — SFTP만의 특이 동작) |
 | 2 | 백엔드 컨테이너 기동 실패, 로그에 `org.postgresql.util.PSQLException: The connection attempt failed.` / `Caused by: java.net.SocketTimeoutException: Connect timed out` | DB(Postgres)가 앱과 **같은 NAS**에 떠 있는데, 앱 컨테이너가 DB 주소를 `illeesam.synology.me`(NAS 자기 자신의 인터넷 주소)로 접속 시도 → "컨테이너→인터넷→공유기→다시 NAS"로 도는 경로(**NAT 헤어핀**)를 타서 공유기/방화벽 설정에 따라 막히거나 느려짐 | `docker-compose.yml`에 `extra_hosts: - "host.docker.internal:host-gateway"` 추가 + `.env`의 `DB_HOST=host.docker.internal`로 지정 → 컨테이너가 인터넷을 안 거치고 NAS 자신에게 직접 접속 (이미 반영돼 있어 이 문서대로 배포하면 재발 안 함) |
+| 3 | 배포 계정을 바꾼 뒤(예: `illeesam` → `appuser`) `deploy:dev-synol-be`/`fe` 실행 시 SFTP 업로드 단계에서 `SFTP 업로드 실패: No such file` | 새 계정이 옛 계정과 **동일한 NAS 권한**을 안 갖고 있음 — SFTP는 로그인 자체는 되지만(비밀번호 인증 통과) 그 다음 파일 접근 권한이 없어서 "파일이 없다"로 나타남(실제로는 권한 문제) | 아래 [계정 설정 시 주의사항](#계정-설정-시-주의사항-nas-쪽-배포-계정) 참조 — 4가지를 옛 계정과 동일하게 맞춰야 함 |
+| 4 | 계정을 바꾼 뒤 `deploy:dev-synol-fe` 실행 시 SFTP 업로드는 성공했는데 `rm: cannot remove '/volume1/docker/shopjoy/frontend/....js': Permission denied`가 파일마다 쭉 뜨면서 배포 실패(`[FE-실패]`) | `frontend/` 안의 기존 파일들이 **옛 계정(`illeesam`) 소유**로 만들어져 있음 — 새 계정(`appuser`)이 그 공유폴더에 읽기/쓰기 권한이 있어도, **이미 존재하는 파일**의 소유권 자체는 자동으로 안 넘어가서 그 파일들을 못 지움(새로 만드는 파일은 문제없음 — 기존 파일만 문제) | 관리자 권한 있는 계정(기존 `illeesam` 등)으로 SSH 접속해서 **한 번만** 소유권을 넘겨줌: `sudo chown -R appuser:docker /volume1/docker/shopjoy/frontend /volume1/docker/shopjoy/backend` — 이후로는 배포 때마다 새로 만드는 파일이 전부 `appuser` 소유가 되므로 재발 안 함(완전교체 방식이라 지우는 주체=소유자가 항상 같아짐) |
+
+## 계정 설정 시 주의사항 (NAS 쪽 배포 계정)
+
+> 계정을 처음부터 만드는 화면별 상세 절차는 [11-2_illeesam_synology_BE_appuser계정생성.md](<11-2_illeesam_synology_BE_appuser계정생성.md>) 참조 — 여기서는 요약 체크리스트만 다룹니다.
+
+배포 스크립트(`deploy:dev-synol-*`)나 GitHub Actions가 쓰는 NAS 계정을 새로 만들거나 바꿀 때, **DSM에서 아래 4가지를 옛 계정과 동일하게 맞춰야** SFTP 업로드/`docker compose` 명령이 정상 동작합니다. 하나라도 빠지면 SFTP 단계에서 `No such file`(권한 문제를 이렇게 표시함) 같은 헷갈리는 에러가 납니다.
+
+| # | 확인할 곳 | 무엇을 맞춰야 하나 |
+|---|---|---|
+| 1 | 제어판 → 사용자 및 그룹 → (계정) → 편집 → **사용자 홈** | **"SFTP 사용자 홈 폴더로 제한"** 옵션을 꺼야 합니다. 켜져 있으면 SFTP 접속 루트가 `/volume1` 전체가 아니라 그 계정의 홈 폴더로 좁혀져서, 배포 스크립트가 계산하는 경로(`/volume1`을 뗀 상대경로)가 완전히 다른 곳을 가리키게 됩니다. |
+| 2 | 제어판 → 공유 폴더 → **`docker`** → 편집 → **권한** | 그 계정(또는 소속 그룹)에 **읽기/쓰기** 권한이 있어야 합니다. 없으면 SFTP가 `/volume1/docker/...` 안에 파일을 못 씁니다. |
+| 3 | 제어판 → 사용자 및 그룹 → (계정) → 편집 → **그룹** | **`docker` 그룹**에 소속돼 있어야 합니다. SFTP 업로드까지는 통과해도, 다음 단계(`docker compose build`/`up`)에서 권한 오류로 막힙니다. |
+| 4 | 제어판 → 파일 서비스 → **FTP/SFTP** | SFTP 서비스 자체가 켜져 있어야 합니다(이미 다른 계정으로 써왔다면 보통 이미 켜져 있음 — 계정별 접근 제한이 따로 걸려있지 않은지만 참고로 확인). |
+| 5 | (DSM 화면 아님) 관리자 계정으로 SSH 접속 | **기존에 옛 계정으로 이미 배포해둔 파일이 있다면**, 그 파일들 소유권이 아직 옛 계정으로 남아있어 새 계정이 못 지웁니다 — `sudo chown -R 새계정:docker /volume1/docker/shopjoy/frontend /volume1/docker/shopjoy/backend`를 관리자 계정으로 **한 번만** 실행(위 표#4 사례 참조). 처음부터 새 계정으로만 배포해온 경우는 해당 없음. |
+
+> 새 계정 설정 후 첫 배포 전에 SSH로 직접 접속해서 아래 명령이 정상적으로 목록을 보여주는지 먼저 확인해보면 빠릅니다:
+> ```
+> (계정)@illeesam:~$ ls -la /volume1/docker/shopjoy/backend/
+> ```
+> 목록이 보이면 정상, "No such file"/"Permission denied" 류가 나오면 위 표를 다시 확인하세요.
 
 ## 자주 쓰는 확인/운영 명령어 모음 (📦 NAS SSH 접속 후)
 
