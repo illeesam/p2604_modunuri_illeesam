@@ -5,7 +5,7 @@
 
 이 문서는 실제로 `21000.illeesam.synology.me`에 HTTPS를 적용하면서 캡처한 화면을 기준으로 정리했습니다. **DSM 화면 조작(GUI)이라 SSH/명령어로는 자동화할 수 없는 부분**입니다 — DSM 로그인 포털의 핵심 설정이라 잘못 건드리면 NAS 관리자 화면 자체에 영향이 갈 수 있어서, 이 부분만큼은 사람이 직접 DSM 제어판에서 진행합니다.
 
-> 관련 문서: [12_illeesam_synology_FE_수동배포가이드.md](12_illeesam_synology_FE_수동배포가이드.md) §4-4 (이 작업을 하게 된 원인 — 로그인 시 `crypto.subtle` 에러)
+> 관련 문서: [12_illeesam_synology_FE_수동배포가이드(synology).md](<12_illeesam_synology_FE_수동배포가이드(synology).md>) §4-4 (이 작업을 하게 된 원인 — 로그인 시 `crypto.subtle` 에러)
 
 ## 왜 필요한가
 

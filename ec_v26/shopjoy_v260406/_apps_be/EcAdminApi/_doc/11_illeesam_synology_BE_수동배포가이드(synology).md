@@ -30,9 +30,10 @@
 
 1. [지금까지 완료된 작업 요약](#1-지금까지-완료된-작업-요약)
 2. [수동 배포 매뉴얼](#2-수동-배포-매뉴얼)
-3. [GitHub Actions 자동 배포](#3-github-actions-자동-배포) — 빠른 실행은 [14번 문서](14_illeesam_synology_BE_자동배포가이드.md)
+3. [GitHub Actions 자동 배포](#3-github-actions-자동-배포) — 빠른 실행은 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)
 4. [DB 접속 정보](#4-db-접속-정보)
 5. [기타 참고사항 (트러블슈팅/용어)](#5-기타-참고사항-트러블슈팅용어) — 상세는 [9011번 문서](9011_illeesam_synology_BE_트러블슈팅용어.md)
+6. 배포 후 로그 확인 방법은 별도 문서 → [11-1_illeesam_synology_BE_로그보기.md](11-1_illeesam_synology_BE_로그보기.md)
 
 ---
 
@@ -45,7 +46,7 @@
 | GitHub Actions 워크플로 6개 정리 (프론트/백엔드 × NAS/GitHub Pages × 빌드검증/배포) | ✅ 완료                                                                                                        |
 | "배포"/"deploy" 커밋 메시지로만 실제 배포되게 하는 안전장치                           | ✅ 완료                                                                                                        |
 | NAS 특유의 버그 2건 발견·수정 (아래 5장 트러블슈팅 참조)                             | ✅ 완료                                                                                                        |
-| 프론트(FO/BO 화면)`dist/` NAS 배포                                                  | ✅ 완료 — 별도 문서[12_illeesam_synology_FE_수동배포가이드.md](12_illeesam_synology_FE_수동배포가이드.md) 참조 |
+| 프론트(FO/BO 화면)`dist/` NAS 배포                                                  | ✅ 완료 — 별도 문서[12_illeesam_synology_FE_수동배포가이드(synology).md](<12_illeesam_synology_FE_수동배포가이드(synology).md>) 참조 |
 
 **지금 떠 있는 서비스**:
 
@@ -362,7 +363,7 @@ illeesam@illeesam:backend$ exit
 
 ### 참고 — `docker-compose.yml` / `Dockerfile` 내용
 
-STEP 4~5에서 실행하는 `docker compose build`/`up`은 NAS의 `/volume1/docker/shopjoy/backend/docker-compose.yml` 설정을 그대로 따릅니다. 이 리포에서는 원본을 [`_doc/정책서-배포-시놀로지/docker/docker-compose.yml`](../../../_doc/정책서-배포-시놀로지/docker/docker-compose.yml)에서 관리합니다. 실제 내용(요약 발췌 + 주석):
+STEP 4~5에서 실행하는 `docker compose build`/`up`은 NAS의 `/volume1/docker/shopjoy/backend/docker-compose.yml` 설정을 그대로 따릅니다. 이 리포에서는 원본을 [`docker-compose.yml`](../docker-compose.yml)(`_apps_be/EcAdminApi/` — GitHub Actions 배포 워크플로도 이 경로를 원본으로 사용)에서 관리합니다. 실제 내용(요약 발췌 + 주석):
 
 ```yaml
 services:
@@ -437,7 +438,7 @@ location /api/ {
 }
 ```
 
-즉 브라우저가 `https://21000.illeesam.synology.me/api/...`로 보낸 요청을 nginx가 컨테이너 내부에서 `http://ecadminapi:3000/api/...`로 그대로 전달합니다 — STEP 5의 "테스트 방법 3"이 `:21080`(백엔드 직결) 대신 nginx 경유(`:21000`) 주소로도 똑같이 동작하는 이유입니다. `nginx.conf`/`locations.conf`/`security-headers.conf` 전체(캐시 정책, MIME 타입, 보안 헤더 등)에 대한 자세한 설명은 [12번 문서](12_illeesam_synology_FE_수동배포가이드.md)의 "참고" 절 참조.
+즉 브라우저가 `https://21000.illeesam.synology.me/api/...`로 보낸 요청을 nginx가 컨테이너 내부에서 `http://ecadminapi:3000/api/...`로 그대로 전달합니다 — STEP 5의 "테스트 방법 3"이 `:21080`(백엔드 직결) 대신 nginx 경유(`:21000`) 주소로도 똑같이 동작하는 이유입니다. `nginx.conf`/`locations.conf`/`security-headers.conf` 전체(캐시 정책, MIME 타입, 보안 헤더 등)에 대한 자세한 설명은 [12번 문서](<12_illeesam_synology_FE_수동배포가이드(synology).md>)의 "참고" 절 참조.
 
 **`Dockerfile`** (멀티스테이지 빌드 — 실제 내용은 [`Dockerfile`](../Dockerfile)):
 
@@ -471,7 +472,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 `git push`만 하면 GitHub 서버가 대신 배포해줍니다(커밋 메시지에 `deploy`/`배포` 포함 시). 백엔드+프론트 공통 매뉴얼은 별도 문서로 분리했습니다:
 
-→ [14_illeesam_synology_BE_자동배포가이드.md](14_illeesam_synology_BE_자동배포가이드.md) 참조 (전체 환경설정은 [21_illeesam_synology_GithubActions_BE_배포가이드.md](21_illeesam_synology_GithubActions_BE_배포가이드.md))
+→ [14_illeesam_synology_BE_자동배포가이드(npm script).md](<14_illeesam_synology_BE_자동배포가이드(npm script).md>) 참조 (전체 환경설정은 [21_illeesam_synology_GithubActions_BE_배포가이드.md](21_illeesam_synology_GithubActions_BE_배포가이드.md))
 
 ---
 

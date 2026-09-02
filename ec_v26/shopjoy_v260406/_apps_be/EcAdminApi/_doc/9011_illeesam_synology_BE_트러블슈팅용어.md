@@ -1,7 +1,7 @@
 # 백엔드(EcAdminApi) 배포 — 트러블슈팅/용어 (참고자료)
 
 작성일: 2026-09-02
-관련 문서: [11_illeesam_synology_BE_수동배포가이드.md](11_illeesam_synology_BE_수동배포가이드.md)
+관련 문서: [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>)
 
 ## 겪었던 문제 목록
 
@@ -36,7 +36,7 @@
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | 파일 업로드(S3) 키 |
 | `NCP_ACCESS_KEY` / `NCP_SECRET_KEY` | 파일 업로드(네이버클라우드) 키 |
 
-나중에 `prod`로 전환하려면, 위 값들을 실제 값으로 채워서 `/volume1/docker/shopjoy/backend/.env`에 추가하고 `SPRING_PROFILES_ACTIVE=prod`로 바꾼 뒤, [11_illeesam_synology_BE_수동배포가이드.md](11_illeesam_synology_BE_수동배포가이드.md) STEP 5(컨테이너 재기동)를 다시 실행하면 됩니다.
+나중에 `prod`로 전환하려면, 위 값들을 실제 값으로 채워서 `/volume1/docker/shopjoy/backend/.env`에 추가하고 `SPRING_PROFILES_ACTIVE=prod`로 바꾼 뒤, [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>) STEP 5(컨테이너 재기동)를 다시 실행하면 됩니다.
 
 ## 용어 설명
 

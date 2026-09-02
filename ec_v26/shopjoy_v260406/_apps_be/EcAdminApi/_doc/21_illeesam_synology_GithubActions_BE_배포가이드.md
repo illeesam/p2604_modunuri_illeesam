@@ -5,9 +5,9 @@
 
 이 문서는 **백엔드(EcAdminApi)** GitHub Actions 자동 배포의 전체 구조와 최초 1회 환경설정을 다루는 참고서입니다. 프론트(FO/BO 화면) 쪽은 별도 문서 [21_illeesam_synology_GithubActions_FE_배포가이드.md](21_illeesam_synology_GithubActions_FE_배포가이드.md) 참조.
 
-실제로 "지금 배포해야 할 때 어떤 명령을 치면 되는지"는 더 짧은 문서를 보세요 → [14_illeesam_synology_BE_자동배포가이드.md](14_illeesam_synology_BE_자동배포가이드.md)
+실제로 "지금 배포해야 할 때 어떤 명령을 치면 되는지"는 더 짧은 문서를 보세요 → [14_illeesam_synology_BE_자동배포가이드(npm script).md](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)
 
-수동 배포(GitHub Actions 없이 내 컴퓨터에서 직접) 방법은 [11_illeesam_synology_BE_수동배포가이드.md](11_illeesam_synology_BE_수동배포가이드.md) 참조.
+수동 배포(GitHub Actions 없이 내 컴퓨터에서 직접) 방법은 [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>) 참조.
 
 ## 목차
 
@@ -71,4 +71,4 @@
 2. 왼쪽에서 `shopjoy-be-illeesam-synol-deploy` 클릭
 3. 오른쪽 `Run workflow` 버튼 클릭 → `Run workflow` 다시 클릭
 
-**테스트 결과**: 목록에 새 작업이 뜨고 진행되면 성공 (이 방식은 커밋 메시지 단어 체크 없이 무조건 배포됩니다). 완료 후 확인은 [14번 문서](14_illeesam_synology_BE_자동배포가이드.md)의 테스트 URL 참조.
+**테스트 결과**: 목록에 새 작업이 뜨고 진행되면 성공 (이 방식은 커밋 메시지 단어 체크 없이 무조건 배포됩니다). 완료 후 확인은 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)의 테스트 URL 참조.

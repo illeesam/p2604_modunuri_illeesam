@@ -2,7 +2,7 @@
 #
 # GitHub Actions로 빌드한 dist/ 를 Synology NAS 로 배포한다 — docker-compose.yml 의 nginx
 # 서비스가 /volume1/docker/shopjoy/frontend 를 읽기전용으로 마운트해서 그대로 서빙한다
-# (_doc/정책서-배포-시놀로지/docker/docker-compose.yml 의 nginx.volumes 참조). 컨테이너
+# (ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/docker-compose.yml 의 nginx.volumes 참조). 컨테이너
 # 재시작 불필요 — nginx 는 파일시스템을 직접 읽으므로 새 파일을 올려두면 다음 요청부터
 # (app JS/CSS/HTML 은 no-cache 캐시정책이라) 바로 반영된다.
 #

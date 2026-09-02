@@ -3,7 +3,7 @@
 작성일: 2026-09-04 / npm 스크립트 이름 개편: 2026-09-05
 대상: Docker/서버 배포 경험이 적은 개발자
 
-명령어 하나로 [11_illeesam_synology_BE_수동배포가이드.md](11_illeesam_synology_BE_수동배포가이드.md)의 STEP들을 대신 실행해줍니다. **방식이 2가지**입니다:
+명령어 하나로 [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>)의 STEP들을 대신 실행해줍니다. **방식이 2가지**입니다:
 
 | | `npm run deploy:dev-synol-be` | `npm run deploy:dev-github-be` |
 |---|---|---|
@@ -13,7 +13,7 @@
 | 사전 준비 | `scripts/.synology-deploy.env`에 NAS 접속정보 필요 | GitHub 리포지토리 시크릿 등록 필요 |
 | 대상 구분 | 백엔드만 배포 | 커밋 메시지는 의도 표시일 뿐 — 실제로는 바뀐 파일 기준으로 GitHub Actions가 자동 결정 |
 
-**평소엔 `deploy:dev-synol-be`를 쓰시면 됩니다(더 빠르고 간단함).** 프론트까지 같이 배포하려면 [15번 문서](15_illeesam_synology_FE_자동배포가이드.md)의 `deploy:dev-synol-fe`를 이어서 실행하거나, 백엔드+프론트를 한 번에 하려면 `npm run deploy:dev-synol-full`을 쓰세요(내부적으로 `deploy:dev-synol-be` → `deploy:dev-synol-fe` 순서로 실행됩니다).
+**평소엔 `deploy:dev-synol-be`를 쓰시면 됩니다(더 빠르고 간단함).** 프론트까지 같이 배포하려면 [15번 문서](<15_illeesam_synology_FE_자동배포가이드(npm script).md>)의 `deploy:dev-synol-fe`를 이어서 실행하거나, 백엔드+프론트를 한 번에 하려면 `npm run deploy:dev-synol-full`을 쓰세요(내부적으로 `deploy:dev-synol-be` → `deploy:dev-synol-fe` 순서로 실행됩니다).
 
 ---
 
@@ -33,7 +33,7 @@ SYNOLOGY_PASSWORD=실제비밀번호
 ~\ec_v26\shopjoy_v260406> npm run deploy:dev-synol-be
 ```
 
-**명령어 설명**: `scripts/deployDevSynolBe.js`를 실행합니다. 이 스크립트가 안에서 하는 일 — [11_illeesam_synology_BE_수동배포가이드.md](11_illeesam_synology_BE_수동배포가이드.md)의 STEP 1~5와 완전히 동일합니다.
+**명령어 설명**: `scripts/deployDevSynolBe.js`를 실행합니다. 이 스크립트가 안에서 하는 일 — [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>)의 STEP 1~5와 완전히 동일합니다.
 
 | 단계 | 하는 일 |
 |---|---|
@@ -58,7 +58,7 @@ http://illeesam.synology.me:21080/api/co/sy/code/page?pageNo=1&pageSize=10
 ```
 `{"ok":true,"status":200,"data":{"pageList":[...],"pageTotalCount":...}}` 형태로 나오면 DB 연동까지 정상입니다.
 
-> **백엔드+프론트를 한 번에 배포하고 싶으면**: `npm run deploy:dev-synol-full` (= `deploy:dev-synol-be` 다음 `deploy:dev-synol-fe`를 순서대로 실행 — 자세한 프론트 쪽 내용은 [15번 문서](15_illeesam_synology_FE_자동배포가이드.md) 참조).
+> **백엔드+프론트를 한 번에 배포하고 싶으면**: `npm run deploy:dev-synol-full` (= `deploy:dev-synol-be` 다음 `deploy:dev-synol-fe`를 순서대로 실행 — 자세한 프론트 쪽 내용은 [15번 문서](<15_illeesam_synology_FE_자동배포가이드(npm script).md>) 참조).
 
 ---
 
@@ -104,7 +104,7 @@ http://illeesam.synology.me:21080/api/co/sy/code/page?pageNo=1&pageSize=10
 6. SSH:  curl localhost:21080/actuator/health     → 실제 응답 출력
 ```
 
-> `docker-compose.yml`/`Dockerfile` 자체의 내용(포트 매핑, healthcheck 설정 등)은 [11번 문서](11_illeesam_synology_BE_수동배포가이드.md)의 "참고" 절 참조.
+> `docker-compose.yml`/`Dockerfile` 자체의 내용(포트 매핑, healthcheck 설정 등)은 [11번 문서](<11_illeesam_synology_BE_수동배포가이드(synology).md>)의 "참고" 절 참조.
 
 ---
 
