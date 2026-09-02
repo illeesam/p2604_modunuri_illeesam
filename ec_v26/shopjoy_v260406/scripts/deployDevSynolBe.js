@@ -7,7 +7,7 @@
  * 사용법: node scripts/deployDevSynolBe.js   (= npm run deploy:dev-synol-be)
  * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synologyDeployUtil.js 상단 주석 참조.
  *
- * 무엇을 하는지는 _apps_be/EcAdminApi/_doc/11_illeesam_synology_BE_수동배포가이드.md 의
+ * 무엇을 하는지는 _apps_be/EcAdminApi/_doc/11_illeesam_synology_BE_수동배포가이드(synology).md 의
  * STEP 1~5 와 완전히 동일한 절차를 그대로 스크립트로 옮긴 것뿐이다 — 사람이 손으로 치던
  * 명령을 그대로 자동화했다는 점이 중요: 이 스크립트가 뭘 하는지 궁금하면 그 문서를 보면 된다.
  */

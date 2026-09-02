@@ -6,7 +6,7 @@
  * 아직 없으면 아래 형식으로 scripts/.synology-deploy.env 를 직접 만들 것:
  *   SYNOLOGY_HOST=illeesam.synology.me
  *   SYNOLOGY_PORT=10022
- *   SYNOLOGY_USER=illeesam
+ *   SYNOLOGY_USER=appuser
  *   SYNOLOGY_PASSWORD=실제비밀번호
  * (이미 환경변수로 SYNOLOGY_* 가 설정돼 있으면 그 값이 우선한다 — CI 등에서 재사용 가능.)
  */

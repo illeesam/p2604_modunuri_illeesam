@@ -7,7 +7,7 @@
  * 사용법: node scripts/deployDevSynolFe.js   (= npm run deploy:dev-synol-fe)
  * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synologyDeployUtil.js 상단 주석 참조.
  *
- * 무엇을 하는지는 _apps_be/EcAdminApi/_doc/12_illeesam_synology_FE_수동배포가이드.md 의
+ * 무엇을 하는지는 _apps_be/EcAdminApi/_doc/12_illeesam_synology_FE_수동배포가이드(synology).md 의
  * STEP 1~4 와 완전히 동일한 절차를 그대로 스크립트로 옮긴 것뿐이다.
  */
 const fs = require('fs');

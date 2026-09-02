@@ -23,8 +23,8 @@
 ```
 SYNOLOGY_HOST=illeesam.synology.me
 SYNOLOGY_PORT=10022
-SYNOLOGY_USER=illeesam
-SYNOLOGY_PASSWORD=실제비밀번호
+SYNOLOGY_USER=appuser
+SYNOLOGY_PASSWORD=appuser1**
 ```
 > 이 파일은 `.gitignore`에 등록돼 있어 깃허브에 절대 올라가지 않습니다.
 
@@ -60,7 +60,7 @@ https://21000.illeesam.synology.me/bo.html
 
 ## 방식 B — `npm run deploy:dev-github-fe` (GitHub Actions 경유, Synology + GitHub Pages 둘 다)
 
-**사전 준비**가 아직이라면 [21_illeesam_synology_GithubActions_FE_배포가이드.md](21_illeesam_synology_GithubActions_FE_배포가이드.md) 참조(시크릿 등록, GitHub Pages 활성화 등).
+**사전 준비**가 아직이라면 [22_illeesam_synology_GithubActions_FE_배포가이드.md](22_illeesam_synology_GithubActions_FE_배포가이드.md) 참조(시크릿 등록, GitHub Pages 활성화 등).
 
 **명령어**:
 ```

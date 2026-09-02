@@ -3,7 +3,7 @@
 작성일: 2026-09-04 / 분리일: 2026-09-04(기존 "GithubActions_배포가이드"에서 BE/FE로 분리)
 대상: Docker/서버 배포 경험이 적은 개발자
 
-이 문서는 **백엔드(EcAdminApi)** GitHub Actions 자동 배포의 전체 구조와 최초 1회 환경설정을 다루는 참고서입니다. 프론트(FO/BO 화면) 쪽은 별도 문서 [21_illeesam_synology_GithubActions_FE_배포가이드.md](21_illeesam_synology_GithubActions_FE_배포가이드.md) 참조.
+이 문서는 **백엔드(EcAdminApi)** GitHub Actions 자동 배포의 전체 구조와 최초 1회 환경설정을 다루는 참고서입니다. 프론트(FO/BO 화면) 쪽은 별도 문서 [22_illeesam_synology_GithubActions_FE_배포가이드.md](22_illeesam_synology_GithubActions_FE_배포가이드.md) 참조.
 
 실제로 "지금 배포해야 할 때 어떤 명령을 치면 되는지"는 더 짧은 문서를 보세요 → [14_illeesam_synology_BE_자동배포가이드(npm script).md](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)
 
@@ -40,11 +40,11 @@
 |---|---|
 | `SYNOLOGY_HOST` | `illeesam.synology.me` |
 | `SYNOLOGY_PORT` | `10022` |
-| `SYNOLOGY_USER` | `illeesam` |
-| `SYNOLOGY_PASSWORD` | (실제 비밀번호, 일부만 `s******9*!`) |
+| `SYNOLOGY_USER` | `appuser` |
+| `SYNOLOGY_PASSWORD` | (실제 비밀번호, 일부만 `appuser1**`) |
 | `SYNOLOGY_SSH_KEY` | (SSH 키를 안 쓰면 비워둬도 됨 — 비밀번호 인증으로도 동작) |
 
-> 이 5개 시크릿은 [FE 문서](21_illeesam_synology_GithubActions_FE_배포가이드.md)의 Synology 배포(`shopjoy-fe-illeesam-synol-deploy.yml`)와 **공용**입니다 — 한 번만 등록하면 BE/FE 둘 다에 쓰입니다.
+> 이 5개 시크릿은 [FE 문서](22_illeesam_synology_GithubActions_FE_배포가이드.md)의 Synology 배포(`shopjoy-fe-illeesam-synol-deploy.yml`)와 **공용**입니다 — 한 번만 등록하면 BE/FE 둘 다에 쓰입니다.
 
 **테스트 방법**: 시크릿 등록 후 `Settings → Secrets and variables → Actions` 목록에 5개 이름이 보이는지 확인 (값은 등록 후 다시 볼 수 없는 게 정상입니다 — GitHub 보안 정책).
 

@@ -98,8 +98,8 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 |---|---|
 | NAS 주소 | `illeesam.synology.me` |
 | SSH 포트 | `10022` |
-| 계정 | `illeesam` |
-| 비밀번호 | `s******9*!` (일부만 표시, 실제 값은 별도 보관) |
+| 계정 | `appuser` |
+| 비밀번호 | `appuser1**` (일부만 표시, 실제 값은 별도 보관) |
 | 프론트 파일 위치(NAS 안) | `/volume1/docker/shopjoy/frontend/` |
 
 > ⚠ 이 폴더는 nginx 컨테이너가 읽기전용(`:ro`)으로 마운트해서 그대로 서빙합니다. **컨테이너 재시작 없이도** 파일만 새로 올리면 다음 요청부터 바로 반영됩니다(HTML/JS/CSS는 `no-cache` 캐시 정책이라 브라우저가 매번 새로 받아갑니다).
@@ -183,7 +183,7 @@ minify 빌드 시작 (dist/ 생성)
 
 **명령어**:
 ```
-~\ec_v26\shopjoy_v260406> scp -P 10022 dist.tar.gz illeesam@illeesam.synology.me:/volume1/docker/shopjoy/
+~\ec_v26\shopjoy_v260406> scp -P 10022 dist.tar.gz appuser@illeesam.synology.me:/volume1/docker/shopjoy/
 ```
 
 **명령어 설명** (`scp`는 파일을 원격 컴퓨터로 복사/전송하는 명령입니다):
@@ -193,7 +193,7 @@ minify 빌드 시작 (dist/ 생성)
 | `scp` | 파일 전송 명령 |
 | `-P 10022` | 접속 포트 지정 (⚠ `ssh`의 `-p`(소문자)와 달리 `scp`는 **대문자 `-P`**) |
 | `dist.tar.gz` | 보낼 파일(내 컴퓨터 쪽) |
-| `illeesam@illeesam.synology.me:/volume1/docker/shopjoy/` | 받는 쪽 — `계정@주소:저장할폴더경로` |
+| `appuser@illeesam.synology.me:/volume1/docker/shopjoy/` | 받는 쪽 — `계정@주소:저장할폴더경로` |
 
 비밀번호 입력 요구하면 입력.
 
@@ -202,21 +202,21 @@ minify 빌드 시작 (dist/ 생성)
 **테스트 방법**: **두 번째 터미널 창(NAS 접속용)**을 새로 열어서 SSH로 접속합니다.
 
 ```
-~> ssh -p 10022 illeesam@illeesam.synology.me
+~> ssh -p 10022 appuser@illeesam.synology.me
 ```
 
 **실제로 입력하는 과정 예시** (계정/비밀번호 입력 부분까지):
 ```
-~> ssh -p 10022 illeesam@illeesam.synology.me
-illeesam@illeesam.synology.me's password: 
-illeesam@illeesam:~$
+~> ssh -p 10022 appuser@illeesam.synology.me
+appuser@illeesam.synology.me's password: 
+appuser@illeesam:~$
 ```
 - `...'s password:` 에서 비밀번호를 입력하면 화면에 글자가 안 보이는 게 정상입니다(보안 때문) — 그대로 입력 후 Enter.
-- 프롬프트가 `illeesam@illeesam:~$` 모양으로 바뀌면 접속 성공입니다.
+- 프롬프트가 `appuser@illeesam:~$` 모양으로 바뀌면 접속 성공입니다.
 
 접속되면 그대로 이어서 입력:
 ```
-illeesam@illeesam:~$ ls -lh /volume1/docker/shopjoy/dist.tar.gz
+appuser@illeesam:~$ ls -lh /volume1/docker/shopjoy/dist.tar.gz
 ```
 
 **명령어 설명**: `ls -lh`는 파일 목록을 상세정보(`-l`)와 함께, 용량은 `10M`처럼 사람이 읽기 편한 단위(`-h`)로 보여줍니다.
@@ -231,9 +231,9 @@ illeesam@illeesam:~$ ls -lh /volume1/docker/shopjoy/dist.tar.gz
 
 **명령어** (STEP 3에서 열어둔 **두 번째 창(📦)**에 이어서 입력):
 ```
-illeesam@illeesam:~$ rm -rf /volume1/docker/shopjoy/frontend/*
-illeesam@illeesam:~$ tar -xzf /volume1/docker/shopjoy/dist.tar.gz -C /volume1/docker/shopjoy/frontend
-illeesam@illeesam:~$ rm -f /volume1/docker/shopjoy/dist.tar.gz
+appuser@illeesam:~$ rm -rf /volume1/docker/shopjoy/frontend/*
+appuser@illeesam:~$ tar -xzf /volume1/docker/shopjoy/dist.tar.gz -C /volume1/docker/shopjoy/frontend
+appuser@illeesam:~$ rm -f /volume1/docker/shopjoy/dist.tar.gz
 ```
 
 **명령어 설명**:
@@ -250,7 +250,7 @@ illeesam@illeesam:~$ rm -f /volume1/docker/shopjoy/dist.tar.gz
 
 **테스트 방법**:
 ```
-illeesam@illeesam:~$ ls -la /volume1/docker/shopjoy/frontend | head -10
+appuser@illeesam:~$ ls -la /volume1/docker/shopjoy/frontend | head -10
 ```
 
 **명령어 설명**: `ls -la`는 상세정보+숨김파일까지 포함한 전체 목록을 보여주는데, 파일이 많을 수 있어서 `| head -10`(파이프+head)으로 **맨 위 10줄만** 잘라서 봅니다.
@@ -408,7 +408,7 @@ add_header X-XSS-Protection "0" always;                     # 레거시 브라�
 
 `git push`만 하면 GitHub 서버가 대신 배포해줍니다(커밋 메시지에 `deploy`/`배포` 포함 시). 백엔드+프론트 공통 매뉴얼은 별도 문서로 분리했습니다:
 
-→ [15_illeesam_synology_FE_자동배포가이드(npm script).md](<15_illeesam_synology_FE_자동배포가이드(npm script).md>) 참조 (전체 환경설정은 [21_illeesam_synology_GithubActions_FE_배포가이드.md](21_illeesam_synology_GithubActions_FE_배포가이드.md))
+→ [15_illeesam_synology_FE_자동배포가이드(npm script).md](<15_illeesam_synology_FE_자동배포가이드(npm script).md>) 참조 (전체 환경설정은 [22_illeesam_synology_GithubActions_FE_배포가이드.md](22_illeesam_synology_GithubActions_FE_배포가이드.md))
 
 ---
 

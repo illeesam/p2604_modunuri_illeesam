@@ -82,8 +82,8 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 | ------------------------ | ------------------------------------------------- |
 | NAS 주소                 | `illeesam.synology.me`                          |
 | SSH 포트                 | `10022`                                         |
-| 계정                     | `illeesam`                                      |
-| 비밀번호                 | `s******9*!` (일부만 표시, 실제 값은 별도 보관) |
+| 계정                     | `appuser`                                      |
+| 비밀번호                 | `appuser1**` (일부만 표시, 실제 값은 별도 보관) |
 | Docker 배포 위치(NAS 안) | `/volume1/docker/shopjoy/backend/`              |
 | 프론트 파일 위치(NAS 안) | `/volume1/docker/shopjoy/frontend/`             |
 
@@ -139,7 +139,7 @@ BUILD SUCCESSFUL in 24s
 **명령어**:
 
 ```
-~> ssh -p 10022 illeesam@illeesam.synology.me
+~> ssh -p 10022 appuser@illeesam.synology.me
 ```
 
 **명령어 설명** (`ssh`는 다른 컴퓨터(여기선 NAS)에 원격으로 접속하는 명령입니다):
@@ -148,30 +148,30 @@ BUILD SUCCESSFUL in 24s
 | --------------------------------- | ----------------------------------------------------------------------------------- |
 | `ssh`                           | 원격 접속 명령                                                                      |
 | `-p 10022`                      | 접속할 포트 번호 지정(NAS의 SSH 서비스가 10022번 포트로 열려있음)                   |
-| `illeesam@illeesam.synology.me` | `계정이름@접속주소` 형식 — `illeesam` 계정으로 `illeesam.synology.me`에 접속 |
+| `appuser@illeesam.synology.me` | `계정이름@접속주소` 형식 — `appuser` 계정으로 `illeesam.synology.me`에 접속 |
 
 **실제로 입력하는 과정 예시** (계정/비밀번호를 입력하는 부분까지 그대로 보여드립니다):
 
 ```
-~> ssh -p 10022 illeesam@illeesam.synology.me
+~> ssh -p 10022 appuser@illeesam.synology.me
 The authenticity of host '[illeesam.synology.me]:10022' can't be established.
 Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-illeesam@illeesam.synology.me's password:
+appuser@illeesam.synology.me's password:
 ```
 
 - `Are you sure you want to continue connecting...` → **처음 접속할 때만** 나옵니다. `yes` 입력 후 Enter.
 - `...'s password:` → 비밀번호를 입력하는 칸입니다. **입력해도 화면에 별표(`*`)나 글자가 하나도 안 보이는 게 정상**입니다(보안 때문에 원래 안 보임) — 그냥 그대로 비밀번호 입력하고 Enter를 누르면 됩니다.
 
-**결과값**: 접속에 성공하면 프롬프트가 아래처럼 `illeesam@illeesam:~$` 모양으로 바뀝니다. 이렇게 바뀌면 성공입니다.
+**결과값**: 접속에 성공하면 프롬프트가 아래처럼 `appuser@illeesam:~$` 모양으로 바뀝니다. 이렇게 바뀌면 성공입니다.
 
 ```
-illeesam@illeesam:~$
+appuser@illeesam:~$
 ```
 
 **테스트 방법**: 그대로 이어서 입력.
 
 ```
-illeesam@illeesam:~$ ls -la /volume1/docker/shopjoy/backend/
+appuser@illeesam:~$ ls -la /volume1/docker/shopjoy/backend/
 ```
 
 **명령어 설명**:
@@ -185,7 +185,7 @@ illeesam@illeesam:~$ ls -la /volume1/docker/shopjoy/backend/
 **테스트 결과**: `docker-compose.yml`, `.env`, `nginx.conf`, `EcAdminApi-0.0.1-SNAPSHOT.jar` 같은 파일들이 보이면 정상입니다(이미 1차 배포가 돼 있는 상태). 폴더 자체가 없다고 나오면 아래 명령으로 먼저 만듭니다.
 
 ```
-illeesam@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/docker/shopjoy/frontend
+appuser@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/docker/shopjoy/frontend
 ```
 
 **명령어 설명**:
@@ -204,7 +204,7 @@ illeesam@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/dock
 **명령어**:
 
 ```
-~\ec_v26\shopjoy_v260406\_apps_be\EcAdminApi> scp -P 10022 build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar illeesam@illeesam.synology.me:/volume1/docker/shopjoy/backend/
+~\ec_v26\shopjoy_v260406\_apps_be\EcAdminApi> scp -P 10022 build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar appuser@illeesam.synology.me:/volume1/docker/shopjoy/backend/
 ```
 
 **명령어 설명** (`scp`는 파일을 원격 컴퓨터로 복사/전송하는 명령입니다 — "이 파일을, 이 계정으로, 저 주소의, 저 경로에 갖다놔라" 형식):
@@ -214,7 +214,7 @@ illeesam@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/dock
 | `scp`                                                            | 파일 전송 명령                                                                          |
 | `-P 10022`                                                       | 접속 포트 지정 (⚠`ssh`의 `-p`(소문자)와 달리 `scp`는 **대문자 `-P`**를 씁니다) |
 | `build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar`                       | 보낼 파일(내 컴퓨터 쪽 경로)                                                            |
-| `illeesam@illeesam.synology.me:/volume1/docker/shopjoy/backend/` | 받는 쪽 —`계정@주소:저장할폴더경로`                                                  |
+| `appuser@illeesam.synology.me:/volume1/docker/shopjoy/backend/` | 받는 쪽 —`계정@주소:저장할폴더경로`                                                  |
 
 비밀번호 입력 요구하면 입력.
 
@@ -223,7 +223,7 @@ illeesam@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/dock
 **테스트 방법**: STEP 2에서 열어둔 **두 번째 창(📦, NAS 접속용)**으로 돌아가서 입력.
 
 ```
-illeesam@illeesam:~$ ls -lh /volume1/docker/shopjoy/backend/EcAdminApi-0.0.1-SNAPSHOT.jar
+appuser@illeesam:~$ ls -lh /volume1/docker/shopjoy/backend/EcAdminApi-0.0.1-SNAPSHOT.jar
 ```
 
 **명령어 설명**: `-h`는 파일 크기를 바이트 숫자 그대로가 아니라 `140M`처럼 사람이 읽기 편한 단위(K/M/G)로 보여줍니다.
@@ -239,8 +239,8 @@ illeesam@illeesam:~$ ls -lh /volume1/docker/shopjoy/backend/EcAdminApi-0.0.1-SNA
 **명령어** (STEP 2에서 열어둔 **두 번째 창(📦)**에 이어서 입력 — 계속 그 창을 씁니다):
 
 ```
-illeesam@illeesam:~$ cd /volume1/docker/shopjoy/backend
-illeesam@illeesam:backend$ /usr/local/bin/docker compose build
+appuser@illeesam:~$ cd /volume1/docker/shopjoy/backend
+appuser@illeesam:backend$ /usr/local/bin/docker compose build
 ```
 
 **명령어 설명**:
@@ -258,7 +258,7 @@ illeesam@illeesam:backend$ /usr/local/bin/docker compose build
 **테스트 방법**:
 
 ```
-illeesam@illeesam:backend$ /usr/local/bin/docker images | grep ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker images | grep ecadminapi
 ```
 
 **명령어 설명**:
@@ -277,7 +277,7 @@ illeesam@illeesam:backend$ /usr/local/bin/docker images | grep ecadminapi
 **명령어**:
 
 ```
-illeesam@illeesam:backend$ /usr/local/bin/docker compose up -d --force-recreate ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker compose up -d --force-recreate ecadminapi
 ```
 
 **명령어 설명**:
@@ -302,7 +302,7 @@ Container 210-ecadminApi  Started
 **테스트 방법 1** — 컨테이너 상태 확인 (기동 후 1분 정도 기다렸다가):
 
 ```
-illeesam@illeesam:backend$ /usr/local/bin/docker compose ps
+appuser@illeesam:backend$ /usr/local/bin/docker compose ps
 ```
 
 **명령어 설명**: `compose ps`는 이 폴더의 `docker-compose.yml`에 정의된 컨테이너들이 지금 어떤 상태(실행중/정지 등)인지 목록으로 보여줍니다.
@@ -312,7 +312,7 @@ illeesam@illeesam:backend$ /usr/local/bin/docker compose ps
 만약 계속 재시작을 반복하면(`Restarting`) 아래 로그 확인 명령으로 원인을 봅니다.
 
 ```
-illeesam@illeesam:backend$ /usr/local/bin/docker compose logs --tail 50 ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 50 ecadminapi
 ```
 
 **명령어 설명**:
@@ -326,7 +326,7 @@ illeesam@illeesam:backend$ /usr/local/bin/docker compose logs --tail 50 ecadmina
 **테스트 방법 2** — 실제 API 응답 확인 (NAS 안에서):
 
 ```
-illeesam@illeesam:backend$ curl http://localhost:21080/actuator/health
+appuser@illeesam:backend$ curl http://localhost:21080/actuator/health
 ```
 
 **명령어 설명**: `curl`은 특정 URL로 요청을 보내고 그 응답을 화면에 그대로 출력하는 명령입니다(브라우저로 그 주소를 열어보는 것과 비슷한 효과를, 터미널에서 확인하는 것).
@@ -352,7 +352,7 @@ http://illeesam.synology.me:21080/actuator/health
 ### STEP 6 — 📦 (선택) 배포 후 정리
 
 ```
-illeesam@illeesam:backend$ exit
+appuser@illeesam:backend$ exit
 ```
 
 **명령어 설명**: `exit`는 지금 SSH 접속을 끊고 이 터미널 창을 내 컴퓨터 상태로 되돌리는 명령입니다.
