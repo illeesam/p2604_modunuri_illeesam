@@ -34,7 +34,7 @@
 4. [DB 접속 정보](#4-db-접속-정보)
 5. [기타 참고사항 (트러블슈팅/용어)](#5-기타-참고사항-트러블슈팅용어) — 상세는 [9011번 문서](9011_illeesam_synology_BE_트러블슈팅용어.md)
 6. 배포 후 로그 확인 방법은 별도 문서 → [11-1_illeesam_synology_BE_로그보기.md](11-1_illeesam_synology_BE_로그보기.md)
-7. 배포용 계정(`appuser`)을 NAS에 처음부터 만드는 방법은 별도 문서 → [11-2_illeesam_synology_BE_appuser계정생성.md](11-2_illeesam_synology_BE_appuser계정생성.md)
+7. 배포용 계정(`appuser`)을 NAS에 처음부터 만드는 방법은 별도 문서 → [10_illeesam_synology_appuser계정생성.md](10_illeesam_synology_appuser계정생성.md)
 
 ---
 
@@ -88,7 +88,7 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 | Docker 배포 위치(NAS 안) | `/volume1/docker/shopjoy/backend/`              |
 | 프론트 파일 위치(NAS 안) | `/volume1/docker/shopjoy/frontend/`             |
 
-> ⚠ **이 계정을 새로 만들거나 바꿨다면**(예: `illeesam` → `appuser`) NAS 쪽 DSM에서 4가지를 옛 계정과 동일하게 맞춰야 SFTP/`docker compose`가 정상 동작합니다 — 계정을 처음부터 만드는 전체 과정은 [11-2번 문서](11-2_illeesam_synology_BE_appuser계정생성.md), 이미 있는 계정의 권한만 점검할 때는 [9011번 문서의 "계정 설정 시 주의사항"](9011_illeesam_synology_BE_트러블슈팅용어.md#계정-설정-시-주의사항-nas-쪽-배포-계정) 참조. 빠뜨리면 STEP 3(jar 전송)에서 `No such file` 같은 헷갈리는 에러가 납니다.
+> ⚠ **이 계정을 새로 만들거나 바꿨다면**(예: `illeesam` → `appuser`) NAS 쪽 DSM에서 4가지를 옛 계정과 동일하게 맞춰야 SFTP/`docker compose`가 정상 동작합니다 — 계정을 처음부터 만드는 전체 과정은 [10번 문서](10_illeesam_synology_appuser계정생성.md), 이미 있는 계정의 권한만 점검할 때는 [9011번 문서의 "계정 설정 시 주의사항"](9011_illeesam_synology_BE_트러블슈팅용어.md#계정-설정-시-주의사항-nas-쪽-배포-계정) 참조. 빠뜨리면 STEP 3(jar 전송)에서 `No such file` 같은 헷갈리는 에러가 납니다.
 
 > ⚠ SSH 접속에는 **OpenSSH 클라이언트**(Windows 10/11에 기본 내장, `ssh`/`scp` 명령)를 사용합니다.
 > PowerShell이나 명령 프롬프트(cmd)에 그대로 입력하면 됩니다.

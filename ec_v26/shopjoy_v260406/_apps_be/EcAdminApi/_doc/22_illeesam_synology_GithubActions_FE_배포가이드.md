@@ -47,6 +47,8 @@
 | `SYNOLOGY_SSH_KEY` | (SSH 키를 안 쓰면 비워둬도 됨 — 비밀번호 인증으로도 동작) |
 
 > 이 5개 시크릿은 [BE 문서](21_illeesam_synology_GithubActions_BE_배포가이드.md)의 백엔드 배포(`shopjoy-be-illeesam-synol-deploy.yml`)와 **공용**입니다 — 한 번만 등록하면 BE/FE 둘 다에 쓰입니다.
+>
+> 이 값들이 가리키는 NAS 계정을 처음부터 만드는 방법은 [10번 문서](10_illeesam_synology_appuser계정생성.md) 참조.
 
 **테스트 방법**: 시크릿 등록 후 `Settings → Secrets and variables → Actions` 목록에 5개 이름이 보이는지 확인 (값은 등록 후 다시 볼 수 없는 게 정상입니다 — GitHub 보안 정책).
 

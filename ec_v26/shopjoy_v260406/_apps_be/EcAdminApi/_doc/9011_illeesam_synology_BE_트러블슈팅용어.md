@@ -16,7 +16,7 @@
 
 ## 계정 설정 시 주의사항 (NAS 쪽 배포 계정)
 
-> 계정을 처음부터 만드는 화면별 상세 절차는 [11-2_illeesam_synology_BE_appuser계정생성.md](<11-2_illeesam_synology_BE_appuser계정생성.md>) 참조 — 여기서는 요약 체크리스트만 다룹니다.
+> 계정을 처음부터 만드는 화면별 상세 절차는 [10_illeesam_synology_appuser계정생성.md](<10_illeesam_synology_appuser계정생성.md>) 참조 — 여기서는 요약 체크리스트만 다룹니다.
 
 배포 스크립트(`deploy:dev-synol-*`)나 GitHub Actions가 쓰는 NAS 계정을 새로 만들거나 바꿀 때, **DSM에서 아래 4가지를 옛 계정과 동일하게 맞춰야** SFTP 업로드/`docker compose` 명령이 정상 동작합니다. 하나라도 빠지면 SFTP 단계에서 `No such file`(권한 문제를 이렇게 표시함) 같은 헷갈리는 에러가 납니다.
 
