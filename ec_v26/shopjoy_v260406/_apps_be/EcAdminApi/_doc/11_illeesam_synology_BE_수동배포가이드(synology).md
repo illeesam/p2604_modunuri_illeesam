@@ -443,31 +443,23 @@ location /api/ {
 
 즉 브라우저가 `https://21000.illeesam.synology.me/api/...`로 보낸 요청을 nginx가 컨테이너 내부에서 `http://ecadminapi:3000/api/...`로 그대로 전달합니다 — STEP 5의 "테스트 방법 3"이 `:21080`(백엔드 직결) 대신 nginx 경유(`:21000`) 주소로도 똑같이 동작하는 이유입니다. `nginx.conf`/`locations.conf`/`security-headers.conf` 전체(캐시 정책, MIME 타입, 보안 헤더 등)에 대한 자세한 설명은 [12번 문서](<12_illeesam_synology_FE_수동배포가이드(synology).md>)의 "참고" 절 참조.
 
-**`Dockerfile`** (멀티스테이지 빌드 — 실제 내용은 [`Dockerfile`](../Dockerfile)):
+**`Dockerfile`** (단일 스테이지 — 실제 내용은 [`Dockerfile`](../Dockerfile)):
 
 ```dockerfile
-FROM eclipse-temurin:17-jdk AS build      # 1단계: 빌드 전용(컴파일러 포함, 최종 이미지엔 안 남음)
+FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY gradlew gradlew.bat ./
-COPY gradle ./gradle
-COPY build.gradle.kts settings.gradle.kts ./
-RUN ./gradlew --no-daemon dependencies || true   # 의존성만 먼저 받아 캐시 재사용(소스만 바뀐 재빌드를 빠르게)
-COPY . .
-RUN ./gradlew --no-daemon bootJar -x test
-
-FROM eclipse-temurin:17-jre               # 2단계: 실행 전용(JDK 대비 이미지 100~200MB 절감)
-WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY *.jar app.jar
 EXPOSE 3000
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-| 항목                                            | 뜻                                                                                                                  |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `AS build` 1단계                              | jar를 만드는 데 필요한 JDK+Gradle 전부 포함(이미지는 크지만 최종엔 안 남음)                                         |
-| `COPY gradlew ... RUN ./gradlew dependencies` | 소스보다 먼저 의존성만 받아두는 레이어 — 소스만 바뀐 재빌드에선 이 레이어가 캐시로 재사용돼 빨라짐                 |
-| 2단계(`FROM ...-jre`)                         | 완성된 jar 하나만 복사해 넣는 실행 전용 이미지(JRE만 있으면 되고 컴파일러는 불필요)                                 |
-| `EXPOSE 3000`                                 | 컨테이너가 3000번 포트로 앱을 띄운다는 표시(문서화 목적, 실제 포트 매핑은`docker-compose.yml`의 `ports`가 결정) |
+| 항목 | 뜻 |
+|---|---|
+| `FROM eclipse-temurin:17-jre` | JRE(실행 전용)만 있는 이미지 — 컴파일러/Gradle 등 빌드 도구는 아예 없음 |
+| `COPY *.jar app.jar` | STEP 1에서 이미 로컬(또는 CI)에서 만들어 둔 jar를 그대로 담기만 함 |
+| `EXPOSE 3000` | 컨테이너가 3000번 포트로 앱을 띄운다는 표시(문서화 목적, 실제 포트 매핑은 `docker-compose.yml`의 `ports`가 결정) |
+
+> ⚠ **2026-09-05 이전엔 멀티스테이지(컨테이너 안에서 `gradlew bootJar`로 다시 빌드)였습니다** — GitHub Actions 경로(전체 소스가 CI 체크아웃에 있음)에서는 문제없었지만, 이 문서의 STEP 1~3(로컬 빌드 → jar만 전송)처럼 **jar만 올라간 상태에서 `docker compose build`를 돌리면 `COPY gradlew.bat` 단계부터 "not found"로 실패**했습니다(NAS 폴더가 삭제됐다가 복구되는 과정에서 실제로 겪음 — 9011번 문서 참조). 지금 버전은 이미 만들어진 jar만 담으므로 이 문제가 없습니다.
 
 ---
 
