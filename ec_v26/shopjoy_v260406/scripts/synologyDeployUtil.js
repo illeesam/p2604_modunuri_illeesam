@@ -76,6 +76,24 @@ function withSsh(uploads, commands) {
     conn.on('ready', async () => {
       try {
         if (uploads.length) {
+          // 2026-09-05: 원격 대상 폴더가 수동 삭제 등으로 없어져 있을 수 있음 — SFTP 는
+          // 자기가 알아서 폴더를 안 만들어주므로(없으면 "No such file"), 업로드 시도 전에
+          // 항상 실경로 기준으로 mkdir -p 를 먼저 실행해서 보장해둔다. 이미 있으면 무해.
+          const dirs = [...new Set(uploads.map((u) => path.posix.dirname(u.remote.replace(/\\/g, '/'))))];
+          console.log(`\n[사전 준비] 업로드 대상 폴더 존재 보장 (mkdir -p)`);
+          await new Promise((res, rej) => {
+            conn.exec(`mkdir -p ${dirs.map((d) => `"${d}"`).join(' ')}`, (err, stream) => {
+              if (err) return rej(err);
+              let errOut = '';
+              stream.on('data', () => {});
+              stream.stderr.on('data', (d) => { errOut += d.toString(); process.stderr.write(d); });
+              stream.on('close', (code) => {
+                if (code !== 0) return rej(new Error(`mkdir -p 실패 (exit ${code}): ${errOut}`));
+                res();
+              });
+            });
+          });
+
           console.log(`\n[전송] SFTP 로 ${uploads.length}개 파일 업로드`);
           await new Promise((res, rej) => {
             conn.sftp((err, sftp) => {

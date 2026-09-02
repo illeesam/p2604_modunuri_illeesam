@@ -74,6 +74,13 @@ function fmtElapsed() {
     await withSsh(
       [{ local: jarPath, remote: `${REMOTE_BE_DIR}/${jarFile}` }],
       [
+        {
+          // 2026-09-05: docker-compose.yml 의 로그 볼륨 마운트 소스(/volume1/docker/ecadminapi/logs)가
+          // 수동 삭제 등으로 없으면 "Bind mount failed: ... does not exist"로 컨테이너 기동 자체가
+          // 실패한다(Docker가 자동으로 안 만들어줌) — 매번 미리 보장해서 재발 방지.
+          label: '로그 볼륨 폴더 존재 보장',
+          cmd: 'mkdir -p /volume1/docker/ecadminapi/logs',
+        },
         { label: 'Docker 이미지 재빌드', cmd: `cd ${REMOTE_BE_DIR} && ${DOCKER} compose build` },
         { label: '컨테이너 재기동', cmd: `cd ${REMOTE_BE_DIR} && ${DOCKER} compose up -d --force-recreate ecadminapi` },
         { label: '헬스체크 대기(healthy 될 때까지 최대 5분)', cmd: waitHealthyCmd, allowFail: true },

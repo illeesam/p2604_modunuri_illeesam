@@ -62,6 +62,9 @@ function fmtElapsed() {
         {
           label: '기존 파일 삭제 후 압축 해제',
           cmd:
+            // 2026-09-05: frontend/ 폴더가 수동 삭제 등으로 아예 없어져 있으면 "rm -rf .../*"가
+            // glob 매칭 실패로 에러 나므로, mkdir -p 로 폴더 존재부터 보장(이미 있으면 무해).
+            `mkdir -p ${REMOTE_FRONTEND_DIR} && ` +
             `rm -rf ${REMOTE_FRONTEND_DIR}/* && ` +
             `tar -xzf ${REMOTE_SHOPJOY_DIR}/dist.tar.gz -C ${REMOTE_FRONTEND_DIR} && ` +
             `rm -f ${REMOTE_SHOPJOY_DIR}/dist.tar.gz`,
