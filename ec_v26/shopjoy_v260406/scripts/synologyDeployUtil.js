@@ -52,6 +52,10 @@ function requireCreds(scriptName) {
       `   (${scriptName} 상단 주석 참조)`
     );
   }
+  // 2026-09-05: 지금 어느 NAS/계정으로 접속하는지 콘솔에서 바로 보이게(비밀번호는 절대 출력 안 함) —
+  // deploy:dev-synol-be/fe/full 이 여러 스크립트를 순서대로 실행할 때, 각 단계가 실제로 어떤
+  // host/port/계정을 쓰는지 헷갈리지 않게 하기 위함.
+  console.log(`[접속정보] HOST=${HOST} PORT=${PORT} USER=${USER}`);
 }
 
 /* SFTP 는 Synology 특성상 /volume1 을 접속 루트(/)로 취급한다 — 실경로에서 /volume1 을 뗀
@@ -80,9 +84,32 @@ function withSsh(uploads, commands) {
                 if (i >= uploads.length) return res();
                 const { local, remote } = uploads[i];
                 const sftpRemote = toSftpPath(remote);
+                const sftpParent = path.posix.dirname(sftpRemote);
                 console.log(`  ㄴ ${path.basename(local)} → ${remote}`);
                 sftp.fastPut(local, sftpRemote, (e) => {
-                  if (e) return rej(e);
+                  if (e) {
+                    // 2026-09-05: "No such file" 같은 원문 메시지만으론 어디가 문제인지 알 수
+                    // 없어서, 실제 시도한 경로(로컬/원격 실경로/SFTP 상대경로) + 에러 코드를
+                    // 전부 보여주고, 그 상위 폴더가 이 SFTP 세션에서 실제로 보이는지까지
+                    // readdir 로 한 번 더 확인해서 같이 붙여준다(권한/홈폴더제한 진단용).
+                    sftp.readdir(sftpParent, (dirErr, list) => {
+                      const parentInfo = dirErr
+                        ? `  상위 폴더(${sftpParent}) 조회 실패: ${dirErr.message} (code: ${dirErr.code})\n` +
+                          `    → 이 SFTP 세션에서 그 폴더 자체가 안 보입니다. DSM에서 이 계정의\n` +
+                          `      "SFTP 사용자 홈 폴더로 제한" 옵션이 켜져 있거나(→ 꺼야 함),\n` +
+                          `      해당 공유폴더에 대한 읽기/쓰기 권한이 없는 경우일 가능성이 큽니다.`
+                        : `  상위 폴더(${sftpParent}) 안 실제 파일 목록: ${list.map((f) => f.filename).join(', ') || '(비어있음)'}\n` +
+                          `    → 폴더는 보이는데 업로드만 실패 — 이 계정의 그 폴더 쓰기 권한을 확인하세요.`;
+                      rej(new Error(
+                        `SFTP 업로드 실패: ${e.message} (code: ${e.code})\n` +
+                        `  로컬 파일:        ${local}\n` +
+                        `  원격 실경로:      ${remote}\n` +
+                        `  SFTP 상대경로:    ${sftpRemote}  (Synology SFTP는 /volume1 을 접속 루트로 취급 — 위 실경로에서 /volume1 을 뗀 경로)\n` +
+                        parentInfo
+                      ));
+                    });
+                    return;
+                  }
                   next(i + 1);
                 });
               };
