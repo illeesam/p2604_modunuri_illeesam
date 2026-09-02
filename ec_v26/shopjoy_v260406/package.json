@@ -49,7 +49,7 @@
     "deploy:dev-synol-fe": "[⑥ 즉시배포-프론트] scripts/deployDevSynolFe.js 실행 — npm run build:dev로 압축 빌드 후 이 컴퓨터가 직접 NAS에 SSH 접속해서 dist/ 를 전송·교체한다(GitHub 안 거침, 즉시 반영. GitHub Pages는 배포 안 됨 — 그건 deploy:dev-github-* 로). NAS 접속정보는 scripts/.synology-deploy.env 필요. 상세: _apps_be/EcAdminApi/_doc/15_illeesam_synology_FE_자동배포가이드.md",
     "deploy:dev-synol-full": "[⑥ 즉시배포-전체] deploy:dev-synol-be 다음 deploy:dev-synol-fe 를 순서대로(백엔드 먼저) 실행 — 백엔드+프론트를 이 NAS에 한 번에 반영하고 싶을 때. 둘 중 하나만 필요하면 각각 따로 실행할 것(이 스크립트는 항상 둘 다 실행됨).",
     "deploy:dev-github-be": "[⑥ GitHub트리거-백엔드] 지금까지 바뀐 파일을 전부 커밋(메시지에 'deploy(be): 배포' — 'deploy'/'배포' 둘 다 포함)하고 push한다 — GitHub 서버가 대신 빌드+배포. 실제로 어느 워크플로가 도는지는 이 스크립트가 아니라 GitHub Actions 쪽 경로 필터가 '무엇이 실제로 바뀌었는지'를 보고 정하므로, 커밋 메시지의 '-be'는 의도를 남기는 표시일 뿐 실제 배포 대상을 강제하지 않는다(백엔드 파일만 바뀌었으면 어차피 백엔드 워크플로만 돈다). 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md",
-    "deploy:dev-github-fe": "[⑥ GitHub트리거-프론트] deploy:dev-github-be 와 동일 메커니즘, 커밋 메시지만 'deploy(fe): 배포'. 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_FE_배포가이드.md",
-    "deploy:dev-github-full": "[⑥ GitHub트리거-전체] deploy:dev-github-be 와 동일 메커니즘, 커밋 메시지만 'deploy(full): 배포' — 백엔드+프론트가 둘 다 바뀌었을 때 의도를 명확히 남기고 싶으면 이걸 사용. 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md , _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_FE_배포가이드.md"
+    "deploy:dev-github-fe": "[⑥ GitHub트리거-프론트] deploy:dev-github-be 와 동일 메커니즘, 커밋 메시지만 'deploy(fe): 배포'. 상세: _apps_be/EcAdminApi/_doc/22_illeesam_synology_GithubActions_FE_배포가이드.md",
+    "deploy:dev-github-full": "[⑥ GitHub트리거-전체] deploy:dev-github-be 와 동일 메커니즘, 커밋 메시지만 'deploy(full): 배포' — 백엔드+프론트가 둘 다 바뀌었을 때 의도를 명확히 남기고 싶으면 이걸 사용. 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md , _apps_be/EcAdminApi/_doc/22_illeesam_synology_GithubActions_FE_배포가이드.md"
   }
 }
