@@ -1,0 +1,352 @@
+/* cf-admin.css — EcCdnApi 관리 화면(cf-client.html / cf-file.html) 공통 스타일.
+   빌드 없는 독립 정적 페이지라 프레임워크 없이 순수 CSS. 색/여백/버튼 감각은
+   shopjoy_v260406 프로젝트의 BO 화면(bo-global-style0N.css) 관례를 참고해 맞췄다 —
+   흰 카드 + 옅은 회색 배경 + 핑크 계열 primary 버튼 + 상단검색/중단목록/하단상세 3단 구성. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  background: #f4f5f7;
+  color: #333;
+  font-size: 14px;
+}
+
+.admin-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+/* ── 화면 프레임(상단 헤더 / 좌측 사이드바 / 중앙 콘텐츠) ─────────────────
+   index.html(shell) 전용 — bo.html 의 상단바+좌측메뉴+콘텐츠 구조를 축소해서 재현.
+   헤더/사이드바는 fixed 로 고정하고, 콘텐츠 영역만 자체 스크롤(overflow-y:auto)되게
+   해서(bo-main 과 동일 원칙) 화면이 길어져도 메뉴/헤더는 항상 보이게 한다. */
+.shell-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+.shell-header .brand { font-size: 16px; font-weight: 700; color: #222; }
+.shell-header .brand .sub { font-size: 12px; color: #999; font-weight: 400; margin-left: 8px; }
+
+.shell-sidebar {
+  position: fixed;
+  top: 56px; bottom: 0; left: 0;
+  width: 210px;
+  background: #fff;
+  border-right: 1px solid #eee;
+  padding: 14px 0;
+  overflow-y: auto;
+  z-index: 90;
+}
+.shell-sidebar .menu-group-label {
+  padding: 6px 20px;
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.shell-sidebar .menu-item {
+  display: block;
+  padding: 10px 20px;
+  color: #555;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 13px;
+  border-right: 3px solid transparent;
+}
+.shell-sidebar .menu-item:hover { background: #f7f7f9; }
+.shell-sidebar .menu-item.active {
+  background: #fdeef3;
+  color: #e91e63;
+  font-weight: 700;
+  border-right-color: #e91e63;
+}
+
+.shell-main {
+  margin-left: 210px;
+  margin-top: 56px;
+  min-height: calc(100vh - 56px);
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 20px;
+  background: #f4f5f7;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+}
+
+.page-nav a {
+  color: #888;
+  text-decoration: none;
+  font-size: 13px;
+  margin-left: 12px;
+}
+.page-nav a:hover { color: #e91e63; }
+
+.session-info {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ── 카드(공용) ───────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── ① 검색란 ─────────────────────────────────────────────── */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.search-bar input[type="text"],
+.search-bar select {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.search-bar input[type="text"] { flex: 1; min-width: 180px; }
+
+/* ── ② 목록(카드 그리드) ──────────────────────────────────── */
+.list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.list-count { font-size: 12px; color: #888; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.item-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.item-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.item-card.selected { border-color: #e91e63; outline: 2px solid #e91e63; outline-offset: -2px; }
+
+.item-card .thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #f0f0f2 center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
+  font-size: 28px;
+  position: relative;
+}
+.item-card .thumb .play-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.15);
+  color: #fff;
+  font-size: 32px;
+}
+.item-card .body { padding: 10px 12px; flex: 1; }
+.item-card .title {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-card .meta { font-size: 11px; color: #999; margin-top: 4px; }
+.item-card .actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid #f2f2f2;
+}
+.item-card .actions a { font-size: 11px; color: #1a73e8; text-decoration: none; }
+.item-card .actions a:hover { text-decoration: underline; }
+
+/* ── 페이지네이션 ─────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.pagination button {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.pagination button.active { background: #e91e63; color: #fff; border-color: #e91e63; }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+
+/* ── ③ 상세란 ─────────────────────────────────────────────── */
+.detail-panel .list-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.detail-panel .empty-hint {
+  color: #aaa;
+  text-align: center;
+  padding: 30px 0;
+  font-size: 13px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.span-2 { grid-column: span 2; }
+.form-group.span-3 { grid-column: span 3; }
+.form-label { font-size: 12px; color: #666; font-weight: 600; }
+.form-control {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.form-control:disabled { background: #f7f7f7; color: #999; }
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* ── 버튼(공용) — 프로젝트 표준 의미 클래스 감각을 단순화해 재현 ── */
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn_search, .btn_save, .btn_select, .btn_confirm {
+  background: linear-gradient(135deg, #ff6fa5, #e91e63);
+  color: #fff;
+}
+.btn_new { background: linear-gradient(135deg, #6fa8ff, #1a73e8); color: #fff; }
+.btn_edit { background: #4285f4; color: #fff; }
+.btn_delete, .btn_row_delete { background: #e53935; color: #fff; }
+.btn_cancel, .btn_close, .btn_reset { background: #eee; color: #555; }
+.btn_row_edit { background: #4285f4; color: #fff; padding: 4px 10px; font-size: 11px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* ── 뱃지 ──────────────────────────────────────────────────── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #e6f4ea; color: #1e7e34; }
+.badge-gray  { background: #eee; color: #777; }
+.badge-blue  { background: #e8f0fe; color: #1a73e8; }
+.badge-purple{ background: #f3e8fd; color: #8430ce; }
+
+/* ── 업로드 영역(cf-file 전용) ───────────────────────────────── */
+.upload-box {
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  background: #fafafa;
+}
+.upload-box label { font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px; }
+
+/* ── 토스트(간이) ─────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: #323232;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  max-width: 360px;
+}
+#toast.show { opacity: 1; }
+#toast.error { background: #c62828; }
+
+/* ── 로그인 모달 ──────────────────────────────────────────── */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 30, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.login-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  width: 320px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+.login-box h3 { margin: 0 0 16px; font-size: 16px; }
+.login-box input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.login-box .btn { width: 100%; }
+.login-err { color: #c62828; font-size: 12px; margin-bottom: 8px; min-height: 14px; }
+
+[hidden] { display: none !important; }
+[v-cloak] { display: none !important; }

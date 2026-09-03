@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.auth.service;
 
+import com.shopjoy.ecadminapi.cache.redisstore.FoAuthRedisStore;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 /**
  * FO 회원 인증 서비스
@@ -56,6 +58,8 @@ public class FoAuthService {
     private final SySiteRepository   siteRepository;
     private final JwtProvider         jwtProvider;
     private final PasswordEncoder     passwordEncoder;
+    // 2026-09-06: Redis 활성화에 맞춰 세션 캐시 + 로그아웃 즉시무효화에 사용 — BoAuthService 와 동일 취지.
+    private final FoAuthRedisStore    foAuthRedisStore;
 
     /** 마스터 패스워드(개발/테스트 전용 우회 로그인) 활성 여부 — prod 는 false */
     @Value("${auth.master-pwd.enabled:false}")
@@ -116,6 +120,16 @@ public class FoAuthService {
 
         // 로그인 성공 이력 기록
         saveLoginLog(authId, "", member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
+
+        // Redis 세션 캐시(선택) — DB(mbh_member_token_log)가 여전히 단일 소스, 이건 조회 편의용 캐시일 뿐.
+        foAuthRedisStore.saveSession(authId, Map.of(
+            "memberId", authId,
+            "loginId", CmUtil.nvlStr(member.getLoginId()),
+            "appTypeCd", appTypeCd,
+            "siteId", CmUtil.nvlStr(member.getSiteId()),
+            "gradeCd", CmUtil.nvlStr(member.getGradeCd()),
+            "loginAt", LocalDateTime.now().toString()
+        ));
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -266,6 +280,14 @@ public class FoAuthService {
                 saveTokenLog(authId, siteId, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);
                 // LOGOUT 로그인 이력 기록
                 saveLoginLog(authId, siteId, authId, "LOGOUT", null, 0, uiNm, cmdNm);
+
+                // Redis 즉시무효화 — BoAuthService.logout() 과 동일 취지(남은 유효시간만큼만 블랙리스트).
+                // FO 는 멀티디바이스 정책이라 세션 하나만 지우면 되는 건 아니지만(다른 디바이스 로그인
+                // 유지), 이 토큰 자체는 이 요청으로 로그아웃된 것이므로 블랙리스트는 이 토큰 한정.
+                long remainingSeconds = 0;
+                java.util.Date exp = claims.getExpiration();
+                if (exp != null) remainingSeconds = Math.max(0, (exp.getTime() - System.currentTimeMillis()) / 1000);
+                foAuthRedisStore.blacklistToken(accessToken, remainingSeconds);
             }
         } catch (Exception e) {
             log.warn("logout token parse error: {}", e.getMessage());

@@ -1,0 +1,11 @@
+# application-local.yml — 로컬 개발 전용.
+# CF_JWT_SECRET 기본값을 여기서만 채워둔다(개발 편의) — dev/prod 는 반드시 환경변수로 넘길 것.
+# 이 값은 Base64 인코딩된 임의 문자열이며 개발용 더미다. 운영 시크릿과 절대 같으면 안 됨.
+app:
+  cf:
+    jwt:
+      secret: ${CF_JWT_SECRET:bG9jYWwtb25seS1kdW1teS1zZWNyZXQtZm9yLWVjY2RuYXBpLWRvLW5vdC11c2UtaW4tcHJvZA==}
+
+logging:
+  level:
+    com.shopjoy.eccdnapi: DEBUG

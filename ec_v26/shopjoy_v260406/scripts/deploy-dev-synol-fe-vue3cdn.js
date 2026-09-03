@@ -1,7 +1,7 @@
 /* deploy-dev-synol-fe-vue3cdn.js — 내 컴퓨터에서 직접 SSH로 프론트(FO/BO 화면)를 Synology NAS(dev)에
  * 빌드+전송까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-be-api/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포, GitHub Pages 도 같이 됨).
- * 백엔드는 별도 scripts/deploy-dev-synol-be-api.js(= npm run deploy:dev-synol-be-api).
+ * 백엔드는 별도 scripts/deploy-dev-synol-be-ecAdminApi.js(= npm run deploy:dev-synol-be-ecAdminApi).
  * 백엔드+프론트 둘 다 한 번에 하려면 npm run deploy:dev-synol-full.
  *
  * 사용법: node scripts/deploy-dev-synol-fe-vue3cdn.js   (= npm run deploy:dev-synol-fe-vue3cdn)
@@ -107,7 +107,7 @@ function fmtElapsed() {
     } else {
       console.log(`${TAG}   ⚠ 200이 아닌 응답이 있습니다 — 배포 자체는 끝났지만 접속 경로에 문제가 있을 수 있습니다.`);
       console.log(`${TAG}     index.html/bo.html 이 200이 아니면: 위 [헬스체크 1/2] 로그, 12번 문서 참조`);
-      console.log(`${TAG}     /api/... 만 200이 아니면: 백엔드가 안 떠 있을 수 있음 → npm run deploy:dev-synol-be-api, 14번 문서 참조`);
+      console.log(`${TAG}     /api/... 만 200이 아니면: 백엔드가 안 떠 있을 수 있음 → npm run deploy:dev-synol-be-ecAdminApi, 14번 문서 참조`);
     }
 
     console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);

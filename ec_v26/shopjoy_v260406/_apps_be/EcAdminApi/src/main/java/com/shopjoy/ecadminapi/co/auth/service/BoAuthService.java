@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.auth.service;
 
+import com.shopjoy.ecadminapi.cache.redisstore.BoAuthRedisStore;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
@@ -53,6 +55,10 @@ public class BoAuthService {
     private final PasswordEncoder passwordEncoder;
     private final SyUserRepository syUserRepository;
     private final SyhUserTokenLogRepository syhUserTokenLogRepository;
+    // 2026-09-06: Redis 활성화에 맞춰 세션 캐시(saveSession/removeSession) + 로그아웃 즉시무효화
+    // (blacklistToken)에 사용 — app.redis.enabled=false 인 동안은 BoAuthRedisStore 내부가 전부
+    // no-op 이라 기존 DB 전용(syh_user_token_log) 동작은 그대로 유지된다.
+    private final BoAuthRedisStore boAuthRedisStore;
 
     /** 마스터 패스워드(개발/테스트 전용 우회 로그인) 활성 여부 — prod 는 false */
     @Value("${auth.master-pwd.enabled:false}")
@@ -129,6 +135,16 @@ public class BoAuthService {
 
         // 로그인 성공 이력 기록
         saveLoginLog(authId, null, user.getLoginId(), "SUCCESS", accessToken, tokenLogId, 0, null, null);
+
+        // Redis 세션 캐시(선택) — DB(syh_user_token_log)가 여전히 단일 소스이며, 이건 조회 편의용 캐시일 뿐.
+        boAuthRedisStore.saveSession(authId, Map.of(
+            "userId", authId,
+            "loginId", CmUtil.nvlStr(user.getLoginId()),
+            "appTypeCd", appTypeCd,
+            "roleId", CmUtil.nvlStr(user.getRoleId()),
+            "deptId", CmUtil.nvlStr(user.getDeptId()),
+            "loginAt", LocalDateTime.now().toString()
+        ));
 
         String deptNm = "";
         if (user.getDeptId() != null) {
@@ -245,6 +261,15 @@ public class BoAuthService {
                 saveTokenLog(authId, null, accessToken, null, "REVOKE", appTypeCd, "LOGOUT", uiNm, cmdNm);
                 // LOGOUT 로그인 이력 기록
                 saveLoginLog(authId, null, authId, "LOGOUT", null, null, 0, uiNm, cmdNm);
+
+                // Redis 즉시무효화 — accessToken 은 15분짜리 무상태(stateless) JWT라 원래는 자연만료까지
+                // 유효했다(JwtAuthFilter 가 매 요청 DB 조회를 안 하므로). 남은 유효시간만큼만 블랙리스트에
+                // 올려서, 로그아웃 직후 도난된/캐싱된 토큰이 그대로 재사용되는 걸 막는다.
+                long remainingSeconds = 0;
+                java.util.Date exp = claims.getExpiration();
+                if (exp != null) remainingSeconds = Math.max(0, (exp.getTime() - System.currentTimeMillis()) / 1000);
+                boAuthRedisStore.blacklistToken(accessToken, remainingSeconds);
+                boAuthRedisStore.removeSession(authId);
             }
         } catch (Exception e) {
             log.warn("logout token parse error: {}", e.getMessage());

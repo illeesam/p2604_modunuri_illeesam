@@ -1,4 +1,4 @@
-/* synology-deploy-util.js — deploy-dev-synol-be-api.js / deploy-dev-synol-fe-vue3cdn.js 가 공유하는
+/* synology-deploy-util.js — deploy-dev-synol-be-ecAdminApi.js / deploy-dev-synol-fe-vue3cdn.js 가 공유하는
  * SSH/SFTP 헬퍼. NAS 접속정보 로드 + SFTP 업로드 + SSH 명령 실행을 여기 한 곳에 모아서
  * 두 스크립트가 똑같은 접속 로직을 중복해서 들고 있지 않게 한다(직접 실행 대상 아님).
  *
@@ -40,7 +40,7 @@ const USER = process.env.SYNOLOGY_USER;
 const PASSWORD = process.env.SYNOLOGY_PASSWORD;
 
 // 2026-09-05: 이 파일이 직접 찍는 로그(캐일러가 자기 TAG를 안 넘겨준 경우)의 기본 태그.
-// run()/fail() 은 호출부(deploy-dev-synol-be-api.js 등)가 자기 TAG 를 3번째 인자로 넘겨주면
+// run()/fail() 은 호출부(deploy-dev-synol-be-ecAdminApi.js 등)가 자기 TAG 를 3번째 인자로 넘겨주면
 // 그걸 쓰고, 안 넘겨주면 이 파일 자신의 이름을 쓴다 — "모든 로그 앞에 어느 파일에서 난
 // 건지 항상 표시"하되, 실제로 그 동작을 시킨 스크립트가 있으면 그 스크립트 이름이
 // 더 유용한 정보이므로 우선한다.
@@ -70,7 +70,7 @@ function requireCreds(scriptName) {
     );
   }
   // 2026-09-05: 지금 어느 NAS/계정으로 접속하는지 콘솔에서 바로 보이게(비밀번호는 뒤쪽 절반
-  // *** 마스킹) — deploy:dev-synol-be-api/fe/full 이 여러 스크립트를 순서대로 실행할 때, 각
+  // *** 마스킹) — deploy:dev-synol-be-ecAdminApi/fe/full 이 여러 스크립트를 순서대로 실행할 때, 각
   // 단계가 실제로 어떤 host/port/계정을 쓰는지 헷갈리지 않게 하기 위함.
   console.log(`${tag}[접속정보] HOST=${HOST} PORT=${PORT} USER=${USER} PASSWORD=${maskPassword(PASSWORD)}`);
 }
@@ -87,7 +87,7 @@ function run(cmd, cwd, tag = SELF_TAG) {
 }
 
 /* SSH 연결 하나를 열고, sftpPut(여러 건) → exec(순차 여러 명령) 을 차례로 수행한 뒤 닫는다.
-   tag: 호출한 스크립트를 식별하는 접두어(예: "[deploy-dev-synol-be-api.js][BE]") — 이 함수가 찍는
+   tag: 호출한 스크립트를 식별하는 접두어(예: "[deploy-dev-synol-be-ecAdminApi.js][BE]") — 이 함수가 찍는
    모든 로그 줄(사전 준비/전송/NAS 실행/Docker 빌드 단계번호) 앞에 그대로 붙는다. 여러 스크립트가
    순서대로 돌 때(deploy:dev-synol-full 등) 지금 이 줄이 어느 스크립트에서 나온 건지 바로
    구분하기 위함(2026-09-05). */

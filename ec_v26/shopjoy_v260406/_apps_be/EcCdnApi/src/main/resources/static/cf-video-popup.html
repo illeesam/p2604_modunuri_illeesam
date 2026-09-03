@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동영상 재생</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  }
+  #title {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 8px 14px;
+    color: #eee;
+    font-size: 13px;
+    background: linear-gradient(rgba(0,0,0,0.6), transparent);
+  }
+  video { max-width: 100%; max-height: 100vh; background: #000; }
+  #empty { color: #999; font-size: 13px; }
+</style>
+</head>
+<body>
+  <!-- cf-file.html 의 window.open('cf-video-popup.html?src=..&poster=..&title=..', '_blank', 'width=..,height=..')
+       로만 열리는 팝업 전용 페이지 — 동영상 첫 프레임(썸네일)을 poster 로 보여주다가 재생되게 한다. -->
+  <div id="title"></div>
+  <video id="v" controls autoplay playsinline></video>
+  <div id="empty" hidden>재생할 동영상 정보가 없습니다.</div>
+  <script>
+    const p = new URLSearchParams(location.search);
+    const src = p.get('src');
+    const poster = p.get('poster');
+    const title = p.get('title') || '';
+
+    document.title = title ? (title + ' - 동영상 재생') : '동영상 재생';
+    document.getElementById('title').textContent = title;
+
+    const v = document.getElementById('v');
+    if (!src) {
+      v.hidden = true;
+      document.getElementById('empty').hidden = false;
+    } else {
+      if (poster) v.setAttribute('poster', poster);
+      v.setAttribute('src', src);
+    }
+  </script>
+</body>
+</html>

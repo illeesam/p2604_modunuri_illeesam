@@ -73,6 +73,12 @@ app:
   # license.secret / license.enabled 는 sy_prop(app.license.*) 에서 주입
   license:
     output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
+  # EcCdnApi(동영상/이미지 CDN 서버) 호출 설정 — CfCdnApiClient 가 사용.
+  # 2026-09-06 시점: 클라이언트만 준비됨, 아직 CmUploadService 에 안 붙임(별도 작업으로 진행 예정).
+  cf-cdn:
+    base-url: ${CF_CDN_BASE_URL:http://localhost:21090}
+    client-id: ${CF_CDN_CLIENT_ID:ecadminapi}
+    client-pwd: ${CF_CDN_CLIENT_PWD:}
 
 # 마스터 패스워드 — 개발 전용, prod=false 필수
 auth:

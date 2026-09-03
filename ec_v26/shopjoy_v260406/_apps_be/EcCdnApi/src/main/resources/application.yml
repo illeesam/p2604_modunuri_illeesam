@@ -1,0 +1,65 @@
+# application.yml — 공통 설정 / 프로파일별: application-{local|dev|prod}.yml
+#
+# ═══════════════════════════════════════════════════════════════════════════
+#  EcCdnApi 는 EcAdminApi 와 완전히 분리된 별도 배포 단위다(별도 docker-compose.yml,
+#  별도 포트, 별도 DB 접속 — 단 같은 Postgres 서버/스키마의 cf_* 전용 테이블만 사용).
+#
+#  실행 명령어(java -jar) — EcAdminApi 와 동일 패턴:
+#    java -jar build/libs/EcCdnApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=local
+#    java -jar build/libs/EcCdnApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+#    java -jar app.jar --spring.profiles.active=prod --CF_JWT_SECRET=<실제운영시크릿> --DB_PASSWORD=<운영DB비밀번호>
+#
+#  DB_* 는 local/dev 기본값이 있어(illeesam.synology.me 공유 개발DB) 안 넘겨도 뜬다.
+#  prod 는 CF_JWT_SECRET 이 기본값 없이 필수 — 안 넘기면 부팅 자체가 안 됨(빠른 오류 감지 의도).
+# ═══════════════════════════════════════════════════════════════════════════
+
+spring:
+  profiles:
+    active: local
+  servlet:
+    multipart:
+      # 용도 자체가 "AWS/Naver Cloud 방식 업로드 서버"라 요구사항의 파일당 상한(120MB)을 그대로 반영.
+      # max-request-size 를 파일 크기보다 살짝 크게 둔 건 멀티파트 폼필드(fileName 등) 여유분.
+      max-file-size: 120MB
+      max-request-size: 125MB
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgresilleesam}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      # cf_client/cf_file 은 _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 이 기준(source of truth) —
+      # EcAdminApi 와 동일하게 Hibernate 가 DDL 을 만들지 않는다(validate 만).
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  port: 3000
+
+app:
+  cf:
+    # 실제 파일이 저장되는 루트 경로. 로컬 실행은 ./storage(프로젝트 폴더 안), NAS 배포는
+    # docker-compose.yml 이 /volume1/docker/shopjoy/cdn-storage 를 컨테이너의 /app/storage 로 마운트.
+    storage-root: ${CF_STORAGE_ROOT:./storage}
+    # 업로드 용량 상한(MB) — spring.servlet.multipart.max-file-size 와 별개로 서비스 코드에서
+    # 한 번 더 명시적으로 검증한다(요청사항: "용량이 너무크면 Exception"). 두 값은 항상 같게 유지할 것.
+    max-file-size-mb: 120
+    # ffmpeg 실행 파일 경로 — Dockerfile 이 apt-get 으로 설치하면 PATH 상의 'ffmpeg' 로 충분.
+    # 로컬 윈도우에서 테스트할 땐 ffmpeg 설치 후 절대경로로 오버라이드(CF_FFMPEG_PATH 환경변수).
+    ffmpeg-path: ${CF_FFMPEG_PATH:ffmpeg}
+    jwt:
+      secret: ${CF_JWT_SECRET}
+      # 요청사항: accessToken 유효시간 30초(고정, 매우 짧음 — 호출측(EcAdminApi)이 매 호출 직전
+      # 재로그인/재발급하거나 만료 임박 시 refresh 하는 걸 전제로 한 설계).
+      access-expiry-ms: 30000
+      # refreshToken 은 7일(EcAdminApi 의 BO refreshToken 정책과 별개 — 서비스간 통신용이라
+      # EcAdminApi 의 FO 15일/BO 2시간과는 다른 기준으로 임의 설정. 만료되면 재로그인).
+      refresh-expiry-ms: 604800000
+
+logging:
+  file:
+    path: logs

@@ -1,0 +1,11 @@
+# Docker 빌드 컨텍스트에서 제외 — EcAdminApi/.dockerignore 와 동일 원칙.
+.git
+.gradle
+.idea
+build
+bin
+out
+*.log
+*.md
+logs
+storage

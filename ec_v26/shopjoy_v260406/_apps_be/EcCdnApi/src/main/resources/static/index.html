@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EcCdnApi 관리자</title>
+<link rel="stylesheet" href="css/cf-admin.css">
+</head>
+<body>
+<!-- EcCdnApi 관리자 화면 — shopjoy_v260406 의 bo.html 구조(상단헤더 + 좌측메뉴 + 우측콘텐츠,
+     PAGE_COMP_MAP + <component :is> 라우팅)를 이 앱 규모(화면 2개)에 맞게 축소 재현했다.
+     실제 페이지는 컴포넌트 파일(js/CfClientMng.js, js/CfFileMng.js)로 분리 등록.
+     2026-09-06: 로그인 없이 바로 사용(요청사항) — SecurityConfig 가 /api/cdn/** 를 permitAll 로 열어둠. -->
+<div id="app">
+  <div class="shell-header">
+    <div class="brand">🛠️ EcCdnApi 관리자<span class="sub">동영상·이미지·파일 CDN</span></div>
+  </div>
+  <div class="shell-sidebar">
+    <div class="menu-group-label">관리</div>
+    <a class="menu-item" :class="{ active: currentPage === 'file' }" @click="currentPage = 'file'">📁 cf_file 관리</a>
+    <a class="menu-item" :class="{ active: currentPage === 'client' }" @click="currentPage = 'client'">🔑 cf_client 관리</a>
+  </div>
+  <div class="shell-main">
+    <cf-file-mng v-if="currentPage === 'file'"></cf-file-mng>
+    <cf-client-mng v-else-if="currentPage === 'client'"></cf-client-mng>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<script src="js/cfAuth.js"></script>
+<script src="js/CfClientMng.js"></script>
+<script src="js/CfFileMng.js"></script>
+<script>
+const { createApp, ref } = Vue;
+
+// ?page=client 로 직접 진입 가능(북마크 편의) — 그 외에는 cf_file 이 기본 진입 화면.
+const initialPage = new URLSearchParams(location.search).get('page');
+
+const app = createApp({
+  setup() {
+    const currentPage = ref(initialPage === 'client' ? 'client' : 'file');
+    return { currentPage };
+  },
+});
+app.component('CfClientMng', window.CfClientMng);
+app.component('CfFileMng', window.CfFileMng);
+app.mount('#app');
+</script>
+</body>
+</html>

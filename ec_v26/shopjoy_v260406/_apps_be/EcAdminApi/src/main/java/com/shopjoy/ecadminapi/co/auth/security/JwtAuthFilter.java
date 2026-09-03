@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.co.auth.security;
 
+import com.shopjoy.ecadminapi.cache.redisstore.BoAuthRedisStore;
+import com.shopjoy.ecadminapi.cache.redisstore.FoAuthRedisStore;
 import com.shopjoy.ecadminapi.common.log.AccessLogFilter;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import io.jsonwebtoken.Claims;
@@ -37,6 +39,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    // 2026-09-06: Redis 활성화(app.redis.enabled=true)에 맞춰 로그아웃 즉시무효화(블랙리스트) 체크
+    // 추가 — Redis 비활성 시 두 스토어 모두 no-op(false)라 이 필터의 기존 무상태(stateless) 동작은
+    // app.redis.enabled=false 인 동안 전혀 안 바뀐다.
+    private final BoAuthRedisStore boAuthRedisStore;
+    private final FoAuthRedisStore foAuthRedisStore;
 
     /** CORS preflight (OPTIONS) 는 인증/MDC 처리 불필요 — 필터 자체 skip */
     @Override
@@ -117,6 +124,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         @SuppressWarnings("unchecked")
                         List<String> roles = claims.get("roles", List.class);
 
+                        // 로그아웃 시 블랙리스트에 올라간 토큰이면(Redis) 만료 전이라도 즉시 무효 처리.
+                        // tokenParseable(로그아웃 경로에서 만료 토큰 파싱) 케이스는 애초에 SecurityContext를
+                        // 안 채우는 경로라 블랙리스트 체크 자체가 무의미 — 아래서 함께 제외.
+                        boolean blacklisted = !tokenParseable && (
+                            "BO".equals(appTypeCd) ? boAuthRedisStore.isBlacklisted(token)
+                                : "FO".equals(appTypeCd) ? foAuthRedisStore.isBlacklisted(token)
+                                : false
+                        );
+
                         AuthPrincipal principal = new AuthPrincipal(
                                 authId,                                 // authId
                                 appTypeCd,                             // appTypeCd
@@ -136,8 +152,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 CmUtil.nvlStr(isStaffYn, "N")              // isStaffYn
                         );
 
-                        // 만료 토큰 파싱(로그아웃 경로)은 AccessLog 기록 용도만 — SecurityContext 등록 안 함
-                        if (!tokenParseable) {
+                        // 만료 토큰 파싱(로그아웃 경로) 또는 블랙리스트 등록된 토큰은
+                        // AccessLog 기록 용도만 — SecurityContext 등록 안 함(=미인증 취급)
+                        if (!tokenParseable && !blacklisted) {
                             List<SimpleGrantedAuthority> grantedAuthorities = roles == null ? List.of() :
                                 roles.stream().map(SimpleGrantedAuthority::new).toList();
                             UsernamePasswordAuthenticationToken auth =

@@ -13,7 +13,7 @@
 | GitHub Pages도 같이 배포되나 | ❌ (Synology NAS만) | ✅ (Synology NAS + GitHub Pages 둘 다) |
 | 사전 준비 | `scripts/.synology-deploy.env`에 NAS 접속정보 필요 | GitHub 리포지토리 시크릿 등록 필요 |
 
-**Synology NAS만 빠르게 반영하고 싶으면 `deploy:dev-synol-fe-vue3cdn`, GitHub Pages까지 같이 갱신하려면 `deploy:dev-github-fe-vue3cdn`을 쓰세요.** 백엔드도 같이 배포하려면 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)의 `deploy:dev-synol-be-api`를 이어서 실행하거나, 백엔드+프론트를 한 번에 하려면 `npm run deploy:dev-synol-full`을 쓰세요(내부적으로 `deploy:dev-synol-be-api` → `deploy:dev-synol-fe-vue3cdn` 순서로 실행됩니다).
+**Synology NAS만 빠르게 반영하고 싶으면 `deploy:dev-synol-fe-vue3cdn`, GitHub Pages까지 같이 갱신하려면 `deploy:dev-github-fe-vue3cdn`을 쓰세요.** 백엔드도 같이 배포하려면 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)의 `deploy:dev-synol-be-ecAdminApi`를 이어서 실행하거나, 백엔드+프론트를 한 번에 하려면 `npm run deploy:dev-synol-full`을 쓰세요(내부적으로 `deploy:dev-synol-be-ecAdminApi` → `deploy:dev-synol-fe-vue3cdn` 순서로 실행됩니다).
 
 ---
 
@@ -44,7 +44,7 @@ SYNOLOGY_PASSWORD=appuser1**
 | 5 | 헬스체크 1/2 — NAS 내부에서 `curl localhost:21000/index.html`, `/bo.html` (nginx가 새 파일을 실제로 서빙하는지) |
 | 6 | 헬스체크 2/2 — **이 컴퓨터**에서 실제 공개 주소로 `https://21000.illeesam.synology.me/index.html`, `/bo.html`, `/api/co/sy/code/page`(nginx→백엔드→DB 전체 경로) 확인 |
 
-**결과값**: 콘솔에 각 단계가 그대로 출력되고, 마지막 헬스체크 2/2에서 `index.html`/`bo.html`/`/api/co/sy/code/page` 세 줄이 전부 `200`으로 나오면 성공입니다(`✅ 헬스체크 통과` 문구 확인). `index.html`/`bo.html`만 문제면 12번 문서, `/api/...`만 문제면 백엔드가 안 떠 있는 것이니 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)의 `deploy:dev-synol-be-api`를 실행하라는 안내가 콘솔에 그대로 출력됩니다.
+**결과값**: 콘솔에 각 단계가 그대로 출력되고, 마지막 헬스체크 2/2에서 `index.html`/`bo.html`/`/api/co/sy/code/page` 세 줄이 전부 `200`으로 나오면 성공입니다(`✅ 헬스체크 통과` 문구 확인). `index.html`/`bo.html`만 문제면 12번 문서, `/api/...`만 문제면 백엔드가 안 떠 있는 것이니 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>)의 `deploy:dev-synol-be-ecAdminApi`를 실행하라는 안내가 콘솔에 그대로 출력됩니다.
 
 **테스트 방법(수동, 스크립트가 이미 자동으로 확인하지만 눈으로도 보고 싶을 때)**: 브라우저로 아래 두 URL 열어보기.
 ```
@@ -54,7 +54,7 @@ https://21000.illeesam.synology.me/bo.html
 
 **테스트 결과**: 화면이 정상적으로 그려지면 성공입니다.
 
-> **백엔드+프론트를 한 번에 배포하고 싶으면**: `npm run deploy:dev-synol-full` (= `deploy:dev-synol-be-api` 다음 `deploy:dev-synol-fe-vue3cdn`를 순서대로 실행 — 자세한 백엔드 쪽 내용은 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>) 참조).
+> **백엔드+프론트를 한 번에 배포하고 싶으면**: `npm run deploy:dev-synol-full` (= `deploy:dev-synol-be-ecAdminApi` 다음 `deploy:dev-synol-fe-vue3cdn`를 순서대로 실행 — 자세한 백엔드 쪽 내용은 [14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>) 참조).
 
 ---
 
@@ -88,7 +88,7 @@ https://21000.illeesam.synology.me/bo.html
 | [`scripts/build-minify.js`](../../../scripts/build-minify.js) | `npm run build:dev` 내부에서 실행되는 실제 빌드 로직(esbuild minify + `lib/env/profiles/*.dev.js` 프로파일 적용) |
 | `scripts/.synology-deploy.env` | (14번 문서와 동일 공유 파일) NAS 접속정보 — `.gitignore` 처리돼 있어 깃허브에 안 올라감 |
 | `package.json`의 `deploy:dev-synol-fe-vue3cdn` | `node scripts/deploy-dev-synol-fe-vue3cdn.js`를 실행하는 npm 스크립트 별칭 |
-| `package.json`의 `deploy:dev-synol-full` | `deploy:dev-synol-be-api` → `deploy:dev-synol-fe-vue3cdn` 순서 실행(백엔드+프론트 한 번에) |
+| `package.json`의 `deploy:dev-synol-full` | `deploy:dev-synol-be-ecAdminApi` → `deploy:dev-synol-fe-vue3cdn` 순서 실행(백엔드+프론트 한 번에) |
 | `package.json`의 `deploy:dev-github-be-api`/`-fe`/`-full` | (방식 B) 커밋 메시지만 다르고 동작은 동일한 `git add && commit && push` — 실제 배포 대상은 GitHub Actions 경로 필터가 결정 |
 | `.github/workflows/shopjoy-fe-illeesam-synol-deploy.yml` | (방식 B) NAS에 프론트 배포하는 GitHub Actions 워크플로 |
 | `.github/workflows/shopjoy-fe-illeesam-github-deploy.yml` | (방식 B) GitHub Pages에 프론트 배포하는 워크플로(같은 push로 동시 실행) |

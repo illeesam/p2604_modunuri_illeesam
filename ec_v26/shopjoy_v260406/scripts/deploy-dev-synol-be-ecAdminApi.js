@@ -1,10 +1,10 @@
-/* deploy-dev-synol-be-api.js — 내 컴퓨터에서 직접 SSH로 백엔드(EcAdminApi)를 Synology NAS(dev)에
+/* deploy-dev-synol-be-ecAdminApi.js — 내 컴퓨터에서 직접 SSH로 백엔드(EcAdminApi)를 Synology NAS(dev)에
  * 빌드+전송+재기동까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-be-api/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포).
  * 프론트는 별도 scripts/deploy-dev-synol-fe-vue3cdn.js(= npm run deploy:dev-synol-fe-vue3cdn).
  * 백엔드+프론트 둘 다 한 번에 하려면 npm run deploy:dev-synol-full.
  *
- * 사용법: node scripts/deploy-dev-synol-be-api.js   (= npm run deploy:dev-synol-be-api)
+ * 사용법: node scripts/deploy-dev-synol-be-ecAdminApi.js   (= npm run deploy:dev-synol-be-ecAdminApi)
  * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 _apps_be/EcAdminApi/_doc/11_illeesam_synology_BE_수동배포가이드(synology).md 의
@@ -15,14 +15,14 @@ const fs = require('fs');
 const path = require('path');
 const { ROOT, fail, requireCreds, run, withSsh } = require('./synology-deploy-util');
 
-requireCreds('scripts/deploy-dev-synol-be-api.js');
+requireCreds('scripts/deploy-dev-synol-be-ecAdminApi.js');
 
 const DOCKER = '/usr/local/bin/docker';
 const REMOTE_BE_DIR = '/volume1/docker/shopjoy/backend';
 
 // 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(BE)"을 밝히는 태그 — deploy:dev-synol-full
 // 처럼 여러 스크립트가 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
-const TAG = '[deploy-dev-synol-be-api.js][BE]';
+const TAG = '[deploy-dev-synol-be-ecAdminApi.js][BE]';
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
 
 // 2026-09-05: 스크립트 전체(빌드~헬스체크까지) 소요시간을 마지막에 보여주기 위한 시작시각.

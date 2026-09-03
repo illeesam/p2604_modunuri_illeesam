@@ -1,0 +1,70 @@
+# ═══════════════════════════════════════════════════════════
+#  ShopJoy EcCdnApi - Docker Compose
+# ═══════════════════════════════════════════════════════════
+#  배치 위치: _apps_be/EcCdnApi/docker-compose.yml
+#  실행 명령: docker compose up -d --build
+#
+#  EcAdminApi 와 완전히 별도의 배포 단위(2026-09-06 결정) — 별도 compose 파일, 별도 NAS
+#  디렉터리(/volume1/docker/shopjoy/eccdnapi), 별도 배포 스크립트(deploy-dev-synol-be-ecCdnApi.js).
+#  단, EcAdminApi의 docker-compose.yml(nginx 포함)이 만드는 "shopjoy-net" 네트워크를
+#  external: true 로 공유한다 — 그래야 nginx(220-shopjoy-nginx)가 서비스명(eccdnapi)으로
+#  이 컨테이너에 프록시할 수 있다(nginx.conf 의 upstream ec_cdn_api 참조).
+#  ⚠️ 그래서 EcAdminApi 쪽 compose(nginx 포함)가 먼저 떠서 shopjoy-net 을 만들어둔 상태여야
+#     이 compose 가 정상 기동한다 — 최초 1회는 반드시 EcAdminApi 배포가 선행되어야 함.
+# ═══════════════════════════════════════════════════════════
+
+services:
+  eccdnapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: shopjoy/eccdnapi:latest
+    container_name: 230-shopjoy-eccdnapi
+
+    # 2026-09-06: DB(illeesam.synology.me:17632)와 Redis(illeesam.synology.me:12379) 둘 다
+    # 이 NAS 자신의 컨테이너다 — 컨테이너 안에서 공인 DDNS로 접속하면 NAT 헤어핀을 타서
+    # SocketTimeoutException 이 난다(EcAdminApi/docker-compose.yml 의 동일 코멘트 참조).
+    # host.docker.internal 로 호스트를 직접 가리켜 이 왕복을 건너뛴다 — .env 의
+    # DB_HOST=host.docker.internal / REDIS_HOST=host.docker.internal 과 짝.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    env_file:
+      - .env
+
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx1024m"
+
+    # ───── 포트 매핑 ─────
+    # 공개 경로는 nginx(21000)의 /cf/ 프록시가 정식 — 21090 은 디버깅 전용(EcAdminApi의 21080과
+    # 같은 원칙). 방화벽/공유기 포트포워딩은 열지 말 것.
+    ports:
+      - "21090:3000"
+
+    # ───── 볼륨 마운트 ─────
+    # cdn-storage: 실제 업로드된 원본/썸네일/동영상 프레임 파일(app.cf.storage-root=/app/storage).
+    # logs: 컨테이너 삭제돼도 로그 보존(EcAdminApi의 ecadminapi/logs 마운트와 동일 원칙).
+    volumes:
+      - /volume1/docker/shopjoy/cdn-storage:/app/storage
+      - /volume1/docker/eccdnapi/logs:/app/logs
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  default:
+    name: shopjoy-net
+    external: true

@@ -1,0 +1,8 @@
+# application-prod.yml — 운영 전용. CF_JWT_SECRET/DB_PASSWORD 등 민감값은 전부 환경변수 필수
+# (기본값 없는 ${CF_JWT_SECRET} 이 application.yml 에 이미 있으므로, 여기서 또 선언할 필요 없음 —
+#  안 넘기면 플레이스홀더 해석 실패로 부팅 자체가 안 되는 게 의도된 동작).
+logging:
+  level:
+    com.shopjoy.eccdnapi: WARN
+  file:
+    path: /app/logs
