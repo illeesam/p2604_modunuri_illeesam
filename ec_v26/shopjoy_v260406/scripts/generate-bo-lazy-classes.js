@@ -1,4 +1,4 @@
-/* generateBoLazyClasses.js — BO 화면 추가 시 사람이 손대는 파일을 이 파일 하나로 통일한다.
+/* generate-bo-lazy-classes.js — BO 화면 추가 시 사람이 손대는 파일을 이 파일 하나로 통일한다.
  *
  * 새 BO 화면을 추가하면:
  *   1) 화면 소스 파일 작성 (pages/bo/... 또는 pages/co/...)
@@ -14,7 +14,7 @@
  *   3) 남은 파일 각각을 열어서 실제로 `window.ClassName = `(또는 IIFE 파라미터 별칭
  *      `global.ClassName = `) 로 뭘 등록하는지 직접 읽는다
  *
- * 사용법: node scripts/generateBoLazyClasses.js   (= npm run gen-bo-lazy)
+ * 사용법: node scripts/generate-bo-lazy-classes.js   (= npm run gen-bo-lazy)
  *
  * 실행하면 콘솔에 [1]~[3] 단계 + [완료] 요약이 순서대로 찍힌다:
  *   [1] 대상 파일 수집 (pages/bo+pages/co 스캔 → eager 제외 → lazy 대상 확정)
@@ -26,6 +26,22 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+
+// 2026-09-05: 이 스크립트가 찍는 모든 로그 앞에 파일명 태그를 자동으로 붙인다(console.log/warn/error
+// 를 한 번만 감싸서, 개별 호출부를 전부 고칠 필요 없이 항상 적용되게 함). 맨 앞 개행(\n)은
+// 그대로 유지해서 기존 줄바꿈 스타일(단계 사이 빈 줄)이 안 깨지게 한다.
+const TAG = '[generate-bo-lazy-classes.js]';
+['log', 'warn', 'error'].forEach((level) => {
+  const orig = console[level].bind(console);
+  console[level] = (first, ...rest) => {
+    if (typeof first === 'string') {
+      const m = first.match(/^\n+/);
+      orig(m ? m[0] + TAG + ' ' + first.slice(m[0].length) : TAG + ' ' + first, ...rest);
+    } else {
+      orig(TAG, first, ...rest);
+    }
+  };
+});
 
 /* ── 사람이 결정해야 하는 부분: pageId -> kebab 태그명. "이 화면을 메뉴/URL 에서 어떤
    pageId 로 부를지"는 파일명에서 기계적으로 못 뽑는, 사람이 짓는 이름이다.
@@ -244,7 +260,7 @@ function eagerScriptSrcs(htmlFile, prefix) {
 function extractGlobalNames(filePath) {
   const src = fs.readFileSync(path.join(ROOT, filePath), 'utf8');
   // 2026-08-30 수정: ^[ \t]*(줄 시작) 앵커는 minify 된 코드(여러 문장이 한 줄에 붙음)에서
-  // 깨진다 — verifyLazyClassIntegrity.js 와 동일 수정. (generateBoLazyClasses 는 항상 원본
+  // 깨진다 — verify-lazy-class-integrity.js 와 동일 수정. (generateBoLazyClasses 는 항상 원본
   // 소스만 스캔하므로 영향은 없지만, 세 스크립트가 같은 정규식을 공유하도록 통일해둔다.)
   const matches = [...src.matchAll(/(?<![\w.$])(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=(?!=)/g)];
   return [...new Set(matches.map((m) => m[1]))];
@@ -255,7 +271,7 @@ function stringifyMap(obj, indent = '  ') {
 }
 
 function generate() {
-  console.log('BO lazy 클래스 맵 재생성 시작 (lib/app/boAppLazyClasses.js)');
+  console.log('▶ 시작 : BO lazy 클래스 맵(lib/app/boAppLazyClasses.js) 자동 생성');
 
   console.log('\n[1] 대상 파일 수집');
   const onDisk = [...walkJsFiles('pages/bo'), ...walkJsFiles('pages/co')];
@@ -289,11 +305,11 @@ function generate() {
     return `  ${k}: ${JSON.stringify(BO_APP_COMP_PAGE[k])},`;
   }).join('\n');
 
-  const out = `/* ShopJoy BO - 페이지 라우팅 + lazy-load 클래스 맵 (scripts/generateBoLazyClasses.js 로 자동 생성 — 손으로 고치지 말 것!)
-   BO 화면을 추가할 때 사람이 손대는 파일은 scripts/generateBoLazyClasses.js 하나뿐이다:
+  const out = `/* ShopJoy BO - 페이지 라우팅 + lazy-load 클래스 맵 (scripts/generate-bo-lazy-classes.js 로 자동 생성 — 손으로 고치지 말 것!)
+   BO 화면을 추가할 때 사람이 손대는 파일은 scripts/generate-bo-lazy-classes.js 하나뿐이다:
      1) 화면 소스 작성 (pages/bo/... 또는 pages/co/...)
-     2) generateBoLazyClasses.js 상단 BO_APP_COMP_PAGE 에 pageId: 'kebab-태그명' 한 줄 추가
-     3) node scripts/generateBoLazyClasses.js (또는 npm run gen-bo-lazy) 실행
+     2) generate-bo-lazy-classes.js 상단 BO_APP_COMP_PAGE 에 pageId: 'kebab-태그명' 한 줄 추가
+     3) node scripts/generate-bo-lazy-classes.js (또는 npm run gen-bo-lazy) 실행
    이 파일(boAppLazyClasses.js) 은 그 결과물이라 재생성될 때마다 전체가 덮어써진다.
    아래 각 블록 위 주석에 무슨 용도인지 설명해뒀다.
    예외(그대로 eager 유지, 자동탐지가 원리상 못 찾는 순수 JS 호출 파일): ZdSimulBase.js /
@@ -302,7 +318,7 @@ function generate() {
 /* BO_APP_COMP_PAGE — "pageId(화면 식별자) → kebab-case 태그명" 매핑.
    boAppBase.js 의 탭 라우팅(<component :is="PAGE_COMP_MAP[pageId]">)이 이 값으로
    실제 렌더링할 컴포넌트 태그를 찾는다. 새 화면 추가 시 사람이 결정해서 넣는 유일한 정보 —
-   이 파일 말고 scripts/generateBoLazyClasses.js 상단의 BO_APP_COMP_PAGE 에 추가할 것. */
+   이 파일 말고 scripts/generate-bo-lazy-classes.js 상단의 BO_APP_COMP_PAGE 에 추가할 것. */
 window.BO_APP_COMP_PAGE = {
 ${pageEntries}
 };
@@ -318,6 +334,7 @@ ${stringifyMap(classMap)}
   fs.writeFileSync(path.join(ROOT, 'lib/app/boAppLazyClasses.js'), out);
   console.log(`  ㄴ 파일 기록 완료: lib/app/boAppLazyClasses.js`);
   console.log(`\n[완료] 페이지(pageId) ${Object.keys(BO_APP_COMP_PAGE).length}개, lazy 클래스 ${Object.keys(classMap).length}개`);
+  console.log('◀ 완료');
 }
 
 generate();

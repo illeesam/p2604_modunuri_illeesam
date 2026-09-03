@@ -89,7 +89,7 @@
 | 항목 | 내용 |
 |---|---|
 | 옵션이 켜져 있으면 | `appuser`로 SFTP 접속 시 접속 루트가 `/volume1` 전체가 아니라 `appuser`의 개인 홈 폴더로 좁혀짐 |
-| 왜 문제인가 | 배포 스크립트(`scripts/synologyDeployUtil.js`)는 "SFTP 접속 루트 = `/volume1`"이라는 전제로 경로를 계산함(`/volume1/docker/...` → `/docker/...`로 변환) — 옵션이 켜져 있으면 전혀 엉뚱한 경로를 찾아 계속 `No such file` 발생 |
+| 왜 문제인가 | 배포 스크립트(`scripts/synology-deploy-util.js`)는 "SFTP 접속 루트 = `/volume1`"이라는 전제로 경로를 계산함(`/volume1/docker/...` → `/docker/...`로 변환) — 옵션이 켜져 있으면 전혀 엉뚱한 경로를 찾아 계속 `No such file` 발생 |
 | 참고 | 옛 계정(`illeesam`)은 이 옵션이 꺼져 있는 상태로 오래 써왔기 때문에 문제가 없었음 — 새 계정은 기본값이 다를 수 있으니 꼭 확인 |
 
 **결과 확인**: 확실하지 않으면 6번(최종 확인)의 SSH 테스트로 실제 동작을 직접 확인하는 게 가장 정확합니다.

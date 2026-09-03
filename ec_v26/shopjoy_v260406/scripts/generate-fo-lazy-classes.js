@@ -1,4 +1,4 @@
-/* generateFoLazyClasses.js — FO 화면 추가 시 사람이 손대는 파일을 이 파일 하나로 통일한다.
+/* generate-fo-lazy-classes.js — FO 화면 추가 시 사람이 손대는 파일을 이 파일 하나로 통일한다.
  *
  * 새 FO "최상위 페이지"를 추가하면:
  *   1) 화면 소스 파일 작성 (pages/fo/...)
@@ -10,7 +10,7 @@
  * boAppBase.js/foAppBase.js 의 자동탐지가 알아서 찾는다.
  * lib/app/foAppLazyClasses.js 는 이 스크립트의 산출물이라 절대 손으로 고치지 않는다.
  *
- * 사용법: node scripts/generateFoLazyClasses.js   (= npm run gen-fo-lazy)
+ * 사용법: node scripts/generate-fo-lazy-classes.js   (= npm run gen-fo-lazy)
  *
  * 실행하면 콘솔에 [1]~[3] 단계 + [완료] 요약이 순서대로 찍힌다:
  *   [1] 대상 파일 수집 (pages/fo 스캔 → eager/제외목록/사이트별동적파일 제외 → lazy 대상 확정)
@@ -22,6 +22,22 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+
+// 2026-09-05: 이 스크립트가 찍는 모든 로그 앞에 파일명 태그를 자동으로 붙인다(console.log/warn/error
+// 를 한 번만 감싸서, 개별 호출부를 전부 고칠 필요 없이 항상 적용되게 함). 맨 앞 개행(\n)은
+// 그대로 유지해서 기존 줄바꿈 스타일(단계 사이 빈 줄)이 안 깨지게 한다.
+const TAG = '[generate-fo-lazy-classes.js]';
+['log', 'warn', 'error'].forEach((level) => {
+  const orig = console[level].bind(console);
+  console[level] = (first, ...rest) => {
+    if (typeof first === 'string') {
+      const m = first.match(/^\n+/);
+      orig(m ? m[0] + TAG + ' ' + first.slice(m[0].length) : TAG + ' ' + first, ...rest);
+    } else {
+      orig(TAG, first, ...rest);
+    }
+  };
+});
 
 /* ── 사람이 결정해야 하는 부분(파일명만 보고는 못 정하는 것들) ── */
 
@@ -95,7 +111,7 @@ function eagerScriptSrcs(htmlFile, prefix) {
 function extractGlobalNames(filePath) {
   const src = fs.readFileSync(path.join(ROOT, filePath), 'utf8');
   // 2026-08-30 수정: ^[ \t]*(줄 시작) 앵커는 minify 된 코드(여러 문장이 한 줄에 붙음)에서
-  // 깨진다 — verifyLazyClassIntegrity.js 와 동일 수정. (generateFoLazyClasses 는 항상 원본
+  // 깨진다 — verify-lazy-class-integrity.js 와 동일 수정. (generateFoLazyClasses 는 항상 원본
   // 소스만 스캔하므로 영향은 없지만, 세 스크립트가 같은 정규식을 공유하도록 통일해둔다.)
   const matches = [...src.matchAll(/(?<![\w.$])(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=(?!=)/g)];
   return [...new Set(matches.map((m) => m[1]))];
@@ -106,7 +122,7 @@ function stringifyMap(obj, indent = '  ') {
 }
 
 function generate() {
-  console.log('FO lazy 클래스 맵 재생성 시작 (lib/app/foAppLazyClasses.js)');
+  console.log('▶ 시작 : FO lazy 클래스 맵(lib/app/foAppLazyClasses.js) 자동 생성');
 
   console.log('\n[1] 대상 파일 수집');
   const onDisk = walkJsFiles('pages/fo');
@@ -139,12 +155,12 @@ function generate() {
   }
 
   console.log('\n[3] foAppLazyClasses.js 파일 생성 (+ FO_SITE_NO 별 Home/Prod 동적 항목 주입)');
-  const out = `/* ShopJoy FO - lazy-load 대상 클래스 맵 (scripts/generateFoLazyClasses.js 로 자동 생성 — 손으로 고치지 말 것!)
-   FO 화면을 추가할 때 사람이 손대는 파일은 scripts/generateFoLazyClasses.js 하나뿐이다:
+  const out = `/* ShopJoy FO - lazy-load 대상 클래스 맵 (scripts/generate-fo-lazy-classes.js 로 자동 생성 — 손으로 고치지 말 것!)
+   FO 화면을 추가할 때 사람이 손대는 파일은 scripts/generate-fo-lazy-classes.js 하나뿐이다:
      1) 화면 소스 작성 (pages/fo/...)
-     2) generateFoLazyClasses.js 상단 FO_PAGE_TO_CLASS_STATIC 에 pageId: 'ClassName' 한 줄 추가
+     2) generate-fo-lazy-classes.js 상단 FO_PAGE_TO_CLASS_STATIC 에 pageId: 'ClassName' 한 줄 추가
         (등록 태그명이 파일 내부 window 전역명과 다르면 FO_REG_TO_GLOBAL 에도 추가)
-     3) node scripts/generateFoLazyClasses.js (또는 npm run gen-fo-lazy) 실행
+     3) node scripts/generate-fo-lazy-classes.js (또는 npm run gen-fo-lazy) 실행
    이 파일(foAppLazyClasses.js) 은 그 결과물이라 재생성될 때마다 전체가 덮어써진다.
    아래 각 블록 위 주석에 무슨 용도인지 설명해뒀다. */
 
@@ -159,7 +175,7 @@ ${stringifyMap(map)}
 /* FO_REG_TO_GLOBAL — "등록명(태그 기준) → 실제 window 전역 변수명" 매핑.
    대부분은 등록명과 파일 내부 window 전역명이 같아서(예: Cart → window.Cart) 필요 없지만,
    극소수(예: <blog-page> 태그인데 파일은 window.Blog) 는 다를 수 있어 여기서 보정한다.
-   자동 계산 불가 — 새로 이런 케이스가 생기면 generateFoLazyClasses.js 상단에 직접 추가. */
+   자동 계산 불가 — 새로 이런 케이스가 생기면 generate-fo-lazy-classes.js 상단에 직접 추가. */
 window.FO_REG_TO_GLOBAL = {
 ${stringifyMap(FO_REG_TO_GLOBAL)}
 };
@@ -168,7 +184,7 @@ ${stringifyMap(FO_REG_TO_GLOBAL)}
    foAppBase.js 가 navigate()/URL 복원 시 이 값으로 어떤 클래스를 로드해야 할지 찾는다.
    BO 의 BO_APP_COMP_PAGE 와 같은 역할이지만, FO 는 kebab 태그 매핑 테이블이 따로 없어서
    pageId 가 바로 등록명으로 연결된다. 새 "최상위 페이지" 추가 시 사람이 결정해서 넣는
-   유일한 정보 — 이 파일 말고 scripts/generateFoLazyClasses.js 상단의
+   유일한 정보 — 이 파일 말고 scripts/generate-fo-lazy-classes.js 상단의
    FO_PAGE_TO_CLASS_STATIC 에 추가할 것(하위 임베드 컴포넌트는 여기 안 넣어도 자동탐지됨). */
 window.FO_PAGE_TO_CLASS = {
 ${stringifyMap(FO_PAGE_TO_CLASS_STATIC)}
@@ -189,6 +205,7 @@ ${stringifyMap(FO_PAGE_TO_CLASS_STATIC)}
   fs.writeFileSync(path.join(ROOT, 'lib/app/foAppLazyClasses.js'), out);
   console.log(`  ㄴ 파일 기록 완료: lib/app/foAppLazyClasses.js`);
   console.log(`\n[완료] lazy 클래스 ${Object.keys(map).length}개(사이트별 동적 3개는 부팅 시점에 추가로 붙음)`);
+  console.log('◀ 완료');
 }
 
 generate();

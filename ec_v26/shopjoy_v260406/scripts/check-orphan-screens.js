@@ -1,4 +1,4 @@
-/* checkOrphanScreens.js — lazy-load 등록 상태를 종합 점검하는 진단 스크립트.
+/* check-orphan-screens.js — lazy-load 등록 상태를 종합 점검하는 진단 스크립트.
  *
  * 4가지 체크를 순서대로 수행한다 (2026-08-30: ②③④ 추가):
  *
@@ -14,7 +14,7 @@
  *    app.component()에 undefined 가 들어가고 체인의 다음 호출이 깨진다)을 고정 도구화한 것.
  *
  * ③ 클래스명 중복정의 — 서로 다른 두 파일이 같은 window.ClassName= 을 정의하는 경우.
- *    generateBoLazyClasses.js/generateFoLazyClasses.js 의 map[cls]=f 대입은 나중에 스캔된
+ *    generate-bo-lazy-classes.js/generate-fo-lazy-classes.js 의 map[cls]=f 대입은 나중에 스캔된
  *    파일이 조용히 먼저 것을 덮어써버리므로, 이 상태는 지금 아무 경고 없이 넘어간다.
  *
  * ④ 도달 불가(unreachable) — lazy 맵엔 등록돼 있지만(=로드는 됨) 그 화면으로 이어지는
@@ -27,12 +27,28 @@
  * 브라우저 런타임(부팅 시 자동 체크)으로는 ①③④를 할 수 없다 — 브라우저 JS 는 디스크에
  * 뭐가 있는지 자체를 모르므로 파일시스템 접근 가능한 Node 스크립트로만 가능하다.
  *
- * 사용법: node scripts/checkOrphanScreens.js   (= npm run check-orphans)
+ * 사용법: node scripts/check-orphan-screens.js   (= npm run check-orphans)
  */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+
+// 2026-09-05: 이 스크립트가 찍는 모든 로그 앞에 파일명 태그를 자동으로 붙인다(console.log/warn/error
+// 를 한 번만 감싸서, 개별 호출부를 전부 고칠 필요 없이 항상 적용되게 함). 맨 앞 개행(\n)은
+// 그대로 유지해서 기존 줄바꿈 스타일(단계 사이 빈 줄)이 안 깨지게 한다.
+const TAG = '[check-orphan-screens.js]';
+['log', 'warn', 'error'].forEach((level) => {
+  const orig = console[level].bind(console);
+  console[level] = (first, ...rest) => {
+    if (typeof first === 'string') {
+      const m = first.match(/^\n+/);
+      orig(m ? m[0] + TAG + ' ' + first.slice(m[0].length) : TAG + ' ' + first, ...rest);
+    } else {
+      orig(TAG, first, ...rest);
+    }
+  };
+});
 
 /* walkJsFiles — dir 아래 .js 파일을 재귀적으로 전부 모아 ROOT 기준 상대경로(슬래시 통일)로 반환 */
 function walkJsFiles(dir) {
@@ -50,13 +66,13 @@ function walkJsFiles(dir) {
   return out;
 }
 
-/* extractGlobalNames — generateBoLazyClasses.js/generateFoLazyClasses.js/
-   verifyLazyClassIntegrity.js 와 동일한 패턴. window.X= 또는 global.X=(IIFE 파라미터
+/* extractGlobalNames — generate-bo-lazy-classes.js/generate-fo-lazy-classes.js/
+   verify-lazy-class-integrity.js 와 동일한 패턴. window.X= 또는 global.X=(IIFE 파라미터
    별칭) 대입에서 클래스명을 전부 추출한다(한 파일에 여러 개일 수 있음). */
 function extractGlobalNames(absFilePath) {
   const src = fs.readFileSync(absFilePath, 'utf8');
   // 2026-08-30 수정: ^[ \t]*(줄 시작) 앵커는 minify 된 코드(여러 문장이 한 줄에 붙음)에서
-  // 깨진다 — verifyLazyClassIntegrity.js 와 동일 수정.
+  // 깨진다 — verify-lazy-class-integrity.js 와 동일 수정.
   const matches = [...src.matchAll(/(?<![\w.$])(?:window|global)\.([A-Z][A-Za-z0-9_]*)\s*=(?!=)/g)];
   return new Set(matches.map((m) => m[1]));
 }
@@ -84,7 +100,7 @@ function loadLazyMapValues(mapFile, globalKey) {
   try {
     require(path.join(ROOT, mapFile));
   } catch (e) {
-    console.error(`[checkOrphanScreens] ${mapFile} 로드 실패:`, e.message);
+    console.error(`${mapFile} 로드 실패:`, e.message);
     return new Set();
   }
   return new Set(Object.values(global.window[globalKey] || {}));
@@ -241,7 +257,7 @@ function checkReachability(stepLabel, label, { pagesDirs, htmlFile, lazyMap, roo
 /* ============================================================
  * 실행 — 4단계, 각 단계는 BO(N-1)/FO(N-2) 순서로 돈다
  * ============================================================ */
-console.log('lazy 등록 종합점검 시작 (BO/FO 각각 4가지 관점)');
+console.log('▶ 시작 : lazy 등록 상태 종합점검(등록누락/eager-lazy이중등록/클래스명중복/도달불가 4가지 관점)');
 global.window = { FO_SITE_NO: process.env.FO_SITE_NO || '01', BO_SITE_NO: process.env.BO_SITE_NO || '01' };
 
 const boOrphans = checkOrphans('1-1', 'BO (pages/bo + pages/co)', {
@@ -282,5 +298,6 @@ const foUnreachable = checkReachability('4-2', 'FO', {
 
 const total = boOrphans.length + foOrphans.length + boOverlap.length + foOverlap.length + boDups.length + foDups.length;
 console.log(`\n[종합] 1~3단계 치명적 문제 ${total}개 / 4단계 확인 필요(오탐 가능) ${boUnreachable.length + foUnreachable.length}개`);
+console.log('◀ 완료');
 // 4단계(도달 불가)는 오탐 가능성이 있는 "확인 필요" 목록이라 exit code 실패 판정에는 포함하지 않는다.
 process.exit(total > 0 ? 1 : 0);

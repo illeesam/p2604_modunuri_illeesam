@@ -1,4 +1,4 @@
-/* buildMinify.js — pages/lib/components 아래 .js 파일을 "번들링 없이" 개별 파일 그대로
+/* build-minify.js — pages/lib/components 아래 .js 파일을 "번들링 없이" 개별 파일 그대로
  * dist/ 밑에 같은 디렉터리 구조로 minify 해서 복사한다.
  *
  * 왜 번들링(여러 파일을 하나로 합치기)을 안 하는가:
@@ -37,10 +37,10 @@
  *   lib/env/profiles/env{Bo,Fo}Consts.{dev,prod}.js 중 해당하는 걸 dist/lib/env/ 자리에
  *   덮어쓴다 — --profile 인자로 고른다(생략 시 'local' = 원본 그대로, 즉 아무 것도 안 덮어씀).
  *
- * 사용법: node scripts/buildMinify.js                    (= npm run build:local, local 프로파일)
- *        node scripts/buildMinify.js --profile=dev       (= npm run build:dev)
- *        node scripts/buildMinify.js --profile=prod      (= npm run build:prod)
- *        node scripts/buildMinify.js --check              (실제로 파일을 안 쓰고 개수만 리포트 — dry run)
+ * 사용법: node scripts/build-minify.js                    (= npm run build:local, local 프로파일)
+ *        node scripts/build-minify.js --profile=dev       (= npm run build:dev)
+ *        node scripts/build-minify.js --profile=prod      (= npm run build:prod)
+ *        node scripts/build-minify.js --check              (실제로 파일을 안 쓰고 개수만 리포트 — dry run)
  */
 const fs = require('fs');
 const path = require('path');
@@ -74,7 +74,24 @@ function walkFiles(dir, ext) {
 }
 const walkJsFiles = (dir) => walkFiles(dir, '.js');
 
+// 2026-09-05: 이 스크립트가 찍는 모든 로그 앞에 파일명 태그를 자동으로 붙인다(console.log/warn/error
+// 를 한 번만 감싸서, 개별 호출부를 전부 고칠 필요 없이 항상 적용되게 함). 맨 앞 개행(\n)은
+// 그대로 유지해서 기존 줄바꿈 스타일(단계 사이 빈 줄)이 안 깨지게 한다.
+const TAG = '[build-minify.js]';
+['log', 'warn', 'error'].forEach((level) => {
+  const orig = console[level].bind(console);
+  console[level] = (first, ...rest) => {
+    if (typeof first === 'string') {
+      const m = first.match(/^\n+/);
+      orig(m ? m[0] + TAG + ' ' + first.slice(m[0].length) : TAG + ' ' + first, ...rest);
+    } else {
+      orig(TAG, first, ...rest);
+    }
+  };
+});
+
 async function main() {
+  console.log(`▶ 시작 : pages/lib/components 아래 JS 파일 압축(minify)해서 dist/ 생성 (profile=${PROFILE})`);
   if (!VALID_PROFILES.includes(PROFILE)) {
     console.error(`❌ 알 수 없는 --profile 값: '${PROFILE}' (사용 가능: ${VALID_PROFILES.join(', ')})`);
     process.exit(1);
@@ -213,6 +230,7 @@ async function main() {
     console.log('   다음: npm run verify-dist 로 lazy 클래스 매핑이 minify 후에도 살아있는지 확인할 것');
     console.log('   그 다음: dist/bo.html 또는 dist/index.html 을 Live Server 로 열어 직접 확인 가능');
   }
+  console.log('◀ 완료');
 }
 
 main();

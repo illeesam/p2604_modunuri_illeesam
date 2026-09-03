@@ -1,9 +1,9 @@
-/* ShopJoy FO - lazy-load 대상 클래스 맵 (scripts/generateFoLazyClasses.js 로 자동 생성 — 손으로 고치지 말 것!)
-   FO 화면을 추가할 때 사람이 손대는 파일은 scripts/generateFoLazyClasses.js 하나뿐이다:
+/* ShopJoy FO - lazy-load 대상 클래스 맵 (scripts/generate-fo-lazy-classes.js 로 자동 생성 — 손으로 고치지 말 것!)
+   FO 화면을 추가할 때 사람이 손대는 파일은 scripts/generate-fo-lazy-classes.js 하나뿐이다:
      1) 화면 소스 작성 (pages/fo/...)
-     2) generateFoLazyClasses.js 상단 FO_PAGE_TO_CLASS_STATIC 에 pageId: 'ClassName' 한 줄 추가
+     2) generate-fo-lazy-classes.js 상단 FO_PAGE_TO_CLASS_STATIC 에 pageId: 'ClassName' 한 줄 추가
         (등록 태그명이 파일 내부 window 전역명과 다르면 FO_REG_TO_GLOBAL 에도 추가)
-     3) node scripts/generateFoLazyClasses.js (또는 npm run gen-fo-lazy) 실행
+     3) node scripts/generate-fo-lazy-classes.js (또는 npm run gen-fo-lazy) 실행
    이 파일(foAppLazyClasses.js) 은 그 결과물이라 재생성될 때마다 전체가 덮어써진다.
    아래 각 블록 위 주석에 무슨 용도인지 설명해뒀다. */
 
@@ -59,7 +59,7 @@ window.FO_LAZY_CLASS_FILES = {
 /* FO_REG_TO_GLOBAL — "등록명(태그 기준) → 실제 window 전역 변수명" 매핑.
    대부분은 등록명과 파일 내부 window 전역명이 같아서(예: Cart → window.Cart) 필요 없지만,
    극소수(예: <blog-page> 태그인데 파일은 window.Blog) 는 다를 수 있어 여기서 보정한다.
-   자동 계산 불가 — 새로 이런 케이스가 생기면 generateFoLazyClasses.js 상단에 직접 추가. */
+   자동 계산 불가 — 새로 이런 케이스가 생기면 generate-fo-lazy-classes.js 상단에 직접 추가. */
 window.FO_REG_TO_GLOBAL = {
   AboutPage: "About",
   BlogPage: "Blog",
@@ -77,7 +77,7 @@ window.FO_REG_TO_GLOBAL = {
    foAppBase.js 가 navigate()/URL 복원 시 이 값으로 어떤 클래스를 로드해야 할지 찾는다.
    BO 의 BO_APP_COMP_PAGE 와 같은 역할이지만, FO 는 kebab 태그 매핑 테이블이 따로 없어서
    pageId 가 바로 등록명으로 연결된다. 새 "최상위 페이지" 추가 시 사람이 결정해서 넣는
-   유일한 정보 — 이 파일 말고 scripts/generateFoLazyClasses.js 상단의
+   유일한 정보 — 이 파일 말고 scripts/generate-fo-lazy-classes.js 상단의
    FO_PAGE_TO_CLASS_STATIC 에 추가할 것(하위 임베드 컴포넌트는 여기 안 넣어도 자동탐지됨). */
 window.FO_PAGE_TO_CLASS = {
   about: "AboutPage",

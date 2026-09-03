@@ -12,7 +12,7 @@
  * ⭐ 프로파일별 파일 교체 (2026-09-03) ─────────────────────────────────────
  * 이 파일(=local 프로파일, Live Server가 원본을 그대로 로드) 외에 dev/prod 버전이
  * lib/env/profiles/envBoConsts.{dev,prod}.js 에 따로 있다. 배포 빌드 시
- * `npm run build:dev`(또는 build:prod)를 돌리면 scripts/buildMinify.js 가 그
+ * `npm run build:dev`(또는 build:prod)를 돌리면 scripts/build-minify.js 가 그
  * 프로파일 파일을 dist/lib/env/envBoConsts.js 자리에 덮어써서 만든다 — 즉
  * "런타임에 지금이 무슨 환경인지 감지"하는 게 아니라 "빌드할 때 이미 정해서 넣는다."
  * local(Live Server)은 이 빌드 과정을 안 거치고 이 파일을 원본 그대로 쓰므로,

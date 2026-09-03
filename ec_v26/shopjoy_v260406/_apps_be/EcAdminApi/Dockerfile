@@ -2,7 +2,7 @@
 #  ShopJoy EcAdminApi - Dockerfile
 # ═══════════════════════════════════════════════════════════
 #  2026-09-05: 멀티스테이지(컨테이너 안에서 gradlew bootJar 재빌드) → 단일스테이지로
-#  단순화. 이 프로젝트가 백엔드를 배포하는 두 경로(직접 SSH — scripts/deployDevSynolBe.js
+#  단순화. 이 프로젝트가 백엔드를 배포하는 두 경로(직접 SSH — scripts/deploy-dev-synol-be.js
 #  / GitHub Actions CI — shopjoy-be-illeesam-synol-deploy.yml) 는 **둘 다 Docker 빌드
 #  이전에 이미 로컬 또는 CI 러너에서 gradlew bootJar 로 jar 를 먼저 만들어서 build
 #  context 에 포함시켜둔다** — 그러니 이 Dockerfile 이 컨테이너 안에서 Gradle 로 또

@@ -168,7 +168,7 @@
           Array.from(autoKeptTabIds).forEach((id) => { if (!liveIds.has(id)) autoKeptTabIds.delete(id); });
         }
       );
-      /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppLazyClasses.js, scripts/generateBoLazyClasses.js 산출물) ── */
+      /* ── 페이지-컴포넌트 매핑 (→ lib/app/boAppLazyClasses.js, scripts/generate-bo-lazy-classes.js 산출물) ── */
       const PAGE_COMP_MAP = window.BO_APP_COMP_PAGE;
 
       /* ── Lazy 로드 2차 개정 (2026-08-30, shopjoy_v260406_lazy 전용) ──────────────────

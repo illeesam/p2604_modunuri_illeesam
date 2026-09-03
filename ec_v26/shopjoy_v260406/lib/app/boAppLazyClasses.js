@@ -1,8 +1,8 @@
-/* ShopJoy BO - 페이지 라우팅 + lazy-load 클래스 맵 (scripts/generateBoLazyClasses.js 로 자동 생성 — 손으로 고치지 말 것!)
-   BO 화면을 추가할 때 사람이 손대는 파일은 scripts/generateBoLazyClasses.js 하나뿐이다:
+/* ShopJoy BO - 페이지 라우팅 + lazy-load 클래스 맵 (scripts/generate-bo-lazy-classes.js 로 자동 생성 — 손으로 고치지 말 것!)
+   BO 화면을 추가할 때 사람이 손대는 파일은 scripts/generate-bo-lazy-classes.js 하나뿐이다:
      1) 화면 소스 작성 (pages/bo/... 또는 pages/co/...)
-     2) generateBoLazyClasses.js 상단 BO_APP_COMP_PAGE 에 pageId: 'kebab-태그명' 한 줄 추가
-     3) node scripts/generateBoLazyClasses.js (또는 npm run gen-bo-lazy) 실행
+     2) generate-bo-lazy-classes.js 상단 BO_APP_COMP_PAGE 에 pageId: 'kebab-태그명' 한 줄 추가
+     3) node scripts/generate-bo-lazy-classes.js (또는 npm run gen-bo-lazy) 실행
    이 파일(boAppLazyClasses.js) 은 그 결과물이라 재생성될 때마다 전체가 덮어써진다.
    아래 각 블록 위 주석에 무슨 용도인지 설명해뒀다.
    예외(그대로 eager 유지, 자동탐지가 원리상 못 찾는 순수 JS 호출 파일): ZdSimulBase.js /
@@ -11,7 +11,7 @@
 /* BO_APP_COMP_PAGE — "pageId(화면 식별자) → kebab-case 태그명" 매핑.
    boAppBase.js 의 탭 라우팅(<component :is="PAGE_COMP_MAP[pageId]">)이 이 값으로
    실제 렌더링할 컴포넌트 태그를 찾는다. 새 화면 추가 시 사람이 결정해서 넣는 유일한 정보 —
-   이 파일 말고 scripts/generateBoLazyClasses.js 상단의 BO_APP_COMP_PAGE 에 추가할 것. */
+   이 파일 말고 scripts/generate-bo-lazy-classes.js 상단의 BO_APP_COMP_PAGE 에 추가할 것. */
 window.BO_APP_COMP_PAGE = {
   appMonitorDashboard: "dashboard-bo-app-monitor",
   cmBlogMng: "cm-blog-mng",

@@ -1,7 +1,7 @@
 /* ShopJoy - 외부 연동 상수 모음 (BO / envBoConsts) — prod 프로파일
  * ─────────────────────────────────────────────────────────────────────────
  * ⭐ 이 파일은 원본이 아니라 "빌드용 프로파일"이다. `npm run build:prod` 실행 시
- * scripts/buildMinify.js 가 이 파일을 dist/lib/env/envBoConsts.js 자리에 그대로
+ * scripts/build-minify.js 가 이 파일을 dist/lib/env/envBoConsts.js 자리에 그대로
  * 복사해서 원본(lib/env/envBoConsts.js, local 프로파일)을 덮어쓴다.
  * 원본 파일과 구조가 동일해야 한다 — 필드를 추가/삭제하면 여기도 맞춰 수정할 것.
  * 원본(local)에 있는 각 필드의 설명 주석은 원본 파일 참조, 여기서는 prod 전용 값만 표시.

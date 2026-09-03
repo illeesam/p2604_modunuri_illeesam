@@ -1,4 +1,4 @@
-/* synologyDeployUtil.js — deployDevSynolBe.js / deployDevSynolFe.js 가 공유하는
+/* synology-deploy-util.js — deploy-dev-synol-be-api.js / deploy-dev-synol-fe-vue3cdn.js 가 공유하는
  * SSH/SFTP 헬퍼. NAS 접속정보 로드 + SFTP 업로드 + SSH 명령 실행을 여기 한 곳에 모아서
  * 두 스크립트가 똑같은 접속 로직을 중복해서 들고 있지 않게 한다(직접 실행 대상 아님).
  *
@@ -39,23 +39,40 @@ const PORT = Number(process.env.SYNOLOGY_PORT || 22);
 const USER = process.env.SYNOLOGY_USER;
 const PASSWORD = process.env.SYNOLOGY_PASSWORD;
 
-function fail(msg) {
-  console.error(`❌ ${msg}`);
+// 2026-09-05: 이 파일이 직접 찍는 로그(캐일러가 자기 TAG를 안 넘겨준 경우)의 기본 태그.
+// run()/fail() 은 호출부(deploy-dev-synol-be-api.js 등)가 자기 TAG 를 3번째 인자로 넘겨주면
+// 그걸 쓰고, 안 넘겨주면 이 파일 자신의 이름을 쓴다 — "모든 로그 앞에 어느 파일에서 난
+// 건지 항상 표시"하되, 실제로 그 동작을 시킨 스크립트가 있으면 그 스크립트 이름이
+// 더 유용한 정보이므로 우선한다.
+const SELF_TAG = '[synology-deploy-util.js]';
+
+// 2026-09-05: 비밀번호를 콘솔에 그대로 찍지 않기 위한 마스킹 — 앞쪽 절반만 보여주고
+// 뒤쪽 절반은 길이와 무관하게 고정 '***' 로 가린다(뒷부분 길이까지 유추되지 않게).
+function maskPassword(pw) {
+  if (!pw) return '(미설정)';
+  const showLen = Math.ceil(pw.length / 2);
+  return pw.slice(0, showLen) + '***';
+}
+
+function fail(msg, tag = SELF_TAG) {
+  console.error(`${tag} ❌ ${msg}`);
   process.exit(1);
 }
 
 function requireCreds(scriptName) {
+  const tag = `[${scriptName.split('/').pop()}]`;
   if (!HOST || !USER || !PASSWORD) {
     fail(
       `NAS 접속정보가 없습니다. scripts/.synology-deploy.env 파일을 만들거나 환경변수를 설정하세요.\n` +
       `   필요한 값: SYNOLOGY_HOST, SYNOLOGY_PORT, SYNOLOGY_USER, SYNOLOGY_PASSWORD\n` +
-      `   (${scriptName} 상단 주석 참조)`
+      `   (${scriptName} 상단 주석 참조)`,
+      tag
     );
   }
-  // 2026-09-05: 지금 어느 NAS/계정으로 접속하는지 콘솔에서 바로 보이게(비밀번호는 절대 출력 안 함) —
-  // deploy:dev-synol-be/fe/full 이 여러 스크립트를 순서대로 실행할 때, 각 단계가 실제로 어떤
-  // host/port/계정을 쓰는지 헷갈리지 않게 하기 위함.
-  console.log(`[접속정보] HOST=${HOST} PORT=${PORT} USER=${USER}`);
+  // 2026-09-05: 지금 어느 NAS/계정으로 접속하는지 콘솔에서 바로 보이게(비밀번호는 뒤쪽 절반
+  // *** 마스킹) — deploy:dev-synol-be-api/fe/full 이 여러 스크립트를 순서대로 실행할 때, 각
+  // 단계가 실제로 어떤 host/port/계정을 쓰는지 헷갈리지 않게 하기 위함.
+  console.log(`${tag}[접속정보] HOST=${HOST} PORT=${PORT} USER=${USER} PASSWORD=${maskPassword(PASSWORD)}`);
 }
 
 /* SFTP 는 Synology 특성상 /volume1 을 접속 루트(/)로 취급한다 — 실경로에서 /volume1 을 뗀
@@ -64,23 +81,29 @@ function toSftpPath(realPath) {
   return realPath.replace(/^\/volume1/, '');
 }
 
-function run(cmd, cwd) {
-  console.log(`  $ ${cmd}`);
+function run(cmd, cwd, tag = SELF_TAG) {
+  console.log(`${tag}   $ ${cmd}`);
   execSync(cmd, { cwd: cwd || ROOT, stdio: 'inherit' });
 }
 
-/* SSH 연결 하나를 열고, sftpPut(여러 건) → exec(순차 여러 명령) 을 차례로 수행한 뒤 닫는다. */
-function withSsh(uploads, commands) {
+/* SSH 연결 하나를 열고, sftpPut(여러 건) → exec(순차 여러 명령) 을 차례로 수행한 뒤 닫는다.
+   tag: 호출한 스크립트를 식별하는 접두어(예: "[deploy-dev-synol-be-api.js][BE]") — 이 함수가 찍는
+   모든 로그 줄(사전 준비/전송/NAS 실행/Docker 빌드 단계번호) 앞에 그대로 붙는다. 여러 스크립트가
+   순서대로 돌 때(deploy:dev-synol-full 등) 지금 이 줄이 어느 스크립트에서 나온 건지 바로
+   구분하기 위함(2026-09-05). */
+function withSsh(uploads, commands, tag = SELF_TAG) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
+    console.log(`${tag}[접속 시도] ssh://${USER}:${maskPassword(PASSWORD)}@${HOST}:${PORT}`);
     conn.on('ready', async () => {
+      console.log(`${tag}[접속 성공] SSH 연결 완료 (${USER}@${HOST}:${PORT})`);
       try {
         if (uploads.length) {
           // 2026-09-05: 원격 대상 폴더가 수동 삭제 등으로 없어져 있을 수 있음 — SFTP 는
           // 자기가 알아서 폴더를 안 만들어주므로(없으면 "No such file"), 업로드 시도 전에
           // 항상 실경로 기준으로 mkdir -p 를 먼저 실행해서 보장해둔다. 이미 있으면 무해.
           const dirs = [...new Set(uploads.map((u) => path.posix.dirname(u.remote.replace(/\\/g, '/'))))];
-          console.log(`\n[사전 준비] 업로드 대상 폴더 존재 보장 (mkdir -p)`);
+          console.log(`\n${tag}[사전 준비] 업로드 대상 폴더 존재 보장 (mkdir -p)`);
           await new Promise((res, rej) => {
             conn.exec(`mkdir -p ${dirs.map((d) => `"${d}"`).join(' ')}`, (err, stream) => {
               if (err) return rej(err);
@@ -94,7 +117,7 @@ function withSsh(uploads, commands) {
             });
           });
 
-          console.log(`\n[전송] SFTP 로 ${uploads.length}개 파일 업로드`);
+          console.log(`\n${tag}[전송] SFTP 로 ${uploads.length}개 파일 업로드`);
           await new Promise((res, rej) => {
             conn.sftp((err, sftp) => {
               if (err) return rej(err);
@@ -103,7 +126,7 @@ function withSsh(uploads, commands) {
                 const { local, remote } = uploads[i];
                 const sftpRemote = toSftpPath(remote);
                 const sftpParent = path.posix.dirname(sftpRemote);
-                console.log(`  ㄴ ${path.basename(local)} → ${remote}`);
+                console.log(`${tag}  ㄴ ${path.basename(local)} → ${remote}`);
                 sftp.fastPut(local, sftpRemote, (e) => {
                   if (e) {
                     // 2026-09-05: "No such file" 같은 원문 메시지만으론 어디가 문제인지 알 수
@@ -137,14 +160,29 @@ function withSsh(uploads, commands) {
         }
 
         for (const cmd of commands) {
-          console.log(`\n[NAS 실행] ${cmd.label || cmd.cmd}`);
+          console.log(`\n${tag}[NAS 실행] ${cmd.label || cmd.cmd}`);
           await new Promise((res, rej) => {
             conn.exec(cmd.cmd, (err, stream) => {
               if (err) return rej(err);
               let out = '', errOut = '';
-              stream.on('data', (d) => { out += d.toString(); process.stdout.write(d); });
+              // 2026-09-05: docker buildkit 진행 로그(#1, #2, ... #8 같은 빌드 단계 번호)가
+              // 어느 스크립트/서비스에서 나온 건지 한눈에 안 보여서, 줄 단위로 버퍼링해 "#N"으로
+              // 시작하는 줄만 "tag[#N] 나머지"로 다시 태그를 붙여준다. 나머지 줄(일반 출력)은 그대로.
+              let lineBuf = '';
+              const writeTagged = (dest, text) => {
+                lineBuf += text;
+                let idx;
+                while ((idx = lineBuf.indexOf('\n')) !== -1) {
+                  const line = lineBuf.slice(0, idx);
+                  lineBuf = lineBuf.slice(idx + 1);
+                  const m = line.match(/^(#\d+)\b(.*)$/);
+                  dest.write(m ? `${tag}[${m[1]}]${m[2]}\n` : `${line}\n`);
+                }
+              };
+              stream.on('data', (d) => { const s = d.toString(); out += s; writeTagged(process.stdout, s); });
               stream.stderr.on('data', (d) => { errOut += d.toString(); process.stderr.write(d); });
               stream.on('close', (code) => {
+                if (lineBuf) { process.stdout.write(lineBuf); lineBuf = ''; } // 개행 없이 끝난 마지막 줄도 흘려보냄
                 if (cmd.allowFail !== true && code !== 0) {
                   return rej(new Error(`NAS 명령 실패(exit ${code}): ${cmd.cmd}`));
                 }
@@ -166,4 +204,4 @@ function withSsh(uploads, commands) {
   });
 }
 
-module.exports = { ROOT, HOST, PORT, USER, PASSWORD, fail, requireCreds, toSftpPath, run, withSsh };
+module.exports = { ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh };
