@@ -27,7 +27,9 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<!-- js/utils: 공용 유틸(fetch래퍼/토스트) · js/comp: 재사용 컴포넌트(BoGrid 등) · js/pages: 화면(페이지) 컴포넌트 -->
 <script src="js/utils/logAuth.js"></script>
+<script src="js/comp/BoLite.js"></script>
 <script src="js/pages/LogViewer.js"></script>
 <script>
 const { createApp, ref } = Vue;
@@ -42,6 +44,15 @@ const app = createApp({
     return { currentPage };
   },
 });
+// BoLite.js(경량 로컬 포트) — 메인 프로젝트 bo-grid/bo-page/bo-container 의 columns 속성화
+// 계약을 따르는 이 운영 도구 전용 구현. LogViewer 가 사용(요청사항: "<bo-grid <bo-form <bo-page
+// 이런거 최대한 활용해줘").
+app.component('BoGrid', window.BoGrid);
+app.component('BoFormArea', window.BoFormArea);
+app.component('BoGridCrud', window.BoGridCrud);
+app.component('BoPager', window.BoPager);
+app.component('BoPage', window.BoPage);
+app.component('BoContainer', window.BoContainer);
 app.component('LogViewer', window.LogViewer);
 app.mount('#app');
 </script>

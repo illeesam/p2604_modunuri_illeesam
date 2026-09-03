@@ -91,18 +91,20 @@ window.CfRedisMonitor = {
 
       <!-- ② 결과 -->
       <div class="card" v-if="uiState.tested">
-        <table class="kv-table">
-          <tbody>
-            <tr><th>PING</th><td>{{ result.ping }}</td></tr>
-            <tr><th>DB Size(키 개수)</th><td>{{ result.dbSize }}</td></tr>
-            <tr><th>Redis 버전</th><td>{{ result.redisVersion }}</td></tr>
-            <tr><th>역할(role)</th><td>{{ result.role }}</td></tr>
-            <tr><th>연결된 클라이언트 수</th><td>{{ result.connectedClients }}</td></tr>
-            <tr><th>사용 메모리</th><td>{{ result.usedMemoryHuman }}</td></tr>
-            <tr><th>가동일수</th><td>{{ result.uptimeInDays }}</td></tr>
-            <tr><th>OS</th><td>{{ result.osInfo }}</td></tr>
-          </tbody>
-        </table>
+        <div style="overflow-x:auto;">
+          <table class="kv-table">
+            <tbody>
+              <tr><th>PING</th><td>{{ result.ping }}</td></tr>
+              <tr><th>DB Size(키 개수)</th><td>{{ result.dbSize }}</td></tr>
+              <tr><th>Redis 버전</th><td>{{ result.redisVersion }}</td></tr>
+              <tr><th>역할(role)</th><td>{{ result.role }}</td></tr>
+              <tr><th>연결된 클라이언트 수</th><td>{{ result.connectedClients }}</td></tr>
+              <tr><th>사용 메모리</th><td>{{ result.usedMemoryHuman }}</td></tr>
+              <tr><th>가동일수</th><td>{{ result.uptimeInDays }}</td></tr>
+              <tr><th>OS</th><td>{{ result.osInfo }}</td></tr>
+            </tbody>
+          </table>
+        </div>
         <div class="list-toolbar" style="margin-top:10px;">
           <span class="list-title">키 샘플(SCAN, 최대 20개)</span>
         </div>

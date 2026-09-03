@@ -207,3 +207,47 @@ body {
 .admin-table th { background: #fafafa; color: #666; font-weight: 600; }
 
 [hidden] { display: none !important; }
+
+/* ── 반응형(모바일) — 요청사항: "프로그램을 모바일에서도 보게 반응형으로 변경해줘". EcCdnApi
+   의 cf-admin.css 와 동일 규칙(요청사항: "EcCdnApi 프로그램 참고해줘" 관례 연장선). 768px 이하
+   에서는 고정(fixed) 헤더/사이드바 레이아웃을 세로 흐름(헤더 → 가로스크롤 메뉴 → 본문)으로
+   바꾼다. 표/kv-table 가로 스크롤이 필요한 화면은 템플릿에서 <div style="overflow-x:auto;">
+   로 감싸는 쪽으로 처리(display:block 을 <table> 에 직접 주면 표 레이아웃이 깨져서 금지). ── */
+@media (max-width: 768px) {
+  .shell-header {
+    position: static;
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+  .shell-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 6px 8px;
+  }
+  .shell-sidebar .menu-group-label { display: none; }
+  .shell-sidebar .menu-item {
+    display: inline-block;
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border-right: none;
+    border-bottom: 3px solid transparent;
+  }
+  .shell-sidebar .menu-item.active { border-right-color: transparent; border-bottom-color: #e91e63; }
+  .shell-main {
+    margin-left: 0;
+    margin-top: 0;
+    height: auto;
+    min-height: 0;
+    padding: 12px;
+  }
+  .page-title { font-size: 17px; }
+  .form-row { grid-template-columns: 1fr; }
+  .search-bar input[type="text"] { min-width: 140px; }
+}

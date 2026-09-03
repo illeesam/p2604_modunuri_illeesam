@@ -31,7 +31,7 @@
      http://localhost:${server.port}/cf/file/{fileId}
      http://localhost:${server.port}/cf/thumbnail/{fileId}
      http://localhost:${server.port}/cf/stream/{fileId}
-     http://localhost:${server.port}/index.html          (관리자 화면 — 로그인 불필요)
+     http://localhost:${server.port}/home/index.html      (관리자 화면 — 로그인 불필요, 2026-09-06: static/home/ 로 이동)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
  EcCdnApi 는 EcAdminApi 와 완전히 분리된 별도 배포 단위(별도 docker-compose.yml, 별도 포트) —

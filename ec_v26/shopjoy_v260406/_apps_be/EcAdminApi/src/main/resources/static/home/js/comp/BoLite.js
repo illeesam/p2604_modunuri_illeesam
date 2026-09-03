@@ -1,12 +1,10 @@
 /* BoLite.js — 메인 프로젝트(shopjoy_v260406)의 components/comp/{BoAreaComp,BoComp}.js 가 정의하는
  * BoGrid / BoFormArea / BoGridCrud / BoPager / BoPage / BoContainer 의 "columns 속성화" 계약
- * (키/라벨/타입/fmt/badge/align 등)을 그대로 따르는 EcCdnApi 전용 경량 로컬 포트다. 원본은 Pinia
- * 스토어·coUtil·boUtil 등 메인 프로젝트 전역에 깊이 의존해 EcCdnApi(완전 별도 배포 단위, 그런
- * 전역이 아예 없음)에 그대로 옮길 수 없어서, 이 화면들에 실제로 필요한 기능만 골라 독립
- * 구현했다. BoPager 는 원본이 자체 완결형(외부 의존 없음)이라 그대로 포팅했다.
- * BoPage/BoContainer 는 원본의 PDF다운로드/카카오톡공유(coExtSdk 등 이 앱에 없는 전역 의존)를
- * 빼고 제목·설명바·카드 래퍼 골격만 이식했다.
- * (2026-09-06: "<bo-grid <bo-grid-crud <bo-form <bo-pager <bo-page 적극적용해줘" 요청사항)
+ * (키/라벨/타입/fmt/badge/align 등)을 그대로 따르는 EcAdminApi 운영 도구 전용 경량 로컬 포트다.
+ * EcCdnApi 의 static/home/js/comp/BoLite.js 를 그대로 참고해 이식했다(요청사항: "EcCdnApi
+ * 프로그램 참고해줘" 관례 연장선 + "<bo-grid <bo-form <bo-page 이런거 최대한 활용해줘"). 원본은
+ * Pinia 스토어·coUtil·boUtil 등 메인 프로젝트 전역에 깊이 의존해 이 운영 도구(완전 별도 배포
+ * 단위, 그런 전역이 아예 없음)에 그대로 옮길 수 없어서, 필요한 기능만 골라 독립 구현했다.
  */
 (function (global) {
   const { computed } = Vue;
@@ -142,12 +140,11 @@
     `,
   };
 
-  /** BoGridCrud(경량판) — cf_client 처럼 행 수가 적은 참조성 테이블을 위한 인라인 편집 그리드.
-   *  EcCdnApi 는 EcAdminApi 식 saveList(배치) 엔드포인트가 없고 단건 REST(POST/PUT/DELETE)만
-   *  있으므로, "전체 일괄저장" 대신 행 단위로 @save-row/@cancel-row/@delete-row 를 emit 해
-   *  부모가 그 행 하나에 대해서만 API 를 호출하게 한다(원본 bo-grid-crud 의 배치저장과 다른 점).
-   *  columns: [{key,label,type,options?,editable?(기본 true),fmt?}]. rows 의 각 행은
-   *  _editing/_isNew 플래그로 편집 상태를 표시한다(부모가 셋업). */
+  /** BoGridCrud(경량판) — 행 수가 적은 참조성 테이블을 위한 인라인 편집 그리드. 단건 REST
+   *  (POST/PUT/DELETE) 전제로 행 단위 @save-row/@cancel-row/@delete-row 를 emit 해 부모가
+   *  그 행 하나에 대해서만 API 를 호출하게 한다. columns: [{key,label,type,options?,
+   *  editable?(기본 true),fmt?}]. rows 의 각 행은 _editing/_isNew 플래그로 편집 상태를 표시한다
+   *  (부모가 셋업). */
   global.BoGridCrud = {
     props: {
       columns: { type: Array, required: true },
@@ -248,7 +245,7 @@
     },
   };
 
-  /** BoPage(경량판) — 화면 최상단 타이틀 표준 헤더. 원본 window.BoPage 중 이 앱들엔 없는
+  /** BoPage(경량판) — 화면 최상단 타이틀 표준 헤더. 원본 window.BoPage 중 이 앱에는 없는
    *  전역(PDF 다운로드용 boUtil.bofExportPdf, 카카오톡 공유용 coExtSdk)에 의존하는 기능은 빼고
    *  제목 + 선택적 설명바(descSummary/descDetail, ▼더보기 토글)만 이식했다. */
   global.BoPage = {

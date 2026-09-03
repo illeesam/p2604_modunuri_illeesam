@@ -47,14 +47,16 @@ window.CfConfigViewer = {
       </div>
 
       <div class="card">
-        <table class="kv-table">
-          <tbody>
-            <tr v-for="[k, v] in configMap.entries" :key="k">
-              <th>{{ k }}</th>
-              <td :class="fnIsRedacted(v) ? 'redacted' : ''">{{ v == null ? '-' : v }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div style="overflow-x:auto;">
+          <table class="kv-table">
+            <tbody>
+              <tr v-for="[k, v] in configMap.entries" :key="k">
+                <th>{{ k }}</th>
+                <td :class="fnIsRedacted(v) ? 'redacted' : ''">{{ v == null ? '-' : v }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `,

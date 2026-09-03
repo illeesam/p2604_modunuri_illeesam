@@ -3,6 +3,11 @@
  * 참고해줘"). 인증없이 누구나 조회 가능(요청사항) — /api/co/** 전체가 permitAll.
  * 일반 로그(ecadminapi.log) / 에러 로그(ecadminapi-error.log) 탭 전환 + 줄수 선택 + 자동새로고침 +
  * 클라이언트측 레벨/키워드 필터.
+ *
+ * 2026-09-06: <bo-page>(제목) + <bo-container>(카드 영역 3개) + <bo-grid>(파일 정보 목록) 로
+ * 재구성(요청사항: "<bo-grid <bo-form <bo-page 이런거 최대한 활용해줘"). 필터 영역은 단일
+ * 검색어/토글 몇 개뿐이라 bo-form-area(컬럼 정의가 필요한 Dtl 폼 전용)를 억지로 쓰지 않고
+ * bo-container 의 검색란(search-bar) 관례 그대로 유지했다.
  */
 window.LogViewer = {
   setup() {
@@ -17,6 +22,15 @@ window.LogViewer = {
     const logState = reactive({ fileName: '', exists: true, returnedLines: 0, raw: [] });
     const logBoxEl = ref(null);
     let timer = null;
+
+    // bo-grid 컬럼 정의(요청사항 — <bo-grid 적극적용) — 파일 정보(일반/에러 로그 2행) 표시용.
+    const fileInfoGridColumns = [
+      { key: 'label', label: '구분' },
+      { key: 'fileName', label: '파일명' },
+      { key: 'sizeLabel', label: '크기', fmt: (r) => (r.exists ? r.sizeLabel : '-') },
+      { key: 'lastModified', label: '최종수정', fmt: (r) => (r.exists ? (r.lastModified || '-') : '-') },
+      { key: 'exists', label: '상태', badge: (r) => (r.exists ? 'badge-green' : 'badge-gray'), fmt: (r) => (r.exists ? '있음' : '파일 없음') },
+    ];
 
     // 2) fn* 순수 유틸
     const LEVELS = ['ALL', 'ERROR', 'WARN', 'INFO', 'DEBUG'];
@@ -86,21 +100,20 @@ window.LogViewer = {
     onBeforeUnmount(fnStopAuto);
 
     return {
-      uiState, fileInfoList, logState, logBoxEl, LEVELS,
+      uiState, fileInfoList, logState, logBoxEl, LEVELS, fileInfoGridColumns,
       fnLevelOf, fnLevelClass, cfFilteredLines,
       onSelectFile, onLinesChange, onRefresh, onSelectLevel, onToggleAutoRefresh,
     };
   },
   template: `
     <div>
-      <div class="page-title">🪵 로그뷰어 <span style="font-size:12px;color:#999;font-weight:400;">— ecadminapi.log / ecadminapi-error.log (인증 불필요)</span></div>
+      <bo-page title="🪵 로그뷰어" desc-summary="ecadminapi.log / ecadminapi-error.log (인증 불필요)" />
 
       <!-- ① 파일 선택 + 정보 -->
-      <div class="card">
-        <div class="search-bar">
+      <bo-container title="파일 선택">
+        <template #toolbar-actions>
           <button class="btn" :class="uiState.fileKey === 'app' ? 'btn_search' : 'btn_reset'" @click="onSelectFile('app')">일반 로그</button>
           <button class="btn" :class="uiState.fileKey === 'error' ? 'btn_search' : 'btn_reset'" @click="onSelectFile('error')">에러 로그</button>
-          <span style="flex:1"></span>
           <select class="form-control" style="width:auto;" v-model.number="uiState.lines" @change="onLinesChange">
             <option :value="100">100줄</option>
             <option :value="200">200줄</option>
@@ -109,16 +122,12 @@ window.LogViewer = {
             <option :value="2000">2000줄</option>
           </select>
           <button class="btn btn_search" :disabled="uiState.loading" @click="onRefresh">{{ uiState.loading ? '조회 중...' : '새로고침' }}</button>
-        </div>
-        <div style="font-size:12px;color:#999;margin-top:6px;">
-          <span v-for="f in fileInfoList.list" :key="f.key" style="margin-right:16px;">
-            {{ f.label }}({{ f.fileName }}): {{ f.exists ? (f.sizeLabel + ' · ' + (f.lastModified || '-')) : '파일 없음' }}
-          </span>
-        </div>
-      </div>
+        </template>
+        <bo-grid :columns="fileInfoGridColumns" :rows="fileInfoList.list" row-key="key" :show-row-no="false" empty-text="파일 정보를 불러오는 중입니다." />
+      </bo-container>
 
       <!-- ② 필터 -->
-      <div class="card">
+      <bo-container title="필터">
         <div class="search-bar">
           <button v-for="lv in LEVELS" :key="lv" class="btn btn-sm"
             :class="uiState.levelFilter === lv ? 'btn_search' : 'btn_reset'"
@@ -132,17 +141,14 @@ window.LogViewer = {
             <input type="checkbox" v-model="uiState.autoRefresh" @change="onToggleAutoRefresh" /> 자동 새로고침(5초)
           </label>
         </div>
-      </div>
+      </bo-container>
 
       <!-- ③ 로그 본문 -->
-      <div class="card">
-        <div class="list-toolbar">
-          <span class="list-count">{{ logState.fileName }} — 조회 {{ logState.returnedLines }}줄 중 표시 {{ cfFilteredLines().length }}줄</span>
-        </div>
+      <bo-container title="로그 본문" :count-text="'조회 ' + logState.returnedLines + '줄 중 표시 ' + cfFilteredLines().length + '줄 (' + logState.fileName + ')'">
         <div v-if="!logState.exists" class="empty-hint">로그 파일이 아직 없습니다.</div>
         <pre v-else ref="logBoxEl" class="log-box"><span v-for="(line, idx) in cfFilteredLines()" :key="idx" :class="fnLevelClass(fnLevelOf(line))">{{ line }}
 </span></pre>
-      </div>
+      </bo-container>
     </div>
   `,
 };
