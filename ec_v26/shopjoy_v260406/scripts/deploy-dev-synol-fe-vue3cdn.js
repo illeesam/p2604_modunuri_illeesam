@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { ROOT, run, withSsh, requireCreds } = require('./synology-deploy-util');
+const { notifyDeployResult } = require('./notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-fe-vue3cdn.js');
 
@@ -113,9 +114,21 @@ function fmtElapsed() {
     console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
     console.log(`${TAG}   HTTP  : http://illeesam.synology.me:21000/index.html , /bo.html`);
     console.log(`${TAG}   HTTPS : https://21000.illeesam.synology.me/index.html , /bo.html  (로그인은 이쪽 필수)`);
+    await notifyDeployResult({
+      tag: TAG, scriptName: '프론트(FO/BO)', success: allOk, elapsed: fmtElapsed(),
+      detail: allOk
+        ? `헬스체크 정상 — https://21000.illeesam.synology.me/index.html , /bo.html`
+        : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus} api=${apiStatus}`,
+      npmScript: 'deploy:dev-synol-fe-vue3cdn',
+    });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
+    await notifyDeployResult({
+      tag: TAG, scriptName: '프론트(FO/BO)', success: false, elapsed: fmtElapsed(),
+      detail: `오류: ${e.message}`,
+      npmScript: 'deploy:dev-synol-fe-vue3cdn',
+    });
     process.exit(1);
   }
 })();

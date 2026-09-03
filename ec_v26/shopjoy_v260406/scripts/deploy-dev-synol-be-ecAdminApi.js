@@ -14,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT, fail, requireCreds, run, withSsh } = require('./synology-deploy-util');
+const { notifyDeployResult } = require('./notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecAdminApi.js');
 
@@ -115,9 +116,19 @@ function fmtElapsed() {
     console.log(`${TAG}   헬스체크 : http://illeesam.synology.me:21080/actuator/health`);
     console.log(`${TAG}   테스트 API(공통코드 페이징, 로그인 불필요):`);
     console.log(`${TAG}     http://illeesam.synology.me:21080/api/co/sy/code/page?pageNo=1&pageSize=10`);
+    await notifyDeployResult({
+      tag: TAG, scriptName: '백엔드(EcAdminApi)', success: true, elapsed: fmtElapsed(),
+      detail: `헬스체크: http://illeesam.synology.me:21080/actuator/health`,
+      npmScript: 'deploy:dev-synol-be-ecAdminApi',
+    });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
+    await notifyDeployResult({
+      tag: TAG, scriptName: '백엔드(EcAdminApi)', success: false, elapsed: fmtElapsed(),
+      detail: `오류: ${e.message}`,
+      npmScript: 'deploy:dev-synol-be-ecAdminApi',
+    });
     process.exit(1);
   }
 })();

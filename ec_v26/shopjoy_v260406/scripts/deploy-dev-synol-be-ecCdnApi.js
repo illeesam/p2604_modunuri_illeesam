@@ -18,6 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ROOT, fail, requireCreds, run, withSsh } = require('./synology-deploy-util');
+const { notifyDeployResult } = require('./notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecCdnApi.js');
 
@@ -92,9 +93,19 @@ function fmtElapsed() {
     console.log(`\n${TAG}[완료] EcCdnApi 배포 끝 (총 소요 ${fmtElapsed()})`);
     console.log(`${TAG}   헬스체크(디버그 직접): http://illeesam.synology.me:21090/actuator/health`);
     console.log(`${TAG}   공개 경로(nginx 경유): https://21000.illeesam.synology.me/cf/file/{fileId}`);
+    await notifyDeployResult({
+      tag: TAG, scriptName: 'EcCdnApi', success: true, elapsed: fmtElapsed(),
+      detail: `헬스체크: http://illeesam.synology.me:21090/actuator/health`,
+      npmScript: 'deploy:dev-synol-be-ecCdnApi',
+    });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
+    await notifyDeployResult({
+      tag: TAG, scriptName: 'EcCdnApi', success: false, elapsed: fmtElapsed(),
+      detail: `오류: ${e.message}`,
+      npmScript: 'deploy:dev-synol-be-ecCdnApi',
+    });
     process.exit(1);
   }
 })();
