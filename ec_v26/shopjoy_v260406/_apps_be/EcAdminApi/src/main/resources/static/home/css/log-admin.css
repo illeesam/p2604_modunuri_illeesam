@@ -1,0 +1,209 @@
+/* log-admin.css — EcAdminApi 운영 화면(로그뷰어 등) 공통 스타일. EcCdnApi 의
+   cf-admin.css(_apps_be/EcCdnApi/src/main/resources/static/css/cf-admin.css) 를 그대로
+   참고해 포팅했다(요청사항: "EcCdnApi 프로그램 참고해줘"). 빌드 없는 독립 정적 페이지라
+   프레임워크 없이 순수 CSS — 흰 카드 + 옅은 회색 배경 + 핑크 계열 primary 버튼. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  background: #f4f5f7;
+  color: #333;
+  font-size: 14px;
+}
+
+/* ── 화면 프레임(상단 헤더 / 좌측 사이드바 / 중앙 콘텐츠) ───────────────── */
+.shell-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+.shell-header .brand { font-size: 16px; font-weight: 700; color: #222; }
+.shell-header .brand .sub { font-size: 12px; color: #999; font-weight: 400; margin-left: 8px; }
+
+.shell-sidebar {
+  position: fixed;
+  top: 56px; bottom: 0; left: 0;
+  width: 210px;
+  background: #fff;
+  border-right: 1px solid #eee;
+  padding: 14px 0;
+  overflow-y: auto;
+  z-index: 90;
+}
+.shell-sidebar .menu-group-label {
+  padding: 6px 20px;
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.shell-sidebar .menu-item {
+  display: block;
+  padding: 10px 20px;
+  color: #555;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 13px;
+  border-right: 3px solid transparent;
+}
+.shell-sidebar .menu-item:hover { background: #f7f7f9; }
+.shell-sidebar .menu-item.active {
+  background: #fdeef3;
+  color: #e91e63;
+  font-weight: 700;
+  border-right-color: #e91e63;
+}
+
+.shell-main {
+  margin-left: 210px;
+  margin-top: 56px;
+  min-height: calc(100vh - 56px);
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 20px;
+  background: #f4f5f7;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+}
+
+/* ── 카드(공용) ───────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── 검색란/폼 ────────────────────────────────────────────── */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.search-bar input[type="text"],
+.search-bar select {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.search-bar input[type="text"] { flex: 1; min-width: 180px; }
+
+.list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.list-count { font-size: 12px; color: #888; }
+.list-title { font-size: 15px; font-weight: 700; }
+.empty-hint { color: #aaa; text-align: center; padding: 30px 0; font-size: 13px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.span-2 { grid-column: span 2; }
+.form-group.span-3 { grid-column: span 3; }
+.form-label { font-size: 12px; color: #666; font-weight: 600; }
+.form-control {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.form-control:disabled { background: #f7f7f7; color: #999; }
+.form-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+
+/* ── 페이지네이션(<bo-pager>) — 메인 프로젝트 계약과 동일 ───────────────── */
+.pagination { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 14px; padding: 3px 10px; }
+.pagination .pager { justify-self: center; }
+.pager-left .list-count { font-size: 12px; color: #999; white-space: nowrap; }
+.pager-right { display: flex; justify-content: flex-end; align-items: center; }
+.pager { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.pager button { min-width: 26px; height: 26px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.pager button.active { background: #e91e63; color: #fff; border-color: #e91e63; font-weight: 700; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.size-select { padding: 3px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+
+/* ── 버튼(공용) ───────────────────────────────────────────── */
+.btn { border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 600; }
+.btn_search, .btn_save, .btn_select, .btn_confirm { background: linear-gradient(135deg, #ff6fa5, #e91e63); color: #fff; }
+.btn_new { background: linear-gradient(135deg, #6fa8ff, #1a73e8); color: #fff; }
+.btn_edit { background: #4285f4; color: #fff; }
+.btn_delete, .btn_row_delete { background: #e53935; color: #fff; }
+.btn_cancel, .btn_close, .btn_reset { background: #eee; color: #555; }
+.btn_row_edit { background: #4285f4; color: #fff; padding: 4px 10px; font-size: 11px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-xs { padding: 3px 8px; font-size: 11px; }
+
+/* ── 뱃지 ──────────────────────────────────────────────────── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #e6f4ea; color: #1e7e34; }
+.badge-gray  { background: #eee; color: #777; }
+.badge-blue  { background: #e8f0fe; color: #1a73e8; }
+.badge-purple{ background: #f3e8fd; color: #8430ce; }
+.badge-red   { background: #fdecea; color: #c62828; }
+
+.title-link { color: #1a73e8; text-decoration: none; }
+.title-link:hover { text-decoration: underline; }
+
+/* ── 토스트(간이) ─────────────────────────────────────────── */
+#toast {
+  position: fixed; right: 20px; bottom: 20px;
+  background: #323232; color: #fff; padding: 10px 16px; border-radius: 8px;
+  font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.2s;
+  pointer-events: none; max-width: 360px;
+}
+#toast.show { opacity: 1; }
+#toast.error { background: #c62828; }
+
+/* ── 로그뷰어(LogViewer.js) ───────────────────────────────────────────── */
+.log-box {
+  max-height: 600px;
+  overflow: auto;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 12px;
+  border-radius: 6px;
+  white-space: pre;
+  margin: 0;
+}
+.log-line-error { color: #f48771; }
+.log-line-warn { color: #dcdcaa; }
+
+/* ── 설정정보 등 키/값 테이블 공용 ────────────────────────────────────── */
+.kv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.kv-table th, .kv-table td { border-bottom: 1px solid #eee; padding: 6px 10px; text-align: left; vertical-align: top; }
+.kv-table th { width: 260px; color: #666; background: #fafafa; font-weight: 600; white-space: nowrap; }
+.kv-table td { font-family: 'Consolas', 'Monaco', monospace; word-break: break-all; }
+.redacted { color: #bbb; font-style: italic; }
+
+.admin-table { border-collapse: collapse; }
+.admin-table th, .admin-table td { border-bottom: 1px solid #eee; padding: 6px 8px; text-align: left; white-space: nowrap; }
+.admin-table th { background: #fafafa; color: #666; font-weight: 600; }
+
+[hidden] { display: none !important; }

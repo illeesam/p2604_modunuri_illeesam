@@ -1,8 +1,24 @@
 # application-dev.yml — 개발 서버(NAS dev 배포) 전용.
 # DB 접속은 local 과 동일 기본값(공유 개발DB) 사용. CF_JWT_SECRET 은 dev NAS 의 .env 로 주입 —
 # 여기 기본값을 안 둔 건 dev 컨테이너가 무심코 local 더미 시크릿으로 뜨는 걸 막기 위함.
+spring:
+  # datasource — 공통 application.yml 에 안 두고 프로파일마다 개별 선언(요청사항, EcAdminApi 관례).
+  # p6spy — local 과 동일(요청사항: "개발인 경우" 적용, prod 는 미적용). NAS 컨테이너 로그(docker
+  # logs)에서도 SQL 이 바로 보여야 배포 후 문제 진단이 쉬워서 dev 도 포함.
+  datasource:
+    # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
+    # DB_USERNAME=postgres | DB_PASSWORD=postgresilleesam
+    url: jdbc:p6spy:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgresilleesam}
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+
+server:
+  port: 3000
+
 logging:
   level:
     com.shopjoy.eccdnapi: INFO
+    p6spy: OFF
   file:
     path: /app/logs

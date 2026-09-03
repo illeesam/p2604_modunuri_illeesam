@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS cf_file (
     media_type_cd       VARCHAR(10)   NOT NULL,   -- IMAGE / VIDEO / FILE
     uploader_client_id  VARCHAR(40)   NOT NULL,
     use_yn              VARCHAR(1)    NOT NULL DEFAULT 'Y',
+    reg_by              VARCHAR(40),   -- 등록자(보통 uploader_client_id 와 동일값 — 업로드 요청자)
     reg_date            TIMESTAMP     NOT NULL DEFAULT now(),
+    upd_by              VARCHAR(40),   -- 수정자
     upd_date            TIMESTAMP     NOT NULL DEFAULT now(),
     CONSTRAINT pk_cf_file PRIMARY KEY (file_id),
     CONSTRAINT fk_cf_file_uploader FOREIGN KEY (uploader_client_id) REFERENCES cf_client (client_id)
@@ -32,5 +34,7 @@ COMMENT ON COLUMN cf_file.content_type         IS 'MIME 타입';
 COMMENT ON COLUMN cf_file.media_type_cd        IS '미디어 유형 IMAGE/VIDEO/FILE';
 COMMENT ON COLUMN cf_file.uploader_client_id   IS '업로드 요청한 내부 클라이언트(cf_client.client_id)';
 COMMENT ON COLUMN cf_file.use_yn               IS '사용여부 Y/N(논리 삭제용 — 실제 삭제는 물리삭제가 기본)';
+COMMENT ON COLUMN cf_file.reg_by               IS '등록자';
 COMMENT ON COLUMN cf_file.reg_date             IS '등록일시';
+COMMENT ON COLUMN cf_file.upd_by               IS '수정자';
 COMMENT ON COLUMN cf_file.upd_date             IS '수정일시';

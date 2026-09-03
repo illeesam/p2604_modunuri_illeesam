@@ -11,6 +11,10 @@
 #
 #  DB_* 는 local/dev 기본값이 있어(illeesam.synology.me 공유 개발DB) 안 넘겨도 뜬다.
 #  prod 는 CF_JWT_SECRET 이 기본값 없이 필수 — 안 넘기면 부팅 자체가 안 됨(빠른 오류 감지 의도).
+#
+#  datasource / server.port 는 여기(공통)에 두지 않는다 — EcAdminApi 와 동일 관례(요청사항):
+#  local/dev/prod 프로파일마다 실제 접속정보·포트가 다르므로(dev/prod 는 p6spy 유무도 다름)
+#  각 application-{local,dev,prod}.yml 에서 개별 선언한다.
 # ═══════════════════════════════════════════════════════════════════════════
 
 spring:
@@ -22,11 +26,6 @@ spring:
       # max-request-size 를 파일 크기보다 살짝 크게 둔 건 멀티파트 폼필드(fileName 등) 여유분.
       max-file-size: 120MB
       max-request-size: 125MB
-  datasource:
-    url: jdbc:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgresilleesam}
-    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       # cf_client/cf_file 은 _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 이 기준(source of truth) —
@@ -36,9 +35,6 @@ spring:
     properties:
       hibernate:
         format_sql: false
-
-server:
-  port: 3000
 
 app:
   cf:
@@ -59,7 +55,22 @@ app:
       # refreshToken 은 7일(EcAdminApi 의 BO refreshToken 정책과 별개 — 서비스간 통신용이라
       # EcAdminApi 의 FO 15일/BO 2시간과는 다른 기준으로 임의 설정. 만료되면 재로그인).
       refresh-expiry-ms: 604800000
+  # Redis 인증 캐시 스위치(요청사항: "redis 인증 연동해줘 단 redis switch 될수 있게 해줘") —
+  # EcAdminApi 의 app.redis.* 관례와 동일. enabled=false(기본) 면 CfRedisConfig 의 빈 자체가
+  # 안 뜨고 CfRedisUtil 이 전부 no-op — 로그인/재발급/강제폐기는 이 스위치와 무관하게 항상
+  # DB(cf_token)만으로 정상 동작한다. 실제 Redis 인스턴스가 준비되면 각 프로파일 yml 에서
+  # enabled: true + primary.host/port/password 를 채워 켠다.
+  redis:
+    enabled: false
+    primary:
+      host: ""
+      port: 6379
+      password: ""
+      database: 0
+      timeout: 3000
+    auth-session-seconds: 3600
 
 logging:
+  config: classpath:logback-spring.xml
   file:
     path: logs

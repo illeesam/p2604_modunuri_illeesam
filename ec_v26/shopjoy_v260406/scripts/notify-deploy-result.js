@@ -97,6 +97,26 @@ function sendSlack(text, tag) {
   });
 }
 
+/* [점검 안내] checkUrls: [{url, note}] → 사람이 배포 직후 클릭해서 바로 확인할 수 있는 URL 목록을
+   코멘트와 함께 나열한 블록으로 포맷. 배포 스크립트마다 자기 대상에 맞는 URL/코멘트를 넘긴다
+   (요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘 — 각종 URL 정보가 나열되고 코멘트가
+   있으면되"). */
+function buildInspectionGuide(checkUrls) {
+  if (!checkUrls || checkUrls.length === 0) return '';
+  const lines = checkUrls.map((c) => `  - ${c.url}${c.note ? '  — ' + c.note : ''}`);
+  return `\n\n📋 점검 안내\n${lines.join('\n')}`;
+}
+
+/* [서버/환경 정보] serverInfo: [{label, value}] → 어느 서버에 뭐가 어디로 배포됐는지(호스트, 설치
+   경로, 컨테이너명, 프로파일, DB 등) 한 블록으로 정리. 요청사항: "서버정보 및 설치 경로정보도
+   추가해줘" / "주요 환경정보도 있으면 좋겠어". checkUrls 와 마찬가지로 배포 스크립트가 자기
+   대상에 맞는 항목을 넘긴다. */
+function buildServerInfo(serverInfo) {
+  if (!serverInfo || serverInfo.length === 0) return '';
+  const lines = serverInfo.map((it) => `  - ${it.label}: ${it.value}`);
+  return `\n\n🖥 서버/환경 정보\n${lines.join('\n')}`;
+}
+
 /**
  * notifyDeployResult — 배포 성공/실패 결과를 이메일+Slack 양쪽에 best-effort 로 통지.
  * 자격정보가 없는 채널은 조용히 스킵되고, 이 함수 자체는 절대 예외를 던지지 않는다
@@ -107,18 +127,22 @@ function sendSlack(text, tag) {
  * @param {string} scriptName 사람이 읽을 배포 대상 이름(예: '백엔드(EcAdminApi)')
  * @param {boolean} success   성공 여부
  * @param {string} elapsed    소요시간 문자열(MM:SS)
- * @param {string} [detail]   추가 상세(헬스체크 URL, 에러 메시지 등) — 여러 줄 가능
+ * @param {string} [detail]   추가 상세(헬스체크 결과, 에러 메시지 등) — 여러 줄 가능
+ * @param {Array<{label:string, value:string}>} [serverInfo] 서버/설치경로/환경 정보 항목 목록
+ * @param {Array<{url:string, note?:string}>} [checkUrls] 점검 안내로 나열할 URL + 코멘트 목록
  * @param {string} [npmScript] 실행한 npm 스크립트명(예: 'deploy:dev-synol-fe-vue3cdn') — 제목 끝에 표시
  */
-async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, npmScript }) {
+async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript }) {
   const emoji = success ? '✅' : '❌';
   const statusText = success ? '성공' : '실패';
   const subject = `${emoji} [ShopJoy 배포] ${scriptName} ${statusText} (소요 ${elapsed})`
     + (npmScript ? ` — ${npmScript}` : '');
-  const text = `${scriptName} 배포 ${statusText}\n소요시간: ${elapsed}\n\n${detail || ''}`;
+  const info = buildServerInfo(serverInfo);
+  const guide = buildInspectionGuide(checkUrls);
+  const text = `${scriptName} 배포 ${statusText}\n소요시간: ${elapsed}\n\n${detail || ''}${info}${guide}`;
   await Promise.all([
     sendEmail(subject, text, tag),
-    sendSlack(`${subject}\n${detail || ''}`, tag),
+    sendSlack(`${subject}\n${detail || ''}${info}${guide}`, tag),
   ]);
 }
 

@@ -59,6 +59,11 @@ public class CfJwtProvider {
         return cfProperties.getJwt().getAccessExpiryMs() / 1000;
     }
 
+    /** refresh-expiry-ms 를 초 단위로 — cf_token.refresh_token_exp 계산용. */
+    public long getRefreshExpirySeconds() {
+        return cfProperties.getJwt().getRefreshExpiryMs() / 1000;
+    }
+
     public boolean validate(String token) {
         try {
             Jwts.parser().verifyWith(secretKey()).build().parseSignedClaims(token);

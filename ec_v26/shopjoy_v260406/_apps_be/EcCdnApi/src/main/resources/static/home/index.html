@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EcCdnApi 관리자</title>
+<link rel="stylesheet" href="css/cf-admin.css">
+</head>
+<body>
+<!-- EcCdnApi 관리자 화면 — shopjoy_v260406 의 bo.html 구조(상단헤더 + 좌측메뉴 + 우측콘텐츠,
+     PAGE_COMP_MAP + <component :is> 라우팅)를 이 앱 규모(화면 4개)에 맞게 축소 재현했다.
+     실제 페이지는 컴포넌트 파일(js/Cf*.js)로 분리 등록.
+     2026-09-06: 로그인 없이 바로 사용(요청사항) — SecurityConfig 가 /api/cdn/** 를 permitAll 로 열어둠. -->
+<div id="app">
+  <div class="shell-header">
+    <div class="brand">🛠️ EcCdnApi 관리자<span class="sub">동영상·이미지·파일 CDN</span></div>
+  </div>
+  <div class="shell-sidebar">
+    <div class="menu-group-label">관리</div>
+    <a class="menu-item" :class="{ active: currentPage === 'file' }" @click="currentPage = 'file'">📁 cf_file 관리</a>
+    <a class="menu-item" :class="{ active: currentPage === 'fileList' }" @click="currentPage = 'fileList'">🗂️ 파일 폴더뷰</a>
+    <a class="menu-item" :class="{ active: currentPage === 'client' }" @click="currentPage = 'client'">🔑 cf_client 관리</a>
+    <a class="menu-item" :class="{ active: currentPage === 'authTest' }" @click="currentPage = 'authTest'">🔐 인증 테스트</a>
+    <div class="menu-group-label">운영</div>
+    <a class="menu-item" :class="{ active: currentPage === 'logViewer' }" @click="currentPage = 'logViewer'">🪵 로그뷰어</a>
+    <a class="menu-item" :class="{ active: currentPage === 'config' }" @click="currentPage = 'config'">⚙️ 설정정보</a>
+    <a class="menu-item" :class="{ active: currentPage === 'redis' }" @click="currentPage = 'redis'">🧰 Redis 모니터링</a>
+    <a class="menu-item" :class="{ active: currentPage === 'dbTest' }" @click="currentPage = 'dbTest'">🗄️ DB 연결 테스트</a>
+  </div>
+  <div class="shell-main">
+    <cf-file-mng v-if="currentPage === 'file'"></cf-file-mng>
+    <cf-file-file-list v-else-if="currentPage === 'fileList'"></cf-file-file-list>
+    <cf-client-mng v-else-if="currentPage === 'client'"></cf-client-mng>
+    <cf-auth-test v-else-if="currentPage === 'authTest'"></cf-auth-test>
+    <cf-log-viewer v-else-if="currentPage === 'logViewer'"></cf-log-viewer>
+    <cf-config-viewer v-else-if="currentPage === 'config'"></cf-config-viewer>
+    <cf-redis-monitor v-else-if="currentPage === 'redis'"></cf-redis-monitor>
+    <cf-db-test v-else-if="currentPage === 'dbTest'"></cf-db-test>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<!-- js/utils: 공용 유틸(fetch래퍼/토스트) · js/comp: 재사용 컴포넌트(BoGrid 등) · js/pages: 화면(페이지) 컴포넌트 -->
+<script src="js/utils/cfAuth.js"></script>
+<script src="js/comp/BoLite.js"></script>
+<script src="js/pages/CfClientMng.js"></script>
+<script src="js/pages/CfFileMng.js"></script>
+<script src="js/pages/CfFileFileList.js"></script>
+<script src="js/pages/CfAuthTest.js"></script>
+<script src="js/pages/CfLogViewer.js"></script>
+<script src="js/pages/CfConfigViewer.js"></script>
+<script src="js/pages/CfRedisMonitor.js"></script>
+<script src="js/pages/CfDbTest.js"></script>
+<script>
+const { createApp, ref } = Vue;
+
+// ?page=client|file|fileList|authTest|logViewer|config|redis|dbTest 로 직접 진입 가능(북마크 편의) — 기본은 cf_file.
+const initialPage = new URLSearchParams(location.search).get('page');
+const VALID_PAGES = ['file', 'fileList', 'client', 'authTest', 'logViewer', 'config', 'redis', 'dbTest'];
+
+const app = createApp({
+  setup() {
+    const currentPage = ref(VALID_PAGES.includes(initialPage) ? initialPage : 'file');
+    return { currentPage };
+  },
+});
+// BoLite.js(경량 로컬 포트) — 메인 프로젝트 bo-grid/bo-grid-crud/bo-form-area 의 columns 속성화
+// 계약을 따르는 EcCdnApi 전용 구현. CfAuthTest/CfClientMng/CfFileMng/CfDbTest 가 사용.
+app.component('BoGrid', window.BoGrid);
+app.component('BoFormArea', window.BoFormArea);
+app.component('BoGridCrud', window.BoGridCrud);
+app.component('BoPager', window.BoPager);
+app.component('CfClientMng', window.CfClientMng);
+app.component('CfFileMng', window.CfFileMng);
+app.component('CfFileFileList', window.CfFileFileList);
+app.component('CfAuthTest', window.CfAuthTest);
+app.component('CfLogViewer', window.CfLogViewer);
+app.component('CfConfigViewer', window.CfConfigViewer);
+app.component('CfRedisMonitor', window.CfRedisMonitor);
+app.component('CfDbTest', window.CfDbTest);
+app.mount('#app');
+</script>
+</body>
+</html>

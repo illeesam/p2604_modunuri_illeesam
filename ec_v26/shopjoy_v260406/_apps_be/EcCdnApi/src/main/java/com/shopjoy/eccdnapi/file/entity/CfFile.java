@@ -54,8 +54,14 @@ public class CfFile {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
+    @Column(name = "reg_by", length = 40)
+    private String regBy;
+
     @Column(name = "reg_date")
     private LocalDateTime regDate;
+
+    @Column(name = "upd_by", length = 40)
+    private String updBy;
 
     @Column(name = "upd_date")
     private LocalDateTime updDate;

@@ -1,6 +1,22 @@
 # application-prod.yml — 운영 전용. CF_JWT_SECRET/DB_PASSWORD 등 민감값은 전부 환경변수 필수
 # (기본값 없는 ${CF_JWT_SECRET} 이 application.yml 에 이미 있으므로, 여기서 또 선언할 필요 없음 —
 #  안 넘기면 플레이스홀더 해석 실패로 부팅 자체가 안 되는 게 의도된 동작).
+# p6spy 는 여기서 의도적으로 미적용 — local/dev 에서만(요청사항: "개발인 경우"). 운영은 순정
+# org.postgresql.Driver + jdbc:postgresql: 사용.
+spring:
+  # datasource — 공통 application.yml 에 안 두고 프로파일마다 개별 선언(요청사항, EcAdminApi 관례).
+  datasource:
+    # DB_HOST=(필수 권장) | DB_PORT=(필수 권장) | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
+    # DB_USERNAME=(필수 권장) | DB_PASSWORD=(필수 권장) — 기본값은 dev 와 같은 공유DB 이지만
+    # 운영은 반드시 환경변수로 실제 값을 넘길 것.
+    url: jdbc:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgresilleesam}
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 3000
+
 logging:
   level:
     com.shopjoy.eccdnapi: WARN

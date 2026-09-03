@@ -117,6 +117,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()           // CORS preflight
                 .requestMatchers(HttpMethod.GET, "/cdn/**", "/zz/**").permitAll() // static 리소스
+                // 2026-09-06 추가: 로그뷰어(static/home/index.html 등) — 인증없이 누구나 조회(요청사항).
+                // 이전까지 static/ 은 업로드 파일(/cdn/**)만 있었고 HTML/JS 관리 화면이 없어서
+                // 이 permitAll 자체가 없었다. EcCdnApi 의 SecurityConfig 와 동일 패턴. 화면 프로그램
+                // 전체(index.html/css/js)는 static/home/ 아래로 모아뒀다(요청사항).
+                .requestMatchers(HttpMethod.GET, "/", "/favicon.ico", "/home/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/foui/**").permitAll() // SEO 메타태그 서버사이드 주입 랜딩(FoSeoController: prodDtl/eventDtl/blogDtl) — 크롤러/링크공유용, 인증 불필요
                 .requestMatchers("/actuator/**").permitAll()       // Spring Boot Actuator (헬스체크·메트릭 등)
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll() // Swagger UI

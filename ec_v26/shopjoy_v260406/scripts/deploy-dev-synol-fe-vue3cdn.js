@@ -114,11 +114,29 @@ function fmtElapsed() {
     console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
     console.log(`${TAG}   HTTP  : http://illeesam.synology.me:21000/index.html , /bo.html`);
     console.log(`${TAG}   HTTPS : https://21000.illeesam.synology.me/index.html , /bo.html  (로그인은 이쪽 필수)`);
+    // 점검 안내 + 서버/환경 정보(요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘" /
+    // "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어"). 정적파일(FO/BO)
+    // + nginx→백엔드 API + 로컬 CDN 패키지 정적서빙 + 같은 nginx 가 물고 있는 EcCdnApi 관리화면까지
+    // 다양하게 골라 나열.
+    const checkUrls = [
+      { url: 'https://21000.illeesam.synology.me/index.html', note: '사용자(FO) 메인 화면' },
+      { url: 'https://21000.illeesam.synology.me/bo.html', note: '관리자(BO) 메인 화면(로그인 필요)' },
+      { url: 'https://21000.illeesam.synology.me/api/co/sy/code/page?pageNo=1&pageSize=1', note: 'nginx→백엔드→DB 확인용 공통코드 API' },
+      { url: 'https://21000.illeesam.synology.me/assets/cdn/pkg/vue/3.4.21/vue.global.prod.min.js', note: '로컬 CDN 패키지(Vue) 정적서빙 확인' },
+      { url: 'https://21000.illeesam.synology.me/cdn-admin/index.html', note: 'EcCdnApi 관리자 화면(같은 nginx, 다른 컨테이너)' },
+    ];
+    const serverInfo = [
+      { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 공개 HTTPS 21000)' },
+      { label: '설치 경로', value: REMOTE_FRONTEND_DIR },
+      { label: '서빙 방식', value: '220-shopjoy-nginx 컨테이너가 정적 파일 직접 서빙(별도 앱 컨테이너 없음)' },
+      { label: '빌드 프로파일', value: `${BUILD_PROFILE} (npm run build:${BUILD_PROFILE})` },
+      { label: '공개 도메인', value: `https://${PUBLIC_HOST}` },
+    ];
     await notifyDeployResult({
       tag: TAG, scriptName: '프론트(FO/BO)', success: allOk, elapsed: fmtElapsed(),
-      detail: allOk
-        ? `헬스체크 정상 — https://21000.illeesam.synology.me/index.html , /bo.html`
-        : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus} api=${apiStatus}`,
+      detail: allOk ? '헬스체크 정상' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus} api=${apiStatus}`,
+      serverInfo,
+      checkUrls,
       npmScript: 'deploy:dev-synol-fe-vue3cdn',
     });
     console.log(`${TAG} ◀ 완료`);
@@ -127,6 +145,14 @@ function fmtElapsed() {
     await notifyDeployResult({
       tag: TAG, scriptName: '프론트(FO/BO)', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
+      serverInfo: [
+        { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 공개 HTTPS 21000)' },
+        { label: '설치 경로', value: REMOTE_FRONTEND_DIR },
+      ],
+      checkUrls: [
+        { url: 'https://21000.illeesam.synology.me/index.html', note: '사용자(FO) 메인 화면(정상화 후 재확인)' },
+        { url: 'https://21000.illeesam.synology.me/bo.html', note: '관리자(BO) 메인 화면(정상화 후 재확인)' },
+      ],
       npmScript: 'deploy:dev-synol-fe-vue3cdn',
     });
     process.exit(1);

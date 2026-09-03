@@ -75,8 +75,11 @@ app:
     output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
   # EcCdnApi(동영상/이미지 CDN 서버) 호출 설정 — CfCdnApiClient 가 사용.
   # 2026-09-06 시점: 클라이언트만 준비됨, 아직 CmUploadService 에 안 붙임(별도 작업으로 진행 예정).
+  # base-url 기본값 3010 = EcCdnApi 의 application-local.yml server.port(로컬 동시 실행 시 EcAdminApi
+  # 자신의 local 포트 3000 과 겹치지 않도록 분리한 값). dev/prod 는 CF_CDN_BASE_URL 환경변수로 실제
+  # NAS 내부망 주소(예: http://ec_cdn_api:3000, Docker 컨테이너 간 통신)를 넘겨 이 기본값을 덮어쓴다.
   cf-cdn:
-    base-url: ${CF_CDN_BASE_URL:http://localhost:21090}
+    base-url: ${CF_CDN_BASE_URL:http://localhost:3010}
     client-id: ${CF_CDN_CLIENT_ID:ecadminapi}
     client-pwd: ${CF_CDN_CLIENT_PWD:}
 

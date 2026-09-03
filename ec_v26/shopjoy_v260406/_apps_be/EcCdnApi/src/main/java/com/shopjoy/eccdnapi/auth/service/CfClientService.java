@@ -52,7 +52,9 @@ public class CfClientService {
             .clientPwd(passwordEncoder.encode(req.getClientPwd()))
             .clientNm(req.getClientNm())
             .useYn("Y")
+            .regBy("admin-ui")
             .regDate(now)
+            .updBy("admin-ui")
             .updDate(now)
             .build();
         return CfClientDto.from(cfClientRepository.save(entity));
@@ -66,6 +68,7 @@ public class CfClientService {
         if (req.getClientPwd() != null && !req.getClientPwd().isBlank()) {
             entity.setClientPwd(passwordEncoder.encode(req.getClientPwd()));
         }
+        entity.setUpdBy("admin-ui");
         entity.setUpdDate(LocalDateTime.now());
         return CfClientDto.from(cfClientRepository.save(entity));
     }

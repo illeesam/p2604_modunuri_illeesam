@@ -15,6 +15,14 @@ public final class CfIdUtil {
         return "CF" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000));
     }
 
+    public static String generateTokenId() {
+        return "CT" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000));
+    }
+
+    public static String generateTokenHistId() {
+        return "CH" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000));
+    }
+
     /** 확장자 뺀 저장 base 파일명 — 같은 초에 여러 건이 와도 안 겹치게 UUID 조각을 덧붙인다. */
     public static String generateStoredBaseName() {
         return "F" + LocalDateTime.now().format(ID_FMT) + "_" + UUID.randomUUID().toString().substring(0, 8);

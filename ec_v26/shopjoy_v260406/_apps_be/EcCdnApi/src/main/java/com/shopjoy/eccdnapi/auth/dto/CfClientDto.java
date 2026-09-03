@@ -13,7 +13,9 @@ public class CfClientDto {
     private String clientId;
     private String clientNm;
     private String useYn;
+    private String regBy;
     private LocalDateTime regDate;
+    private String updBy;
     private LocalDateTime updDate;
 
     public static CfClientDto from(CfClient e) {
@@ -21,7 +23,9 @@ public class CfClientDto {
             .clientId(e.getClientId())
             .clientNm(e.getClientNm())
             .useYn(e.getUseYn())
+            .regBy(e.getRegBy())
             .regDate(e.getRegDate())
+            .updBy(e.getUpdBy())
             .updDate(e.getUpdDate())
             .build();
     }

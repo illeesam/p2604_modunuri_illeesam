@@ -6,6 +6,34 @@ app:
     jwt:
       secret: ${CF_JWT_SECRET:bG9jYWwtb25seS1kdW1teS1zZWNyZXQtZm9yLWVjY2RuYXBpLWRvLW5vdC11c2UtaW4tcHJvZA==}
 
+# server.port — EcAdminApi 의 local 포트(application-local.yml server.port: 3000)와 그대로 겹치면
+# 두 앱을 로컬에서 동시에 띄워 연동 테스트할 때 포트 충돌이 난다(요청사항: "로컬인경우 포트가 같으면
+# 안될거 같은데"). 그래서 EcCdnApi 의 local 프로파일만 3010 으로 분리. dev/prod 는 각자 Docker
+# 컨테이너 안에서 독립 네임스페이스라 둘 다 컨테이너 내부 3000 이어도 문제없다(호스트에는 서로
+# 다른 포트로 매핑됨) — 그대로 둔다.
+server:
+  port: 3010
+
+spring:
+  # datasource — 공통 application.yml 에 안 두고 프로파일마다 개별 선언(요청사항, EcAdminApi 관례).
+  # p6spy — EcAdminApi 방식 그대로: url 을 jdbc:p6spy: 로 감싸고 driver-class-name 을 P6SpyDriver 로
+  # 스왑해야 spy.properties 의 StdoutLogger 가 실제 SQL(바인딩 값 치환)을 출력한다(요청사항 —
+  # "개발인 경우" p6spy 적용, prod 는 미적용).
+  datasource:
+    # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
+    # DB_USERNAME=postgres | DB_PASSWORD=postgresilleesam
+    url: jdbc:p6spy:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgresilleesam}
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+
 logging:
   level:
     com.shopjoy.eccdnapi: DEBUG
+    # p6spy 로거는 StdoutLogger 가 직접 출력하므로 logback 을 통한 중복 출력 방지(OFF).
+    p6spy: OFF
+  # 워크스페이스 밖 절대경로 — VSCode Live Server 가 .log 변경을 감지해 브라우저를 계속 새로고침하는
+  # 문제 회피(EcAdminApi 의 local-logging.md 정책과 동일 원인/동일 해법). EcAdminApi 와 같은 폴더를
+  # 공유하되 파일명(logback-spring.xml 의 APP_NAME=eccdnapi)이 달라 충돌하지 않는다.
+  file:
+    path: C:/_logs/shopjoy

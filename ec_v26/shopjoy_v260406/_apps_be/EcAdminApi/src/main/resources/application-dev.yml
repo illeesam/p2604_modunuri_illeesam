@@ -177,7 +177,9 @@ app:
 # ────────────────────────────────────────────
 logging:
   file:
-    # ⚠ 워크스페이스 밖 절대경로 — VSCode Live Server reload 무한 루프 회피
-    #   자세히: _doc/정책서-dev/local-logging.md
-    path: C:/_logs/shopjoy
+    # 2026-09-06 버그수정: 여기 있던 C:/_logs/shopjoy 는 local(윈도우 직접 실행) 전용 경로가
+    # 실수로 dev 에도 복사돼 있던 것 — dev 는 Linux Docker 컨테이너라 그 경로로는 로그 파일이
+    # 전혀 안 만들어지고 있었다(docker exec 로 확인: /app/logs 자체가 없었음). docker-compose.yml
+    # 의 볼륨 마운트(/volume1/docker/ecadminapi/logs:/app/logs)에 맞춰 컨테이너 내부 경로로 수정.
+    path: /app/logs
   # level: hibernate SQL 로그 — p6spy 사용 중이므로 비활성 (중복 출력 방지)

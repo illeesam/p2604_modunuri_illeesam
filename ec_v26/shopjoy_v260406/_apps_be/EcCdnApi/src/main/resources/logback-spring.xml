@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+    <!-- EcAdminApi 의 logback-spring.xml(_apps_be/EcAdminApi/src/main/resources/logback-spring.xml)
+         구조를 그대로 참고해 이식했다(요청사항). EcCdnApi 는 MyBatis/Hibernate SQL 이 없는 순수
+         JPA+Security 스코프라 로거 목록이 그만큼 짧고, "validate"(스키마 검증) 프로파일도 없어
+         local/dev + prod 두 블록만 유지한다. -->
+
+    <!-- ================================================================
+         Spring Boot 색상 변환기
+         ================================================================ -->
+    <conversionRule conversionWord="clr"
+                    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+
+    <!-- ================================================================
+         공통 속성 (application-{local,dev,prod}.yml 의 logging.file.path 를 LOG_DIR 로 수신)
+         ※ local/dev 기본값을 워크스페이스 밖 절대경로(C:/_logs/shopjoy)로 설정 — VSCode Live
+           Server 가 워크스페이스 안의 .log 파일 변경을 감지해 브라우저를 계속 새로고침하던 문제
+           회피(EcAdminApi 와 동일 원인/동일 해법, _doc/정책서-dev/local-logging.md 참조). 같은
+           폴더를 공유해도 APP_NAME 이 달라(ecadminapi vs eccdnapi) 파일이 섞이지 않는다.
+         ================================================================ -->
+    <springProperty scope="context" name="LOG_DIR"
+                    source="logging.file.path" defaultValue="C:/_logs/shopjoy"/>
+
+    <property name="APP_NAME"    value="eccdnapi"/>
+    <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>
+    <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
+    <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>
+
+    <!-- 일반 파일 패턴 — [clientId] 는 요청 처리 중인 cf_client 계정(가능하면 필터/인터셉터가 MDC 로
+         채워줌). 아직 MDC 연동 전이면 빈 값으로만 찍히고 크래시하지 않는다. -->
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{clientId}] [%thread] %logger{50} : %msg%n%wex"/>
+
+    <property name="ERROR_FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{clientId}] [%X{req}] [%thread] %logger{50} : %msg%n%wex"/>
+
+
+    <!-- ================================================================
+         LOCAL / DEV
+         - 콘솔: DEBUG+, 컬러, (%F:%L) IntelliJ/VSCode 클릭 링크
+         - 파일:  DEBUG+, 롤링(일별+50MB), 30일, 2GB, gzip 압축
+         - 에러:  ERROR 전용, 롤링(일별+20MB), 90일, 500MB, gzip 압축
+         ================================================================ -->
+    <springProfile name="local,dev">
+
+        <!-- ─── CONSOLE: 컬러 ────────────────────────────────────────── -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>%d{HH:mm:ss.SSS} %clr(%-5level){highlight} %clr([%X{clientId}]){magenta} %logger{39} : %msg%n%clr(%wex){red}</pattern>
+                </layout>
+            </encoder>
+        </appender>
+
+        <!-- ─── FILE: 롤링 (워크스페이스 밖 C:/_logs/shopjoy) ────────── -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${APP_LOG}</file>
+            <encoder>
+                <pattern>${FILE_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${ARCH_DIR}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>50MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>2GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- ─── ERROR FILE ───────────────────────────────────────────── -->
+        <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${ERR_LOG}</file>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+            <encoder>
+                <pattern>${ERROR_FILE_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${ARCH_DIR}/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>20MB</maxFileSize>
+                <maxHistory>90</maxHistory>
+                <totalSizeCap>500MB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- ─── 비동기 래핑 (파일 I/O 논블로킹) ──────────────────────── -->
+        <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="FILE"/>
+        </appender>
+
+        <appender name="ASYNC_ERR" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>128</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>true</includeCallerData>
+            <appender-ref ref="ERROR_FILE"/>
+        </appender>
+
+        <!-- ─── 로거 레벨 ─────────────────────────────────────────────── -->
+        <logger name="com.shopjoy.eccdnapi" level="DEBUG"/>
+        <logger name="p6spy" level="OFF"/>  <!-- StdoutLogger 직접 출력, logback 중복 방지 -->
+
+        <!-- 프레임워크 노이즈 억제 -->
+        <logger name="org.springframework"    level="WARN"/>
+        <logger name="org.springframework.boot.logging" level="WARN"/>
+        <logger name="org.springframework.web.servlet.mvc.method.annotation" level="WARN"/>
+        <logger name="org.springframework.web.servlet.handler" level="WARN"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate"          level="WARN"/>
+        <logger name="com.zaxxer.hikari"      level="WARN"/>
+        <logger name="org.apache.catalina"    level="WARN"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+            <appender-ref ref="ASYNC_ERR"/>
+        </root>
+
+    </springProfile>
+
+
+    <!-- ================================================================
+         PROD
+         - 콘솔: INFO+, 간결 (색상 없음)
+         - 파일:  INFO+, 롤링(일별+100MB), 30일, 3GB, gzip 압축
+         - 에러:  ERROR 전용, 롤링(일별+50MB), 90일, 1GB, gzip 압축
+         - p6spy 미사용(local/dev 전용, application-prod.yml 참조)
+         ================================================================ -->
+    <springProfile name="prod">
+
+        <!-- ─── CONSOLE: 심플 ───────────────────────────────────────── -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} : %msg%n%wex</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+
+        <!-- ─── FILE: 롤링 ──────────────────────────────────────────── -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${APP_LOG}</file>
+            <encoder>
+                <pattern>${FILE_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${ARCH_DIR}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>100MB</maxFileSize>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>3GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- ─── ERROR FILE ───────────────────────────────────────────── -->
+        <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${ERR_LOG}</file>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+            <encoder>
+                <pattern>${ERROR_FILE_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${ARCH_DIR}/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <maxFileSize>50MB</maxFileSize>
+                <maxHistory>90</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- ─── 비동기 래핑 ─────────────────────────────────────────── -->
+        <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <appender-ref ref="FILE"/>
+        </appender>
+
+        <appender name="ASYNC_ERR" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>256</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>true</includeCallerData>
+            <appender-ref ref="ERROR_FILE"/>
+        </appender>
+
+        <logger name="com.shopjoy.eccdnapi" level="INFO"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+            <appender-ref ref="ASYNC_ERR"/>
+        </root>
+
+    </springProfile>
+
+</configuration>

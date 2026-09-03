@@ -17,6 +17,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const { ROOT, fail, requireCreds, run, withSsh } = require('./synology-deploy-util');
 const { notifyDeployResult } = require('./notify-deploy-result');
 
@@ -24,6 +25,24 @@ requireCreds('scripts/deploy-dev-synol-be-ecCdnApi.js');
 
 const DOCKER = '/usr/local/bin/docker';
 const REMOTE_CDN_DIR = '/volume1/docker/shopjoy/eccdnapi';
+const PUBLIC_HOST = '21000.illeesam.synology.me';
+
+// 2026-09-06: 지금까지는 NAS 내부(localhost:21090, withSsh 단계)만 확인했다 — nginx 라우팅
+// (locations.conf 의 /api/cdn/, /cdn-admin/) 이 깨져도 그 체크는 통과해버리므로, FE 배포 스크립트
+// (deploy-dev-synol-fe-vue3cdn.js)와 동일하게 이 컴퓨터 → 공개 HTTPS 경로도 별도로 확인한다
+// (요청사항: "URL 헬스체크도 한거야? 헬스체크 없으면 api 추가해줘"). actuator 는 공개 라우트가
+// 아니라서(의도적으로 nginx 에 안 뚫어둠) 실제 공개된 두 경로로 대신 검증: 관리자 정적 화면(/cdn-admin/)
+// + nginx→백엔드→DB 까지 타는 실 API(/api/cdn/client/page).
+function checkUrl(pathname) {
+  return new Promise((resolve) => {
+    const req = https.get({ hostname: PUBLIC_HOST, path: pathname, timeout: 10000 }, (res) => {
+      res.resume();
+      resolve(String(res.statusCode));
+    });
+    req.on('timeout', () => { req.destroy(); resolve('timeout'); });
+    req.on('error', (e) => resolve(`error(${e.code || e.message})`));
+  });
+}
 
 const TAG = '[deploy-dev-synol-be-ecCdnApi.js][CDN]';
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
@@ -90,12 +109,51 @@ function fmtElapsed() {
       TAG
     );
 
-    console.log(`\n${TAG}[완료] EcCdnApi 배포 끝 (총 소요 ${fmtElapsed()})`);
-    console.log(`${TAG}   헬스체크(디버그 직접): http://illeesam.synology.me:21090/actuator/health`);
-    console.log(`${TAG}   공개 경로(nginx 경유): https://21000.illeesam.synology.me/cf/file/{fileId}`);
+    console.log(`\n${step(2)} 헬스체크 2/2 — 외부 HTTPS 접속 확인 (이 컴퓨터 → https://${PUBLIC_HOST})`);
+    const [adminStatus, apiStatus] = await Promise.all([
+      checkUrl('/cdn-admin/index.html'),
+      checkUrl('/api/cdn/client/page?pageNo=1&pageSize=1'),
+    ]);
+    console.log(`${TAG}   /cdn-admin/index.html (정적 관리자 화면) : ${adminStatus}`);
+    console.log(`${TAG}   /api/cdn/client/page (nginx→백엔드→DB)   : ${apiStatus}`);
+    const publicOk = adminStatus === '200' && apiStatus === '200';
+    if (publicOk) {
+      console.log(`${TAG}   ✅ 외부 헬스체크 통과 — nginx→EcCdnApi→DB 경로까지 전부 정상`);
+    } else {
+      console.log(`${TAG}   ⚠ 200이 아닌 응답이 있습니다 — NAS 내부는 정상이어도 nginx 라우팅(locations.conf)/DSM 리버스 프록시 쪽 문제일 수 있음`);
+    }
+
+    console.log(`\n${TAG}[완료] EcCdnApi 배포 끝 (총 소요 ${fmtElapsed()})${publicOk ? ' (외부 헬스체크 정상)' : ' (외부 헬스체크 이상 있음 — 위 내용 확인)'}`);
+    console.log(`${TAG}   헬스체크(디버그 직접, NAS 내부): http://illeesam.synology.me:21090/actuator/health`);
+    console.log(`${TAG}   공개 경로(nginx 경유): https://${PUBLIC_HOST}/cdn-admin/index.html , https://${PUBLIC_HOST}/api/cdn/client/page`);
+    // 점검 안내(요청사항) — 정적화면(로그뷰어 포함) + API + NAS 내부 디버그, 다양하게 골라 나열.
+    // 로그뷰어 URL 은 배포 후 바로 클릭해서 볼 수 있게 항상 포함(요청사항: "배포 후 로그화면보는
+    // url 도 보내줘 이건 인증없이 누구나 보는거야").
+    const checkUrls = [
+      { url: `https://${PUBLIC_HOST}/cdn-admin/index.html`, note: '관리자 화면 기본 진입(cf_file 관리, 로그인 불필요)' },
+      { url: `https://${PUBLIC_HOST}/cdn-admin/index.html?page=logViewer`, note: '🪵 로그뷰어(인증 불필요)' },
+      { url: `https://${PUBLIC_HOST}/cdn-admin/index.html?page=authTest`, note: '인증 테스트(로그인/재발급/강제폐기)' },
+      { url: `https://${PUBLIC_HOST}/cdn-admin/index.html?page=dbTest`, note: 'DB 연결 테스트(임의 접속정보로 SELECT 확인)' },
+      { url: `https://${PUBLIC_HOST}/api/cdn/client/page?pageNo=1&pageSize=1`, note: 'cf_client 목록 API — nginx→EcCdnApi→DB 확인용' },
+      { url: `https://${PUBLIC_HOST}/api/cdn/log/tail?file=app&lines=20`, note: '로그 tail API(최근 20줄)' },
+      { url: 'http://illeesam.synology.me:21090/actuator/health', note: 'NAS 내부 디버그용(공개 라우트 아님, 21090 직접 접속)' },
+    ];
+    // 서버/설치경로/환경 정보(요청사항: "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어").
+    const serverInfo = [
+      { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21090 / 공개 HTTPS 21000)' },
+      { label: '설치 경로', value: REMOTE_CDN_DIR },
+      { label: '컨테이너명', value: '230-shopjoy-eccdnapi (docker compose 서비스명: eccdnapi)' },
+      { label: 'Docker 네트워크', value: 'shopjoy-net (EcAdminApi nginx 컨테이너와 공유)' },
+      { label: '활성 프로파일', value: 'dev (application-dev.yml)' },
+      { label: 'DB 접속', value: 'illeesam.synology.me:17632 / shopjoy_2604 (PostgreSQL, p6spy 경유)' },
+      { label: '파일 저장 볼륨', value: '/volume1/docker/shopjoy/cdn-storage → 컨테이너 /app/storage' },
+      { label: '로그 경로', value: '/volume1/docker/eccdnapi/logs → 컨테이너 /app/logs' },
+    ];
     await notifyDeployResult({
-      tag: TAG, scriptName: 'EcCdnApi', success: true, elapsed: fmtElapsed(),
-      detail: `헬스체크: http://illeesam.synology.me:21090/actuator/health`,
+      tag: TAG, scriptName: 'EcCdnApi', success: publicOk, elapsed: fmtElapsed(),
+      detail: publicOk ? '외부 헬스체크 정상' : `외부 헬스체크 이상 있음: /cdn-admin/index.html=${adminStatus} /api/cdn/client/page=${apiStatus}`,
+      serverInfo,
+      checkUrls,
       npmScript: 'deploy:dev-synol-be-ecCdnApi',
     });
     console.log(`${TAG} ◀ 완료`);
@@ -104,6 +162,11 @@ function fmtElapsed() {
     await notifyDeployResult({
       tag: TAG, scriptName: 'EcCdnApi', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
+      checkUrls: [
+        { url: `https://${PUBLIC_HOST}/cdn-admin/index.html`, note: '관리자 화면(정상화 후 재확인)' },
+        { url: `https://${PUBLIC_HOST}/api/cdn/client/page?pageNo=1&pageSize=1`, note: 'cf_client 목록 API(정상화 후 재확인)' },
+        { url: 'http://illeesam.synology.me:21090/actuator/health', note: 'NAS 내부 디버그용' },
+      ],
       npmScript: 'deploy:dev-synol-be-ecCdnApi',
     });
     process.exit(1);

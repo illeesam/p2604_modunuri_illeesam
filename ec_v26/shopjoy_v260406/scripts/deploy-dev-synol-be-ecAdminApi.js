@@ -116,9 +116,34 @@ function fmtElapsed() {
     console.log(`${TAG}   헬스체크 : http://illeesam.synology.me:21080/actuator/health`);
     console.log(`${TAG}   테스트 API(공통코드 페이징, 로그인 불필요):`);
     console.log(`${TAG}     http://illeesam.synology.me:21080/api/co/sy/code/page?pageNo=1&pageSize=10`);
+
+    // 점검 안내 + 서버/환경 정보(요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘" /
+    // "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어" / "배포 후
+    // 로그화면보는 url 도 보내줘 이건 인증없이 누구나 보는거야"). 프레임워크 표준 경로
+    // (actuator/swagger) + 서로 다른 도메인 API + 신규 운영 도구(로그뷰어)로 다양화.
+    // 로그뷰어는 nginx 의 /admin-tools/ prefix(2026-09-06 추가, locations.conf) 경유 공개 HTTPS.
+    const checkUrls = [
+      { url: 'http://illeesam.synology.me:21080/actuator/health', note: '헬스체크' },
+      { url: 'https://21000.illeesam.synology.me/admin-tools/index.html', note: '🪵 로그뷰어(운영 도구, 인증 불필요)' },
+      { url: 'http://illeesam.synology.me:21080/swagger-ui/index.html', note: 'API 문서(Swagger UI, 로그인 불필요)' },
+      { url: 'http://illeesam.synology.me:21080/api/co/sy/code/page?pageNo=1&pageSize=1', note: '공통코드 페이징(로그인 불필요)' },
+      { url: 'http://illeesam.synology.me:21080/api/co/sy/site?pageNo=1&pageSize=1', note: '사이트 목록(로그인 불필요)' },
+      { url: 'http://illeesam.synology.me:21080/api/co/log/tail?file=app&lines=20', note: '로그 tail API(최근 20줄, 인증 불필요)' },
+    ];
+    const serverInfo = [
+      { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21080)' },
+      { label: '설치 경로', value: REMOTE_BE_DIR },
+      { label: '컨테이너명', value: '210-ecadminApi (docker compose 서비스명: ecadminapi)' },
+      { label: 'Docker 네트워크', value: 'shopjoy-net (220-shopjoy-nginx, EcCdnApi 와 공유)' },
+      { label: '활성 프로파일', value: `${REMOTE_BE_DIR}/.env 의 SPRING_PROFILES_ACTIVE 값 (위 로그 참조)` },
+      { label: 'DB 접속', value: 'illeesam.synology.me:17632 / shopjoy_2604 (PostgreSQL, p6spy 경유)' },
+      { label: '로그 경로', value: '/volume1/docker/ecadminapi/logs → 컨테이너 내부 logs' },
+    ];
     await notifyDeployResult({
       tag: TAG, scriptName: '백엔드(EcAdminApi)', success: true, elapsed: fmtElapsed(),
       detail: `헬스체크: http://illeesam.synology.me:21080/actuator/health`,
+      serverInfo,
+      checkUrls,
       npmScript: 'deploy:dev-synol-be-ecAdminApi',
     });
     console.log(`${TAG} ◀ 완료`);
@@ -127,6 +152,10 @@ function fmtElapsed() {
     await notifyDeployResult({
       tag: TAG, scriptName: '백엔드(EcAdminApi)', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
+      serverInfo: [
+        { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21080)' },
+        { label: '설치 경로', value: REMOTE_BE_DIR },
+      ],
       npmScript: 'deploy:dev-synol-be-ecAdminApi',
     });
     process.exit(1);

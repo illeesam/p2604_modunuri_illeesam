@@ -16,8 +16,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * EcCdnApi(동영상/이미지 CDN 서버) 호출 클라이언트 — id/pwd 로 로그인해 accessToken(30초)을
- * 받고, 만료 임박 시 refreshToken 으로 재발급, refreshToken 마저 만료되면 재로그인한다.
+ * EcCdnApi(동영상/이미지 CDN 서버) 호출 클라이언트 — id/pwd 로 로그인해 accessToken(30초)을 받고,
+ * 만료되면 그 accessToken 을 그대로 다시 보내 재발급받는다(EcCdnApi 가 서버 DB에 보관 중인
+ * refreshToken 을 내부에서 조회해 처리 — refreshToken 은 이 클라이언트도, 어떤 클라이언트도
+ * 절대 안 받는다. EcAdminApi 의 BoAuthService/FoAuthService 와 동일 원칙, 2026-09-06).
  *
  * <p><b>2026-09-06 시점 상태: 아직 어디서도 안 씀(대기 상태).</b> EcCdnApi 자체 배포 파이프라인과
  * 함께 준비만 해둔 것으로, 기존에 잘 동작 중인 {@code CmUploadService}(로컬 디스크 저장,
@@ -45,7 +47,6 @@ public class CfCdnApiClient {
     private String clientPwd;
 
     private volatile String accessToken;
-    private volatile String refreshToken;
     private volatile Instant accessTokenExpiry = Instant.EPOCH;
 
     /** 만료 임박 판단 여유(초) — accessToken 이 30초뿐이라 너무 짧게 두면 전송 도중 만료될 수 있음. */
@@ -95,12 +96,15 @@ public class CfCdnApiClient {
         if (accessToken != null && Instant.now().isBefore(accessTokenExpiry.minusSeconds(EXPIRY_SKEW_SECONDS))) {
             return accessToken;
         }
-        if (refreshToken != null) {
+        // 만료됐어도 accessToken 값 자체는 재발급 조회 키로 쓸 수 있다(서버가 그 값으로
+        // cf_token 행을 찾아 보관 중인 refreshToken 을 대신 검사) — 그래서 refresh() 는
+        // "막 만료된 값이라도" accessToken 이 하나라도 있으면 시도해본다.
+        if (accessToken != null) {
             try {
                 refresh();
                 return accessToken;
             } catch (Exception e) {
-                log.warn("[CfCdnApiClient] refreshToken 재발급 실패 — 재로그인으로 폴백: {}", e.getMessage());
+                log.warn("[CfCdnApiClient] accessToken 재발급 실패 — 재로그인으로 폴백: {}", e.getMessage());
             }
         }
         login();
@@ -112,6 +116,7 @@ public class CfCdnApiClient {
             String body = objectMapper.writeValueAsString(new LoginBody(clientId, clientPwd));
             HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/auth/login"))
                 .header("Content-Type", "application/json")
+                .header("X-Caller-System", "EcAdminApi") // 마이크로서비스 환경에서 "어느 서비스"인지 자기소개(cf_token/cf_token_hist 기록용)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .timeout(Duration.ofSeconds(10))
                 .build();
@@ -127,11 +132,12 @@ public class CfCdnApiClient {
         }
     }
 
+    /** 재발급 — 요청 바디 없음, 지금 갖고 있는(막 만료됐을 수도 있는) accessToken 을 헤더로 보낸다. */
     private void refresh() throws IOException, InterruptedException {
-        String body = objectMapper.writeValueAsString(new RefreshBody(refreshToken));
         HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/auth/refresh"))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .header("Authorization", "Bearer " + accessToken)
+            .header("X-Caller-System", "EcAdminApi")
+            .POST(HttpRequest.BodyPublishers.noBody())
             .timeout(Duration.ofSeconds(10))
             .build();
         HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
@@ -141,10 +147,10 @@ public class CfCdnApiClient {
         applyTokenResponse(res.body());
     }
 
+    /** refreshToken 은 응답에 없다(서버 보관 원칙) — accessToken/expiresIn 만 반영. */
     private void applyTokenResponse(String jsonBody) throws IOException {
         JsonNode data = objectMapper.readTree(jsonBody).path("data");
         this.accessToken = data.path("accessToken").asText();
-        this.refreshToken = data.path("refreshToken").asText();
         long expiresIn = data.path("expiresIn").asLong(30);
         this.accessTokenExpiry = Instant.now().plusSeconds(expiresIn);
     }
@@ -208,7 +214,6 @@ public class CfCdnApiClient {
     }
 
     private record LoginBody(String id, String pwd) {}
-    private record RefreshBody(String refreshToken) {}
 
     /** 401 을 구분해서 잡기 위한 내부 전용 예외 — withAuthRetry 가 재로그인 재시도 트리거로 사용. */
     private static class CfUnauthorizedException extends RuntimeException {}

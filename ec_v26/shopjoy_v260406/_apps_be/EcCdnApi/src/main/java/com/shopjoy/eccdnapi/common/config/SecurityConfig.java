@@ -50,7 +50,9 @@ public class SecurityConfig {
                 // index.html 서빙" 처리는 정적 리소스 핸들러 단계라, 그 전에 걸리는 이 보안필터는
                 // "/" 자체를 "/*.html" 로 안 봐서 안 넣으면 여기서 먼저 401 난다(nginx 의
                 // /cdn-admin/ → / 리라이트로 실제로 겪음, 2026-09-06).
-                .requestMatchers(HttpMethod.GET, "/", "/*.html", "/css/**", "/js/**", "/favicon.ico").permitAll()
+                // 2026-09-06: 관리 화면 프로그램(index.html/css/js/cf-video-popup.html) 을
+                // static/home/ 으로 이동(요청사항) — 전부 그 아래 한 prefix 로 커버.
+                .requestMatchers(HttpMethod.GET, "/", "/favicon.ico", "/home/**").permitAll()
                 // 관리 화면(cf_client/cf_file CRUD, 업로드/삭제)은 로그인 없이 사용 — 요청사항.
                 .requestMatchers("/api/cdn/**").permitAll()
                 .anyRequest().authenticated()

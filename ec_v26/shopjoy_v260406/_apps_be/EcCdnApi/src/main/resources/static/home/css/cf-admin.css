@@ -201,24 +201,31 @@ body {
 .item-card .actions a { font-size: 11px; color: #1a73e8; text-decoration: none; }
 .item-card .actions a:hover { text-decoration: underline; }
 
-/* ── 페이지네이션 ─────────────────────────────────────────── */
+/* ── 페이지네이션(<bo-pager> — 메인 프로젝트 bo-global-style0N.css 의 .pagination/.pager 계약을
+   그대로 따른다: .pagination(3열 grid: 좌측 건수 / 가운데 페이지번호 / 우측 사이즈선택)) ── */
 .pagination {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   margin-top: 14px;
-  flex-wrap: wrap;
+  padding: 3px 10px;
 }
-.pagination button {
+.pagination .pager { justify-self: center; }
+.pager-left .list-count { font-size: 12px; color: #999; white-space: nowrap; }
+.pager-right { display: flex; justify-content: flex-end; align-items: center; }
+.pager { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.pager button {
+  min-width: 26px;
+  height: 26px;
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 6px;
-  padding: 5px 10px;
   cursor: pointer;
   font-size: 12px;
 }
-.pagination button.active { background: #e91e63; color: #fff; border-color: #e91e63; }
-.pagination button:disabled { opacity: 0.4; cursor: default; }
+.pager button.active { background: #e91e63; color: #fff; border-color: #e91e63; font-weight: 700; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.size-select { padding: 3px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
 
 /* ── ③ 상세란 ─────────────────────────────────────────────── */
 .detail-panel .list-title {
@@ -278,6 +285,7 @@ body {
 .btn_row_edit { background: #4285f4; color: #fff; padding: 4px 10px; font-size: 11px; }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-xs { padding: 3px 8px; font-size: 11px; }
 
 /* ── 뱃지 ──────────────────────────────────────────────────── */
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
@@ -285,6 +293,10 @@ body {
 .badge-gray  { background: #eee; color: #777; }
 .badge-blue  { background: #e8f0fe; color: #1a73e8; }
 .badge-purple{ background: #f3e8fd; color: #8430ce; }
+.badge-red   { background: #fdecea; color: #c62828; }
+
+.title-link { color: #1a73e8; text-decoration: none; }
+.title-link:hover { text-decoration: underline; }
 
 /* ── 업로드 영역(cf-file 전용) ───────────────────────────────── */
 .upload-box {
@@ -348,5 +360,55 @@ body {
 .login-box .btn { width: 100%; }
 .login-err { color: #c62828; font-size: 12px; margin-bottom: 8px; min-height: 14px; }
 
+/* ── 폴더트리(CfFileFileList.js) ──────────────────────────── */
+.folder-item {
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.folder-item:hover { background: #f7f7f9; }
+.folder-item.active { background: #fdeef3; color: #e91e63; font-weight: 700; }
+.folder-item .meta { color: #999; font-size: 11px; }
+.folder-year { font-weight: 600; }
+
+/* ── 인증 테스트 화면용 간단 테이블 ───────────────────────── */
+.admin-table { border-collapse: collapse; }
+.admin-table th, .admin-table td {
+  border-bottom: 1px solid #eee;
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+.admin-table th { background: #fafafa; color: #666; font-weight: 600; }
+.crud-row.status-I { background: #f0f7ff; } /* bo-grid-crud 신규(편집중) 행 강조 */
+
 [hidden] { display: none !important; }
+
+/* ── 로그뷰어(CfLogViewer.js) ─────────────────────────────────────────── */
+.log-box {
+  max-height: 600px;
+  overflow: auto;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 12px;
+  border-radius: 6px;
+  white-space: pre;
+  margin: 0;
+}
+.log-line-error { color: #f48771; }
+.log-line-warn { color: #dcdcaa; }
+
+/* ── 설정정보/DB연결테스트 공용(CfConfigViewer/CfDbTest) ────────────────── */
+.kv-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.kv-table th, .kv-table td { border-bottom: 1px solid #eee; padding: 6px 10px; text-align: left; vertical-align: top; }
+.kv-table th { width: 260px; color: #666; background: #fafafa; font-weight: 600; white-space: nowrap; }
+.kv-table td { font-family: 'Consolas', 'Monaco', monospace; word-break: break-all; }
+.redacted { color: #bbb; font-style: italic; }
 [v-cloak] { display: none !important; }
