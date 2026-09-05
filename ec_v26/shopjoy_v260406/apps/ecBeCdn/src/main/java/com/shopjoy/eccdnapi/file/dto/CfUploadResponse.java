@@ -11,8 +11,8 @@ public class CfUploadResponse {
     private String origFileNm;
     private String mediaTypeCd;
     private Long fileSize;
-    private String fileUrl;        // GET /cf/file/{fileId}
-    private String thumbnailUrl;   // GET /cf/thumbnail/{fileId} (없으면 null)
-    private String frameUrl;       // GET /cf/frame/{fileId} (동영상 아니면 null)
-    private String streamUrl;      // GET /cf/stream/{fileId} (동영상만, 아니면 null)
+    private String fileUrl;        // GET /api/cdn/serve/file/{fileId}
+    private String thumbnailUrl;   // GET /api/cdn/serve/thumbnail/{fileId} (없으면 null)
+    private String frameUrl;       // GET /api/cdn/serve/frame/{fileId} (동영상 아니면 null)
+    private String streamUrl;      // GET /api/cdn/serve/stream/{fileId} (동영상만, 아니면 null)
 }

@@ -1,0 +1,20 @@
+{
+  "// ⭐⭐⭐": "이 파일은 [DEPLOY] 전용 — 5개 앱 빌드+전송+컨테이너 기동/갱신. 형제 폴더 stop/·delete/·ps/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것.",
+  "name": "shopjoy-deploy-scripts-deploy",
+  "private": true,
+  "description": "5개 앱 빌드+전송+컨테이너 기동/갱신. 루트(apps/scripts_deploy_illeesam_synol/)의 npm run deploy:dev-synol-ecBeBo 등과 완전히 동일한 스크립트를 가리킨다 — 여기(deploy/)에서 npm run ecBeBo 처럼 짧게 부르고 싶을 때 쓴다. node_modules(ssh2/nodemailer)는 npm workspaces로 루트와 공유.",
+  "scripts": {
+    "---------- DEPLOY (빌드+전송+기동) ----------": "exit 0",
+    "ecBeBo": "node deploy-dev-synol-be-ecBeBo.js",
+    "ecBeCdn": "node deploy-dev-synol-be-ecBeCdn.js",
+    "ecFeBo": "node deploy-dev-synol-fe-ecFeBo.js",
+    "ecBeRedis": "node deploy-dev-synol-be-ecBeRedis.js",
+    "ecGateway": "node deploy-dev-synol-gw-ecGateway.js",
+    "zmulti-ecBeBo-ecBeCdn": "npm run ecBeBo && npm run ecBeCdn",
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+  },
+  "scriptsGuide": {
+    "ecXxx": "빌드(필요시)+전송+컨테이너 기동/갱신. 요청사항 원문: 5개 앱을 각자 독립 배포.",
+    "zmulti-all": "5개 앱 전부 순서대로(ecBeBo→ecBeCdn→ecFeBo→ecBeRedis→ecGateway) 배포. 하나라도 실패하면 그 뒤는 실행 안 됨(&& 체이닝)."
+  }
+}

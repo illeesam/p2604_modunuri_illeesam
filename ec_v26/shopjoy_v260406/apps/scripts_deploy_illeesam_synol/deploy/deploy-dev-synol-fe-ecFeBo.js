@@ -1,8 +1,8 @@
 /* deploy-dev-synol-fe-ecFeBo.js — 내 컴퓨터에서 직접 SSH로 프론트(FO/BO 화면)를 Synology NAS(dev)에
  * 빌드+전송까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-ecBeBo/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포, GitHub Pages 도 같이 됨).
- * 백엔드는 별도 scripts/deploy-dev-synol-be-ecBeBo.js(= npm run deploy:dev-synol-ecBeBo).
- * (2026-09-06: 예전엔 deploy:dev-synol-full 이 백엔드+프론트를 묶었으나, deploy:dev-synol-zmulti-ecBeBo-ecBeCdn
+ * 백엔드는 별도 deploy-dev-synol-be-ecBeBo.js(= cd deploy && npm run ecBeBo).
+ * (2026-09-06: 예전엔 deploy:dev-synol-full 이 백엔드+프론트를 묶었으나, npm run zmulti-ecBeBo-ecBeCdn
  * 로 이름/조합이 바뀌면서 프론트는 이제 어떤 조합 명령에도 안 묶여있다 — 필요하면 이 스크립트를 따로 실행할 것.)
  *
  * 2026-09-06 추가 개편(요청사항: "4개 앱이 각자 다른 호스팅사에 흩어질 수도 있다"는 최악의 경우
@@ -13,8 +13,9 @@
  * nginx가 더 이상 /api,/cdn-admin 을 리버스프록시하지 않으므로 그 헬스체크도 제거 — 이제
  * index.html/bo.html 정적 서빙만 확인한다.
  *
- * 사용법: node scripts/deploy-dev-synol-fe-ecFeBo.js   (= npm run deploy:dev-synol-ecFeBo)
- * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
+ * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecFeBo
+ *          (또는 루트에서 npm run ecFeBo --workspace=deploy)
+ * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/12_illeesam_synology_FE_수동배포가이드(synology).md 의
  * STEP 1~4 와 완전히 동일한 절차를 그대로 스크립트로 옮긴 것뿐이다.
@@ -22,8 +23,8 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, run, withSsh, requireCreds, hms } = require('./synology-deploy-util');
-const { notifyDeployResult } = require('./notify-deploy-result');
+const { ROOT, run, withSsh, requireCreds, hms } = require('../synology-deploy-util');
+const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-fe-ecFeBo.js');
 
@@ -66,7 +67,7 @@ function checkUrl(pathname) {
 }
 
 // 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(FE)"을 밝히는 태그 — 여러 스크립트가
-// (예: deploy:dev-synol-zmulti-* 류) 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
+// (예: npm run zmulti-* 류) 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
 // 2026-09-06: toString() 을 커스텀해서 `${TAG}` 로 보간될 때마다 그 순간의 [HH:MM:SS] 시각을
 // 새로 계산해 넣는다(요청사항).
 const TAG = { toString() { return `[${hms()}][deploy-dev-synol-fe-ecFeBo.js][FE]`; } };
@@ -134,7 +135,7 @@ function fmtElapsed() {
 
     console.log(`\n${step(3)} 헬스체크 2/2 — 외부 HTTPS 접속 확인 (이 컴퓨터 → https://${PUBLIC_HTTPS_HOST})`);
     // 2026-09-06: nginx가 더 이상 /api 를 리버스프록시하지 않으므로(완전 분리 설계) 백엔드
-    // API 헬스체크는 여기서 뺀다 — 백엔드 자체 헬스체크는 npm run deploy:dev-synol-ecBeBo 가 담당.
+    // API 헬스체크는 여기서 뺀다 — 백엔드 자체 헬스체크는 deploy/ 의 npm run ecBeBo 가 담당.
     const [idxStatus, boStatus] = await Promise.all([
       checkUrl('/index.html'),
       checkUrl('/bo.html'),
@@ -151,8 +152,8 @@ function fmtElapsed() {
     }
 
     console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
-    console.log(`${TAG}   HTTP  : http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html , /bo.html`);
-    console.log(`${TAG}   HTTPS : https://${PUBLIC_HTTPS_HOST}/index.html , /bo.html  (로그인은 이쪽 필수)`);
+    console.log(`${TAG}   HTTP  : http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html , http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`);
+    console.log(`${TAG}   HTTPS : https://${PUBLIC_HTTPS_HOST}/index.html , https://${PUBLIC_HTTPS_HOST}/bo.html  (로그인은 이쪽 필수)`);
     console.log(`${TAG}   ⚠ 백엔드/CDN API 호출은 이제 이 nginx를 안 거치고 각자의 절대 URL로 직접 나간다 —`);
     console.log(`${TAG}     apps/ecFeBo/lib/env/profiles/{bo,fo}EnvConsts.dev.js 의 baseApiHost/cdnApiHost 참조.`);
     // 점검 안내 + 서버/환경 정보(요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘" /
@@ -161,7 +162,7 @@ function fmtElapsed() {
     const checkUrls = [
       { url: `https://${PUBLIC_HTTPS_HOST}/index.html`, note: '사용자(FO) 메인 화면' },
       { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(로그인 필요)' },
-      { url: `https://${PUBLIC_HTTPS_HOST}/assets/cdn/pkg/vue/3.4.21/vue.global.prod.min.js`, note: '로컬 CDN 패키지(Vue) 정적서빙 확인' },
+      { url: `https://${PUBLIC_HTTPS_HOST}/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js`, note: '로컬 CDN 패키지(Vue) 정적서빙 확인' },
     ];
     const serverInfo = [
       { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 공개 포트 ${PUBLIC_PORT})` },
@@ -176,7 +177,7 @@ function fmtElapsed() {
       detail: allOk ? '헬스체크 정상' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus}`,
       serverInfo,
       checkUrls,
-      npmScript: 'deploy:dev-synol-ecFeBo',
+      npmScript: 'deploy/ecFeBo',
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -193,7 +194,7 @@ function fmtElapsed() {
         { url: `https://${PUBLIC_HTTPS_HOST}/index.html`, note: '사용자(FO) 메인 화면(정상화 후 재확인)' },
         { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(정상화 후 재확인)' },
       ],
-      npmScript: 'deploy:dev-synol-ecFeBo',
+      npmScript: 'deploy/ecFeBo',
     });
     process.exit(1);
   }

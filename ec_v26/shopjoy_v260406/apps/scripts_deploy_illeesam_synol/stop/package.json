@@ -1,0 +1,15 @@
+{
+  "// ⭐⭐⭐": "이 파일은 [STOP] 전용 — 5개 앱 컨테이너 정지만(compose stop, 데이터/설정 보존). 형제 폴더 deploy/·delete/·ps/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것.",
+  "name": "shopjoy-deploy-scripts-stop",
+  "private": true,
+  "description": "5개 앱 컨테이너 정지(docker compose stop — 설정/컨테이너는 남고, 나중에 start로 바로 재개 가능). 실제 구현은 루트(apps/scripts_deploy_illeesam_synol/)의 manage-dev-synol.js 공용 — stop/delete/ps 가 이 파일 하나를 verb만 바꿔 호출한다.",
+  "scripts": {
+    "---------- STOP (컨테이너 정지) ----------": "exit 0",
+    "ecBeBo": "node ../manage-dev-synol.js stop ecBeBo",
+    "ecBeCdn": "node ../manage-dev-synol.js stop ecBeCdn",
+    "ecFeBo": "node ../manage-dev-synol.js stop ecFeBo",
+    "ecBeRedis": "node ../manage-dev-synol.js stop ecBeRedis",
+    "ecGateway": "node ../manage-dev-synol.js stop ecGateway",
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+  }
+}

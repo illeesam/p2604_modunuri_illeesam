@@ -23,12 +23,12 @@ const ENV_FILE = path.join(__dirname, '.synology-deploy.env');
 //  로그로 기록 가능하나?")
 //
 //  apps/scripts_logs/{YYYYMMDD}_{HHmmss}_{npm 스크립트명}.log 에 그대로 기록한다. 이 파일이
-//  synology-deploy-util.js 를 require 하는 모든 스크립트(deploy-dev-synol-*.js,
+//  synology-deploy-util.js 를 require 하는 모든 스크립트(deploy/deploy-dev-synol-*.js,
 //  manage-dev-synol.js)가 로드되는 시점에 자동으로 켜진다 — 개별 스크립트가 따로 뭘 더
 //  안 해도 된다. 파일명의 스크립트명은 process.env.npm_lifecycle_event(= npm 이 "npm run
-//  <이름>" 실행 시 자동으로 심어주는 그 <이름> 자체, 예: "deploy:dev-synol-ecBeRedis")를
-//  쓰고, ':' 는 파일명에 못 쓰는 문자라 '-' 로 바꾼다 — node 로 직접 실행해서 이 값이 없으면
-//  실행 파일명(확장자 제외)으로 대체한다.
+//  <이름>" 실행 시 자동으로 심어주는 그 <이름> 자체 — 워크스페이스에서 실행해도 워크스페이스
+//  쪽 스크립트명이 그대로 들어온다, 예: "ecBeRedis")를 쓰고, ':' 는 파일명에 못 쓰는 문자라
+//  '-' 로 바꾼다 — node 로 직접 실행해서 이 값이 없으면 실행 파일명(확장자 제외)으로 대체한다.
 //
 //  process.stdout.write/process.stderr.write 를 직접 후킹한다(console.log/error 도 내부적으로
 //  이 두 함수를 거치므로 자동 포함) — withSsh() 가 SSH 원격 명령 출력을 process.stdout.write로
@@ -49,7 +49,16 @@ function initFileLog() {
     // 여러 개 x 날짜 여러 날치가 한 폴더에 뒤섞이지 않게(요청사항).
     const dayDir = path.join(LOG_DIR, dateStr);
     if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
-    const scriptName = (process.env.npm_lifecycle_event || path.basename(process.argv[1] || 'unknown', '.js')).replace(/:/g, '-');
+    // 2026-09-06: npm_lifecycle_event 단독 의존 폐기 — deploy/stop/delete/ps 4개 워크스페이스가
+    // 전부 같은 짧은 스크립트명(예: "ecGateway")을 쓰게 되면서 npm_lifecycle_event 만으로는
+    // 로그 파일명에서 "이게 stop 인지 ps 인지"가 안 드러나는 문제가 생겼다(요청사항: "ps 는
+    // 로그파일 안남기네" — 실제로는 남지만 파일명만 보고 구분이 안 됐던 것). 실행 파일 자체
+    // (process.argv[1] — manage-dev-synol.js 는 항상 이 이름 그대로) + 실제 전달된 인자
+    // (action/app 등, "-"로 시작하는 플래그는 제외)를 조합해서 파일명을 만든다 — npm 워크스페이스
+    // 경유든 node 직접 실행이든 process.argv 는 동일하므로 어느 경로로 실행해도 같은 결과.
+    const argExtras = process.argv.slice(2).filter((a) => a && !a.startsWith('-'));
+    const baseName = path.basename(process.argv[1] || 'unknown', '.js');
+    const scriptName = (argExtras.length ? `${baseName}-${argExtras.join('-')}` : baseName).replace(/:/g, '-');
     const logPath = path.join(dayDir, `${stamp}_${scriptName}.log`);
     const stream = fs.createWriteStream(logPath, { flags: 'a' });
 
@@ -140,7 +149,7 @@ function requireCreds(scriptName) {
     );
   }
   // 2026-09-05: 지금 어느 NAS/계정으로 접속하는지 콘솔에서 바로 보이게(비밀번호는 뒤쪽 절반
-  // *** 마스킹) — deploy:dev-synol-ecBeBo/fe/full 이 여러 스크립트를 순서대로 실행할 때, 각
+  // *** 마스킹) — deploy/ 워크스페이스의 zmulti-* 처럼 여러 스크립트가 순서대로 실행될 때, 각
   // 단계가 실제로 어떤 host/port/계정을 쓰는지 헷갈리지 않게 하기 위함.
   console.log(`${tag}[접속정보] HOST=${HOST} PORT=${PORT} USER=${USER} PASSWORD=${maskPassword(PASSWORD)}`);
 }
@@ -174,12 +183,19 @@ function run(cmd, cwd, tag = SELF_TAG) {
 /* SSH 연결 하나를 열고, sftpPut(여러 건) → exec(순차 여러 명령) 을 차례로 수행한 뒤 닫는다.
    tag: 호출한 스크립트를 식별하는 접두어(예: "[deploy-dev-synol-be-ecBeBo.js][BE]") — 이 함수가 찍는
    모든 로그 줄(사전 준비/전송/NAS 실행/Docker 빌드 단계번호) 앞에 그대로 붙는다. 여러 스크립트가
-   순서대로 돌 때(deploy:dev-synol-zmulti-ecBeBo-ecBeCdn 등) 지금 이 줄이 어느 스크립트에서 나온 건지 바로
+   순서대로 돌 때(deploy/ 워크스페이스의 npm run zmulti-ecBeBo-ecBeCdn 등) 지금 이 줄이 어느 스크립트에서 나온 건지 바로
    구분하기 위함(2026-09-05). */
 function withSsh(uploads, commands, tag = SELF_TAG) {
   return new Promise((resolve, reject) => {
     const conn = new Client();
     console.log(`${tag}[접속 시도] ssh://${USER}:${maskPassword(PASSWORD)}@${HOST}:${PORT}`);
+    // 2026-09-06: 실제로 이 컴퓨터가 (ssh2 라이브러리로 프로그래밍 방식으로) 맺는 접속과 동등한
+    // OpenSSH 커맨드라인을 한 줄 더 남긴다(요청사항: "ssh 명령들도 다 남겨야해") — 사람이 문제
+    // 재현/직접 접속해서 확인하고 싶을 때 그대로 복붙 가능하게. 비밀번호는 이 라이브러리가 코드로
+    // 직접 넘기므로 커맨드라인에 실릴 필요 자체가 없다 — 그래서 아예 표시 대상에서 뺀다(마스킹이
+    // 아니라 "이 자리엔 원래 없다"는 것). 아래 "▶️" 접두는 [NAS 실행] 블록의 실제 명령 표기와
+    // 통일된 표기.
+    console.log(`${tag} ▶️  ssh -p ${PORT} ${USER}@${HOST}  (비밀번호는 코드로 직접 전달 — 커맨드라인에 없음)`);
     conn.on('ready', async () => {
       console.log(`${tag}[접속 성공] SSH 연결 완료 (${USER}@${HOST}:${PORT})`);
       try {
@@ -246,6 +262,10 @@ function withSsh(uploads, commands, tag = SELF_TAG) {
 
         for (const cmd of commands) {
           console.log(`\n${tag}[NAS 실행] ${cmd.label || cmd.cmd}`);
+          // 2026-09-06: 지금까지 label 이 있으면 실제 실행된 명령(cmd.cmd) 자체는 로그에 전혀
+          // 안 남았다 — "어떤 명령을 수행한 건지 파악하고 싶다"는 요청사항. label 유무와 무관하게
+          // 항상 실제 명령을 "▶️ " 접두로 한 줄 더 남긴다(label 없을 때는 위 줄과 같아 중복이라 생략).
+          if (cmd.label) console.log(`${tag} ▶️  ${cmd.cmd}`);
           await new Promise((res, rej) => {
             conn.exec(cmd.cmd, (err, stream) => {
               if (err) return rej(err);

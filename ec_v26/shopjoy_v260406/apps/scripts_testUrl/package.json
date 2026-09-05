@@ -1,0 +1,18 @@
+{
+  "name": "shopjoy-test-urls",
+  "private": true,
+  "description": "5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecGateway)의 점검용 URL을 test-urls.data.js 한 곳에 모아두고, test-urls.js 로 실제 curl 확인까지 한다. deploy-dev-synol-*.js 의 notifyDeployResult({ checkUrls }) 목록을 그대로 옮겨온 것 — SSH 접속정보 불필요(공개 URL만 GET).",
+  "scripts": {
+    "test:all": "node test-urls.js",
+    "test:ecBeBo": "node test-urls.js ecBeBo",
+    "test:ecBeCdn": "node test-urls.js ecBeCdn",
+    "test:ecFeBo": "node test-urls.js ecFeBo",
+    "test:ecGateway": "node test-urls.js ecGateway"
+  },
+  "// scriptsGuide": "JSON은 주석 문법이 없어 npm 이 무시하는 커스텀 필드로 설명을 남긴다.",
+  "scriptsGuide": {
+    "test:all": "5개 서비스(ecBeRedis 제외 — HTTP 엔드포인트 없음) 전체 URL을 순서대로 GET, 상태코드/응답시간 출력 + 마지막에 통과 건수 요약.",
+    "test:ecXxx": "그 서비스 URL 목록만 확인. ecBeRedis 는 HTTP 점검 대상이 없어 스크립트 없음 — deploy-dev-synol-be-ecBeRedis.js 가 배포 시 redis-cli ping 으로 직접 확인."
+  },
+  "dependencies": {}
+}

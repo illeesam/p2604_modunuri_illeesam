@@ -1,11 +1,12 @@
 /* deploy-dev-synol-be-ecBeBo.js — 내 컴퓨터에서 직접 SSH로 백엔드(EcAdminApi)를 Synology NAS(dev)에
  * 빌드+전송+재기동까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-ecBeBo/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포).
- * 프론트는 별도 scripts/deploy-dev-synol-fe-ecFeBo.js(= npm run deploy:dev-synol-ecFeBo).
- * 백엔드+CDN서버 둘 다 한 번에 하려면 npm run deploy:dev-synol-zmulti-ecBeBo-ecBeCdn.
+ * 프론트는 별도 deploy-dev-synol-fe-ecFeBo.js(= cd deploy && npm run ecFeBo).
+ * 백엔드+CDN서버 둘 다 한 번에 하려면 npm run zmulti-ecBeBo-ecBeCdn.
  *
- * 사용법: node scripts/deploy-dev-synol-be-ecBeBo.js   (= npm run deploy:dev-synol-ecBeBo)
- * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
+ * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeBo
+ *          (또는 루트에서 npm run ecBeBo --workspace=deploy)
+ * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/11_illeesam_synology_BE_수동배포가이드(synology).md 의
  * STEP 1~5 와 완전히 동일한 절차를 그대로 스크립트로 옮긴 것뿐이다 — 사람이 손으로 치던
@@ -13,15 +14,15 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { ROOT, fail, requireCreds, run, withSsh, hms } = require('./synology-deploy-util');
-const { notifyDeployResult } = require('./notify-deploy-result');
+const { ROOT, fail, requireCreds, run, withSsh, hms } = require('../synology-deploy-util');
+const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecBeBo.js');
 
 const DOCKER = '/usr/local/bin/docker';
 const REMOTE_BE_DIR = '/volume1/docker/shopjoy/ecBeBo';
 
-// 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(BE)"을 밝히는 태그 — deploy:dev-synol-zmulti-ecBeBo-ecBeCdn
+// 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(BE)"을 밝히는 태그 — npm run zmulti-ecBeBo-ecBeCdn
 // 처럼 여러 스크립트가 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
 // 2026-09-06: toString() 을 커스텀해서 `${TAG}` 로 보간될 때마다 그 순간의 [HH:MM:SS] 시각을
 // 새로 계산해 넣는다 — Gradle 빌드/NAS 전송처럼 오래 걸리는 단계 사이 실제 경과시간을 로그만
@@ -184,7 +185,7 @@ function fmtElapsed() {
       detail: `헬스체크: http://illeesam.synology.me:21080/actuator/health`,
       serverInfo,
       checkUrls,
-      npmScript: 'deploy:dev-synol-ecBeBo',
+      npmScript: 'deploy/ecBeBo',
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -196,7 +197,7 @@ function fmtElapsed() {
         { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21080)' },
         { label: '설치 경로', value: REMOTE_BE_DIR },
       ],
-      npmScript: 'deploy:dev-synol-ecBeBo',
+      npmScript: 'deploy/ecBeBo',
     });
     process.exit(1);
   }

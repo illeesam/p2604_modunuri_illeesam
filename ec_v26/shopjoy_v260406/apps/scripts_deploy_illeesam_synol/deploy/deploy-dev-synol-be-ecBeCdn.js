@@ -14,14 +14,15 @@
  *      2) _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 을 DB에 적용 + cf_client 계정 시딩
  *    이 스크립트는 그 이후 "jar만 갱신"하는 반복 배포용이다 — Dockerfile/compose/.env 는 안 건드림.
  *
- * 사용법: node scripts/deploy-dev-synol-be-ecBeCdn.js   (= npm run deploy:dev-synol-ecBeCdn)
- * NAS 접속정보는 scripts/.synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
+ * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeCdn
+ *          (또는 루트에서 npm run ecBeCdn --workspace=deploy)
+ * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, fail, requireCreds, run, withSsh, hms } = require('./synology-deploy-util');
-const { notifyDeployResult } = require('./notify-deploy-result');
+const { ROOT, fail, requireCreds, run, withSsh, hms } = require('../synology-deploy-util');
+const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecBeCdn.js');
 
@@ -153,7 +154,7 @@ function fmtElapsed() {
 
     console.log(`\n${TAG}[완료] EcCdnApi 배포 끝 (총 소요 ${fmtElapsed()})${publicOk ? ' (외부 헬스체크 정상)' : ' (외부 헬스체크 이상 있음 — 위 내용 확인)'}`);
     console.log(`${TAG}   헬스체크(직접): http://${PUBLIC_HOST}:${PUBLIC_PORT}/actuator/health`);
-    console.log(`${TAG}   공개 경로: http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html , /api/cdn/client/page`);
+    console.log(`${TAG}   공개 경로: http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html , http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/client/page`);
     // 점검 안내(요청사항) — 정적화면(로그뷰어 포함) + API + NAS 내부 디버그, 다양하게 골라 나열.
     const checkUrls = [
       { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html`, note: '관리자 화면 기본 진입(cf_file 관리, 로그인 불필요)' },
@@ -180,7 +181,7 @@ function fmtElapsed() {
       detail: publicOk ? '외부 헬스체크 정상' : `외부 헬스체크 이상 있음: /home/index.html=${adminStatus} /api/cdn/client/page=${apiStatus}`,
       serverInfo,
       checkUrls,
-      npmScript: 'deploy:dev-synol-ecBeCdn',
+      npmScript: 'deploy/ecBeCdn',
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -193,7 +194,7 @@ function fmtElapsed() {
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/client/page?pageNo=1&pageSize=1`, note: 'cf_client 목록 API(정상화 후 재확인)' },
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/actuator/health`, note: '헬스체크(직접)' },
       ],
-      npmScript: 'deploy:dev-synol-ecBeCdn',
+      npmScript: 'deploy/ecBeCdn',
     });
     process.exit(1);
   }

@@ -81,7 +81,7 @@ window.CfAuthTest = {
     // 4) 이벤트 핸들러(on*)
     const onLogin = async () => {
       if (!form.id.trim() || !form.pwd) return cfAuth.showToast('아이디/비밀번호를 입력하세요.', true);
-      const url = fnBaseUrl() + '/api/auth/login';
+      const url = fnBaseUrl() + '/api/cdn/auth/login';
       const reqBody = { id: form.id.trim(), pwd: form.pwd };
       try {
         const res = await fetch(url, {
@@ -105,7 +105,7 @@ window.CfAuthTest = {
 
     const onRefresh = async () => {
       if (!lastAccessToken) return cfAuth.showToast('먼저 토큰을 요청(로그인)하세요.', true);
-      const url = fnBaseUrl() + '/api/auth/refresh';
+      const url = fnBaseUrl() + '/api/cdn/auth/refresh';
       try {
         const res = await fetch(url, {
           method: 'POST',

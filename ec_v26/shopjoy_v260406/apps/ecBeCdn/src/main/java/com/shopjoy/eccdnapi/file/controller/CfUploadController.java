@@ -47,10 +47,10 @@ public class CfUploadController {
             f.getOrigFileNm(),
             f.getMediaTypeCd(),
             f.getFileSize(),
-            "/cf/file/" + f.getFileId(),
-            f.getThumbnailPath() != null ? "/cf/thumbnail/" + f.getFileId() : null,
-            f.getFramePath() != null ? "/cf/frame/" + f.getFileId() : null,
-            isVideo ? "/cf/stream/" + f.getFileId() : null
+            "/api/cdn/serve/file/" + f.getFileId(),
+            f.getThumbnailPath() != null ? "/api/cdn/serve/thumbnail/" + f.getFileId() : null,
+            f.getFramePath() != null ? "/api/cdn/serve/frame/" + f.getFileId() : null,
+            isVideo ? "/api/cdn/serve/stream/" + f.getFileId() : null
         );
     }
 }

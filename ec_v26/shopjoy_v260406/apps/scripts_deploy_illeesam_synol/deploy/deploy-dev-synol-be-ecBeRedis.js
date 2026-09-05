@@ -9,12 +9,13 @@
  * 컨테이너(123-redis.70rc1, 12379, 무암호)와 겹치지 않으므로 더 이상 그 컨테이너를 정지·삭제할
  * 필요가 없다 — 둘 다 동시에 떠 있을 수 있다(옛 컨테이너는 준비되는 대로 수동 정리할 것).
  *
- * 사용법: node deploy-dev-synol-be-ecBeRedis.js   (= npm run deploy:dev-synol-ecBeRedis, apps/scripts_deploy_illeesam_synol/ 안에서)
- * NAS 접속정보는 .synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
+ * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeRedis
+ *          (또는 루트에서 npm run ecBeRedis --workspace=deploy)
+ * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms } = require('./synology-deploy-util');
-const { notifyDeployResult } = require('./notify-deploy-result');
+const { ROOT, requireCreds, withSsh, hms } = require('../synology-deploy-util');
+const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('deploy-dev-synol-be-ecBeRedis.js');
 
@@ -89,7 +90,7 @@ function fmtElapsed() {
         { label: '기존 무암호 컨테이너', value: '123-redis.70rc1(12379)은 포트가 달라 그대로 남아있음 — 준비되면 수동 정리' },
       ],
       checkUrls: [],
-      npmScript: 'deploy:dev-synol-ecBeRedis',
+      npmScript: 'deploy/ecBeRedis',
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -98,7 +99,7 @@ function fmtElapsed() {
       tag: TAG, scriptName: 'Redis', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
-      npmScript: 'deploy:dev-synol-ecBeRedis',
+      npmScript: 'deploy/ecBeRedis',
     });
     process.exit(1);
   }

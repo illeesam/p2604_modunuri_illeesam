@@ -24,7 +24,7 @@ import java.nio.file.Path;
  * 파일명이 UUID 기반이라 재사용될 일이 없으므로 영구 캐시(immutable) 헤더를 붙인다.
  */
 @RestController
-@RequestMapping("/cf")
+@RequestMapping("/api/cdn/serve")
 @RequiredArgsConstructor
 public class CfFileServeController {
 

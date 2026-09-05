@@ -6,16 +6,17 @@
  * ⚠️ 테스트 전용이다(apps/ecGateway/docker-compose.yml 상단 주석 참조) — ecBeBo(22300)/
  * ecBeCdn(22400)이 이 NAS에 이미 떠 있어야(host.docker.internal 경유로 호출) 정상 동작하고,
  * ecFeBo(22000)가 배포해둔 정적 파일 폴더(/volume1/docker/shopjoy/ecFeBo)를 그대로 재사용한다
- * — 즉 이 스크립트를 돌리기 전에 npm run deploy:dev-synol-ecBeBo / -ecBeCdn / -ecFeBo 가
+ * — 즉 이 스크립트를 돌리기 전에 deploy/ 에서 npm run ecBeBo / ecBeCdn / ecFeBo 가
  * 먼저 실행되어 있어야 의미가 있다(순서 강제는 안 함 — 없어도 컨테이너 자체는 뜨지만 502/빈
  * 화면만 보게 된다).
  *
- * 사용법: node deploy-dev-synol-gw-ecGateway.js   (= npm run deploy:dev-synol-ecGateway, apps/scripts_deploy_illeesam_synol/ 안에서)
- * NAS 접속정보는 .synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
+ * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecGateway
+ *          (또는 루트에서 npm run ecGateway --workspace=deploy)
+ * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms } = require('./synology-deploy-util');
-const { notifyDeployResult } = require('./notify-deploy-result');
+const { ROOT, requireCreds, withSsh, hms } = require('../synology-deploy-util');
+const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('deploy-dev-synol-gw-ecGateway.js');
 
@@ -66,7 +67,7 @@ function fmtElapsed() {
     );
 
     console.log(`\n${TAG}[완료] 게이트웨이 배포 끝 (총 소요 ${fmtElapsed()})`);
-    console.log(`${TAG}   접속: http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html , /bo.html`);
+    console.log(`${TAG}   접속: http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html , http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`);
     console.log(`${TAG}   ⚠ ecBeBo(22300)/ecBeCdn(22400)이 이 NAS에 안 떠 있으면 /api,/cdn-admin,/admin-tools 는 502가 정상입니다.`);
 
     await notifyDeployResult({
@@ -84,7 +85,7 @@ function fmtElapsed() {
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유)' },
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 API(게이트웨이→ecBeBo)' },
       ],
-      npmScript: 'deploy:dev-synol-ecGateway',
+      npmScript: 'deploy/ecGateway',
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -93,7 +94,7 @@ function fmtElapsed() {
       tag: TAG, scriptName: '게이트웨이(테스트용, ecGateway)', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
-      npmScript: 'deploy:dev-synol-ecGateway',
+      npmScript: 'deploy/ecGateway',
     });
     process.exit(1);
   }

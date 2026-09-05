@@ -44,8 +44,6 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
-                .requestMatchers("/cf/file/**", "/cf/thumbnail/**", "/cf/frame/**", "/cf/stream/**").permitAll()
                 // 관리 화면 정적 리소스. "/" 단독(파일명 없음)도 필요 — Spring Boot 의 "루트 요청엔
                 // index.html 서빙" 처리는 정적 리소스 핸들러 단계라, 그 전에 걸리는 이 보안필터는
                 // "/" 자체를 "/*.html" 로 안 봐서 안 넣으면 여기서 먼저 401 난다(nginx 의
@@ -53,7 +51,10 @@ public class SecurityConfig {
                 // 2026-09-06: 관리 화면 프로그램(index.html/css/js/cf-video-popup.html) 을
                 // static/home/ 으로 이동(요청사항) — 전부 그 아래 한 prefix 로 커버.
                 .requestMatchers(HttpMethod.GET, "/", "/favicon.ico", "/home/**").permitAll()
-                // 관리 화면(cf_client/cf_file CRUD, 업로드/삭제)은 로그인 없이 사용 — 요청사항.
+                // 관리 화면(cf_client/cf_file CRUD, 업로드/삭제) + 인증(로그인/재발급) + 바이너리
+                // 서빙(file/thumbnail/frame/stream) 전부 /api/cdn/** 밑으로 통일 — 개별 permitAll
+                // 나열 대신 이 규칙 하나로 커버(2026-09-06: /api/auth/**, /cf/** 컨트롤러를
+                // /api/cdn/auth/**, /api/cdn/serve/** 로 이동 통합하면서 정리).
                 .requestMatchers("/api/cdn/**").permitAll()
                 .anyRequest().authenticated()
             )

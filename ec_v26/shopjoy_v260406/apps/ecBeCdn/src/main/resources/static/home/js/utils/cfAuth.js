@@ -2,7 +2,7 @@
  * 래퍼 + 토스트.
  *
  * 2026-09-06: 관리 화면은 로그인 없이 쓴다(요청사항) — SecurityConfig 가 /api/cdn/** 를 permitAll 로
- * 열어뒀으므로 이 화면은 토큰을 아예 안 붙여도 된다. accessToken 로그인 체계(POST /api/auth/login 등)
+ * 열어뒀으므로 이 화면은 토큰을 아예 안 붙여도 된다. accessToken 로그인 체계(POST /api/cdn/auth/login 등)
  * 자체는 EcAdminApi 쪽 서버-서버 연동을 위해 백엔드에 그대로 남아있지만, 이 화면에서는 안 씀 —
  * 이름은 과거 로그인 버전과의 호환을 위해 cfAuth 로 유지.
  */

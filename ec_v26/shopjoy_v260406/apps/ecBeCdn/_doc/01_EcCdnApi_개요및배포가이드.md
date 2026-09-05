@@ -8,18 +8,18 @@
 | 용도 | 설명 |
 |---|---|
 | 동영상 스트리머 서버 | 상품 동영상 리뷰 등에 사용. 업로드 시 **첫 프레임 미리보기 이미지**와 **썸네일 이미지**를 항상 함께 만든다. HTTP Range 요청을 지원해 탐색(seek)이 자연스럽다. |
-| 상품이미지 링크 서버 | 이미지를 저장하고 고유 URL(`/cf/file/{fileId}`)로 직접 서빙(`<img src>`로 바로 사용). |
+| 상품이미지 링크 서버 | 이미지를 저장하고 고유 URL(`/api/cdn/serve/file/{fileId}`)로 직접 서빙(`<img src>`로 바로 사용). |
 | 파일 업로드 서버 | AWS S3 / Naver Cloud Object Storage 방식과 비슷한 REST 업로드/삭제 API. 파일당 최대 **120MB**, 초과 시 예외. |
 
 ## 2. 아키텍처
 
 ```
 브라우저 → EcAdminApi(멀티파트 수신) → [accessToken] → EcCdnApi(실제 저장+DB 기록)
-브라우저 ← ─────────────────────────────  <img>/<video> 직접 GET  ← EcCdnApi(nginx 경유, /cf/**)
+브라우저 ← ─────────────────────────────  <img>/<video> 직접 GET  ← EcCdnApi(nginx 경유, /api/cdn/serve/**)
 ```
 
 - **업로드/삭제는 EcAdminApi 가 대신 호출**한다(EcCdnApi 를 브라우저가 직접 두드리지 않음) — `co/ext/cdn/CfCdnApiClient.java` 참조.
-- **원본/썸네일/프레임/스트리밍 GET 은 브라우저가 직접** EcCdnApi 를 호출한다(nginx 의 `/cf/` 프록시 경유, 공개 permitAll).
+- **원본/썸네일/프레임/스트리밍 GET 은 브라우저가 직접** EcCdnApi 를 호출한다(nginx 의 `/api/cdn/` 프록시 경유, 공개 permitAll — 2026-09-06 2차 정리로 `/cf/`·`/api/auth/` 전용 location 을 없애고 `/api/cdn/` 하나로 통합).
 - EcAdminApi 와 EcCdnApi 는 **accessToken(30초) + refreshToken(7일)** 기반 id/pwd 인증으로 통신한다. accessToken 이 매우 짧기 때문에 `CfCdnApiClient` 는 매 호출 직전 만료 여부를 확인하고, 필요하면 refresh(또는 refreshToken 마저 만료면 재로그인)한다. 401 응답을 받으면 1회 재로그인 후 재시도.
 - DB는 EcAdminApi 와 **같은 Postgres 서버/스키마**(`illeesam.synology.me:17632`, `shopjoy_2604`)를 쓰되, **`cf_` 전용 테이블(`cf_client`, `cf_file`)만 EcCdnApi 가 독립적으로 소유**한다(`sy_attach` 재사용 안 함 — 2026-09-06 결정).
 - 배포는 EcAdminApi 와 **완전히 별도**(별도 docker-compose.yml, 별도 NAS 디렉터리) — 단, nginx 가 만드는 `shopjoy-net` 네트워크를 공유해서 서비스명(`eccdnapi`)으로 통신한다.
@@ -28,14 +28,14 @@
 
 | 메서드 | 경로 | 인증 | 설명 |
 |---|---|---|---|
-| POST | `/api/auth/login` | 없음 | `{id, pwd}` → `{accessToken, refreshToken, expiresIn:30}` |
-| POST | `/api/auth/refresh` | 없음 | `{refreshToken}` → 새 accessToken(같은 refreshToken 재사용) |
+| POST | `/api/cdn/auth/login` | 없음 | `{id, pwd}` → `{accessToken, refreshToken, expiresIn:30}` |
+| POST | `/api/cdn/auth/refresh` | 없음 | `{refreshToken}` → 새 accessToken(같은 refreshToken 재사용) |
 | POST | `/api/cdn/upload` | 없음(permitAll) | 멀티파트(`file`, `thumbnail` bool) → 파일 메타 + URL들 |
 | DELETE | `/api/cdn/file/{fileId}` | 없음(permitAll) | 원본+썸네일+프레임 전부 삭제 |
-| GET | `/cf/file/{fileId}` | 없음(공개) | 원본 파일 서빙 |
-| GET | `/cf/thumbnail/{fileId}` | 없음(공개) | 썸네일 서빙(없으면 400) |
-| GET | `/cf/frame/{fileId}` | 없음(공개) | 동영상 첫 프레임 서빙(동영상 아니면 400) |
-| GET | `/cf/stream/{fileId}` | 없음(공개) | 동영상 스트리밍(Range 지원, `Accept-Ranges: bytes`) |
+| GET | `/api/cdn/serve/file/{fileId}` | 없음(공개) | 원본 파일 서빙 |
+| GET | `/api/cdn/serve/thumbnail/{fileId}` | 없음(공개) | 썸네일 서빙(없으면 400) |
+| GET | `/api/cdn/serve/frame/{fileId}` | 없음(공개) | 동영상 첫 프레임 서빙(동영상 아니면 400) |
+| GET | `/api/cdn/serve/stream/{fileId}` | 없음(공개) | 동영상 스트리밍(Range 지원, `Accept-Ranges: bytes`) |
 
 **업로드 처리 규칙**(요청사항 그대로):
 - 파일 용량이 **120MB** 초과 → `CfFileTooLargeException`(413)
@@ -63,7 +63,7 @@ EcAdminApi 의 `_doc/11번 문서`(수동배포가이드)와 같은 절차. **�
 3. **NAS 디렉터리 준비**: `/volume1/docker/shopjoy/eccdnapi/` 에 `Dockerfile`, `docker-compose.yml`, `.env`(`env.dev` 참고해서 직접 작성, `CF_JWT_SECRET`/`DB_PASSWORD`/`CF_CDN_CLIENT_PWD` 등 실제 값 채움) 배치.
 4. **저장소/로그 볼륨 폴더 생성**: `mkdir -p /volume1/docker/shopjoy/cdn-storage /volume1/docker/eccdnapi/logs`
 5. **최초 기동**: `cd /volume1/docker/shopjoy/eccdnapi && docker compose up -d --build`
-6. **nginx 반영 확인** — `nginx.conf`(upstream `ec_cdn_api`)와 `locations.conf`(`/cf/` 프록시)가 이미 EcAdminApi 배포에 포함되어 있으므로, EcAdminApi 를 최신 상태로 재배포하면 자동 반영된다. `https://21000.illeesam.synology.me/cf/file/{fileId}` 로 확인.
+6. **nginx 반영 확인** — (2026-09-06 2차 재편 후) `apps/ecGateway/nginx.conf`(upstream `ec_cdn_api`)와 `locations.conf`(`/api/cdn/` 프록시 하나로 통합, 예전 `/cf/`·`/api/auth/` 개별 location 은 폐기)가 테스트 게이트웨이 배포에 포함되어 있다. 실제 운영 경로는 이 게이트웨이 없이 `https://22400.illeesam.synology.me/api/cdn/serve/file/{fileId}` 로 EcCdnApi 를 직접 호출.
 
 ## 6. 반복 배포 (자동 스크립트)
 
@@ -142,7 +142,7 @@ URL 을 아는 사람은 누구나 파일 업로드/삭제·cf_client 계정 생
 | PUT | `/api/cdn/client/{clientId}` | cf_client 수정(비밀번호는 값 있을 때만 재해시) |
 | DELETE | `/api/cdn/client/{clientId}` | cf_client 삭제 |
 | GET | `/api/cdn/file/page` | cf_file 목록(검색: 원본파일명 + 미디어유형 필터) |
-| GET | `/api/cdn/file/{fileId}` | cf_file 상세 메타(공개 바이너리 서빙 `/cf/file/{id}` 와는 별개 경로) |
+| GET | `/api/cdn/file/{fileId}` | cf_file 상세 메타(공개 바이너리 서빙 `/api/cdn/serve/file/{id}` 와는 별개 경로) |
 
 ## 9. EcAdminApi 쪽 연동 상태 (중요)
 
@@ -158,4 +158,4 @@ URL 을 아는 사람은 누구나 파일 업로드/삭제·cf_client 계정 생
 | `_doc/ddl_pgsql/ec/cf_client.sql`, `cf_file.sql` | DDL(source of truth) |
 | `scripts/deploy-dev-synol-be-ecBeCdn.js` | 자동 배포 스크립트 |
 | `apps/ecBeBo/co/ext/cdn/CfCdnApiClient.java` | EcAdminApi → EcCdnApi 호출 클라이언트(대기 상태) |
-| `apps/ecBeBo/nginx.conf`, `locations.conf` | `/cf/` 프록시(upstream `ec_cdn_api`) |
+| `apps/ecGateway/nginx.conf`, `locations.conf` | 테스트 전용 게이트웨이의 `/api/cdn/` 프록시(upstream `ec_cdn_api`) — 운영 경로 아님, EcCdnApi(22400)/EcAdminApi(22300) 각자 직접 공개가 원칙 |

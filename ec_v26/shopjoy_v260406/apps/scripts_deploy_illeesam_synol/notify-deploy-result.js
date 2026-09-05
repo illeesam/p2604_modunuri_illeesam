@@ -130,7 +130,7 @@ function buildServerInfo(serverInfo) {
  * @param {string} [detail]   추가 상세(헬스체크 결과, 에러 메시지 등) — 여러 줄 가능
  * @param {Array<{label:string, value:string}>} [serverInfo] 서버/설치경로/환경 정보 항목 목록
  * @param {Array<{url:string, note?:string}>} [checkUrls] 점검 안내로 나열할 URL + 코멘트 목록
- * @param {string} [npmScript] 실행한 npm 스크립트명(예: 'deploy:dev-synol-ecFeBo') — 제목 끝에 표시
+ * @param {string} [npmScript] 실행한 워크스페이스/스크립트명(예: 'deploy/ecFeBo' — cd deploy && npm run ecFeBo) — 제목 끝에 표시
  */
 async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript }) {
   const emoji = success ? '✅' : '❌';

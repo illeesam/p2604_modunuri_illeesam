@@ -8,8 +8,9 @@
  *           ps(상태 확인) | logs(최근 로그 30줄)
  *   app   : ecBeBo | ecBeCdn | ecFeBo | ecBeRedis | ecGateway
  *
- * npm 스크립트로는 각 조합이 stop:dev-synol-{app} / delete:dev-synol-{app} 형태로 등록돼 있다
- * (package.json 참조) — 예: npm run stop:dev-synol-ecBeBo, npm run delete:dev-synol-ecGateway.
+ * npm 스크립트로는 stop/, delete/, ps/ 워크스페이스(각자 package.json)에 {app} 이름으로 등록돼
+ * 있다 — 예: cd stop && npm run ecBeBo, cd delete && npm run ecGateway, cd ps && npm run ecFeBo
+ * (또는 루트에서 npm run ecBeBo --workspace=stop 처럼 --workspace 지정).
  *
  * ⚠️ delete(docker compose down)는 컨테이너/compose가 만든 네트워크만 지운다 — 볼륨(DB 데이터,
  * Redis 데이터, 로그, CDN 저장소 등 호스트 바인드마운트)은 전혀 건드리지 않는다. 이미지도 안

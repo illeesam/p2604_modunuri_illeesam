@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 모호할 수 있어(로드밸런서/NAT 뒤) cf_token/cf_token_hist 에 IP 와 별도로 기록한다.</p>
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/cdn/auth")
 @RequiredArgsConstructor
 public class CfAuthController {
 

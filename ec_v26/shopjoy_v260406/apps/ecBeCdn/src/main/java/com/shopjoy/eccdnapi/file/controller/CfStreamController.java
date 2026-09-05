@@ -26,7 +26,7 @@ import java.nio.file.Path;
  * permitAll(SecurityConfig) — 브라우저가 직접 요청.
  */
 @RestController
-@RequestMapping("/cf")
+@RequestMapping("/api/cdn/serve")
 @RequiredArgsConstructor
 public class CfStreamController {
 

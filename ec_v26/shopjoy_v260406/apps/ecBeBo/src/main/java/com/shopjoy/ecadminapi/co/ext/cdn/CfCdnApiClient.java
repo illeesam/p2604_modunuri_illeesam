@@ -114,7 +114,7 @@ public class CfCdnApiClient {
     private void login() {
         try {
             String body = objectMapper.writeValueAsString(new LoginBody(clientId, clientPwd));
-            HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/auth/login"))
+            HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/cdn/auth/login"))
                 .header("Content-Type", "application/json")
                 .header("X-Caller-System", "EcAdminApi") // 마이크로서비스 환경에서 "어느 서비스"인지 자기소개(cf_token/cf_token_hist 기록용)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
@@ -134,7 +134,7 @@ public class CfCdnApiClient {
 
     /** 재발급 — 요청 바디 없음, 지금 갖고 있는(막 만료됐을 수도 있는) accessToken 을 헤더로 보낸다. */
     private void refresh() throws IOException, InterruptedException {
-        HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/auth/refresh"))
+        HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/cdn/auth/refresh"))
             .header("Authorization", "Bearer " + accessToken)
             .header("X-Caller-System", "EcAdminApi")
             .POST(HttpRequest.BodyPublishers.noBody())

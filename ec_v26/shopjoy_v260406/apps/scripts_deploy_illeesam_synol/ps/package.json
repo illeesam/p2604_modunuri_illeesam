@@ -1,0 +1,15 @@
+{
+  "// ⭐⭐⭐": "이 파일은 [PS] 전용 — 5개 앱 컨테이너 상태만 확인(compose ps, 읽기전용). 형제 폴더 deploy/·stop/·delete/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것.",
+  "name": "shopjoy-deploy-scripts-ps",
+  "private": true,
+  "description": "5개 앱 컨테이너 상태만 빠르게 확인(docker compose ps) — 배포/정지/삭제 없이 지금 떠 있는지만 볼 때. 실제 구현은 루트(apps/scripts_deploy_illeesam_synol/)의 manage-dev-synol.js 공용 — stop/delete/ps 가 이 파일 하나를 verb만 바꿔 호출한다.",
+  "scripts": {
+    "---------- PS (컨테이너 상태 확인) ----------": "exit 0",
+    "ecBeBo": "node ../manage-dev-synol.js ps ecBeBo",
+    "ecBeCdn": "node ../manage-dev-synol.js ps ecBeCdn",
+    "ecFeBo": "node ../manage-dev-synol.js ps ecFeBo",
+    "ecBeRedis": "node ../manage-dev-synol.js ps ecBeRedis",
+    "ecGateway": "node ../manage-dev-synol.js ps ecGateway",
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+  }
+}

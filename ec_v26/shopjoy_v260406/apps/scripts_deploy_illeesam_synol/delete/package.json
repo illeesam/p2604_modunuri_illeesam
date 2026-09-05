@@ -1,0 +1,15 @@
+{
+  "// ⭐⭐⭐": "이 파일은 [DELETE] 전용 — 5개 앱 컨테이너+네트워크 제거(compose down, 볼륨/데이터/이미지는 안 지움). 형제 폴더 deploy/·stop/·ps/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것.",
+  "name": "shopjoy-deploy-scripts-delete",
+  "private": true,
+  "description": "5개 앱 컨테이너+네트워크 제거(docker compose down — 볼륨/데이터/이미지는 안 지움, 재배포하면 그대로 복구). 실제 구현은 루트(apps/scripts_deploy_illeesam_synol/)의 manage-dev-synol.js 공용 — stop/delete/ps 가 이 파일 하나를 verb만 바꿔 호출한다.",
+  "scripts": {
+    "---------- DELETE (컨테이너+네트워크 제거) ----------": "exit 0",
+    "ecBeBo": "node ../manage-dev-synol.js delete ecBeBo",
+    "ecBeCdn": "node ../manage-dev-synol.js delete ecBeCdn",
+    "ecFeBo": "node ../manage-dev-synol.js delete ecFeBo",
+    "ecBeRedis": "node ../manage-dev-synol.js delete ecBeRedis",
+    "ecGateway": "node ../manage-dev-synol.js delete ecGateway",
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+  }
+}

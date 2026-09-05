@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * cf_file 관리 화면(목록/상세 메타데이터/폴더트리) 전용 — permitAll(로그인 불필요, 2026-09-06). 실제
- * 바이너리 서빙은 CfFileServeController(/cf/file/**, permitAll), 업로드/삭제는
+ * 바이너리 서빙은 CfFileServeController(/api/cdn/serve/file/**, permitAll), 업로드/삭제는
  * CfUploadController(/api/cdn/**) 참조 — 이 컨트롤러는 그 둘과 경로가 겹치지 않는 조회(GET) 전용
  * 보조 API 만 담당한다.
  */
