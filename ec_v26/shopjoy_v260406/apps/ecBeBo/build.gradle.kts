@@ -78,8 +78,10 @@ dependencies {
     implementation("org.flywaydb:flyway-core:10.0.1")
     implementation("org.flywaydb:flyway-database-postgresql:10.0.1")
 
-    // Swagger/OpenAPI
-    // implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
+    // Swagger/OpenAPI — 2026-09-06: application.yml(springdoc.*)/SecurityConfig(permitAll)는
+    // 이미 준비돼 있었는데 이 의존성 한 줄만 주석 처리돼 있어서 /swagger-ui/index.html 이 계속
+    // 404 였다(test-urls.js 로 실측 발견). 활성화.
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
 
     // DevTools (핫 리로드)
     //developmentOnly("org.springframework.boot:spring-boot-devtools")

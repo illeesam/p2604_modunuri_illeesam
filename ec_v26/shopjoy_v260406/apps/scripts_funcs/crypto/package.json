@@ -1,0 +1,17 @@
+{
+  "// ⭐⭐⭐": "이 파일은 [CRYPTO] 전용 — Jasypt(ecBeBo/ecBeCdn 이 실제로 쓰는 PBEWITHHMACSHA512ANDAES_256) 기반 설정값 암호화/복호화 CLI.",
+  "name": "shopjoy-crypto-cli",
+  "private": true,
+  "description": "application-*.yml 의 ENC(...) 값을 만들거나 확인하는 CLI(_doc/정책서/base/base.설정값암호화.md 참조). Node 는 java(JasyptCli.java)를 그대로 실행하는 얇은 래퍼일 뿐 — 실제 암복호화는 프로젝트가 이미 쓰는 jasypt 1.9.3 라이브러리(ecBeBo build.gradle.kts 의 jasypt-spring-boot-starter 내부 엔진)로 수행하므로, 여기서 만든 ENC(...) 값을 Spring Boot 가 그대로 복호화 가능(직접 재구현 아님 — 알고리즘 미묘한 차이로 인한 불일치 위험 원천 차단).",
+  "scripts": {
+    "---------- CRYPTO (ENC 값 생성/확인) ----------": "exit 0",
+    "encrypt": "node crypto-cli.js encrypt",
+    "decrypt": "node crypto-cli.js decrypt"
+  },
+  "scriptsGuide": {
+    "encrypt": "평문 → ENC(암호문). 마스터키는 JASYPT_MASTER_KEY 환경변수(권장, 셸 히스토리에 안 남음) 또는 첫 번째 인자로: `JASYPT_MASTER_KEY=마스터키 npm run encrypt -- \"평문값\"` 또는 `npm run encrypt -- 마스터키 \"평문값\"`.",
+    "decrypt": "ENC(암호문) 또는 암호문만 → 평문 확인. 사용법은 encrypt 와 동일한 인자 규칙: `JASYPT_MASTER_KEY=마스터키 npm run decrypt -- \"ENC(...)\"`.",
+    "마스터키 실서버 주입": "이 CLI 로 만든 ENC(...) 를 yml 에 넣고, 실행 서버는 JASYPT_ENCRYPTOR_PASSWORD 환경변수(또는 -Djasypt.encryptor.password=)로 같은 마스터키를 줘야 Spring Boot 가 복호화한다 — base.설정값암호화.md 참조.",
+    "JASYPT_JAR 오버라이드": "다른 머신에서 Gradle 캐시 경로가 다르면 JASYPT_JAR 환경변수로 jasypt-1.9.3.jar 의 실제 경로를 직접 지정."
+  }
+}

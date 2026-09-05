@@ -20,24 +20,21 @@
      * 흩어질 수도 있다"는 최악의 경우 기준 설계로 전환 — nginx가 더 이상 /api,/cdn 을
      * 리버스프록시하지 않으므로(완전 분리), 프론트와 백엔드는 서로 다른 origin이다.
      * CORS(CorsOriginPolicy.java 의 "*.illeesam.synology.me" 패턴)로 방어하며 백엔드를
-     * 직접 절대 URL로 호출한다.
+     * 직접 절대 URL로 호출한다. 포트는 443(HTTPS 기본 포트라 안 적어도 자동)이라 비워둔다.
      *
-     * 2026-09-06(추가 수정) — 원래 설계는 `22300.illeesam.synology.me`(HTTPS 서브도메인,
-     * 포트는 443 기본이라 생략) 였으나, 그 서브도메인용 DSM 리버스프록시 등록 + 그 이름을
-     * 커버하는 인증서가 아직 준비되지 않아(22000 프론트 서브도메인도 같은 상태 —
-     * ERR_TLS_CERT_ALTNAME_INVALID 로 실측 확인) 실제로 붙지 않았다. 그 인프라가 준비될
-     * 때까지는 배포스크립트/헬스체크가 실제로 쓰는 방식과 동일하게 "NAS 호스트 + 실제
-     * 공개 포트"로 직접 호출한다(originFrom 이 location.protocol 을 그대로 붙이므로,
-     * 이 페이지 자체도 http://illeesam.synology.me:22000 처럼 HTTP로 열어야 http 로
-     * 맞물린다 — HTTPS 프론트에서 이 host:port 조합을 그대로 쓰면 백엔드가 TLS를 안 하므로
-     * mixed-content 로 막힌다. 서브도메인 인증서가 준비되면 위 원래 설계로 되돌릴 것). */
-    baseApiHost: 'illeesam.synology.me',
-    baseApiPort: '22300',
+     * 2026-09-06: 한때 이 서브도메인용 인증서가 준비 전이라 "illeesam.synology.me:22300"
+     * 처럼 호스트+포트 직접 호출로 임시 우회했었다 — DSM 리버스프록시 규칙 + 전용 인증서
+     * (22300.illeesam.synology.me, SAN 단독) 등록 완료 확인(curl 실측 200) 후 원래 설계로
+     * 복귀. ⚠ 예전 21000.illeesam.synology.me(같은 origin) 방식과 달리, 지금은 이 값이 곧
+     * 백엔드(ecBeBo) 자신의 공개 서브도메인이다 — 값을 바꾸면 그 즉시 다른 백엔드를 호출하게
+     * 된다. */
+    baseApiHost: '22300.illeesam.synology.me',
+    baseApiPort: '',
 
-    /* EcCdnApi(ecBeCdn)도 완전히 별도 서버 — 위와 같은 이유로 서브도메인 대신 실제 포트
-     * 직접 지정. 나중에 진짜 다른 호스팅사로 옮기면 이 두 값만 그 주소로 바꾸면 됨. */
-    cdnApiHost: 'illeesam.synology.me',
-    cdnApiPort: '22400',
+    /* EcCdnApi(ecBeCdn)도 마찬가지로 완전히 별도 서브도메인/서버 — 나중에 진짜 다른
+     * 호스팅사로 옮기면 이 두 값만 그 주소로 바꾸면 됨(코드/배포 구조 변경 불필요). */
+    cdnApiHost: '22400.illeesam.synology.me',
+    cdnApiPort: '',
 
     /* ── 토스페이먼츠 ── */
     toss: {
