@@ -709,11 +709,16 @@ public class AppTableLog {
         return s.length() >= width ? s : s + " ".repeat(width - s.length());
     }
 
+    /**
+     * 2026-09-06 보안수정 — 기존 로직은 "가운데 3글자만" 가려서, 60자 넘는 JWT/API Key 같은
+     * 긴 시크릿은 앞뒤 대부분이 그대로 로그(+ 배포 이메일 첨부 로그파일)에 찍혔다(EcBeCdn 쪽
+     * CfAppTableLog 이식 중 실측 확인). 길이와 무관하게 앞/뒤 4자만 보이고 나머지는 고정 폭
+     * "..."으로 가린다 — 값의 실제 길이도 추측 못 하게.
+     */
     private static String maskMiddle(String val) {
         if (val == null || val.isBlank()) return "(not configured)";
-        if (val.length() <= 6) return "***";
-        int mid = val.length() / 2;
-        return val.substring(0, mid - 1) + "***" + val.substring(mid + 2);
+        if (val.length() <= 10) return "***";
+        return val.substring(0, 4) + "..." + val.substring(val.length() - 4);
     }
 
     private static String maskSecret(String secret) {

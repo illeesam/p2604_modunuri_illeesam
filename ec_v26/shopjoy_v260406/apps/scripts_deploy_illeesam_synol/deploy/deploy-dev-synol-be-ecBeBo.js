@@ -112,6 +112,16 @@ function fmtElapsed() {
       [{ local: jarPath, remote: `${REMOTE_BE_DIR}/${jarFile}` }, ...configUploads],
       [
         {
+          // 2026-09-06 버그수정 — rootProject.name(EcAdminApi→EcBeBo) 변경 후 jar 파일명이
+          // 바뀌면서, 예전 이름의 jar가 이 폴더에 그대로 남아있었다. Dockerfile 의
+          // `COPY *.jar app.jar` 는 정확히 하나의 파일만 매치해야 하는데, 두 개가 있으면
+          // 어느 게 실제로 이미지에 들어갈지 보장이 안 된다(실측: 옛 jar가 들어가 컨테이너가
+          // 옛 클래스명으로 뜨는 사고 발생). 지금 올린 jar(${jarFile}) 만 남기고 나머지는 지운다.
+          label: '이전 이름의 잔존 jar 정리 (rootProject.name 변경 대비)',
+          cmd: `find ${REMOTE_BE_DIR} -maxdepth 1 -name "*.jar" ! -name "${jarFile}" -print -delete`,
+          allowFail: true,
+        },
+        {
           // 2026-09-05: docker-compose.yml 의 로그 볼륨 마운트 소스가 수동 삭제 등으로 없으면
           // "Bind mount failed: ... does not exist"로 컨테이너 기동 자체가 실패한다(Docker가
           // 자동으로 안 만들어줌) — 매번 미리 보장해서 재발 방지.

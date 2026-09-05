@@ -118,7 +118,18 @@ function fmtElapsed() {
       ],
       [
         {
-          // EcAdminApi 배포 스크립트와 같은 이유(로그 볼륨) + 여기는 실제 미디어 저장 볼륨도 있음.
+          // 2026-09-06 버그수정 — rootProject.name(EcCdnApi→EcBeCdn) 변경 후 jar 파일명이
+          // 바뀌면서, 예전 이름의 jar가 이 폴더에 그대로 남아있었다. Dockerfile 의
+          // `COPY *.jar app.jar` 는 정확히 하나의 파일만 매치해야 하는데, 두 개가 있으면
+          // 어느 게 실제로 이미지에 들어갈지 보장이 안 된다(실측: 옛 jar가 들어가 컨테이너가
+          // 옛 클래스명(EcCdnApiApplication)으로 뜨는 사고 발생 — 재현·수정 확인함).
+          // 지금 올린 jar(${jarFile}) 만 남기고 나머지는 지운다.
+          label: '이전 이름의 잔존 jar 정리 (rootProject.name 변경 대비)',
+          cmd: `find ${REMOTE_CDN_DIR} -maxdepth 1 -name "*.jar" ! -name "${jarFile}" -print -delete`,
+          allowFail: true,
+        },
+        {
+          // ecBeBo 배포 스크립트와 같은 이유(로그 볼륨) + 여기는 실제 미디어 저장 볼륨도 있음.
           // 2026-09-06: /volume1/docker/eccdnapi/logs → /volume1/docker/shopjoy/ecBeCdnLogs 로
           // 경로 변경(다른 앱들과 명명 원칙 통일). 기존 로그가 있으면 새 경로로 1회 이관.
           label: '로그·저장소 볼륨 폴더 존재 보장 (+ 로그 구경로 1회 이관)',

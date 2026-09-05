@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds">
-    <!-- EcAdminApi 의 logback-spring.xml(_apps_be/EcAdminApi/src/main/resources/logback-spring.xml)
-         구조를 그대로 참고해 이식했다(요청사항). EcCdnApi 는 MyBatis/Hibernate SQL 이 없는 순수
+    <!-- EcBeBo 의 logback-spring.xml(_apps_be/EcBeBo/src/main/resources/logback-spring.xml)
+         구조를 그대로 참고해 이식했다(요청사항). EcBeCdn 는 MyBatis/Hibernate SQL 이 없는 순수
          JPA+Security 스코프라 로거 목록이 그만큼 짧고, "validate"(스키마 검증) 프로파일도 없어
          local/dev + prod 두 블록만 유지한다. -->
 
@@ -17,7 +17,7 @@
          공통 속성 (application-{local,dev,prod}.yml 의 logging.file.path 를 LOG_DIR 로 수신)
          ※ local/dev 기본값을 워크스페이스 밖 절대경로(C:/_logs/shopjoy)로 설정 — VSCode Live
            Server 가 워크스페이스 안의 .log 파일 변경을 감지해 브라우저를 계속 새로고침하던 문제
-           회피(EcAdminApi 와 동일 원인/동일 해법, _doc/정책서-dev/local-logging.md 참조). 같은
+           회피(EcBeBo 와 동일 원인/동일 해법, _doc/정책서-dev/local-logging.md 참조). 같은
            폴더를 공유해도 APP_NAME 이 달라(ecbebo vs ecbecdn) 파일이 섞이지 않는다.
          ================================================================ -->
     <springProperty scope="context" name="LOG_DIR"

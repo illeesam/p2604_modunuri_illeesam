@@ -1,18 +1,18 @@
 # application.yml — 공통 설정 / 프로파일별: application-{local|dev|prod}.yml
 #
 # ═══════════════════════════════════════════════════════════════════════════
-#  EcCdnApi 는 EcAdminApi 와 완전히 분리된 별도 배포 단위다(별도 docker-compose.yml,
+#  EcBeCdn 는 EcBeBo 와 완전히 분리된 별도 배포 단위다(별도 docker-compose.yml,
 #  별도 포트, 별도 DB 접속 — 단 같은 Postgres 서버/스키마의 cf_* 전용 테이블만 사용).
 #
-#  실행 명령어(java -jar) — EcAdminApi 와 동일 패턴:
-#    java -jar build/libs/EcCdnApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=local
-#    java -jar build/libs/EcCdnApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+#  실행 명령어(java -jar) — EcBeBo 와 동일 패턴:
+#    java -jar build/libs/EcBeCdn-0.0.1-SNAPSHOT.jar --spring.profiles.active=local
+#    java -jar build/libs/EcBeCdn-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
 #    java -jar app.jar --spring.profiles.active=prod --CF_JWT_SECRET=<실제운영시크릿> --DB_PASSWORD=<운영DB비밀번호>
 #
 #  DB_* 는 local/dev 기본값이 있어(illeesam.synology.me 공유 개발DB) 안 넘겨도 뜬다.
 #  prod 는 CF_JWT_SECRET 이 기본값 없이 필수 — 안 넘기면 부팅 자체가 안 됨(빠른 오류 감지 의도).
 #
-#  datasource / server.port 는 여기(공통)에 두지 않는다 — EcAdminApi 와 동일 관례(요청사항):
+#  datasource / server.port 는 여기(공통)에 두지 않는다 — EcBeBo 와 동일 관례(요청사항):
 #  local/dev/prod 프로파일마다 실제 접속정보·포트가 다르므로(dev/prod 는 p6spy 유무도 다름)
 #  각 application-{local,dev,prod}.yml 에서 개별 선언한다.
 # ═══════════════════════════════════════════════════════════════════════════
@@ -29,7 +29,7 @@ spring:
   jpa:
     hibernate:
       # cf_client/cf_file 은 _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 이 기준(source of truth) —
-      # EcAdminApi 와 동일하게 Hibernate 가 DDL 을 만들지 않는다(validate 만).
+      # EcBeBo 와 동일하게 Hibernate 가 DDL 을 만들지 않는다(validate 만).
       ddl-auto: validate
     open-in-view: false
     properties:
@@ -49,14 +49,14 @@ app:
     ffmpeg-path: ${CF_FFMPEG_PATH:ffmpeg}
     jwt:
       secret: ${CF_JWT_SECRET}
-      # 요청사항: accessToken 유효시간 30초(고정, 매우 짧음 — 호출측(EcAdminApi)이 매 호출 직전
+      # 요청사항: accessToken 유효시간 30초(고정, 매우 짧음 — 호출측(EcBeBo)이 매 호출 직전
       # 재로그인/재발급하거나 만료 임박 시 refresh 하는 걸 전제로 한 설계).
       access-expiry-ms: 30000
-      # refreshToken 은 7일(EcAdminApi 의 BO refreshToken 정책과 별개 — 서비스간 통신용이라
-      # EcAdminApi 의 FO 15일/BO 2시간과는 다른 기준으로 임의 설정. 만료되면 재로그인).
+      # refreshToken 은 7일(EcBeBo 의 BO refreshToken 정책과 별개 — 서비스간 통신용이라
+      # EcBeBo 의 FO 15일/BO 2시간과는 다른 기준으로 임의 설정. 만료되면 재로그인).
       refresh-expiry-ms: 604800000
   # Redis 인증 캐시 스위치(요청사항: "redis 인증 연동해줘 단 redis switch 될수 있게 해줘") —
-  # EcAdminApi 의 app.redis.* 관례와 동일. enabled=false(기본) 면 CfRedisConfig 의 빈 자체가
+  # EcBeBo 의 app.redis.* 관례와 동일. enabled=false(기본) 면 CfRedisConfig 의 빈 자체가
   # 안 뜨고 CfRedisUtil 이 전부 no-op — 로그인/재발급/강제폐기는 이 스위치와 무관하게 항상
   # DB(cf_token)만으로 정상 동작한다. 실제 Redis 인스턴스가 준비되면 각 프로파일 yml 에서
   # enabled: true + primary.host/port/password 를 채워 켠다.
@@ -76,7 +76,7 @@ app:
 # 시도하는 RedisReactiveHealthIndicator 를 actuator 헬스체크에 끼워넣는다 — CfRedisConfig 가
 # @ConditionalOnProperty 로 꺼져 있어도 이 기본 인디케이터는 별개로 항상 켜진다. 그 결과
 # "Connection refused: localhost/127.0.0.1:6379" 로 /actuator/health 전체가 DOWN 판정되고
-# docker healthcheck 가 "unhealthy" 로 떨어진다(EcAdminApi 가 이미 같은 문제를 겪고 고쳤던
+# docker healthcheck 가 "unhealthy" 로 떨어진다(EcBeBo 가 이미 같은 문제를 겪고 고쳤던
 # management.health.redis.enabled 버그와 동일 원인 — apps/ecBeBo 의 application-*.yml
 # 참조). 이 앱도 동일하게 명시적으로 꺼둔다.
 management:

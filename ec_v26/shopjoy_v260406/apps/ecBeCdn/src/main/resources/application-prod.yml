@@ -4,7 +4,7 @@
 # p6spy 는 여기서 의도적으로 미적용 — local/dev 에서만(요청사항: "개발인 경우"). 운영은 순정
 # org.postgresql.Driver + jdbc:postgresql: 사용.
 spring:
-  # datasource — 공통 application.yml 에 안 두고 프로파일마다 개별 선언(요청사항, EcAdminApi 관례).
+  # datasource — 공통 application.yml 에 안 두고 프로파일마다 개별 선언(요청사항, EcBeBo 관례).
   datasource:
     # DB_HOST=(필수 권장) | DB_PORT=(필수 권장) | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
     # DB_USERNAME=(필수 권장) | DB_PASSWORD=(필수 권장) — 기본값은 dev 와 같은 공유DB 이지만
