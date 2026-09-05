@@ -492,11 +492,17 @@ VALUES ('2604010000000001','app.file','app.file.cdn-host',
 ON CONFLICT (reg_site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
+-- 2026-09-06: 'https://cdn-ncp.shopjoy.com' → 실제 존재하지 않는(DNS 미등록) 자리표시자 도메인이라
+-- dev 환경에서 첨부/썸네일 이미지가 ERR_NAME_NOT_RESOLVED 로 전부 깨졌다(실측 확인, 관리자
+-- 공지사항 화면에서 발견). CmUploadService.fnCdnHost() 가 이 값 + 상대경로(WebConfig.java 의
+-- "/cdn/**" 정적 매핑)로 URL을 조립하므로, 실제 그 정적 리소스가 서빙되는 곳(ecBeBo 자기 포트
+-- 22300)을 직접 가리키도록 정정 — CDN 서버(EcCdnApi)는 아직 이 업로드 흐름에 연동되지 않았다
+-- (apps/ecBeCdn/_doc/01_EcCdnApi_개요및배포가이드.md §9 참조).
 INSERT INTO shopjoy_2604.sy_prop (reg_site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.file','app.file.cdn-host',
- 'https://cdn-ncp.shopjoy.com',
+ 'http://illeesam.synology.me:22300/cdn',
  'CDN 호스트 URL','STRING',20,'Y','^dev^',
- 'dev CDN URL',
+ 'dev CDN URL — ecBeBo 자기 포트(22300)의 /cdn/** 정적 서빙 직접 참조(2026-09-06 정정)',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (reg_site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
