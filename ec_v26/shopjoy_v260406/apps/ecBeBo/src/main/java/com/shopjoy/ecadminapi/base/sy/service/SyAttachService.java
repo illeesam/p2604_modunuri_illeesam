@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
+import com.shopjoy.ecadminapi.co.ext.cdn.CfCdnApiClient;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
@@ -31,6 +32,7 @@ public class SyAttachService {
 
     private final SyAttachRepository syAttachRepository;
     private final FileUploadUtil fileUploadUtil;
+    private final CfCdnApiClient cfCdnApiClient;
 
     @PersistenceContext
     private EntityManager em;
@@ -230,17 +232,28 @@ public class SyAttachService {
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyAttach entity = findById(id);
+        String storageTypeCd = entity.getStorageTypeCd();
         String storagePath = entity.getStoragePath();
         // [쿼리 메서드] 첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리 삭제
         syAttachRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (storagePath != null) {
+        if (storagePath == null) return;
+        // 2026-09-06: storage_type_cd=CDN 행은 storagePath 에 로컬 경로가 아니라 EcCdnApi 의
+        // fileId 가 들어있다(CmUploadService.uploadMulti() CDN 분기 참조) — 로컬 파일 삭제 대신
+        // EcCdnApi 에 원본+썸네일+프레임 일괄 삭제를 요청한다.
+        if ("CDN".equalsIgnoreCase(storageTypeCd)) {
             try {
-                Files.deleteIfExists(Paths.get(fileUploadUtil.toPhysicalPath(storagePath)));
+                cfCdnApiClient.delete(storagePath);
             } catch (Exception e) {
-                log.warn("실제 파일 삭제 실패 (계속 진행): {}", storagePath, e);
+                log.warn("EcCdnApi 파일 삭제 실패 (계속 진행 — 고아 파일로 남을 수 있음): fileId={}", storagePath, e);
             }
+            return;
+        }
+        try {
+            Files.deleteIfExists(Paths.get(fileUploadUtil.toPhysicalPath(storagePath)));
+        } catch (Exception e) {
+            log.warn("실제 파일 삭제 실패 (계속 진행): {}", storagePath, e);
         }
     }
 

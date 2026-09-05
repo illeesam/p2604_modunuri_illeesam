@@ -475,10 +475,16 @@ ON CONFLICT (reg_site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (reg_site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+-- 2026-09-06: NCP_OBS → CDN — NCP 버킷/키를 하나도 채운 적 없어 실제로 동작한 적 없는 미구현
+-- 옵션이었다(app.file.ncp.* sy_prop 값이 dev/prod 전부 빈 문자열). EcCdnApi(CfCdnApiClient)
+-- 실연동을 CDN 옵션으로 새로 추가 — CmUploadService.uploadMulti() 가 storage-type=CDN 이면
+-- EcCdnApi 로 업로드를 위임하고 결과 fileId/URL 을 sy_attach 에 기록한다(요청사항: "ecBeBo 에
+-- 업로드 하면 ecBeCdn 로 파일정보 전달하여 스토리지에 적재하는거야").
+INSERT INTO shopjoy_2604.sy_prop (reg_site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.file','app.file.storage-type',
- 'NCP_OBS',
+ 'CDN',
  '파일 저장소 유형','STRING',10,'Y','^dev^prod^',
- 'dev/prod: NCP Object Storage 사용',
+ 'dev/prod: EcCdnApi(CfCdnApiClient) 위임 — LOCAL / CDN / AWS_S3 / NCP_OBS',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (reg_site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;

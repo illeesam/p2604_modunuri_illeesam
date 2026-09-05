@@ -15,7 +15,7 @@
  * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms } = require('../synology-deploy-util');
+const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('deploy-dev-synol-gw-ecGateway.js');
@@ -71,7 +71,7 @@ function fmtElapsed() {
     console.log(`${TAG}   ⚠ ecBeBo(22300)/ecBeCdn(22400)이 이 NAS에 안 떠 있으면 /api,/cdn-admin,/admin-tools 는 502가 정상입니다.`);
 
     await notifyDeployResult({
-      tag: TAG, scriptName: '게이트웨이(테스트용, ecGateway)', success: true, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '게이트웨이(테스트용, ecGateway)', success: true, elapsed: fmtElapsed(),
       detail: '배포 완료 — 위 로그의 각 경로별 HTTP 상태 참조',
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 포트 ${PUBLIC_PORT})` },
@@ -91,7 +91,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, scriptName: '게이트웨이(테스트용, ecGateway)', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '게이트웨이(테스트용, ecGateway)', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
       npmScript: 'deploy/ecGateway',

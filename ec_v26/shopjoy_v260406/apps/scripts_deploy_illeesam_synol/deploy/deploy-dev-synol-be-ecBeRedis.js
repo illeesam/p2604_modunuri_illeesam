@@ -14,7 +14,7 @@
  * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms } = require('../synology-deploy-util');
+const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('deploy-dev-synol-be-ecBeRedis.js');
@@ -79,7 +79,7 @@ function fmtElapsed() {
     console.log(`${TAG}     REDIS_PASSWORD=(위와 동일 값)을 맞춰 넣어야 한다(비밀번호가 걸렸으므로 필수).`);
 
     await notifyDeployResult({
-      tag: TAG, scriptName: 'Redis', success: true, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'Redis', success: true, elapsed: fmtElapsed(),
       detail: '배포 완료 — redis-cli ping 결과는 위 로그 참조',
       serverInfo: [
         { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / Redis 포트 22379)' },
@@ -96,7 +96,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, scriptName: 'Redis', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'Redis', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
       npmScript: 'deploy/ecBeRedis',

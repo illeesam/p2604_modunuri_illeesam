@@ -164,7 +164,11 @@ app:
     max-document-size: 20971520
     max-video-size: 104857600
     local:
-      base-path: static/cdn
+      # 2026-09-06 오타 수정: physicalRoot(.../static/cdn)와 같은 값을 넣어놔서 실제 저장 경로가
+      # .../static/cdn/static/cdn/... 로 중첩되던 버그(관리자 공지사항 화면에서 발견). local/
+      # validate 프로파일과 동일하게 "attach"로 통일 — 이제 dev 도 storage-type=CDN 이라 이 값
+      # 자체는 LOCAL 폴백 시에만 쓰이지만, 잘못된 값으로 남겨두면 다음에 또 헷갈리게 된다.
+      base-path: attach
       upload-dir: uploads
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800

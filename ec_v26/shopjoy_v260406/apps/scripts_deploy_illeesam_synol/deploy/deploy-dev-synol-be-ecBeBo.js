@@ -14,7 +14,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { ROOT, fail, requireCreds, run, withSsh, hms } = require('../synology-deploy-util');
+const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecBeBo.js');
@@ -181,7 +181,7 @@ function fmtElapsed() {
       { label: '로그 경로', value: '/volume1/docker/shopjoy/ecBeBoLogs → 컨테이너 내부 logs' },
     ];
     await notifyDeployResult({
-      tag: TAG, scriptName: '백엔드(EcAdminApi)', success: true, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '백엔드(EcAdminApi)', success: true, elapsed: fmtElapsed(),
       detail: `헬스체크: http://illeesam.synology.me:21080/actuator/health`,
       serverInfo,
       checkUrls,
@@ -191,7 +191,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, scriptName: '백엔드(EcAdminApi)', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '백엔드(EcAdminApi)', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [
         { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21080)' },

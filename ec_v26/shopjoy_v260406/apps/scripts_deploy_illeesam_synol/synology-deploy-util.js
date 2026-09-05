@@ -309,4 +309,4 @@ function withSsh(uploads, commands, tag = SELF_TAG) {
   });
 }
 
-module.exports = { ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms };
+module.exports = { ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms, LOG_FILE_PATH };

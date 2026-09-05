@@ -84,7 +84,7 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 | NAS 주소                 | `illeesam.synology.me`                          |
 | SSH 포트                 | `10022`                                         |
 | 계정                     | `appuser`                                      |
-| 비밀번호                 | `appuser1**` (일부만 표시, 실제 값은 별도 보관) |
+| 비밀번호                 | `appu****************` (일부만 표시, 실제 값은 별도 보관) |
 | Docker 배포 위치(NAS 안) | `/volume1/docker/shopjoy/ecBeBo/`              |
 | 프론트 파일 위치(NAS 안) | `/volume1/docker/shopjoy/frontend/`             |
 

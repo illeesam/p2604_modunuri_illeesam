@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.co.cm.service;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
+import com.shopjoy.ecadminapi.co.ext.cdn.CfCdnApiClient;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
 import com.shopjoy.ecadminapi.common.util.VideoConvertUtil;
@@ -35,11 +36,25 @@ public class CmUploadService {
     private final SyAttachService syAttachService;
     private final com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository syPropRepository;
     private final org.springframework.core.env.Environment environment;
+    private final CfCdnApiClient cfCdnApiClient;
 
     /* yml 기본값은 sy_prop 조회가 실패했을 때만 쓰는 최후 폴백이다.
        실제 값은 sy_prop(app.file.cdn-host) 의 활성 프로파일 행에서 읽는다 — fnCdnHost() 참조. */
     @Value("${app.file.cdn-host:http://localhost:3000/cdn}")
     private String cdnHostFallback;
+
+    /* yml 기본값 — sy_prop(app.file.storage-type) 조회가 실패했을 때만 쓰는 최후 폴백.
+       2026-09-06: EcCdnApi 실연동(요청사항 "ecBeBo 에 업로드하면 ecBeCdn 로 파일정보 전달하여
+       스토리지에 적재") 추가 — fnStorageType() 이 "CDN" 이면 로컬 디스크 대신 CfCdnApiClient 로
+       업로드를 위임한다(uploadMulti() 만 적용 — uploadOne() 은 당장은 LOCAL 유지, 별도 작업). */
+    @Value("${app.file.storage-type:LOCAL}")
+    private String storageTypeFallback;
+
+    /** EcCdnApi 가 돌려주는 fileUrl/thumbnailUrl 은 상대경로 — 브라우저가 직접 붙을 절대 URL을
+     * 만들 때 쓰는 "공개" 베이스. app.cf-cdn.base-url(서버↔서버 내부호출용, host.docker.internal
+     * 등)과는 다른 값이어야 한다 — 그건 컨테이너 내부에서만 통하는 주소라 브라우저에서 못 붙는다. */
+    @Value("${app.cf-cdn.public-base-url:${app.cf-cdn.base-url:http://localhost:22400}}")
+    private String cfCdnPublicBaseUrl;
 
     /**
      * CDN 호스트 — sy_prop(app.file.cdn-host) 우선, 없으면 yml 폴백.
@@ -67,6 +82,29 @@ public class CmUploadService {
     private boolean fnPropProfileMatch(String propProfile, String activeProfile) {
         if (propProfile == null || propProfile.isBlank() || "all".equals(propProfile)) return true;
         return propProfile.contains("^" + activeProfile + "^");
+    }
+
+    /**
+     * 스토리지 타입 — sy_prop(app.file.storage-type) 우선, 없으면 yml 폴백(fnCdnHost() 와 동일 패턴).
+     * "CDN" 이면 uploadMulti() 가 로컬 디스크 대신 EcCdnApi(CfCdnApiClient)로 업로드를 위임한다.
+     */
+    private String fnStorageType() {
+        String profile = environment.getActiveProfiles().length > 0
+            ? environment.getActiveProfiles()[0] : "-";
+        // [쿼리 메서드] 프로퍼티 (환경설정/공통 파라미터) 전체/다건 조회
+        String v = syPropRepository.findAll().stream()
+            .filter(p -> "Y".equals(p.getUseYn())
+                && "app.file.storage-type".equals(p.getPropKey())
+                && fnPropProfileMatch(p.getPropProfile(), profile))
+            .map(com.shopjoy.ecadminapi.base.sy.data.entity.SyProp::getPropValue)
+            .filter(x -> x != null && !x.isBlank())
+            .findFirst().orElse(null);
+        return (v != null) ? v : storageTypeFallback;
+    }
+
+    private String fnCfCdnPublicBase() {
+        return cfCdnPublicBaseUrl.endsWith("/")
+            ? cfCdnPublicBaseUrl.substring(0, cfCdnPublicBaseUrl.length() - 1) : cfCdnPublicBaseUrl;
     }
 
     /** 단일 파일 업로드 — 확장자/용량 검증, 썸네일 옵션, DB 저장 (그룹/ref 연계 없음) */
@@ -206,15 +244,77 @@ public class CmUploadService {
             String folderPath = fileUploadUtil.generateFolderPath(businessCode);
             String cdnHost = fnCdnHost();
         String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
+            // 2026-09-06: storage-type=CDN 이면 이 배치 전체를 EcCdnApi 로 위임(로컬 디스크 미사용).
+            // 매 파일마다 sy_prop 을 다시 조회할 필요 없이 배치 시작 시 한 번만 확인.
+            boolean useCdn = "CDN".equalsIgnoreCase(fnStorageType());
 
             for (int i = 0; i < files.length; i++) {
                 MultipartFile file = files[i];
                 try {
                     fileUploadUtil.validate(file);
-                    Files.createDirectories(Paths.get(folderPath));
 
                     String originalName = file.getOriginalFilename();
                     String ext = fileUploadUtil.getFileExtension(originalName);
+
+                    if (useCdn) {
+                        // ── CDN 업로드 분기 — 원본/썸네일(이미지)·프레임+썸네일(동영상) 생성까지
+                        // 전부 EcCdnApi 가 처리한다(120MB 제한도 그쪽에서 검증). 로컬 디스크 기록 없음.
+                        CfCdnApiClient.UploadResult up = cfCdnApiClient.upload(
+                            file.getBytes(), originalName, file.getContentType(), true);
+                        String cdnPublicBase = fnCfCdnPublicBase();
+                        String cdnImgUrl = up.fileUrl() != null ? cdnPublicBase + up.fileUrl() : null;
+                        String thumbCdnUrl = up.thumbnailUrl() != null ? cdnPublicBase + up.thumbnailUrl() : null;
+
+                        SyAttach syAttach = SyAttach.builder()
+                                .fileNm(originalName)
+                                .fileSize(file.getSize())
+                                .fileExt(ext)
+                                .mimeTypeCd(file.getContentType())
+                                // storedNm/storagePath 는 로컬 파일명이 없는 CDN 저장 특성상 EcCdnApi
+                                // 의 fileId 를 대신 담는다(삭제 시 이 값으로 DELETE /api/cdn/file/{id}
+                                // 호출 — SyAttachService.delete() 참조). "저장 경로" 라는 컬럼 의미와는
+                                // 다르지만 CDN 타입 한정 repurpose 이며, 새 컬럼 추가 없이 기존 스키마로
+                                // 처리하기 위한 선택이다.
+                                .storedNm(up.fileId())
+                                .storageTypeCd("CDN")
+                                .storagePath(up.fileId())
+                                .cdnHost(cdnPublicBase)
+                                .cdnImgUrl(cdnImgUrl)
+                                .thumbGeneratedYn(up.thumbnailUrl() != null ? "Y" : "N")
+                                .sortOrd(i + 1)
+                                .build();
+                        if (up.thumbnailUrl() != null) {
+                            syAttach.setThumbFileNm(originalName + " (thumbnail)");
+                            syAttach.setThumbUrl(up.thumbnailUrl());
+                            syAttach.setThumbCdnUrl(thumbCdnUrl);
+                        }
+
+                        SyAttach savedAttach = syAttachService.create(syAttach);
+
+                        Map<String, Object> fileInfoCdn = new HashMap<>();
+                        fileInfoCdn.put("attachId", savedAttach.getAttachId());
+                        fileInfoCdn.put("originalName", originalName);
+                        fileInfoCdn.put("fileSize", file.getSize());
+                        fileInfoCdn.put("fileType", file.getContentType());
+                        fileInfoCdn.put("fileExt", ext);
+                        fileInfoCdn.put("uploadedAt", LocalDateTime.now());
+                        fileInfoCdn.put("storageTypeCd", "CDN");
+                        fileInfoCdn.put("cdnImgUrl", cdnImgUrl);
+                        fileInfoCdn.put("thumbGeneratedYn", savedAttach.getThumbGeneratedYn());
+                        if ("Y".equals(savedAttach.getThumbGeneratedYn())) {
+                            fileInfoCdn.put("thumbUrl", savedAttach.getThumbUrl());
+                            fileInfoCdn.put("thumbCdnUrl", thumbCdnUrl);
+                        }
+
+                        uploadedFiles.add(fileInfoCdn);
+                        attachIds.add(savedAttach.getAttachId());
+                        totalSize += file.getSize();
+                        log.info("파일 업로드 성공(CDN): {} → fileId={} (attachId: {})", originalName, up.fileId(), savedAttach.getAttachId());
+                        continue;
+                    }
+
+                    Files.createDirectories(Paths.get(folderPath));
+
                     String savedName = fileUploadUtil.generateFileName(ext, i + 1);
                     String filePath = folderPath + "/" + savedName;
                     String storageFilePath = storageFolderPath + "/" + savedName;

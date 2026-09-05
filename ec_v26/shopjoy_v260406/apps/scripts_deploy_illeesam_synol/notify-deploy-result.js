@@ -37,7 +37,11 @@ loadLocalEnv();
 
 /* [이메일] nodemailer 는 devDependencies 에 있어야 함(package.json). Gmail SMTP + 앱 비밀번호 방식 —
    일반 로그인 비밀번호로는 Google 이 SMTP 인증을 거부한다(보안 정책상 앱 비밀번호 필수). */
-async function sendEmail(subject, text, tag) {
+// 2026-09-06(요청사항: "scripts 실행결과 메일보낼때 진행중인내용의 log 파일도 첨부해줘") —
+// logFilePath 가 있고 실제로 읽을 수 있으면 이메일에 그대로 첨부한다. 파일이 없거나 너무 커서
+// (Gmail 첨부 25MB 제한) 실패해도 이메일 발송 자체가 막히면 안 되므로, 첨부 준비 단계 자체를
+// try/catch 로 감싸 실패 시 첨부 없이 발송을 계속한다.
+async function sendEmail(subject, text, tag, logFilePath) {
   const to = process.env.NOTIFY_EMAIL_TO;
   const from = process.env.NOTIFY_EMAIL_FROM;
   const appPassword = process.env.NOTIFY_EMAIL_APP_PASSWORD;
@@ -45,14 +49,40 @@ async function sendEmail(subject, text, tag) {
     console.log(`${tag}[알림] 이메일 설정 없음(NOTIFY_EMAIL_*) — 스킵`);
     return;
   }
+  // 2026-09-06(요청사항: "테스트 끝나고 약간의 시간을두고 3~5초 후 메일보내면 어떨까?") —
+  // synology-deploy-util.js 의 로그 파일은 fs.createWriteStream 이 비동기로 디스크에 플러시한다
+  // (console.log 후킹이 stream.write() 를 호출하는 시점 ≠ 실제로 디스크에 반영되는 시점). 배포
+  // 마지막 줄(헬스체크/URL 안내 등)을 찍자마자 바로 이 파일을 첨부로 읽으면, 아직 디스크에 다
+  // 안 내려간 상태를 읽어 실제 로그 파일보다 몇 줄 짧게 잘린 첨부가 되는 경합이 있었다(실측
+  // 확인 — 메일 첨부는 "Slack 설정 없음" 줄에서 끊기는데 실제 파일엔 그 뒤로 "이메일 발송..."
+  // 까지 더 있었음). 짧게 대기해 흘려보낸다.
+  await new Promise((r) => setTimeout(r, 4000));
+
+  let attachments;
+  try {
+    if (logFilePath && fs.existsSync(logFilePath)) {
+      attachments = [{ filename: path.basename(logFilePath), path: logFilePath }];
+    }
+  } catch (e) {
+    console.warn(`${tag}[알림] ⚠ 로그 파일 첨부 준비 실패(첨부 없이 계속): ${e.message}`);
+  }
+  // 2026-09-06(요청사항: "'이메일 발송 완료' 문구가 '이메일 발송'이 되겠지") — "발송 완료"는
+  // 그 자체가 "방금 첨부한 파일" 안에는 절대 들어갈 수 없다(파일을 읽어 보낸 다음에야 쓰이는
+  // 줄이라 시간 순서상 불가능). 그래서 첨부에 실제로 남도록 발송 시도 "직전"에 남기고, 문구도
+  // 완료형이 아닌 진행형으로 바꾼다 — 진짜 성공/실패 결과는 아래 catch 의 실패 로그(또는 이
+  // 함수가 예외 없이 끝났다는 사실)로 다음 실행 로그에서 확인.
+  console.log(`${tag}[알림] 이메일 발송 → 수신: ${to} | 제목: ${subject}${attachments ? ` | 첨부: ${attachments[0].filename}` : ''}`);
+  // 위 로그 줄이 실제 디스크로 흘러나갈 최소한의 여유(짧게) — 그래야 그 줄까지 포함된 상태의
+  // 파일이 첨부된다.
+  await new Promise((r) => setTimeout(r, 300));
+
   try {
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: { user: from, pass: appPassword },
     });
-    await transporter.sendMail({ from, to, subject, text });
-    console.log(`${tag}[알림] 이메일 발송 완료 → 수신: ${to} | 제목: ${subject}`);
+    await transporter.sendMail({ from, to, subject, text, ...(attachments ? { attachments } : {}) });
   } catch (e) {
     console.warn(`${tag}[알림] ⚠ 이메일 발송 실패(무시하고 계속 — 배포 결과에는 영향 없음): ${e.message}`);
   }
@@ -130,19 +160,26 @@ function buildServerInfo(serverInfo) {
  * @param {string} [detail]   추가 상세(헬스체크 결과, 에러 메시지 등) — 여러 줄 가능
  * @param {Array<{label:string, value:string}>} [serverInfo] 서버/설치경로/환경 정보 항목 목록
  * @param {Array<{url:string, note?:string}>} [checkUrls] 점검 안내로 나열할 URL + 코멘트 목록
- * @param {string} [npmScript] 실행한 워크스페이스/스크립트명(예: 'deploy/ecFeBo' — cd deploy && npm run ecFeBo) — 제목 끝에 표시
+ * @param {string} [npmScript] 실행한 워크스페이스/스크립트명(예: 'deploy/ecFeBo' — cd deploy && npm run ecFeBo) — 제목 끝 + 본문에 표시
+ * @param {string} [logFilePath] 이번 실행의 로그 파일 전체경로(synology-deploy-util.js 의 LOG_FILE_PATH)
+ *                                — 있으면 이메일에 그대로 첨부(요청사항: "scripts 실행결과 메일보낼때
+ *                                진행중인내용의 log 파일도 첨부해줘")
  */
-async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript }) {
+async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript, logFilePath }) {
   const emoji = success ? '✅' : '❌';
   const statusText = success ? '성공' : '실패';
   const subject = `${emoji} [ShopJoy 배포] ${scriptName} ${statusText} (소요 ${elapsed})`
     + (npmScript ? ` — ${npmScript}` : '');
   const info = buildServerInfo(serverInfo);
   const guide = buildInspectionGuide(checkUrls);
-  const text = `${scriptName} 배포 ${statusText}\n소요시간: ${elapsed}\n\n${detail || ''}${info}${guide}`;
+  // 2026-09-06(요청사항: "내용에 실행스크립트명도 적어줘") — 제목에도 있지만 본문 첫머리에도
+  // 명시해 메일만 봐도 어느 스크립트를 실행한 결과인지 바로 알 수 있게 한다.
+  const scriptLine = npmScript ? `실행 스크립트: ${npmScript}\n` : '';
+  const logLine = logFilePath ? `로그 파일: ${path.basename(logFilePath)} (첨부${fs.existsSync(logFilePath) ? '됨' : ' 시도 — 파일 없음'})\n` : '';
+  const text = `${scriptName} 배포 ${statusText}\n${scriptLine}${logLine}소요시간: ${elapsed}\n\n${detail || ''}${info}${guide}`;
   await Promise.all([
-    sendEmail(subject, text, tag),
-    sendSlack(`${subject}\n${detail || ''}${info}${guide}`, tag),
+    sendEmail(subject, text, tag, logFilePath),
+    sendSlack(`${subject}\n${scriptLine}${detail || ''}${info}${guide}`, tag),
   ]);
 }
 

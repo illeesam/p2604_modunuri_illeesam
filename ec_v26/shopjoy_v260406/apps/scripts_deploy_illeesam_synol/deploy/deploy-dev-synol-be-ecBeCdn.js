@@ -21,7 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, fail, requireCreds, run, withSsh, hms } = require('../synology-deploy-util');
+const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecBeCdn.js');
@@ -177,7 +177,7 @@ function fmtElapsed() {
       { label: '로그 경로', value: '/volume1/docker/shopjoy/ecBeCdnLogs → 컨테이너 /app/logs' },
     ];
     await notifyDeployResult({
-      tag: TAG, scriptName: 'EcCdnApi', success: publicOk, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'EcCdnApi', success: publicOk, elapsed: fmtElapsed(),
       detail: publicOk ? '외부 헬스체크 정상' : `외부 헬스체크 이상 있음: /home/index.html=${adminStatus} /api/cdn/client/page=${apiStatus}`,
       serverInfo,
       checkUrls,
@@ -187,7 +187,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, scriptName: 'EcCdnApi', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'EcCdnApi', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       checkUrls: [
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html`, note: '관리자 화면(정상화 후 재확인)' },

@@ -24,7 +24,7 @@
 SYNOLOGY_HOST=illeesam.synology.me
 SYNOLOGY_PORT=10022
 SYNOLOGY_USER=appuser
-SYNOLOGY_PASSWORD=appuser1**
+SYNOLOGY_PASSWORD=appu****************
 ```
 > 이 파일은 `.gitignore`에 등록돼 있어 깃허브에 절대 올라가지 않습니다.
 

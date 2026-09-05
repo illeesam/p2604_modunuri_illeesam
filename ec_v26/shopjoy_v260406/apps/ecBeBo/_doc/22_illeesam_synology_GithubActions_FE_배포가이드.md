@@ -43,7 +43,7 @@
 | `SYNOLOGY_HOST` | `illeesam.synology.me` |
 | `SYNOLOGY_PORT` | `10022` |
 | `SYNOLOGY_USER` | `appuser` |
-| `SYNOLOGY_PASSWORD` | (실제 비밀번호, 일부만 `appuser1**`) |
+| `SYNOLOGY_PASSWORD` | (실제 비밀번호, 일부만 `appu****************`) |
 | `SYNOLOGY_SSH_KEY` | (SSH 키를 안 쓰면 비워둬도 됨 — 비밀번호 인증으로도 동작) |
 
 > 이 5개 시크릿은 [BE 문서](21_illeesam_synology_GithubActions_BE_배포가이드.md)의 백엔드 배포(`shopjoy-be-illeesam-synol-deploy.yml`)와 **공용**입니다 — 한 번만 등록하면 BE/FE 둘 다에 쓰입니다.

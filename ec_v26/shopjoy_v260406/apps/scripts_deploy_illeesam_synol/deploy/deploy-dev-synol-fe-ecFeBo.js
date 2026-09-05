@@ -23,7 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, run, withSsh, requireCreds, hms } = require('../synology-deploy-util');
+const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-fe-ecFeBo.js');
@@ -173,7 +173,7 @@ function fmtElapsed() {
       { label: '공개 도메인', value: `https://${PUBLIC_HTTPS_HOST}` },
     ];
     await notifyDeployResult({
-      tag: TAG, scriptName: '프론트(FO/BO)', success: allOk, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '프론트(FO/BO)', success: allOk, elapsed: fmtElapsed(),
       detail: allOk ? '헬스체크 정상' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus}`,
       serverInfo,
       checkUrls,
@@ -183,7 +183,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, scriptName: '프론트(FO/BO)', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '프론트(FO/BO)', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 공개 포트 ${PUBLIC_PORT})` },

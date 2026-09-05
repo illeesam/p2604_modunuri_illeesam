@@ -99,7 +99,7 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 | NAS 주소 | `illeesam.synology.me` |
 | SSH 포트 | `10022` |
 | 계정 | `appuser` |
-| 비밀번호 | `appuser1**` (일부만 표시, 실제 값은 별도 보관) |
+| 비밀번호 | `appu****************` (일부만 표시, 실제 값은 별도 보관) |
 | 프론트 파일 위치(NAS 안) | `/volume1/docker/shopjoy/frontend/` |
 
 > ⚠ 이 계정을 새로 만들거나 바꿨다면 DSM 쪽 권한 설정을 먼저 맞춰야 합니다 — 처음부터 만드는 과정은 [10번 문서](10_illeesam_synology_appuser계정생성.md), 이미 있는 계정의 권한만 점검할 때는 [9012번 문서](9012_illeesam_synology_FE_트러블슈팅용어.md) 또는 [9011번 문서의 "계정 설정 시 주의사항"](9011_illeesam_synology_BE_트러블슈팅용어.md#계정-설정-시-주의사항-nas-쪽-배포-계정) 참조.
