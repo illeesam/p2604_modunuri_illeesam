@@ -14,13 +14,20 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecBeBo.js');
 
 const DOCKER = '/usr/local/bin/docker';
 const REMOTE_BE_DIR = '/volume1/docker/shopjoy/ecBeBo';
+const PUBLIC_HOST = 'illeesam.synology.me';
+const PUBLIC_PORT = 22300;
+// 2026-09-06: ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
+// gateway 접속 URL 예제도 제시해줘") — /api/** 는 ecGateway 의 locations.conf 가 이 백엔드로
+// 명시적으로 라우팅해준다. ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 다 떠 있어야 502 없이 통과한다.
+const GW = `${PUBLIC_HOST}:22099`;
+const GW_HTTPS = `22099.${PUBLIC_HOST}`;
 
 // 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(BE)"을 밝히는 태그 — npm run zmulti-ecBeBo-ecBeCdn
 // 처럼 여러 스크립트가 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
@@ -151,10 +158,28 @@ function fmtElapsed() {
       TAG
     );
 
+    // 2026-09-06(요청사항: "우측에 결과정보 표시해줄수 있어? ✅ 200 이런식이지") — 아래 나열할
+    // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다. 배지 폭에 맞춰 URL 을 padEnd 로
+    // 정렬해서 여러 줄이 나란히 보이게 한다.
+    const completionUrls = [
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/actuator/health`,
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`,
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=10`,
+      `http://${GW}/api/co/sy/code/page?pageNo=1&pageSize=10`,
+      `https://${GW_HTTPS}/api/co/sy/code/page?pageNo=1&pageSize=10`,
+    ];
+    const completionBadges = await checkUrlStatusBadges(completionUrls);
+    const completionWidth = Math.max(...completionUrls.map((u) => u.length));
+    const withBadge = (i) => `${completionUrls[i].padEnd(completionWidth)}  ${completionBadges[i]}`;
+
     console.log(`\n${TAG}[완료] 백엔드 배포 끝 (총 소요 ${fmtElapsed()})`);
-    console.log(`${TAG}   헬스체크 : http://illeesam.synology.me:22300/actuator/health`);
+    console.log(`${TAG}   헬스체크 : ${withBadge(0)}`);
+    console.log(`${TAG}   Swagger  : ${withBadge(1)}`);
     console.log(`${TAG}   테스트 API(공통코드 페이징, 로그인 불필요):`);
-    console.log(`${TAG}     http://illeesam.synology.me:22300/api/co/sy/code/page?pageNo=1&pageSize=10`);
+    console.log(`${TAG}     ${withBadge(2)}`);
+    console.log(`${TAG}   게이트웨이(22099) 경유 예시 — ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 같이 떠 있을 때만:`);
+    console.log(`${TAG}     ${withBadge(3)}`);
+    console.log(`${TAG}     ${withBadge(4)}`);
 
     // 점검 안내 + 서버/환경 정보(요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘" /
     // "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어" / "배포 후
@@ -164,12 +189,14 @@ function fmtElapsed() {
     // 직접 URL로 변경 — /admin-tools/ 도 더 이상 nginx 경유가 아니라 이 앱이 자기 static/home
     // 리소스를 직접 서빙하는 /home/index.html 로 접근한다(경로 충돌 상대가 없어져 rewrite 불필요).
     const checkUrls = [
-      { url: 'http://illeesam.synology.me:22300/actuator/health', note: '헬스체크' },
-      { url: 'http://illeesam.synology.me:22300/home/index.html', note: '🪵 로그뷰어(운영 도구, 인증 불필요)' },
-      { url: 'http://illeesam.synology.me:22300/swagger-ui/index.html', note: 'API 문서(Swagger UI, 로그인 불필요)' },
-      { url: 'http://illeesam.synology.me:22300/api/co/sy/code/page?pageNo=1&pageSize=1', note: '공통코드 페이징(로그인 불필요)' },
-      { url: 'http://illeesam.synology.me:22300/api/co/sy/site?pageNo=1&pageSize=1', note: '사이트 목록(로그인 불필요)' },
-      { url: 'http://illeesam.synology.me:22300/api/co/log/tail?file=app&lines=20', note: '로그 tail API(최근 20줄, 인증 불필요)' },
+      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/actuator/health`, note: '헬스체크' },
+      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html`, note: '🪵 로그뷰어(운영 도구, 인증 불필요)' },
+      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 로그인 불필요)' },
+      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 페이징(로그인 불필요)' },
+      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/site?pageNo=1&pageSize=1`, note: '사이트 목록(로그인 불필요)' },
+      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/log/tail?file=app&lines=20`, note: '로그 tail API(최근 20줄, 인증 불필요)' },
+      { url: `http://${GW}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 페이징(게이트웨이 22099 경유, HTTP)' },
+      { url: `https://${GW_HTTPS}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 페이징(게이트웨이 22099 경유, HTTPS)' },
     ];
     const serverInfo = [
       { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 22300 — 이제 정식 공개 포트)' },
@@ -181,7 +208,7 @@ function fmtElapsed() {
       { label: '로그 경로', value: '/volume1/docker/shopjoy/ecBeBoLogs → 컨테이너 내부 logs' },
     ];
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '백엔드(EcAdminApi)', success: true, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeBo', success: true, elapsed: fmtElapsed(),
       detail: `헬스체크: http://illeesam.synology.me:21080/actuator/health`,
       serverInfo,
       checkUrls,
@@ -191,7 +218,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '백엔드(EcAdminApi)', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeBo', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [
         { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21080)' },

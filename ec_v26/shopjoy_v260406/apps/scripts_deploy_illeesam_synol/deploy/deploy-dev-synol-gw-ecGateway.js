@@ -15,7 +15,7 @@
  * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('deploy-dev-synol-gw-ecGateway.js');
@@ -25,6 +25,9 @@ const REMOTE_GW_DIR = '/volume1/docker/shopjoy/ecGateway';
 const CONTAINER_NAME = 'shopjoy-ecGateway-22099';
 const PUBLIC_PORT = 22099;
 const PUBLIC_HOST = 'illeesam.synology.me';
+// 2026-09-06: 22099.illeesam.synology.me 도 DSM 리버스프록시+전용 인증서 등록 완료(curl 실측
+// 200) — HTTP 포트 방식과 나란히 HTTPS 서브도메인 방식도 같이 보여준다.
+const PUBLIC_HTTPS_HOST = `22099.${PUBLIC_HOST}`;
 
 const TAG = { toString() { return `[${hms()}][deploy-dev-synol-gw-ecGateway.js][GW]`; } };
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
@@ -66,8 +69,23 @@ function fmtElapsed() {
       TAG
     );
 
+    // 2026-09-06(요청사항: "우측에 결과정보 표시해줄수 있어? ✅ 200 이런식이지") — 아래 나열할
+    // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다.
+    const completionUrls = [
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html`,
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
+      `https://${PUBLIC_HTTPS_HOST}/index.html`,
+      `https://${PUBLIC_HTTPS_HOST}/bo.html`,
+    ];
+    const completionBadges = await checkUrlStatusBadges(completionUrls);
+    const completionWidth = Math.max(...completionUrls.map((u) => u.length));
+    const withBadge = (i) => `${completionUrls[i].padEnd(completionWidth)}  ${completionBadges[i]}`;
+
     console.log(`\n${TAG}[완료] 게이트웨이 배포 끝 (총 소요 ${fmtElapsed()})`);
-    console.log(`${TAG}   접속: http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html , http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`);
+    console.log(`${TAG}   접속(HTTP)  : ${withBadge(0)}`);
+    console.log(`${TAG}   접속(HTTP)  : ${withBadge(1)}`);
+    console.log(`${TAG}   접속(HTTPS) : ${withBadge(2)}`);
+    console.log(`${TAG}   접속(HTTPS) : ${withBadge(3)}`);
     console.log(`${TAG}   ⚠ ecBeBo(22300)/ecBeCdn(22400)이 이 NAS에 안 떠 있으면 /api,/cdn-admin,/admin-tools 는 502가 정상입니다.`);
 
     await notifyDeployResult({
@@ -81,9 +99,11 @@ function fmtElapsed() {
         { label: '전제조건', value: 'ecBeBo(22300)/ecBeCdn(22400)이 같은 NAS에 떠 있고, ecFeBo 정적 파일이 배포돼 있어야 함' },
       ],
       checkUrls: [
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html`, note: '사용자(FO) 메인 화면(게이트웨이 경유)' },
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유)' },
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 API(게이트웨이→ecBeBo)' },
+        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTP)' },
+        { url: `https://${PUBLIC_HTTPS_HOST}/index.html`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTPS)' },
+        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTP)' },
+        { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTPS — 로그인 가능)' },
+        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 API(게이트웨이→ecBeBo, HTTP)' },
       ],
       npmScript: 'deploy/ecGateway',
     });

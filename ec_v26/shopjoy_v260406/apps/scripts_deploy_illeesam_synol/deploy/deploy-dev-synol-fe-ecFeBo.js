@@ -23,7 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-fe-ecFeBo.js');
@@ -44,9 +44,13 @@ const CONTAINER_NAME = 'shopjoy-ecFeBo-22000';
 const PUBLIC_PORT = 22000;
 const PUBLIC_HOST = 'illeesam.synology.me';
 // 2026-09-06: DSM 리버스 프록시 서브도메인(HTTPS) — 21000.illeesam.synology.me 와 같은 방식으로
-// 22000.illeesam.synology.me 를 DSM 콘솔에서 등록해야 한다(수동, CorsOriginPolicy.java 의
-// "*.illeesam.synology.me" 패턴은 이미 신규 서브도메인도 자동 허용).
+// 22000.illeesam.synology.me 를 DSM 콘솔에 등록 완료(13번 문서 절차, curl 실측 200 확인).
+// CorsOriginPolicy.java 의 "*.illeesam.synology.me" 패턴은 신규 서브도메인도 자동 허용.
 const PUBLIC_HTTPS_HOST = '22000.illeesam.synology.me';
+// ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는 gateway 접속
+// URL 예제도 제시해줘") — 이 정적 파일들은 ecGateway 자기 root 에서도 그대로 서빙된다.
+const GW = `${PUBLIC_HOST}:22099`;
+const GW_HTTPS = `22099.${PUBLIC_HOST}`;
 // 이 스크립트는 항상 dev NAS 대상 + dev 프로파일로 빌드한다(build-minify.js 의 --profile=dev,
 // npm run build:dev 와 동일) — local/prod 빌드가 필요하면 npm run build:local/build:prod 를
 // 직접 쓰거나(로컬 확인용) GitHub Actions 배포(deploy:dev-github-*)를 사용할 것.
@@ -151,9 +155,32 @@ function fmtElapsed() {
       console.log(`${TAG}     위 [헬스체크 1/2] 로그, DSM 리버스 프록시(22000 서브도메인 등록 여부) 확인 — 12번 문서 참조`);
     }
 
+    // 2026-09-06(요청사항: "우측에 결과정보 표시해줄수 있어? ✅ 200 이런식이지") — 아래 나열할
+    // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다.
+    const completionUrls = [
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html`,
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
+      `https://${PUBLIC_HTTPS_HOST}/index.html`,
+      `https://${PUBLIC_HTTPS_HOST}/bo.html`,
+      `http://${GW}/index.html`,
+      `http://${GW}/bo.html`,
+      `https://${GW_HTTPS}/index.html`,
+      `https://${GW_HTTPS}/bo.html`,
+    ];
+    const completionBadges = await checkUrlStatusBadges(completionUrls);
+    const completionWidth = Math.max(...completionUrls.map((u) => u.length));
+    const withBadge = (i) => `${completionUrls[i].padEnd(completionWidth)}  ${completionBadges[i]}`;
+
     console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
-    console.log(`${TAG}   HTTP  : http://${PUBLIC_HOST}:${PUBLIC_PORT}/index.html , http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`);
-    console.log(`${TAG}   HTTPS : https://${PUBLIC_HTTPS_HOST}/index.html , https://${PUBLIC_HTTPS_HOST}/bo.html  (로그인은 이쪽 필수)`);
+    console.log(`${TAG}   HTTP  : ${withBadge(0)}`);
+    console.log(`${TAG}   HTTP  : ${withBadge(1)}`);
+    console.log(`${TAG}   HTTPS : ${withBadge(2)}`);
+    console.log(`${TAG}   HTTPS : ${withBadge(3)}  (로그인은 이쪽 필수)`);
+    console.log(`${TAG}   게이트웨이(22099) 경유 예시 — ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 같이 떠 있을 때만:`);
+    console.log(`${TAG}     ${withBadge(4)}`);
+    console.log(`${TAG}     ${withBadge(5)}`);
+    console.log(`${TAG}     ${withBadge(6)}`);
+    console.log(`${TAG}     ${withBadge(7)}`);
     console.log(`${TAG}   ⚠ 백엔드/CDN API 호출은 이제 이 nginx를 안 거치고 각자의 절대 URL로 직접 나간다 —`);
     console.log(`${TAG}     apps/ecFeBo/lib/env/profiles/{bo,fo}EnvConsts.dev.js 의 baseApiHost/cdnApiHost 참조.`);
     // 점검 안내 + 서버/환경 정보(요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘" /
@@ -163,6 +190,8 @@ function fmtElapsed() {
       { url: `https://${PUBLIC_HTTPS_HOST}/index.html`, note: '사용자(FO) 메인 화면' },
       { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(로그인 필요)' },
       { url: `https://${PUBLIC_HTTPS_HOST}/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js`, note: '로컬 CDN 패키지(Vue) 정적서빙 확인' },
+      { url: `http://${GW}/index.html`, note: '사용자(FO) 메인 화면(게이트웨이 22099 경유, HTTP)' },
+      { url: `https://${GW_HTTPS}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 22099 경유, HTTPS)' },
     ];
     const serverInfo = [
       { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 공개 포트 ${PUBLIC_PORT})` },
@@ -173,7 +202,7 @@ function fmtElapsed() {
       { label: '공개 도메인', value: `https://${PUBLIC_HTTPS_HOST}` },
     ];
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '프론트(FO/BO)', success: allOk, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecFeBo', success: allOk, elapsed: fmtElapsed(),
       detail: allOk ? '헬스체크 정상' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus}`,
       serverInfo,
       checkUrls,
@@ -183,7 +212,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '프론트(FO/BO)', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecFeBo', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 공개 포트 ${PUBLIC_PORT})` },

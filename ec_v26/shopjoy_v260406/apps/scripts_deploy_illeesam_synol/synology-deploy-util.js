@@ -309,4 +309,33 @@ function withSsh(uploads, commands, tag = SELF_TAG) {
   });
 }
 
-module.exports = { ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms, LOG_FILE_PATH };
+// ═══════════════════════════════════════════════════════════════════════
+//  완료 로그 URL 우측 결과 표시 (2026-09-06 신설, 요청사항: "우측에 결과정보 표시해줄수
+//  있어? ✅ 200 이런식이지") — 배포 완료 후 콘솔에 나열하는 URL들을 실제로 curl 체크해서
+//  각 줄 오른쪽에 "✅ 200" / "❌ 404" 처럼 붙여준다. http/https 는 URL 프로토콜로 자동 판별.
+// ═══════════════════════════════════════════════════════════════════════
+function checkUrlStatus(url) {
+  return new Promise((resolve) => {
+    let u;
+    try { u = new URL(url); } catch (e) { return resolve('error(bad-url)'); }
+    const lib = u.protocol === 'https:' ? require('https') : require('http');
+    const req = lib.get({ hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 8000 }, (res) => {
+      res.resume(); // 응답 바디는 안 쓰므로 그냥 흘려보내 소켓을 빨리 반환
+      resolve(String(res.statusCode));
+    });
+    req.on('timeout', () => { req.destroy(); resolve('timeout'); });
+    req.on('error', (e) => resolve(`error(${e.code || e.message})`));
+  });
+}
+
+// urls: 순서를 보존한 URL 문자열 배열 → 같은 순서의 "✅ 200"/"❌ 404" 배지 문자열 배열.
+// Promise.all 로 병렬 체크하므로 URL이 여러 개라도 순차 체크보다 훨씬 빠르다.
+async function checkUrlStatusBadges(urls) {
+  const statuses = await Promise.all(urls.map(checkUrlStatus));
+  return statuses.map((s) => (s === '200' ? `✅ ${s}` : `❌ ${s}`));
+}
+
+module.exports = {
+  ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms, LOG_FILE_PATH,
+  checkUrlStatus, checkUrlStatusBadges,
+};
