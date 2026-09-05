@@ -23,7 +23,7 @@
 # 필요 시크릿(리포지토리 Settings → Secrets and variables → Actions, deploy-ec-admin.yml과
 # 공유): SYNOLOGY_HOST / SYNOLOGY_PORT / SYNOLOGY_USER / SYNOLOGY_PASSWORD / SYNOLOGY_SSH_KEY
 #
-# NAS 배포 경로: /volume1/docker/shopjoy/ecFeBo/(정적 파일 dist/) + /volume1/docker/shopjoy/ecFeBoApp/
+# NAS 배포 경로: /volume1/docker/shopjoy/apps/ecFeBo/(정적 파일 dist/) + /volume1/docker/shopjoy/apps/ecFeBoApp/
 #   (docker-compose.yml + nginx 설정 3종 — 정적 파일 폴더와 분리해야 매 배포마다 통째로
 #   rm -rf 되는 ecFeBo/ 안에서 compose 파일이 같이 지워지는 사고를 막는다)
 
@@ -83,8 +83,8 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Port(SSH)  : ${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정(User) : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호   : $MASK  (총 ${LEN}자리 — 뒤 3자리만 표시, 나머지는 자체 마스킹)"
-          echo "[$(date '+%H:%M:%S')]   정적 파일 경로 : /volume1/docker/shopjoy/ecFeBo/"
-          echo "[$(date '+%H:%M:%S')]   compose 경로   : /volume1/docker/shopjoy/ecFeBoApp/"
+          echo "[$(date '+%H:%M:%S')]   정적 파일 경로 : /volume1/docker/shopjoy/apps/ecFeBo/"
+          echo "[$(date '+%H:%M:%S')]   compose 경로   : /volume1/docker/shopjoy/apps/ecFeBoApp/"
           echo "[$(date '+%H:%M:%S')]   서비스 URL : http://illeesam.synology.me:22000  (nginx 단독 컨테이너, 완전 분리 설계)"
           echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
 
@@ -125,7 +125,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec_v26/shopjoy_v260406/apps/ecFeBo/dist.tar.gz"
-          target: "/volume1/docker/shopjoy/"
+          target: "/volume1/docker/shopjoy/apps/"
           strip_components: 4
 
       - name: "[6-2] Synology NAS 로 nginx 설정 3종 전송 (SCP) — compose 폴더(정적 파일과 분리)"
@@ -137,7 +137,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec_v26/shopjoy_v260406/apps/ecFeBo/docker-compose.yml,ec_v26/shopjoy_v260406/apps/ecFeBo/nginx.conf,ec_v26/shopjoy_v260406/apps/ecFeBo/locations.conf,ec_v26/shopjoy_v260406/apps/ecFeBo/security-headers.conf"
-          target: "/volume1/docker/shopjoy/ecFeBoApp/"
+          target: "/volume1/docker/shopjoy/apps/ecFeBoApp/"
           strip_components: 4
 
       - name: "[7] NAS 에서 압축 해제 (기존 파일 완전 교체) + nginx 컨테이너 기동/갱신"
@@ -150,18 +150,18 @@ jobs:
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
             echo "[$(date '+%H:%M:%S')] [7-1] 배포 대상 디렉터리 준비"
-            sudo mkdir -p /volume1/docker/shopjoy/ecFeBo
+            sudo mkdir -p /volume1/docker/shopjoy/apps/ecFeBo
             echo "[$(date '+%H:%M:%S')] [7-2] 기존 정적 파일 전체 삭제 (완전 교체 — dist/ 는 항상 자기완결형이므로 잔존파일 위험 없음)"
-            sudo rm -rf /volume1/docker/shopjoy/ecFeBo/*
+            sudo rm -rf /volume1/docker/shopjoy/apps/ecFeBo/*
             echo "[$(date '+%H:%M:%S')] [7-3] 새 dist 압축 해제"
-            sudo tar -xzf /volume1/docker/shopjoy/dist.tar.gz -C /volume1/docker/shopjoy/ecFeBo
+            sudo tar -xzf /volume1/docker/shopjoy/apps/dist.tar.gz -C /volume1/docker/shopjoy/apps/ecFeBo
             echo "[$(date '+%H:%M:%S')] [7-4] 임시 압축파일 정리"
-            sudo rm -f /volume1/docker/shopjoy/dist.tar.gz
+            sudo rm -f /volume1/docker/shopjoy/apps/dist.tar.gz
             echo "[$(date '+%H:%M:%S')] [7-5] 배포 결과 확인"
-            ls -la /volume1/docker/shopjoy/ecFeBo | head -20
+            ls -la /volume1/docker/shopjoy/apps/ecFeBo | head -20
             echo ""
             echo "[$(date '+%H:%M:%S')] [7-6] nginx(ecFeBo) 컨테이너 기동/갱신"
-            cd /volume1/docker/shopjoy/ecFeBoApp
+            cd /volume1/docker/shopjoy/apps/ecFeBoApp
             sudo docker compose up -d --force-recreate --remove-orphans
             echo ""
             echo "[$(date '+%H:%M:%S')] [7-7] 컨테이너 상태 + 정적 서빙 확인"
@@ -197,8 +197,8 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Host/Port(SSH) : ${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정           : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호       : $MASK  (뒤 3자리만 표시)"
-          echo "[$(date '+%H:%M:%S')]   정적 파일 경로 : /volume1/docker/shopjoy/ecFeBo/"
-          echo "[$(date '+%H:%M:%S')]   compose 경로   : /volume1/docker/shopjoy/ecFeBoApp/"
+          echo "[$(date '+%H:%M:%S')]   정적 파일 경로 : /volume1/docker/shopjoy/apps/ecFeBo/"
+          echo "[$(date '+%H:%M:%S')]   compose 경로   : /volume1/docker/shopjoy/apps/ecFeBoApp/"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] 🔍 점검 방법 — 아래 URL 을 브라우저/curl 로 접속해 정상 동작을 확인하세요"
           echo "[$(date '+%H:%M:%S')]   (2026-09-06 완전 분리 설계 — 백엔드/CDN API 호출은 이 nginx 를 안 거치고 각자"
@@ -207,5 +207,5 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   2) 관리자 화면 : http://illeesam.synology.me:22000/bo.html"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] Synology SSH 수동 확인 명령어"
-          echo "[$(date '+%H:%M:%S')]   ls -la /volume1/docker/shopjoy/ecFeBo"
-          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/ecFeBoApp && sudo docker compose logs -f"
+          echo "[$(date '+%H:%M:%S')]   ls -la /volume1/docker/shopjoy/apps/ecFeBo"
+          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/apps/ecFeBoApp && sudo docker compose logs -f"

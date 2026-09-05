@@ -25,12 +25,14 @@ const DOCKER = '/usr/local/bin/docker';
 // app 이름 → NAS 상 compose 파일 위치. ecFeBo만 예외적으로 ecFeBoApp(compose 전용 폴더)를
 // 쓴다 — ecFeBo 자체는 정적 파일(dist/)만 담는 폴더라 compose 를 거기 두면 매 프론트 배포마다
 // 통째로 rm -rf 돼서 지워진다(apps/ecFeBo/docker-compose.yml 상단 주석 참조).
+// 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로
+// 분류") — 5개 앱 모두 컨테이너 실행 폴더는 apps/ 아래로 이동.
 const APP_DIRS = {
-  ecBeBo: '/volume1/docker/shopjoy/ecBeBo',
-  ecBeCdn: '/volume1/docker/shopjoy/ecBeCdn',
-  ecFeBo: '/volume1/docker/shopjoy/ecFeBoApp',
-  ecBeRedis: '/volume1/docker/shopjoy/ecBeRedis',
-  ecGateway: '/volume1/docker/shopjoy/ecGateway',
+  ecBeBo: '/volume1/docker/shopjoy/apps/ecBeBo',
+  ecBeCdn: '/volume1/docker/shopjoy/apps/ecBeCdn',
+  ecFeBo: '/volume1/docker/shopjoy/apps/ecFeBoApp',
+  ecBeRedis: '/volume1/docker/shopjoy/apps/ecBeRedis',
+  ecGateway: '/volume1/docker/shopjoy/apps/ecGateway',
 };
 
 const ACTIONS = {

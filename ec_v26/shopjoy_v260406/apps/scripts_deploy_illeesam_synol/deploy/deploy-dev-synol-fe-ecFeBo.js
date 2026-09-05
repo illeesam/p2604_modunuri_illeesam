@@ -37,9 +37,11 @@ const DOCKER = '/usr/local/bin/docker';
 // 2026-09-06: 정적 파일(dist/) 배포 폴더와 compose/nginx 설정 폴더를 분리 — 전자는 매 배포마다
 // 통째로 rm -rf 되므로, 같이 두면 docker-compose.yml 자체가 다음 배포 때 지워진다
 // (apps/ecFeBo/docker-compose.yml 상단 주석 참조).
-const REMOTE_FRONTEND_DIR = '/volume1/docker/shopjoy/ecFeBo';           // 정적 파일(dist/)만
-const REMOTE_FRONTEND_APP_DIR = '/volume1/docker/shopjoy/ecFeBoApp';    // docker-compose.yml + nginx 설정
-const REMOTE_SHOPJOY_DIR = '/volume1/docker/shopjoy';
+// 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로
+// 분류") — 둘 다 컨테이너 실행 관련 폴더라 apps/ 아래로 이동.
+const REMOTE_FRONTEND_DIR = '/volume1/docker/shopjoy/apps/ecFeBo';           // 정적 파일(dist/)만
+const REMOTE_FRONTEND_APP_DIR = '/volume1/docker/shopjoy/apps/ecFeBoApp';    // docker-compose.yml + nginx 설정
+const REMOTE_SHOPJOY_DIR = '/volume1/docker/shopjoy/apps';
 const CONTAINER_NAME = 'shopjoy-ecFeBo-22000';
 const PUBLIC_PORT = 22000;
 const PUBLIC_HOST = 'illeesam.synology.me';

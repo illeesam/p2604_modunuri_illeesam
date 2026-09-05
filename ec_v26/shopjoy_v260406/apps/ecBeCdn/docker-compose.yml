@@ -5,7 +5,7 @@
 #  실행 명령: docker compose up -d --build
 #
 #  EcAdminApi 와 완전히 별도의 배포 단위(2026-09-06 결정) — 별도 compose 파일, 별도 NAS
-#  디렉터리(/volume1/docker/shopjoy/ecBeCdn), 별도 배포 스크립트(deploy-dev-synol-be-ecBeCdn.js).
+#  디렉터리(/volume1/docker/shopjoy/apps/ecBeCdn), 별도 배포 스크립트(deploy-dev-synol-be-ecBeCdn.js).
 #
 #  2026-09-06 추가 개편 — "4개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis)이 각자 다른 호스팅사에
 #  흩어질 수도 있다"는 최악의 경우를 기준으로 완전 분리 설계로 전환. 예전엔 shopjoy-net을
@@ -36,8 +36,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+    # 2026-09-06 재구조화(요청사항: "각 앱의 .env 파일을 env/로 모음") — apps/ecBeCdn/ →
+    # shopjoy/env/ecBeCdn.env(두 단계 위)로 상대경로 변경.
     env_file:
-      - .env
+      - ../../env/ecBeCdn.env
 
     environment:
       JAVA_OPTS: "-Xms256m -Xmx1024m"
@@ -53,12 +55,14 @@ services:
     # ───── 볼륨 마운트 ─────
     # cdn-storage: 실제 업로드된 원본/썸네일/동영상 프레임 파일(app.cf.storage-root=/app/storage).
     # logs: 컨테이너 삭제돼도 로그 보존.
+    # 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs
+    # 로 분류") — 컨테이너 내부 경로(/app/storage, /app/logs)는 그대로, 호스트 경로만 이동.
     volumes:
-      - /volume1/docker/shopjoy/ecBeCdnStorage:/app/storage
+      - /volume1/docker/shopjoy/storage/ecBeCdnStorage:/app/storage
       # 2026-09-06: /volume1/docker/eccdnapi/logs → /volume1/docker/shopjoy/ecBeCdnLogs
       # (EcAdminApi 의 ecBeBoLogs 와 같은 명명 원칙에 맞춤). 최초 배포 시 새 경로로 시작 —
       # 기존 로그 이관이 필요하면 deploy-dev-synol-be-ecBeCdn.js 실행 시 자동 처리.
-      - /volume1/docker/shopjoy/ecBeCdnLogs:/app/logs
+      - /volume1/docker/shopjoy/logs/ecBeCdnLogs:/app/logs
 
     restart: unless-stopped
 

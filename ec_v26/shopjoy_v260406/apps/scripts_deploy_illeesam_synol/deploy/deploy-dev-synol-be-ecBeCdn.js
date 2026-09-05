@@ -27,7 +27,14 @@ const { notifyDeployResult } = require('../notify-deploy-result');
 requireCreds('scripts/deploy-dev-synol-be-ecBeCdn.js');
 
 const DOCKER = '/usr/local/bin/docker';
-const REMOTE_CDN_DIR = '/volume1/docker/shopjoy/ecBeCdn';
+// 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로
+// 분류") — 컨테이너 실행 폴더는 apps/, 로그는 logs/, 첨부 저장소는 storage/ 아래로 이동.
+// 저장소는 추가로 "storage/ecBeCdnStorage/cdn" 처럼 한 단 더 nesting — ecBeBo 의
+// static/cdn 관례와 통일. 실제 그 nesting은 CF_STORAGE_ROOT 환경변수(NAS .env)가
+// "/app/storage/cdn" 으로 설정돼 있어야 적용된다(컨테이너 마운트 경로 자체는 /app/storage 그대로).
+const REMOTE_CDN_DIR = '/volume1/docker/shopjoy/apps/ecBeCdn';
+const REMOTE_CDN_LOGS_DIR = '/volume1/docker/shopjoy/logs/ecBeCdnLogs';
+const REMOTE_CDN_STORAGE_DIR = '/volume1/docker/shopjoy/storage/ecBeCdnStorage';
 // 2026-09-06: 이 컨테이너가 이제 자기 포트(22400)로 직접 공개된다 — EcAdminApi 쪽 nginx(21000/
 // 22000)를 더 이상 거치지 않는다. DSM 리버스 프록시에 22400.illeesam.synology.me(HTTPS) 서브
 // 도메인을 이 포트로 연결해두면(CorsOriginPolicy.java 의 "*.illeesam.synology.me" 패턴이 이미
@@ -115,11 +122,11 @@ function fmtElapsed() {
           // 2026-09-06: /volume1/docker/eccdnapi/logs → /volume1/docker/shopjoy/ecBeCdnLogs 로
           // 경로 변경(다른 앱들과 명명 원칙 통일). 기존 로그가 있으면 새 경로로 1회 이관.
           label: '로그·저장소 볼륨 폴더 존재 보장 (+ 로그 구경로 1회 이관)',
-          cmd: 'mkdir -p /volume1/docker/shopjoy/ecBeCdnLogs /volume1/docker/shopjoy/ecBeCdnStorage && ' +
-            'if [ -d /volume1/docker/eccdnapi/logs ] && [ -z "$(ls -A /volume1/docker/shopjoy/ecBeCdnLogs 2>/dev/null)" ]; then ' +
-            'mv /volume1/docker/eccdnapi/logs/* /volume1/docker/shopjoy/ecBeCdnLogs/ 2>/dev/null; ' +
-            'echo "  ↪ 구 로그 경로(/volume1/docker/eccdnapi/logs)에서 이관 완료"; ' +
-            'else echo "  (이관 대상 없음 — 스킵)"; fi',
+          cmd: `mkdir -p ${REMOTE_CDN_LOGS_DIR} ${REMOTE_CDN_STORAGE_DIR} && ` +
+            `if [ -d /volume1/docker/eccdnapi/logs ] && [ -z "$(ls -A ${REMOTE_CDN_LOGS_DIR} 2>/dev/null)" ]; then ` +
+            `mv /volume1/docker/eccdnapi/logs/* ${REMOTE_CDN_LOGS_DIR}/ 2>/dev/null; ` +
+            `echo "  ↪ 구 로그 경로(/volume1/docker/eccdnapi/logs)에서 이관 완료"; ` +
+            `else echo "  (이관 대상 없음 — 스킵)"; fi`,
           allowFail: true,
         },
         { label: 'Docker 이미지 재빌드', cmd: `cd ${REMOTE_CDN_DIR} && ${DOCKER} compose build` },
@@ -206,8 +213,8 @@ function fmtElapsed() {
       { label: 'Docker 네트워크', value: '완전 분리 설계(2026-09-06) — 다른 컨테이너와 네트워크 비공유, 단독 기동' },
       { label: '활성 프로파일', value: 'dev (application-dev.yml)' },
       { label: 'DB 접속', value: 'illeesam.synology.me:17632 / shopjoy_2604 (PostgreSQL, p6spy 경유)' },
-      { label: '파일 저장 볼륨', value: '/volume1/docker/shopjoy/ecBeCdnStorage → 컨테이너 /app/storage' },
-      { label: '로그 경로', value: '/volume1/docker/shopjoy/ecBeCdnLogs → 컨테이너 /app/logs' },
+      { label: '파일 저장 볼륨', value: `${REMOTE_CDN_STORAGE_DIR} → 컨테이너 /app/storage (CF_STORAGE_ROOT=/app/storage/cdn 이면 실제 파일은 storage/ecBeCdnStorage/cdn/... 에 쌓임)` },
+      { label: '로그 경로', value: `${REMOTE_CDN_LOGS_DIR} → 컨테이너 /app/logs` },
     ];
     await notifyDeployResult({
       tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeCdn', success: publicOk, elapsed: fmtElapsed(),

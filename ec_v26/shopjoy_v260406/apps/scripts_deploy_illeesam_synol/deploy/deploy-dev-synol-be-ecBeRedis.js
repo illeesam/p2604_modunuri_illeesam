@@ -20,7 +20,15 @@ const { notifyDeployResult } = require('../notify-deploy-result');
 requireCreds('deploy-dev-synol-be-ecBeRedis.js');
 
 const DOCKER = '/usr/local/bin/docker';
-const REMOTE_REDIS_DIR = '/volume1/docker/shopjoy/ecBeRedis';
+// 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로
+// 분류") — 컨테이너 실행 폴더는 apps/, 데이터는 data/ 아래로 이동.
+const REMOTE_REDIS_DIR = '/volume1/docker/shopjoy/apps/ecBeRedis';
+const REMOTE_REDIS_DATA_DIR = '/volume1/docker/shopjoy/data/ecBeRedisData';
+// 2026-09-06 재구조화(요청사항: "각 앱의 .env 파일을 env/로 모음") — REDIS_PASSWORD 는
+// docker-compose.yml 안에서 ${REDIS_PASSWORD:-redis123} 로 변수치환되는 값이라(env_file: 이
+// 아니라 compose 자체의 .env 로딩), .env 를 이 디렉터리 밖으로 옮긴 뒤로는 모든 `docker
+// compose` 호출에 --env-file 을 명시해야 한다(아래 REDIS_COMPOSE 참조).
+const REMOTE_REDIS_ENV_FILE = '/volume1/docker/shopjoy/env/ecBeRedis.env';
 const CONTAINER_NAME = 'shopjoy-ecBeRedis-22379';
 const DEFAULT_PASSWORD = 'redis123'; // .env 미준비 시 최초 1회 자동 생성해 넣는 기본값(요청사항)
 
@@ -47,7 +55,7 @@ function fmtElapsed() {
     await withSsh(
       [{ local: composePath, remote: `${REMOTE_REDIS_DIR}/docker-compose.yml` }],
       [
-        { label: '데이터 폴더 존재 보장', cmd: 'mkdir -p /volume1/docker/shopjoy/ecBeRedisData' },
+        { label: '데이터 폴더 존재 보장', cmd: `mkdir -p ${REMOTE_REDIS_DATA_DIR}` },
         {
           // 2026-09-06: .env 가 없으면(최초 1회) REDIS_PASSWORD 를 기본값으로 생성해둔다 —
           // docker-compose.yml 의 ${REDIS_PASSWORD:-redis123} 는 "환경변수가 아예 없을 때"만
@@ -55,15 +63,18 @@ function fmtElapsed() {
           // 나중에 값을 바꿔야 할 때 어디를 고쳐야 하는지 명확하게 하려고 파일로 만들어둔다.
           // 이미 .env 가 있으면(운영자가 직접 값을 바꿔둔 경우) 절대 덮어쓰지 않는다.
           label: '.env 존재 보장 (+ 없으면 REDIS_PASSWORD 기본값 생성, 있으면 그대로 유지)',
-          cmd: `if [ ! -f ${REMOTE_REDIS_DIR}/.env ]; then ` +
-            `echo 'REDIS_PASSWORD=${DEFAULT_PASSWORD}' > ${REMOTE_REDIS_DIR}/.env; ` +
+          cmd: `mkdir -p $(dirname ${REMOTE_REDIS_ENV_FILE}) && ` +
+            `if [ ! -f ${REMOTE_REDIS_ENV_FILE} ]; then ` +
+            `echo 'REDIS_PASSWORD=${DEFAULT_PASSWORD}' > ${REMOTE_REDIS_ENV_FILE}; ` +
             `echo '  ↪ .env 신규 생성 (REDIS_PASSWORD=${DEFAULT_PASSWORD})'; ` +
             `else echo '  ↪ 기존 .env 유지 (내용 변경 없음)'; fi`,
           allowFail: true,
         },
-        { label: 'Redis 이미지 pull(최초 1회만 실제로 받아옴)', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose pull` },
-        { label: 'Redis 컨테이너 기동', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose up -d` },
-        { label: '5초 대기 후 상태 확인', cmd: `sleep 5 && cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose ps` },
+        // 2026-09-06: .env 가 이 폴더 밖(shopjoy/env/)으로 이동했으므로, compose 의 자동 .env
+        // 탐색(CWD 기준)이 더는 안 먹는다 — 모든 compose 호출에 --env-file 명시 필수.
+        { label: 'Redis 이미지 pull(최초 1회만 실제로 받아옴)', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose --env-file ${REMOTE_REDIS_ENV_FILE} pull` },
+        { label: 'Redis 컨테이너 기동', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose --env-file ${REMOTE_REDIS_ENV_FILE} up -d` },
+        { label: '5초 대기 후 상태 확인', cmd: `sleep 5 && cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose --env-file ${REMOTE_REDIS_ENV_FILE} ps` },
         {
           label: 'redis-cli ping (컨테이너 안에서 직접 확인, 인증 포함)',
           cmd: `${DOCKER} exec ${CONTAINER_NAME} sh -c 'redis-cli -a "$REDIS_PASSWORD" --no-auth-warning ping'`,
@@ -84,9 +95,9 @@ function fmtElapsed() {
       serverInfo: [
         { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / Redis 포트 22379)' },
         { label: '설치 경로', value: REMOTE_REDIS_DIR },
-        { label: '데이터 경로', value: '/volume1/docker/shopjoy/ecBeRedisData' },
+        { label: '데이터 경로', value: REMOTE_REDIS_DATA_DIR },
         { label: '컨테이너명', value: `${CONTAINER_NAME} (이미지 redis:7.0-rc1)` },
-        { label: '비밀번호', value: `있음(REDIS_PASSWORD, ${REMOTE_REDIS_DIR}/.env — 미준비 시 기본값 ${DEFAULT_PASSWORD} 자동생성)` },
+        { label: '비밀번호', value: `있음(REDIS_PASSWORD, ${REMOTE_REDIS_ENV_FILE} — 미준비 시 기본값 ${DEFAULT_PASSWORD} 자동생성)` },
         { label: '기존 무암호 컨테이너', value: '123-redis.70rc1(12379)은 포트가 달라 그대로 남아있음 — 준비되면 수동 정리' },
       ],
       checkUrls: [],

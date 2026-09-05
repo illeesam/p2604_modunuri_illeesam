@@ -19,10 +19,10 @@
 #   단독으로 완결되어 뜬다 — 더 이상 EcAdminApi 배포가 선행될 필요가 없다.
 #
 # ⚠️ 전제조건(최초 1회, 로컬 스크립트로 배포했을 때와 동일):
-#   1) /volume1/docker/shopjoy/ecBeCdn/.env 가 NAS 에 수동으로 준비되어 있을 것(CF_JWT_SECRET 등)
+#   1) /volume1/docker/shopjoy/apps/ecBeCdn/.env 가 NAS 에 수동으로 준비되어 있을 것(CF_JWT_SECRET 등)
 #   2) _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 이 DB 에 적용 + cf_client 계정 시딩되어 있을 것
 #
-# NAS 배포 경로: /volume1/docker/shopjoy/ecBeCdn/ (docker-compose.yml 위치)
+# NAS 배포 경로: /volume1/docker/shopjoy/apps/ecBeCdn/ (docker-compose.yml 위치)
 # docker-compose.yml 원본 위치: ec_v26/shopjoy_v260406/apps/ecBeCdn/docker-compose.yml
 #
 # 필요 시크릿(shopjoy-be-illeesam-synol-deploy.yml 과 완전히 동일한 것을 그대로 재사용 —
@@ -82,7 +82,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Port(SSH)  : ${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정(User) : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호   : $MASK  (총 ${LEN}자리 — 뒤 3자리만 표시, 나머지는 자체 마스킹)"
-          echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/ecBeCdn/"
+          echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/apps/ecBeCdn/"
           echo "[$(date '+%H:%M:%S')]   컨테이너   : eccdnapi (단독 기동, nginx 없음 — 완전 분리 설계)"
           echo "[$(date '+%H:%M:%S')]   관리화면 URL: http://illeesam.synology.me:22400/home/index.html"
           echo "[$(date '+%H:%M:%S')]   디버그 URL  : http://illeesam.synology.me:22400  (actuator 직결, 외부 미공개 권장)"
@@ -149,7 +149,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')] ▶ Synology NAS(${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}) 로 전송을 시작합니다."
           echo "[$(date '+%H:%M:%S')]   1) 설정파일 (docker-compose.yml)"
           echo "[$(date '+%H:%M:%S')]   2) Docker 이미지 압축파일 (eccdnapi-image.tar.gz)"
-          echo "[$(date '+%H:%M:%S')]   대상 경로: /volume1/docker/shopjoy/ecBeCdn/"
+          echo "[$(date '+%H:%M:%S')]   대상 경로: /volume1/docker/shopjoy/apps/ecBeCdn/"
 
       - name: "[5-1] 설정파일 전송"
         uses: appleboy/scp-action@v0.1.7
@@ -160,7 +160,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec_v26/shopjoy_v260406/deploy_pkg_cdn/docker-compose.yml"
-          target: "/volume1/docker/shopjoy/ecBeCdn/"
+          target: "/volume1/docker/shopjoy/apps/ecBeCdn/"
           strip_components: 3
 
       - name: "[5-2] Docker 이미지 전송"
@@ -172,7 +172,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec_v26/shopjoy_v260406/apps/ecBeCdn/eccdnapi-image.tar.gz"
-          target: "/volume1/docker/shopjoy/ecBeCdn/"
+          target: "/volume1/docker/shopjoy/apps/ecBeCdn/"
           strip_components: 4
 
       # ─────────────────────────────────────────
@@ -187,7 +187,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
-            cd /volume1/docker/shopjoy/ecBeCdn
+            cd /volume1/docker/shopjoy/apps/ecBeCdn
 
             echo "[$(date '+%H:%M:%S')] [6-1-1] 전송된 파일 확인"
             ls -lh .
@@ -199,7 +199,7 @@ jobs:
 
             echo ""
             echo "[$(date '+%H:%M:%S')] [6-1-2] 로그·저장소 볼륨 폴더 존재 보장"
-            mkdir -p /volume1/docker/shopjoy/ecBeCdnLogs /volume1/docker/shopjoy/ecBeCdnStorage
+            mkdir -p /volume1/docker/shopjoy/logs/ecBeCdnLogs /volume1/docker/shopjoy/storage/ecBeCdnStorage
 
             echo ""
             echo "[$(date '+%H:%M:%S')] [6-1-3] 새 이미지 로드 (재빌드 없음 — NAS 는 미리 빌드된 이미지만 import)"
@@ -253,7 +253,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')] 헬스체크              : http://illeesam.synology.me:22400/actuator/health"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] Synology SSH 수동 확인 명령어"
-          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/ecBeCdn"
+          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/apps/ecBeCdn"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose ps"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose logs -f eccdnapi"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose restart eccdnapi"

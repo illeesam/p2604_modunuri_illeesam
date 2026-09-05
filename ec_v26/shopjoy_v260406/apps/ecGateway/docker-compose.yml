@@ -35,11 +35,13 @@ services:
     # html: ecFeBo 가 이미 배포해둔 정적 파일 루트를 그대로 재사용(읽기전용, 별도 배포 불필요) —
     #   apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecFeBo 가 채워둔 그 폴더를 이
     #   게이트웨이도 같이 읽는다.
+    # 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs
+    # 로 분류") — ecFeBo → apps/ecFeBo.
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./locations.conf:/etc/nginx/locations.conf:ro
       - ./security-headers.conf:/etc/nginx/security-headers.conf:ro
-      - /volume1/docker/shopjoy/ecFeBo:/usr/share/nginx/html:ro
+      - /volume1/docker/shopjoy/apps/ecFeBo:/usr/share/nginx/html:ro
 
     restart: "no"
 

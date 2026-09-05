@@ -5,7 +5,7 @@
  *
  * ⚠️ 테스트 전용이다(apps/ecGateway/docker-compose.yml 상단 주석 참조) — ecBeBo(22300)/
  * ecBeCdn(22400)이 이 NAS에 이미 떠 있어야(host.docker.internal 경유로 호출) 정상 동작하고,
- * ecFeBo(22000)가 배포해둔 정적 파일 폴더(/volume1/docker/shopjoy/ecFeBo)를 그대로 재사용한다
+ * ecFeBo(22000)가 배포해둔 정적 파일 폴더(/volume1/docker/shopjoy/apps/ecFeBo)를 그대로 재사용한다
  * — 즉 이 스크립트를 돌리기 전에 deploy/ 에서 npm run ecBeBo / ecBeCdn / ecFeBo 가
  * 먼저 실행되어 있어야 의미가 있다(순서 강제는 안 함 — 없어도 컨테이너 자체는 뜨지만 502/빈
  * 화면만 보게 된다).
@@ -21,7 +21,8 @@ const { notifyDeployResult } = require('../notify-deploy-result');
 requireCreds('deploy-dev-synol-gw-ecGateway.js');
 
 const DOCKER = '/usr/local/bin/docker';
-const REMOTE_GW_DIR = '/volume1/docker/shopjoy/ecGateway';
+// 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로 분류")
+const REMOTE_GW_DIR = '/volume1/docker/shopjoy/apps/ecGateway';
 const CONTAINER_NAME = 'shopjoy-ecGateway-22099';
 const PUBLIC_PORT = 22099;
 const PUBLIC_HOST = 'illeesam.synology.me';

@@ -20,7 +20,10 @@ const { notifyDeployResult } = require('../notify-deploy-result');
 requireCreds('scripts/deploy-dev-synol-be-ecBeBo.js');
 
 const DOCKER = '/usr/local/bin/docker';
-const REMOTE_BE_DIR = '/volume1/docker/shopjoy/ecBeBo';
+// 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로
+// 분류") — 컨테이너 실행 폴더는 apps/ 아래, 로그는 logs/ 아래로 이동.
+const REMOTE_BE_DIR = '/volume1/docker/shopjoy/apps/ecBeBo';
+const REMOTE_BE_LOGS_DIR = '/volume1/docker/shopjoy/logs/ecBeBoLogs';
 const PUBLIC_HOST = 'illeesam.synology.me';
 const PUBLIC_PORT = 22300;
 // 2026-09-06: ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
@@ -116,11 +119,11 @@ function fmtElapsed() {
           // 경로 변경(다른 앱들의 ecBeCdnStorage 등과 명명 원칙 통일). 기존 로그가 있으면 새
           // 경로로 1회 이관(mv, 이미 이관됐거나 기존 폴더가 없으면 조용히 건너뜀).
           label: '로그 볼륨 폴더 존재 보장 (+ 구경로 1회 이관)',
-          cmd: 'mkdir -p /volume1/docker/shopjoy/ecBeBoLogs && ' +
-            'if [ -d /volume1/docker/ecadminapi/logs ] && [ -z "$(ls -A /volume1/docker/shopjoy/ecBeBoLogs 2>/dev/null)" ]; then ' +
-            'mv /volume1/docker/ecadminapi/logs/* /volume1/docker/shopjoy/ecBeBoLogs/ 2>/dev/null; ' +
-            'echo "  ↪ 구 로그 경로(/volume1/docker/ecadminapi/logs)에서 이관 완료"; ' +
-            'else echo "  (이관 대상 없음 — 스킵)"; fi',
+          cmd: `mkdir -p ${REMOTE_BE_LOGS_DIR} && ` +
+            `if [ -d /volume1/docker/ecadminapi/logs ] && [ -z "$(ls -A ${REMOTE_BE_LOGS_DIR} 2>/dev/null)" ]; then ` +
+            `mv /volume1/docker/ecadminapi/logs/* ${REMOTE_BE_LOGS_DIR}/ 2>/dev/null; ` +
+            `echo "  ↪ 구 로그 경로(/volume1/docker/ecadminapi/logs)에서 이관 완료"; ` +
+            `else echo "  (이관 대상 없음 — 스킵)"; fi`,
           allowFail: true,
         },
         {
@@ -205,7 +208,7 @@ function fmtElapsed() {
       { label: 'Docker 네트워크', value: '완전 분리 설계(2026-09-06) — 다른 컨테이너와 네트워크 비공유, 단독 기동' },
       { label: '활성 프로파일', value: `${REMOTE_BE_DIR}/.env 의 SPRING_PROFILES_ACTIVE 값 (위 로그 참조)` },
       { label: 'DB 접속', value: 'illeesam.synology.me:17632 / shopjoy_2604 (PostgreSQL, p6spy 경유)' },
-      { label: '로그 경로', value: '/volume1/docker/shopjoy/ecBeBoLogs → 컨테이너 내부 logs' },
+      { label: '로그 경로', value: `${REMOTE_BE_LOGS_DIR} → 컨테이너 내부 logs` },
     ];
     await notifyDeployResult({
       tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeBo', success: true, elapsed: fmtElapsed(),

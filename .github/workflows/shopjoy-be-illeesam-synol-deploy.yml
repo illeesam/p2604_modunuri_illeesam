@@ -29,10 +29,10 @@
 #   공개 가능해야 하기 때문(CORS 로 방어). 전송 대상도 docker-compose.yml 하나뿐이라
 #   strip_components 값이 3→4(설정4종 공통 경로)에서 개별 파일 기준으로 바뀌었다(아래 [5-1] 참조).
 #
-# NAS 배포 경로: /volume1/docker/shopjoy/ecBeBo/ (docker-compose.yml 위치)
+# NAS 배포 경로: /volume1/docker/shopjoy/apps/ecBeBo/ (docker-compose.yml 위치)
 # docker-compose.yml 원본 위치: ec_v26/shopjoy_v260406/apps/ecBeBo/docker-compose.yml
 #   (2026-09-05: _doc/정책서-배포-시놀로지/docker/ 에서 이동 — 그 폴더는 폐기됨)
-#   ⚠ .env 파일은 이 워크플로가 만들지 않는다 — /volume1/docker/shopjoy/ecBeBo/.env 를
+#   ⚠ .env 파일은 이 워크플로가 만들지 않는다 — /volume1/docker/shopjoy/apps/ecBeBo/.env 를
 #     최초 1회 NAS 에 수동으로 준비해둬야 한다(JWT_SECRET 등 민감정보를 리포에 커밋하지 않기 위함).
 #
 # 필요 시크릿(리포지토리 Settings → Secrets and variables → Actions):
@@ -91,7 +91,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Port(SSH)  : ${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정(User) : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호   : $MASK  (총 ${LEN}자리 — 뒤 3자리만 표시, 나머지는 자체 마스킹)"
-          echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/ecBeBo/"
+          echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/apps/ecBeBo/"
           echo "[$(date '+%H:%M:%S')]   컨테이너   : ecbebo (단독, nginx 없음 — 완전 분리 설계)"
           echo "[$(date '+%H:%M:%S')]   서비스 URL : http://illeesam.synology.me:22300  (정식 공개 포트)"
           echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
@@ -157,7 +157,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')] ▶ Synology NAS(${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}) 로 전송을 시작합니다."
           echo "[$(date '+%H:%M:%S')]   1) 설정파일 (docker-compose.yml)"
           echo "[$(date '+%H:%M:%S')]   2) Docker 이미지 압축파일 (ecbebo-image.tar.gz)"
-          echo "[$(date '+%H:%M:%S')]   대상 경로: /volume1/docker/shopjoy/ecBeBo/"
+          echo "[$(date '+%H:%M:%S')]   대상 경로: /volume1/docker/shopjoy/apps/ecBeBo/"
 
       - name: "[5-1] 설정파일 전송"
         uses: appleboy/scp-action@v0.1.7
@@ -168,7 +168,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec_v26/shopjoy_v260406/deploy_pkg/docker-compose.yml"
-          target: "/volume1/docker/shopjoy/ecBeBo/"
+          target: "/volume1/docker/shopjoy/apps/ecBeBo/"
           strip_components: 3
 
       - name: "[5-2] Docker 이미지 전송"
@@ -180,7 +180,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           source: "ec_v26/shopjoy_v260406/apps/ecBeBo/ecbebo-image.tar.gz"
-          target: "/volume1/docker/shopjoy/ecBeBo/"
+          target: "/volume1/docker/shopjoy/apps/ecBeBo/"
           strip_components: 4
 
       # ─────────────────────────────────────────
@@ -195,7 +195,7 @@ jobs:
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
-            cd /volume1/docker/shopjoy/ecBeBo
+            cd /volume1/docker/shopjoy/apps/ecBeBo
             echo "[$(date '+%H:%M:%S')] ▶ NAS 접속 완료 — 지금부터 이미지 로드 및 docker compose 배포를 진행합니다."
             echo "[$(date '+%H:%M:%S')]   작업 디렉터리: $(pwd)"
 
@@ -270,7 +270,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Host/Port(SSH) : ${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정           : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호       : $MASK  (뒤 3자리만 표시)"
-          echo "[$(date '+%H:%M:%S')]   설치 경로      : /volume1/docker/shopjoy/ecBeBo/"
+          echo "[$(date '+%H:%M:%S')]   설치 경로      : /volume1/docker/shopjoy/apps/ecBeBo/"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] 🔍 점검 방법 — 아래 URL 을 브라우저/curl 로 접속해 정상 동작을 확인하세요"
           echo "[$(date '+%H:%M:%S')]   (2026-09-06 완전 분리 설계 — 사용자/관리자 화면은 apps/ecFeBo 로 별도 배포됨)"
@@ -279,7 +279,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   3) 공통코드 API     : http://illeesam.synology.me:22300/api/co/sy/code/page?pageNo=1&pageSize=1"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] Synology SSH 수동 확인 명령어"
-          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/ecBeBo"
+          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/apps/ecBeBo"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose ps"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose logs -f ecbebo"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose restart ecbebo"
