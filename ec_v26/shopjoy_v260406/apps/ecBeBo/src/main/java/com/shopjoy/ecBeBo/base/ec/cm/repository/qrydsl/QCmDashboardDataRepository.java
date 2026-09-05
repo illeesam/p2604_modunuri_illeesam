@@ -10,7 +10,7 @@ import java.util.Optional;
  * CmDashboardData QueryDSL Custom Repository.
  *
  * <p>기본 3종 {@code selectList}/{@code selectPageData}(이 엔티티는 페이징 소비처가 없어 미정의) /
- * {@code updateSelective} 위주로 구성한다(base.backend-EcAdminApi.md §14.6.8). 그 외
+ * {@code updateSelective} 위주로 구성한다(base.backend-EcBeBo.md §14.6.8). 그 외
  * {@code selectByCoordinate}(UNIQUE 좌표조회)/{@code updateItemKey}(계산식 UPDATE) 는 위 3종으로
  * 표현이 안 되는 진짜 필요한 경우라 별도로 둔다.</p>
  */

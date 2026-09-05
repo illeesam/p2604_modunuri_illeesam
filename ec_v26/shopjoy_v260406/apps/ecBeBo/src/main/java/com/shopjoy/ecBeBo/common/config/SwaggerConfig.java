@@ -24,7 +24,7 @@
 //    public OpenAPI openAPI() {
 //        return new OpenAPI()
 //            .info(new Info()
-//                .title("ShopJoy EcAdminApi")
+//                .title("ShopJoy EcBeBo")
 //                .description("ShopJoy 전자상거래 플랫폼 API")
 //                .version("v2604"));
 //    }

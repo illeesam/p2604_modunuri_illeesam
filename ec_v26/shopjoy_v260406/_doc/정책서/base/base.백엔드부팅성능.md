@@ -154,6 +154,6 @@ EMF 빌드 구간이 `Building JPA container EntityManagerFactory` ~ `Initialize
 
 ## 관련 문서
 
-- [`base.backend-EcAdminApi.md`](base.backend-EcAdminApi.md) — 패키지 구조 및 서비스 패턴
+- [`base.backend-EcBeBo.md`](base.backend-EcBeBo.md) — 패키지 구조 및 서비스 패턴
 - [`base.설정값암호화.md`](base.설정값암호화.md) — Jasypt (dev/prod 에서는 필수)
 - [`base.운영환경-배포설정.md`](base.운영환경-배포설정.md) — 배포 환경 설정

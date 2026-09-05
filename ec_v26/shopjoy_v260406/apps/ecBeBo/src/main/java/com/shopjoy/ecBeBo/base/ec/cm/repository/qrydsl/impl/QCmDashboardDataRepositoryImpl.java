@@ -62,7 +62,7 @@ public class QCmDashboardDataRepositoryImpl implements QCmDashboardDataRepositor
     /**
      * UNIQUE 좌표(item_key, data_opts, data_opt2s) 로 단건을 찾는다 — 저장 시 upsert 판정에 쓴다.
      * 검색조건 DTO 가 아니라 복합키 그대로 받는 형태라 selectById/selectList 로는 표현이 안 돼
-     * 별도로 둔다(base.backend-EcAdminApi.md §14.6.8 예외 1호).
+     * 별도로 둔다(base.backend-EcBeBo.md §14.6.8 예외 1호).
      */
     @Override
     public Optional<CmDashboardData> selectByCoordinate(String itemKey, String dataOpts, String dataOpt2s) {
@@ -104,7 +104,7 @@ public class QCmDashboardDataRepositoryImpl implements QCmDashboardDataRepositor
      * 표준 이스케이프로 PostgreSQL 네이티브 함수를 그대로 호출한다(Hibernate 가 등록 없이도
      * 그대로 방언에 전달) — 별도 native SQL 없이 QueryDSL 만으로 표현할 수 있다. updateSelective
      * 는 "온 필드만 그대로 SET" 전제라 계산식(split_part) SET 은 표현 못 해 별도로 둔다
-     * (base.backend-EcAdminApi.md §14.6.8 예외 3호).
+     * (base.backend-EcBeBo.md §14.6.8 예외 3호).
      */
     @Override
     public int updateItemKey(String oldKey, String newKey) {

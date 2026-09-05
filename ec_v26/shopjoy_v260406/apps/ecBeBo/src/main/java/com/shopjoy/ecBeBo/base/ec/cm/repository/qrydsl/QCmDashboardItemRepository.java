@@ -11,7 +11,7 @@ import java.util.Optional;
  * CmDashboardItem QueryDSL Custom Repository.
  *
  * <p>기본 3종 {@code selectList}/{@code selectPageData}/{@code updateSelective} 위주로 구성한다
- * (base.backend-EcAdminApi.md §14.6.8). {@code selectById} 는 다른 조회들과 마찬가지로
+ * (base.backend-EcBeBo.md §14.6.8). {@code selectById} 는 다른 조회들과 마찬가지로
  * hibernate.comment 힌트가 붙어 쿼리 로그 추적이 되는 QueryDSL 진입점으로 추가했다 — 내부에서
  * 같은 트랜잭션 안 엔티티를 그대로 수정·저장해야 하는 곳(putRow/renameByCode 등)은 여전히
  * {@code JpaRepository.findById}를 직접 쓴다(그쪽은 굳이 바꿀 이유가 없는 단순 1조건 조회).</p>

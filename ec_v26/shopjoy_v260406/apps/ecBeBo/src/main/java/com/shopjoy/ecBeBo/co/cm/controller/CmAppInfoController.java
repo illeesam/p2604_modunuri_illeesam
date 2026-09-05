@@ -160,7 +160,7 @@ public class CmAppInfoController {
     /* buildApp */
     private Map<String, Object> buildApp() {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("name",           env.getProperty("spring.application.name", "EcAdminApi"));
+        m.put("name",           env.getProperty("spring.application.name", "EcBeBo"));
         m.put("activeProfiles", Arrays.asList(env.getActiveProfiles()));
         m.put("defaultProfiles", Arrays.asList(env.getDefaultProfiles()));
         return m;
