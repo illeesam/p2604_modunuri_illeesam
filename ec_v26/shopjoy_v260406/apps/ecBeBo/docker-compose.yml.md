@@ -37,7 +37,7 @@ container_name: shopjoy_db
 ```yaml
 environment:
   POSTGRES_USER: illeesam              # DB 접속 사용자명
-  POSTGRES_PASSWORD: postgresqlilleesam # DB 접속 암호
+  POSTGRES_PASSWORD: your_db_password # DB 접속 암호
   POSTGRES_DB: shopjoy_db              # 생성할 기본 데이터베이스명
 ```
 - PostgreSQL 초기 설정 정보
@@ -113,7 +113,7 @@ ports:
 ```yaml
 SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shopjoy_db
 SPRING_DATASOURCE_USERNAME: illeesam
-SPRING_DATASOURCE_PASSWORD: postgresqlilleesam
+SPRING_DATASOURCE_PASSWORD: your_db_password
 SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 ```
 - **SPRING_DATASOURCE_URL**: `postgres`는 같은 네트워크의 PostgreSQL 서비스 호스트명
@@ -322,7 +322,7 @@ docker-compose up -d --build
 ### `.env` 파일 생성
 ```env
 POSTGRES_USER=illeesam
-POSTGRES_PASSWORD=postgresqlilleesam
+POSTGRES_PASSWORD=your_db_password
 POSTGRES_DB=shopjoy_db
 
 JWT_SECRET=your_very_secure_jwt_secret_key_minimum_32_characters

@@ -4,11 +4,14 @@ sy_path 전체 재구성 v2
 - 시스템(sy_*) 10개: 역할/브랜드/업체/코드/템플릿/알람/배치/사이트/biz/bbm
 - 각 biz_cd 루트 1개 -> 2레벨 분류 -> 3레벨
 """
+import os
 import psycopg2
 
+# 2026-09-06: 하드코딩된 실제 비밀번호가 GitGuardian 에 노출 탐지됨(이 저장소는 Public) — 환경변수로
+# 변경. 실행 전 DB_PASSWORD 환경변수를 설정할 것.
 conn = psycopg2.connect(
     host='illeesam.synology.me', port=17632, dbname='postgres',
-    user='postgres', password='postgresilleesam',
+    user='postgres', password=os.environ['DB_PASSWORD'],
     options='-c search_path=shopjoy_2604'
 )
 conn.autocommit = False

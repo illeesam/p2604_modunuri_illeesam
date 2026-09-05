@@ -11,7 +11,7 @@
 | **Database** | `postgres` |
 | **Schema** | `shopjoy_2604` |
 | **Username** | `postgres` |
-| **Password** | `postgresilleesam` |
+| **Password** | ⚠ 2026-09-06 GitGuardian 탐지로 마스킹(이 저장소는 Public) — 실제 값은 `scripts/.synology-deploy.env`(git-미추적) 참조, 이 문서엔 평문으로 다시 적지 말 것 |
 
 ## Spring Boot 실행 파라미터
 
@@ -22,7 +22,7 @@
 -DDB_NAME=postgres
 -DDB_SCHEMA=shopjoy_2604
 -DDB_USERNAME=postgres
--DDB_PASSWORD=postgresilleesam
+-DDB_PASSWORD=<실제DB비밀번호>
 ```
 
 ## JDBC URL (참조용)

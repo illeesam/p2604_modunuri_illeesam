@@ -7,31 +7,36 @@
 #  각 줄은 셸(PowerShell/cmd/bash) 구분 없이 그대로 콘솔에 붙여넣기 가능 — java 프로그램
 #  인자라 셸 문법에 안 걸린다(줄바꿈 이어쓰기 문자를 안 써서 셸마다 다른 문제도 없음).
 #
-#  DB_* 는 전부 기본값이 있어서(illeesam.synology.me 공유 개발DB) local/dev 는 안 넘겨도
-#  뜬다 — prod 만 JWT_SECRET/LICENSE_SECRET/FRONTEND_DIR/FRONTEND_BASE_URL/AWS_*/NCP_* 가
-#  기본값 없이 필수라 반드시 넘겨야 부팅된다(하나라도 빠지면 플레이스홀더 해석 실패로
-#  부팅 자체가 안 됨 — 그래서 prod 에는 "①심플" 예시가 따로 없다).
+#  DB_HOST/PORT/NAME/SCHEMA/USERNAME 은 기본값이 있어서(illeesam.synology.me 공유 개발DB)
+#  안 넘겨도 뜬다. ⚠ DB_PASSWORD 는 2026-09-06부터 local/dev 도 기본값이 없다(GitHub 공개
+#  저장소에 실제 비밀번호가 하드코딩 기본값으로 올라가 있던 걸 정리 — 이제 무조건 환경변수로
+#  넘겨야 부팅된다). 실제 값은 이 파일에 적지 말고 scripts/.synology-deploy.env 같은
+#  git-미추적 파일이나 셸 환경변수로 따로 보관해서 붙여넣을 것. prod 는 그 외에도
+#  JWT_SECRET/LICENSE_SECRET/FRONTEND_DIR/FRONTEND_BASE_URL/AWS_*/NCP_* 가 기본값 없이
+#  필수라 반드시 넘겨야 부팅된다(하나라도 빠지면 플레이스홀더 해석 실패로 부팅 자체가 안 됨
+#  — 그래서 prod 에는 "①심플" 예시가 따로 없다).
 #
 # ── ① 로컬(local) ────────────────────────────────────────────────────────
-#  1) 심플 실행:
+#  1) 심플 실행 (⚠ DB_PASSWORD 환경변수가 이미 셸에 export 돼 있어야 뜬다 — 없으면 ②처럼
+#     --DB_PASSWORD=<값> 을 직접 붙일 것):
 #    java -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=local
 #
 #  2) 기본옵션(진짜 로컬 PC의 Postgres로 붙일 때 — application-local.yml 상단 주석의 의도된 조합):
 #    java -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=local --DB_HOST=localhost --DB_PORT=5432 --DB_USERNAME=postgres --DB_PASSWORD=postgres
 #
 #  3) 다양한 옵션(포트/메모리까지 지정, 공유 개발DB 명시):
-#    java -Xms256m -Xmx1024m -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=local --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=postgresilleesam
+#    java -Xms256m -Xmx1024m -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=local --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=<개발DB비밀번호>
 #
 # ── ② 개발(dev) ──────────────────────────────────────────────────────────
 #  local 과 DB 접속은 같지만 Flyway 활성화 + 로그 파일 경로(C:/_logs/shopjoy)가 다르다.
-#  1) 심플 실행:
+#  1) 심플 실행 (⚠ DB_PASSWORD 환경변수 필요 — 위 local 과 동일):
 #    java -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
 #
 #  2) 기본옵션(DB 명시):
-#    java -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_USERNAME=postgres --DB_PASSWORD=postgresilleesam
+#    java -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_USERNAME=postgres --DB_PASSWORD=<개발DB비밀번호>
 #
 #  3) 다양한 옵션(포트/메모리 + 젠킨스 배치 토큰까지):
-#    java -Xms256m -Xmx1024m -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=postgresilleesam --JENKINS_BATCH_TOKEN=xxxxx
+#    java -Xms256m -Xmx1024m -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=<개발DB비밀번호> --JENKINS_BATCH_TOKEN=xxxxx
 #
 # ── ③ 운영(prod) ─────────────────────────────────────────────────────────
 #  실제 배포는 Docker(Dockerfile 의 ENTRYPOINT — java -jar app.jar 고정, docker-compose 의

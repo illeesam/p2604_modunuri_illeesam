@@ -1085,12 +1085,12 @@ Order/Claim/Dliv Mng의 "변경작업 선택" 모달:
 | **Port** | 17632 |
 | **Database** | postgres |
 | **Username** | postgres |
-| **Password** | postgresilleesam |
+| **Password** | ⚠ 2026-09-06 GitGuardian 이 이 저장소(Public)에서 실제 비밀번호 노출을 탐지해 마스킹함 — 실제 값은 `scripts/.synology-deploy.env`(git-미추적) 또는 팀 내 별도 비밀관리 경로 참조. 절대 이 문서에 평문으로 다시 적지 말 것. |
 | **Default Schema** | shopjoy_2604 |
 
-**Spring Boot 실행 파라미터**:
+**Spring Boot 실행 파라미터** (DB_PASSWORD 는 위와 동일한 이유로 값 생략 — 실행 시 직접 채울 것):
 ```
--Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgresilleesam
+-Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=<실제DB비밀번호>
 ```
 
 > 상세 설정 → `_doc/정책서-dev/db-connection.md`

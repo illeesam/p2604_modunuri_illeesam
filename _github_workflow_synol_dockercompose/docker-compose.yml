@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-illeesam}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgresqlilleesam}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_db_password}
       POSTGRES_DB: ${DB_NAME:-shopjoy_db}
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -73,7 +73,7 @@ services:
       # ── Database ──────────────────────────
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-shopjoy_db}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-illeesam}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgresqlilleesam}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-your_db_password}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
       # ── Redis ─────────────────────────────

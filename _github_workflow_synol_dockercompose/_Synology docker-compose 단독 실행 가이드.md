@@ -78,7 +78,7 @@ DB_PORT=5432
 REDIS_PORT=6379
 
 DB_USER=illeesam
-DB_PASSWORD=postgresqlilleesam
+DB_PASSWORD=your_db_password
 DB_NAME=shopjoy_db
 
 SPRING_PROFILES_ACTIVE=prod

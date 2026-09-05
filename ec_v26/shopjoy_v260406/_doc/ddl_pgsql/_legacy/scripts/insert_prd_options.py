@@ -1,12 +1,15 @@
+import os
 import psycopg2
 from datetime import datetime
 import random
 
 random.seed(99)
 
+# 2026-09-06: 하드코딩된 실제 비밀번호가 GitGuardian 에 노출 탐지됨(이 저장소는 Public) — 환경변수로
+# 변경. 실행 전 DB_PASSWORD 환경변수를 설정할 것.
 conn = psycopg2.connect(
     host='illeesam.synology.me', port=17632, dbname='postgres',
-    user='postgres', password='postgresilleesam', options='-c search_path=shopjoy_2604'
+    user='postgres', password=os.environ['DB_PASSWORD'], options='-c search_path=shopjoy_2604'
 )
 cur = conn.cursor()
 

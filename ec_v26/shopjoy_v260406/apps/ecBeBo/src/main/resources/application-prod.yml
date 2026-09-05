@@ -11,7 +11,7 @@ spring:
     # DB_USERNAME=(필수) | DB_PASSWORD=(필수)
     url: jdbc:p6spy:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgresilleesam}
+    password: ${DB_PASSWORD}
     # 2026-08-30 버그수정: url 이 jdbc:p6spy:postgresql://(p6spy 래퍼) 인데 여기가
     # org.postgresql.Driver(순정 드라이버)로 잘못 돼 있었다 — local/dev 는 이미
     # com.p6spy.engine.spy.P6SpyDriver 로 올바르게 맞춰져 있었는데 prod 만 어긋나 있었음.
