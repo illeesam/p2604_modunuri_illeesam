@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,7 +17,7 @@ import java.io.IOException;
  *
  * <p>브라우저의 실제 CORS 거부(특히 preflight)는 Spring Security 의 {@code CorsFilter} 가
  * 필터 단계에서 예외 없이 바로 403 "Invalid CORS request" 를 응답해버려서, 그 뒤에 있는
- * {@link com.shopjoy.ecadminapi.common.exception.GlobalExceptionHandler} 까지 애초에
+ * {@link com.shopjoy.ecBeBo.common.exception.GlobalExceptionHandler} 까지 애초에
  * 도달하지 않는다(실측 확인함). 게다가 그 응답 body 를 커스터마이즈해도 브라우저가 CORS
  * 위반 응답 자체를 JS 에서 못 읽게 막아버려서 프론트 개발자한텐 어차피 안 보인다 —
  * 그래서 <b>응답을 건드리지 않고</b>(CorsFilter 의 실제 판정/응답 로직은 그대로 두고)

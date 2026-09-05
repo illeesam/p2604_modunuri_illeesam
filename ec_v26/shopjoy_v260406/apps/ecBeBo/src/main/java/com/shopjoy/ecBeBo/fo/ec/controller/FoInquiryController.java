@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.fo.ec.controller;
+package com.shopjoy.ecBeBo.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.fo.ec.service.FoCmContactService;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmContactSubmitDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyContact;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.fo.ec.service.FoCmContactService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

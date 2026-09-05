@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.co.sy.controller;
+package com.shopjoy.ecBeBo.co.sy.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
-import com.shopjoy.ecadminapi.base.sy.service.SyCodeService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyCodeDto;
+import com.shopjoy.ecBeBo.base.sy.service.SyCodeService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

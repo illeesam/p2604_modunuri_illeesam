@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.sy.controller;
+package com.shopjoy.ecBeBo.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhExtTestLog;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhExtTestLogRepository;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhExtTestLog;
+import com.shopjoy.ecBeBo.base.sy.repository.SyhExtTestLogRepository;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.response.PageResult;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

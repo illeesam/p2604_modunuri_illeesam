@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.fo.ec.controller;
+package com.shopjoy.ecBeBo.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.fo.ec.service.FoMyPageService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdClaimDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCacheDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyContactDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmChattDto;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.fo.ec.service.FoMyPageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

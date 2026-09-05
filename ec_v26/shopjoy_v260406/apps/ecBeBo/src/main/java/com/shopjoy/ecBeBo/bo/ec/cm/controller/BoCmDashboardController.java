@@ -1,20 +1,20 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.controller;
+package com.shopjoy.ecBeBo.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardWidgetRow;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardMenu;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardMenuRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataGridService;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataService;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemService;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardService;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboard;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardItem;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmDashboardWidgetRow;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardData;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardMenu;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmDashboardMenuRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmDashboardRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmDashboardDataGridService;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmDashboardDataService;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmDashboardItemService;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmDashboardService;
+import com.shopjoy.ecBeBo.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -132,7 +132,7 @@ public class BoCmDashboardController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CmDashboard>> getById(@PathVariable("id") String id) {
         CmDashboard entity = cmDashboardRepository.findById(id)
-            .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new com.shopjoy.ecBeBo.common.exception.CmBizException("존재하지 않습니다: " + id));
         return ResponseEntity.ok(ApiResponse.ok(entity));
     }
 
@@ -150,7 +150,7 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<CmDashboard>> update(
             @PathVariable("id") String id, @Valid @RequestBody CmDashboard body) {
         CmDashboard entity = cmDashboardRepository.findById(id)
-            .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + id));
+            .orElseThrow(() -> new com.shopjoy.ecBeBo.common.exception.CmBizException("존재하지 않습니다: " + id));
         checkOwner(entity);
         if (body.getDashboardNm() != null) entity.setDashboardNm(body.getDashboardNm());
         if (body.getUiCompNm() != null)    entity.setUiCompNm(body.getUiCompNm());
@@ -181,7 +181,7 @@ public class BoCmDashboardController {
         if (owner == null || owner.isBlank()) return; /* 공용 대시보드 */
         String authId = SecurityUtil.getAuthUser().authId();
         if (!owner.equals(authId))
-            throw new com.shopjoy.ecadminapi.common.exception.CmBizException(
+            throw new com.shopjoy.ecBeBo.common.exception.CmBizException(
                 "본인 소유의 개인화 대시보드만 수정/삭제할 수 있습니다. (소유자: " + owner + ")");
     }
 
@@ -275,7 +275,7 @@ public class BoCmDashboardController {
                 cmDashboardItemService.getById(src.asText()); /* 미존재 시 CmBizException */
             }
         } catch (com.fasterxml.jackson.core.JacksonException e) {
-            throw new com.shopjoy.ecadminapi.common.exception.CmBizException(
+            throw new com.shopjoy.ecBeBo.common.exception.CmBizException(
                 "optionJson 형식이 올바르지 않습니다: " + e.getOriginalMessage());
         }
     }
@@ -361,7 +361,7 @@ public class BoCmDashboardController {
      * 파라미터: dashboardId(단일) 또는 dashboardIds(콤마구분) / useYn / itemNm / pageNo / pageSize.
      */
     @GetMapping("/item/page")
-    public ResponseEntity<ApiResponse<com.shopjoy.ecadminapi.common.data.BasePage<CmDashboardItem>>> itemPage(
+    public ResponseEntity<ApiResponse<com.shopjoy.ecBeBo.common.data.BasePage<CmDashboardItem>>> itemPage(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataGridService.getChartPage(p)));
     }
@@ -398,7 +398,7 @@ public class BoCmDashboardController {
                 cmDashboardDataGridService.getGridsByCharts(ids, siteId, yyyymmdd, prodId, vendorId)));
         }
         if (dashboardId == null || dashboardId.isBlank())
-            throw new com.shopjoy.ecadminapi.common.exception.CmBizException("dashboardId 또는 chartIds 중 하나는 필수입니다.");
+            throw new com.shopjoy.ecBeBo.common.exception.CmBizException("dashboardId 또는 chartIds 중 하나는 필수입니다.");
         return ResponseEntity.ok(ApiResponse.ok(
             cmDashboardDataGridService.getGrids(dashboardId, siteId, yyyymmdd, prodId, vendorId)));
     }

@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.sch.handler;
+package com.shopjoy.ecBeBo.sch.handler;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
 
 /**
  * 배치 작업 핸들러 인터페이스.

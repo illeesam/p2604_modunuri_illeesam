@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.base.ec.cm.service;
+package com.shopjoy.ecBeBo.base.ec.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardWidgetRow;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmDashboardDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmDashboardWidgetRow;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboard;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardItem;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmDashboardItemRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmDashboardRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.common.log;
+package com.shopjoy.ecBeBo.common.log;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessLog;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhAccessLogRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhAccessLog;
+import com.shopjoy.ecBeBo.base.sy.repository.SyhAccessLogRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;

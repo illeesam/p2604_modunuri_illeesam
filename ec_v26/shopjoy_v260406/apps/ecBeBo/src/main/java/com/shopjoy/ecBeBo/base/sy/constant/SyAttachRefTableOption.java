@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.constant;
+package com.shopjoy.ecBeBo.base.sy.constant;
 
 /**
  * sy_attach.ref_table_nm 옵션 1건 — {@code GET /co/cm/upload/ref/table-options} 로 프론트에 내려준다.

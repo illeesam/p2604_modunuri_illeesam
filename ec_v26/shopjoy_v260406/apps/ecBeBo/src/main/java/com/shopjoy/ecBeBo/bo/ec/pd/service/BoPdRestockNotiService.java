@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.service;
+package com.shopjoy.ecBeBo.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiSendDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdRestockNotiService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdRestockNotiDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdRestockNotiSendDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdRestockNoti;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdRestockNotiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

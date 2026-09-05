@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.md.sg.repository.qrydsl;
+package com.shopjoy.ecBeBo.md.sg.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.md.sg.data.dto.MdSgSourcegenHistDto;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.md.sg.data.dto.MdSgSourcegenHistDto;
 
 import java.util.List;
 

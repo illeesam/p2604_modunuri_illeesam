@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.bo.common.config;
+package com.shopjoy.ecBeBo.bo.common.config;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
-import com.shopjoy.ecadminapi.base.sy.repository.SyNoticeRepository;
-import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmBlogService;
-import com.shopjoy.ecadminapi.common.excel.ExcelDomainHandler;
-import com.shopjoy.ecadminapi.common.excel.PagedExcelHandler;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyNoticeDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyNotice;
+import com.shopjoy.ecBeBo.base.sy.repository.SyNoticeRepository;
+import com.shopjoy.ecBeBo.bo.ec.cm.service.BoCmBlogService;
+import com.shopjoy.ecBeBo.common.excel.ExcelDomainHandler;
+import com.shopjoy.ecBeBo.common.excel.PagedExcelHandler;
 import jakarta.persistence.EntityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

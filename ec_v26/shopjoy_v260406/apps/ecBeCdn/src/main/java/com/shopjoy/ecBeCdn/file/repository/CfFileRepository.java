@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.file.repository;
+package com.shopjoy.ecBeCdn.file.repository;
 
-import com.shopjoy.eccdnapi.file.entity.CfFile;
+import com.shopjoy.ecBeCdn.file.entity.CfFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

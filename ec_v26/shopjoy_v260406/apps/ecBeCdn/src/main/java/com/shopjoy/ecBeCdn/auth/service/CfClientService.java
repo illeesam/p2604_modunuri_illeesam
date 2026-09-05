@@ -1,12 +1,12 @@
-package com.shopjoy.eccdnapi.auth.service;
+package com.shopjoy.ecBeCdn.auth.service;
 
-import com.shopjoy.eccdnapi.auth.dto.CfClientCreateReq;
-import com.shopjoy.eccdnapi.auth.dto.CfClientDto;
-import com.shopjoy.eccdnapi.auth.dto.CfClientUpdateReq;
-import com.shopjoy.eccdnapi.auth.entity.CfClient;
-import com.shopjoy.eccdnapi.auth.repository.CfClientRepository;
-import com.shopjoy.eccdnapi.common.exception.CfBizException;
-import com.shopjoy.eccdnapi.common.response.PageResult;
+import com.shopjoy.ecBeCdn.auth.dto.CfClientCreateReq;
+import com.shopjoy.ecBeCdn.auth.dto.CfClientDto;
+import com.shopjoy.ecBeCdn.auth.dto.CfClientUpdateReq;
+import com.shopjoy.ecBeCdn.auth.entity.CfClient;
+import com.shopjoy.ecBeCdn.auth.repository.CfClientRepository;
+import com.shopjoy.ecBeCdn.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

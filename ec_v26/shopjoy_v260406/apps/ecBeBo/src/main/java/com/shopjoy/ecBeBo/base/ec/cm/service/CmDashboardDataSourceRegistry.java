@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.cm.service;
+package com.shopjoy.ecBeBo.base.ec.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardWidgetRow;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmDashboardWidgetRow;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;

@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.fo.ec.controller;
+package com.shopjoy.ecBeBo.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartUpdateQtyDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.fo.ec.service.FoOdCartService;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdCartDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdCartUpdateQtyDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdCart;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.fo.ec.service.FoOdCartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

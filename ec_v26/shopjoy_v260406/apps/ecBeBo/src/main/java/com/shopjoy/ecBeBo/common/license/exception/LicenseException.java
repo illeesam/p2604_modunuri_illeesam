@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.license.exception;
+package com.shopjoy.ecBeBo.common.license.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

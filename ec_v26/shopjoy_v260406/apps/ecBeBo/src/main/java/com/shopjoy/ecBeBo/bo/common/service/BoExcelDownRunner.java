@@ -1,22 +1,22 @@
-package com.shopjoy.ecadminapi.bo.common.service;
+package com.shopjoy.ecBeBo.bo.common.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyExceldownDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyNotiDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
-import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
-import com.shopjoy.ecadminapi.base.sy.service.SyExceldownService;
-import com.shopjoy.ecadminapi.base.sy.service.SyNotiService;
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
-import com.shopjoy.ecadminapi.common.excel.ExcelDomainHandler;
-import com.shopjoy.ecadminapi.common.excel.ExcelDomainRegistry;
-import com.shopjoy.ecadminapi.common.excel.ExcelDownProps;
-import com.shopjoy.ecadminapi.common.excel.ExcelExportUtil;
-import com.shopjoy.ecadminapi.common.excel.ExcelMetaBuilder;
-import com.shopjoy.ecadminapi.common.excel.ExcelMetaInfo;
-import com.shopjoy.ecadminapi.common.excel.GridColumnMetaBuilder;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyExceldownDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyNotiDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyAttach;
+import com.shopjoy.ecBeBo.base.sy.repository.SyAttachRepository;
+import com.shopjoy.ecBeBo.base.sy.service.SyExceldownService;
+import com.shopjoy.ecBeBo.base.sy.service.SyNotiService;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.excel.ExcelDomainHandler;
+import com.shopjoy.ecBeBo.common.excel.ExcelDomainRegistry;
+import com.shopjoy.ecBeBo.common.excel.ExcelDownProps;
+import com.shopjoy.ecBeBo.common.excel.ExcelExportUtil;
+import com.shopjoy.ecBeBo.common.excel.ExcelMetaBuilder;
+import com.shopjoy.ecBeBo.common.excel.ExcelMetaInfo;
+import com.shopjoy.ecBeBo.common.excel.GridColumnMetaBuilder;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -181,7 +181,7 @@ public class BoExcelDownRunner {
             try {
                 if (wb == null) openNewFile();
                 Row r = sheet.createRow(rowInFile++);
-                List<com.shopjoy.ecadminapi.common.excel.ColumnMeta> cols = meta.columns();
+                List<com.shopjoy.ecBeBo.common.excel.ColumnMeta> cols = meta.columns();
                 for (int c = 0; c < cols.size(); c++) {
                     Object v = ExcelExportUtil.readField(item, fieldMap.get(cols.get(c).fieldName()));
                     ExcelExportUtil.setCellValue(r.createCell(c), v);

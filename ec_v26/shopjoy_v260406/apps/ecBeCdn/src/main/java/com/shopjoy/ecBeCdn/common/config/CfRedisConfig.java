@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.common.config;
+package com.shopjoy.ecBeCdn.common.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

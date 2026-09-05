@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.sy.service;
+package com.shopjoy.ecBeBo.base.sy.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserPref;
-import com.shopjoy.ecadminapi.base.sy.repository.SyUserPrefRepository;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyUserPref;
+import com.shopjoy.ecBeBo.base.sy.repository.SyUserPrefRepository;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

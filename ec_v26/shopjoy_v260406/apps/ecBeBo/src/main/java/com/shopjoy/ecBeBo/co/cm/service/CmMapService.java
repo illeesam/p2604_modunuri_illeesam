@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.co.cm.service;
+package com.shopjoy.ecBeBo.co.cm.service;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.co.cm.data.vo.MapKeysRes;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.co.cm.data.vo.MapKeysRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,12 +10,12 @@ import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntUsage;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntUsage;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntUsageRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmDiscntUsageDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmDiscntUsage;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmDiscntUsage;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmDiscntUsageRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 /** PmDiscntUsage(할인 적용 이력 (주문 시 적용된 할인정책 건별 기록)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {

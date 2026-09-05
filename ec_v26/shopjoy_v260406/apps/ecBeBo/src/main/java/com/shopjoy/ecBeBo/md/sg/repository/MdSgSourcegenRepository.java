@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.md.sg.repository;
+package com.shopjoy.ecBeBo.md.sg.repository;
 
-import com.shopjoy.ecadminapi.md.sg.data.entity.MdSgSourcegen;
+import com.shopjoy.ecBeBo.md.sg.data.entity.MdSgSourcegen;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

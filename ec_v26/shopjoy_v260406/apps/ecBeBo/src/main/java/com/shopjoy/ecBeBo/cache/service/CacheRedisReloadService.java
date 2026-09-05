@@ -1,22 +1,22 @@
-package com.shopjoy.ecadminapi.cache.service;
+package com.shopjoy.ecBeBo.cache.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
-import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyI18nRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
-import com.shopjoy.ecadminapi.cache.config.RedisUtil;
-import com.shopjoy.ecadminapi.cache.redisstore.*;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdCategoryRepository;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyCodeDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyI18nDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyMenuDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyPropDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyRoleDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyRoleMenuDto;
+import com.shopjoy.ecBeBo.base.sy.repository.SyCodeRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyI18nRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyMenuRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyRoleMenuRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyRoleRepository;
+import com.shopjoy.ecBeBo.cache.config.RedisUtil;
+import com.shopjoy.ecBeBo.cache.redisstore.*;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -127,7 +127,7 @@ public class CacheRedisReloadService {
         if (!redis.isEnabled()) return 0;
         codeCache.evictAll();
         // [쿼리 메서드] Code 목록 조회
-        List<SyCodeDto.Item> list = codeRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto.Request());
+        List<SyCodeDto.Item> list = codeRepository.selectList(new com.shopjoy.ecBeBo.base.sy.data.dto.SyCodeDto.Request());
         Map<String, List<Map<String, Object>>> grouped = list.stream()
             .collect(Collectors.groupingBy(
                 dto -> dto.getCodeGrp(),
@@ -144,7 +144,7 @@ public class CacheRedisReloadService {
         if (!redis.isEnabled()) return 0;
         menuCache.evictAll();
         // [쿼리 메서드] Menu 목록 조회
-        List<SyMenuDto.Item> list = menuRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto.Request());
+        List<SyMenuDto.Item> list = menuRepository.selectList(new com.shopjoy.ecBeBo.base.sy.data.dto.SyMenuDto.Request());
         menuCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-menu 리로드 완료 — {}건", list.size());
         return list.size();
@@ -155,7 +155,7 @@ public class CacheRedisReloadService {
         if (!redis.isEnabled()) return 0;
         roleCache.evictAll();
         // [쿼리 메서드] Role 목록 조회
-        List<SyRoleDto.Item> list = roleRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto.Request());
+        List<SyRoleDto.Item> list = roleRepository.selectList(new com.shopjoy.ecBeBo.base.sy.data.dto.SyRoleDto.Request());
         roleCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] sy-role 리로드 완료 — {}건", list.size());
         return list.size();
@@ -166,7 +166,7 @@ public class CacheRedisReloadService {
         if (!redis.isEnabled()) return 0;
         roleMenuCache.evictAll();
         // [쿼리 메서드] RoleMenu 목록 조회
-        List<SyRoleMenuDto.Item> list = roleMenuRepository.selectList(new com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto.Request());
+        List<SyRoleMenuDto.Item> list = roleMenuRepository.selectList(new com.shopjoy.ecBeBo.base.sy.data.dto.SyRoleMenuDto.Request());
         list.stream()
             .collect(Collectors.groupingBy(
                 dto -> dto.getRoleId(),
@@ -238,7 +238,7 @@ public class CacheRedisReloadService {
         if (!redis.isEnabled()) return 0;
         ecPdCateCache.evictAll();
         // [쿼리 메서드] Category 목록 조회
-        List<com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Item> list = categoryRepository.selectList(new com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto.Request());
+        List<com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryDto.Item> list = categoryRepository.selectList(new com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryDto.Request());
         ecPdCateCache.saveAll(list.stream().map(this::toMap).collect(Collectors.toList()));
         log.info("[Cache] ec-pd-cate 리로드 완료 — {}건", list.size());
         return list.size();

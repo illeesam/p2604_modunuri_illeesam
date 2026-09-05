@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.co.auth.security;
+package com.shopjoy.ecBeBo.co.auth.security;
 
-import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
+import com.shopjoy.ecBeBo.co.auth.data.dto.AccessTokenClaims;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

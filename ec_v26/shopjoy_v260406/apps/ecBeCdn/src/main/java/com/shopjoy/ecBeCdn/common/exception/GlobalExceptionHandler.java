@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.common.exception;
+package com.shopjoy.ecBeCdn.common.exception;
 
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

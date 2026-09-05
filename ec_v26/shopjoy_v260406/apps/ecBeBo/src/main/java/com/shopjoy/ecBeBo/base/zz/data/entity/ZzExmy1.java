@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.zz.data.entity;
+package com.shopjoy.ecBeBo.base.zz.data.entity;
 
 import lombok.*;
 

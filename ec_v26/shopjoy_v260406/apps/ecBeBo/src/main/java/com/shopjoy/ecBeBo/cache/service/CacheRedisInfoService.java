@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.cache.service;
+package com.shopjoy.ecBeBo.cache.service;
 
-import com.shopjoy.ecadminapi.cache.config.CacheKey;
-import com.shopjoy.ecadminapi.cache.config.RedisProperties;
-import com.shopjoy.ecadminapi.cache.config.RedisUtil;
+import com.shopjoy.ecBeBo.cache.config.CacheKey;
+import com.shopjoy.ecBeBo.cache.config.RedisProperties;
+import com.shopjoy.ecBeBo.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

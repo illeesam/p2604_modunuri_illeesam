@@ -1,17 +1,17 @@
-package com.shopjoy.ecadminapi.fo.ec.service;
+package com.shopjoy.ecBeBo.fo.ec.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
-import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
-import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
-import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogReplyDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmContactSubmitDto;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmBlogReplyService;
+import com.shopjoy.ecBeBo.base.sy.constant.SyAttachRefTableConst;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyContact;
+import com.shopjoy.ecBeBo.base.sy.repository.SyContactRepository;
+import com.shopjoy.ecBeBo.base.sy.service.SyAttachService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +39,7 @@ public class FoCmContactService {
     private final CmBlogReplyService cmBlogReplyService;
     private final SyContactRepository syContactRepository;
     private final SyAttachService syAttachService;
-    private final com.shopjoy.ecadminapi.co.cm.service.CmMsgSendService cmMsgSendService;
+    private final com.shopjoy.ecBeBo.co.cm.service.CmMsgSendService cmMsgSendService;
 
     /** getById — 조회 */
     public CmBlogDto.Item getById(String id) {

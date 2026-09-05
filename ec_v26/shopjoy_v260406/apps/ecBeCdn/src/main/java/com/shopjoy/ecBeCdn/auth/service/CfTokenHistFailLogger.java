@@ -1,9 +1,9 @@
-package com.shopjoy.eccdnapi.auth.service;
+package com.shopjoy.ecBeCdn.auth.service;
 
-import com.shopjoy.eccdnapi.auth.entity.CfToken;
-import com.shopjoy.eccdnapi.auth.entity.CfTokenHist;
-import com.shopjoy.eccdnapi.auth.repository.CfTokenHistRepository;
-import com.shopjoy.eccdnapi.common.util.CfIdUtil;
+import com.shopjoy.ecBeCdn.auth.entity.CfToken;
+import com.shopjoy.ecBeCdn.auth.entity.CfTokenHist;
+import com.shopjoy.ecBeCdn.auth.repository.CfTokenHistRepository;
+import com.shopjoy.ecBeCdn.common.util.CfIdUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.base.sy.repository;
+package com.shopjoy.ecBeBo.base.sy.repository;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhExtTestLog;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhExtTestLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhExtTestLogRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.qrydsl.QSyhExtTestLogRepository;
 
 /* findLatestByChannel(상관 서브쿼리) 은 QSyhExtTestLogRepository.selectLatestByChannel 유지 (2026-08-27) */
 public interface SyhExtTestLogRepository extends JpaRepository<SyhExtTestLog, String>, QSyhExtTestLogRepository {

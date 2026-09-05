@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.data;
+package com.shopjoy.ecBeBo.common.data;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

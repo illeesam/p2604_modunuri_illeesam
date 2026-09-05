@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmCoupon;
 
 import java.time.LocalDate;
 import java.util.List;

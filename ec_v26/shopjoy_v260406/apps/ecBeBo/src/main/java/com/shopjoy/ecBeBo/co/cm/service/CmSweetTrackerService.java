@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.co.cm.service;
+package com.shopjoy.ecBeBo.co.cm.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyProp;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;

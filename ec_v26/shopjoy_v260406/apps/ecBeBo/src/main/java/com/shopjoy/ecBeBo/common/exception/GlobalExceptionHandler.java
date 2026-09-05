@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.common.exception;
+package com.shopjoy.ecBeBo.common.exception;
 
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.common.config.CorsOriginPolicy;
-import com.shopjoy.ecadminapi.common.config.MyBatisQueryInterceptor;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecBeBo.common.config.CorsOriginPolicy;
+import com.shopjoy.ecBeBo.common.config.MyBatisQueryInterceptor;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -391,8 +391,8 @@ public class GlobalExceptionHandler {
      * 빠진 패키지가 계속 새는 문제가 있었다 — 화이트리스트는 "우리 코드 패키지"라는 기준
      * 하나만 유지하면 되므로 더 안전하다.
      *
-     * <p>이 클래스({@code GlobalExceptionHandler})의 패키지({@code com.shopjoy.ecadminapi.common.exception})
-     * 에서 앞 3단계({@code com.shopjoy.ecadminapi})만 뽑아 기준으로 쓴다 — 문자열로
+     * <p>이 클래스({@code GlobalExceptionHandler})의 패키지({@code com.shopjoy.ecBeBo.common.exception})
+     * 에서 앞 3단계({@code com.shopjoy.ecBeBo})만 뽑아 기준으로 쓴다 — 문자열로
      * 하드코딩하지 않고 클래스 자신의 패키지에서 유도하므로, 프로젝트 루트 패키지가
      * 바뀌어도 이 상수를 손으로 고칠 필요가 없다.</p>
      */
@@ -400,7 +400,7 @@ public class GlobalExceptionHandler {
 
     /**
      * 클래스의 패키지명에서 앞 {@code levels} 단계만 잘라낸다.
-     * 예) {@code com.shopjoy.ecadminapi.common.exception}, levels=3 → {@code com.shopjoy.ecadminapi}
+     * 예) {@code com.shopjoy.ecBeBo.common.exception}, levels=3 → {@code com.shopjoy.ecBeBo}
      *
      * @param clazz  패키지를 뽑아올 클래스
      * @param levels 유지할 패키지 단계 수(클래스 패키지가 이보다 얕으면 전체를 반환)
@@ -416,7 +416,7 @@ public class GlobalExceptionHandler {
      * 예외 스택 추적을 디버그용 문자열로 가공한다.
      *
      * <p>첫 줄(예외 클래스 + 메시지)은 항상 포함하고, 이후 라인은 {@link #APP_BASE_PACKAGE}
-     * (이 클래스 패키지의 앞 3단계, 예: {@code com.shopjoy.ecadminapi}) 소속 프레임만
+     * (이 클래스 패키지의 앞 3단계, 예: {@code com.shopjoy.ecBeBo}) 소속 프레임만
      * 화이트리스트로 남긴다 — 그 외(Spring/서블릿/JDK/서드파티 라이브러리 등) 프레임은 전부
      * 제거해 애플리케이션 코드 흐름만 남긴다. 그리고 바로 위 줄과 완전히 같은 줄이 연달아
      * 나오면(AOP 프록시 래핑 등으로 흔함) 하나만 남기고 나머지는 건너뛴다.

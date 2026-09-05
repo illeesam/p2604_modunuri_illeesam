@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.license;
+package com.shopjoy.ecBeBo.common.license;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

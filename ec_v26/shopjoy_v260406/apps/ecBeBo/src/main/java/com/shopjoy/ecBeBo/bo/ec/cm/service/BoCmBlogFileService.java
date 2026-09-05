@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.service;
+package com.shopjoy.ecBeBo.bo.ec.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogFile;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogFileService;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogFileDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmBlogFile;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmBlogFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

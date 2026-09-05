@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.base.ec.cm.service;
+package com.shopjoy.ecBeBo.base.ec.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMemberDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMember;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMemberRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmChattMemberDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmChattMember;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmChattMemberRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

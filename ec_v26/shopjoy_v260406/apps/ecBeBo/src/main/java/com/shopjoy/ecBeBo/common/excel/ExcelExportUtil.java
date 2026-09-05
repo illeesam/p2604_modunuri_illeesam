@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +77,7 @@ public final class ExcelExportUtil {
      * </ul>
      *
      * <h4>상한 초과 시 동작</h4>
-     * 호출 측({@link com.shopjoy.ecadminapi.bo.sy.service.BoSyUserService#exportExcel} 등)이
+     * 호출 측({@link com.shopjoy.ecBeBo.bo.sy.service.BoSyUserService#exportExcel} 등)이
      * 사전 카운트로 검증 → IllegalStateException 발생 → 사용자에게
      * "검색조건 좁히기 / 관리자에게 비동기 다운로드 요청" 메시지 노출.
      */
@@ -585,7 +585,7 @@ public final class ExcelExportUtil {
     /**
      * 필드 값 read — 분할 저장 writer(BoExcelDownRunner.SplitWriter)도 재사용하는 공용 지점.
      *
-     * <p>{@code @Sensitive} 로 마킹된 필드는 여기서 {@link com.shopjoy.ecadminapi.common.util.MaskUtil}
+     * <p>{@code @Sensitive} 로 마킹된 필드는 여기서 {@link com.shopjoy.ecBeBo.common.util.MaskUtil}
      * 로 마스킹된다 — 즉시(SYNC)/예약(ASYNC) 두 다운로드 경로가 전부 이 메서드를 거치므로
      * 마스킹 훅도 한 곳(여기)에만 있으면 양쪽에 자동 적용된다.
      */
@@ -593,7 +593,7 @@ public final class ExcelExportUtil {
         if (f == null || obj == null) return null;
         try {
             Object raw = f.get(obj);
-            return com.shopjoy.ecadminapi.common.util.MaskUtil.maskIfSensitive(f, raw);
+            return com.shopjoy.ecBeBo.common.util.MaskUtil.maskIfSensitive(f, raw);
         }
         catch (IllegalAccessException e) { return null; }
     }

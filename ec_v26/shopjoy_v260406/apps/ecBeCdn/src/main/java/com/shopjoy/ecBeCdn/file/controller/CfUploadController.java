@@ -1,9 +1,9 @@
-package com.shopjoy.eccdnapi.file.controller;
+package com.shopjoy.ecBeCdn.file.controller;
 
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
-import com.shopjoy.eccdnapi.file.dto.CfUploadResponse;
-import com.shopjoy.eccdnapi.file.entity.CfFile;
-import com.shopjoy.eccdnapi.file.service.CfFileService;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.file.dto.CfUploadResponse;
+import com.shopjoy.ecBeCdn.file.entity.CfFile;
+import com.shopjoy.ecBeCdn.file.service.CfFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;

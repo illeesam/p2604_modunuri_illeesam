@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.sy.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,11 +11,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRoleMenu;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyRoleMenu;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleMenuRepository;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyRoleMenuDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyRoleMenu;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyRoleMenu;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyRoleMenu;
+import com.shopjoy.ecBeBo.base.sy.repository.qrydsl.QSyRoleMenuRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
 /** SyRoleMenu(역할-메뉴 권한 매핑) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {

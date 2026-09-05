@@ -1,7 +1,7 @@
-package com.shopjoy.eccdnapi.auth.redisstore;
+package com.shopjoy.ecBeCdn.auth.redisstore;
 
-import com.shopjoy.eccdnapi.common.config.CfRedisProperties;
-import com.shopjoy.eccdnapi.common.config.CfRedisUtil;
+import com.shopjoy.ecBeCdn.common.config.CfRedisProperties;
+import com.shopjoy.ecBeCdn.common.config.CfRedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

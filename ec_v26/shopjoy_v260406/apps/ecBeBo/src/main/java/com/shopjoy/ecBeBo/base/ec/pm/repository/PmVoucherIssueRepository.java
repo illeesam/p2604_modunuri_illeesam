@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository;
+package com.shopjoy.ecBeBo.base.ec.pm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucherIssue;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmVoucherIssue;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherIssueRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmVoucherIssueRepository;
 
 public interface PmVoucherIssueRepository extends JpaRepository<PmVoucherIssue, String>, QPmVoucherIssueRepository {
 }

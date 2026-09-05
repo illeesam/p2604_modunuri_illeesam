@@ -1,9 +1,9 @@
-package com.shopjoy.eccdnapi.auth.controller;
+package com.shopjoy.ecBeCdn.auth.controller;
 
-import com.shopjoy.eccdnapi.auth.dto.CfLoginRequest;
-import com.shopjoy.eccdnapi.auth.dto.CfTokenResponse;
-import com.shopjoy.eccdnapi.auth.service.CfAuthService;
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.auth.dto.CfLoginRequest;
+import com.shopjoy.ecBeCdn.auth.dto.CfTokenResponse;
+import com.shopjoy.ecBeCdn.auth.service.CfAuthService;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

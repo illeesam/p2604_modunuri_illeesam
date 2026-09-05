@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.cache.config;
+package com.shopjoy.ecBeBo.cache.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

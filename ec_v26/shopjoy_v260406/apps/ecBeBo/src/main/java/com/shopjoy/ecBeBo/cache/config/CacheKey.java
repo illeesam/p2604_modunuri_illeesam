@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.cache.config;
+package com.shopjoy.ecBeBo.cache.config;
 
 /**
  * Redis 캐시 키 프리픽스 상수.

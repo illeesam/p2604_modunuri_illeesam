@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.sy.repository.qrydsl.impl;
 
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhExtTestLog;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhExtTestLog;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhExtTestLogRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyhExtTestLog;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhExtTestLog;
+import com.shopjoy.ecBeBo.base.sy.repository.qrydsl.QSyhExtTestLogRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

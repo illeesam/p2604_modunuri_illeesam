@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.util;
+package com.shopjoy.ecBeBo.common.util;
 
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

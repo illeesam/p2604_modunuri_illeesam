@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.od.service;
+package com.shopjoy.ecBeBo.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderItemDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdOrderItem;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdOrderItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

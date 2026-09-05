@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.bo.ec.od.service;
+package com.shopjoy.ecBeBo.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdCartService;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdService;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdSkuService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdCartDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdCart;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdCartService;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdSkuDto;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdProdService;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdProdSkuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

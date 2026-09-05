@@ -1,9 +1,9 @@
-package com.shopjoy.eccdnapi.file.controller;
+package com.shopjoy.ecBeCdn.file.controller;
 
-import com.shopjoy.eccdnapi.common.exception.CfBizException;
-import com.shopjoy.eccdnapi.file.entity.CfFile;
-import com.shopjoy.eccdnapi.file.service.CfFileService;
-import com.shopjoy.eccdnapi.file.service.CfStorageService;
+import com.shopjoy.ecBeCdn.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.file.entity.CfFile;
+import com.shopjoy.ecBeCdn.file.service.CfFileService;
+import com.shopjoy.ecBeCdn.file.service.CfStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;

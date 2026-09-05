@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.base.ec.od.service;
+package com.shopjoy.ecBeBo.base.ec.od.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhPayChgHistDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhPayChgHist;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdhPayChgHistRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdhPayChgHistDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdhPayChgHist;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdhPayChgHistRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.PageHelper;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

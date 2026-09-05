@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.bo.sy.service;
+package com.shopjoy.ecBeBo.bo.sy.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
-import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
-import com.shopjoy.ecadminapi.base.sy.service.SyRoleService;
-import com.shopjoy.ecadminapi.cache.redisstore.SyRoleRedisStore;
-import com.shopjoy.ecadminapi.common.excel.ExcelDomainHandler;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyRoleDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyRole;
+import com.shopjoy.ecBeBo.base.sy.repository.SyRoleRepository;
+import com.shopjoy.ecBeBo.base.sy.service.SyRoleService;
+import com.shopjoy.ecBeBo.cache.redisstore.SyRoleRedisStore;
+import com.shopjoy.ecBeBo.common.excel.ExcelDomainHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;

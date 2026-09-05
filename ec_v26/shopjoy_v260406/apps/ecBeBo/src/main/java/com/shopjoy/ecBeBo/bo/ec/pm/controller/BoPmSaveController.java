@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.controller;
+package com.shopjoy.ecBeBo.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSavePolicyDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveItemDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSavePolicy;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveItem;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveItemService;
-import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmSaveService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmSavePolicyDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmSaveItemDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmSavePolicy;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmSaveItem;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmSaveItemService;
+import com.shopjoy.ecBeBo.bo.ec.pm.service.BoPmSaveService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

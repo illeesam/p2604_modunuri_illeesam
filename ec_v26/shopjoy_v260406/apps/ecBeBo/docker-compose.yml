@@ -26,8 +26,10 @@ services:
       dockerfile: Dockerfile
 
     # 빌드된 이미지 태그
-    # 2026-09-06: shopjoy/ecadminapi → shopjoy/ecbebo (apps/ecBeBo 폴더명 리네임에 맞춤. 컨테이너
-    # 레벨 이름만 바꾼 것 — Java 패키지(com.shopjoy.ecadminapi)/애플리케이션 클래스명은 별개로 유지)
+    # 2026-09-06: shopjoy/ecadminapi → shopjoy/ecbebo (apps/ecBeBo 폴더명 리네임에 맞춤. 처음엔
+    # 컨테이너 레벨 이름만 바꾸고 Java 패키지(com.shopjoy.ecadminapi)/애플리케이션 클래스명
+    # (EcAdminApiApplication)은 그대로 뒀었는데, 같은 날 다시 com.shopjoy.ecBeBo/
+    # EcBeBoApplication 으로 전부 통일 — 이제 컨테이너명·이미지명·Java 패키지명이 모두 일치한다)
     image: shopjoy/ecbebo:latest
 
     # ───── 컨테이너 식별 ─────

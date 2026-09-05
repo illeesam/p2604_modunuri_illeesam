@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.impl;
 
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmDashboardData;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmDashboardDataRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardData;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.QCmDashboardData;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.QCmDashboardDataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.sy.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,11 +11,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyProp;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyPropRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPathRepository;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyPropDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyProp;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyProp;
+import com.shopjoy.ecBeBo.base.sy.repository.qrydsl.QSyPropRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 /** SyProp(프로퍼티 (환경설정/공통 파라미터)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {

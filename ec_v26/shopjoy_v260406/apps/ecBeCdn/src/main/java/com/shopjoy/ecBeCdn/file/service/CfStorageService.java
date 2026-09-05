@@ -1,7 +1,7 @@
-package com.shopjoy.eccdnapi.file.service;
+package com.shopjoy.ecBeCdn.file.service;
 
-import com.shopjoy.eccdnapi.common.config.CfProperties;
-import com.shopjoy.eccdnapi.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.common.config.CfProperties;
+import com.shopjoy.ecBeCdn.common.exception.CfBizException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

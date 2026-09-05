@@ -19,6 +19,6 @@ server:
 
 logging:
   level:
-    com.shopjoy.eccdnapi: WARN
+    com.shopjoy.ecBeCdn: WARN
   file:
     path: /app/logs

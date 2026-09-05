@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.sch.config;
+package com.shopjoy.ecBeBo.sch.config;
 
 import lombok.Data;
 

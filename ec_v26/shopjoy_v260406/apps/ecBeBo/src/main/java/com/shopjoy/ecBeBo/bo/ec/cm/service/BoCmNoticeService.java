@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.service;
+package com.shopjoy.ecBeBo.bo.ec.cm.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
-import com.shopjoy.ecadminapi.base.sy.service.SyNoticeService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyNoticeDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyNotice;
+import com.shopjoy.ecBeBo.base.sy.service.SyNoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

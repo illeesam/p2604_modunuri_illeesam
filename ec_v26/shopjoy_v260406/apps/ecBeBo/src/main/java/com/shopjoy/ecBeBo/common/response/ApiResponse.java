@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.response;
+package com.shopjoy.ecBeBo.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
@@ -39,7 +39,7 @@ public class ApiResponse<T> {
     private String descErrUserInfo;
 
     /** CORS 힌트 — 요청 Origin 이 허용 목록에 없을 때만, prod 가 아닐 때만 채워진다.
-        2026-08-30 추가. {@link com.shopjoy.ecadminapi.common.exception.GlobalExceptionHandler#buildCorsHint} 참조. */
+        2026-08-30 추가. {@link com.shopjoy.ecBeBo.common.exception.GlobalExceptionHandler#buildCorsHint} 참조. */
     private String descCorsHint;
 
     /**
@@ -94,7 +94,7 @@ public class ApiResponse<T> {
     /**
      * 오류 응답을 생성한다(데이터 없음).
      *
-     * <p>주로 {@link com.shopjoy.ecadminapi.common.exception.GlobalExceptionHandler}
+     * <p>주로 {@link com.shopjoy.ecBeBo.common.exception.GlobalExceptionHandler}
      * 에서 사용한다. 제네릭 추론이 안 되는 호출부에서는 {@code ApiResponse.<Void>error(...)}
      * 처럼 타입을 명시한다.</p>
      *
@@ -125,7 +125,7 @@ public class ApiResponse<T> {
     /**
      * 디버그 정보(스택·사용자정보)를 현재 응답에 채워 자기 자신을 반환한다.
      *
-     * <p>{@link com.shopjoy.ecadminapi.common.exception.GlobalExceptionHandler}
+     * <p>{@link com.shopjoy.ecBeBo.common.exception.GlobalExceptionHandler}
      * 가 오류 응답 생성 직후 체이닝으로 호출한다. 두 값 모두 {@code @JsonInclude(NON_NULL)}
      * 이므로 null 이면 JSON 에서 생략된다.</p>
      *

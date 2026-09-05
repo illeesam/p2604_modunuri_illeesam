@@ -1,15 +1,15 @@
-package com.shopjoy.ecadminapi.co.auth.controller;
+package com.shopjoy.ecBeBo.co.auth.controller;
 
-import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
-import com.shopjoy.ecadminapi.co.auth.data.vo.BoJoinRes;
-import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
-import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
-import com.shopjoy.ecadminapi.co.auth.data.vo.SocialLoginReq;
-import com.shopjoy.ecadminapi.co.auth.service.BoAuthService;
-import com.shopjoy.ecadminapi.co.auth.service.SocialAuthService;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.co.auth.data.dto.TokenPair;
+import com.shopjoy.ecBeBo.co.auth.data.vo.BoJoinRes;
+import com.shopjoy.ecBeBo.co.auth.data.vo.ChangePasswordReq;
+import com.shopjoy.ecBeBo.co.auth.data.vo.LoginReq;
+import com.shopjoy.ecBeBo.co.auth.data.vo.LoginRes;
+import com.shopjoy.ecBeBo.co.auth.data.vo.SocialLoginReq;
+import com.shopjoy.ecBeBo.co.auth.service.BoAuthService;
+import com.shopjoy.ecBeBo.co.auth.service.SocialAuthService;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyUser;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

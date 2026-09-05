@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.bo.common.controller;
+package com.shopjoy.ecBeBo.bo.common.controller;
 
-import com.shopjoy.ecadminapi.bo.common.service.BoExcelService;
-import com.shopjoy.ecadminapi.common.excel.ExcelMetaInfo;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.bo.common.service.BoExcelService;
+import com.shopjoy.ecBeBo.common.excel.ExcelMetaInfo;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import java.util.Map;
  * BO 엑셀 통합 컨트롤러 — 모든 도메인의 엑셀 다운로드/업로드 처리.
  *
  * <p>도메인별 컨트롤러 작성 불필요. 새 도메인은
- * {@link com.shopjoy.ecadminapi.common.excel.ExcelDomainHandler} 빈 하나만 등록하면 즉시 사용 가능.
+ * {@link com.shopjoy.ecBeBo.common.excel.ExcelDomainHandler} 빈 하나만 등록하면 즉시 사용 가능.
  *
  * <p>엔드포인트:
  * <ul>

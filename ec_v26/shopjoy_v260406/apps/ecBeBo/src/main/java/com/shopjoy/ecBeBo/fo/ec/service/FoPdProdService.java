@@ -1,32 +1,32 @@
-package com.shopjoy.ecadminapi.fo.ec.service;
+package com.shopjoy.ecBeBo.fo.ec.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.service.*;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventService;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftService;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.*;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.service.*;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmDiscntDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmEventDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmGiftDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmSaveDto;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmCouponProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmDiscntProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmEventProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmSaveProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmCouponService;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmDiscntService;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmEventService;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmGiftService;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmSaveService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 
 /**

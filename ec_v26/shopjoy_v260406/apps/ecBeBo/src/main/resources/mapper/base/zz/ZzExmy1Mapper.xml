@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.base.zz.mapper.ZzExmy1Mapper">
+<mapper namespace="com.shopjoy.ecBeBo.base.zz.mapper.ZzExmy1Mapper">
 
     <sql id="searchWhere">
         <where>
@@ -28,7 +28,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy1Dto$Item">
+    <select id="selectById" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzExmy1Dto$Item">
         SELECT /* base.zz :: ZzExmy1 :: selectById */
             e.exmy1_id, e.col11, e.col12, e.col13, e.col14, e.col15,
             e.reg_by, e.reg_date, e.upd_by, e.upd_date
@@ -36,7 +36,7 @@
         WHERE e.exmy1_id = #{exmy1Id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy1Dto$Item">
+    <select id="selectList" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzExmy1Dto$Item">
         SELECT /* base.zz :: ZzExmy1 :: selectList */
             e.exmy1_id, e.col11, e.col12, e.col13, e.col14, e.col15,
             e.reg_by, e.reg_date, e.upd_by, e.upd_date
@@ -45,7 +45,7 @@
         ORDER BY e.exmy1_id ASC
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy1Dto$Item">
+    <select id="selectPageList" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzExmy1Dto$Item">
         SELECT /* base.zz :: ZzExmy1 :: selectPageList */
             e.exmy1_id, e.col11, e.col12, e.col13, e.col14, e.col15,
             e.reg_by, e.reg_date, e.upd_by, e.upd_date

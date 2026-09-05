@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi;
+package com.shopjoy.ecBeCdn;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,8 +19,8 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
  * "generated security password" 를 만들어 로그에 찍는 무의미한 경고만 남는다.</p>
  */
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
-public class EcCdnApiApplication {
+public class EcBeCdnApplication {
     public static void main(String[] args) {
-        SpringApplication.run(EcCdnApiApplication.class, args);
+        SpringApplication.run(EcBeCdnApplication.class, args);
     }
 }

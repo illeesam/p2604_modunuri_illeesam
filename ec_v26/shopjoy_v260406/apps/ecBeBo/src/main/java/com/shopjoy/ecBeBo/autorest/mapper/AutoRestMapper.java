@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.autorest.mapper;
+package com.shopjoy.ecBeBo.autorest.mapper;
 
-import com.shopjoy.ecadminapi.autorest.data.dto.QueryParam;
-import com.shopjoy.ecadminapi.autorest.data.dto.RowMap;
+import com.shopjoy.ecBeBo.autorest.data.dto.QueryParam;
+import com.shopjoy.ecBeBo.autorest.data.dto.RowMap;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

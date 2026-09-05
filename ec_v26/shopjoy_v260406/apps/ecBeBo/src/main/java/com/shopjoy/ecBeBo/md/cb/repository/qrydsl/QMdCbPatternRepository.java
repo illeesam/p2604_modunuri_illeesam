@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.md.cb.repository.qrydsl;
+package com.shopjoy.ecBeBo.md.cb.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.md.cb.data.dto.MdCbPatternDto;
-import com.shopjoy.ecadminapi.md.cb.data.entity.MdCbPattern;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.md.cb.data.dto.MdCbPatternDto;
+import com.shopjoy.ecBeBo.md.cb.data.entity.MdCbPattern;
 
 import java.util.List;
 import java.util.Optional;

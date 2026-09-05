@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.sy.mapper;
+package com.shopjoy.ecBeBo.base.sy.mapper;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyDeptDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

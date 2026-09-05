@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 모든 {@link ExcelDomainHandler} 빈을 Spring 컨텍스트에서 자동 수집하여 key 기준으로 조회 제공.
  *
- * <p>{@link com.shopjoy.ecadminapi.bo.common.controller.BoExcelController} 가
+ * <p>{@link com.shopjoy.ecBeBo.bo.common.controller.BoExcelController} 가
  * {@code /bo/excel/{domain}/...} 요청 시 domain 으로 핸들러를 찾아 위임한다.
  *
  * <p>같은 key 가 여러 빈에 중복 선언되면 컨텍스트 로딩 시 실패시켜 조기 발견 — 이건

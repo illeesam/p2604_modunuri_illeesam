@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.validation;
+package com.shopjoy.ecBeBo.common.validation;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityManager;

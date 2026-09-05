@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.st.repository;
+package com.shopjoy.ecBeBo.base.ec.st.repository;
 
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StErpVoucherLine;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStErpVoucherLineRepository;
+import com.shopjoy.ecBeBo.base.ec.st.repository.qrydsl.QStErpVoucherLineRepository;
 
 public interface StErpVoucherLineRepository extends JpaRepository<StErpVoucherLine, String>, QStErpVoucherLineRepository {
 }

@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.cm.data.entity;
+package com.shopjoy.ecBeBo.base.ec.cm.data.entity;
 
-import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecBeBo.base.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -23,7 +23,7 @@ import jakarta.validation.constraints.Size;
  *
  * <p>화면이 이 항목의 필드 일부만 보내는 부분수정(예: 시리즈표시방법만 저장)이 흔하다. 이 경우
  * {@code CmDashboardItemService.saveOneBase()} 의 "U" 분기가 JPA 엔티티를 fetch 해 덮어쓰는 대신
- * {@link com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmDashboardItemRepository#updateSelective}
+ * {@link com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.QCmDashboardItemRepository#updateSelective}
  * (QueryDSL) 로 넘어온 필드만 UPDATE 문의 SET 절에 담는다 — 나머지 컬럼은 SQL 에 아예 등장하지
  * 않으므로 실제 안 바뀐 값이 "이 컬럼도 바뀐 것"처럼 보이는 감사·트리거·CDC 오탐이 없다.</p>
  */

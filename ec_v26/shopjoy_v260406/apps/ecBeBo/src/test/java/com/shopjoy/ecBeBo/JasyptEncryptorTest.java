@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi;
+package com.shopjoy.ecBeBo;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.iv.RandomIvGenerator;

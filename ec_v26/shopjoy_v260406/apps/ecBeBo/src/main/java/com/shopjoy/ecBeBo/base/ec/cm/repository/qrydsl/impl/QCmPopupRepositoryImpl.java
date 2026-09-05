@@ -1,15 +1,15 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmPopup;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPopupRepository;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmPopupDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopup;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.QCmPopup;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.QCmPopupRepository;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;

@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.fo.ec.cm.controller;
+package com.shopjoy.ecBeBo.fo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmPopupPickService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmPopupPickService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

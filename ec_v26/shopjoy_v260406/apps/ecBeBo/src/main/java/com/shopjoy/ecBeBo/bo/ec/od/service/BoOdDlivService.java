@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.bo.ec.od.service;
+package com.shopjoy.ecBeBo.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdDlivRepository;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdDlivItemService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdDlivService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdDlivDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdDlivItemDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdDliv;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdDlivRepository;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdDlivItemService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdDlivService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 배송 서비스 — base OdDlivService 위임 (thin wrapper) + 일괄 처리 메서드.

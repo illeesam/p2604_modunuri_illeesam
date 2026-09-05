@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.bo.sy.service;
+package com.shopjoy.ecBeBo.bo.sy.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
-import com.shopjoy.ecadminapi.base.sy.service.SyVendorService;
-import com.shopjoy.ecadminapi.common.util.MaskUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyVendorDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyVendor;
+import com.shopjoy.ecBeBo.base.sy.service.SyVendorService;
+import com.shopjoy.ecBeBo.common.util.MaskUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

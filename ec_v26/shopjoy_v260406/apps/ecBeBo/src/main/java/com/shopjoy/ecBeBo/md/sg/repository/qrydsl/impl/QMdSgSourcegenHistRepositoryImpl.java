@@ -1,25 +1,25 @@
-package com.shopjoy.ecadminapi.md.sg.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.md.sg.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.shopjoy.ecadminapi.md.sg.data.dto.MdSgSourcegenHistDto;
-import com.shopjoy.ecadminapi.md.sg.data.entity.QMdSgSourcegenHist;
-import com.shopjoy.ecadminapi.md.sg.data.entity.QMdSgProject;
-import com.shopjoy.ecadminapi.md.sg.repository.qrydsl.QMdSgSourcegenHistRepository;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.md.sg.data.dto.MdSgSourcegenHistDto;
+import com.shopjoy.ecBeBo.md.sg.data.entity.QMdSgSourcegenHist;
+import com.shopjoy.ecBeBo.md.sg.data.entity.QMdSgProject;
+import com.shopjoy.ecBeBo.md.sg.repository.qrydsl.QMdSgSourcegenHistRepository;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** MdSgSourcegenHist(소스젠 생성이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

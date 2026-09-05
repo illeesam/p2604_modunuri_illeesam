@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.common.util;
+package com.shopjoy.ecBeCdn.common.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

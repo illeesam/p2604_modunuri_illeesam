@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.sy.repository;
+package com.shopjoy.ecBeBo.base.sy.repository;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyNotice;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyNoticeRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.qrydsl.QSyNoticeRepository;
 
 public interface SyNoticeRepository extends JpaRepository<SyNotice, String>, QSyNoticeRepository {
 }

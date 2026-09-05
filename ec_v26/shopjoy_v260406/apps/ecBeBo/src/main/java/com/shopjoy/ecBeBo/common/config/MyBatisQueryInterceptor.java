@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
@@ -71,7 +71,7 @@ public class MyBatisQueryInterceptor implements Interceptor {
         String fullId = ms.getId();
 
         // FQ statement id 에서 마지막 두 세그먼트만 추출:
-        // com.shopjoy.ecadminapi.mapper.mb.MbMemberMapper.selectPageData → MbMemberMapper.selectPageData
+        // com.shopjoy.ecBeBo.mapper.mb.MbMemberMapper.selectPageData → MbMemberMapper.selectPageData
         int lastDot = fullId.lastIndexOf('.');
         int prevDot = fullId.lastIndexOf('.', lastDot - 1);
         String shortId = prevDot >= 0 ? fullId.substring(prevDot + 1) : fullId;

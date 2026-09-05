@@ -1,6 +1,6 @@
-//package com.shopjoy.ecadminapi.common.license;
+//package com.shopjoy.ecBeBo.common.license;
 //
-//import com.shopjoy.ecadminapi.common.license.exception.LicenseException;
+//import com.shopjoy.ecBeBo.common.license.exception.LicenseException;
 //import jakarta.servlet.FilterChain;
 //import jakarta.servlet.ServletException;
 //import jakarta.servlet.http.HttpServletRequest;

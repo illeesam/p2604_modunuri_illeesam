@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.log.util;
+package com.shopjoy.ecBeCdn.log.util;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.md.cb.repository;
+package com.shopjoy.ecBeBo.md.cb.repository;
 
-import com.shopjoy.ecadminapi.md.cb.data.entity.MdCbPatternCell;
+import com.shopjoy.ecBeBo.md.cb.data.entity.MdCbPatternCell;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

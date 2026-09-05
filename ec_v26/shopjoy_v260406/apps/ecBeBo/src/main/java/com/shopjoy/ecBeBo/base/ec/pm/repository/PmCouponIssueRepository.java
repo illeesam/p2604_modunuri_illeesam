@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository;
+package com.shopjoy.ecBeBo.base.ec.pm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponIssue;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmCouponIssue;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponIssueRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmCouponIssueRepository;
 
 /* useYn IS NULL OR <> 'Y' 는 AND-속-OR 라 Query Method 로 표현 불가 →
    QPmCouponIssueRepository.selectUnusedByCouponIds() (QueryDSL) 사용 */

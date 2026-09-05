@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.co.cm.controller;
+package com.shopjoy.ecBeBo.co.cm.controller;
 
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

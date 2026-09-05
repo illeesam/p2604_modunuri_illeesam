@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.common.config;
+package com.shopjoy.ecBeCdn.common.config;
 
 import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
 

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
 /**
  * 엑셀 export/upload 의 한 컬럼 메타정보.

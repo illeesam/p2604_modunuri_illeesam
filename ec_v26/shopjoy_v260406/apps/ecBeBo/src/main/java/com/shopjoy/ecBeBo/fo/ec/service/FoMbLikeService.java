@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.fo.ec.service;
+package com.shopjoy.ecBeBo.fo.ec.service;
 
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.MbLikeRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbLikeDto;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbLike;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.MbLikeRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdProdService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

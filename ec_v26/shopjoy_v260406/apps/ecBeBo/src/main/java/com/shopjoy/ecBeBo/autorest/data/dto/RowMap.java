@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.autorest.data.dto;
+package com.shopjoy.ecBeBo.autorest.data.dto;
 
 import java.util.LinkedHashMap;
 

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.log;
+package com.shopjoy.ecBeBo.common.log;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

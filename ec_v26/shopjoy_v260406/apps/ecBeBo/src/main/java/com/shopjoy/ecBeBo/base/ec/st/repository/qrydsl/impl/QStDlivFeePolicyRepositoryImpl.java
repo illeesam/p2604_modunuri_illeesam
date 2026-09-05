@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.st.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,14 +11,14 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.st.data.dto.StDlivFeePolicyDto;
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStDlivFeePolicy;
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StDlivFeePolicy;
-import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStDlivFeePolicyRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.st.data.dto.StDlivFeePolicyDto;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.QStDlivFeePolicy;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StDlivFeePolicy;
+import com.shopjoy.ecBeBo.base.ec.st.repository.qrydsl.QStDlivFeePolicyRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** StDlivFeePolicy(배송수수료정책 - 배송방법(DLIV_METHOD_CD)별 플랫폼 수수료율/정액) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

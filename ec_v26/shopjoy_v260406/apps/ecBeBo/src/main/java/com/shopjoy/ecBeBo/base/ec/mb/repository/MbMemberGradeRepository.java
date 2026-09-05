@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.mb.repository;
+package com.shopjoy.ecBeBo.base.ec.mb.repository;
 
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMemberGrade;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberGradeRepository;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.qrydsl.QMbMemberGradeRepository;
 
 import java.util.List;
 

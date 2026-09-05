@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.sy.service;
+package com.shopjoy.ecBeBo.bo.sy.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUserRole;
-import com.shopjoy.ecadminapi.base.sy.service.SyVendorUserRoleService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyVendorUserRoleDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyVendorUserRole;
+import com.shopjoy.ecBeBo.base.sy.service.SyVendorUserRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

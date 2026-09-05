@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.common.entity;
+package com.shopjoy.ecBeBo.base.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

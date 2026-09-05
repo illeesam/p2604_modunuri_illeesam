@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 
 /**
  * MyBatis 설정.
- * - @MapperScan 은 EcAdminApiApplication 에서 일괄 처리 (com.shopjoy.ecadminapi 전체)
+ * - @MapperScan 은 EcBeBoApplication 에서 일괄 처리 (com.shopjoy.ecBeBo 전체)
  * - local/dev 프로파일에서만 쿼리 로깅 인터셉터 활성화 (운영 성능 영향 없음)
  */
 @Slf4j

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.constant;
+package com.shopjoy.ecBeBo.base.sy.constant;
 
 import java.util.List;
 

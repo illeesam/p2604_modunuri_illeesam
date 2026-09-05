@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.common.response;
+package com.shopjoy.ecBeCdn.common.response;
 
 import lombok.Getter;
 

@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.autorest.service;
+package com.shopjoy.ecBeBo.autorest.service;
 
-import com.shopjoy.ecadminapi.autorest.comn.TableConfig;
-import com.shopjoy.ecadminapi.autorest.comn.TableRegistry;
-import com.shopjoy.ecadminapi.autorest.data.dto.QueryParam;
-import com.shopjoy.ecadminapi.autorest.data.dto.RowMap;
-import com.shopjoy.ecadminapi.autorest.data.vo.SearchReq;
-import com.shopjoy.ecadminapi.autorest.mapper.AutoRestMapper;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.autorest.comn.TableConfig;
+import com.shopjoy.ecBeBo.autorest.comn.TableRegistry;
+import com.shopjoy.ecBeBo.autorest.data.dto.QueryParam;
+import com.shopjoy.ecBeBo.autorest.data.dto.RowMap;
+import com.shopjoy.ecBeBo.autorest.data.vo.SearchReq;
+import com.shopjoy.ecBeBo.autorest.mapper.AutoRestMapper;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.PageResult;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 @Slf4j
 @Service

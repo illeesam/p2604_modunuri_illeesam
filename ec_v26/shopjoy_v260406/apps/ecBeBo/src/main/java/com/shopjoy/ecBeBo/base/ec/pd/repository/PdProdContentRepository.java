@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository;
+package com.shopjoy.ecBeBo.base.ec.pd.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdContent;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdProdContent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdContentRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.QPdProdContentRepository;
 
 public interface PdProdContentRepository extends JpaRepository<PdProdContent, String>, QPdProdContentRepository {
 

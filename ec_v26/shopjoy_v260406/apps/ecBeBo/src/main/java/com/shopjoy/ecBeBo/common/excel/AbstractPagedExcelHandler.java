@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;

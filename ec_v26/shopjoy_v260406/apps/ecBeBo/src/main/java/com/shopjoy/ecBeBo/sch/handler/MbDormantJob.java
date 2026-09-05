@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.sch.handler;
+package com.shopjoy.ecBeBo.sch.handler;
 
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMember;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

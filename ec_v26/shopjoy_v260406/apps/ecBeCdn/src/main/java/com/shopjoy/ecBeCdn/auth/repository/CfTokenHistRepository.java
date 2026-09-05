@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.auth.repository;
+package com.shopjoy.ecBeCdn.auth.repository;
 
-import com.shopjoy.eccdnapi.auth.entity.CfTokenHist;
+import com.shopjoy.ecBeCdn.auth.entity.CfTokenHist;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.bo.common.service;
+package com.shopjoy.ecBeBo.bo.common.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
-import com.shopjoy.ecadminapi.common.excel.ExcelDomainHandler;
-import com.shopjoy.ecadminapi.common.excel.ExcelDomainRegistry;
-import com.shopjoy.ecadminapi.common.excel.ExcelMetaBuilder;
-import com.shopjoy.ecadminapi.common.excel.ExcelMetaInfo;
-import com.shopjoy.ecadminapi.common.excel.ExcelUpsertService;
-import com.shopjoy.ecadminapi.common.excel.ExcelExportUtil;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.excel.ExcelDomainHandler;
+import com.shopjoy.ecBeBo.common.excel.ExcelDomainRegistry;
+import com.shopjoy.ecBeBo.common.excel.ExcelMetaBuilder;
+import com.shopjoy.ecBeBo.common.excel.ExcelMetaInfo;
+import com.shopjoy.ecBeBo.common.excel.ExcelUpsertService;
+import com.shopjoy.ecBeBo.common.excel.ExcelExportUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * 엑셀 다운로드/존재체크/업로드의 단일 처리 서비스.
  *
- * <p>{@link com.shopjoy.ecadminapi.bo.common.controller.BoExcelController} 의 모든
+ * <p>{@link com.shopjoy.ecBeBo.bo.common.controller.BoExcelController} 의 모든
  * 엔드포인트가 이 서비스로 위임. 도메인별 차이는 {@link ExcelDomainHandler} 가 흡수.
  */
 @Slf4j

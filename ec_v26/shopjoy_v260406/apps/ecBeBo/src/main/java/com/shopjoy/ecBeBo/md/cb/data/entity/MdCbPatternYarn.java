@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.md.cb.data.entity;
+package com.shopjoy.ecBeBo.md.cb.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecBeBo.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
 import jakarta.validation.constraints.Size;

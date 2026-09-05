@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository;
+package com.shopjoy.ecBeBo.base.ec.pd.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdPlan;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdProdPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdPlanRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.QPdProdPlanRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

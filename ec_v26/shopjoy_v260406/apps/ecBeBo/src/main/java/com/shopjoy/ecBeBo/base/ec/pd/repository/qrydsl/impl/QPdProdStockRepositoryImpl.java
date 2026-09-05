@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.impl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdStock;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdStockRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdProdStock;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdProdStock;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.QPdProdStockRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;

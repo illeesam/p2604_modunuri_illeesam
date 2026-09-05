@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.controller;
+package com.shopjoy.ecBeBo.bo.ec.pd.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiSendDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
-import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdRestockNotiService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdRestockNotiDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdRestockNotiSendDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdRestockNoti;
+import com.shopjoy.ecBeBo.bo.ec.pd.service.BoPdRestockNotiService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

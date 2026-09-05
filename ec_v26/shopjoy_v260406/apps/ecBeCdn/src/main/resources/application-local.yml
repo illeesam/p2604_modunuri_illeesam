@@ -29,7 +29,7 @@ spring:
 
 logging:
   level:
-    com.shopjoy.eccdnapi: DEBUG
+    com.shopjoy.ecBeCdn: DEBUG
     # p6spy 로거는 StdoutLogger 가 직접 출력하므로 logback 을 통한 중복 출력 방지(OFF).
     p6spy: OFF
   # 워크스페이스 밖 절대경로 — VSCode Live Server 가 .log 변경을 감지해 브라우저를 계속 새로고침하는

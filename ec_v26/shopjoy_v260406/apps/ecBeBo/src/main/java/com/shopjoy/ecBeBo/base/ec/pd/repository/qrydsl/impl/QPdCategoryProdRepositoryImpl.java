@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,15 +10,15 @@ import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategoryProd;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryProdRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryProdDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdCategoryProd;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdCategory;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdCategoryProd;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.QPdCategoryProdRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 /** PdCategoryProd(상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository {

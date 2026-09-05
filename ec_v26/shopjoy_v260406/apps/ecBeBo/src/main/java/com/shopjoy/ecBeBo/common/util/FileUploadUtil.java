@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.util;
+package com.shopjoy.ecBeBo.common.util;
 
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

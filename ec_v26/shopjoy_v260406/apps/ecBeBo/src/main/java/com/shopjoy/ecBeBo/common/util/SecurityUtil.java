@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.util;
+package com.shopjoy.ecBeBo.common.util;
 
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecBeBo.co.auth.security.AuthPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -159,7 +159,7 @@ public final class SecurityUtil {
      * 을 확인해 'Y' 인 경우에만 JWT authorities 에 {@code SENSITIVE_VIEW} 를 추가한다. 역할 변경은
      * 다음 로그인/토큰갱신부터 반영된다(다른 role 기반 권한과 동일한 방식 — 매 요청마다 DB 조회하지 않음).
      *
-     * <p>false 인 경우 {@link com.shopjoy.ecadminapi.common.util.MaskUtil} 이 회원 연락처/주소 등을
+     * <p>false 인 경우 {@link com.shopjoy.ecBeBo.common.util.MaskUtil} 이 회원 연락처/주소 등을
      * 마스킹(***)해 응답·엑셀 양쪽에 적용한다. 인증 자체가 없으면 false(미인증 = 원본 열람 불가).
      *
      * @return SENSITIVE_VIEW authority 보유 시 true

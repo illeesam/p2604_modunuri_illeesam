@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.autorest.comn;
+package com.shopjoy.ecBeBo.autorest.comn;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi;
+package com.shopjoy.ecBeBo;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;

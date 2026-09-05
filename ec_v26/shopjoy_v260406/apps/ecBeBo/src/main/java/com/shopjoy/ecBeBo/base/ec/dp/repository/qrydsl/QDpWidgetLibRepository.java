@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.dp.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.dp.data.dto.DpWidgetLibDto;
+import com.shopjoy.ecBeBo.base.ec.dp.data.entity.DpWidgetLib;
 
 import java.util.List;
 import java.util.Map;

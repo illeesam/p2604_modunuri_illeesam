@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardData;
 
 import java.util.List;
 import java.util.Map;

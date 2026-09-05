@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.service;
+package com.shopjoy.ecBeBo.bo.ec.pm.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSavePolicyDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSavePolicy;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmSavePolicyService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmSavePolicyDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmSavePolicy;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmSavePolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

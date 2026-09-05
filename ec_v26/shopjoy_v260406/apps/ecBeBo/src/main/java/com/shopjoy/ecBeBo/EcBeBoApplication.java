@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi;
+package com.shopjoy.ecBeBo;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Mapper;
@@ -10,20 +10,20 @@ import org.springframework.context.ConfigurableApplicationContext;
 @Slf4j
 @SpringBootApplication
 /* @MapperScan — @Mapper 인터페이스가 실제 존재하는 3개 패키지만 지정.
- * 루트("com.shopjoy.ecadminapi")로 두면 @Mapper 9개를 찾으려고 클래스 1600여 개를 전수 ASM 스캔한다
+ * 루트("com.shopjoy.ecBeBo")로 두면 @Mapper 9개를 찾으려고 클래스 1600여 개를 전수 ASM 스캔한다
  * (@ComponentScan 과 별개로 한 번 더). 새 @Mapper 패키지를 추가하면 여기에도 등록할 것. */
 @MapperScan(basePackages = {
-        "com.shopjoy.ecadminapi.autorest.mapper",
-        "com.shopjoy.ecadminapi.base.sy.mapper",
-        "com.shopjoy.ecadminapi.base.zz.mapper"
+        "com.shopjoy.ecBeBo.autorest.mapper",
+        "com.shopjoy.ecBeBo.base.sy.mapper",
+        "com.shopjoy.ecBeBo.base.zz.mapper"
 }, annotationClass = Mapper.class)
-public class EcAdminApiApplication {
+public class EcBeBoApplication {
 
     public static void main(String[] args) {
         long started = System.currentTimeMillis();
-        log.info("[EcAdminApi] ===== 애플리케이션 시작 중 =====");
+        log.info("[EcBeBo] ===== 애플리케이션 시작 중 =====");
 
-        ConfigurableApplicationContext ctx = SpringApplication.run(EcAdminApiApplication.class, args);
+        ConfigurableApplicationContext ctx = SpringApplication.run(EcBeBoApplication.class, args);
 
         String profiles = String.join(", ", ctx.getEnvironment().getActiveProfiles());
         if (profiles.isBlank()) profiles = "default";

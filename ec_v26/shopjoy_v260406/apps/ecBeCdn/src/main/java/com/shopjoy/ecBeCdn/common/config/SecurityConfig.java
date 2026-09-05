@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.common.config;
+package com.shopjoy.ecBeCdn.common.config;
 
-import com.shopjoy.eccdnapi.auth.security.CfTokenAuthFilter;
+import com.shopjoy.ecBeCdn.auth.security.CfTokenAuthFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

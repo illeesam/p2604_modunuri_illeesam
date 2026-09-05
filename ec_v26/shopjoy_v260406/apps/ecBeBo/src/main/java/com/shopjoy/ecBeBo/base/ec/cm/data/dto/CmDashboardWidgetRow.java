@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
+package com.shopjoy.ecBeBo.base.ec.cm.data.dto;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
  *
  * <p>실제 저장(3레벨 {@code cm_dashboard_item}+{@code cm_dashboard_data})은 "행 하나 = 좌표 하나 =
  * 값 하나" 로 정규화되어 있지만, 프론트(cmDashWidgetUtil)와 실시간 집계
- * ({@link com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataSourceRegistry})는 여전히
+ * ({@link com.shopjoy.ecBeBo.base.ec.cm.service.CmDashboardDataSourceRegistry})는 여전히
  * "한 차트 = 한 행에 여러 지표(col1~9)" 형태를 편하게 소비한다. 이 클래스는 그 형태로
  * <b>pivot(집계 후 옆으로 펼치기)</b> 한 결과만 담는다 — 절대 저장되지 않는다(JPA 엔티티 아님).</p>
  *

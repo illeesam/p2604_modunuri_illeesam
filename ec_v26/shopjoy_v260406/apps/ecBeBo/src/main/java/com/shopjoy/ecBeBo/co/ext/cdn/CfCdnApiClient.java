@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.co.ext.cdn;
+package com.shopjoy.ecBeBo.co.ext.cdn;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

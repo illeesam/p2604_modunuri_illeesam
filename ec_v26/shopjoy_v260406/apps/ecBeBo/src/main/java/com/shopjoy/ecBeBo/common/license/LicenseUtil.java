@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.common.license;
+package com.shopjoy.ecBeBo.common.license;
 
-import com.shopjoy.ecadminapi.common.license.exception.LicenseException;
-import com.shopjoy.ecadminapi.common.license.exception.LicenseException.Reason;
+import com.shopjoy.ecBeBo.common.license.exception.LicenseException;
+import com.shopjoy.ecBeBo.common.license.exception.LicenseException.Reason;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;

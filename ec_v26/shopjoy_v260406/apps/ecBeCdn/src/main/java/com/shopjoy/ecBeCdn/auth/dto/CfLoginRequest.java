@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.auth.dto;
+package com.shopjoy.ecBeCdn.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

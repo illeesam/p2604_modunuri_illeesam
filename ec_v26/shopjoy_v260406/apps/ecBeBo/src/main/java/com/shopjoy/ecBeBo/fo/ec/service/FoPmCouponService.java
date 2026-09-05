@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.fo.ec.service;
+package com.shopjoy.ecBeBo.fo.ec.service;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponIssueRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponIssueDto;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmCouponIssueRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmCouponProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmCouponService;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

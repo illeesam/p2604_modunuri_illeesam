@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.co.auth.service;
+package com.shopjoy.ecBeBo.co.auth.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
-import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyUser;
+import com.shopjoy.ecBeBo.base.sy.repository.SyUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

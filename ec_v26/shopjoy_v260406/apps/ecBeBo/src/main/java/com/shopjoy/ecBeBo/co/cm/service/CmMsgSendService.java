@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.co.cm.service;
+package com.shopjoy.ecBeBo.co.cm.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
-import com.shopjoy.ecadminapi.base.sy.repository.SyTemplateRepository;
-import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyTemplate;
+import com.shopjoy.ecBeBo.base.sy.repository.SyTemplateRepository;
+import com.shopjoy.ecBeBo.co.cm.data.vo.SendResultVo;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -51,7 +51,7 @@ public class CmMsgSendService {
      *
      * <p>문의 접수 응답이 메일 SMTP 발송(수 초) 등으로 지연되지 않도록 별도 스레드풀
      * ({@code msgSendExecutor})에서 처리한다. 발송 결과는 호출자에게 반환하지 않고 이력 테이블에만
-     * 기록한다. 예외는 {@link com.shopjoy.ecadminapi.common.config.AsyncConfig} 의 핸들러가 로깅한다.</p>
+     * 기록한다. 예외는 {@link com.shopjoy.ecBeBo.common.config.AsyncConfig} 의 핸들러가 로깅한다.</p>
      *
      * <p>주의: @Async 스레드에는 SecurityContext 가 전파되지 않아 이력 reg_by 는 GUEST 로 기록된다
      * (발송 주체는 시스템이므로 의도된 동작).</p>

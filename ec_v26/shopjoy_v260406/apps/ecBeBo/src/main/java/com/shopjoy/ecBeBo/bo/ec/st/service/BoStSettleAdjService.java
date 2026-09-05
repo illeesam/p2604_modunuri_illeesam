@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.bo.ec.st.service;
+package com.shopjoy.ecBeBo.bo.ec.st.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjApproveDto;
-import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
-import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleAdjRepository;
-import com.shopjoy.ecadminapi.base.ec.st.service.StSettleAdjService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.st.data.dto.StSettleAdjApproveDto;
+import com.shopjoy.ecBeBo.base.ec.st.data.dto.StSettleAdjDto;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StSettleAdj;
+import com.shopjoy.ecBeBo.base.ec.st.repository.StSettleAdjRepository;
+import com.shopjoy.ecBeBo.base.ec.st.service.StSettleAdjService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 정산조정 서비스 — base StSettleAdjService 위임 (thin wrapper) + approve.

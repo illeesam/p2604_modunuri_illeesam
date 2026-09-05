@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.od.repository;
+package com.shopjoy.ecBeBo.base.ec.od.repository;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdRefund;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdRefundRepository;
+import com.shopjoy.ecBeBo.base.ec.od.repository.qrydsl.QOdRefundRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

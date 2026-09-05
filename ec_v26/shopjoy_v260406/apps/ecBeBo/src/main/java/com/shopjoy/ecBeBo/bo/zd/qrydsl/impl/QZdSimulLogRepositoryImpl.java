@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.bo.zd.qrydsl.impl;
+package com.shopjoy.ecBeBo.bo.zd.qrydsl.impl;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.shopjoy.ecadminapi.bo.zd.entity.QZdSimulLog;
-import com.shopjoy.ecadminapi.bo.zd.entity.ZdSimulLog;
-import com.shopjoy.ecadminapi.bo.zd.qrydsl.QZdSimulLogRepository;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.bo.zd.entity.QZdSimulLog;
+import com.shopjoy.ecBeBo.bo.zd.entity.ZdSimulLog;
+import com.shopjoy.ecBeBo.bo.zd.qrydsl.QZdSimulLogRepository;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

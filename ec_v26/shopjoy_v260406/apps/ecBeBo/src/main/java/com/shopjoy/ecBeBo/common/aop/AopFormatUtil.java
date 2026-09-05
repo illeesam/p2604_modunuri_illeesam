@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.aop;
+package com.shopjoy.ecBeBo.common.aop;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

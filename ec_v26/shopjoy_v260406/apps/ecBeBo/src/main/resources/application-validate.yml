@@ -48,7 +48,7 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   config-location: classpath:mybatis/mybatis-config.xml
-  type-aliases-package: com.shopjoy.ecadminapi
+  type-aliases-package: com.shopjoy.ecBeBo
 
 server:
   port: 3000
@@ -125,4 +125,4 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.schema: DEBUG
     org.hibernate.boot: INFO
-    com.shopjoy.ecadminapi: INFO
+    com.shopjoy.ecBeBo: INFO

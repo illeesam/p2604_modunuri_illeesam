@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.md.sg.controller;
+package com.shopjoy.ecBeBo.md.sg.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.md.sg.data.dto.MdSgStackDto;
-import com.shopjoy.ecadminapi.md.sg.data.entity.MdSgStack;
-import com.shopjoy.ecadminapi.md.sg.service.MdSgStackService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.md.sg.data.dto.MdSgStackDto;
+import com.shopjoy.ecBeBo.md.sg.data.entity.MdSgStack;
+import com.shopjoy.ecBeBo.md.sg.service.MdSgStackService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

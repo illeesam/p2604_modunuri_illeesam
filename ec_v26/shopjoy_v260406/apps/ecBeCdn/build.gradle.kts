@@ -78,7 +78,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-// EcAdminApi 와 동일 — bootJar 만 쓰고 plain jar(*-plain.jar) 는 생성 안 함
+// EcBeBo 와 동일 — bootJar 만 쓰고 plain jar(*-plain.jar) 는 생성 안 함
 tasks.named<Jar>("jar") {
     enabled = false
 }

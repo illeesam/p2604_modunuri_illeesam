@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.mb.data.dto;
+package com.shopjoy.ecBeBo.base.ec.mb.data.dto;
 
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

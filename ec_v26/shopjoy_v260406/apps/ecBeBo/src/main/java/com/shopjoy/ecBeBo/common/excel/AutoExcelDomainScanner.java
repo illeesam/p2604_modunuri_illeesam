@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Id;
@@ -83,7 +83,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AutoExcelDomainScanner {
 
     /** 스캔 대상 루트 패키지 — base 아래 전 도메인(ec/*, sy/*) */
-    private static final String BASE_PACKAGE = "com.shopjoy.ecadminapi.base";
+    private static final String BASE_PACKAGE = "com.shopjoy.ecBeBo.base";
 
     private final ExcelDomainRegistry registry;
     private final ApplicationContext applicationContext;

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
 import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
 

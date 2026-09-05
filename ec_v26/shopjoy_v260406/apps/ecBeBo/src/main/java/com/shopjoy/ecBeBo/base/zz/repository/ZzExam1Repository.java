@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.zz.repository;
+package com.shopjoy.ecBeBo.base.zz.repository;
 
-import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam1;
-import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzExam1Repository;
+import com.shopjoy.ecBeBo.base.zz.data.entity.ZzExam1;
+import com.shopjoy.ecBeBo.base.zz.repository.qrydsl.QZzExam1Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

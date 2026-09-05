@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,12 +10,12 @@ import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventItem;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventItemRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmEventItemDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmEventItem;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmEventItem;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmEventItemRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 /** PmEventItem(이벤트 적용 대상 항목 (상품/카테고리/판매자/브랜드)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {

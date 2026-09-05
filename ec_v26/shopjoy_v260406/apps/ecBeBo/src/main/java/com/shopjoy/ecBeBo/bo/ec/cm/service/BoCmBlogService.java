@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.service;
+package com.shopjoy.ecBeBo.bo.ec.cm.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogToggleUseDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogToggleUseDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmBlogService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO CmBlog 서비스 — base CmBlogService 위임 (thin wrapper) + toggleUse.

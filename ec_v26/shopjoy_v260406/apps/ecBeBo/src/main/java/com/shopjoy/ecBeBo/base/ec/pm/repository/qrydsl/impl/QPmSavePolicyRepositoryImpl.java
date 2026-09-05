@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -12,15 +12,15 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSavePolicyDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSavePolicy;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSavePolicy;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveProd;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSavePolicyRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmSavePolicyDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmSavePolicy;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmSavePolicy;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmSaveProd;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmSavePolicyRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** PmSavePolicy(적립금 정책(캠페인)) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

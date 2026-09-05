@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.auth.dto;
+package com.shopjoy.ecBeCdn.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

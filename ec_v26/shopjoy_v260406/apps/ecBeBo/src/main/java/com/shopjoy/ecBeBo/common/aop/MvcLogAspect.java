@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.aop;
+package com.shopjoy.ecBeBo.common.aop;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

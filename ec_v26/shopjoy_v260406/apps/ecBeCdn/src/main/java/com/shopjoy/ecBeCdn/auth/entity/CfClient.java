@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.auth.entity;
+package com.shopjoy.ecBeCdn.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

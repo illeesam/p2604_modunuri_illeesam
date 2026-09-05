@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.base.zz.mapper.ZzSamy1Mapper">
+<mapper namespace="com.shopjoy.ecBeBo.base.zz.mapper.ZzSamy1Mapper">
 
     <sql id="cols">
         s.samy1_id, s.cd_grp, s.cd_vl, s.cd_nm, s.srtord_vl,
@@ -30,20 +30,20 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy1Dto$Item">
+    <select id="selectById" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzSamy1Dto$Item">
         SELECT <include refid="cols"/> /* base.zz :: ZzSamy1 :: selectById */
         FROM shopjoy_2604.zz_samy1 s
         WHERE s.samy1_id = #{samy1Id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy1Dto$Item">
+    <select id="selectList" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzSamy1Dto$Item">
         SELECT <include refid="cols"/> /* base.zz :: ZzSamy1 :: selectList */
         FROM shopjoy_2604.zz_samy1 s
         <include refid="searchWhere"/>
         ORDER BY s.reg_dt DESC, s.samy1_id ASC
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy1Dto$Item">
+    <select id="selectPageList" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzSamy1Dto$Item">
         SELECT <include refid="cols"/> /* base.zz :: ZzSamy1 :: selectPageList */
         FROM shopjoy_2604.zz_samy1 s
         <include refid="searchWhere"/>

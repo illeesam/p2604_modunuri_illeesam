@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.co.ext.controller;
+package com.shopjoy.ecBeBo.co.ext.controller;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
-import com.shopjoy.ecadminapi.co.cm.service.CmKakaoSendService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.co.cm.data.vo.SendResultVo;
+import com.shopjoy.ecBeBo.co.cm.service.CmKakaoSendService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

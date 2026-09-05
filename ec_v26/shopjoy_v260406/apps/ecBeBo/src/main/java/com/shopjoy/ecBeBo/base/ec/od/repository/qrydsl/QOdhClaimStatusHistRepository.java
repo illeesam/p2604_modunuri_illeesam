@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.od.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimStatusHist;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdhClaimStatusHistDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdhClaimStatusHist;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,7 +1,7 @@
-package com.shopjoy.eccdnapi.log.controller;
+package com.shopjoy.ecBeCdn.log.controller;
 
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
-import com.shopjoy.eccdnapi.log.util.CfLogTailUtil;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.log.util.CfLogTailUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;

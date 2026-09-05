@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.bo.common.controller;
+package com.shopjoy.ecBeBo.bo.common.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyExceldownDto;
-import com.shopjoy.ecadminapi.bo.common.service.BoExcelDownService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyExceldownDto;
+import com.shopjoy.ecBeBo.bo.common.service.BoExcelDownService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

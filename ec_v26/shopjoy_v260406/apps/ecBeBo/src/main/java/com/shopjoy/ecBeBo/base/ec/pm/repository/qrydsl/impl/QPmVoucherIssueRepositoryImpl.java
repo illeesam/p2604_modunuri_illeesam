@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,17 +11,17 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucherIssue;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucher;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucherIssue;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherIssueRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.QOdOrder;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmVoucherIssueDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmVoucherIssue;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmVoucher;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmVoucherIssue;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmVoucherIssueRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyCode;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 /** PmVoucherIssue(상품권 발급 및 사용 이력) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository {

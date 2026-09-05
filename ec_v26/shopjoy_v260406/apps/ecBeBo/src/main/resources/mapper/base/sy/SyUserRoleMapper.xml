@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyUserRoleMapper">
+<mapper namespace="com.shopjoy.ecBeBo.base.sy.mapper.SyUserRoleMapper">
 
     <!-- userId 기준 사용자-역할 매핑 조회 -->
-    <select id="selectByUserId" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto$Item">
+    <select id="selectByUserId" resultType="com.shopjoy.ecBeBo.base.sy.data.dto.SyUserRoleDto$Item">
         SELECT  /* base.sy :: SyUserRole :: selectByUserId */
               r.*
             , rol.role_nm  AS role_nm

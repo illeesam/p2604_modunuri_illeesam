@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.co.log.controller;
+package com.shopjoy.ecBeBo.co.log.controller;
 
-import com.shopjoy.ecadminapi.co.log.util.LogTailUtil;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.co.log.util.LogTailUtil;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

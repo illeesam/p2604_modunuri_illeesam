@@ -44,7 +44,7 @@ window.CfLogViewer = {
       { label: '인증 실패', kw: '아이디 또는 비밀번호' },
       { label: 'Redis 연결', kw: 'Redis' },
       { label: 'Connection refused', kw: 'Connection refused' },
-      { label: '기동 로그', kw: 'Started EcCdnApiApplication' },
+      { label: '기동 로그', kw: 'Started EcBeCdnApplication' },
       { label: '업로드', kw: 'upload' },
     ];
 

@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.common.config;
+package com.shopjoy.ecBeCdn.common.config;
 
 import lombok.Getter;
 import lombok.Setter;

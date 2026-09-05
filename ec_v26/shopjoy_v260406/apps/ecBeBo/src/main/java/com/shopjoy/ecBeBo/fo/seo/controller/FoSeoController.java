@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.fo.seo.controller;
+package com.shopjoy.ecBeBo.fo.seo.controller;
 
-import com.shopjoy.ecadminapi.fo.seo.service.FoSeoService;
+import com.shopjoy.ecBeBo.fo.seo.service.FoSeoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

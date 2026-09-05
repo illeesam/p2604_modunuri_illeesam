@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.mb.service;
+package com.shopjoy.ecBeBo.bo.ec.mb.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberLoginLogRepository;
-import com.shopjoy.ecadminapi.base.ec.mb.service.MbhMemberLoginLogService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbhMemberLoginLogDto;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.MbhMemberLoginLogRepository;
+import com.shopjoy.ecBeBo.base.ec.mb.service.MbhMemberLoginLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

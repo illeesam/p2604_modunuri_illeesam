@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.autorest.data.vo;
+package com.shopjoy.ecBeBo.autorest.data.vo;
 
 import lombok.Data;
 

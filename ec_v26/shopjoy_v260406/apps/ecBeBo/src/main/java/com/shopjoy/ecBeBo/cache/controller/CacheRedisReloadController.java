@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.cache.controller;
+package com.shopjoy.ecBeBo.cache.controller;
 
-import com.shopjoy.ecadminapi.cache.service.CacheRedisReloadService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.cache.service.CacheRedisReloadService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.file.domain;
+package com.shopjoy.ecBeCdn.file.domain;
 
 import java.util.Set;
 

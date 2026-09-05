@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.bo.zd.qrydsl;
+package com.shopjoy.ecBeBo.bo.zd.qrydsl;
 
-import com.shopjoy.ecadminapi.bo.zd.entity.ZdSimulLog;
+import com.shopjoy.ecBeBo.bo.zd.entity.ZdSimulLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

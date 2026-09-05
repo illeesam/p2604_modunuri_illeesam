@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.aop;
+package com.shopjoy.ecBeBo.common.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -36,7 +36,7 @@ public class RepositoryResultLogAspect {
     /**
      * Repository 메서드 실행 결과를 가로채 상세 로깅한다.
      *
-     * <p>포인트컷 {@code com.shopjoy.ecadminapi.*.*.repository.*Repository.*}: 도메인 2단계 하위
+     * <p>포인트컷 {@code com.shopjoy.ecBeBo.*.*.repository.*Repository.*}: 도메인 2단계 하위
      * (예: bo.mb) repository 패키지의 {@code *Repository} public 메서드만 대상으로 한정한다
      * (MvcLogAspect 보다 좁은 범위 — 결과 본문 상세 덤프 전용).</p>
      *
@@ -48,7 +48,7 @@ public class RepositoryResultLogAspect {
      * @throws Throwable 원본 예외는 ERROR 로그 후 재전파(로깅이 예외를 삼키지 않음).
      *                   로깅 비활성(prod 등) 시에도 호출자 정보 등 부가 연산을 건너뛰어 오버헤드 최소화
      */
-    @Around("execution(public * com.shopjoy.ecadminapi.*.*.repository.*Repository.*(..))")
+    @Around("execution(public * com.shopjoy.ecBeBo.*.*.repository.*Repository.*(..))")
     public Object logRepositoryResult(ProceedingJoinPoint joinPoint) throws Throwable {
         boolean loggingEnabled = isLoggingEnabled();
 

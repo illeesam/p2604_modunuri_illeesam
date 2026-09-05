@@ -1,17 +1,17 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.controller;
+package com.shopjoy.ecBeBo.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupItemRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmPopupPickService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmPopupDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopup;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopupItem;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupItemRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmPopupPickService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.response.PageResult;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -100,7 +100,7 @@ public class BoCmPopupPickController {
     public ResponseEntity<ApiResponse<CmPopup>> popupUpdate(
             @PathVariable("popupId") String popupId, @Valid @RequestBody CmPopup body) {
         CmPopup e = cmPopupRepository.findById(popupId)
-            .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + popupId));
+            .orElseThrow(() -> new com.shopjoy.ecBeBo.common.exception.CmBizException("존재하지 않습니다: " + popupId));
         if (body.getPopupNm() != null)      e.setPopupNm(body.getPopupNm());
         if (body.getPopupPattern() != null) e.setPopupPattern(body.getPopupPattern());
         if (body.getEntityNm() != null)     e.setEntityNm(body.getEntityNm());

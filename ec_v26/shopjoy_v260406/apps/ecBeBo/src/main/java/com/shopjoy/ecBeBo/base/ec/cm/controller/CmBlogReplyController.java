@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.base.ec.cm.controller;
+package com.shopjoy.ecBeBo.base.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogReply;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogReplyDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmBlogReply;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmBlogReplyService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

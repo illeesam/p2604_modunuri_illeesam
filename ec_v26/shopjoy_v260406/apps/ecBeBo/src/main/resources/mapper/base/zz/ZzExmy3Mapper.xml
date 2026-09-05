@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.shopjoy.ecadminapi.base.zz.mapper.ZzExmy3Mapper">
+<mapper namespace="com.shopjoy.ecBeBo.base.zz.mapper.ZzExmy3Mapper">
 
     <sql id="searchWhere">
         <where>
@@ -34,7 +34,7 @@
         </where>
     </sql>
 
-    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy3Dto$Item">
+    <select id="selectById" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzExmy3Dto$Item">
         SELECT /* base.zz :: ZzExmy3 :: selectById */
             e.exmy1_id, e.exmy2_id, e.exmy3_id,
             e.col31, e.col32, e.col33, e.col34, e.col35,
@@ -43,7 +43,7 @@
         WHERE e.exmy1_id = #{exmy1Id} AND e.exmy2_id = #{exmy2Id} AND e.exmy3_id = #{exmy3Id}
     </select>
 
-    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy3Dto$Item">
+    <select id="selectList" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzExmy3Dto$Item">
         SELECT /* base.zz :: ZzExmy3 :: selectList */
             e.exmy1_id, e.exmy2_id, e.exmy3_id,
             e.col31, e.col32, e.col33, e.col34, e.col35,
@@ -53,7 +53,7 @@
         ORDER BY e.exmy1_id ASC, e.exmy2_id ASC, e.exmy3_id ASC
     </select>
 
-    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy3Dto$Item">
+    <select id="selectPageList" resultType="com.shopjoy.ecBeBo.base.zz.data.dto.ZzExmy3Dto$Item">
         SELECT /* base.zz :: ZzExmy3 :: selectPageList */
             e.exmy1_id, e.exmy2_id, e.exmy3_id,
             e.col31, e.col32, e.col33, e.col34, e.col35,

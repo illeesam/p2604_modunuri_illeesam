@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.autorest.controller;
+package com.shopjoy.ecBeBo.autorest.controller;
 
-import com.shopjoy.ecadminapi.autorest.comn.TableRegistry;
-import com.shopjoy.ecadminapi.autorest.data.dto.RowMap;
-import com.shopjoy.ecadminapi.autorest.data.vo.BulkDeleteReq;
-import com.shopjoy.ecadminapi.autorest.data.vo.SearchReq;
-import com.shopjoy.ecadminapi.autorest.service.AutoRestService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecBeBo.autorest.comn.TableRegistry;
+import com.shopjoy.ecBeBo.autorest.data.dto.RowMap;
+import com.shopjoy.ecBeBo.autorest.data.vo.BulkDeleteReq;
+import com.shopjoy.ecBeBo.autorest.data.vo.SearchReq;
+import com.shopjoy.ecBeBo.autorest.service.AutoRestService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.response.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

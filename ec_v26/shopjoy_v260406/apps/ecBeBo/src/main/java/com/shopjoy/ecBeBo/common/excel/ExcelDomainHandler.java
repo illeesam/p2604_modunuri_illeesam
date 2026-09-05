@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.function.Consumer;
  * 엑셀 다운로드/업로드 도메인 핸들러.
  *
  * <p>각 도메인(사용자/역할/부서/...)은 이 인터페이스를 구현한 Spring Bean 하나만 제공하면
- * {@link com.shopjoy.ecadminapi.bo.common.controller.BoExcelController} 의 단일 진입점에서
+ * {@link com.shopjoy.ecBeBo.bo.common.controller.BoExcelController} 의 단일 진입점에서
  * 자동 라우팅된다. 새 도메인 추가 시 작성해야 할 백엔드 코드는 **이 Handler 한 클래스뿐**.
  *
  * <p><b>일반적인 구현 예시</b>:

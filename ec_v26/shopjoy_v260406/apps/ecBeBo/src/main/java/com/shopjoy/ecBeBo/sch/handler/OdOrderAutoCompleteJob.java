@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.sch.handler;
+package com.shopjoy.ecBeBo.sch.handler;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderStatusHist;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdDlivRepository;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdhOrderStatusHistRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdDliv;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdOrder;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdhOrderStatusHist;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdDlivRepository;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdOrderRepository;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdhOrderStatusHistRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

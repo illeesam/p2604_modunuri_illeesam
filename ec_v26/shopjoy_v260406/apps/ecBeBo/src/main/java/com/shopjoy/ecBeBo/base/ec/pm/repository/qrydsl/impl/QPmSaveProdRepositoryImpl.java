@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.impl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveProd;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmSaveProd;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmSaveProdRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

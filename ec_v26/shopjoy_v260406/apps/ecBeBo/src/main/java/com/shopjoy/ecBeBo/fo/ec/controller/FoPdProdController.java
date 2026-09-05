@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.fo.ec.controller;
+package com.shopjoy.ecBeBo.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdRelDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.fo.ec.service.FoPdProdService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdContentDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdQnaDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdRelDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewAttachDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewDto;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.fo.ec.service.FoPdProdService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

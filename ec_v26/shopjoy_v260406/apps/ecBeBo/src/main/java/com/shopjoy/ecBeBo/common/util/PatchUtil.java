@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.util;
+package com.shopjoy.ecBeBo.common.util;
 
 import java.util.Map;
 

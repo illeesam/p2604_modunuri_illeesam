@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.base.sy.service;
+package com.shopjoy.ecBeBo.base.sy.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhBatchHistRepository;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyhBatchHistDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhBatchHist;
+import com.shopjoy.ecBeBo.base.sy.repository.SyhBatchHistRepository;
+import com.shopjoy.ecBeBo.common.util.PageHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

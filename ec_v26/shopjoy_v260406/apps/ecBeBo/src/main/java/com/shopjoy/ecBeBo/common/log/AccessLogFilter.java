@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.common.log;
+package com.shopjoy.ecBeBo.common.log;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessLog;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhAccessLog;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.md.cb.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.md.cb.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,12 +10,12 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.md.cb.data.dto.MdCbSymbolDto;
-import com.shopjoy.ecadminapi.md.cb.data.entity.MdCbSymbol;
-import com.shopjoy.ecadminapi.md.cb.data.entity.QMdCbSymbol;
-import com.shopjoy.ecadminapi.md.cb.repository.qrydsl.QMdCbSymbolRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.md.cb.data.dto.MdCbSymbolDto;
+import com.shopjoy.ecBeBo.md.cb.data.entity.MdCbSymbol;
+import com.shopjoy.ecBeBo.md.cb.data.entity.QMdCbSymbol;
+import com.shopjoy.ecBeBo.md.cb.repository.qrydsl.QMdCbSymbolRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** MdCbSymbol(코바늘 기호) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

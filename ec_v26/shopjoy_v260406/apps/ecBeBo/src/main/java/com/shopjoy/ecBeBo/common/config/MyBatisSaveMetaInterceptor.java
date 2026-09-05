@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;

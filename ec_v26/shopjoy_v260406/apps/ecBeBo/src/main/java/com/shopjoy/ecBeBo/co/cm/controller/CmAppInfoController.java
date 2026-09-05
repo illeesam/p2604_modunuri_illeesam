@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.co.cm.controller;
+package com.shopjoy.ecBeBo.co.cm.controller;
 
-import com.shopjoy.ecadminapi.cache.config.RedisProperties;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.cache.config.RedisProperties;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

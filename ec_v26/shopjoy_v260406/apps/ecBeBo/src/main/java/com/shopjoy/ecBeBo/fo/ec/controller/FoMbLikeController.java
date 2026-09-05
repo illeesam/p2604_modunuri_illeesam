@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.fo.ec.controller;
+package com.shopjoy.ecBeBo.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.fo.ec.service.FoMbLikeService;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbLikeDto;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.fo.ec.service.FoMbLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,15 +1,15 @@
-package com.shopjoy.ecadminapi.fo.ec.controller;
+package com.shopjoy.ecBeBo.fo.ec.controller;
 
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.fo.ec.service.FoMbLikeService;
-import com.shopjoy.ecadminapi.fo.ec.service.FoOdOrderService;
-import com.shopjoy.ecadminapi.fo.ec.service.FoPmCacheService;
-import com.shopjoy.ecadminapi.fo.ec.service.FoPmCouponService;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbLikeDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCacheDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponIssueDto;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.fo.ec.service.FoMbLikeService;
+import com.shopjoy.ecBeBo.fo.ec.service.FoOdOrderService;
+import com.shopjoy.ecBeBo.fo.ec.service.FoPmCacheService;
+import com.shopjoy.ecBeBo.fo.ec.service.FoPmCouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

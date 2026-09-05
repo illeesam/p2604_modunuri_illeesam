@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.service;
+package com.shopjoy.ecBeBo.bo.ec.pm.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmCoupon;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.PmCouponRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmCouponService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 쿠폰 서비스 — base PmCouponService 위임 (thin wrapper) + changeStatus.

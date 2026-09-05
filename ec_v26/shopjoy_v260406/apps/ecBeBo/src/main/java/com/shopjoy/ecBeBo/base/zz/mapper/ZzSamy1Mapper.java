@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.zz.mapper;
+package com.shopjoy.ecBeBo.base.zz.mapper;
 
-import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy1Dto;
-import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSamy1;
+import com.shopjoy.ecBeBo.base.zz.data.dto.ZzSamy1Dto;
+import com.shopjoy.ecBeBo.base.zz.data.entity.ZzSamy1;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

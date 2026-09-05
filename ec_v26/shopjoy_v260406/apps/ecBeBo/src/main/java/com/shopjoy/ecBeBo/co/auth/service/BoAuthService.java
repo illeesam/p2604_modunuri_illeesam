@@ -1,21 +1,21 @@
-package com.shopjoy.ecadminapi.co.auth.service;
+package com.shopjoy.ecBeBo.co.auth.service;
 
-import com.shopjoy.ecadminapi.cache.redisstore.BoAuthRedisStore;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserTokenLog;
-import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyhUserTokenLogRepository;
-import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
-import com.shopjoy.ecadminapi.co.auth.data.dto.TokenPair;
-import com.shopjoy.ecadminapi.co.auth.data.vo.BoJoinRes;
-import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
-import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
-import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
-import com.shopjoy.ecadminapi.co.auth.security.JwtProvider;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.cache.redisstore.BoAuthRedisStore;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyRole;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhUserLoginLog;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhUserTokenLog;
+import com.shopjoy.ecBeBo.base.sy.repository.SyUserRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.SyhUserTokenLogRepository;
+import com.shopjoy.ecBeBo.co.auth.data.dto.AccessTokenClaims;
+import com.shopjoy.ecBeBo.co.auth.data.dto.TokenPair;
+import com.shopjoy.ecBeBo.co.auth.data.vo.BoJoinRes;
+import com.shopjoy.ecBeBo.co.auth.data.vo.ChangePasswordReq;
+import com.shopjoy.ecBeBo.co.auth.data.vo.LoginReq;
+import com.shopjoy.ecBeBo.co.auth.data.vo.LoginRes;
+import com.shopjoy.ecBeBo.co.auth.security.JwtProvider;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 관리자 인증 서비스
@@ -149,8 +149,8 @@ public class BoAuthService {
         String deptNm = "";
         if (user.getDeptId() != null) {
             try {
-                com.shopjoy.ecadminapi.base.sy.data.entity.SyDept dept =
-                    em.find(com.shopjoy.ecadminapi.base.sy.data.entity.SyDept.class, user.getDeptId());
+                com.shopjoy.ecBeBo.base.sy.data.entity.SyDept dept =
+                    em.find(com.shopjoy.ecBeBo.base.sy.data.entity.SyDept.class, user.getDeptId());
                 if (dept != null) deptNm = dept.getDeptNm();
             } catch (Exception ignored) {}
         }

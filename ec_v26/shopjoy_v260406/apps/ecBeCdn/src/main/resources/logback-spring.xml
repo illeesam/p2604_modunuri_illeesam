@@ -103,7 +103,7 @@
         </appender>
 
         <!-- ─── 로거 레벨 ─────────────────────────────────────────────── -->
-        <logger name="com.shopjoy.eccdnapi" level="DEBUG"/>
+        <logger name="com.shopjoy.ecBeCdn" level="DEBUG"/>
         <logger name="p6spy" level="OFF"/>  <!-- StdoutLogger 직접 출력, logback 중복 방지 -->
 
         <!-- 프레임워크 노이즈 억제 -->
@@ -189,7 +189,7 @@
             <appender-ref ref="ERROR_FILE"/>
         </appender>
 
-        <logger name="com.shopjoy.eccdnapi" level="INFO"/>
+        <logger name="com.shopjoy.ecBeCdn" level="INFO"/>
 
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>

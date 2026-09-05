@@ -1,14 +1,14 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.controller;
+package com.shopjoy.ecBeBo.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattChangeStatusDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMemberDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChatt;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
-import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmChattService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmChattChangeStatusDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmChattDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmChattMemberDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmChattMsgDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmChatt;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmChattMsg;
+import com.shopjoy.ecBeBo.bo.ec.cm.service.BoCmChattService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

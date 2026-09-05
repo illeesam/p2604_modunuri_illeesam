@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
 import java.util.List;
 

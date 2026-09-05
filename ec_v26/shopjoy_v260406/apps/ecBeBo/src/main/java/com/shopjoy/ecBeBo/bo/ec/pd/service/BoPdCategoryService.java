@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.service;
+package com.shopjoy.ecBeBo.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryUpdateProdsDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdCategoryService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryUpdateProdsDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdCategory;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdCategoryProd;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdCategoryProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdCategoryService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

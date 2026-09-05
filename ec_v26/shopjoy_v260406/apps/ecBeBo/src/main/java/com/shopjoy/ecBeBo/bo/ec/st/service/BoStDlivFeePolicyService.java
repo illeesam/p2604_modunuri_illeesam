@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.st.service;
+package com.shopjoy.ecBeBo.bo.ec.st.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.st.data.dto.StDlivFeePolicyDto;
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StDlivFeePolicy;
-import com.shopjoy.ecadminapi.base.ec.st.service.StDlivFeePolicyService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.st.data.dto.StDlivFeePolicyDto;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StDlivFeePolicy;
+import com.shopjoy.ecBeBo.base.ec.st.service.StDlivFeePolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

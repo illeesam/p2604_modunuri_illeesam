@@ -1,18 +1,18 @@
-package com.shopjoy.ecadminapi.co.cm.service;
+package com.shopjoy.ecBeBo.co.cm.service;
 
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.*;
-import com.shopjoy.ecadminapi.base.ec.dp.repository.*;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.*;
-import com.shopjoy.ecadminapi.base.sy.repository.*;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.co.cm.constant.CmStoreConst;
-import com.shopjoy.ecadminapi.co.cm.data.vo.*;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.ec.dp.data.entity.*;
+import com.shopjoy.ecBeBo.base.ec.dp.repository.*;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMember;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyCodeDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyUserRoleDto;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyVendorUserRoleDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.*;
+import com.shopjoy.ecBeBo.base.sy.repository.*;
+import com.shopjoy.ecBeBo.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecBeBo.co.cm.constant.CmStoreConst;
+import com.shopjoy.ecBeBo.co.cm.data.vo.*;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,7 +87,7 @@ public class CmAppStoreDataService {
      * @return 요청된 데이터만 포함된 Map
      */
     public Map<String, Object> getAuthData(String names, String appTypeCd) {
-        AuthPrincipal authUser = com.shopjoy.ecadminapi.common.util.SecurityUtil.getAuthUser();
+        AuthPrincipal authUser = com.shopjoy.ecBeBo.common.util.SecurityUtil.getAuthUser();
         java.util.List<String> requestedItems = CmUtil.parseNames(names);
         Map<String, Object> resultMap = new java.util.HashMap<>();
 

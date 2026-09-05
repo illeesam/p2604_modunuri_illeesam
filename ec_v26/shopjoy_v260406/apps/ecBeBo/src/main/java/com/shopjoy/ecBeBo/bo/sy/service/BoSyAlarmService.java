@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.bo.sy.service;
+package com.shopjoy.ecBeBo.bo.sy.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
-import com.shopjoy.ecadminapi.base.sy.service.SyAlarmService;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import com.shopjoy.ecadminapi.common.util.VoUtil;
-import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyAlarmDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyAlarm;
+import com.shopjoy.ecBeBo.base.sy.service.SyAlarmService;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.util.VoUtil;
+import com.shopjoy.ecBeBo.base.sy.repository.SyAlarmRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

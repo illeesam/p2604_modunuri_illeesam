@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.base.zz.controller;
+package com.shopjoy.ecBeBo.base.zz.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExam1Dto;
-import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam1;
-import com.shopjoy.ecadminapi.base.zz.service.ZzExam1Service;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.zz.data.dto.ZzExam1Dto;
+import com.shopjoy.ecBeBo.base.zz.data.entity.ZzExam1;
+import com.shopjoy.ecBeBo.base.zz.service.ZzExam1Service;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

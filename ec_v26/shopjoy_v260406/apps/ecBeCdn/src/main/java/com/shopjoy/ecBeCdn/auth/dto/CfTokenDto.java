@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.auth.dto;
+package com.shopjoy.ecBeCdn.auth.dto;
 
-import com.shopjoy.eccdnapi.auth.entity.CfToken;
+import com.shopjoy.ecBeCdn.auth.entity.CfToken;
 import lombok.Builder;
 import lombok.Getter;
 

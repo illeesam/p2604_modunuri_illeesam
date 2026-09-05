@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository;
+package com.shopjoy.ecBeBo.base.ec.cm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPopupRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopup;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.QCmPopupRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

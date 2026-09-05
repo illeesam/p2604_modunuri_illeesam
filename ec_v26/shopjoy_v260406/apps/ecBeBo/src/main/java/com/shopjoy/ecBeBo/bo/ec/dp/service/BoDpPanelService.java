@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.bo.ec.dp.service;
+package com.shopjoy.ecBeBo.bo.ec.dp.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
-import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelItemDto;
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
-import com.shopjoy.ecadminapi.base.ec.dp.service.DpPanelService;
-import com.shopjoy.ecadminapi.base.ec.dp.service.DpPanelItemService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.dp.data.dto.DpPanelDto;
+import com.shopjoy.ecBeBo.base.ec.dp.data.dto.DpPanelItemDto;
+import com.shopjoy.ecBeBo.base.ec.dp.data.entity.DpPanel;
+import com.shopjoy.ecBeBo.base.ec.dp.service.DpPanelService;
+import com.shopjoy.ecBeBo.base.ec.dp.service.DpPanelItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

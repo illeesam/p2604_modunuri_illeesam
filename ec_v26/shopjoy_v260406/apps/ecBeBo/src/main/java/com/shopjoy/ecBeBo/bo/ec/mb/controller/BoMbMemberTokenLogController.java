@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.mb.controller;
+package com.shopjoy.ecBeBo.bo.ec.mb.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberTokenLogDto;
-import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemberTokenLogService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbhMemberTokenLogDto;
+import com.shopjoy.ecBeBo.bo.ec.mb.service.BoMbMemberTokenLogService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

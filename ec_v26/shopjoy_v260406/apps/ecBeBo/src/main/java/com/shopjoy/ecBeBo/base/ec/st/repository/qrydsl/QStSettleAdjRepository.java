@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.st.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.st.data.dto.StSettleAdjDto;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StSettleAdj;
 
 import java.util.List;
 import java.util.Optional;

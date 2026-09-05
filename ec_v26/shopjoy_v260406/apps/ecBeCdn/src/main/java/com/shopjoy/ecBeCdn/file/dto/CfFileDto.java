@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.file.dto;
+package com.shopjoy.ecBeCdn.file.dto;
 
-import com.shopjoy.eccdnapi.file.entity.CfFile;
+import com.shopjoy.ecBeCdn.file.entity.CfFile;
 import lombok.Builder;
 import lombok.Getter;
 

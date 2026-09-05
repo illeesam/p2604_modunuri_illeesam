@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.md.cb.service;
+package com.shopjoy.ecBeBo.md.cb.service;
 
-import com.shopjoy.ecadminapi.md.cb.data.dto.MdCbPatternCellDto;
-import com.shopjoy.ecadminapi.md.cb.data.entity.MdCbPatternCell;
-import com.shopjoy.ecadminapi.md.cb.repository.MdCbPatternCellRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.md.cb.data.dto.MdCbPatternCellDto;
+import com.shopjoy.ecBeBo.md.cb.data.entity.MdCbPatternCell;
+import com.shopjoy.ecBeBo.md.cb.repository.MdCbPatternCellRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

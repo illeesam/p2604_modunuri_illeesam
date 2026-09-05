@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.controller;
+package com.shopjoy.ecBeBo.bo.ec.pd.controller;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdPlan;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdPlanRepository;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdProdPlan;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdProdPlanRepository;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;

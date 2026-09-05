@@ -1,9 +1,9 @@
-package com.shopjoy.eccdnapi.file.controller;
+package com.shopjoy.ecBeCdn.file.controller;
 
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
-import com.shopjoy.eccdnapi.common.response.PageResult;
-import com.shopjoy.eccdnapi.file.dto.CfFileDto;
-import com.shopjoy.eccdnapi.file.service.CfFileService;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.common.response.PageResult;
+import com.shopjoy.ecBeCdn.file.dto.CfFileDto;
+import com.shopjoy.ecBeCdn.file.service.CfFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

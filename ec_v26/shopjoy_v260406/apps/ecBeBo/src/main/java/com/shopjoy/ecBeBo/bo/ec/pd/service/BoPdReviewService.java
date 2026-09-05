@@ -1,16 +1,16 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.service;
+package com.shopjoy.ecBeBo.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdReviewAttachService;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdReviewCommentService;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdReviewService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewAttachDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewCommentDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdReview;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdReviewRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdReviewAttachService;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdReviewCommentService;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdReviewService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 리뷰 서비스 — base PdReviewService 위임 (thin wrapper) + changeStatus.

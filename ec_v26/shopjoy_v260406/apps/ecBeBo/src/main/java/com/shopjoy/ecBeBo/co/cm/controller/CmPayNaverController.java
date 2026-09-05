@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.co.cm.controller;
+package com.shopjoy.ecBeBo.co.cm.controller;
 
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayNaverApproveReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayNaverCancelReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayNaverReserveReq;
-import com.shopjoy.ecadminapi.co.cm.service.CmPayNaverService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayNaverApproveReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayNaverCancelReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayNaverReserveReq;
+import com.shopjoy.ecBeBo.co.cm.service.CmPayNaverService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

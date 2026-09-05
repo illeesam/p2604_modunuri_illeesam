@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.autorest.comn;
+package com.shopjoy.ecBeBo.autorest.comn;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;

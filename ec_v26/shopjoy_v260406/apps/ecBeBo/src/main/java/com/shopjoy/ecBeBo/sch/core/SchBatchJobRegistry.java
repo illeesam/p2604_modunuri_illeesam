@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.sch.core;
+package com.shopjoy.ecBeBo.sch.core;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.sch.config.SchBatchProperties;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.sch.config.SchBatchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;

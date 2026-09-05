@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.st.repository;
+package com.shopjoy.ecBeBo.base.ec.st.repository;
 
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StSettleAdj;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleAdjRepository;
+import com.shopjoy.ecBeBo.base.ec.st.repository.qrydsl.QStSettleAdjRepository;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.od.repository;
+package com.shopjoy.ecBeBo.base.ec.od.repository;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderStatusHist;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdhOrderStatusHist;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhOrderStatusHistRepository;
+import com.shopjoy.ecBeBo.base.ec.od.repository.qrydsl.QOdhOrderStatusHistRepository;
 
 public interface OdhOrderStatusHistRepository extends JpaRepository<OdhOrderStatusHist, String>, QOdhOrderStatusHistRepository {
 }

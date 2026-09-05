@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.service;
+package com.shopjoy.ecBeBo.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdTagService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdTagDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdTag;
+import com.shopjoy.ecBeBo.base.ec.pd.service.PdTagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

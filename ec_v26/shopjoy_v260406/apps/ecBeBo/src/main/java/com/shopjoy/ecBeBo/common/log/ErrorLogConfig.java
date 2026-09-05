@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.log;
+package com.shopjoy.ecBeBo.common.log;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;

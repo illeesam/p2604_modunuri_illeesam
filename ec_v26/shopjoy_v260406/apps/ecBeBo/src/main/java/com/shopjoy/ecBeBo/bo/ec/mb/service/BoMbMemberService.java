@@ -1,17 +1,17 @@
-package com.shopjoy.ecadminapi.bo.ec.mb.service;
+package com.shopjoy.ecBeBo.bo.ec.mb.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
-import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberAddrService;
-import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberService;
-import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberSnsService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.MaskUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbMemberAddrDto;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbMemberDto;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbMemberSnsDto;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMember;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecBeBo.base.ec.mb.service.MbMemberAddrService;
+import com.shopjoy.ecBeBo.base.ec.mb.service.MbMemberService;
+import com.shopjoy.ecBeBo.base.ec.mb.service.MbMemberSnsService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.MaskUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 회원 서비스 — base MbMemberService 위임 (thin wrapper) + changeStatus.

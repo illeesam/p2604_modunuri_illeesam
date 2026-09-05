@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.co.cm.controller;
+package com.shopjoy.ecBeBo.co.cm.controller;
 
-import com.shopjoy.ecadminapi.co.cm.service.CmUploadService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.co.cm.service.CmUploadService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

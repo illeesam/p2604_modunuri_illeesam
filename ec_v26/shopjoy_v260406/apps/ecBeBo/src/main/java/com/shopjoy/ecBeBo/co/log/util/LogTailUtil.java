@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.co.log.util;
+package com.shopjoy.ecBeBo.co.log.util;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

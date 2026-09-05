@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.fo.seo.service;
+package com.shopjoy.ecBeBo.fo.seo.service;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
-import com.shopjoy.ecadminapi.fo.ec.service.FoPdProdService;
-import com.shopjoy.ecadminapi.fo.ec.service.FoPmEventService;
-import com.shopjoy.ecadminapi.fo.ec.service.FoCmBlogService;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdProdDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmEventDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmBlogFileDto;
+import com.shopjoy.ecBeBo.fo.ec.service.FoPdProdService;
+import com.shopjoy.ecBeBo.fo.ec.service.FoPmEventService;
+import com.shopjoy.ecBeBo.fo.ec.service.FoCmBlogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

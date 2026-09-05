@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.sch.handler;
+package com.shopjoy.ecBeBo.sch.handler;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardDataRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataGridService;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardData;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardItem;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmDashboardDataRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmDashboardItemRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmDashboardDataGridService;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -26,8 +26,11 @@ const REMOTE_REDIS_DIR = '/volume1/docker/shopjoy/apps/ecBeRedis';
 const REMOTE_REDIS_DATA_DIR = '/volume1/docker/shopjoy/data/ecBeRedisData';
 // 2026-09-06 재구조화(요청사항: "각 앱의 .env 파일을 env/로 모음") — REDIS_PASSWORD 는
 // docker-compose.yml 안에서 ${REDIS_PASSWORD:-redis123} 로 변수치환되는 값이라(env_file: 이
-// 아니라 compose 자체의 .env 로딩), .env 를 이 디렉터리 밖으로 옮긴 뒤로는 모든 `docker
-// compose` 호출에 --env-file 을 명시해야 한다(아래 REDIS_COMPOSE 참조).
+// 아니라 compose 자체의 .env 자동로드, CWD 기준), .env 실물을 이 디렉터리 밖으로 옮기면
+// compose 가 못 찾는다. `docker compose --env-file`로 우회하려 했으나 이 NAS의 Docker
+// 24.0.2(compose가 CLI 내장 플러그인)는 그 플래그 자체를 모른다("unknown flag: --env-file",
+// 2026-09-06 실측 확인) — 대신 REMOTE_REDIS_DIR/.env 를 실물 파일(env/ecBeRedis.env)을
+// 가리키는 심볼릭 링크로 만들어 compose 의 "같은 폴더에서 .env 자동탐색"을 그대로 속인다.
 const REMOTE_REDIS_ENV_FILE = '/volume1/docker/shopjoy/env/ecBeRedis.env';
 const CONTAINER_NAME = 'shopjoy-ecBeRedis-22379';
 const DEFAULT_PASSWORD = 'redis123'; // .env 미준비 시 최초 1회 자동 생성해 넣는 기본값(요청사항)
@@ -70,11 +73,15 @@ function fmtElapsed() {
             `else echo '  ↪ 기존 .env 유지 (내용 변경 없음)'; fi`,
           allowFail: true,
         },
-        // 2026-09-06: .env 가 이 폴더 밖(shopjoy/env/)으로 이동했으므로, compose 의 자동 .env
-        // 탐색(CWD 기준)이 더는 안 먹는다 — 모든 compose 호출에 --env-file 명시 필수.
-        { label: 'Redis 이미지 pull(최초 1회만 실제로 받아옴)', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose --env-file ${REMOTE_REDIS_ENV_FILE} pull` },
-        { label: 'Redis 컨테이너 기동', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose --env-file ${REMOTE_REDIS_ENV_FILE} up -d` },
-        { label: '5초 대기 후 상태 확인', cmd: `sleep 5 && cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose --env-file ${REMOTE_REDIS_ENV_FILE} ps` },
+        {
+          // 2026-09-06: --env-file 이 이 Docker 버전에서 안 먹혀서(위 주석 참조), 심볼릭
+          // 링크로 우회 — compose 는 실행 폴더의 ".env"가 진짜 파일이든 링크든 구분하지 않는다.
+          label: '.env 심볼릭 링크 생성 (env/ecBeRedis.env → 이 폴더의 .env)',
+          cmd: `ln -sf ${REMOTE_REDIS_ENV_FILE} ${REMOTE_REDIS_DIR}/.env && ls -la ${REMOTE_REDIS_DIR}/.env`,
+        },
+        { label: 'Redis 이미지 pull(최초 1회만 실제로 받아옴)', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose pull` },
+        { label: 'Redis 컨테이너 기동', cmd: `cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose up -d` },
+        { label: '5초 대기 후 상태 확인', cmd: `sleep 5 && cd ${REMOTE_REDIS_DIR} && ${DOCKER} compose ps` },
         {
           label: 'redis-cli ping (컨테이너 안에서 직접 확인, 인증 포함)',
           cmd: `${DOCKER} exec ${CONTAINER_NAME} sh -c 'redis-cli -a "$REDIS_PASSWORD" --no-auth-warning ping'`,

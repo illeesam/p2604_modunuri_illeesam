@@ -1,24 +1,24 @@
-package com.shopjoy.ecadminapi.bo.ec.od.service;
+package com.shopjoy.ecBeBo.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDiscntDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderItemRepository;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdDlivService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderDiscntService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdPayService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.MaskUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdClaimDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdDlivDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderDiscntDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderItemDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdPayDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdOrder;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdOrderItem;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdOrderRepository;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdOrderItemRepository;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdDlivService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdOrderDiscntService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdOrderItemService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdOrderService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdPayService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.MaskUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 주문 서비스 — base OdOrderService 위임 (thin wrapper) + changeStatus.

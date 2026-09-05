@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository;
+package com.shopjoy.ecBeBo.base.ec.pm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponItem;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmCouponItem;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponItemRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmCouponItemRepository;
 
 public interface PmCouponItemRepository extends JpaRepository<PmCouponItem, String>, QPmCouponItemRepository {
 }

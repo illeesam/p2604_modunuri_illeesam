@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.file.entity;
+package com.shopjoy.ecBeCdn.file.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,7 +43,7 @@ public class CfFile {
     @Column(name = "content_type", length = 100)
     private String contentType;
 
-    /** IMAGE / VIDEO / FILE — com.shopjoy.eccdnapi.file.domain.CfMediaType 과 1:1 */
+    /** IMAGE / VIDEO / FILE — com.shopjoy.ecBeCdn.file.domain.CfMediaType 과 1:1 */
     @Column(name = "media_type_cd", length = 10)
     private String mediaTypeCd;
 

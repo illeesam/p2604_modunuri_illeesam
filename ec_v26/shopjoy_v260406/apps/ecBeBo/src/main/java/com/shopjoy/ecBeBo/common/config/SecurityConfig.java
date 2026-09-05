@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.common.config;
+package com.shopjoy.ecBeBo.common.config;
 
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.co.auth.security.JwtAuthFilter;
-//import com.shopjoy.ecadminapi.common.license.LicenseFilter;
-import com.shopjoy.ecadminapi.common.log.ErrorLogQueue;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessErrorLog;
+import com.shopjoy.ecBeBo.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecBeBo.co.auth.security.JwtAuthFilter;
+//import com.shopjoy.ecBeBo.common.license.LicenseFilter;
+import com.shopjoy.ecBeBo.common.log.ErrorLogQueue;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhAccessErrorLog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;

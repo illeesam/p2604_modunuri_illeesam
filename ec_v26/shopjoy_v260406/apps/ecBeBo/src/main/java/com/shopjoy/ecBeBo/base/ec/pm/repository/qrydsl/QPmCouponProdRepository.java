@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl;
 
 import java.util.List;
 

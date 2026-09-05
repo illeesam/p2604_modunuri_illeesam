@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,14 +10,14 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdCategory;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdCategory;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.QPdCategoryRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyCode;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 /** PdCategory(카테고리) QueryDSL Custom 구현체 */
 public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 

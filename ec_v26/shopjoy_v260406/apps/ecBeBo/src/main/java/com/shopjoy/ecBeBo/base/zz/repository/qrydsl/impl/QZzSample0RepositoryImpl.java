@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.zz.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -9,19 +9,19 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample0Dto;
-import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample0;
-import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample0;
-import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample0Repository;
+import com.shopjoy.ecBeBo.base.zz.data.dto.ZzSample0Dto;
+import com.shopjoy.ecBeBo.base.zz.data.entity.QZzSample0;
+import com.shopjoy.ecBeBo.base.zz.data.entity.ZzSample0;
+import com.shopjoy.ecBeBo.base.zz.repository.qrydsl.QZzSample0Repository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 /** ZzSample0(ZzSample0 - 샘플 데이터 관리 테이블 0) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QZzSample0RepositoryImpl implements QZzSample0Repository {

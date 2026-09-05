@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.bo.zd.entity;
+package com.shopjoy.ecBeBo.bo.zd.entity;
 
-import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecBeBo.base.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

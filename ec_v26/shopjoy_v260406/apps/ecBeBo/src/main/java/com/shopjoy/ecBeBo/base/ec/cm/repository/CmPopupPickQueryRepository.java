@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository;
+package com.shopjoy.ecBeBo.base.ec.cm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopup;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopupItem;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;

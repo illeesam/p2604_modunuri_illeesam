@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.co.cm.controller;
+package com.shopjoy.ecBeBo.co.cm.controller;
 
-import com.shopjoy.ecadminapi.co.cm.data.vo.TossCancelReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.TossConfirmReq;
-import com.shopjoy.ecadminapi.co.cm.service.CmTossPayService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.co.cm.data.vo.TossCancelReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.TossConfirmReq;
+import com.shopjoy.ecBeBo.co.cm.service.CmTossPayService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

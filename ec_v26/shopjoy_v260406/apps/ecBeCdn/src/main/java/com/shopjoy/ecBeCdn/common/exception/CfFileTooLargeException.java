@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.common.exception;
+package com.shopjoy.ecBeCdn.common.exception;
 
 /**
  * 업로드 파일이 허용 용량(app.cf.max-file-size-mb, 기본 120MB)을 초과했을 때 던지는 전용 예외.

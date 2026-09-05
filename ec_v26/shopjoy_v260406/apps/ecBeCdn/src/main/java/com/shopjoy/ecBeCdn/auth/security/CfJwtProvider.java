@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.auth.security;
+package com.shopjoy.ecBeCdn.auth.security;
 
-import com.shopjoy.eccdnapi.common.config.CfProperties;
+import com.shopjoy.ecBeCdn.common.config.CfProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

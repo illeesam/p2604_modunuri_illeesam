@@ -1,11 +1,11 @@
-package com.shopjoy.ecadminapi.common.log;
+package com.shopjoy.ecBeBo.common.log;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessErrorLog;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhAccessErrorLog;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     /** 자기 자신 패키지 로그를 무시해 재귀 무한루프를 막기 위한 패키지 프리픽스 */
-    private static final String OWN_PKG        = "com.shopjoy.ecadminapi.common.log";
+    private static final String OWN_PKG        = "com.shopjoy.ecBeBo.common.log";
     /** 스택트레이스 저장 최대 길이(문자) */
     private static final int    MAX_STACK_LEN  = 3000;
     /** 에러 메시지 저장 최대 길이(문자) */

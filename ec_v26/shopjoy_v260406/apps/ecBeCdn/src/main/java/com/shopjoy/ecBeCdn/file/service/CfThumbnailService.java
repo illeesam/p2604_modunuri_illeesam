@@ -1,6 +1,6 @@
-package com.shopjoy.eccdnapi.file.service;
+package com.shopjoy.ecBeCdn.file.service;
 
-import com.shopjoy.eccdnapi.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.common.exception.CfBizException;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyProp;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

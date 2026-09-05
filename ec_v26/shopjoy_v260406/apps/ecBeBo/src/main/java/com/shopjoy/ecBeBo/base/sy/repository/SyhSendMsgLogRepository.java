@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.sy.repository;
+package com.shopjoy.ecBeBo.base.sy.repository;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendMsgLog;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhSendMsgLog;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhSendMsgLogRepository;
+import com.shopjoy.ecBeBo.base.sy.repository.qrydsl.QSyhSendMsgLogRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.sch.controller;
+package com.shopjoy.ecBeBo.sch.controller;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.sch.config.SchBatchProperties;
-import com.shopjoy.ecadminapi.sch.core.SchBatchExecutor;
-import com.shopjoy.ecadminapi.sch.core.SchBatchJobRegistry;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.base.sy.repository.SyBatchRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.sch.config.SchBatchProperties;
+import com.shopjoy.ecBeBo.sch.core.SchBatchExecutor;
+import com.shopjoy.ecBeBo.sch.core.SchBatchJobRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

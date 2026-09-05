@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdPlan;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdProdPlan;
 
 import java.time.LocalDateTime;
 import java.util.List;

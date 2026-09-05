@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.md.sg.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.md.sg.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,10 +10,10 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.md.sg.data.dto.MdSgStackDto;
-import com.shopjoy.ecadminapi.md.sg.data.entity.MdSgStack;
-import com.shopjoy.ecadminapi.md.sg.data.entity.QMdSgStack;
-import com.shopjoy.ecadminapi.md.sg.repository.qrydsl.QMdSgStackRepository;
+import com.shopjoy.ecBeBo.md.sg.data.dto.MdSgStackDto;
+import com.shopjoy.ecBeBo.md.sg.data.entity.MdSgStack;
+import com.shopjoy.ecBeBo.md.sg.data.entity.QMdSgStack;
+import com.shopjoy.ecBeBo.md.sg.repository.qrydsl.QMdSgStackRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** MdSgStack(소스젠 언어/스택 카탈로그) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.bo.sy.controller;
+package com.shopjoy.ecBeBo.bo.sy.controller;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyProp;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;

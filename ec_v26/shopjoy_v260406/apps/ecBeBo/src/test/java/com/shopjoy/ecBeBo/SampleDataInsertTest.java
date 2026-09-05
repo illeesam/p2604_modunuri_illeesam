@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi;
+package com.shopjoy.ecBeBo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.List;
  * _doc/sample_data.sql + _doc/sample_data_ec.sql 을 DB에 실행하는 테스트
  *
  * 실행:
- *   ./gradlew test --tests "com.shopjoy.ecadminapi.SampleDataInsertTest"
+ *   ./gradlew test --tests "com.shopjoy.ecBeBo.SampleDataInsertTest"
  *
  * 전제:
  *   - application-dev.yml DB 접속 설정이 올바를 것

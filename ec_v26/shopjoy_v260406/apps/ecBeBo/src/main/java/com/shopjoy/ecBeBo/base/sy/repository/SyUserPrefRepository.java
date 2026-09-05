@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.sy.repository;
+package com.shopjoy.ecBeBo.base.sy.repository;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserPref;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyUserPref;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

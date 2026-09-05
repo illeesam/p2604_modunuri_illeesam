@@ -1,17 +1,17 @@
-package com.shopjoy.ecadminapi.bo.ec.od.service;
+package com.shopjoy.ecBeBo.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimStatusHist;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimItemService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimService;
-import com.shopjoy.ecadminapi.base.ec.od.service.OdhClaimStatusHistService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdClaimDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdClaimItemDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdhClaimStatusHistDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdClaim;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdhClaimStatusHist;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdClaimRepository;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdClaimItemService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdClaimService;
+import com.shopjoy.ecBeBo.base.ec.od.service.OdhClaimStatusHistService;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 /**
  * BO 클레임 서비스 — base OdClaimService 위임 (thin wrapper) + 일괄 처리 메서드.

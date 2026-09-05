@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.od.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -13,18 +13,18 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
-import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecBeBo.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdOrder;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.QOdOrderItem;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.QOdOrder;
+import com.shopjoy.ecBeBo.base.ec.od.repository.qrydsl.QOdOrderRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmCoupon;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyCode;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** OdOrder(주문) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

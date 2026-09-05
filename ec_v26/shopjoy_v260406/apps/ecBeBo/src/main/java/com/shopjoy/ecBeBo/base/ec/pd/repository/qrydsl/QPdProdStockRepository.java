@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdProdStock;
 
 import java.util.Optional;
 

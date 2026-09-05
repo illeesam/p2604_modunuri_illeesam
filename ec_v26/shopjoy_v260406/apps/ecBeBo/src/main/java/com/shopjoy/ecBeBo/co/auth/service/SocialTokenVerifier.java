@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.co.auth.service;
+package com.shopjoy.ecBeBo.co.auth.service;
 
-import com.shopjoy.ecadminapi.co.auth.data.dto.SocialUserInfo;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.co.auth.data.dto.SocialUserInfo;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;

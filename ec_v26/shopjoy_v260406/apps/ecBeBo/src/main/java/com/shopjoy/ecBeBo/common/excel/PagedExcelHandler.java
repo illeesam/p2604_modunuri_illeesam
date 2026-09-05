@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,7 +12,7 @@ import java.util.function.Function;
  * 도메인마다 클래스를 만들지 않고 <b>설정 한 줄</b>로 엑셀 도메인을 등록하기 위한 팩토리.
  *
  * <p>BO 화면이 100개를 넘어가면 "도메인 = 클래스 1개" 규칙은 파일 수가 감당이 안 된다.
- * 이 팩토리를 쓰면 {@link com.shopjoy.ecadminapi.bo.common.config.ExcelDomainConfig} 한 파일에
+ * 이 팩토리를 쓰면 {@link com.shopjoy.ecBeBo.bo.common.config.ExcelDomainConfig} 한 파일에
  * {@code @Bean} 을 계속 추가하는 형태가 되어 목록을 한눈에 보고 관리할 수 있다.</p>
  *
  * <pre>

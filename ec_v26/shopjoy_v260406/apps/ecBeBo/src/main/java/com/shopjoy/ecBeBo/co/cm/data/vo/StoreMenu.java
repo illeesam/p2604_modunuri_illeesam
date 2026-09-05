@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.co.cm.data.vo;
+package com.shopjoy.ecBeBo.co.cm.data.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.md.cb.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.md.cb.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -12,15 +12,15 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.jpa.JPAExpressions;
-import com.shopjoy.ecadminapi.md.cb.data.dto.MdCbPatternDto;
-import com.shopjoy.ecadminapi.md.cb.data.entity.MdCbPattern;
-import com.shopjoy.ecadminapi.md.cb.data.entity.QMdCbPattern;
-import com.shopjoy.ecadminapi.md.cb.data.entity.QMdCbPatternCell;
-import com.shopjoy.ecadminapi.md.cb.repository.qrydsl.QMdCbPatternRepository;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
+import com.shopjoy.ecBeBo.md.cb.data.dto.MdCbPatternDto;
+import com.shopjoy.ecBeBo.md.cb.data.entity.MdCbPattern;
+import com.shopjoy.ecBeBo.md.cb.data.entity.QMdCbPattern;
+import com.shopjoy.ecBeBo.md.cb.data.entity.QMdCbPatternCell;
+import com.shopjoy.ecBeBo.md.cb.repository.qrydsl.QMdCbPatternRepository;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 
 /** MdCbPattern(코바늘 도안) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor

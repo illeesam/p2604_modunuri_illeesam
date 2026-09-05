@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.mb.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbMemberAddrDto;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMemberAddr;
 
 import java.util.List;
 import java.util.Optional;

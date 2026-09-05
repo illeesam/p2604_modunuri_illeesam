@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.cm.data.entity;
+package com.shopjoy.ecBeBo.base.ec.cm.data.entity;
 
-import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecBeBo.base.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -137,7 +137,7 @@ public class CmDashboardData extends BaseEntity {
     /**
      * item1_key/item2_key/item3_key 자동 재계산(2026-08-26) — INSERT/UPDATE 직전마다 itemKey
      * 기준으로 다시 채운다. cm_dashboard_data 는 값이 항상 3레벨(leaf) 행에만 붙으므로
-     * {@link com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem}과 달리 keyLevel
+     * {@link com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardItem}과 달리 keyLevel
      * 분기 없이 세 조각 다 채운다. 엔티티 자체에 두는 이유는 저장 경로가
      * {@code CmDashboardDataGridService.upsert()}, {@code SyStatsDashboardJob.upsertLeaf()},
      * {@code CmDashboardDataService.upsert()}(외부 단건 upsert) 등 여러 곳인데, 어느 경로로

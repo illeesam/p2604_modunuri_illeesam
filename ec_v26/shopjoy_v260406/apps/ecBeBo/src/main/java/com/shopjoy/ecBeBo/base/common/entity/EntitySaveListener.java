@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.common.entity;
+package com.shopjoy.ecBeBo.base.common.entity;
 
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 

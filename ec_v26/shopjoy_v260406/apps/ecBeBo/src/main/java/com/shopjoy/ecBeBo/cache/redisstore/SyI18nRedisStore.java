@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.cache.redisstore;
+package com.shopjoy.ecBeBo.cache.redisstore;
 
-import com.shopjoy.ecadminapi.cache.config.CacheKey;
-import com.shopjoy.ecadminapi.cache.config.RedisProperties;
-import com.shopjoy.ecadminapi.cache.config.RedisUtil;
+import com.shopjoy.ecBeBo.cache.config.CacheKey;
+import com.shopjoy.ecBeBo.cache.config.RedisProperties;
+import com.shopjoy.ecBeBo.cache.config.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

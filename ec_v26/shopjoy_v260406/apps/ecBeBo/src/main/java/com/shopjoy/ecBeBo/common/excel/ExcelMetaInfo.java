@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
 import java.util.List;
 

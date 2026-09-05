@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.common.service;
+package com.shopjoy.ecBeBo.bo.common.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyExceldownDto;
-import com.shopjoy.ecadminapi.base.sy.service.SyExceldownService;
-import com.shopjoy.ecadminapi.common.excel.ExcelDownProps;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyExceldownDto;
+import com.shopjoy.ecBeBo.base.sy.service.SyExceldownService;
+import com.shopjoy.ecBeBo.common.excel.ExcelDownProps;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

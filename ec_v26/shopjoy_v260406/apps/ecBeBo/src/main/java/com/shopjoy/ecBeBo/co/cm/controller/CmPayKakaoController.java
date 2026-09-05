@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.co.cm.controller;
+package com.shopjoy.ecBeBo.co.cm.controller;
 
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayKakaoApproveReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayKakaoCancelReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayKakaoReadyReq;
-import com.shopjoy.ecadminapi.co.cm.service.CmPayKakaoService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayKakaoApproveReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayKakaoCancelReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayKakaoReadyReq;
+import com.shopjoy.ecBeBo.co.cm.service.CmPayKakaoService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

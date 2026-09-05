@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.bo.ec.pd.service;
+package com.shopjoy.ecBeBo.bo.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryProdSaveDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryProdDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdCategoryProdSaveDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdCategoryProd;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdCategoryProdRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.PageHelper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi;
+package com.shopjoy.ecBeBo;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.EntityType;
@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.fail;
 @ActiveProfiles("dev")
 class EntitySchemaValidationTest {
 
-    private static final String BASE_PACKAGE = "com.shopjoy.ecadminapi.base";
+    private static final String BASE_PACKAGE = "com.shopjoy.ecBeBo.base";
     private static final String SCHEMA       = "shopjoy_2604";
 
     @Autowired

@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository;
+package com.shopjoy.ecBeBo.base.ec.pm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmDiscnt;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
 
 import java.util.List;
 

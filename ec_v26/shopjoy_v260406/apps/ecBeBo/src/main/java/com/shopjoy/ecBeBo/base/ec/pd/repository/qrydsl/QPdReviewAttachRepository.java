@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewAttachDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdReviewAttach;
 
 import java.util.List;
 import java.util.Optional;

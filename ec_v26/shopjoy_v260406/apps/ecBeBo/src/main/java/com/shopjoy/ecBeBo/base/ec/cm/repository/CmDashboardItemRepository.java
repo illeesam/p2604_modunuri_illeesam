@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository;
+package com.shopjoy.ecBeBo.base.ec.cm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmDashboardItemRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmDashboardItem;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.qrydsl.QCmDashboardItemRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,19 +1,19 @@
-package com.shopjoy.ecadminapi.base.ec.cm.service;
+package com.shopjoy.ecBeBo.base.ec.cm.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupItemRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository.ForcedCond;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository.PickRows;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmPopupDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopup;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopupItem;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupItemRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupPickQueryRepository;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupPickQueryRepository.ForcedCond;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupPickQueryRepository.PickRows;
+import com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.response.PageResult;
+import com.shopjoy.ecBeBo.co.auth.security.AuthPrincipal;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * <p>역할 분리: 이 클래스는 <b>정책</b>만 다룬다 — 사용 시스템 범위(BO/FO) 검증, 세션값 해석,
  * 필수 조회조건 검증, 화면이 쓰는 응답(config/Map) 변환. 실제 <b>쿼리 조립·실행</b>은
- * {@link com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository} 가 맡는다
+ * {@link com.shopjoy.ecBeBo.base.ec.cm.repository.CmPopupPickQueryRepository} 가 맡는다
  * (식별자 화이트리스트 검증도 쿼리 문자열을 만드는 그쪽에 함께 있다).</p>
  *
  * <p>팝업 정의 목록({@link #getPopupPage})만은 대상이 {@code CmPopup} 하나로 고정이라

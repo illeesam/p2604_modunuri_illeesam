@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.sch.handler;
+package com.shopjoy.ecBeBo.sch.handler;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
-import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
-import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
-import com.shopjoy.ecadminapi.co.cm.service.CmMsgSendService;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMember;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SySite;
+import com.shopjoy.ecBeBo.base.sy.repository.SySiteRepository;
+import com.shopjoy.ecBeBo.co.cm.data.vo.SendResultVo;
+import com.shopjoy.ecBeBo.co.cm.service.CmMsgSendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

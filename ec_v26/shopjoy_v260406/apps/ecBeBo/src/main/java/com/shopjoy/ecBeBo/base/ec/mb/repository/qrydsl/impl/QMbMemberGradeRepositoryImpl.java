@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.mb.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,15 +11,15 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberGrade;
-import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberGradeRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.mb.data.dto.MbMemberGradeDto;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.MbMemberGrade;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.QMbMemberGrade;
+import com.shopjoy.ecBeBo.base.ec.mb.repository.qrydsl.QMbMemberGradeRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QVwSyCode;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 

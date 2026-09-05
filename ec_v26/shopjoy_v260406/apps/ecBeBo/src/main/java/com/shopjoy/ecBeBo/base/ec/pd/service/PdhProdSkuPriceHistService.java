@@ -1,13 +1,13 @@
-package com.shopjoy.ecadminapi.base.ec.pd.service;
+package com.shopjoy.ecBeBo.base.ec.pd.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuPriceHistDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuPriceHist;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdhProdSkuPriceHistRepository;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdhProdSkuPriceHistDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdhProdSkuPriceHist;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.PdhProdSkuPriceHistRepository;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.PageHelper;
+import com.shopjoy.ecBeBo.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

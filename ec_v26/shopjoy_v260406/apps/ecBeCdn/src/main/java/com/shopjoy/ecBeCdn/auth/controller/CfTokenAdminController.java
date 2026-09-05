@@ -1,14 +1,14 @@
-package com.shopjoy.eccdnapi.auth.controller;
+package com.shopjoy.ecBeCdn.auth.controller;
 
-import com.shopjoy.eccdnapi.auth.dto.CfTokenDto;
-import com.shopjoy.eccdnapi.auth.dto.CfTokenHistDto;
-import com.shopjoy.eccdnapi.auth.entity.CfToken;
-import com.shopjoy.eccdnapi.auth.entity.CfTokenHist;
-import com.shopjoy.eccdnapi.auth.repository.CfTokenHistRepository;
-import com.shopjoy.eccdnapi.auth.repository.CfTokenRepository;
-import com.shopjoy.eccdnapi.auth.service.CfAuthService;
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
-import com.shopjoy.eccdnapi.common.response.PageResult;
+import com.shopjoy.ecBeCdn.auth.dto.CfTokenDto;
+import com.shopjoy.ecBeCdn.auth.dto.CfTokenHistDto;
+import com.shopjoy.ecBeCdn.auth.entity.CfToken;
+import com.shopjoy.ecBeCdn.auth.entity.CfTokenHist;
+import com.shopjoy.ecBeCdn.auth.repository.CfTokenHistRepository;
+import com.shopjoy.ecBeCdn.auth.repository.CfTokenRepository;
+import com.shopjoy.ecBeCdn.auth.service.CfAuthService;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.common.response.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

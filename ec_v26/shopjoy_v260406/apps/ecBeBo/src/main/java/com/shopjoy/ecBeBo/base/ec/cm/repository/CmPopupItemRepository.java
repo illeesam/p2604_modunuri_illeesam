@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.cm.repository;
+package com.shopjoy.ecBeBo.base.ec.cm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmPopupItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

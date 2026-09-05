@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -12,16 +12,16 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscnt;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntProd;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntUsage;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmDiscntDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmDiscnt;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmDiscnt;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmDiscntProd;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.QPmDiscntUsage;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecBeBo.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 /** PmDiscnt(할인정책) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {

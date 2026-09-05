@@ -1,1 +1,1 @@
-rootProject.name = "EcAdminApi"
+rootProject.name = "EcBeBo"

@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.pm.data.dto;
+package com.shopjoy.ecBeBo.base.ec.pm.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecBeBo.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

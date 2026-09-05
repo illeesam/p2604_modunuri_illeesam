@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.co.cm.service;
+package com.shopjoy.ecBeBo.co.cm.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
-import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
-import com.shopjoy.ecadminapi.co.ext.cdn.CfCdnApiClient;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
-import com.shopjoy.ecadminapi.common.util.VideoConvertUtil;
+import com.shopjoy.ecBeBo.base.sy.data.dto.SyAttachDto;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyAttach;
+import com.shopjoy.ecBeBo.base.sy.service.SyAttachService;
+import com.shopjoy.ecBeBo.co.ext.cdn.CfCdnApiClient;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.FileUploadUtil;
+import com.shopjoy.ecBeBo.common.util.VideoConvertUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnailator;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 
 @Slf4j
 @Service
@@ -34,7 +34,7 @@ public class CmUploadService {
     private final FileUploadUtil fileUploadUtil;
     private final VideoConvertUtil videoConvertUtil;
     private final SyAttachService syAttachService;
-    private final com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository syPropRepository;
+    private final com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository syPropRepository;
     private final org.springframework.core.env.Environment environment;
     private final CfCdnApiClient cfCdnApiClient;
 
@@ -72,7 +72,7 @@ public class CmUploadService {
             .filter(p -> "Y".equals(p.getUseYn())
                 && "app.file.cdn-host".equals(p.getPropKey())
                 && fnPropProfileMatch(p.getPropProfile(), profile))
-            .map(com.shopjoy.ecadminapi.base.sy.data.entity.SyProp::getPropValue)
+            .map(com.shopjoy.ecBeBo.base.sy.data.entity.SyProp::getPropValue)
             .filter(x -> x != null && !x.isBlank())
             .findFirst().orElse(null);
         return (v != null) ? v : cdnHostFallback;
@@ -96,7 +96,7 @@ public class CmUploadService {
             .filter(p -> "Y".equals(p.getUseYn())
                 && "app.file.storage-type".equals(p.getPropKey())
                 && fnPropProfileMatch(p.getPropProfile(), profile))
-            .map(com.shopjoy.ecadminapi.base.sy.data.entity.SyProp::getPropValue)
+            .map(com.shopjoy.ecBeBo.base.sy.data.entity.SyProp::getPropValue)
             .filter(x -> x != null && !x.isBlank())
             .findFirst().orElse(null);
         return (v != null) ? v : storageTypeFallback;

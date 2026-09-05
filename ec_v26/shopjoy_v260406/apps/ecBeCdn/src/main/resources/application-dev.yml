@@ -18,7 +18,7 @@ server:
 
 logging:
   level:
-    com.shopjoy.eccdnapi: INFO
+    com.shopjoy.ecBeCdn: INFO
     p6spy: OFF
   file:
     path: /app/logs

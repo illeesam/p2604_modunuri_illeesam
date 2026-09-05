@@ -1,12 +1,12 @@
-package com.shopjoy.ecadminapi.co.cm.service;
+package com.shopjoy.ecBeBo.co.cm.service;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayNaverApproveReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayNaverCancelReq;
-import com.shopjoy.ecadminapi.co.cm.data.vo.PayNaverReserveReq;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyProp;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayNaverApproveReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayNaverCancelReq;
+import com.shopjoy.ecBeBo.co.cm.data.vo.PayNaverReserveReq;
+import com.shopjoy.ecBeBo.common.exception.CmBizException;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;

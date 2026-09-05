@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.service;
+package com.shopjoy.ecBeBo.bo.ec.cm.service;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmFaqService;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.cm.data.dto.CmFaqDto;
+import com.shopjoy.ecBeBo.base.ec.cm.data.entity.CmFaq;
+import com.shopjoy.ecBeBo.base.ec.cm.service.CmFaqService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

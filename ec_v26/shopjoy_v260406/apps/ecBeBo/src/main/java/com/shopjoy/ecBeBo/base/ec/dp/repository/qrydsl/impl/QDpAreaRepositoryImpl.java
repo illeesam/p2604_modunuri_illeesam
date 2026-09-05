@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.dp.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -10,13 +10,13 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
-import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpArea;
-import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpAreaRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.sy.repository.SyPathRepository;
+import com.shopjoy.ecBeBo.base.ec.dp.data.dto.DpAreaDto;
+import com.shopjoy.ecBeBo.base.ec.dp.data.entity.DpArea;
+import com.shopjoy.ecBeBo.base.ec.dp.data.entity.QDpArea;
+import com.shopjoy.ecBeBo.base.ec.dp.repository.qrydsl.QDpAreaRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 

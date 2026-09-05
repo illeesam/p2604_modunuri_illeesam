@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.sch.handler;
+package com.shopjoy.ecBeBo.sch.handler;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
-import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
-import com.shopjoy.ecadminapi.base.ec.od.repository.OdRefundRepository;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdClaim;
+import com.shopjoy.ecBeBo.base.ec.od.data.entity.OdRefund;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyBatch;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdClaimRepository;
+import com.shopjoy.ecBeBo.base.ec.od.repository.OdRefundRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

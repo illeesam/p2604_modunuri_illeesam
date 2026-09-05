@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.sy.data.entity;
+package com.shopjoy.ecBeBo.base.sy.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

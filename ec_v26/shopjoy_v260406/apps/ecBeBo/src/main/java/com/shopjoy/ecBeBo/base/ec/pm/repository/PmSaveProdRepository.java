@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.pm.repository;
+package com.shopjoy.ecBeBo.base.ec.pm.repository;
 
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveProd;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmSaveProd;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveProdRepository;
+import com.shopjoy.ecBeBo.base.ec.pm.repository.qrydsl.QPmSaveProdRepository;
 
 public interface PmSaveProdRepository extends JpaRepository<PmSaveProd, String>, QPmSaveProdRepository {
 }

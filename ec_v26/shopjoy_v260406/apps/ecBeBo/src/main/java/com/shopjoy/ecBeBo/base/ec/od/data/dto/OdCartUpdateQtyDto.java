@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.od.data.dto;
+package com.shopjoy.ecBeBo.base.ec.od.data.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

@@ -1,11 +1,11 @@
-package com.shopjoy.eccdnapi.auth.controller;
+package com.shopjoy.ecBeCdn.auth.controller;
 
-import com.shopjoy.eccdnapi.auth.dto.CfClientCreateReq;
-import com.shopjoy.eccdnapi.auth.dto.CfClientDto;
-import com.shopjoy.eccdnapi.auth.dto.CfClientUpdateReq;
-import com.shopjoy.eccdnapi.auth.service.CfClientService;
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
-import com.shopjoy.eccdnapi.common.response.PageResult;
+import com.shopjoy.ecBeCdn.auth.dto.CfClientCreateReq;
+import com.shopjoy.ecBeCdn.auth.dto.CfClientDto;
+import com.shopjoy.ecBeCdn.auth.dto.CfClientUpdateReq;
+import com.shopjoy.ecBeCdn.auth.service.CfClientService;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.common.response.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

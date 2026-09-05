@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.zz.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.zz.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExam2Dto;
-import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam2;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.zz.data.dto.ZzExam2Dto;
+import com.shopjoy.ecBeBo.base.zz.data.entity.ZzExam2;
 
 import java.util.List;
 import java.util.Optional;

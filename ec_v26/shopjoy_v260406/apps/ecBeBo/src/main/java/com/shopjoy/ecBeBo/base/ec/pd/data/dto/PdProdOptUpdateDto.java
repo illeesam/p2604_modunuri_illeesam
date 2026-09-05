@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.pd.data.dto;
+package com.shopjoy.ecBeBo.base.ec.pd.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

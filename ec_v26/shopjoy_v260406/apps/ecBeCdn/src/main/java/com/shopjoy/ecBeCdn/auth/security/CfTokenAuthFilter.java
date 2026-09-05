@@ -1,4 +1,4 @@
-package com.shopjoy.eccdnapi.auth.security;
+package com.shopjoy.ecBeCdn.auth.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

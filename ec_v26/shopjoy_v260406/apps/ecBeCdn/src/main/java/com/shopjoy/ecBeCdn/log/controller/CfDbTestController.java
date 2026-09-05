@@ -1,7 +1,7 @@
-package com.shopjoy.eccdnapi.log.controller;
+package com.shopjoy.ecBeCdn.log.controller;
 
-import com.shopjoy.eccdnapi.common.exception.CfBizException;
-import com.shopjoy.eccdnapi.common.response.ApiResponse;
+import com.shopjoy.ecBeCdn.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.common.response.ApiResponse;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.bind.annotation.PostMapping;

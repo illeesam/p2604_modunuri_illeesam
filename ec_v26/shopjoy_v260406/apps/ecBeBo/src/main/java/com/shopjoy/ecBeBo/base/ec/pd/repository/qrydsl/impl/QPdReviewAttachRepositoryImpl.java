@@ -1,7 +1,7 @@
-package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
+package com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.impl;
 
-import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
+import com.shopjoy.ecBeBo.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -11,13 +11,13 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReview;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewAttach;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewAttachRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecBeBo.base.ec.pd.data.dto.PdReviewAttachDto;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.PdReviewAttach;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdReview;
+import com.shopjoy.ecBeBo.base.ec.pd.data.entity.QPdReviewAttach;
+import com.shopjoy.ecBeBo.base.ec.pd.repository.qrydsl.QPdReviewAttachRepository;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecBeBo.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import com.shopjoy.ecadminapi.common.util.QdslUtil;
+import com.shopjoy.ecBeBo.common.util.QdslUtil;
 /** PdReviewAttach(리뷰 이미지/동영상) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository {

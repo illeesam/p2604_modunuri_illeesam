@@ -1,10 +1,10 @@
-package com.shopjoy.ecadminapi.bo.ec.pm.controller;
+package com.shopjoy.ecBeBo.bo.ec.pm.controller;
 
-import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponUsageDto;
-import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponUsage;
-import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponUsageService;
-import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecBeBo.common.data.BasePage;
+import com.shopjoy.ecBeBo.base.ec.pm.data.dto.PmCouponUsageDto;
+import com.shopjoy.ecBeBo.base.ec.pm.data.entity.PmCouponUsage;
+import com.shopjoy.ecBeBo.base.ec.pm.service.PmCouponUsageService;
+import com.shopjoy.ecBeBo.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

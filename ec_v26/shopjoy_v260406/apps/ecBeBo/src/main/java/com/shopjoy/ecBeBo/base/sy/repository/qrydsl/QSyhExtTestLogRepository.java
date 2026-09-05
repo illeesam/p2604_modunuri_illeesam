@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
+package com.shopjoy.ecBeBo.base.sy.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyhExtTestLog;
+import com.shopjoy.ecBeBo.base.sy.data.entity.SyhExtTestLog;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.base.ec.pm.data.entity;
+package com.shopjoy.ecBeBo.base.ec.pm.data.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecBeBo.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
 import jakarta.validation.constraints.Size;

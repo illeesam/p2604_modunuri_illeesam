@@ -1,6 +1,6 @@
-package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
+package com.shopjoy.ecBeBo.base.ec.cm.data.dto;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
+import com.shopjoy.ecBeBo.base.sy.data.dto.AttachFile;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

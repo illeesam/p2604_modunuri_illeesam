@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.co.cm.constant;
+package com.shopjoy.ecBeBo.co.cm.constant;
 
 /**
  * Store 데이터 상수

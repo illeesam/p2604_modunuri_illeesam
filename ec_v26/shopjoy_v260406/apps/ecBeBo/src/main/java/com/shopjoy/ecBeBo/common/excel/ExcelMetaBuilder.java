@@ -1,4 +1,4 @@
-package com.shopjoy.ecadminapi.common.excel;
+package com.shopjoy.ecBeBo.common.excel;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;

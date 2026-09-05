@@ -1,8 +1,8 @@
-package com.shopjoy.ecadminapi.base.ec.st.repository;
+package com.shopjoy.ecBeBo.base.ec.st.repository;
 
-import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
+import com.shopjoy.ecBeBo.base.ec.st.data.entity.StSettleConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleConfigRepository;
+import com.shopjoy.ecBeBo.base.ec.st.repository.qrydsl.QStSettleConfigRepository;
 
 public interface StSettleConfigRepository extends JpaRepository<StSettleConfig, String>, QStSettleConfigRepository {
 }

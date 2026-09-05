@@ -39,7 +39,7 @@ window.LogViewer = {
       { label: '인증 실패', kw: '토큰이 유효하지 않습니다' },
       { label: 'Redis 연결', kw: 'Redis' },
       { label: 'Connection refused', kw: 'Connection refused' },
-      { label: '기동 로그', kw: 'Started EcAdminApiApplication' },
+      { label: '기동 로그', kw: 'Started EcBeBoApplication' },
       { label: 'SQL', kw: 'SQLException' },
     ];
 

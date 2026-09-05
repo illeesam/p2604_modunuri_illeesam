@@ -1,14 +1,14 @@
-package com.shopjoy.eccdnapi.file.service;
+package com.shopjoy.ecBeCdn.file.service;
 
-import com.shopjoy.eccdnapi.common.config.CfProperties;
-import com.shopjoy.eccdnapi.common.exception.CfBizException;
-import com.shopjoy.eccdnapi.common.exception.CfFileTooLargeException;
-import com.shopjoy.eccdnapi.common.response.PageResult;
-import com.shopjoy.eccdnapi.common.util.CfIdUtil;
-import com.shopjoy.eccdnapi.file.domain.CfMediaType;
-import com.shopjoy.eccdnapi.file.dto.CfFileDto;
-import com.shopjoy.eccdnapi.file.entity.CfFile;
-import com.shopjoy.eccdnapi.file.repository.CfFileRepository;
+import com.shopjoy.ecBeCdn.common.config.CfProperties;
+import com.shopjoy.ecBeCdn.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.common.exception.CfFileTooLargeException;
+import com.shopjoy.ecBeCdn.common.response.PageResult;
+import com.shopjoy.ecBeCdn.common.util.CfIdUtil;
+import com.shopjoy.ecBeCdn.file.domain.CfMediaType;
+import com.shopjoy.ecBeCdn.file.dto.CfFileDto;
+import com.shopjoy.ecBeCdn.file.entity.CfFile;
+import com.shopjoy.ecBeCdn.file.repository.CfFileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

@@ -1,9 +1,9 @@
-package com.shopjoy.ecadminapi.co.auth.security;
+package com.shopjoy.ecBeBo.co.auth.security;
 
-import com.shopjoy.ecadminapi.cache.redisstore.BoAuthRedisStore;
-import com.shopjoy.ecadminapi.cache.redisstore.FoAuthRedisStore;
-import com.shopjoy.ecadminapi.common.log.AccessLogFilter;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecBeBo.cache.redisstore.BoAuthRedisStore;
+import com.shopjoy.ecBeBo.cache.redisstore.FoAuthRedisStore;
+import com.shopjoy.ecBeBo.common.log.AccessLogFilter;
+import com.shopjoy.ecBeBo.common.util.CmUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
