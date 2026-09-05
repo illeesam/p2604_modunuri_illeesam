@@ -286,7 +286,7 @@ http://illeesam.synology.me:21000/bo.html      ← BO(관리자) 화면
 
 ### 참고 — 프론트를 실제로 서빙하는 `nginx` 컨테이너 설정
 
-STEP 4에서 파일만 새로 올리고 컨테이너를 재시작할 필요가 없는 이유가 바로 이 설정입니다. `/volume1/docker/shopjoy/backend/docker-compose.yml`(원본은 [`docker-compose.yml`](../docker-compose.yml) — `_apps_be/EcAdminApi/`, 백엔드와 같은 폴더에서 관리) 안의 `nginx` 서비스 부분만 발췌:
+STEP 4에서 파일만 새로 올리고 컨테이너를 재시작할 필요가 없는 이유가 바로 이 설정입니다. `/volume1/docker/shopjoy/backend/docker-compose.yml`(원본은 [`docker-compose.yml`](../docker-compose.yml) — `apps/ecBeBo/`, 백엔드와 같은 폴더에서 관리) 안의 `nginx` 서비스 부분만 발췌:
 
 ```yaml
 nginx:

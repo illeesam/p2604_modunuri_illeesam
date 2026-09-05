@@ -16,17 +16,20 @@
     appTitle: 'ShopJoy BO',
     appCiImage: 'assets/img/ci/bo-ci.svg',
 
-    /* 2026-09-04: DSM 리버스 프록시(서브도메인 21000.illeesam.synology.me, 443)로 전환.
-     * 예전엔 illeesam.synology.me:21000(평문 HTTP)을 직접 가리켰는데, HTTPS(secure context)가
-     * 필요해서(crypto.subtle 등) 서브도메인+443 방식으로 옮겼다. 포트는 443(HTTPS 기본 포트라
-     * 안 적어도 자동)이라 비워둔다. ⚠ 이 값을 바꾸면 예전 http://illeesam.synology.me:21000
-     * 직접 접속으로는 API 가 더 이상 안 붙는다(의도된 트레이드오프 — 이제 정식 진입점은 HTTPS). */
-    baseApiHost: '21000.illeesam.synology.me',
+    /* 2026-09-06 대개편: "4개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis)이 각자 다른 호스팅사에
+     * 흩어질 수도 있다"는 최악의 경우 기준 설계로 전환 — nginx가 더 이상 /api,/cdn 을
+     * 리버스프록시하지 않으므로(완전 분리), 이 프론트(22000.illeesam.synology.me)와
+     * 백엔드는 이제 서로 다른 서브도메인(=다른 origin)이다. CORS(CorsOriginPolicy.java 의
+     * "*.illeesam.synology.me" 패턴)로 방어하며 백엔드를 직접 절대 URL로 호출한다.
+     * 포트는 443(HTTPS 기본 포트라 안 적어도 자동)이라 비워둔다.
+     * ⚠ 예전 21000.illeesam.synology.me(같은 origin) 방식과 달리, 지금은 이 값이 곧 백엔드
+     * (ecBeBo) 자신의 공개 서브도메인이다 — 값을 바꾸면 그 즉시 다른 백엔드를 호출하게 된다. */
+    baseApiHost: '22300.illeesam.synology.me',
     baseApiPort: '',
 
-    /* 첨부파일도 같은 nginx가 /cdn/** 로 서빙 — baseApi와 동일 주소.
-     * 나중에 진짜 CDN/S3로 옮기면 이 두 값만 그 주소로 바꾸면 됨. */
-    cdnApiHost: '21000.illeesam.synology.me',
+    /* EcCdnApi(ecBeCdn)도 마찬가지로 완전히 별도 서브도메인/서버 — 나중에 진짜 다른
+     * 호스팅사로 옮기면 이 두 값만 그 주소로 바꾸면 됨(코드/배포 구조 변경 불필요). */
+    cdnApiHost: '22400.illeesam.synology.me',
     cdnApiPort: '',
 
     /* ── 토스페이먼츠 ── */

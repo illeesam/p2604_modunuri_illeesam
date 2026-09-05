@@ -13,26 +13,26 @@ on:
   push:
     branches: [main]
     paths:
-      - 'ec_v26/shopjoy_v260406/pages/**'
-      - 'ec_v26/shopjoy_v260406/lib/**'
-      - 'ec_v26/shopjoy_v260406/components/**'
-      - 'ec_v26/shopjoy_v260406/assets/**'
-      - 'ec_v26/shopjoy_v260406/scripts/**'
-      - 'ec_v26/shopjoy_v260406/*.html'
-      - 'ec_v26/shopjoy_v260406/package.json'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/pages/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/lib/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/components/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/assets/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/scripts/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/*.html'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/package.json'
   pull_request:
     paths:
-      - 'ec_v26/shopjoy_v260406/pages/**'
-      - 'ec_v26/shopjoy_v260406/lib/**'
-      - 'ec_v26/shopjoy_v260406/components/**'
-      - 'ec_v26/shopjoy_v260406/assets/**'
-      - 'ec_v26/shopjoy_v260406/scripts/**'
-      - 'ec_v26/shopjoy_v260406/*.html'
-      - 'ec_v26/shopjoy_v260406/package.json'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/pages/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/lib/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/components/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/assets/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/scripts/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/*.html'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/package.json'
 
 defaults:
   run:
-    working-directory: ec_v26/shopjoy_v260406
+    working-directory: ec_v26/shopjoy_v260406/apps/ecFeBo
 
 jobs:
   build-and-verify:
@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ec_v26/shopjoy_v260406/package-lock.json
+          cache-dependency-path: ec_v26/shopjoy_v260406/apps/ecFeBo/package-lock.json
 
       - name: 의존성 설치
         run: npm ci

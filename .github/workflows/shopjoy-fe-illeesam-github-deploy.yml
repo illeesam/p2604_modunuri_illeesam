@@ -14,11 +14,12 @@
 # 빌드 검증(shopjoy-fe-illeesam-github-build.yml)과는 별개 워크플로 — 그쪽은 배포 안 하고 검증만 함.
 # 같은 dist/ 를 Synology NAS 에도 따로 배포하려면 shopjoy-fe-illeesam-synol-deploy.yml 참조.
 #
-# ⚠⚠ GitHub Pages는 순수 정적 호스팅이라 백엔드가 같이 안 떠 있다(NAS 배포와 결정적으로 다른 점).
-#   lib/env/profiles/env{Bo,Fo}Consts.prod.js 의 apiOrigin 기본값은 ''(상대경로) 인데, 이대로
-#   두면 API 요청이 GitHub Pages 자기 자신(백엔드 없음)으로 나가 전부 실패한다. 이 배포를 실제
-#   쓰려면 그 두 파일의 apiOrigin 을 실제 백엔드 절대주소(예: 'http://illeesam.synology.me:21000')
-#   로 미리 채워넣고 커밋해야 한다.
+# GitHub Pages는 순수 정적 호스팅이라 백엔드가 같이 안 떠 있다(NAS 배포와 결정적으로 다른 점).
+#   2026-09-06 대개편 이후 lib/env/profiles/env{Bo,Fo}Consts.prod.js 의 baseApiHost/cdnApiHost
+#   기본값이 이미 백엔드/CDN 절대 서브도메인(22300/22400.illeesam.synology.me)이라 — "4개 앱이
+#   각자 다른 호스팅사에 흩어질 수도 있다"는 최악의 경우 기준 설계 전환 덕분에, 이 GitHub Pages
+#   배포도 별도 수정 없이 그 백엔드/CDN을 그대로 호출한다(CORS는 CorsOriginPolicy.java 가 처리).
+#   별도의 진짜 다른 백엔드/CDN 서버로 바꾸고 싶을 때만 그 두 파일의 값을 수정하면 된다.
 #
 # ⚠ 최초 1회 수동 설정 필요: 리포지토리 Settings → Pages → Build and deployment →
 #   Source 를 "GitHub Actions" 로 선택해야 이 워크플로가 실제로 Pages에 반영됨.
@@ -32,18 +33,18 @@ on:
   push:
     branches: [main]
     paths:
-      - 'ec_v26/shopjoy_v260406/pages/**'
-      - 'ec_v26/shopjoy_v260406/lib/**'
-      - 'ec_v26/shopjoy_v260406/components/**'
-      - 'ec_v26/shopjoy_v260406/assets/**'
-      - 'ec_v26/shopjoy_v260406/scripts/**'
-      - 'ec_v26/shopjoy_v260406/*.html'
-      - 'ec_v26/shopjoy_v260406/package.json'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/pages/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/lib/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/components/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/assets/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/scripts/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/*.html'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/package.json'
   workflow_dispatch: {}
 
 defaults:
   run:
-    working-directory: ec_v26/shopjoy_v260406
+    working-directory: ec_v26/shopjoy_v260406/apps/ecFeBo
 
 permissions:
   contents: read
@@ -73,7 +74,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ec_v26/shopjoy_v260406/package-lock.json
+          cache-dependency-path: ec_v26/shopjoy_v260406/apps/ecFeBo/package-lock.json
 
       - name: 의존성 설치
         run: npm ci
@@ -87,7 +88,7 @@ jobs:
       - name: dist/ 를 Pages 아티팩트로 업로드
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ec_v26/shopjoy_v260406/dist
+          path: ec_v26/shopjoy_v260406/apps/ecFeBo/dist
 
   deploy:
     needs: build

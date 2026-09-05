@@ -1732,7 +1732,7 @@ const onDragEnd = async () => {
 };
 ```
 
-**서버 Service saveList `'order'` 분기 표준** (참조: [`SyCodeService.saveList`](../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/service/SyCodeService.java)):
+**서버 Service saveList `'order'` 분기 표준** (참조: [`SyCodeService.saveList`](../../apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/service/SyCodeService.java)):
 ```java
 @Transactional
 public void saveList(String cmd, List<Xxx> rows) {

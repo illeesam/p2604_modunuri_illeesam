@@ -85,7 +85,7 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 | SSH 포트                 | `10022`                                         |
 | 계정                     | `appuser`                                      |
 | 비밀번호                 | `appuser1**` (일부만 표시, 실제 값은 별도 보관) |
-| Docker 배포 위치(NAS 안) | `/volume1/docker/shopjoy/backend/`              |
+| Docker 배포 위치(NAS 안) | `/volume1/docker/shopjoy/ecBeBo/`              |
 | 프론트 파일 위치(NAS 안) | `/volume1/docker/shopjoy/frontend/`             |
 
 > ⚠ **이 계정을 새로 만들거나 바꿨다면**(예: `illeesam` → `appuser`) NAS 쪽 DSM에서 4가지를 옛 계정과 동일하게 맞춰야 SFTP/`docker compose`가 정상 동작합니다 — 계정을 처음부터 만드는 전체 과정은 [10번 문서](10_illeesam_synology_appuser계정생성.md), 이미 있는 계정의 권한만 점검할 때는 [9011번 문서의 "계정 설정 시 주의사항"](9011_illeesam_synology_BE_트러블슈팅용어.md#계정-설정-시-주의사항-nas-쪽-배포-계정) 참조. 빠뜨리면 STEP 3(jar 전송)에서 `No such file` 같은 헷갈리는 에러가 납니다.
@@ -100,7 +100,7 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 **명령어**:
 
 ```
-~\ec_v26\shopjoy_v260406\_apps_be\EcAdminApi> ./gradlew clean bootJar -x test
+~\ec_v26\shopjoy_v260406\apps\ecBeBo> ./gradlew clean bootJar -x test
 ```
 
 **명령어 설명** (`gradlew`는 자바 프로젝트를 빌드(=소스코드를 실행 가능한 형태로 조립)하는 도구입니다):
@@ -117,12 +117,12 @@ GitHub Actions 없이도 이 순서대로 하면 배포됩니다.
 BUILD SUCCESSFUL in 24s
 ```
 
-**결과물 위치**: `_apps_be\EcAdminApi\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar` (약 140MB 파일)
+**결과물 위치**: `apps\ecBeBo\build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar` (약 140MB 파일)
 
 **테스트 방법**: 아래 명령으로 파일이 실제로 생겼는지 확인합니다.
 
 ```
-~\ec_v26\shopjoy_v260406\_apps_be\EcAdminApi> dir build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
+~\ec_v26\shopjoy_v260406\apps\ecBeBo> dir build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar
 ```
 
 **명령어 설명**:
@@ -174,7 +174,7 @@ appuser@illeesam:~$
 **테스트 방법**: 그대로 이어서 입력.
 
 ```
-appuser@illeesam:~$ ls -la /volume1/docker/shopjoy/backend/
+appuser@illeesam:~$ ls -la /volume1/docker/shopjoy/ecBeBo/
 ```
 
 **명령어 설명**:
@@ -188,7 +188,7 @@ appuser@illeesam:~$ ls -la /volume1/docker/shopjoy/backend/
 **테스트 결과**: `docker-compose.yml`, `.env`, `nginx.conf`, `EcAdminApi-0.0.1-SNAPSHOT.jar` 같은 파일들이 보이면 정상입니다(이미 1차 배포가 돼 있는 상태). 폴더 자체가 없다고 나오면 아래 명령으로 먼저 만듭니다.
 
 ```
-appuser@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/docker/shopjoy/frontend
+appuser@illeesam:~$ mkdir -p /volume1/docker/shopjoy/ecBeBo/logs /volume1/docker/shopjoy/frontend
 ```
 
 **명령어 설명**:
@@ -207,7 +207,7 @@ appuser@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/docke
 **명령어**:
 
 ```
-~\ec_v26\shopjoy_v260406\_apps_be\EcAdminApi> scp -P 10022 build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar appuser@illeesam.synology.me:/volume1/docker/shopjoy/backend/
+~\ec_v26\shopjoy_v260406\apps\ecBeBo> scp -P 10022 build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar appuser@illeesam.synology.me:/volume1/docker/shopjoy/ecBeBo/
 ```
 
 **명령어 설명** (`scp`는 파일을 원격 컴퓨터로 복사/전송하는 명령입니다 — "이 파일을, 이 계정으로, 저 주소의, 저 경로에 갖다놔라" 형식):
@@ -217,7 +217,7 @@ appuser@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/docke
 | `scp`                                                            | 파일 전송 명령                                                                          |
 | `-P 10022`                                                       | 접속 포트 지정 (⚠`ssh`의 `-p`(소문자)와 달리 `scp`는 **대문자 `-P`**를 씁니다) |
 | `build\libs\EcAdminApi-0.0.1-SNAPSHOT.jar`                       | 보낼 파일(내 컴퓨터 쪽 경로)                                                            |
-| `appuser@illeesam.synology.me:/volume1/docker/shopjoy/backend/` | 받는 쪽 —`계정@주소:저장할폴더경로`                                                  |
+| `appuser@illeesam.synology.me:/volume1/docker/shopjoy/ecBeBo/` | 받는 쪽 —`계정@주소:저장할폴더경로`                                                  |
 
 비밀번호 입력 요구하면 입력.
 
@@ -226,7 +226,7 @@ appuser@illeesam:~$ mkdir -p /volume1/docker/shopjoy/backend/logs /volume1/docke
 **테스트 방법**: STEP 2에서 열어둔 **두 번째 창(📦, NAS 접속용)**으로 돌아가서 입력.
 
 ```
-appuser@illeesam:~$ ls -lh /volume1/docker/shopjoy/backend/EcAdminApi-0.0.1-SNAPSHOT.jar
+appuser@illeesam:~$ ls -lh /volume1/docker/shopjoy/ecBeBo/EcAdminApi-0.0.1-SNAPSHOT.jar
 ```
 
 **명령어 설명**: `-h`는 파일 크기를 바이트 숫자 그대로가 아니라 `140M`처럼 사람이 읽기 편한 단위(K/M/G)로 보여줍니다.
@@ -242,7 +242,7 @@ appuser@illeesam:~$ ls -lh /volume1/docker/shopjoy/backend/EcAdminApi-0.0.1-SNAP
 **명령어** (STEP 2에서 열어둔 **두 번째 창(📦)**에 이어서 입력 — 계속 그 창을 씁니다):
 
 ```
-appuser@illeesam:~$ cd /volume1/docker/shopjoy/backend
+appuser@illeesam:~$ cd /volume1/docker/shopjoy/ecBeBo
 appuser@illeesam:backend$ /usr/local/bin/docker compose build
 ```
 
@@ -250,7 +250,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose build
 
 | 부분                                   | 뜻                                                                                                                                       |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `cd /volume1/docker/shopjoy/backend` | 그 폴더로 이동(`cd`=Change Directory) — 이 뒤 `docker compose` 명령들은 전부 이 폴더 기준으로 동작해서 매번 여기로 먼저 이동해야 함 |
+| `cd /volume1/docker/shopjoy/ecBeBo` | 그 폴더로 이동(`cd`=Change Directory) — 이 뒤 `docker compose` 명령들은 전부 이 폴더 기준으로 동작해서 매번 여기로 먼저 이동해야 함 |
 | `/usr/local/bin/docker`              | Docker 명령.`docker`가 아니라 전체 경로를 쓰는 이유는 아래 참고                                                                        |
 | `compose build`                      | 이 폴더의`docker-compose.yml` 설정대로 Docker 이미지를 (다시) 만듦                                                                     |
 
@@ -366,7 +366,7 @@ appuser@illeesam:backend$ exit
 
 ### 참고 — `docker-compose.yml` / `Dockerfile` 내용
 
-STEP 4~5에서 실행하는 `docker compose build`/`up`은 NAS의 `/volume1/docker/shopjoy/backend/docker-compose.yml` 설정을 그대로 따릅니다. 이 리포에서는 원본을 [`docker-compose.yml`](../docker-compose.yml)(`_apps_be/EcAdminApi/` — GitHub Actions 배포 워크플로도 이 경로를 원본으로 사용)에서 관리합니다. 실제 내용(요약 발췌 + 주석):
+STEP 4~5에서 실행하는 `docker compose build`/`up`은 NAS의 `/volume1/docker/shopjoy/ecBeBo/docker-compose.yml` 설정을 그대로 따릅니다. 이 리포에서는 원본을 [`docker-compose.yml`](../docker-compose.yml)(`apps/ecBeBo/` — GitHub Actions 배포 워크플로도 이 경로를 원본으로 사용)에서 관리합니다. 실제 내용(요약 발췌 + 주석):
 
 ```yaml
 services:
@@ -494,7 +494,7 @@ jdbc:p6spy:postgresql://illeesam.synology.me:17632/postgres?currentSchema=shopjo
 
 (운영 코드가 p6spy라는 SQL 로깅 도구를 경유해서 접속하도록 되어 있어 `postgresql://` 앞에 `p6spy:`가 붙습니다.)
 
-**컨테이너 안에서 이 DB에 접속하는 서비스(EcAdminApi)의 `.env` 설정** (`/volume1/docker/shopjoy/backend/.env`):
+**컨테이너 안에서 이 DB에 접속하는 서비스(EcAdminApi)의 `.env` 설정** (`/volume1/docker/shopjoy/ecBeBo/.env`):
 
 ```
 SPRING_PROFILES_ACTIVE=dev

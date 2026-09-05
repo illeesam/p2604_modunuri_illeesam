@@ -16,17 +16,18 @@
     appTitle: 'ShopJoy BO',
     appCiImage: 'assets/img/ci/bo-ci.svg',
 
-    /* 지금 실제로 떠 있는 운영 서버(Synology NAS, DSM 리버스 프록시 경유 HTTPS)를 그대로
+    /* 지금 실제로 떠 있는 백엔드 서버(Synology NAS, DSM 리버스 프록시 경유 HTTPS)를 그대로
      * 가리킨다 — 이 값 덕분에 GitHub Pages처럼 백엔드가 같이 안 뜨는 곳에 프론트를 올려도
-     * API가 정상 호출된다. 2026-09-04: 서브도메인(21000.illeesam.synology.me)+443(HTTPS)
-     * 방식으로 전환(secure context 필요 — crypto.subtle 등). 포트는 443 기본값이라 비워둔다.
-     * ⚠ 별도의 진짜 운영 도메인/서버가 생기면 그때 이 값을 그 주소로 바꿀 것. */
-    baseApiHost: '21000.illeesam.synology.me',
+     * API가 정상 호출된다. 2026-09-06 대개편: "4개 앱이 각자 다른 호스팅사에 흩어질 수도
+     * 있다"는 최악의 경우 기준으로 nginx의 /api 리버스프록시를 완전히 제거 — 프론트와
+     * 백엔드가 이제 서로 다른 서브도메인(=다른 origin, CORS로 방어)이다. 포트는 443
+     * 기본값이라 비워둔다. ⚠ 별도의 진짜 운영 도메인/서버가 생기면 이 값을 그 주소로 바꿀 것. */
+    baseApiHost: '22300.illeesam.synology.me',
     baseApiPort: '',
 
-    /* 첨부파일도 같은 nginx가 /cdn/** 로 서빙 — baseApi와 동일 주소.
-     * 나중에 진짜 CDN/S3로 옮기면 이 두 값만 그 주소로 바꾸면 됨. */
-    cdnApiHost: '21000.illeesam.synology.me',
+    /* EcCdnApi도 완전히 별도 서브도메인/서버 — 나중에 진짜 CDN/S3나 다른 호스팅사로
+     * 옮기면 이 두 값만 그 주소로 바꾸면 됨(코드/배포 구조 변경 불필요). */
+    cdnApiHost: '22400.illeesam.synology.me',
     cdnApiPort: '',
 
     /* ── 토스페이먼츠 ── */

@@ -108,7 +108,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecadminapi
 appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 100 ecadminapi
 ```
 
-**명령어 설명**: `--tail 100` = 전체 로그 중 **최근 100줄만** 보여주고 바로 끝남(`-f`가 없으므로 이어서 보여주지 않음). 재기동 직후 정상적으로 떴는지 훑어볼 때 가장 많이 씁니다. `deploy-dev-synol-be-ecAdminApi.js`(= `npm run deploy:dev-synol-be-ecAdminApi`)도 배포 마지막에 이걸 자동으로 30줄 찍어줍니다([14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>) 참조).
+**명령어 설명**: `--tail 100` = 전체 로그 중 **최근 100줄만** 보여주고 바로 끝남(`-f`가 없으므로 이어서 보여주지 않음). 재기동 직후 정상적으로 떴는지 훑어볼 때 가장 많이 씁니다. `deploy-dev-synol-be-ecBeBo.js`(= `npm run deploy:dev-synol-be-ecAdminApi`)도 배포 마지막에 이걸 자동으로 30줄 찍어줍니다([14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>) 참조).
 
 **실시간+최근 동시에 보고 싶으면**: `-f`와 `--tail`을 같이 써도 됩니다.
 ```

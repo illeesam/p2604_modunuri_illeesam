@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════
+#  ShopJoy Redis - Docker Compose
+# ═══════════════════════════════════════════════════════════
+#  배치 위치: apps/ecBeRedis/docker-compose.yml
+#  실행 명령: docker compose up -d   (이미지만 pull — 빌드 대상 없음, Dockerfile 없음)
+#
+#  2026-09-06 신설 — 지금까지 이 NAS의 Redis(illeesam.synology.me:12379)는 docker-compose
+#  관리 밖에서(DSM Container Manager 로 직접 생성, 컨테이너명 123-redis.70rc1) 떠 있었다.
+#  이 파일은 그 컨테이너를 재현하되, "4개 앱이 각자 다른 호스팅사에 흩어질 수도 있다"는
+#  최악의 경우를 기준으로 처음부터 비밀번호를 건다 — 다른 호스팅사에 있는 앱이 이 Redis에
+#  붙으려면 인터넷 구간을 지나야 하므로, 무암호는 그대로 공개 Redis가 되어 위험하다.
+#
+#  ⚠️ 기존 123-redis.70rc1 컨테이너(포트 12379, 무암호)는 그대로 두고 이 컨테이너는 새 포트
+#     (22379)로 별도 기동한다 — 포트가 달라 충돌 없음. app.redis.enabled=false 인 동안은
+#     두 인스턴스 다 실사용 캐시 데이터가 없으므로(EcAdminApi/EcCdnApi 둘 다 sy_prop 기준
+#     확인 완료, 2026-09-06) 데이터 이관 불필요 — 준비되면 옛 컨테이너는 폐기할 것.
+#
+#  같은 NAS에 있는 EcAdminApi/EcCdnApi 는 host.docker.internal:22379 로 이 Redis 에 접속한다
+#  (컨테이너 간 DNS 가 아니라 호스트로 나갔다 들어오는 방식) — 그래서 이 compose 는
+#  다른 컨테이너와 네트워크를 공유할 필요가 없다(포트만 host 에 열려있으면 됨). Redis가
+#  다른 호스팅사로 옮겨가면 REDIS_HOST/REDIS_PORT(.env)만 그 서버 주소로 바꾸면 된다.
+# ═══════════════════════════════════════════════════════════
+
+services:
+  redis:
+    image: redis:7.0-rc1
+    # 2026-09-06: 240-shopjoy-redis → shopjoy-ecBeRedis-22379 (컨테이너 이름 규칙
+    # shopjoy-{앱}-{포트} 통일 + 포트도 12379 → 22379 재번호).
+    container_name: shopjoy-ecBeRedis-22379
+
+    # 2026-09-06: 비밀번호 추가(REDIS_PASSWORD, .env 미설정 시 기본값 redis123 — 반드시 NAS의
+    # .env 에 실제 값을 넣을 것, 이 파일은 커밋되는 저장소 파일이라 실제 비밀번호를 여기
+    # 하드코딩하지 않는다). EcAdminApi/EcCdnApi 쪽 application-{dev,prod}.yml 은 이미
+    # REDIS_PASSWORD 환경변수를 받게 되어 있어(app.redis.primary.password) 이 값만 맞추면 된다.
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis123}
+
+    # ───── 포트 매핑 ─────
+    ports:
+      - "22379:6379"
+
+    # ───── 볼륨 마운트 ─────
+    # 기존 컨테이너는 이름 없는 익명 볼륨(/data)이라 위치 추적이 안 됐다 — 여기서는 실제
+    # NAS 경로에 바인드마운트해서(다른 앱들의 ecBeCdnStorage 등과 동일 원칙) 백업/확인이
+    # 쉽게 한다.
+    volumes:
+      - /volume1/docker/shopjoy/ecBeRedisData:/data
+
+    restart: always
+
+    healthcheck:
+      # 2026-09-06: 비밀번호가 걸려 있어 인증 없는 PING은 (error) NOAUTH 로 실패한다 — -a 로
+      # 인증하고, --no-auth-warning 으로 "비밀번호를 커맨드라인에 노출"경고 로그를 숨긴다
+      # (컨테이너 내부 healthcheck 실행이라 실제 유출 경로는 아님).
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123}", "--no-auth-warning", "ping"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3

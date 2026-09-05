@@ -39,7 +39,7 @@ Java 필드는 대응해서 `xxxCd` (camelCase). 인덱스명도 컬럼명을 �
 ```bash
 # ① QueryDSL 이 sy_code 와 조인하는 컬럼 중 Cd 로 끝나지 않는 것 → 위반
 grep -rhoE 'codeValue\.eq\([a-zA-Z]+\.[a-zA-Z0-9_]+\)' \
-  _apps_be/EcAdminApi/src/main/java --include="*.java" \
+  apps/ecBeBo/src/main/java --include="*.java" \
   | sed 's/codeValue.eq(//;s/)//' | sort -u | grep -vE "Cd$"
 ```
 

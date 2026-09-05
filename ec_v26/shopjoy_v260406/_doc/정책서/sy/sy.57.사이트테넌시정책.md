@@ -232,7 +232,7 @@ String siteId = SecurityUtil.getSiteIdOrDefault();      // 기본값 생략 = �
 
 ```bash
 # sy_site 에 없는 site_id 리터럴이 코드에 있는지
-grep -rn '"SITE[0-9]\{6\}"' --include=*.java _apps_be/EcAdminApi/src/main/java
+grep -rn '"SITE[0-9]\{6\}"' --include=*.java apps/ecBeBo/src/main/java
 ```
 
 ```sql

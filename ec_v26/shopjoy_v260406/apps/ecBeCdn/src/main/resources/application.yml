@@ -39,7 +39,7 @@ spring:
 app:
   cf:
     # 실제 파일이 저장되는 루트 경로. 로컬 실행은 ./storage(프로젝트 폴더 안), NAS 배포는
-    # docker-compose.yml 이 /volume1/docker/shopjoy/cdn-storage 를 컨테이너의 /app/storage 로 마운트.
+    # docker-compose.yml 이 /volume1/docker/shopjoy/ecBeCdnStorage 를 컨테이너의 /app/storage 로 마운트.
     storage-root: ${CF_STORAGE_ROOT:./storage}
     # 업로드 용량 상한(MB) — spring.servlet.multipart.max-file-size 와 별개로 서비스 코드에서
     # 한 번 더 명시적으로 검증한다(요청사항: "용량이 너무크면 Exception"). 두 값은 항상 같게 유지할 것.
@@ -77,7 +77,7 @@ app:
 # @ConditionalOnProperty 로 꺼져 있어도 이 기본 인디케이터는 별개로 항상 켜진다. 그 결과
 # "Connection refused: localhost/127.0.0.1:6379" 로 /actuator/health 전체가 DOWN 판정되고
 # docker healthcheck 가 "unhealthy" 로 떨어진다(EcAdminApi 가 이미 같은 문제를 겪고 고쳤던
-# management.health.redis.enabled 버그와 동일 원인 — _apps_be/EcAdminApi 의 application-*.yml
+# management.health.redis.enabled 버그와 동일 원인 — apps/ecBeBo 의 application-*.yml
 # 참조). 이 앱도 동일하게 명시적으로 꺼둔다.
 management:
   health:

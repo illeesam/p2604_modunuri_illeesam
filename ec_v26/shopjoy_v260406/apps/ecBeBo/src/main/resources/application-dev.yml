@@ -98,15 +98,17 @@ app:
     base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5501}
 
   redis:
-    # 2026-09-06: NAS Container Manager 에 실제 Redis 컨테이너(123-redis.70rc1, 호스트 포트 12379)가
-    # 떠서 활성화. host 기본값이 illeesam.synology.me(공인 DDNS)인 이유는 DB_HOST 와 동일 — 이 PC에서
-    # 직접 bootRun 할 때 외부에서 붙을 수 있게. NAS 컨테이너 안에서 이 앱이 뜰 때는(docker-compose)
-    # 자기 자신으로 되돌아오는 NAT 헤어핀을 피하려고 .env 에서 REDIS_HOST=host.docker.internal 로
-    # 오버라이드한다(DB_HOST 와 같은 이유 — docker-compose.yml 상단 주석 참조).
+    # 2026-09-06: apps/ecBeRedis/docker-compose.yml(shopjoy-ecBeRedis-22379, 비밀번호 있음)가
+    # 정식 관리 대상 — 옛 DSM 직접생성 컨테이너(123-redis.70rc1, 12379, 무암호)는 포트가 달라
+    # 병행 운영 가능하나 대체 대상이다. host 기본값이 illeesam.synology.me(공인 DDNS)인 이유는
+    # DB_HOST 와 동일 — 이 PC에서 직접 bootRun 할 때 외부에서 붙을 수 있게. NAS 컨테이너 안에서
+    # 이 앱이 뜰 때는(docker-compose) 자기 자신으로 되돌아오는 NAT 헤어핀을 피하려고 .env 에서
+    # REDIS_HOST=host.docker.internal 로 오버라이드한다(DB_HOST 와 같은 이유). 비밀번호가 걸린
+    # Redis 이므로 REDIS_PASSWORD 도 .env 에 반드시 맞춰 넣을 것(apps/ecBeRedis/.env 와 동일 값).
     enabled: ${REDIS_ENABLED:false}
     primary:
       host: ${REDIS_HOST:illeesam.synology.me}
-      port: ${REDIS_PORT:12379}
+      port: ${REDIS_PORT:22379}
       password: ${REDIS_PASSWORD:}
       database: 0
       timeout: 3000

@@ -33,7 +33,7 @@ SYNOLOGY_PASSWORD=appuser1**
 ~\ec_v26\shopjoy_v260406> npm run deploy:dev-synol-fe-vue3cdn
 ```
 
-**명령어 설명**: `scripts/deploy-dev-synol-fe-vue3cdn.js`를 실행합니다. 이 스크립트가 안에서 하는 일 — [12_illeesam_synology_FE_수동배포가이드(synology).md](<12_illeesam_synology_FE_수동배포가이드(synology).md>)의 STEP 1~4와 완전히 동일합니다.
+**명령어 설명**: `scripts/deploy-dev-synol-fe-ecFeBo.js`를 실행합니다. 이 스크립트가 안에서 하는 일 — [12_illeesam_synology_FE_수동배포가이드(synology).md](<12_illeesam_synology_FE_수동배포가이드(synology).md>)의 STEP 1~4와 완전히 동일합니다.
 
 | 단계 | 하는 일 |
 |---|---|
@@ -83,17 +83,17 @@ https://21000.illeesam.synology.me/bo.html
 
 | 파일 | 역할 |
 |---|---|
-| [`scripts/deploy-dev-synol-fe-vue3cdn.js`](../../../scripts/deploy-dev-synol-fe-vue3cdn.js) | 실제 배포 로직 — `npm run build:dev` → `dist/` 압축(tar.gz) → SFTP 전송 → NAS에서 기존 파일 삭제 후 압축 해제 → 헬스체크 2단계(NAS 내부 + 이 컴퓨터→공개 HTTPS 주소, API까지 확인) |
+| [`scripts/deploy-dev-synol-fe-ecFeBo.js`](../../../scripts/deploy-dev-synol-fe-ecFeBo.js) | 실제 배포 로직 — `npm run build:dev` → `dist/` 압축(tar.gz) → SFTP 전송 → NAS에서 기존 파일 삭제 후 압축 해제 → 헬스체크 2단계(NAS 내부 + 이 컴퓨터→공개 HTTPS 주소, API까지 확인) |
 | [`scripts/synology-deploy-util.js`](../../../scripts/synology-deploy-util.js) | (14번 문서와 동일 공유 파일) SSH/SFTP 공통 로직 |
 | [`scripts/build-minify.js`](../../../scripts/build-minify.js) | `npm run build:dev` 내부에서 실행되는 실제 빌드 로직(esbuild minify + `lib/env/profiles/*.dev.js` 프로파일 적용) |
 | `scripts/.synology-deploy.env` | (14번 문서와 동일 공유 파일) NAS 접속정보 — `.gitignore` 처리돼 있어 깃허브에 안 올라감 |
-| `package.json`의 `deploy:dev-synol-fe-vue3cdn` | `node scripts/deploy-dev-synol-fe-vue3cdn.js`를 실행하는 npm 스크립트 별칭 |
+| `package.json`의 `deploy:dev-synol-fe-vue3cdn` | `node scripts/deploy-dev-synol-fe-ecFeBo.js`를 실행하는 npm 스크립트 별칭 |
 | `package.json`의 `deploy:dev-synol-full` | `deploy:dev-synol-be-ecAdminApi` → `deploy:dev-synol-fe-vue3cdn` 순서 실행(백엔드+프론트 한 번에) |
 | `package.json`의 `deploy:dev-github-be-api`/`-fe`/`-full` | (방식 B) 커밋 메시지만 다르고 동작은 동일한 `git add && commit && push` — 실제 배포 대상은 GitHub Actions 경로 필터가 결정 |
 | `.github/workflows/shopjoy-fe-illeesam-synol-deploy.yml` | (방식 B) NAS에 프론트 배포하는 GitHub Actions 워크플로 |
 | `.github/workflows/shopjoy-fe-illeesam-github-deploy.yml` | (방식 B) GitHub Pages에 프론트 배포하는 워크플로(같은 push로 동시 실행) |
 
-**`deploy-dev-synol-fe-vue3cdn.js` 핵심 로직 요약**:
+**`deploy-dev-synol-fe-ecFeBo.js` 핵심 로직 요약**:
 ```
 1. npm run build:dev                              → dist/ 생성(minify + dev 프로파일 API 주소 적용)
 2. tar -czf dist.tar.gz -C dist .

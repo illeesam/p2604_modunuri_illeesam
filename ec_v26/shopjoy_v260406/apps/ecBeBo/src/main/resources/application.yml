@@ -39,13 +39,13 @@
 #  ⚠️ <꺾쇠> 부분은 실제 값으로 바꿔서 쓸 것 — 이 파일에 진짜 운영 시크릿을 적어두지 않는다.
 #
 #  1) 기본옵션(prod 는 필수값이 있어 "심플"이 곧 최소 실행 형태):
-#    java -jar app.jar --spring.profiles.active=prod --JWT_SECRET=<실제운영시크릿> --LICENSE_SECRET=<실제라이선스시크릿> --FRONTEND_DIR=/volume1/docker/shopjoy/frontend --FRONTEND_BASE_URL=https://your-domain.com --AWS_ACCESS_KEY_ID=<key> --AWS_SECRET_ACCESS_KEY=<secret> --NCP_ACCESS_KEY=<key> --NCP_SECRET_KEY=<secret>
+#    java -jar app.jar --spring.profiles.active=prod --JWT_SECRET=<실제운영시크릿> --LICENSE_SECRET=<실제라이선스시크릿> --FRONTEND_DIR=/volume1/docker/shopjoy/ecFeBo --FRONTEND_BASE_URL=https://your-domain.com --AWS_ACCESS_KEY_ID=<key> --AWS_SECRET_ACCESS_KEY=<secret> --NCP_ACCESS_KEY=<key> --NCP_SECRET_KEY=<secret>
 #
 #  2) + DB 명시(운영 DB 계정이 기본값과 다를 때):
-#    java -jar app.jar --spring.profiles.active=prod --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=<운영DB비밀번호> --JWT_SECRET=<실제운영시크릿> --LICENSE_SECRET=<실제라이선스시크릿> --FRONTEND_DIR=/volume1/docker/shopjoy/frontend --FRONTEND_BASE_URL=https://your-domain.com --AWS_ACCESS_KEY_ID=<key> --AWS_SECRET_ACCESS_KEY=<secret> --NCP_ACCESS_KEY=<key> --NCP_SECRET_KEY=<secret>
+#    java -jar app.jar --spring.profiles.active=prod --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=<운영DB비밀번호> --JWT_SECRET=<실제운영시크릿> --LICENSE_SECRET=<실제라이선스시크릿> --FRONTEND_DIR=/volume1/docker/shopjoy/ecFeBo --FRONTEND_BASE_URL=https://your-domain.com --AWS_ACCESS_KEY_ID=<key> --AWS_SECRET_ACCESS_KEY=<secret> --NCP_ACCESS_KEY=<key> --NCP_SECRET_KEY=<secret>
 #
 #  3) 다양한 옵션(메모리/타임존/젠킨스/라이선스출력경로까지 전부):
-#    java -Xms256m -Xmx1024m -Duser.timezone=Asia/Seoul -jar app.jar --spring.profiles.active=prod --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=<운영DB비밀번호> --JWT_SECRET=<실제운영시크릿> --LICENSE_SECRET=<실제라이선스시크릿> --FRONTEND_DIR=/volume1/docker/shopjoy/frontend --FRONTEND_BASE_URL=https://your-domain.com --AWS_ACCESS_KEY_ID=<key> --AWS_SECRET_ACCESS_KEY=<secret> --NCP_ACCESS_KEY=<key> --NCP_SECRET_KEY=<secret> --JENKINS_BATCH_TOKEN=<jenkins토큰> --LICENSE_OUTPUT_DIR=./_license-output
+#    java -Xms256m -Xmx1024m -Duser.timezone=Asia/Seoul -jar app.jar --spring.profiles.active=prod --server.port=3000 --DB_HOST=illeesam.synology.me --DB_PORT=17632 --DB_NAME=postgres --DB_SCHEMA=shopjoy_2604 --DB_USERNAME=postgres --DB_PASSWORD=<운영DB비밀번호> --JWT_SECRET=<실제운영시크릿> --LICENSE_SECRET=<실제라이선스시크릿> --FRONTEND_DIR=/volume1/docker/shopjoy/ecFeBo --FRONTEND_BASE_URL=https://your-domain.com --AWS_ACCESS_KEY_ID=<key> --AWS_SECRET_ACCESS_KEY=<secret> --NCP_ACCESS_KEY=<key> --NCP_SECRET_KEY=<secret> --JENKINS_BATCH_TOKEN=<jenkins토큰> --LICENSE_OUTPUT_DIR=./_license-output
 #
 #  검증: 2026-08-30 이 3개 프로파일 전부 실제 부팅 확인함(prod 는 이 작업 중
 #  driver-class-name 불일치 버그를 발견·수정한 뒤 재검증 — 아래 datasource 섹션 참조).

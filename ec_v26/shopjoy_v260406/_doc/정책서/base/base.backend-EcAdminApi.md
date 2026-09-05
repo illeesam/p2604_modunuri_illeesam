@@ -9,7 +9,7 @@
 
 ## 1. 개요
 
-`_apps/EcAdminApi` — Spring Boot 3.2 기반 관리자 전용 REST API 서버.  
+`apps/ecBeBo` — Spring Boot 3.2 기반 관리자 전용 REST API 서버.  
 관리자 프론트(`bo.html`)의 `window.boApi`(`lib/utils/boApiAxios.js` axios 래퍼) + `window.boApiSvc`/`window.coApiSvc`(`lib/services/boApiSvc.js` · `lib/services/coApiSvc.js` 도메인별 서비스 객체) 가 이 서버를 호출한다.
 
 | 항목 | 값 |
@@ -463,14 +463,14 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
 ### 14.5.5 예시 위치
 
-- [`SyPathRepository.findTreePathIds`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/SyPathRepository.java) — 재귀 CTE 표준 사례
-- [`QSyDeptRepositoryImpl`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyDeptRepositoryImpl.java) — 자기참조 `@Lazy` 명시적 생성자 사례
+- [`SyPathRepository.findTreePathIds`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/SyPathRepository.java) — 재귀 CTE 표준 사례
+- [`QSyDeptRepositoryImpl`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyDeptRepositoryImpl.java) — 자기참조 `@Lazy` 명시적 생성자 사례
 
 ---
 
 ## 14.6 QueryDSL `Q*RepositoryImpl` 표준 패턴
 
-### 14.6.1 표준 예시 — [`QSyUserRepositoryImpl`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyUserRepositoryImpl.java)
+### 14.6.1 표준 예시 — [`QSyUserRepositoryImpl`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyUserRepositoryImpl.java)
 
 이 파일이 신규/리팩토링 시 따라야 할 표준 모델이다.
 
@@ -575,7 +575,7 @@ private static final QVwSyCode cdDc = new QVwSyCode("cd_dc");
 
 - **명명 규칙**: `code` + 매칭 필드명(PascalCase) — 예) `dlivCourierCd` 필드에 매칭 → `codeDlivCourierCd`
 - **한 파일에 같은 이름이 중복될 경우** 두 번째부터 숫자 접미사 (`codeGradeCd`, `codeGradeCd2`)
-- **여러 쿼리 메서드에서 범용으로 재사용되는 alias**(코드그룹이 메서드마다 다름, 필드 하나로 못 좁혀짐)는 `codeLookup` 처럼 일반화된 이름 사용 — 예) [`PdProdHistQueryRepository`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/ec/pd/repository/qrydsl/PdProdHistQueryRepository.java) 의 `codeLookup`
+- **여러 쿼리 메서드에서 범용으로 재사용되는 alias**(코드그룹이 메서드마다 다름, 필드 하나로 못 좁혀짐)는 `codeLookup` 처럼 일반화된 이름 사용 — 예) [`PdProdHistQueryRepository`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/ec/pd/repository/qrydsl/PdProdHistQueryRepository.java) 의 `codeLookup`
 - SQL 별칭 문자열(`new QVwSyCode("code_xxx")` 의 인자)도 가급적 변수명과 맞춰 snake_case 로 통일
 
 **`innerJoin` vs `leftJoin` 선택 — 컬럼 nullable 여부와 반드시 일치시킨다** ⭐:
@@ -637,7 +637,7 @@ QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv), // 노출환경 필터
 | `selectPageData(Dto.Request search)` | 조건 검색 + 페이징(`BasePage<Dto.Item>` 반환) |
 | `updateSelective(Entity entity)` | null 아닌 필드만 SET 하는 부분수정 |
 
-`QCmBlogGoodRepositoryImpl`([참고](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/ec/cm/repository/qrydsl/impl/QCmBlogGoodRepositoryImpl.java))가 이 3개만으로 구성된 표준 예시다. §14.6.1 의 `QSyUserRepositoryImpl` 템플릿에 있는 `selectById`/`selectCount`
+`QCmBlogGoodRepositoryImpl`([참고](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/ec/cm/repository/qrydsl/impl/QCmBlogGoodRepositoryImpl.java))가 이 3개만으로 구성된 표준 예시다. §14.6.1 의 `QSyUserRepositoryImpl` 템플릿에 있는 `selectById`/`selectCount`
 는 "이 3개 밖에 실제로 더 필요했던" 경우이지 항상 같이 만들어야 하는 필수 세트가 아니다.
 
 **"그 외 필요한 것만 별도로"의 기준** — 아래 셋 중 하나에 해당하면 전용 메서드를 추가한다. 그
@@ -1037,7 +1037,7 @@ grep -rnB 6 'Repository\.save(' --include=*.java src/main/java | grep 'setRegDat
 | `POST /save-list` | `saveList` | `service.saveList("base", rows)` |
 | `POST /save-list/{cmd}` | `saveListCmd` | `service.saveList(cmd, rows)` |
 
-### 14.8.2 표준 예시 — [`SyUserController`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/controller/SyUserController.java)
+### 14.8.2 표준 예시 — [`SyUserController`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/controller/SyUserController.java)
 
 ```java
 /** save — rowStatus 단건 분기 저장 (기본) */
@@ -1076,7 +1076,7 @@ public ResponseEntity<ApiResponse<Void>> saveListCmd(
 1. **`null` cmd 금지** — 기본 엔드포인트도 `"base"` 명시 전달 (의도 명확화)
 2. **메서드명 규약** — `saveDefault`/`saveCmd`/`saveList`/`saveListCmd`. 시그니처 충돌 회피
 3. **BO Wrapper Service 도 동일 시그니처** — `BoSyUserService.save(String cmd, ...)` / `saveList(String cmd, ...)`
-4. **BO Controller 도 동일 4개 엔드포인트** — [`BoSyUserController`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo/sy/controller/BoSyUserController.java)
+4. **BO Controller 도 동일 4개 엔드포인트** — [`BoSyUserController`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/bo/sy/controller/BoSyUserController.java)
 
 ### 14.8.4 cmd 활용 예시
 
@@ -1124,9 +1124,9 @@ public ResponseEntity<ApiResponse<Void>> saveListCmd(
 ### 14.9.4 표준 모델 3개
 
 이 세 파일을 참조 모델로 사용:
-- [`QSyUserRepositoryImpl.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyUserRepositoryImpl.java)
-- [`SyUserService.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/service/SyUserService.java)
-- [`SyUserController.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/controller/SyUserController.java) + [`BoSyUserController.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo/sy/controller/BoSyUserController.java)
+- [`QSyUserRepositoryImpl.java`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyUserRepositoryImpl.java)
+- [`SyUserService.java`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/service/SyUserService.java)
+- [`SyUserController.java`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/controller/SyUserController.java) + [`BoSyUserController.java`](/apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/bo/sy/controller/BoSyUserController.java)
 
 ---
 
@@ -1655,7 +1655,7 @@ DB 에는 소스 "이름"만  →  실제 SQL 은 코드(CmDashboardDataSourceRe
 
 ```bash
 # Service 에 남은 쿼리 조립 흔적
-grep -rn "em.createQuery\|EntityManager"   _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/*/service/*Service.java
+grep -rn "em.createQuery\|EntityManager"   apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/*/service/*Service.java
 ```
 
 `em.flush()` / `em.clear()` 용도의 `EntityManager` 는 정상 — `createQuery` 로 문자열을
@@ -1815,7 +1815,7 @@ for (String[] link : attachLinks) {   // 그다음 연계
 
 ```bash
 # flush 없이 단독으로 clear 하는 곳 찾기 (위 예외 2곳 외에는 0 이어야 정상)
-cd _apps_be/EcAdminApi/src/main/java
+cd apps/ecBeBo/src/main/java
 grep -rn -B1 "em\.clear();" --include=*.java . | grep -A1 -v "em\.flush()"
 ```
 

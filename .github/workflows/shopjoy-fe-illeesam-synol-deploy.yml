@@ -1,14 +1,19 @@
-# shopjoy-fe-illeesam-synol-deploy.yml — 2026-09-02 신설.
+# shopjoy-fe-illeesam-synol-deploy.yml — 2026-09-02 신설, 2026-09-06 대개편.
 #
-# GitHub Actions로 빌드한 dist/ 를 Synology NAS 로 배포한다 — docker-compose.yml 의 nginx
-# 서비스가 /volume1/docker/shopjoy/frontend 를 읽기전용으로 마운트해서 그대로 서빙한다
-# (ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/docker-compose.yml 의 nginx.volumes 참조). 컨테이너
-# 재시작 불필요 — nginx 는 파일시스템을 직접 읽으므로 새 파일을 올려두면 다음 요청부터
-# (app JS/CSS/HTML 은 no-cache 캐시정책이라) 바로 반영된다.
+# GitHub Actions로 빌드한 dist/ 를 Synology NAS 로 배포한다.
+#
+# 2026-09-06 개편(요청사항: "4개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis)이 각자 다른 호스팅사에
+# 흩어질 수도 있다"는 최악의 경우 기준 설계) — nginx가 apps/ecBeBo/docker-compose.yml 에
+# 얹혀있던 것에서 완전히 독립된 자체 compose 스택(apps/ecFeBo/docker-compose.yml)이 되었다.
+# 이 워크플로가 이제 그 컨테이너 자체의 기동/갱신까지 책임진다(compose+nginx 설정 3종
+# 업로드 + docker compose up) — 예전엔 "이미 떠 있는 nginx가 파일만 새로 읽는다"는 전제라
+# 컨테이너 재시작이 아예 불필요했지만, 지금은 최초 배포 시 컨테이너 자체가 없을 수 있어
+# 매번 up -d 로 존재를 보장한다. 포트도 21000 → 22000, nginx가 더 이상 /api,/cdn-admin 을
+# 리버스프록시하지 않으므로 그 헬스체크도 제거 — 정적 파일 서빙만 확인한다.
 #
 # main에 push 되면 트리거는 되지만, 실제 빌드+배포는 커밋 메시지에 정확히
-# 'deploy_dev-github-fe-vue3cdn' 또는 'deploy_dev-github-full' 토큰이 들어있을 때만 진행한다
-# (npm run deploy:dev-github-fe-vue3cdn 이 이 토큰을 커밋 메시지에 실어 보낸다. 2026-09-06
+# 'deploy_dev-github-ecFeBo' 또는 'deploy_dev-github-full' 토큰이 들어있을 때만 진행한다
+# (npm run deploy:dev-github-ecFeBo 이 이 토큰을 커밋 메시지에 실어 보낸다. 2026-09-06
 # 변경 — 예전엔 'deploy'/'배포' 아무 단어나 매칭되는 느슨한 방식이었다). 토큰이 없으면 스킵.
 # (workflow_dispatch로 수동 실행할 땐 이 토큰 체크 없이 무조건 진행됨)
 #
@@ -18,9 +23,9 @@
 # 필요 시크릿(리포지토리 Settings → Secrets and variables → Actions, deploy-ec-admin.yml과
 # 공유): SYNOLOGY_HOST / SYNOLOGY_PORT / SYNOLOGY_USER / SYNOLOGY_PASSWORD / SYNOLOGY_SSH_KEY
 #
-# ⚠ NAS 쪽 /volume1/docker/shopjoy/frontend 디렉터리는 nginx 컨테이너가 미리 마운트하고
-#   있어야 한다 — docker-compose 스택이 아직 안 떠있으면(shopjoy-be-illeesam-synol-deploy.yml
-#   최초 1회 실행 전) 이 워크플로가 파일은 올려도 실제로 서빙되진 않는다.
+# NAS 배포 경로: /volume1/docker/shopjoy/ecFeBo/(정적 파일 dist/) + /volume1/docker/shopjoy/ecFeBoApp/
+#   (docker-compose.yml + nginx 설정 3종 — 정적 파일 폴더와 분리해야 매 배포마다 통째로
+#   rm -rf 되는 ecFeBo/ 안에서 compose 파일이 같이 지워지는 사고를 막는다)
 
 name: shopjoy-fe-illeesam-synol-deploy
 
@@ -28,28 +33,32 @@ on:
   push:
     branches: [main]
     paths:
-      - 'ec_v26/shopjoy_v260406/pages/**'
-      - 'ec_v26/shopjoy_v260406/lib/**'
-      - 'ec_v26/shopjoy_v260406/components/**'
-      - 'ec_v26/shopjoy_v260406/assets/**'
-      - 'ec_v26/shopjoy_v260406/scripts/**'
-      - 'ec_v26/shopjoy_v260406/*.html'
-      - 'ec_v26/shopjoy_v260406/package.json'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/pages/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/lib/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/components/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/assets/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/scripts/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/*.html'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/package.json'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/docker-compose.yml'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/nginx.conf'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/locations.conf'
+      - 'ec_v26/shopjoy_v260406/apps/ecFeBo/security-headers.conf'
   workflow_dispatch: {}
 
 defaults:
   run:
-    working-directory: ec_v26/shopjoy_v260406
+    working-directory: ec_v26/shopjoy_v260406/apps/ecFeBo
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # 커밋 메시지에 이 워크플로 전용 토큰(deploy_dev-github-fe-vue3cdn) 또는 전체트리거 토큰
+    # 커밋 메시지에 이 워크플로 전용 토큰(deploy_dev-github-ecFeBo) 또는 전체트리거 토큰
     # (deploy_dev-github-full) 이 있어야 진행. workflow_dispatch(수동 실행)는 head_commit 이
     # 없으므로 항상 통과.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.head_commit.message, 'deploy_dev-github-fe-vue3cdn') ||
+      contains(github.event.head_commit.message, 'deploy_dev-github-ecFeBo') ||
       contains(github.event.head_commit.message, 'deploy_dev-github-full')
     steps:
       - name: "[1] 소스코드 체크아웃"
@@ -74,8 +83,9 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Port(SSH)  : ${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정(User) : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호   : $MASK  (총 ${LEN}자리 — 뒤 3자리만 표시, 나머지는 자체 마스킹)"
-          echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/frontend/ (nginx 읽기전용 마운트)"
-          echo "[$(date '+%H:%M:%S')]   서비스 URL : http://illeesam.synology.me:21000  (nginx 정적 서빙, 컨테이너 재시작 불필요)"
+          echo "[$(date '+%H:%M:%S')]   정적 파일 경로 : /volume1/docker/shopjoy/ecFeBo/"
+          echo "[$(date '+%H:%M:%S')]   compose 경로   : /volume1/docker/shopjoy/ecFeBoApp/"
+          echo "[$(date '+%H:%M:%S')]   서비스 URL : http://illeesam.synology.me:22000  (nginx 단독 컨테이너, 완전 분리 설계)"
           echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
 
       - name: "[2] Node 설정"
@@ -83,7 +93,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ec_v26/shopjoy_v260406/package-lock.json
+          cache-dependency-path: ec_v26/shopjoy_v260406/apps/ecFeBo/package-lock.json
 
       - name: "[3] 의존성 설치"
         run: |
@@ -92,20 +102,21 @@ jobs:
           echo "[$(date '+%H:%M:%S')] ✅ 의존성 설치 완료"
 
       - name: "[4] minify 빌드(dev 프로파일) + dist 정합성 검증 (실패 시 배포 중단)"
-        # dev 프로파일 = lib/env/profiles/env{Bo,Fo}Consts.dev.js 로 apiOrigin='' 상대경로 적용.
-        # 이 NAS 배포는 nginx가 같은 origin 위에서 프론트+API 를 같이 서빙하므로 dev가 맞다.
+        # dev 프로파일 = lib/env/profiles/env{Bo,Fo}Consts.dev.js 로 baseApiHost 가 백엔드/CDN의
+        # 절대 서브도메인(22300/22400.illeesam.synology.me)을 직접 가리킨다(2026-09-06 완전
+        # 분리 설계 — 더 이상 같은 origin 상대경로가 아니라 CORS 기반 절대 URL 호출).
         run: |
           echo "[$(date '+%H:%M:%S')] ▶ dev 프로파일로 minify 빌드를 시작합니다 (npm run build:dev)..."
           npm run build:dev
           echo "[$(date '+%H:%M:%S')] ✅ 빌드 + 정합성 검증 완료"
 
-      - name: "[5] dist/ 를 tar.gz 로 압축 (파일 340여개 개별전송 대신 1개로 묶어 전송)"
+      - name: "[5] dist/ + nginx 설정 3종을 tar.gz 로 압축 (파일 340여개 개별전송 대신 1개로 묶어 전송)"
         run: |
           echo "[$(date '+%H:%M:%S')] ▶ dist/ 전체를 tar.gz 로 압축합니다..."
           tar -czf dist.tar.gz -C dist .
           echo "[$(date '+%H:%M:%S')] ✅ 압축 완료 — 압축파일 크기: $(du -sh dist.tar.gz | cut -f1)"
 
-      - name: "[6] Synology NAS 로 dist.tar.gz 전송 (SCP)"
+      - name: "[6-1] Synology NAS 로 dist.tar.gz 전송 (SCP) — 정적 파일 폴더"
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SYNOLOGY_HOST }}
@@ -113,11 +124,23 @@ jobs:
           username: ${{ secrets.SYNOLOGY_USER }}
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
-          source: "ec_v26/shopjoy_v260406/dist.tar.gz"
+          source: "ec_v26/shopjoy_v260406/apps/ecFeBo/dist.tar.gz"
           target: "/volume1/docker/shopjoy/"
-          strip_components: 2
+          strip_components: 4
 
-      - name: "[7] NAS 에서 압축 해제 (기존 파일 완전 교체) + 헬스체크"
+      - name: "[6-2] Synology NAS 로 nginx 설정 3종 전송 (SCP) — compose 폴더(정적 파일과 분리)"
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          port: ${{ secrets.SYNOLOGY_PORT }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          password: ${{ secrets.SYNOLOGY_PASSWORD }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          source: "ec_v26/shopjoy_v260406/apps/ecFeBo/docker-compose.yml,ec_v26/shopjoy_v260406/apps/ecFeBo/nginx.conf,ec_v26/shopjoy_v260406/apps/ecFeBo/locations.conf,ec_v26/shopjoy_v260406/apps/ecFeBo/security-headers.conf"
+          target: "/volume1/docker/shopjoy/ecFeBoApp/"
+          strip_components: 4
+
+      - name: "[7] NAS 에서 압축 해제 (기존 파일 완전 교체) + nginx 컨테이너 기동/갱신"
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SYNOLOGY_HOST }}
@@ -127,16 +150,25 @@ jobs:
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
             echo "[$(date '+%H:%M:%S')] [7-1] 배포 대상 디렉터리 준비"
-            sudo mkdir -p /volume1/docker/shopjoy/frontend
-            echo "[$(date '+%H:%M:%S')] [7-2] 기존 파일 전체 삭제 (완전 교체 — dist/ 는 항상 자기완결형이므로 잔존파일 위험 없음)"
-            sudo rm -rf /volume1/docker/shopjoy/frontend/*
+            sudo mkdir -p /volume1/docker/shopjoy/ecFeBo
+            echo "[$(date '+%H:%M:%S')] [7-2] 기존 정적 파일 전체 삭제 (완전 교체 — dist/ 는 항상 자기완결형이므로 잔존파일 위험 없음)"
+            sudo rm -rf /volume1/docker/shopjoy/ecFeBo/*
             echo "[$(date '+%H:%M:%S')] [7-3] 새 dist 압축 해제"
-            sudo tar -xzf /volume1/docker/shopjoy/dist.tar.gz -C /volume1/docker/shopjoy/frontend
+            sudo tar -xzf /volume1/docker/shopjoy/dist.tar.gz -C /volume1/docker/shopjoy/ecFeBo
             echo "[$(date '+%H:%M:%S')] [7-4] 임시 압축파일 정리"
             sudo rm -f /volume1/docker/shopjoy/dist.tar.gz
             echo "[$(date '+%H:%M:%S')] [7-5] 배포 결과 확인"
-            ls -la /volume1/docker/shopjoy/frontend | head -20
-            echo "[$(date '+%H:%M:%S')] [7-6] 완료 — nginx 가 이 디렉터리를 이미 마운트 중이면 다음 요청부터 바로 반영됨"
+            ls -la /volume1/docker/shopjoy/ecFeBo | head -20
+            echo ""
+            echo "[$(date '+%H:%M:%S')] [7-6] nginx(ecFeBo) 컨테이너 기동/갱신"
+            cd /volume1/docker/shopjoy/ecFeBoApp
+            sudo docker compose up -d --force-recreate --remove-orphans
+            echo ""
+            echo "[$(date '+%H:%M:%S')] [7-7] 컨테이너 상태 + 정적 서빙 확인"
+            sleep 3
+            sudo docker compose ps
+            echo "[$(date '+%H:%M:%S')]   index.html: $(curl -s -o /dev/null -w '%{http_code}' http://localhost:22000/index.html)"
+            echo "[$(date '+%H:%M:%S')]   bo.html   : $(curl -s -o /dev/null -w '%{http_code}' http://localhost:22000/bo.html)"
 
       # ─────────────────────────────────────────
       # [8] 결과 요약
@@ -165,14 +197,15 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   Host/Port(SSH) : ${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}"
           echo "[$(date '+%H:%M:%S')]   계정           : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호       : $MASK  (뒤 3자리만 표시)"
-          echo "[$(date '+%H:%M:%S')]   설치 경로      : /volume1/docker/shopjoy/frontend/"
+          echo "[$(date '+%H:%M:%S')]   정적 파일 경로 : /volume1/docker/shopjoy/ecFeBo/"
+          echo "[$(date '+%H:%M:%S')]   compose 경로   : /volume1/docker/shopjoy/ecFeBoApp/"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] 🔍 점검 방법 — 아래 URL 을 브라우저/curl 로 접속해 정상 동작을 확인하세요"
-          echo "[$(date '+%H:%M:%S')]   1) 사용자 화면       : http://illeesam.synology.me:21000/index.html"
-          echo "[$(date '+%H:%M:%S')]   2) 관리자 화면       : http://illeesam.synology.me:21000/bo.html"
-          echo "[$(date '+%H:%M:%S')]   3) 공통코드 API      : http://illeesam.synology.me:21000/api/co/sy/code/page?pageNo=1&pageSize=1"
-          echo "[$(date '+%H:%M:%S')]   4) CDN 관리화면 교차확인: https://21000.illeesam.synology.me/cdn-admin/index.html"
+          echo "[$(date '+%H:%M:%S')]   (2026-09-06 완전 분리 설계 — 백엔드/CDN API 호출은 이 nginx 를 안 거치고 각자"
+          echo "[$(date '+%H:%M:%S')]    절대 URL로 직접 나간다. apps/ecFeBo/lib/env/profiles/*.dev.js 참조)"
+          echo "[$(date '+%H:%M:%S')]   1) 사용자 화면 : http://illeesam.synology.me:22000/index.html"
+          echo "[$(date '+%H:%M:%S')]   2) 관리자 화면 : http://illeesam.synology.me:22000/bo.html"
           echo "[$(date '+%H:%M:%S')] --------------------------------------"
           echo "[$(date '+%H:%M:%S')] Synology SSH 수동 확인 명령어"
-          echo "[$(date '+%H:%M:%S')]   ls -la /volume1/docker/shopjoy/frontend"
-          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/backend && sudo docker compose logs -f nginx"
+          echo "[$(date '+%H:%M:%S')]   ls -la /volume1/docker/shopjoy/ecFeBo"
+          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/ecFeBoApp && sudo docker compose logs -f"

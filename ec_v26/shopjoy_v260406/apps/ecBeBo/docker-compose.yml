@@ -1,17 +1,24 @@
 # ═══════════════════════════════════════════════════════════
 #  ShopJoy EcAdminApi - Docker Compose (실제 NAS 운영에 쓰이는 원본)
 # ═══════════════════════════════════════════════════════════
-#  배치 위치: _apps_be/EcAdminApi/docker-compose.yml
+#  배치 위치: apps/ecBeBo/docker-compose.yml
 #  실행 명령: docker compose up -d --build
 #
 #  2026-09-05: _doc/정책서-배포-시놀로지/docker/docker-compose.yml 에서 여기로 이동.
 #  그 자리에 있던 옛 버전(postgres/redis 컨테이너 + GitHub 원격 build context + 포트 31000,
 #  실제로는 한 번도 쓰인 적 없음)은 폐기. 이 파일이 진짜 원본이며 GitHub Actions
 #  (shopjoy-be-illeesam-synol-deploy.yml)가 이 경로를 배포 트리거 + 배포 산출물로 사용한다.
+#
+#  2026-09-06 대개편 — "4개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis)이 각자 다른 호스팅사에
+#  흩어질 수도 있다"는 최악의 경우를 기준으로 완전 분리 설계로 전환하면서, 이 파일에 같이
+#  얹혀있던 nginx 서비스를 apps/ecFeBo/docker-compose.yml 로 완전히 독립시켰다. 이 백엔드는
+#  이제 nginx 없이도 단독으로 공개 가능해야 하므로, 포트를 "디버깅 전용(21080)"에서
+#  "정식 공개 포트(22300)"로 승격했다 — CORS(CorsOriginPolicy.java)가 이미 이 시나리오를
+#  지원한다(프론트가 어느 호스트에 있든 절대 URL로 이 포트를 직접 호출).
 # ═══════════════════════════════════════════════════════════
 
 services:
-  ecadminapi:
+  ecbebo:
     # ───── 빌드 설정 ─────
     # context: Dockerfile이 있는 위치 기준 (현재 디렉터리)
     build:
@@ -19,10 +26,13 @@ services:
       dockerfile: Dockerfile
 
     # 빌드된 이미지 태그
-    image: shopjoy/ecadminapi:latest
+    # 2026-09-06: shopjoy/ecadminapi → shopjoy/ecbebo (apps/ecBeBo 폴더명 리네임에 맞춤. 컨테이너
+    # 레벨 이름만 바꾼 것 — Java 패키지(com.shopjoy.ecadminapi)/애플리케이션 클래스명은 별개로 유지)
+    image: shopjoy/ecbebo:latest
 
     # ───── 컨테이너 식별 ─────
-    container_name: 210-ecadminApi
+    # 2026-09-06: 210-ecBeBo → shopjoy-ecBeBo-22300 (컨테이너 이름 규칙 shopjoy-{앱}-{포트} 통일).
+    container_name: shopjoy-ecBeBo-22300
 
     # ───── 호스트(NAS 자신) 접근 — 2026-09-02 추가 ─────
     # Postgres(17632)가 이 NAS의 별도 컨테이너로 떠 있는 구성에서, 앱 컨테이너가 DB_HOST
@@ -31,6 +41,10 @@ services:
     # 따라 SocketTimeoutException 으로 실패하기 쉽다(실측 확인). host.docker.internal 로
     # 호스트를 직접 가리키면 이 왕복을 건너뛴다 — .env 의 DB_HOST=host.docker.internal 과 짝.
     # (DB 가 이 NAS가 아니라 정말 외부 서버라면 이 설정은 있어도 무해 — 안 쓰면 그만이다.)
+    # 2026-09-06: EcCdnApi(같은 NAS에 있을 경우)도 이 방식으로 부른다 — .env 의
+    # CF_CDN_BASE_URL=http://host.docker.internal:22400 (더 이상 Docker 내부 DNS 이름으로
+    # 안 부른다 — shopjoy-net 공유가 사라졌으므로). CDN이 다른 호스팅사로 가면 이 값만
+    # 그 서버의 실제 공개 URL로 바꾸면 된다 — 코드/컴포즈 변경 불필요.
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -44,16 +58,20 @@ services:
       JAVA_OPTS: "-Xms256m -Xmx1024m"
 
     # ───── 포트 매핑 (호스트:컨테이너) ─────
-    # 2026-08-30: nginx 도입 후에는 공개 접속은 nginx(21000)를 통하는 게 원칙이라, 이 21080은
-    # "백엔드 직접 접근(디버깅용)"으로만 남겨둔다. 방화벽/공유기 포트포워딩은 21000만 열 것 —
-    # 21080까지 외부에 열면 nginx의 압축/캐시/정적서빙을 우회해 곧바로 API 를 때리게 된다.
+    # 2026-09-06: 21080(디버깅 전용) → 22300(정식 공개 포트)로 승격 — nginx가 더 이상 앞에
+    # 없으므로 이 포트가 곧 이 백엔드의 유일한 공개 진입점이다. 방화벽/공유기 포트포워딩은
+    # 이 포트로 연결할 것. DSM 리버스 프록시로 22300.illeesam.synology.me(HTTPS) 서브도메인을
+    # 이 포트로 연결하면 브라우저 secure-context 요구(crypto.subtle 등)도 만족한다(수동 등록 필요).
     ports:
-      - "21080:3000"   # HTTP API (디버깅용 — 외부 공개 금지, nginx 경유가 정식 경로)
+      - "22300:3000"
 
     # ───── 볼륨 마운트 ─────
     # 로그를 호스트에 보관하여 컨테이너 삭제 시에도 보존
     volumes:
-      - /volume1/docker/ecadminapi/logs:/app/logs
+      # 2026-09-06: /volume1/docker/ecadminapi/logs → /volume1/docker/shopjoy/ecBeBoLogs
+      # (다른 앱들의 ecBeCdnStorage 등과 같은 명명 원칙에 맞춤). NAS 상 실제 폴더 이동은
+      # deploy-dev-synol-be-ecBeBo.js 배포 시 자동 처리(기존 로그 보존).
+      - /volume1/docker/shopjoy/ecBeBoLogs:/app/logs
 
     # ───── 재시작 정책 ─────
     # unless-stopped: NAS 재부팅 시 자동 시작 (수동 정지한 경우 제외)
@@ -78,47 +96,7 @@ services:
         max-size: "10m"   # 단일 로그 파일 최대 크기
         max-file: "5"     # 보관할 로그 파일 개수
 
-  # ═══════════════════════════════════════════════════════════
-  #  Nginx — 정적 자산(FO/BO) 서빙 + 압축(gzip) + 캐시 헤더 + API 리버스 프록시
-  #  2026-08-30 신설. 지금까지 정적 파일을 실제로 서빙하는 계층이 없었다(ecadminapi 컨테이너엔
-  #  프론트 파일 자체가 안 들어있음 — Dockerfile 이 JAR만 담음). 이 서비스가 그 역할을 한다.
-  #  설정 본문은 이 compose 파일과 같은 디렉터리의 nginx.conf 참조.
-  # ═══════════════════════════════════════════════════════════
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: 220-shopjoy-nginx
-
-    depends_on:
-      - ecadminapi
-
-    # ───── 포트 매핑 ─────
-    # 실제 공개 진입점. 방화벽/공유기 포트포워딩은 이 포트로 연결할 것(21080 아님).
-    ports:
-      - "21000:80"
-
-    # ───── 볼륨 마운트 ─────
-    # nginx.conf/locations.conf/security-headers.conf: 이 리포의 _apps_be/EcAdminApi/ 안 파일을
-    #   그대로 사용(3개 다 같은 디렉터리에 있어야 nginx.conf 의 include 상대참조가 맞음).
-    # frontend: FO/BO 빌드 산출물 루트(dist/, npm run build 로 생성 — bo.html/index.html 이
-    #   있는 폴더) — scripts/deploy-dev-synol-fe-vue3cdn.js(npm run deploy:dev-synol-fe-vue3cdn)로 배포할 때마다 채워진다.
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./locations.conf:/etc/nginx/locations.conf:ro
-      - ./security-headers.conf:/etc/nginx/security-headers.conf:ro
-      - /volume1/docker/shopjoy/frontend:/usr/share/nginx/html:ro
-      # HTTPS 활성화 시(nginx.conf [443 블록] 주석 해제와 함께) 아래 볼륨도 추가할 것 —
-      # certbot 이 발급한 인증서를 컨테이너 안 /etc/letsencrypt 경로로 읽기 전용 마운트.
-      # - /volume1/docker/shopjoy/certs:/etc/letsencrypt:ro
-
-    restart: unless-stopped
-
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"
-
-# ───── 네트워크 (선택) ─────
-networks:
-  default:
-    name: shopjoy-net
+# 2026-09-06: nginx 서비스는 apps/ecFeBo/docker-compose.yml 로 분리 이동. shopjoy-net
+# 공유 네트워크도 함께 폐기 — EcCdnApi/nginx를 Docker 내부 DNS 이름으로 부르던 리버스
+# 프록시가 사라졌으므로 이 컨테이너가 다른 컨테이너와 네트워크를 공유할 이유가 없다
+# (완전 독립). 별도 networks: 블록 없이 compose 기본 네트워크만 사용.

@@ -11,14 +11,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecBeBo/**'
   pull_request:
     paths:
-      - 'ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/**'
+      - 'ec_v26/shopjoy_v260406/apps/ecBeBo/**'
 
 defaults:
   run:
-    working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
+    working-directory: ec_v26/shopjoy_v260406/apps/ecBeBo
 
 jobs:
   build-and-verify:

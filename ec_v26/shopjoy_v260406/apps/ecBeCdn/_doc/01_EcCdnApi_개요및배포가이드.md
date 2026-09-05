@@ -46,7 +46,7 @@
 ## 4. 로컬 실행
 
 ```bash
-cd _apps_be/EcCdnApi
+cd apps/ecBeCdn
 ./gradlew.bat bootRun --args=--spring.profiles.active=local   # Windows
 ```
 
@@ -67,13 +67,13 @@ EcAdminApi 의 `_doc/11번 문서`(수동배포가이드)와 같은 절차. **�
 
 ## 6. 반복 배포 (자동 스크립트)
 
-최초 수동 배포 이후에는 jar 갱신만 하면 되므로 자동 스크립트를 쓴다 — `_apps_be/EcAdminApi/_doc/14번 문서`(BE 자동배포가이드)와 완전히 같은 패턴.
+최초 수동 배포 이후에는 jar 갱신만 하면 되므로 자동 스크립트를 쓴다 — `apps/ecBeBo/_doc/14번 문서`(BE 자동배포가이드)와 완전히 같은 패턴.
 
 ```bash
 npm run deploy:dev-synol-be-ecCdnApi
 ```
 
-- `scripts/deploy-dev-synol-be-ecCdnApi.js` 실행 — Gradle 빌드 → jar SFTP 전송 → `docker compose build/up` → healthy 대기 → actuator 헬스체크.
+- `scripts/deploy-dev-synol-be-ecBeCdn.js` 실행 — Gradle 빌드 → jar SFTP 전송 → `docker compose build/up` → healthy 대기 → actuator 헬스체크.
 - `deploy:dev-synol-full`(BE+FE) 에는 **포함되지 않는다** — EcCdnApi 를 건드렸을 때만 별도로 실행.
 - NAS 접속정보는 `scripts/.synology-deploy.env` 공유(EcAdminApi 배포 스크립트와 동일 파일).
 
@@ -154,8 +154,8 @@ URL 을 아는 사람은 누구나 파일 업로드/삭제·cf_client 계정 생
 
 | 파일 | 역할 |
 |---|---|
-| `_apps_be/EcCdnApi/` | Spring Boot 프로젝트 전체 |
+| `apps/ecBeCdn/` | Spring Boot 프로젝트 전체 |
 | `_doc/ddl_pgsql/ec/cf_client.sql`, `cf_file.sql` | DDL(source of truth) |
-| `scripts/deploy-dev-synol-be-ecCdnApi.js` | 자동 배포 스크립트 |
-| `_apps_be/EcAdminApi/co/ext/cdn/CfCdnApiClient.java` | EcAdminApi → EcCdnApi 호출 클라이언트(대기 상태) |
-| `_apps_be/EcAdminApi/nginx.conf`, `locations.conf` | `/cf/` 프록시(upstream `ec_cdn_api`) |
+| `scripts/deploy-dev-synol-be-ecBeCdn.js` | 자동 배포 스크립트 |
+| `apps/ecBeBo/co/ext/cdn/CfCdnApiClient.java` | EcAdminApi → EcCdnApi 호출 클라이언트(대기 상태) |
+| `apps/ecBeBo/nginx.conf`, `locations.conf` | `/cf/` 프록시(upstream `ec_cdn_api`) |

@@ -1,16 +1,20 @@
 # ═══════════════════════════════════════════════════════════
 #  ShopJoy EcCdnApi - Docker Compose
 # ═══════════════════════════════════════════════════════════
-#  배치 위치: _apps_be/EcCdnApi/docker-compose.yml
+#  배치 위치: apps/ecBeCdn/docker-compose.yml
 #  실행 명령: docker compose up -d --build
 #
 #  EcAdminApi 와 완전히 별도의 배포 단위(2026-09-06 결정) — 별도 compose 파일, 별도 NAS
-#  디렉터리(/volume1/docker/shopjoy/eccdnapi), 별도 배포 스크립트(deploy-dev-synol-be-ecCdnApi.js).
-#  단, EcAdminApi의 docker-compose.yml(nginx 포함)이 만드는 "shopjoy-net" 네트워크를
-#  external: true 로 공유한다 — 그래야 nginx(220-shopjoy-nginx)가 서비스명(eccdnapi)으로
-#  이 컨테이너에 프록시할 수 있다(nginx.conf 의 upstream ec_cdn_api 참조).
-#  ⚠️ 그래서 EcAdminApi 쪽 compose(nginx 포함)가 먼저 떠서 shopjoy-net 을 만들어둔 상태여야
-#     이 compose 가 정상 기동한다 — 최초 1회는 반드시 EcAdminApi 배포가 선행되어야 함.
+#  디렉터리(/volume1/docker/shopjoy/ecBeCdn), 별도 배포 스크립트(deploy-dev-synol-be-ecBeCdn.js).
+#
+#  2026-09-06 추가 개편 — "4개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis)이 각자 다른 호스팅사에
+#  흩어질 수도 있다"는 최악의 경우를 기준으로 완전 분리 설계로 전환. 예전엔 shopjoy-net을
+#  external:true 로 공유해서 nginx가 Docker 내부 DNS 이름(eccdnapi)으로 이 컨테이너를 직접
+#  불렀는데, 그 방식은 반드시 같은 Docker 네트워크(=같은 호스트)에 떠 있어야만 동작해서
+#  분리 배포 전제와 맞지 않는다. shopjoy-net 공유를 폐기하고, 이 컨테이너는 이제 완전히
+#  독립적으로 자기 포트(22400)에서 직접 공개된다 — 호출자(EcAdminApi의
+#  app.cf-cdn.base-url, 프론트의 cdnApiHost/cdnApiPort)는 이 컨테이너의 절대 URL로 직접
+#  접속한다(CORS는 CorsOriginPolicy.java 의 "*.illeesam.synology.me" 패턴이 이미 지원).
 # ═══════════════════════════════════════════════════════════
 
 services:
@@ -20,13 +24,15 @@ services:
       dockerfile: Dockerfile
 
     image: shopjoy/eccdnapi:latest
-    container_name: 230-shopjoy-eccdnapi
+    # 2026-09-06: 230-shopjoy-eccdnapi → shopjoy-ecBeCdn-22400 (컨테이너 이름 규칙
+    # shopjoy-{앱}-{포트} 통일).
+    container_name: shopjoy-ecBeCdn-22400
 
-    # 2026-09-06: DB(illeesam.synology.me:17632)와 Redis(illeesam.synology.me:12379) 둘 다
-    # 이 NAS 자신의 컨테이너다 — 컨테이너 안에서 공인 DDNS로 접속하면 NAT 헤어핀을 타서
-    # SocketTimeoutException 이 난다(EcAdminApi/docker-compose.yml 의 동일 코멘트 참조).
-    # host.docker.internal 로 호스트를 직접 가리켜 이 왕복을 건너뛴다 — .env 의
-    # DB_HOST=host.docker.internal / REDIS_HOST=host.docker.internal 과 짝.
+    # 2026-09-06: DB(illeesam.synology.me:17632)와 Redis 둘 다 이 NAS 자신의 컨테이너다 —
+    # 컨테이너 안에서 공인 DDNS로 접속하면 NAT 헤어핀을 타서 SocketTimeoutException 이 난다
+    # (EcAdminApi/docker-compose.yml 의 동일 코멘트 참조). host.docker.internal 로 호스트를
+    # 직접 가리켜 이 왕복을 건너뛴다 — .env 의 DB_HOST=host.docker.internal /
+    # REDIS_HOST=host.docker.internal(포트는 22379) 과 짝.
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -37,17 +43,22 @@ services:
       JAVA_OPTS: "-Xms256m -Xmx1024m"
 
     # ───── 포트 매핑 ─────
-    # 공개 경로는 nginx(21000)의 /cf/ 프록시가 정식 — 21090 은 디버깅 전용(EcAdminApi의 21080과
-    # 같은 원칙). 방화벽/공유기 포트포워딩은 열지 말 것.
+    # 2026-09-06: 21090(디버깅 전용, nginx의 /cf/ 프록시가 정식 경로였음) → 22400(정식 공개
+    # 포트)로 승격 — nginx 리버스프록시가 사라졌으므로 이 포트가 곧 이 CDN 서버의 유일한
+    # 공개 진입점이다. DSM 리버스 프록시로 22400.illeesam.synology.me(HTTPS) 서브도메인을
+    # 이 포트로 연결하면 브라우저 secure-context 요구도 만족한다(수동 등록 필요).
     ports:
-      - "21090:3000"
+      - "22400:3000"
 
     # ───── 볼륨 마운트 ─────
     # cdn-storage: 실제 업로드된 원본/썸네일/동영상 프레임 파일(app.cf.storage-root=/app/storage).
-    # logs: 컨테이너 삭제돼도 로그 보존(EcAdminApi의 ecadminapi/logs 마운트와 동일 원칙).
+    # logs: 컨테이너 삭제돼도 로그 보존.
     volumes:
-      - /volume1/docker/shopjoy/cdn-storage:/app/storage
-      - /volume1/docker/eccdnapi/logs:/app/logs
+      - /volume1/docker/shopjoy/ecBeCdnStorage:/app/storage
+      # 2026-09-06: /volume1/docker/eccdnapi/logs → /volume1/docker/shopjoy/ecBeCdnLogs
+      # (EcAdminApi 의 ecBeBoLogs 와 같은 명명 원칙에 맞춤). 최초 배포 시 새 경로로 시작 —
+      # 기존 로그 이관이 필요하면 deploy-dev-synol-be-ecBeCdn.js 실행 시 자동 처리.
+      - /volume1/docker/shopjoy/ecBeCdnLogs:/app/logs
 
     restart: unless-stopped
 
@@ -64,7 +75,5 @@ services:
         max-size: "10m"
         max-file: "5"
 
-networks:
-  default:
-    name: shopjoy-net
-    external: true
+# 2026-09-06: shopjoy-net 공유 폐기(위 설명 참조) — 별도 networks: 블록 없이 compose
+# 기본 네트워크만 사용(완전 독립).

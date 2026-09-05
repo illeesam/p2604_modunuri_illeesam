@@ -47,7 +47,7 @@ FO 는 이런 상품을 만나면 사용자가 원인을 알 수 없는 상태�
 - 미리보기 모드에서는 `prodOpts` 가 `_hide_prodOpts` 로 옮겨지므로 **두 키를 모두** 검사한다
 
 ### 3-2. 시뮬레이터 생성 — 백엔드 가드
-[`ZdSimulController.prodCreate()`](../../../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo/zd/ZdSimulController.java)
+[`ZdSimulController.prodCreate()`](../../../../apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/bo/zd/ZdSimulController.java)
 
 - `SET`/`GROUP` 이면 `prodCompItems` 가 비었는지 확인 → 비었으면 `IllegalArgumentException`
 - 프론트를 우회한 직접 API 호출도 막는다
@@ -187,7 +187,7 @@ QueryDSL 이 없는 코드그룹으로 조인하면 **에러 없이 라벨만 NU
 
 ```bash
 # 결과 0건 — setChgTypeCd / setChgReasonCd 를 호출하는 코드가 없음
-grep -rn "setChgTypeCd\|setChgReasonCd" _apps_be/EcAdminApi/src/main/java --include="*.java"
+grep -rn "setChgTypeCd\|setChgReasonCd" apps/ecBeBo/src/main/java --include="*.java"
 ```
 
 Controller·Service·Repository·조회화면([`PdProdHist.js`](../../../../pages/bo/ec/pd/PdProdHist.js) 재고/변경 이력 탭)은
@@ -203,7 +203,7 @@ Controller·Service·Repository·조회화면([`PdProdHist.js`](../../../../page
 
 ```bash
 # 1) QueryDSL 조인 코드그룹 추출
-grep -rhoE 'codeGrp\.eq\("[A-Z_]+"\)' _apps_be/EcAdminApi/src/main/java --include="*.java" \
+grep -rhoE 'codeGrp\.eq\("[A-Z_]+"\)' apps/ecBeBo/src/main/java --include="*.java" \
   | sed 's/codeGrp.eq("//;s/")//' | sort -u
 # 2) sy_code_grp.code_grp 와 대조 → 차집합이 곧 "라벨 항상 NULL" 목록
 ```

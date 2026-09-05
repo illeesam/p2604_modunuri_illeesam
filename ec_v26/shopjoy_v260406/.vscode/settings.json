@@ -12,8 +12,8 @@
     },
     "liveServer.settings.port": 5501,
     "liveServer.settings.ignoreFiles": [
-        "_apps/**",
-        "_apps_be/**",
+        "apps/ecBeBo/**",
+        "apps/ecBeCdn/**",
         "_doc/**",
         "log/**",
         "logs/**",
@@ -180,7 +180,7 @@
     },
     "liveServer.settings.CustomBrowser": "chrome",
     "liveServer.settings.file": "bo.html",
-    "liveServer.settings.root": "/",
+    "liveServer.settings.root": "/apps/ecFeBo",
     "liveServer.settings.useWebExt": false,
     "java.configuration.updateBuildConfiguration": "automatic"
 }

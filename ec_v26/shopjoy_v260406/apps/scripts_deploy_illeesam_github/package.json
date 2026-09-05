@@ -1,16 +1,20 @@
 {
   "name": "shopjoy-deploy-github-trigger",
   "private": true,
-  "description": "3개 앱(ecBeBo/ecBeCdn/ecFeBo) + 모바일(ecAppFoFlutter) GitHub Actions/Codemagic 트리거 전용 — 실제로는 커밋 메시지에 전용 토큰을 실어 git push 하는 게 전부라 외부 의존성이 없다. apps/scripts_synol_illeesam/(직접 SSH 즉시배포) 와는 별개(2026-09-06 분리 — 배포 방식(SSH즉시 vs git push트리거)별로 폴더를 나눠서 VS Code NPM SCRIPTS 패널에서 구분이 쉽게).",
+  "description": "3개 앱(ecBeBo/ecBeCdn/ecFeBo) + 모바일(ecAppFoFlutter) GitHub Actions/Codemagic 트리거 전용 — 실제로는 커밋 메시지에 전용 토큰을 실어 git push 하는 게 전부라 외부 의존성이 없다. apps/scripts_deploy_illeesam_synol/(직접 SSH 즉시배포) 와는 별개(2026-09-06 분리 — 배포 방식(SSH즉시 vs git push트리거)별로 폴더를 나눠서 VS Code NPM SCRIPTS 패널에서 구분이 쉽게).",
   "scripts": {
+    "---------- deploy (GitHub Actions: 웹 3앱) ----------": "exit 0",
     "deploy:dev-github-ecBeBo": "git add . && git commit -m \"deploy_dev-github-ecBeBo: 배포\" && git push",
     "deploy:dev-github-ecBeCdn": "git add . && git commit -m \"deploy_dev-github-ecBeCdn: 배포\" && git push",
     "deploy:dev-github-ecFeBo": "git add . && git commit -m \"deploy_dev-github-ecFeBo: 배포\" && git push",
     "deploy:dev-github-full": "git add . && git commit -m \"deploy_dev-github-full: 배포\" && git push",
+
+    "---------- deploy (Codemagic: 모바일) ----------": "exit 0",
     "deploy:dev-github-ecAppFoFlutter": "git add . && git commit -m \"deploy_dev-github-ecAppFoFlutter: 배포\" && git push"
   },
   "//": "──────────────────────────────────────────────────────────────────────",
   "// scriptsGuide": "JSON은 주석 문법이 없어 npm 이 무시하는 커스텀 필드로 설명을 남긴다.",
+  "// 구분선": "'---------- 그룹명 ----------': 'exit 0' 항목은 실행용이 아니라 VS Code NPM SCRIPTS 패널에서 웹 3앱(GitHub Actions)과 모바일(Codemagic)을 시각적으로 나누기 위한 더미 항목이다(요청사항: '너무 많은데 중간에 구분선 줄 수 있어'). 실수로 실행해도 exit 0 이라 무해하다.",
   "// 사용법": "npm run <스크립트명>. 실행하는 컴퓨터에 이미 변경된 파일이 있어야 의미가 있다(git add . 가 현재 저장소 전체를 커밋 대상으로 잡음) — apps/ 어디서 작업했든 이 폴더에서 실행하면 됨(git 명령은 리포지토리 루트 기준으로 동작).",
   "scriptsGuide": {
     "deploy:dev-github-ecBeBo": "[GitHub트리거-백엔드(EcAdminApi)] 지금까지 바뀐 파일을 전부 커밋(메시지에 정확히 'deploy_dev-github-ecBeBo' 토큰 포함)하고 push한다 — GitHub 서버가 대신 빌드+배포. .github/workflows/shopjoy-be-illeesam-synol-deploy.yml 이 커밋 메시지에 이 토큰(또는 deploy_dev-github-full)이 있을 때만 실제로 진행된다 — 다른 목적의 커밋에 'deploy' 라는 단어가 우연히 들어가 있어도 잘못 트리거되지 않도록 스크립트별 전용 토큰을 쓴다. 상세: apps/ecBeBo/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md",

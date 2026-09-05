@@ -196,7 +196,7 @@ PK: attach_id (YYMMDDhhmmss+random+seq)
 ### ref_table_nm 명명 규칙
 
 ⭐ 백엔드에서 `ref_table_nm` 값은 항상 **`SyAttachRefTableConst`**
-([base/sy/constant/SyAttachRefTableConst.java](../../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/constant/SyAttachRefTableConst.java))
+([base/sy/constant/SyAttachRefTableConst.java](../../../apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/sy/constant/SyAttachRefTableConst.java))
 상수로 참조한다 — 문자열 리터럴 직접 타이핑 금지. 첨부 저장(연계 반영, `applyChanges`/`updateSelective`
 호출부)뿐 아니라 목록/상세 조회에서 첨부 목록을 함께 내려줄 때(`findByRefTableNmAndRefIdIn...` 조회부,
 §10 `fnFillAttachFiles` 패턴)도 동일하게 이 상수를 쓴다. 오타로 인한 연계 불일치(저장은

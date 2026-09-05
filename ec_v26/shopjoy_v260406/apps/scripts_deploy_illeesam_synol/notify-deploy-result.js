@@ -123,14 +123,14 @@ function buildServerInfo(serverInfo) {
  * (배포 스크립트의 catch 블록/성공 경로 마지막에서 await 로 호출 — 알림 실패가 배포의
  * 최종 성공/실패 판정(exit code)에 영향을 주면 안 되기 때문).
  *
- * @param {string} tag        해당 배포 스크립트의 로그 태그(예: '[deploy-dev-synol-be-ecAdminApi.js][BE]')
+ * @param {string} tag        해당 배포 스크립트의 로그 태그(예: '[deploy-dev-synol-be-ecBeBo.js][BE]')
  * @param {string} scriptName 사람이 읽을 배포 대상 이름(예: '백엔드(EcAdminApi)')
  * @param {boolean} success   성공 여부
  * @param {string} elapsed    소요시간 문자열(MM:SS)
  * @param {string} [detail]   추가 상세(헬스체크 결과, 에러 메시지 등) — 여러 줄 가능
  * @param {Array<{label:string, value:string}>} [serverInfo] 서버/설치경로/환경 정보 항목 목록
  * @param {Array<{url:string, note?:string}>} [checkUrls] 점검 안내로 나열할 URL + 코멘트 목록
- * @param {string} [npmScript] 실행한 npm 스크립트명(예: 'deploy:dev-synol-fe-vue3cdn') — 제목 끝에 표시
+ * @param {string} [npmScript] 실행한 npm 스크립트명(예: 'deploy:dev-synol-ecFeBo') — 제목 끝에 표시
  */
 async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript }) {
   const emoji = success ? '✅' : '❌';

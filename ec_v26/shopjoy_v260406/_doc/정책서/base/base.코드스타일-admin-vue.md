@@ -155,7 +155,7 @@ VS Code **Live Server** 확장의 chokidar watcher 가 워크스페이스 안의
 저장하면 이 변경이 감지되어 화면이 통째로 새로고침된다.
 
 검증 완료(2026-05-26):
-- 실제 저장 경로: `_apps_be/EcAdminApi/bin/main/static/cdn/attach/{businessCode}/{yyyy}/...`
+- 실제 저장 경로: `apps/ecBeBo/bin/main/static/cdn/attach/{businessCode}/{yyyy}/...`
 - `liveServer.settings.ignoreFiles` 에 `**/bin/**` / `**/static/cdn/**` / `**/cdn/**` /
   이미지 확장자 등을 추가해도 **여전히 리프레시 발생** — Live Server 의 ignore 규칙이
   부모 디렉토리 watch 와 충돌하여 효과 없음.
@@ -179,7 +179,7 @@ VS Code **Live Server** 확장의 chokidar watcher 가 워크스페이스 안의
 - **현상**: 공지사항/사용자관리 첨부파일 추가·삭제 시, 사진 변경 시 화면 전체 리프레시.
   콘솔 에러 없음. Network 탭에 `bo.html` GET 이 다시 발생.
 - **원인 추적**: `find ... -path "*NOTICE_ATTACH*"` 로 실제 업로드 파일 위치를 찾아
-  `_apps_be/EcAdminApi/bin/main/static/cdn/...` 임을 확인. ignore 패턴 추가해도 해결 안 됨.
+  `apps/ecBeBo/bin/main/static/cdn/...` 임을 확인. ignore 패턴 추가해도 해결 안 됨.
   Live Server OFF 후 정상 동작.
 - **장기 해결안**(아직 미적용): `application-local.yml` 의 `app.file.local.physical-root` 를
   워크스페이스 외부 경로(예: `C:/_shopjoy_uploads/cdn`)로 변경하면 Live Server ON 상태에서도

@@ -33,8 +33,17 @@ workflows:
     max_build_duration: 60
     environment:
       <<: *android_env
+      # 2026-09-06: _apps/ShopjoyFoApp → apps/ecAppFoFlutter/ShopjoyFoApp (리네임 반영 — 이전
+      # 경로는 리네임 전에도 이미 실제 위치(_apps_app/flutter/ShopjoyFoApp)와 달라 안 맞았었음).
       vars:
-        APP_DIR: "_apps/ShopjoyFoApp"
+        APP_DIR: "apps/ecAppFoFlutter/ShopjoyFoApp"
+      # Synology NAS 업로드용(요청사항: "시놀로지 특정폴더에 넣는건 가능해?") — Codemagic 콘솔의
+      # Environment variables 에 synology_deploy 그룹으로 아래 4개를 등록해야 한다:
+      #   SYNOLOGY_HOST / SYNOLOGY_PORT / SYNOLOGY_USER / SYNOLOGY_PASSWORD
+      # (GitHub Actions 시크릿과 같은 값이면 되지만, Codemagic 은 별도 저장소라 여기에 다시
+      # 등록해야 한다 — GitHub 쪽 값을 그대로 복사해서 넣으면 됨.)
+      groups:
+        - synology_deploy
     cache: *cache_paths
     triggering:
       events: [push]
@@ -45,11 +54,24 @@ workflows:
       - cd $APP_DIR && npm ci
       - cd $APP_DIR && npm run config:prod && npx cap sync android
       - cd $APP_DIR/android && ./gradlew assembleDebug
+      - name: Synology NAS 에 APK 업로드 (요청사항)
+        script: |
+          brew install hudochenkov/sshpass/sshpass
+          APK_FILE=$(find $APP_DIR/android/app/build/outputs/apk -name "*.apk" | head -1)
+          echo "업로드 대상: $APK_FILE"
+          sshpass -p "$SYNOLOGY_PASSWORD" ssh -o StrictHostKeyChecking=no -p "$SYNOLOGY_PORT" "$SYNOLOGY_USER@$SYNOLOGY_HOST" \
+            "mkdir -p /volume1/docker/shopjoy/ecAppFoFlutter"
+          sshpass -p "$SYNOLOGY_PASSWORD" scp -o StrictHostKeyChecking=no -P "$SYNOLOGY_PORT" "$APK_FILE" \
+            "$SYNOLOGY_USER@$SYNOLOGY_HOST:/volume1/docker/shopjoy/ecAppFoFlutter/"
     artifacts:
       - $APP_DIR/android/app/build/outputs/apk/**/*.apk
     publishing:
       email:
         recipients: [illeesam@gmail.com]
+        # 요청사항: "첨부와 링크 둘 다 보내줘" — attach_artifacts 로 APK 첨부를 명시하고,
+        # Codemagic 알림 메일은 기본적으로 빌드 상세(Artifacts 다운로드 링크 포함) 페이지
+        # 링크도 항상 같이 보낸다 — 둘 다 자동으로 충족됨.
+        attach_artifacts: true
 
   fo-android-release:
     name: FO — Android Release (Play Store)

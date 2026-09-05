@@ -11,7 +11,7 @@ EcAdminApi 로컬 부팅 시간을 **10초 내외**로 유지한다.
 
 | 항목 | 값 |
 |---|---|
-| 대상 | `_apps_be/EcAdminApi`, `spring.profiles.active=local` |
+| 대상 | `apps/ecBeBo`, `spring.profiles.active=local` |
 | 기준 시간 | **10초 내외** (허용 범위 9~12초) |
 | 개선 전 | 18.669초 |
 | 개선 후 | 9~11초 |
@@ -23,7 +23,7 @@ EcAdminApi 로컬 부팅 시간을 **10초 내외**로 유지한다.
 반드시 3회 이상 반복해 평균으로 비교한다. 실행 중인 개발 서버(3000)를 죽이지 않으려면 별도 포트를 쓴다.
 
 ```bash
-cd _apps_be/EcAdminApi
+cd apps/ecBeBo
 for i in 1 2 3; do
   timeout 90 java -Dfile.encoding=UTF-8 -Dserver.port=3099 -Dspring.profiles.active=local \
     -jar build/libs/EcAdminApi-0.0.1-SNAPSHOT.jar 2>&1 \

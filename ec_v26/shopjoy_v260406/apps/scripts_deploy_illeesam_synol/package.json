@@ -1,0 +1,53 @@
+{
+  "name": "shopjoy-deploy-scripts",
+  "private": true,
+  "description": "5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecGateway) 공통 배포 도구 — deploy-dev-synol-*.js(빌드+전송+기동) + manage-dev-synol.js(정지/삭제/상태확인) + synology-deploy-util.js + notify-deploy-result.js. apps/ecFeBo/scripts/(빌드 전용) 와는 별개(2026-09-06 분리 — 백엔드 배포 스크립트가 프론트 앱 폴더 밑에 있는 게 어색하다는 지적으로 apps/scripts_deploy_illeesam_synol/ 로 독립).",
+  "scripts": {
+    "---------- deploy ----------": "exit 0",
+    "deploy:dev-synol-ecBeBo": "node deploy-dev-synol-be-ecBeBo.js",
+    "deploy:dev-synol-ecBeCdn": "node deploy-dev-synol-be-ecBeCdn.js",
+    "deploy:dev-synol-ecFeBo": "node deploy-dev-synol-fe-ecFeBo.js",
+    "deploy:dev-synol-ecBeRedis": "node deploy-dev-synol-be-ecBeRedis.js",
+    "deploy:dev-synol-ecGateway": "node deploy-dev-synol-gw-ecGateway.js",
+    "deploy:dev-synol-zmulti-ecBeBo-ecBeCdn": "npm run deploy:dev-synol-ecBeBo && npm run deploy:dev-synol-ecBeCdn",
+    "deploy:dev-synol-zmulti-all": "npm run deploy:dev-synol-ecBeBo && npm run deploy:dev-synol-ecBeCdn && npm run deploy:dev-synol-ecFeBo && npm run deploy:dev-synol-ecBeRedis && npm run deploy:dev-synol-ecGateway",
+
+    "---------- stop ----------": "exit 0",
+    "stop:dev-synol-ecBeBo": "node manage-dev-synol.js stop ecBeBo",
+    "stop:dev-synol-ecBeCdn": "node manage-dev-synol.js stop ecBeCdn",
+    "stop:dev-synol-ecFeBo": "node manage-dev-synol.js stop ecFeBo",
+    "stop:dev-synol-ecBeRedis": "node manage-dev-synol.js stop ecBeRedis",
+    "stop:dev-synol-ecGateway": "node manage-dev-synol.js stop ecGateway",
+    "stop:dev-synol-zmulti-all": "npm run stop:dev-synol-ecBeBo && npm run stop:dev-synol-ecBeCdn && npm run stop:dev-synol-ecFeBo && npm run stop:dev-synol-ecBeRedis && npm run stop:dev-synol-ecGateway",
+
+    "---------- delete ----------": "exit 0",
+    "delete:dev-synol-ecBeBo": "node manage-dev-synol.js delete ecBeBo",
+    "delete:dev-synol-ecBeCdn": "node manage-dev-synol.js delete ecBeCdn",
+    "delete:dev-synol-ecFeBo": "node manage-dev-synol.js delete ecFeBo",
+    "delete:dev-synol-ecBeRedis": "node manage-dev-synol.js delete ecBeRedis",
+    "delete:dev-synol-ecGateway": "node manage-dev-synol.js delete ecGateway",
+    "delete:dev-synol-zmulti-all": "npm run delete:dev-synol-ecBeBo && npm run delete:dev-synol-ecBeCdn && npm run delete:dev-synol-ecFeBo && npm run delete:dev-synol-ecBeRedis && npm run delete:dev-synol-ecGateway",
+
+    "---------- ps ----------": "exit 0",
+    "ps:dev-synol-ecBeBo": "node manage-dev-synol.js ps ecBeBo",
+    "ps:dev-synol-ecBeCdn": "node manage-dev-synol.js ps ecBeCdn",
+    "ps:dev-synol-ecFeBo": "node manage-dev-synol.js ps ecFeBo",
+    "ps:dev-synol-ecBeRedis": "node manage-dev-synol.js ps ecBeRedis",
+    "ps:dev-synol-ecGateway": "node manage-dev-synol.js ps ecGateway"
+  },
+  "// scriptsGuide": "JSON은 주석 문법이 없어 npm 이 무시하는 커스텀 필드로 설명을 남긴다.",
+  "// 구분선": "'---------- 그룹명 ----------': 'exit 0' 항목은 실행용이 아니라 VS Code NPM SCRIPTS 패널에서 deploy/stop/delete/ps 그룹을 시각적으로 나누기 위한 더미 항목이다(요청사항: '너무 많은데 중간에 구분선 줄 수 있어'). 실수로 실행해도 exit 0 이라 무해하다 — 이 항목들은 실제로 실행할 일이 없다.",
+  "scriptsGuide": {
+    "deploy:*": "빌드(필요시)+전송+컨테이너 기동/갱신. 요청사항 원문: 5개 앱을 각자 독립 배포.",
+    "deploy:dev-synol-zmulti-all": "5개 앱 전부 순서대로(ecBeBo→ecBeCdn→ecFeBo→ecBeRedis→ecGateway) 배포. 하나라도 실패하면 그 뒤는 실행 안 됨(&& 체이닝) — 어디서 멈췄는지 콘솔 로그로 바로 확인 가능.",
+    "stop:*": "컨테이너만 정지(docker compose stop) — 설정/컨테이너 자체는 남아있어서 나중에 그냥 start로 재개 가능. 요청사항: '그 컨테이너는 중지'.",
+    "stop:dev-synol-zmulti-all": "5개 앱 전부 순서대로 정지.",
+    "delete:*": "컨테이너+compose 네트워크 제거(docker compose down) — 볼륨/데이터(DB, Redis 데이터, 로그, CDN 저장소 등 호스트 바인드마운트)와 이미지는 안 지운다. 다시 배포하면 그대로 복구됨. 요청사항: '그 컨테이너는 삭제'.",
+    "delete:dev-synol-zmulti-all": "5개 앱 전부 순서대로 삭제(컨테이너만 — 데이터는 안 지움).",
+    "ps:*": "컨테이너 상태만 빠르게 확인(docker compose ps) — 배포/정지/삭제 없이 지금 떠 있는지만 볼 때."
+  },
+  "dependencies": {
+    "ssh2": "^1.17.0",
+    "nodemailer": "^9.1.1"
+  }
+}

@@ -33,7 +33,7 @@ SYNOLOGY_PASSWORD=appuser1**
 ~\ec_v26\shopjoy_v260406> npm run deploy:dev-synol-be-ecAdminApi
 ```
 
-**명령어 설명**: `scripts/deploy-dev-synol-be-ecAdminApi.js`를 실행합니다. 이 스크립트가 안에서 하는 일 — [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>)의 STEP 1~5와 완전히 동일합니다.
+**명령어 설명**: `scripts/deploy-dev-synol-be-ecBeBo.js`를 실행합니다. 이 스크립트가 안에서 하는 일 — [11_illeesam_synology_BE_수동배포가이드(synology).md](<11_illeesam_synology_BE_수동배포가이드(synology).md>)의 STEP 1~5와 완전히 동일합니다.
 
 | 단계 | 하는 일 |
 |---|---|
@@ -85,16 +85,16 @@ http://illeesam.synology.me:21080/api/co/sy/code/page?pageNo=1&pageSize=10
 
 | 파일 | 역할 |
 |---|---|
-| [`scripts/deploy-dev-synol-be-ecAdminApi.js`](../../../scripts/deploy-dev-synol-be-ecAdminApi.js) | 실제 배포 로직 — Gradle 빌드 → jar SFTP 전송 → NAS에서 `docker compose build`+재기동 → healthy 될 때까지 최대 5분 폴링 → `actuator/health` 응답 확인 |
-| [`scripts/synology-deploy-util.js`](../../../scripts/synology-deploy-util.js) | `deploy-dev-synol-be-ecAdminApi.js`/`deploy-dev-synol-fe-vue3cdn.js`가 공유하는 SSH/SFTP 공통 로직(접속정보 로드, SFTP 업로드, SSH 명령 실행) |
+| [`scripts/deploy-dev-synol-be-ecBeBo.js`](../../../scripts/deploy-dev-synol-be-ecBeBo.js) | 실제 배포 로직 — Gradle 빌드 → jar SFTP 전송 → NAS에서 `docker compose build`+재기동 → healthy 될 때까지 최대 5분 폴링 → `actuator/health` 응답 확인 |
+| [`scripts/synology-deploy-util.js`](../../../scripts/synology-deploy-util.js) | `deploy-dev-synol-be-ecBeBo.js`/`deploy-dev-synol-fe-ecFeBo.js`가 공유하는 SSH/SFTP 공통 로직(접속정보 로드, SFTP 업로드, SSH 명령 실행) |
 | `scripts/.synology-deploy.env` | NAS 접속정보(호스트/포트/계정/비밀번호) — `.gitignore` 처리돼 있어 깃허브에 올라가지 않음(위 "사전 준비" 참조) |
-| `package.json`의 `deploy:dev-synol-be-ecAdminApi` | `node scripts/deploy-dev-synol-be-ecAdminApi.js`를 실행하는 npm 스크립트 별칭 |
+| `package.json`의 `deploy:dev-synol-be-ecAdminApi` | `node scripts/deploy-dev-synol-be-ecBeBo.js`를 실행하는 npm 스크립트 별칭 |
 | `package.json`의 `deploy:dev-synol-full` | `deploy:dev-synol-be-ecAdminApi` → `deploy:dev-synol-fe-vue3cdn` 순서 실행(백엔드+프론트 한 번에) |
 | `package.json`의 `deploy:dev-github-be-api`/`-fe`/`-full` | (방식 B) 커밋 메시지만 다르고 동작은 동일한 `git add && commit && push` — 실제 배포 대상은 GitHub Actions 경로 필터가 결정 |
 | `.github/workflows/shopjoy-be-illeesam-synol-deploy.yml` | (방식 B) push 시 GitHub 서버가 대신 실행 — 절차는 같지만 GitHub Actions 문법으로 옮긴 것 |
 | `.github/workflows/shopjoy-be-illeesam-synol-build.yml` | 배포 없이 컴파일만 확인하는 CI 검증(모든 push마다 실행, 배포와는 무관) |
 
-**`deploy-dev-synol-be-ecAdminApi.js` 핵심 로직 요약**:
+**`deploy-dev-synol-be-ecBeBo.js` 핵심 로직 요약**:
 ```
 1. gradlew(.bat) clean bootJar -x test           → jar 생성
 2. SFTP: jar → NAS /volume1/docker/shopjoy/backend/

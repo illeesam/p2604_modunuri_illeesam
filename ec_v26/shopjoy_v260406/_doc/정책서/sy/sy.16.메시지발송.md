@@ -51,7 +51,7 @@ cmMsgSendService.sendContactReceivedAsync(
 return saved;
 ```
 
-- 발송은 별도 스레드풀 `msgSendExecutor` 에서 실행([`common/config/AsyncConfig.java`](../../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/common/config/AsyncConfig.java), `@EnableAsync`).
+- 발송은 별도 스레드풀 `msgSendExecutor` 에서 실행([`common/config/AsyncConfig.java`](../../../apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/common/config/AsyncConfig.java), `@EnableAsync`).
 - 각 채널 서비스도 내부적으로 발송 실패를 삼키고 `SendResultVo.success=false` 로 반환한다(예외 미전파).
   → **한 채널이 실패해도 다른 채널·본 흐름에 영향 없음**.
 - 동기 결과가 필요한 경우(컨트롤러/테스트)는 `sendContactReceived(...)`(동기, `List<SendResultVo>` 반환) 사용.

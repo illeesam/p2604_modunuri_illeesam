@@ -159,11 +159,11 @@ public void saveList(List<XxxEntity> rows) {
 ```bash
 # id 검증 누락된 update/delete 찾기
 grep -rL "CmUtil.requireId" \
-  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/*/service/*Service.java
+  apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base/*/service/*Service.java
 
 # saveList 에 && r.getXxxId() != null 잔존 패턴 찾기 (위반)
 grep -rnE '\.filter\([^)]*\.getRowStatus\(\)\)\s*&&\s*r\.get\w+Id\(\)\s*!=\s*null' \
-  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base
+  apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base
 ```
 
 ### getById / getById - 필수 검증
@@ -329,9 +329,9 @@ public class SyUser {
 ```bash
 # Entity·DTO 클래스에서 필드 default 또는 @Builder.Default 사용 검색
 grep -rnE "private [A-Z][a-zA-Z]+ [a-zA-Z]+ = |@Builder\.Default" \
-  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base \
-  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo \
-  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/fo
+  apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/base \
+  apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/bo \
+  apps/ecBeBo/src/main/java/com/shopjoy/ecadminapi/fo
 ```
 
 ### 사용 제약

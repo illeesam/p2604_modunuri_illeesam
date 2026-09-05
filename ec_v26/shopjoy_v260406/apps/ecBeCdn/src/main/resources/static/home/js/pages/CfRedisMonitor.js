@@ -7,8 +7,9 @@ window.CfRedisMonitor = {
     const { reactive, ref, nextTick, onMounted } = Vue;
 
     // 1) ref/reactive
-    // 요청사항(2026-09-06): 이 NAS 의 Redis 는 12379 포트 사용 — 기본값을 표준 6379 대신 이걸로.
-    const form = reactive({ host: 'illeesam.synology.me', port: 12379, password: '', database: 0 });
+    // 요청사항(2026-09-06): 이 NAS 의 Redis(shopjoy-ecBeRedis-22379) 는 22379 포트 사용 —
+    // 기본값을 표준 6379 대신 이걸로(비밀번호가 걸려있어 password 는 직접 입력 필요).
+    const form = reactive({ host: 'illeesam.synology.me', port: 22379, password: '', database: 0 });
     const uiState = reactive({ testing: false, tested: false });
     const result = reactive({ ping: '', dbSize: 0, redisVersion: '', role: '', connectedClients: '', usedMemoryHuman: '', uptimeInDays: '', osInfo: '', sampleKeys: [] });
     // appRedis — 이 EcCdnApi 앱 자체(app.redis.*)의 인증 캐시 스위치 상태(요청사항: "redis switch
