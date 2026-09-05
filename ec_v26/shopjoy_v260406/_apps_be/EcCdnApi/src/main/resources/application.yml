@@ -70,6 +70,20 @@ app:
       timeout: 3000
     auth-session-seconds: 3600
 
+# 2026-09-06 버그수정(배포 직후 컨테이너 unhealthy 로 실증 발견): spring-boot-starter-data-redis
+# 를 classpath 에 추가하면, app.redis.enabled 스위치와 완전히 무관하게 Spring Boot 자체
+# 자동설정(RedisHealthContributorAutoConfiguration)이 자기 것대로 localhost:6379 로 접속을
+# 시도하는 RedisReactiveHealthIndicator 를 actuator 헬스체크에 끼워넣는다 — CfRedisConfig 가
+# @ConditionalOnProperty 로 꺼져 있어도 이 기본 인디케이터는 별개로 항상 켜진다. 그 결과
+# "Connection refused: localhost/127.0.0.1:6379" 로 /actuator/health 전체가 DOWN 판정되고
+# docker healthcheck 가 "unhealthy" 로 떨어진다(EcAdminApi 가 이미 같은 문제를 겪고 고쳤던
+# management.health.redis.enabled 버그와 동일 원인 — _apps_be/EcAdminApi 의 application-*.yml
+# 참조). 이 앱도 동일하게 명시적으로 꺼둔다.
+management:
+  health:
+    redis:
+      enabled: false
+
 logging:
   config: classpath:logback-spring.xml
   file:

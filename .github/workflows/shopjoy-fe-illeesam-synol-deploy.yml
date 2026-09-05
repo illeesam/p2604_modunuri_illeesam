@@ -6,9 +6,11 @@
 # 재시작 불필요 — nginx 는 파일시스템을 직접 읽으므로 새 파일을 올려두면 다음 요청부터
 # (app JS/CSS/HTML 은 no-cache 캐시정책이라) 바로 반영된다.
 #
-# main에 push 되면 트리거는 되지만, 실제 빌드+배포는 커밋 메시지에 "deploy" 또는 "배포"라는
-# 단어가 들어있을 때만 진행한다. 그 단어가 없으면 곧바로 스킵 처리된다.
-# (workflow_dispatch로 수동 실행할 땐 이 단어 체크 없이 무조건 진행됨)
+# main에 push 되면 트리거는 되지만, 실제 빌드+배포는 커밋 메시지에 정확히
+# 'deploy_dev-github-fe-vue3cdn' 또는 'deploy_dev-github-full' 토큰이 들어있을 때만 진행한다
+# (npm run deploy:dev-github-fe-vue3cdn 이 이 토큰을 커밋 메시지에 실어 보낸다. 2026-09-06
+# 변경 — 예전엔 'deploy'/'배포' 아무 단어나 매칭되는 느슨한 방식이었다). 토큰이 없으면 스킵.
+# (workflow_dispatch로 수동 실행할 땐 이 토큰 체크 없이 무조건 진행됨)
 #
 # 같은 dist/ 를 GitHub Pages 에도 배포하려면 shopjoy-fe-illeesam-github-deploy.yml 참조 —
 # 두 배포는 서로 독립적이라 하나가 실패해도 다른 쪽엔 영향 없다.
@@ -42,14 +44,13 @@ defaults:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # 커밋 메시지에 deploy/Deploy/DEPLOY/배포 중 하나라도 있어야 진행.
-    # workflow_dispatch(수동 실행)는 head_commit 이 없으므로 항상 통과.
+    # 커밋 메시지에 이 워크플로 전용 토큰(deploy_dev-github-fe-vue3cdn) 또는 전체트리거 토큰
+    # (deploy_dev-github-full) 이 있어야 진행. workflow_dispatch(수동 실행)는 head_commit 이
+    # 없으므로 항상 통과.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.head_commit.message, 'deploy') ||
-      contains(github.event.head_commit.message, 'Deploy') ||
-      contains(github.event.head_commit.message, 'DEPLOY') ||
-      contains(github.event.head_commit.message, '배포')
+      contains(github.event.head_commit.message, 'deploy_dev-github-fe-vue3cdn') ||
+      contains(github.event.head_commit.message, 'deploy_dev-github-full')
     steps:
       - name: "[1] 소스코드 체크아웃"
         uses: actions/checkout@v4

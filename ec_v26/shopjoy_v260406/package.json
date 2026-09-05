@@ -20,9 +20,10 @@
     "deploy:dev-synol-be-ecCdnApi": "node scripts/deploy-dev-synol-be-ecCdnApi.js",
     "deploy:dev-synol-fe-vue3cdn": "node scripts/deploy-dev-synol-fe-vue3cdn.js",
     "deploy:dev-synol-full": "npm run deploy:dev-synol-be-ecAdminApi && npm run deploy:dev-synol-fe-vue3cdn",
-    "deploy:dev-github-be-api": "git add . && git commit -m \"deploy(be): 배포\" && git push",
-    "deploy:dev-github-fe-vue3cdn": "git add . && git commit -m \"deploy(fe): 배포\" && git push",
-    "deploy:dev-github-full": "git add . && git commit -m \"deploy(full): 배포\" && git push"
+    "deploy:dev-github-be-api": "git add . && git commit -m \"deploy_dev-github-be-api: 배포\" && git push",
+    "deploy:dev-github-be-cdn": "git add . && git commit -m \"deploy_dev-github-be-cdn: 배포\" && git push",
+    "deploy:dev-github-fe-vue3cdn": "git add . && git commit -m \"deploy_dev-github-fe-vue3cdn: 배포\" && git push",
+    "deploy:dev-github-full": "git add . && git commit -m \"deploy_dev-github-full: 배포\" && git push"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
@@ -51,8 +52,9 @@
     "deploy:dev-synol-be-ecCdnApi": "[⑥ 즉시배포-CDN서버] scripts/deploy-dev-synol-be-ecCdnApi.js 실행 — EcAdminApi 와 완전히 별도 배포 단위인 EcCdnApi(동영상 스트리밍/이미지 링크/파일 업로드 서버)를 같은 방식(Gradle 빌드→jar 전송→docker compose 재빌드/재기동)으로 dev NAS에 배포한다. deploy:dev-synol-full 에는 포함되지 않음(EcCdnApi 를 건드렸을 때만 따로 실행) — 최초 1회는 NAS에 Dockerfile/docker-compose.yml/.env 수동 배치 + shopjoy-net 네트워크(EcAdminApi 선행 배포) + DB DDL 적용이 먼저 필요하다. 상세: _apps_be/EcCdnApi/_doc/01_EcCdnApi_개요및배포가이드.md",
     "deploy:dev-synol-fe-vue3cdn": "[⑥ 즉시배포-프론트] scripts/deploy-dev-synol-fe-vue3cdn.js 실행 — npm run build:dev로 압축 빌드 후 이 컴퓨터가 직접 NAS에 SSH 접속해서 dist/ 를 전송·교체한다(GitHub 안 거침, 즉시 반영. GitHub Pages는 배포 안 됨 — 그건 deploy:dev-github-* 로). NAS 접속정보는 scripts/.synology-deploy.env 필요. 상세: _apps_be/EcAdminApi/_doc/15_illeesam_synology_FE_자동배포가이드(npm script).md",
     "deploy:dev-synol-full": "[⑥ 즉시배포-전체] deploy:dev-synol-be-ecAdminApi 다음 deploy:dev-synol-fe-vue3cdn 를 순서대로(백엔드 먼저) 실행 — 백엔드+프론트를 이 NAS에 한 번에 반영하고 싶을 때. 둘 중 하나만 필요하면 각각 따로 실행할 것(이 스크립트는 항상 둘 다 실행됨).",
-    "deploy:dev-github-be-api": "[⑥ GitHub트리거-백엔드] 지금까지 바뀐 파일을 전부 커밋(메시지에 'deploy(be): 배포' — 'deploy'/'배포' 둘 다 포함)하고 push한다 — GitHub 서버가 대신 빌드+배포. 실제로 어느 워크플로가 도는지는 이 스크립트가 아니라 GitHub Actions 쪽 경로 필터가 '무엇이 실제로 바뀌었는지'를 보고 정하므로, 커밋 메시지의 '-be'는 의도를 남기는 표시일 뿐 실제 배포 대상을 강제하지 않는다(백엔드 파일만 바뀌었으면 어차피 백엔드 워크플로만 돈다). 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md",
-    "deploy:dev-github-fe-vue3cdn": "[⑥ GitHub트리거-프론트] deploy:dev-github-be-api 와 동일 메커니즘, 커밋 메시지만 'deploy(fe): 배포'. 상세: _apps_be/EcAdminApi/_doc/22_illeesam_synology_GithubActions_FE_배포가이드.md",
-    "deploy:dev-github-full": "[⑥ GitHub트리거-전체] deploy:dev-github-be-api 와 동일 메커니즘, 커밋 메시지만 'deploy(full): 배포' — 백엔드+프론트가 둘 다 바뀌었을 때 의도를 명확히 남기고 싶으면 이걸 사용. 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md , _apps_be/EcAdminApi/_doc/22_illeesam_synology_GithubActions_FE_배포가이드.md"
+    "deploy:dev-github-be-api": "[⑥ GitHub트리거-백엔드(EcAdminApi)] 2026-09-06 변경: 지금까지 바뀐 파일을 전부 커밋(메시지에 정확히 'deploy_dev-github-be-api' 토큰 포함)하고 push한다 — GitHub 서버가 대신 빌드+배포. .github/workflows/shopjoy-be-illeesam-synol-deploy.yml 이 커밋 메시지에 이 토큰(또는 deploy_dev-github-full)이 있을 때만 실제로 진행된다 — 예전의 'deploy'/'배포' 아무거나 매칭되던 느슨한 방식에서 스크립트별 전용 토큰 방식으로 좁혔다(다른 목적의 커밋에 'deploy' 라는 단어가 우연히 들어가 있어도 잘못 트리거되지 않게). 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md",
+    "deploy:dev-github-be-cdn": "[⑥ GitHub트리거-CDN서버(EcCdnApi)] 2026-09-06 신설. deploy:dev-github-be-api 와 동일 메커니즘, 커밋 메시지 토큰만 'deploy_dev-github-be-cdn'. .github/workflows/shopjoy-cdn-illeesam-synol-deploy.yml 이 이 토큰(또는 deploy_dev-github-full)이 있을 때만 진행된다.",
+    "deploy:dev-github-fe-vue3cdn": "[⑥ GitHub트리거-프론트] deploy:dev-github-be-api 와 동일 메커니즘, 커밋 메시지 토큰만 'deploy_dev-github-fe-vue3cdn'. 상세: _apps_be/EcAdminApi/_doc/22_illeesam_synology_GithubActions_FE_배포가이드.md",
+    "deploy:dev-github-full": "[⑥ GitHub트리거-전체] be-api+be-cdn+fe-vue3cdn 워크플로 3개를 한 커밋으로 전부 트리거 — 커밋 메시지 토큰 'deploy_dev-github-full'. 셋 중 일부만 바뀌었어도(경로 필터 미매치) 상관없이 토큰만 있으면 3개 워크플로 모두 진행 조건을 통과한다(경로 필터 자체가 없는 워크플로는 없으므로, 실제로는 각 워크플로의 paths 조건도 같이 만족해야 함 — 즉 3앱 전부 건드린 커밋에 쓰는 것이 정확한 용도). 상세: _apps_be/EcAdminApi/_doc/21_illeesam_synology_GithubActions_BE_배포가이드.md , _apps_be/EcAdminApi/_doc/22_illeesam_synology_GithubActions_FE_배포가이드.md"
   }
 }
