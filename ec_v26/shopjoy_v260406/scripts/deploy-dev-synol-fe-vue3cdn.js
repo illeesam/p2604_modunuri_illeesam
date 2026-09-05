@@ -13,7 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { ROOT, run, withSsh, requireCreds } = require('./synology-deploy-util');
+const { ROOT, run, withSsh, requireCreds, hms } = require('./synology-deploy-util');
 const { notifyDeployResult } = require('./notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-fe-vue3cdn.js');
@@ -42,7 +42,9 @@ function checkUrl(pathname) {
 
 // 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(FE)"을 밝히는 태그 — deploy:dev-synol-full
 // 처럼 여러 스크립트가 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
-const TAG = '[deploy-dev-synol-fe-vue3cdn.js][FE]';
+// 2026-09-06: toString() 을 커스텀해서 `${TAG}` 로 보간될 때마다 그 순간의 [HH:MM:SS] 시각을
+// 새로 계산해 넣는다(요청사항).
+const TAG = { toString() { return `[${hms()}][deploy-dev-synol-fe-vue3cdn.js][FE]`; } };
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
 
 // 2026-09-05: 스크립트 전체(빌드~헬스체크까지) 소요시간을 마지막에 보여주기 위한 시작시각.

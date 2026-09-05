@@ -77,15 +77,23 @@ const walkJsFiles = (dir) => walkFiles(dir, '.js');
 // 2026-09-05: 이 스크립트가 찍는 모든 로그 앞에 파일명 태그를 자동으로 붙인다(console.log/warn/error
 // 를 한 번만 감싸서, 개별 호출부를 전부 고칠 필요 없이 항상 적용되게 함). 맨 앞 개행(\n)은
 // 그대로 유지해서 기존 줄바꿈 스타일(단계 사이 빈 줄)이 안 깨지게 한다.
+// 2026-09-06: 태그 앞에 [HH:MM:SS] 시각도 같이 붙인다 — 오래 걸리는 빌드 단계 사이 실제
+// 경과시간을 로그만 보고 바로 파악하기 위함(요청사항).
 const TAG = '[build-minify.js]';
+function hms() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
 ['log', 'warn', 'error'].forEach((level) => {
   const orig = console[level].bind(console);
   console[level] = (first, ...rest) => {
+    const prefix = `[${hms()}]${TAG}`;
     if (typeof first === 'string') {
       const m = first.match(/^\n+/);
-      orig(m ? m[0] + TAG + ' ' + first.slice(m[0].length) : TAG + ' ' + first, ...rest);
+      orig(m ? m[0] + prefix + ' ' + first.slice(m[0].length) : prefix + ' ' + first, ...rest);
     } else {
-      orig(TAG, first, ...rest);
+      orig(prefix, first, ...rest);
     }
   };
 });

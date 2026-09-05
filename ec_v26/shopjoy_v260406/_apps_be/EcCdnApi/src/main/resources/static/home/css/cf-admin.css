@@ -96,6 +96,51 @@ body {
   color: #222;
 }
 
+/* ── 열린 탭바(index.html shell, 요청사항: "열린탭바도 있으면 좋겠는데") ──────────
+   메인 프로젝트 bo.html 의 멀티탭 감각을 축소 재현. 탭이 많아지면 가로 스크롤. */
+.open-tabs-bar {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
+.open-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 6px 8px 6px 12px;
+  border-radius: 8px 8px 0 0;
+  background: #f4f5f7;
+  color: #777;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.open-tab:hover { background: #fdeef3; color: #e91e63; }
+.open-tab.active {
+  background: #fff;
+  color: #e91e63;
+  font-weight: 700;
+  border-color: #eee;
+  border-bottom-color: #fff;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.04);
+}
+.open-tab .tab-close {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #bbb;
+}
+.open-tab .tab-close:hover { background: #e91e63; color: #fff; }
+
 .page-nav a {
   color: #888;
   text-decoration: none;
@@ -249,6 +294,9 @@ body {
 .form-group { display: flex; flex-direction: column; gap: 4px; }
 .form-group.span-2 { grid-column: span 2; }
 .form-group.span-3 { grid-column: span 3; }
+/* 요청/응답 데이터 좌우 배치(CfAuthTest.js 등, 요청사항: "좌 우로 배치해줘") — .form-row 기본
+   3열 대신 2등분. 모바일 반응형 블록에서 1열로 되돌아간다. */
+.form-row-2col { grid-template-columns: 1fr 1fr; }
 .form-label { font-size: 12px; color: #666; font-weight: 600; }
 .form-control {
   padding: 7px 10px;
@@ -389,6 +437,18 @@ body {
 [hidden] { display: none !important; }
 
 /* ── 로그뷰어(CfLogViewer.js) ─────────────────────────────────────────── */
+/* 2026-09-06: 좌측 파일 tree + 우측(검색/본문) 2단 레이아웃(요청사항: "좌측에 파일목록 tree
+   형식으로") — .bo-2col(메인 프로젝트 bo-global-style0N.css) 관례를 이 독립 앱 CSS 안에서
+   재현. 좁은 화면에서는 아래 반응형 블록에서 1열로 되돌린다. */
+.log-viewer-2col {
+  display: grid;
+  grid-template-columns: minmax(200px, 220px) minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: flex-start;
+}
+.log-file-tree .folder-item { margin-bottom: 4px; }
+.log-file-tree .folder-item .meta { display: block; margin-top: 2px; }
+
 .log-box {
   max-height: 600px;
   overflow: auto;
@@ -404,6 +464,33 @@ body {
 }
 .log-line-error { color: #f48771; }
 .log-line-warn { color: #dcdcaa; }
+.log-box mark { background: #ffeb3b; color: #000; padding: 0 1px; border-radius: 2px; }
+
+/* 더보기 버튼 영역(요청사항: "하단에 더보기 버튼도 추가해줘" — 스크롤 다운 자동 로드와 병행) */
+.log-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 2px;
+}
+
+/* 검색어 템플릿 칩(요청사항: "검색어 템플릿도 제공해줘") */
+.search-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.search-templates .chip {
+  border: 1px solid #ddd;
+  background: #f7f7f9;
+  color: #555;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.search-templates .chip:hover { background: #fdeef3; border-color: #f5b8cd; color: #e91e63; }
+.search-templates .chip.active { background: #e91e63; border-color: #e91e63; color: #fff; }
 
 /* ── 설정정보/DB연결테스트 공용(CfConfigViewer/CfDbTest) ────────────────── */
 /* kv-table/admin-table 은 <table> 태그 자체라 display:block 을 직접 주면 표 레이아웃이 깨진다 —
@@ -457,4 +544,8 @@ body {
   .page-title { font-size: 17px; }
   .form-row { grid-template-columns: 1fr; }
   .search-bar input[type="text"] { min-width: 140px; }
+  .log-viewer-2col { grid-template-columns: 1fr; }
+  .form-row-2col { grid-template-columns: 1fr; }
+  .log-file-tree { display: flex; gap: 6px; overflow-x: auto; }
+  .log-file-tree .folder-item { flex: 0 0 auto; margin-bottom: 0; white-space: nowrap; }
 }

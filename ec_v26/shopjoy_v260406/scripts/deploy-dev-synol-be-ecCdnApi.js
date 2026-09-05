@@ -18,7 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { ROOT, fail, requireCreds, run, withSsh } = require('./synology-deploy-util');
+const { ROOT, fail, requireCreds, run, withSsh, hms } = require('./synology-deploy-util');
 const { notifyDeployResult } = require('./notify-deploy-result');
 
 requireCreds('scripts/deploy-dev-synol-be-ecCdnApi.js');
@@ -44,7 +44,9 @@ function checkUrl(pathname) {
   });
 }
 
-const TAG = '[deploy-dev-synol-be-ecCdnApi.js][CDN]';
+// 2026-09-06: toString() 을 커스텀해서 `${TAG}` 로 보간될 때마다 그 순간의 [HH:MM:SS] 시각을
+// 새로 계산해 넣는다(요청사항).
+const TAG = { toString() { return `[${hms()}][deploy-dev-synol-be-ecCdnApi.js][CDN]`; } };
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
 
 const startedAt = Date.now();

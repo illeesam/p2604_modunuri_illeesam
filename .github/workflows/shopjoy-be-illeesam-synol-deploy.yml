@@ -54,11 +54,36 @@ jobs:
 
       - name: "[1-2] 체크아웃 확인"
         run: |
-          echo "브랜치  : ${{ github.ref_name }}"
-          echo "커밋SHA : ${{ github.sha }}"
-          echo "커밋메시지: ${{ github.event.head_commit.message }}"
-          echo "작성자  : ${{ github.actor }}"
-          echo "시각    : $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "[$(date '+%H:%M:%S')] 브랜치  : ${{ github.ref_name }}"
+          echo "[$(date '+%H:%M:%S')] 커밋SHA : ${{ github.sha }}"
+          echo "[$(date '+%H:%M:%S')] 커밋메시지: ${{ github.event.head_commit.message }}"
+          echo "[$(date '+%H:%M:%S')] 작성자  : ${{ github.actor }}"
+          echo "[$(date '+%H:%M:%S')] 시각    : $(date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: "[1-3] 배포 대상 시스템 접속정보 출력 (비밀번호는 뒤 3자리만 노출)"
+        run: |
+          PW="${{ secrets.SYNOLOGY_PASSWORD }}"
+          LEN=${#PW}
+          if [ "$LEN" -le 3 ]; then
+            MASK=$(printf '%*s' "$LEN" '' | tr ' ' '*')
+          else
+            TAIL="${PW: -3}"
+            HEAD_LEN=$((LEN - 3))
+            HEAD=$(printf '%*s' "$HEAD_LEN" '' | tr ' ' '*')
+            MASK="${HEAD}${TAIL}"
+          fi
+          echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
+          echo "[$(date '+%H:%M:%S')] 🎯 배포 대상 시스템 (Synology NAS) — EcAdminApi"
+          echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
+          echo "[$(date '+%H:%M:%S')]   Host       : ${{ secrets.SYNOLOGY_HOST }}"
+          echo "[$(date '+%H:%M:%S')]   Port(SSH)  : ${{ secrets.SYNOLOGY_PORT }}"
+          echo "[$(date '+%H:%M:%S')]   계정(User) : ${{ secrets.SYNOLOGY_USER }}"
+          echo "[$(date '+%H:%M:%S')]   비밀번호   : $MASK  (총 ${LEN}자리 — 뒤 3자리만 표시, 나머지는 자체 마스킹)"
+          echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/backend/"
+          echo "[$(date '+%H:%M:%S')]   컨테이너   : ecadminapi (+ nginx 스택)"
+          echo "[$(date '+%H:%M:%S')]   서비스 URL : http://illeesam.synology.me:21000  (nginx 경유, 정식 접속경로)"
+          echo "[$(date '+%H:%M:%S')]   디버그 URL : http://illeesam.synology.me:21080  (actuator 직결, 외부 미공개 권장)"
+          echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
 
       # ─────────────────────────────────────────
       # [2] JDK 설정 + Gradle 빌드
@@ -73,7 +98,9 @@ jobs:
         working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
         run: |
           chmod +x gradlew
+          echo "[$(date '+%H:%M:%S')] ▶ Gradle bootJar 빌드를 시작합니다 (테스트는 제외 — 배포 파이프라인 시간 단축 목적)..."
           ./gradlew bootJar -x test --no-daemon
+          echo "[$(date '+%H:%M:%S')] ✅ Gradle 빌드 완료 — 산출물 목록:"
           ls -lh build/libs/
 
       # ─────────────────────────────────────────
@@ -82,35 +109,47 @@ jobs:
       - name: "[3-1] Docker 이미지 빌드 (docker-compose.yml 의 image: 태그와 일치시킴)"
         working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
         run: |
+          echo "[$(date '+%H:%M:%S')] ▶ Docker 이미지 빌드를 시작합니다 (tag: shopjoy/ecadminapi:latest, ${{ github.sha }})..."
           docker build \
             --tag shopjoy/ecadminapi:latest \
             --tag shopjoy/ecadminapi:${{ github.sha }} \
             --build-arg BUILD_DATE=$(date '+%Y-%m-%d') \
             --build-arg GIT_COMMIT=${{ github.sha }} \
             .
+          echo "[$(date '+%H:%M:%S')] ✅ Docker 이미지 빌드 완료"
           docker images | grep shopjoy/ecadminapi
 
       - name: "[3-2] Docker 이미지 tar.gz 압축"
         working-directory: ec_v26/shopjoy_v260406/_apps_be/EcAdminApi
         run: |
+          echo "[$(date '+%H:%M:%S')] ▶ NAS 전송을 위해 Docker 이미지를 tar.gz 로 압축합니다..."
           docker save shopjoy/ecadminapi:latest | gzip > ecadminapi-image.tar.gz
-          echo "압축파일 크기: $(du -sh ecadminapi-image.tar.gz | cut -f1)"
+          echo "[$(date '+%H:%M:%S')] ✅ 압축 완료 — 압축파일 크기: $(du -sh ecadminapi-image.tar.gz | cut -f1)"
 
       # ─────────────────────────────────────────
       # [4] 배포용 설정파일 한 곳에 모으기 (docker-compose.yml + nginx 설정 3종)
       # ─────────────────────────────────────────
       - name: "[4-1] 설정파일 모음 (deploy_pkg/)"
         run: |
+          echo "[$(date '+%H:%M:%S')] ▶ NAS 로 전송할 설정파일 4종을 deploy_pkg/ 한 곳에 모읍니다..."
           mkdir -p ec_v26/shopjoy_v260406/deploy_pkg
           cp "ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/docker-compose.yml" ec_v26/shopjoy_v260406/deploy_pkg/
           cp ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/nginx.conf ec_v26/shopjoy_v260406/deploy_pkg/
           cp ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/locations.conf ec_v26/shopjoy_v260406/deploy_pkg/
           cp ec_v26/shopjoy_v260406/_apps_be/EcAdminApi/security-headers.conf ec_v26/shopjoy_v260406/deploy_pkg/
+          echo "[$(date '+%H:%M:%S')] ✅ 설정파일 모음 완료"
           ls -la ec_v26/shopjoy_v260406/deploy_pkg/
 
       # ─────────────────────────────────────────
       # [5] Synology NAS 로 전송 (SCP)
       # ─────────────────────────────────────────
+      - name: "[5-0] NAS 전송 시작 안내"
+        run: |
+          echo "[$(date '+%H:%M:%S')] ▶ Synology NAS(${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}) 로 전송을 시작합니다."
+          echo "[$(date '+%H:%M:%S')]   1) 설정파일 4종 (docker-compose.yml / nginx.conf / locations.conf / security-headers.conf)"
+          echo "[$(date '+%H:%M:%S')]   2) Docker 이미지 압축파일 (ecadminapi-image.tar.gz)"
+          echo "[$(date '+%H:%M:%S')]   대상 경로: /volume1/docker/shopjoy/backend/"
+
       - name: "[5-1] 설정파일 전송"
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -148,34 +187,36 @@ jobs:
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           script: |
             cd /volume1/docker/shopjoy/backend
+            echo "[$(date '+%H:%M:%S')] ▶ NAS 접속 완료 — 지금부터 이미지 로드 및 docker compose 배포를 진행합니다."
+            echo "[$(date '+%H:%M:%S')]   작업 디렉터리: $(pwd)"
 
-            echo "[6-1-1] 전송된 파일 확인"
+            echo "[$(date '+%H:%M:%S')] [6-1-1] 전송된 파일 확인"
             ls -lh .
 
             if [ ! -f .env ]; then
-              echo "⚠ .env 파일이 없습니다 — 최초 1회 수동으로 준비해야 합니다. 배포를 계속하되"
-              echo "  ecadminapi 컨테이너는 필수 환경변수(JWT_SECRET 등) 없이 뜨지 못할 수 있습니다."
+              echo "[$(date '+%H:%M:%S')] ⚠ .env 파일이 없습니다 — 최초 1회 수동으로 준비해야 합니다. 배포를 계속하되"
+              echo "[$(date '+%H:%M:%S')]   ecadminapi 컨테이너는 필수 환경변수(JWT_SECRET 등) 없이 뜨지 못할 수 있습니다."
             fi
 
             echo ""
-            echo "[6-1-2] 새 이미지 로드 (재빌드 없음 — NAS 는 미리 빌드된 이미지만 import)"
+            echo "[$(date '+%H:%M:%S')] [6-1-2] 새 이미지 로드 (재빌드 없음 — NAS 는 미리 빌드된 이미지만 import)"
             sudo docker load < ecadminapi-image.tar.gz
 
             echo ""
-            echo "[6-1-3] docker compose 로 스택 기동/갱신 (변경된 서비스만 재생성됨)"
+            echo "[$(date '+%H:%M:%S')] [6-1-3] docker compose 로 스택 기동/갱신 (변경된 서비스만 재생성됨)"
             sudo docker compose up -d
 
             echo ""
-            echo "[6-1-4] 임시 압축파일 정리"
+            echo "[$(date '+%H:%M:%S')] [6-1-4] 임시 압축파일 정리"
             rm -f ecadminapi-image.tar.gz
 
             echo ""
-            echo "[6-1-5] 컨테이너 상태 확인"
+            echo "[$(date '+%H:%M:%S')] [6-1-5] 컨테이너 상태 확인"
             sleep 5
             sudo docker compose ps
 
             echo ""
-            echo "[6-1-6] ecadminapi 초기 로그"
+            echo "[$(date '+%H:%M:%S')] [6-1-6] ecadminapi 초기 로그"
             sudo docker compose logs --tail 30 ecadminapi
 
       # ─────────────────────────────────────────
@@ -188,15 +229,15 @@ jobs:
           # 있다. nginx location /api/ 는 프록시 시 URI 를 그대로 넘기므로(/api/actuator/health
           # 로 백엔드에 전달됨) 21000(nginx) 경유로는 안 맞는다 — 21080(디버그용 직결 포트)으로
           # 직접 확인한다. nginx 자체 응답 확인은 정적 파일 하나(/index.html)로 별도 체크.
-          echo ">> nginx 정적서빙 확인 (21000)"
+          echo "[$(date '+%H:%M:%S')] >> nginx 정적서빙 확인 (21000)"
           curl -s -o /dev/null -w "   HTTP Status: %{http_code}\n" --max-time 10 --connect-timeout 5 \
             "http://illeesam.synology.me:21000/index.html" || echo "   curl실패"
 
           echo ""
-          echo ">> 백엔드 actuator 헬스체크 (21080, 디버그 직결)"
+          echo "[$(date '+%H:%M:%S')] >> 백엔드 actuator 헬스체크 (21080, 디버그 직결)"
           URL="http://illeesam.synology.me:21080/actuator/health"
           HTTP_CODE=$(curl -s -o /tmp/body.txt -w "%{http_code}" --max-time 10 --connect-timeout 5 "$URL" || echo "curl실패")
-          echo "   HTTP Status: $HTTP_CODE"
+          echo "[$(date '+%H:%M:%S')]    HTTP Status: $HTTP_CODE"
           [ -s /tmp/body.txt ] && cat /tmp/body.txt | head -20 | sed 's/^/     /'
 
       # ─────────────────────────────────────────
@@ -205,17 +246,39 @@ jobs:
       - name: "[8-1] 배포 결과 요약"
         if: always()
         run: |
-          echo "레포    : ${{ github.repository }}"
-          echo "커밋SHA : ${{ github.sha }}"
-          echo "결과    : ${{ job.status }}"
-          echo "--------------------------------------"
-          echo "외부 URL(nginx)     : http://illeesam.synology.me:21000"
-          echo "백엔드 디버그 URL   : http://illeesam.synology.me:21080 (외부 미공개 권장)"
-          echo "헬스체크(디버그 직결): http://illeesam.synology.me:21080/actuator/health"
-          echo "--------------------------------------"
-          echo "Synology SSH 수동 확인 명령어"
-          echo "  cd /volume1/docker/shopjoy/backend"
-          echo "  sudo docker compose ps"
-          echo "  sudo docker compose logs -f ecadminapi"
-          echo "  sudo docker compose restart ecadminapi"
-          echo "  sudo docker compose down          # 스택 전체 정지"
+          PW="${{ secrets.SYNOLOGY_PASSWORD }}"
+          LEN=${#PW}
+          if [ "$LEN" -le 3 ]; then
+            MASK=$(printf '%*s' "$LEN" '' | tr ' ' '*')
+          else
+            TAIL="${PW: -3}"
+            HEAD_LEN=$((LEN - 3))
+            HEAD=$(printf '%*s' "$HEAD_LEN" '' | tr ' ' '*')
+            MASK="${HEAD}${TAIL}"
+          fi
+          echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
+          echo "[$(date '+%H:%M:%S')] 📦 배포 결과 요약 — EcAdminApi"
+          echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
+          echo "[$(date '+%H:%M:%S')] 레포    : ${{ github.repository }}"
+          echo "[$(date '+%H:%M:%S')] 커밋SHA : ${{ github.sha }}"
+          echo "[$(date '+%H:%M:%S')] 결과    : ${{ job.status }}"
+          echo "[$(date '+%H:%M:%S')] --------------------------------------"
+          echo "[$(date '+%H:%M:%S')] 🔑 배포 대상 시스템"
+          echo "[$(date '+%H:%M:%S')]   Host/Port(SSH) : ${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}"
+          echo "[$(date '+%H:%M:%S')]   계정           : ${{ secrets.SYNOLOGY_USER }}"
+          echo "[$(date '+%H:%M:%S')]   비밀번호       : $MASK  (뒤 3자리만 표시)"
+          echo "[$(date '+%H:%M:%S')]   설치 경로      : /volume1/docker/shopjoy/backend/"
+          echo "[$(date '+%H:%M:%S')] --------------------------------------"
+          echo "[$(date '+%H:%M:%S')] 🔍 점검 방법 — 아래 URL 을 브라우저/curl 로 접속해 정상 동작을 확인하세요"
+          echo "[$(date '+%H:%M:%S')]   1) 사용자 화면      : http://illeesam.synology.me:21000/index.html"
+          echo "[$(date '+%H:%M:%S')]   2) 관리자 화면      : http://illeesam.synology.me:21000/bo.html"
+          echo "[$(date '+%H:%M:%S')]   3) 로그뷰어(무인증) : http://illeesam.synology.me:21000/admin-tools/index.html"
+          echo "[$(date '+%H:%M:%S')]   4) 공통코드 API     : http://illeesam.synology.me:21000/api/co/sy/code/page?pageNo=1&pageSize=1"
+          echo "[$(date '+%H:%M:%S')]   5) 헬스체크(디버그) : http://illeesam.synology.me:21080/actuator/health"
+          echo "[$(date '+%H:%M:%S')] --------------------------------------"
+          echo "[$(date '+%H:%M:%S')] Synology SSH 수동 확인 명령어"
+          echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/backend"
+          echo "[$(date '+%H:%M:%S')]   sudo docker compose ps"
+          echo "[$(date '+%H:%M:%S')]   sudo docker compose logs -f ecadminapi"
+          echo "[$(date '+%H:%M:%S')]   sudo docker compose restart ecadminapi"
+          echo "[$(date '+%H:%M:%S')]   sudo docker compose down          # 스택 전체 정지"

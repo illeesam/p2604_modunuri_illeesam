@@ -31,14 +31,20 @@ const ROOT = path.resolve(__dirname, '..');
 // 를 한 번만 감싸서, 개별 호출부를 전부 고칠 필요 없이 항상 적용되게 함). 맨 앞 개행(\n)은
 // 그대로 유지해서 기존 줄바꿈 스타일(단계 사이 빈 줄)이 안 깨지게 한다.
 const TAG = '[generate-bo-lazy-classes.js]';
+function hms() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
 ['log', 'warn', 'error'].forEach((level) => {
   const orig = console[level].bind(console);
   console[level] = (first, ...rest) => {
+    const prefix = `[${hms()}]${TAG}`;
     if (typeof first === 'string') {
       const m = first.match(/^\n+/);
-      orig(m ? m[0] + TAG + ' ' + first.slice(m[0].length) : TAG + ' ' + first, ...rest);
+      orig(m ? m[0] + prefix + ' ' + first.slice(m[0].length) : prefix + ' ' + first, ...rest);
     } else {
-      orig(TAG, first, ...rest);
+      orig(prefix, first, ...rest);
     }
   };
 });

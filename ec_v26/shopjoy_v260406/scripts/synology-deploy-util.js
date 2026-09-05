@@ -39,12 +39,21 @@ const PORT = Number(process.env.SYNOLOGY_PORT || 22);
 const USER = process.env.SYNOLOGY_USER;
 const PASSWORD = process.env.SYNOLOGY_PASSWORD;
 
-// 2026-09-05: 이 파일이 직접 찍는 로그(캐일러가 자기 TAG를 안 넘겨준 경우)의 기본 태그.
+// 2026-09-06: 태그 앞에 [HH:MM:SS] 시각을 붙이기 위한 헬퍼 — SSH 원격 실행/SFTP 전송처럼
+// 오래 걸리는 단계 사이 실제 경과시간을 로그만 보고 바로 파악하기 위함(요청사항).
+function hms() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+// 2026-09-05: 이 파일이 직접 찍는 로그(호출자가 자기 TAG를 안 넘겨준 경우)의 기본 태그.
 // run()/fail() 은 호출부(deploy-dev-synol-be-ecAdminApi.js 등)가 자기 TAG 를 3번째 인자로 넘겨주면
 // 그걸 쓰고, 안 넘겨주면 이 파일 자신의 이름을 쓴다 — "모든 로그 앞에 어느 파일에서 난
 // 건지 항상 표시"하되, 실제로 그 동작을 시킨 스크립트가 있으면 그 스크립트 이름이
-// 더 유용한 정보이므로 우선한다.
-const SELF_TAG = '[synology-deploy-util.js]';
+// 더 유용한 정보이므로 우선한다. toString() 을 커스텀해서 매번 문자열로 보간(${tag})될 때마다
+// 그 순간의 시각을 새로 계산해 넣는다 — 호출부(deploy-dev-synol-*.js)의 TAG 도 동일 패턴.
+const SELF_TAG = { toString() { return `[${hms()}][synology-deploy-util.js]`; } };
 
 // 2026-09-05: 비밀번호를 콘솔에 그대로 찍지 않기 위한 마스킹 — 앞쪽 절반만 보여주고
 // 뒤쪽 절반은 길이와 무관하게 고정 '***' 로 가린다(뒷부분 길이까지 유추되지 않게).
@@ -60,7 +69,7 @@ function fail(msg, tag = SELF_TAG) {
 }
 
 function requireCreds(scriptName) {
-  const tag = `[${scriptName.split('/').pop()}]`;
+  const tag = { toString() { return `[${hms()}][${scriptName.split('/').pop()}]`; } };
   if (!HOST || !USER || !PASSWORD) {
     fail(
       `NAS 접속정보가 없습니다. scripts/.synology-deploy.env 파일을 만들거나 환경변수를 설정하세요.\n` +
@@ -204,4 +213,4 @@ function withSsh(uploads, commands, tag = SELF_TAG) {
   });
 }
 
-module.exports = { ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh };
+module.exports = { ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms };

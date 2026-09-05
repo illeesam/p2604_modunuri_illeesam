@@ -17,17 +17,26 @@
   </div>
   <div class="shell-sidebar">
     <div class="menu-group-label">관리</div>
-    <a class="menu-item" :class="{ active: currentPage === 'file' }" @click="currentPage = 'file'">📁 cf_file 관리</a>
-    <a class="menu-item" :class="{ active: currentPage === 'fileList' }" @click="currentPage = 'fileList'">🗂️ 파일 폴더뷰</a>
-    <a class="menu-item" :class="{ active: currentPage === 'client' }" @click="currentPage = 'client'">🔑 cf_client 관리</a>
-    <a class="menu-item" :class="{ active: currentPage === 'authTest' }" @click="currentPage = 'authTest'">🔐 인증 테스트</a>
+    <a class="menu-item" :class="{ active: currentPage === 'file' }" @click="navigate('file')">📁 cf_file 관리</a>
+    <a class="menu-item" :class="{ active: currentPage === 'fileList' }" @click="navigate('fileList')">🗂️ 파일 폴더뷰</a>
+    <a class="menu-item" :class="{ active: currentPage === 'client' }" @click="navigate('client')">🔑 cf_client 관리</a>
+    <a class="menu-item" :class="{ active: currentPage === 'authTest' }" @click="navigate('authTest')">🔐 인증 테스트</a>
     <div class="menu-group-label">운영</div>
-    <a class="menu-item" :class="{ active: currentPage === 'logViewer' }" @click="currentPage = 'logViewer'">🪵 로그뷰어</a>
-    <a class="menu-item" :class="{ active: currentPage === 'config' }" @click="currentPage = 'config'">⚙️ 설정정보</a>
-    <a class="menu-item" :class="{ active: currentPage === 'redis' }" @click="currentPage = 'redis'">🧰 Redis 모니터링</a>
-    <a class="menu-item" :class="{ active: currentPage === 'dbTest' }" @click="currentPage = 'dbTest'">🗄️ DB 연결 테스트</a>
+    <a class="menu-item" :class="{ active: currentPage === 'logViewer' }" @click="navigate('logViewer')">🪵 로그뷰어</a>
+    <a class="menu-item" :class="{ active: currentPage === 'config' }" @click="navigate('config')">⚙️ 설정정보</a>
+    <a class="menu-item" :class="{ active: currentPage === 'redis' }" @click="navigate('redis')">🧰 Redis 모니터링</a>
+    <a class="menu-item" :class="{ active: currentPage === 'dbTest' }" @click="navigate('dbTest')">🗄️ DB 연결 테스트</a>
   </div>
   <div class="shell-main">
+    <!-- 열린 탭바(요청사항: "열린탭바도 있으면 좋겠는데") — 메인 프로젝트 bo.html 의 멀티탭
+         감각을 이 앱 규모에 맞게 축소: 방문한 화면이 탭으로 남아 클릭 한 번에 전환, ✕ 로 닫기.
+         전부 닫으면 첫 화면으로 자동 복귀(빈 화면 방지). -->
+    <div class="open-tabs-bar">
+      <div v-for="t in openTabs" :key="t.id" class="open-tab" :class="{ active: currentPage === t.id }" @click="navigate(t.id)">
+        {{ t.label }}
+        <span class="tab-close" @click.stop="onCloseTab(t.id)">✕</span>
+      </div>
+    </div>
     <cf-file-mng v-if="currentPage === 'file'"></cf-file-mng>
     <cf-file-file-list v-else-if="currentPage === 'fileList'"></cf-file-file-list>
     <cf-client-mng v-else-if="currentPage === 'client'"></cf-client-mng>
@@ -52,16 +61,46 @@
 <script src="js/pages/CfRedisMonitor.js"></script>
 <script src="js/pages/CfDbTest.js"></script>
 <script>
-const { createApp, ref } = Vue;
+const { createApp, ref, reactive } = Vue;
 
 // ?page=client|file|fileList|authTest|logViewer|config|redis|dbTest 로 직접 진입 가능(북마크 편의) — 기본은 cf_file.
 const initialPage = new URLSearchParams(location.search).get('page');
 const VALID_PAGES = ['file', 'fileList', 'client', 'authTest', 'logViewer', 'config', 'redis', 'dbTest'];
+const PAGE_LABELS = {
+  file: '📁 cf_file 관리', fileList: '🗂️ 파일 폴더뷰', client: '🔑 cf_client 관리', authTest: '🔐 인증 테스트',
+  logViewer: '🪵 로그뷰어', config: '⚙️ 설정정보', redis: '🧰 Redis 모니터링', dbTest: '🗄️ DB 연결 테스트',
+};
 
 const app = createApp({
   setup() {
-    const currentPage = ref(VALID_PAGES.includes(initialPage) ? initialPage : 'file');
-    return { currentPage };
+    const startPage = VALID_PAGES.includes(initialPage) ? initialPage : 'file';
+    const currentPage = ref(startPage);
+    // 열린 탭바(요청사항: "열린탭바도 있으면 좋겠는데") — 방문한 화면을 탭으로 유지.
+    const openTabs = reactive([{ id: startPage, label: PAGE_LABELS[startPage] }]);
+    // 요청사항(2026-09-06): "상단 URL 이 ?page=... 로 표시되어야 하고, 새로고침해도 그 화면
+    // 그대로 보여야 한다" — 메뉴 클릭 시 currentPage 만 바꾸고 URL 은 그대로 두던 방식(예전)은
+    // 새로고침하면 항상 기본 페이지(file)로 돌아갔다. history.replaceState 로 주소창의 ?page=
+    // 쿼리를 화면 전환마다 같이 갱신해서(새 히스토리 항목은 안 쌓음 — 뒤로가기 스팸 방지),
+    // 북마크·새로고침·주소 복사 어디서든 같은 화면으로 복귀되게 한다.
+    const navigate = (page) => {
+      currentPage.value = page;
+      if (!openTabs.some((t) => t.id === page)) openTabs.push({ id: page, label: PAGE_LABELS[page] });
+      const url = new URL(location.href);
+      url.searchParams.set('page', page);
+      history.replaceState(null, '', url);
+    };
+    // 탭 닫기 — 닫은 게 현재 보고 있던 탭이면 그 옆 탭(없으면 남은 첫 탭)으로 전환, 전부
+    // 닫혔으면 기본 화면을 다시 연다(빈 화면 방지).
+    const onCloseTab = (id) => {
+      const idx = openTabs.findIndex((t) => t.id === id);
+      if (idx === -1) return;
+      openTabs.splice(idx, 1);
+      if (currentPage.value !== id) return;
+      if (openTabs.length === 0) { navigate('file'); return; }
+      const nextTab = openTabs[idx] || openTabs[idx - 1];
+      navigate(nextTab.id);
+    };
+    return { currentPage, openTabs, navigate, onCloseTab };
   },
 });
 // BoLite.js(경량 로컬 포트) — 메인 프로젝트 bo-grid/bo-grid-crud/bo-form-area 의 columns 속성화

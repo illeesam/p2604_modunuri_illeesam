@@ -220,16 +220,16 @@ window.CfAuthTest = {
         <bo-grid :columns="histGridColumns" :rows="histState.list" row-key="histId" empty-text="이력이 없습니다." />
       </div>
 
-      <!-- ④ 요청/응답 로그(하단, 요청사항) -->
+      <!-- ④ 요청/응답 로그(하단, 요청사항 — 2026-09-06: 세로 스택 대신 좌우 배치로 변경) -->
       <div class="card">
-        <div class="form-row">
-          <div class="form-group span-3">
+        <div class="form-row form-row-2col">
+          <div class="form-group">
             <span class="form-label">요청 데이터</span>
-            <textarea class="form-control" rows="10" readonly :value="uiState.reqLog" style="font-family:monospace;font-size:12px;white-space:pre;"></textarea>
+            <textarea class="form-control" rows="16" readonly :value="uiState.reqLog" style="font-family:monospace;font-size:12px;white-space:pre;"></textarea>
           </div>
-          <div class="form-group span-3">
+          <div class="form-group">
             <span class="form-label">응답 데이터</span>
-            <textarea class="form-control" rows="10" readonly :value="uiState.resLog" style="font-family:monospace;font-size:12px;white-space:pre;"></textarea>
+            <textarea class="form-control" rows="16" readonly :value="uiState.resLog" style="font-family:monospace;font-size:12px;white-space:pre;"></textarea>
           </div>
         </div>
       </div>

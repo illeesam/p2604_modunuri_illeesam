@@ -53,6 +53,10 @@ public class CfLogController {
         m.put("key", key);
         m.put("label", label);
         m.put("fileName", p.getFileName().toString());
+        // 요청사항(2026-09-06): "로그파일 full 경로 표시해줘" — 좌측 tree 의 상위 폴더 라벨과
+        // 로그 본문 헤더에 그대로 노출할 절대경로. logDir 이 상대경로("logs")로 설정된 로컬
+        // 환경에서도 toAbsolutePath() 로 실제 디스크 위치를 정확히 알려준다.
+        m.put("fullPath", p.toAbsolutePath().normalize().toString());
         m.put("exists", java.nio.file.Files.exists(p));
         long size = CfLogTailUtil.sizeOf(p);
         m.put("sizeBytes", size);
@@ -73,6 +77,7 @@ public class CfLogController {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("fileKey", file);
         body.put("fileName", p.getFileName().toString());
+        body.put("fullPath", p.toAbsolutePath().normalize().toString());
         body.put("exists", java.nio.file.Files.exists(p));
         body.put("requestedLines", lines);
         body.put("returnedLines", result.size());

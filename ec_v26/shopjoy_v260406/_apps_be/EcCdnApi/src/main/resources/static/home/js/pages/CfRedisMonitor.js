@@ -4,15 +4,32 @@
  */
 window.CfRedisMonitor = {
   setup() {
-    const { reactive, onMounted } = Vue;
+    const { reactive, ref, nextTick, onMounted } = Vue;
 
     // 1) ref/reactive
-    const form = reactive({ host: 'illeesam.synology.me', port: 6379, password: '', database: 0 });
+    // 요청사항(2026-09-06): 이 NAS 의 Redis 는 12379 포트 사용 — 기본값을 표준 6379 대신 이걸로.
+    const form = reactive({ host: 'illeesam.synology.me', port: 12379, password: '', database: 0 });
     const uiState = reactive({ testing: false, tested: false });
     const result = reactive({ ping: '', dbSize: 0, redisVersion: '', role: '', connectedClients: '', usedMemoryHuman: '', uptimeInDays: '', osInfo: '', sampleKeys: [] });
     // appRedis — 이 EcCdnApi 앱 자체(app.redis.*)의 인증 캐시 스위치 상태(요청사항: "redis switch
     // 될수 있게 해줘" — 화면에서 현재 스위치 on/off 를 바로 확인 + 그 설정값으로 접속 테스트).
-    const appRedis = reactive({ enabled: false, host: '', port: 6379, database: 0, loaded: false });
+    const appRedis = reactive({ enabled: false, host: '', port: 12379, database: 0, loaded: false });
+    // 연결 테스트 로그(요청사항: "연결 테스트 응답정보 아래에 text area 추가하고 로그정보 표시") —
+    // 테스트를 누를 때마다 타임스탬프 찍힌 줄을 계속 쌓아서 이 화면에서 여러 번 시도한 이력을
+    // 한눈에 비교할 수 있게 한다(로그뷰어(CfLogViewer.js)와 동일한 [HH:MM:SS] 표기 관례).
+    const logLines = ref([]);
+    const logBoxEl = ref(null);
+    const fnHms = () => {
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, '0');
+      return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    };
+    const fnAppendLog = async (msg) => {
+      logLines.value.push(`[${fnHms()}] ${msg}`);
+      await nextTick();
+      if (logBoxEl.value) logBoxEl.value.scrollTop = logBoxEl.value.scrollHeight;
+    };
+    const cfLogText = () => logLines.value.join('\n');
 
     // 3) 조회
     const fnLoadAppRedisConfig = async () => {
@@ -37,26 +54,31 @@ window.CfRedisMonitor = {
       if (!form.host.trim()) return cfAuth.showToast('host 를 입력하세요.', true);
       uiState.testing = true;
       uiState.tested = false;
+      const body = { host: form.host.trim(), port: form.port, password: form.password || null, database: form.database };
+      await fnAppendLog(`▶ 연결 시도: ${body.host}:${body.port} (database=${body.database}, password=${body.password ? '설정됨' : '없음'})`);
       try {
-        const body = { host: form.host.trim(), port: form.port, password: form.password || null, database: form.database };
         const data = await cfAuth.cfApi('/api/cdn/redis/test', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
         });
         Object.assign(result, data);
         uiState.tested = true;
+        await fnAppendLog(`✅ 연결 성공 — PING=${data.ping}, dbSize=${data.dbSize}, redisVersion=${data.redisVersion}, role=${data.role}`);
+        await fnAppendLog(`   응답 원문: ${JSON.stringify(data)}`);
         cfAuth.showToast('Redis 연결 성공 (PING=' + data.ping + ')');
       } catch (e) {
+        await fnAppendLog(`❌ 연결 실패 — ${e.message}`);
         cfAuth.showToast(e.message, true);
       } finally {
         uiState.testing = false;
       }
     };
+    const onClearLog = () => { logLines.value = []; };
 
     // 5) onMounted
     const initPage = async () => { await fnLoadAppRedisConfig(); };
     onMounted(initPage);
 
-    return { form, uiState, result, appRedis, onTest, onUseAppConfig };
+    return { form, uiState, result, appRedis, logLines, logBoxEl, cfLogText, onTest, onUseAppConfig, onClearLog };
   },
   template: `
     <div>
@@ -112,6 +134,17 @@ window.CfRedisMonitor = {
         <ul v-else style="margin:0;padding-left:18px;font-size:12px;font-family:Consolas,Monaco,monospace;">
           <li v-for="k in result.sampleKeys" :key="k">{{ k }}</li>
         </ul>
+      </div>
+
+      <!-- ③ 로그정보(요청사항: "연결 테스트 응답정보 아래에 text area 추가하고 로그정보 표시") -->
+      <div class="card">
+        <div class="list-toolbar">
+          <span class="list-title">📜 연결 테스트 로그</span>
+          <button class="btn btn_reset btn-sm" @click="onClearLog">지우기</button>
+        </div>
+        <textarea ref="logBoxEl" class="log-box" readonly :value="cfLogText()"
+          style="width:100%;height:200px;resize:vertical;border:none;box-sizing:border-box;"
+          placeholder="[연결 테스트] 버튼을 누르면 시도/결과 로그가 여기 시간순으로 쌓입니다."></textarea>
       </div>
     </div>
   `,

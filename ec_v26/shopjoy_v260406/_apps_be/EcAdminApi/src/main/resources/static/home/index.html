@@ -19,9 +19,17 @@
   </div>
   <div class="shell-sidebar">
     <div class="menu-group-label">운영</div>
-    <a class="menu-item" :class="{ active: currentPage === 'logViewer' }" @click="currentPage = 'logViewer'">🪵 로그뷰어</a>
+    <a class="menu-item" :class="{ active: currentPage === 'logViewer' }" @click="navigate('logViewer')">🪵 로그뷰어</a>
   </div>
   <div class="shell-main">
+    <!-- 열린 탭바(요청사항: "열린탭바도 있으면 좋겠는데") — EcCdnApi 의 index.html 과 동일 패턴.
+         현재는 화면 1개뿐이라 탭 1개로 시작하지만, 앞으로 화면이 늘어도 그대로 확장된다. -->
+    <div class="open-tabs-bar">
+      <div v-for="t in openTabs" :key="t.id" class="open-tab" :class="{ active: currentPage === t.id }" @click="navigate(t.id)">
+        {{ t.label }}
+        <span class="tab-close" @click.stop="onCloseTab(t.id)">✕</span>
+      </div>
+    </div>
     <log-viewer v-if="currentPage === 'logViewer'"></log-viewer>
   </div>
 </div>
@@ -32,16 +40,39 @@
 <script src="js/comp/BoLite.js"></script>
 <script src="js/pages/LogViewer.js"></script>
 <script>
-const { createApp, ref } = Vue;
+const { createApp, ref, reactive } = Vue;
 
 // ?page=logViewer 로 직접 진입 가능(북마크 편의) — 기본은 logViewer(현재 화면이 1개뿐).
 const initialPage = new URLSearchParams(location.search).get('page');
 const VALID_PAGES = ['logViewer'];
+const PAGE_LABELS = { logViewer: '🪵 로그뷰어' };
 
 const app = createApp({
   setup() {
-    const currentPage = ref(VALID_PAGES.includes(initialPage) ? initialPage : 'logViewer');
-    return { currentPage };
+    const startPage = VALID_PAGES.includes(initialPage) ? initialPage : 'logViewer';
+    const currentPage = ref(startPage);
+    // 열린 탭바(요청사항) — 방문한 화면을 탭으로 유지.
+    const openTabs = reactive([{ id: startPage, label: PAGE_LABELS[startPage] }]);
+    // 요청사항(2026-09-06): "상단 URL 이 ?page=... 로 표시되어야 하고, 새로고침해도 그 화면
+    // 그대로 보여야 한다" — history.replaceState 로 주소창의 ?page= 쿼리를 화면 전환마다
+    // 같이 갱신해서(새 히스토리 항목은 안 쌓음) 새로고침·북마크 어디서든 같은 화면으로 복귀.
+    const navigate = (page) => {
+      currentPage.value = page;
+      if (!openTabs.some((t) => t.id === page)) openTabs.push({ id: page, label: PAGE_LABELS[page] });
+      const url = new URL(location.href);
+      url.searchParams.set('page', page);
+      history.replaceState(null, '', url);
+    };
+    const onCloseTab = (id) => {
+      const idx = openTabs.findIndex((t) => t.id === id);
+      if (idx === -1) return;
+      openTabs.splice(idx, 1);
+      if (currentPage.value !== id) return;
+      if (openTabs.length === 0) { navigate('logViewer'); return; }
+      const nextTab = openTabs[idx] || openTabs[idx - 1];
+      navigate(nextTab.id);
+    };
+    return { currentPage, openTabs, navigate, onCloseTab };
   },
 });
 // BoLite.js(경량 로컬 포트) — 메인 프로젝트 bo-grid/bo-page/bo-container 의 columns 속성화
