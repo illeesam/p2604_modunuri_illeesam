@@ -127,13 +127,36 @@ function sendSlack(text, tag) {
   });
 }
 
+// 2026-09-06(요청사항: "URL 점검 결과도 우측에 표시해줘") — synology-deploy-util.js 의
+// checkUrlStatus 와 동일 로직을 여기 독립적으로 둔다(위 loadLocalEnv 와 같은 이유 — 이 파일은
+// 순환 의존 없이 독립 유지하는 설계라 import 대신 중복 구현).
+function checkUrlStatus(url) {
+  return new Promise((resolve) => {
+    let u;
+    try { u = new URL(url); } catch (e) { return resolve('error(bad-url)'); }
+    const lib = u.protocol === 'https:' ? require('https') : require('http');
+    const req = lib.get({ hostname: u.hostname, port: u.port || undefined, path: u.pathname + u.search, timeout: 8000 }, (res) => {
+      res.resume();
+      resolve(String(res.statusCode));
+    });
+    req.on('timeout', () => { req.destroy(); resolve('timeout'); });
+    req.on('error', (e) => resolve(`error(${e.code || e.message})`));
+  });
+}
+
 /* [점검 안내] checkUrls: [{url, note}] → 사람이 배포 직후 클릭해서 바로 확인할 수 있는 URL 목록을
    코멘트와 함께 나열한 블록으로 포맷. 배포 스크립트마다 자기 대상에 맞는 URL/코멘트를 넘긴다
    (요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘 — 각종 URL 정보가 나열되고 코멘트가
-   있으면되"). */
-function buildInspectionGuide(checkUrls) {
+   있으면되"). 2026-09-06(요청사항: "URL 점검 결과도 우측에 표시해줘") — 각 URL을 실제로 curl
+   체크해서 "✅ 200"/"❌ 404" 를 URL 오른쪽(코멘트 왼쪽)에 붙인다. */
+async function buildInspectionGuide(checkUrls) {
   if (!checkUrls || checkUrls.length === 0) return '';
-  const lines = checkUrls.map((c) => `  - ${c.url}${c.note ? '  — ' + c.note : ''}`);
+  const statuses = await Promise.all(checkUrls.map((c) => checkUrlStatus(c.url)));
+  const width = Math.max(...checkUrls.map((c) => c.url.length));
+  const lines = checkUrls.map((c, i) => {
+    const badge = statuses[i] === '200' ? `✅ ${statuses[i]}` : `❌ ${statuses[i]}`;
+    return `  - ${c.url.padEnd(width)}  ${badge}${c.note ? '  — ' + c.note : ''}`;
+  });
   return `\n\n📋 점검 안내\n${lines.join('\n')}`;
 }
 
@@ -168,10 +191,12 @@ function buildServerInfo(serverInfo) {
 async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript, logFilePath }) {
   const emoji = success ? '✅' : '❌';
   const statusText = success ? '성공' : '실패';
-  const subject = `${emoji} [ShopJoy 배포] ${scriptName} ${statusText} (소요 ${elapsed})`
+  // 2026-09-06(요청사항: "무지개 아이콘 추가해줘 🌈✅[ShopJoy] [배포] ecGateway 성공") —
+  // 앞머리에 🌈 고정 + "[ShopJoy 배포]" 한 덩어리였던 걸 "[ShopJoy] [배포]" 두 덩어리로 분리.
+  const subject = `🌈${emoji}[ShopJoy] [배포] ${scriptName} ${statusText} (소요 ${elapsed})`
     + (npmScript ? ` — ${npmScript}` : '');
   const info = buildServerInfo(serverInfo);
-  const guide = buildInspectionGuide(checkUrls);
+  const guide = await buildInspectionGuide(checkUrls);
   // 2026-09-06(요청사항: "내용에 실행스크립트명도 적어줘") — 제목에도 있지만 본문 첫머리에도
   // 명시해 메일만 봐도 어느 스크립트를 실행한 결과인지 바로 알 수 있게 한다.
   const scriptLine = npmScript ? `실행 스크립트: ${npmScript}\n` : '';

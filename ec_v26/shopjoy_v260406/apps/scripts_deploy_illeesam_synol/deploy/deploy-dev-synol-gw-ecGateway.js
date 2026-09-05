@@ -76,6 +76,10 @@ function fmtElapsed() {
       `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
       `https://${PUBLIC_HTTPS_HOST}/index.html`,
       `https://${PUBLIC_HTTPS_HOST}/bo.html`,
+      // 2026-09-06(요청사항: "swagger 도 추가해주고") — locations.conf 에 /swagger-ui/, /v3/api-docs
+      // 전용 라우팅을 추가한 뒤 실측 200 확인.
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`,
+      `https://${PUBLIC_HTTPS_HOST}/swagger-ui/index.html`,
     ];
     const completionBadges = await checkUrlStatusBadges(completionUrls);
     const completionWidth = Math.max(...completionUrls.map((u) => u.length));
@@ -86,10 +90,12 @@ function fmtElapsed() {
     console.log(`${TAG}   접속(HTTP)  : ${withBadge(1)}`);
     console.log(`${TAG}   접속(HTTPS) : ${withBadge(2)}`);
     console.log(`${TAG}   접속(HTTPS) : ${withBadge(3)}`);
+    console.log(`${TAG}   Swagger(HTTP)  : ${withBadge(4)}`);
+    console.log(`${TAG}   Swagger(HTTPS) : ${withBadge(5)}`);
     console.log(`${TAG}   ⚠ ecBeBo(22300)/ecBeCdn(22400)이 이 NAS에 안 떠 있으면 /api,/cdn-admin,/admin-tools 는 502가 정상입니다.`);
 
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '게이트웨이(테스트용, ecGateway)', success: true, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecGateway', success: true, elapsed: fmtElapsed(),
       detail: '배포 완료 — 위 로그의 각 경로별 HTTP 상태 참조',
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 포트 ${PUBLIC_PORT})` },
@@ -104,6 +110,11 @@ function fmtElapsed() {
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTP)' },
         { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTPS — 로그인 가능)' },
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 API(게이트웨이→ecBeBo, HTTP)' },
+        // 2026-09-06(요청사항: "swagger 도 추가해주고") — /swagger-ui/** 는 locations.conf 의
+        // 어느 location 에도 안 걸려 맨 아래 location / → @backend 폴백으로 ecBeBo(ec_admin_api)에
+        // 그대로 넘어간다(직접 확인 필요 없이 이미 라우팅됨).
+        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 게이트웨이→ecBeBo, HTTP)' },
+        { url: `https://${PUBLIC_HTTPS_HOST}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 게이트웨이→ecBeBo, HTTPS)' },
       ],
       npmScript: 'deploy/ecGateway',
     });
@@ -111,7 +122,7 @@ function fmtElapsed() {
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: '게이트웨이(테스트용, ecGateway)', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecGateway', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
       npmScript: 'deploy/ecGateway',
