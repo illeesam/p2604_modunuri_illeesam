@@ -4,7 +4,7 @@ import lombok.Getter;
 
 import java.util.List;
 
-/** 목록 화면 표준 페이징 응답 — EcAdminApi 의 PageResult 와 같은 필드명(pageList/pageTotalCount/pageTotalPage). */
+/** 목록 화면 표준 페이징 응답 — EcBeBo 의 PageResult 와 같은 필드명(pageList/pageTotalCount/pageTotalPage). */
 @Getter
 public class PageResult<T> {
 

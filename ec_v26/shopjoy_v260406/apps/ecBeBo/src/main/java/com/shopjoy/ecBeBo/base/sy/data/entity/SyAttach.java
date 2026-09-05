@@ -73,12 +73,12 @@ public class SyAttach extends BaseEntity {
     @Size(max = 500, message = "cdnThumbUrl 는 500자 이내여야 합니다.")
     private String cdnThumbUrl;
 
-    @Comment("스토리지 타입 (LOCAL/CDN/AWS_S3/NCP_OBS) — CDN=EcCdnApi 위임(2026-09-06 CfCdnApiClient 연동)")
+    @Comment("스토리지 타입 (LOCAL/CDN/AWS_S3/NCP_OBS) — CDN=EcBeCdn 위임(2026-09-06 CfCdnApiClient 연동)")
     @Column(name = "storage_type_cd", length = 50)
     @Size(max = 50, message = "storageTypeCd 는 50자 이내여야 합니다.")
     private String storageTypeCd;
 
-    @Comment("파일 저장 경로 (정책: /cdn/{업무명}/YYYY/YYYYMM/YYYYMMDD/{파일명}) — storage_type_cd=CDN 이면 예외적으로 EcCdnApi 의 fileId 를 담는다(삭제 시 필요, 2026-09-06)")
+    @Comment("파일 저장 경로 (정책: /cdn/{업무명}/YYYY/YYYYMM/YYYYMMDD/{파일명}) — storage_type_cd=CDN 이면 예외적으로 EcBeCdn 의 fileId 를 담는다(삭제 시 필요, 2026-09-06)")
     @Column(name = "storage_path", length = 500)
     @Size(max = 500, message = "storagePath 는 500자 이내여야 합니다.")
     private String storagePath;

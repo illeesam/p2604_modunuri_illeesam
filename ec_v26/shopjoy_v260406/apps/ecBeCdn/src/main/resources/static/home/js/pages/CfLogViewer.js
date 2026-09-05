@@ -1,7 +1,7 @@
 /* CfLogViewer.js — 로그뷰어 화면. shell(index.html)의 main 프레임에 <cf-log-viewer> 로 임베드된다.
  * 인증없이 누구나 조회 가능(요청사항: "배포 후 로그화면보는 url도 보내줘 이건 인증없이 누구나
  * 보는거야"). 서버 API(/api/cdn/log/*)는 /api/cdn/** 전체가 permitAll 이라 별도 인가 불필요.
- * 일반 로그(eccdnapi.log) / 에러 로그(eccdnapi-error.log) 탭 전환 + 줄수 선택 + 자동새로고침 +
+ * 일반 로그(ecbecdn.log) / 에러 로그(ecbecdn-error.log) 탭 전환 + 줄수 선택 + 자동새로고침 +
  * 클라이언트측 레벨/키워드 필터.
  *
  * 2026-09-06: <bo-page>(제목) + <bo-container>(카드 영역) + <bo-grid>(파일 정보 목록) 로
@@ -211,7 +211,7 @@ window.CfLogViewer = {
   },
   template: `
     <div>
-      <bo-page title="🪵 로그뷰어" desc-summary="eccdnapi.log / eccdnapi-error.log (인증 불필요)" />
+      <bo-page title="🪵 로그뷰어" desc-summary="ecbecdn.log / ecbecdn-error.log (인증 불필요)" />
 
       <div class="log-viewer-2col">
         <!-- ① 좌측 파일 tree(요청사항: "logs 경로부터 트리로") -->

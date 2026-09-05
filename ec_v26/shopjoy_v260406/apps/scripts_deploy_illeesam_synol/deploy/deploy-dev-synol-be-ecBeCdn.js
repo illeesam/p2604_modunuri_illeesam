@@ -134,7 +134,7 @@ function fmtElapsed() {
           // 2026-09-06: --remove-orphans — shopjoy-net 공유를 폐기하면서 네트워크 구성이
           // 바뀌었으므로, 옛 방식으로 뜬 컨테이너가 있으면 같이 정리한다.
           label: '컨테이너 재기동 (+ 옛 구성 정리)',
-          cmd: `cd ${REMOTE_CDN_DIR} && ${DOCKER} compose up -d --force-recreate --remove-orphans eccdnapi`,
+          cmd: `cd ${REMOTE_CDN_DIR} && ${DOCKER} compose up -d --force-recreate --remove-orphans ecbecdn`,
         },
         { label: '헬스체크 대기(healthy 될 때까지 최대 5분)', cmd: waitHealthyCmd, allowFail: true },
         {
@@ -144,7 +144,7 @@ function fmtElapsed() {
         },
         {
           label: '최근 로그(위 응답이 이상하면 원인 확인용)',
-          cmd: `cd ${REMOTE_CDN_DIR} && ${DOCKER} compose logs --tail 30 eccdnapi`,
+          cmd: `cd ${REMOTE_CDN_DIR} && ${DOCKER} compose logs --tail 30 ecbecdn`,
           allowFail: true,
         },
       ],
@@ -209,7 +209,7 @@ function fmtElapsed() {
     const serverInfo = [
       { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 앱 포트 ${PUBLIC_PORT} — 이제 정식 공개 포트)` },
       { label: '설치 경로', value: REMOTE_CDN_DIR },
-      { label: '컨테이너명', value: 'shopjoy-ecBeCdn-22400 (docker compose 서비스명: eccdnapi)' },
+      { label: '컨테이너명', value: 'shopjoy-ecBeCdn-22400 (docker compose 서비스명: ecbecdn)' },
       { label: 'Docker 네트워크', value: '완전 분리 설계(2026-09-06) — 다른 컨테이너와 네트워크 비공유, 단독 기동' },
       { label: '활성 프로파일', value: 'dev (application-dev.yml)' },
       { label: 'DB 접속', value: 'illeesam.synology.me:17632 / shopjoy_2604 (PostgreSQL, p6spy 경유)' },

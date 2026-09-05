@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * id/pwd 로그인 → accessToken(30초) 발급. EcAdminApi(호출측) 전용, 공개 permitAll.
+ * id/pwd 로그인 → accessToken(30초) 발급. EcBeBo(호출측) 전용, 공개 permitAll.
  * refreshToken 은 응답에 절대 안 실린다(서버 cf_token 테이블에만 보관, 요청사항) — 재발급은
  * "지금 갖고 있는(막 만료됐을 수도 있는) accessToken" 을 Authorization 헤더로 보내는 방식이다
- * (EcAdminApi 의 POST /api/co/bo-auth/token-refresh 와 동일 패턴).
+ * (EcBeBo 의 POST /api/co/bo-auth/token-refresh 와 동일 패턴).
  *
  * <p>X-Caller-System 헤더(선택) — 호출측이 자기 시스템 이름을 자기소개하는 용도(예:
- * "EcAdminApi"). 마이크로서비스로 EcAdminApi 가 여러 대일 때 IP만으론 "어느 서비스"인지
+ * "EcBeBo"). 마이크로서비스로 EcBeBo 가 여러 대일 때 IP만으론 "어느 서비스"인지
  * 모호할 수 있어(로드밸런서/NAT 뒤) cf_token/cf_token_hist 에 IP 와 별도로 기록한다.</p>
  */
 @RestController
@@ -53,9 +53,9 @@ public class CfAuthController {
     }
 
     /**
-     * 호출자 IP 추출 — EcAdminApi 가 여러 대(로드밸런서/리버스프록시 뒤)일 수 있다는 전제로,
+     * 호출자 IP 추출 — EcBeBo 가 여러 대(로드밸런서/리버스프록시 뒤)일 수 있다는 전제로,
      * X-Forwarded-For(프록시가 원 클라이언트 IP를 남길 때) 를 우선 보고 없으면 소켓 IP로 폴백.
-     * EcAdminApi.JwtAuthFilter.resolveClientIp() 와 동일한 패턴.
+     * EcBeBo.JwtAuthFilter.resolveClientIp() 와 동일한 패턴.
      */
     private String resolveClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");

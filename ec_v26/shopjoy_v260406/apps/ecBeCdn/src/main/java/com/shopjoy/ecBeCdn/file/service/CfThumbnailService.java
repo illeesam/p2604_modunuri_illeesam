@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Path;
 
-/** 이미지 썸네일 생성 — EcAdminApi(CmUploadService)와 동일한 Thumbnailator 정적 API 사용(컨벤션 통일). */
+/** 이미지 썸네일 생성 — EcBeBo(CmUploadService)와 동일한 Thumbnailator 정적 API 사용(컨벤션 통일). */
 @Slf4j
 @Service
 public class CfThumbnailService {

@@ -22,9 +22,9 @@ import java.util.Map;
 
 /**
  * Redis 모니터링(연결 테스트) API — /api/cdn/redis/test (요청사항: "redis 모니터링 화면도
- * 추가해주고"). EcCdnApi 자체는 Redis 를 쓰지 않으므로(빈으로 미리 연결해둔 게 없음), 화면에서
+ * 추가해주고"). EcBeCdn 자체는 Redis 를 쓰지 않으므로(빈으로 미리 연결해둔 게 없음), 화면에서
  * 입력한 host/port/password/database 로 그때그때 1회성 접속해 PING·INFO 일부·키 샘플만 확인한다
- * (예: EcAdminApi 쪽 Redis 를 이 화면에서 원격으로 점검할 때도 그대로 사용 가능).
+ * (예: EcBeBo 쪽 Redis 를 이 화면에서 원격으로 점검할 때도 그대로 사용 가능).
  */
 @RestController
 @RequestMapping("/api/cdn/redis")

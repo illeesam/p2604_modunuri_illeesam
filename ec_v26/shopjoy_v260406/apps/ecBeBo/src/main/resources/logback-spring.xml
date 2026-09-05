@@ -19,7 +19,7 @@
     <springProperty scope="context" name="LOG_DIR"
                     source="logging.file.path" defaultValue="C:/_logs/shopjoy"/>
 
-    <property name="APP_NAME"    value="ecadminapi"/>
+    <property name="APP_NAME"    value="ecbebo"/>
     <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>
     <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
     <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>

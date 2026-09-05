@@ -18,15 +18,15 @@ import java.util.Map;
  * 로그뷰어 전용 API — /api/cdn/log/** (요청사항: "배포 후 로그화면보는 url", 인증없이 누구나 조회).
  * /api/cdn/** 전체가 이미 SecurityConfig 에서 permitAll 이라 별도 인가 설정 불필요.
  *
- * <p>logback-spring.xml 의 APP_NAME=eccdnapi 규칙과 정확히 맞춰 파일명을 고정한다:
- * {@code {logDir}/eccdnapi.log}(일반), {@code {logDir}/eccdnapi-error.log}(에러 전용).</p>
+ * <p>logback-spring.xml 의 APP_NAME=ecbecdn 규칙과 정확히 맞춰 파일명을 고정한다:
+ * {@code {logDir}/ecbecdn.log}(일반), {@code {logDir}/ecbecdn-error.log}(에러 전용).</p>
  */
 @RestController
 @RequestMapping("/api/cdn/log")
 @RequiredArgsConstructor
 public class CfLogController {
 
-    private static final String APP_NAME = "eccdnapi";
+    private static final String APP_NAME = "ecbecdn";
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Value("${logging.file.path:logs}")

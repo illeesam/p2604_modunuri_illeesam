@@ -9,7 +9,7 @@
 #
 #  2026-09-06 추가 개편 — "4개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis)이 각자 다른 호스팅사에
 #  흩어질 수도 있다"는 최악의 경우를 기준으로 완전 분리 설계로 전환. 예전엔 shopjoy-net을
-#  external:true 로 공유해서 nginx가 Docker 내부 DNS 이름(eccdnapi)으로 이 컨테이너를 직접
+#  external:true 로 공유해서 nginx가 Docker 내부 DNS 이름(ecbecdn)으로 이 컨테이너를 직접
 #  불렀는데, 그 방식은 반드시 같은 Docker 네트워크(=같은 호스트)에 떠 있어야만 동작해서
 #  분리 배포 전제와 맞지 않는다. shopjoy-net 공유를 폐기하고, 이 컨테이너는 이제 완전히
 #  독립적으로 자기 포트(22400)에서 직접 공개된다 — 호출자(EcAdminApi의
@@ -18,12 +18,12 @@
 # ═══════════════════════════════════════════════════════════
 
 services:
-  eccdnapi:
+  ecbecdn:
     build:
       context: .
       dockerfile: Dockerfile
 
-    image: shopjoy/eccdnapi:latest
+    image: shopjoy/ecbecdn:latest
     # 2026-09-06: 230-shopjoy-eccdnapi → shopjoy-ecBeCdn-22400 (컨테이너 이름 규칙
     # shopjoy-{앱}-{포트} 통일).
     container_name: shopjoy-ecBeCdn-22400

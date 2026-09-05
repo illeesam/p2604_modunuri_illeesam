@@ -17,10 +17,10 @@ import org.springframework.util.StringUtils;
 import java.time.Duration;
 
 /**
- * Redis 연결 및 RedisTemplate 빈 구성 — EcAdminApi 의 cache/config/RedisConfig.java 를 그대로
- * 참고해 이식했다(요청사항: "EcCdnApi 프로그램 참고해줘" 관례 연장선). app.redis.enabled=true
+ * Redis 연결 및 RedisTemplate 빈 구성 — EcBeBo 의 cache/config/RedisConfig.java 를 그대로
+ * 참고해 이식했다(요청사항: "EcBeCdn 프로그램 참고해줘" 관례 연장선). app.redis.enabled=true
  * 일 때만 이 Configuration 전체가 활성화된다(스위치 — 요청사항: "redis switch 될수 있게 해줘").
- * EcCdnApi 는 노드 하나만 쓰므로 primary 만 둔다(EcAdminApi 의 secondary 개념 생략).
+ * EcBeCdn 는 노드 하나만 쓰므로 primary 만 둔다(EcBeBo 의 secondary 개념 생략).
  */
 @Slf4j
 @Configuration

@@ -36,7 +36,7 @@ Spring Boot 기반 REST API + 동적 배치 스케줄러.
 ## 프로젝트 구조
 
 ```
-src/main/java/com/shopjoy/ecadminapi/
+src/main/java/com/shopjoy/ecbebo/
 ├── auth/          JWT 인증·인가 (필터, 토큰 발급/검증)
 ├── autorest/      공통 REST 응답 구조 (ApiResponse, PageResult)
 ├── base/          기준 데이터 도메인 (sy.*, ec.* 엔티티/리포지토리)
@@ -102,7 +102,7 @@ java -Dspring.profiles.active=dev -DDB_HOST=illeesam.synology.me -DDB_PORT=17632
 환경변수를 별도 파일로 분리하는 방식을 강력히 권장합니다.
 
 ```bash
-# /etc/ecadminapi.env (파일 권한: 600, 소유자: 실행 계정)
+# /etc/ecbebo.env (파일 권한: 600, 소유자: 실행 계정)
 export DB_HOST=서버IP또는도메인
 export DB_PORT=포트
 export DB_NAME=postgres
@@ -113,22 +113,22 @@ export JWT_SECRET=실제값
 export JENKINS_BATCH_TOKEN=실제값
 
 # 실행
-source /etc/ecadminapi.env
+source /etc/ecbebo.env
 java -Dspring.profiles.active=prod -jar /app/EcAdminApi.jar
 ```
 
-**systemd 사용 시** (`/etc/systemd/system/ecadminapi.service`):
+**systemd 사용 시** (`/etc/systemd/system/ecbebo.service`):
 ```ini
 [Service]
-EnvironmentFile=/etc/ecadminapi.env
+EnvironmentFile=/etc/ecbebo.env
 ExecStart=java -Dspring.profiles.active=prod -jar /app/EcAdminApi.jar
 ```
 
 **Docker 사용 시**:
 ```bash
-docker run --env-file /etc/ecadminapi.env \
+docker run --env-file /etc/ecbebo.env \
   -Dspring.profiles.active=prod \
-  ecadminapi:latest
+  ecbebo:latest
 ```
 
 #### 대안: java -jar 인수 방식 (보안 주의)
@@ -478,13 +478,13 @@ INSERT INTO shopjoy_2604.sy_batch (
 
 | 프로파일 | 레벨 | 콘솔 | 파일 |
 |---|---|---|---|
-| local / dev | DEBUG | 컬러 + IntelliJ 클릭링크 | `logs/ecadminapi.log` |
-| prod | INFO | 심플 | `logs/ecadminapi.log` |
+| local / dev | DEBUG | 컬러 + IntelliJ 클릭링크 | `logs/ecbebo.log` |
+| prod | INFO | 심플 | `logs/ecbebo.log` |
 
 **로그 파일 위치**
 ```
-logs/ecadminapi.log              일반 로그 (50MB 롤링·30일·2GB·gzip)
-logs/ecadminapi-error.log        에러 로그 (20MB 롤링·90일·500MB·gzip)
+logs/ecbebo.log              일반 로그 (50MB 롤링·30일·2GB·gzip)
+logs/ecbebo-error.log        에러 로그 (20MB 롤링·90일·500MB·gzip)
 logs/archived/                   압축 보관
 ```
 

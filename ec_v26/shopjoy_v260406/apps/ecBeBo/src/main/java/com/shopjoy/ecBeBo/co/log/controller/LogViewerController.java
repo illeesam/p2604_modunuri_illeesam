@@ -19,16 +19,16 @@ import java.util.Map;
  * 로그뷰어 전용 API — /api/co/log/** (요청사항: "배포 후 로그화면보는 url", 인증없이 누구나 조회).
  * /api/co/** 전체가 이미 SecurityConfig 에서 permitAll 이라 별도 인가 설정 불필요.
  *
- * <p>EcCdnApi 의 {@code com.shopjoy.eccdnapi.log.controller.CfLogController} 구조를 그대로
- * 참고해 이식했다(요청사항: "EcCdnApi 프로그램 참고해줘"). logback-spring.xml 의 APP_NAME=ecadminapi
- * 규칙과 정확히 맞춰 파일명을 고정한다: {@code {logDir}/ecadminapi.log}(일반),
- * {@code {logDir}/ecadminapi-error.log}(에러 전용).</p>
+ * <p>EcBeCdn 의 {@code com.shopjoy.ecBeCdn.log.controller.CfLogController} 구조를 그대로
+ * 참고해 이식했다(요청사항: "EcBeCdn 프로그램 참고해줘"). logback-spring.xml 의 APP_NAME=ecbebo
+ * 규칙과 정확히 맞춰 파일명을 고정한다: {@code {logDir}/ecbebo.log}(일반),
+ * {@code {logDir}/ecbebo-error.log}(에러 전용).</p>
  */
 @RestController
 @RequestMapping("/api/co/log")
 public class LogViewerController {
 
-    private static final String APP_NAME = "ecadminapi";
+    private static final String APP_NAME = "ecbebo";
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Value("${logging.file.path:logs}")

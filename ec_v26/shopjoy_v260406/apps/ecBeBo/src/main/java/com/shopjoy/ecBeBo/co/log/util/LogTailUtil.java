@@ -11,8 +11,8 @@ import java.util.List;
 
 /**
  * 로그 파일 tail(마지막 N줄) 유틸 — 로그뷰어(요청사항: "배포 후 로그화면보는 url", 인증없이
- * 누구나 조회) 전용. EcCdnApi 의 {@code com.shopjoy.eccdnapi.log.util.CfLogTailUtil} 을 그대로
- * 포팅했다(요청사항: "EcCdnApi 프로그램 참고해줘"). 롤링 정책상 파일이 최대 수백MB 까지 커질 수
+ * 누구나 조회) 전용. EcBeCdn 의 {@code com.shopjoy.ecBeCdn.log.util.CfLogTailUtil} 을 그대로
+ * 포팅했다(요청사항: "EcBeCdn 프로그램 참고해줘"). 롤링 정책상 파일이 최대 수백MB 까지 커질 수
  * 있어 전체를 메모리에 올리지 않고, 파일 끝에서 최대 {@link #MAX_READ_BYTES} 만큼만 읽어 그 안에서
  * 줄 단위로 tail 한다 — 개발용 도구라 매 요청마다 정확히 N줄 보장보다 "안전하게 빠르게" 를 우선했다.
  */

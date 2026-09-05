@@ -11,7 +11,7 @@
 #
 # 흐름: Gradle 빌드(GitHub 러너) → Docker 이미지 빌드 → 이미지 tar.gz 압축 →
 #   docker-compose.yml 과 함께 NAS 로 전송 → NAS 에서 docker load(재빌드 안 함) →
-#   docker compose up -d (eccdnapi 컨테이너 단독 기동/갱신) → 헬스체크.
+#   docker compose up -d (ecbecdn 컨테이너 단독 기동/갱신) → 헬스체크.
 #
 # 2026-09-06 개편(요청사항: "4개 앱이 각자 다른 호스팅사에 흩어질 수도 있다"는 최악의 경우
 #   기준 설계) — shopjoy-net 공유 폐기, 포트 21090→22400(정식 공개 포트로 승격), 컨테이너명
@@ -83,7 +83,7 @@ jobs:
           echo "[$(date '+%H:%M:%S')]   계정(User) : ${{ secrets.SYNOLOGY_USER }}"
           echo "[$(date '+%H:%M:%S')]   비밀번호   : $MASK  (총 ${LEN}자리 — 뒤 3자리만 표시, 나머지는 자체 마스킹)"
           echo "[$(date '+%H:%M:%S')]   배포 경로  : /volume1/docker/shopjoy/apps/ecBeCdn/"
-          echo "[$(date '+%H:%M:%S')]   컨테이너   : eccdnapi (단독 기동, nginx 없음 — 완전 분리 설계)"
+          echo "[$(date '+%H:%M:%S')]   컨테이너   : ecbecdn (단독 기동, nginx 없음 — 완전 분리 설계)"
           echo "[$(date '+%H:%M:%S')]   관리화면 URL: http://illeesam.synology.me:22400/home/index.html"
           echo "[$(date '+%H:%M:%S')]   디버그 URL  : http://illeesam.synology.me:22400  (actuator 직결, 외부 미공개 권장)"
           echo "[$(date '+%H:%M:%S')] ═══════════════════════════════════════════"
@@ -112,22 +112,22 @@ jobs:
       - name: "[3-1] Docker 이미지 빌드 (docker-compose.yml 의 image: 태그와 일치시킴)"
         working-directory: ec_v26/shopjoy_v260406/apps/ecBeCdn
         run: |
-          echo "[$(date '+%H:%M:%S')] ▶ Docker 이미지 빌드를 시작합니다 (tag: shopjoy/eccdnapi:latest, ${{ github.sha }})..."
+          echo "[$(date '+%H:%M:%S')] ▶ Docker 이미지 빌드를 시작합니다 (tag: shopjoy/ecbecdn:latest, ${{ github.sha }})..."
           docker build \
-            --tag shopjoy/eccdnapi:latest \
-            --tag shopjoy/eccdnapi:${{ github.sha }} \
+            --tag shopjoy/ecbecdn:latest \
+            --tag shopjoy/ecbecdn:${{ github.sha }} \
             --build-arg BUILD_DATE=$(date '+%Y-%m-%d') \
             --build-arg GIT_COMMIT=${{ github.sha }} \
             .
           echo "[$(date '+%H:%M:%S')] ✅ Docker 이미지 빌드 완료"
-          docker images | grep shopjoy/eccdnapi
+          docker images | grep shopjoy/ecbecdn
 
       - name: "[3-2] Docker 이미지 tar.gz 압축"
         working-directory: ec_v26/shopjoy_v260406/apps/ecBeCdn
         run: |
           echo "[$(date '+%H:%M:%S')] ▶ NAS 전송을 위해 Docker 이미지를 tar.gz 로 압축합니다..."
-          docker save shopjoy/eccdnapi:latest | gzip > eccdnapi-image.tar.gz
-          echo "[$(date '+%H:%M:%S')] ✅ 압축 완료 — 압축파일 크기: $(du -sh eccdnapi-image.tar.gz | cut -f1)"
+          docker save shopjoy/ecbecdn:latest | gzip > ecbecdn-image.tar.gz
+          echo "[$(date '+%H:%M:%S')] ✅ 압축 완료 — 압축파일 크기: $(du -sh ecbecdn-image.tar.gz | cut -f1)"
 
       # ─────────────────────────────────────────
       # [4] 배포용 설정파일 한 곳에 모으기 (docker-compose.yml 하나뿐 — nginx 자체가 없음,
@@ -148,7 +148,7 @@ jobs:
         run: |
           echo "[$(date '+%H:%M:%S')] ▶ Synology NAS(${{ secrets.SYNOLOGY_HOST }}:${{ secrets.SYNOLOGY_PORT }}) 로 전송을 시작합니다."
           echo "[$(date '+%H:%M:%S')]   1) 설정파일 (docker-compose.yml)"
-          echo "[$(date '+%H:%M:%S')]   2) Docker 이미지 압축파일 (eccdnapi-image.tar.gz)"
+          echo "[$(date '+%H:%M:%S')]   2) Docker 이미지 압축파일 (ecbecdn-image.tar.gz)"
           echo "[$(date '+%H:%M:%S')]   대상 경로: /volume1/docker/shopjoy/apps/ecBeCdn/"
 
       - name: "[5-1] 설정파일 전송"
@@ -171,7 +171,7 @@ jobs:
           username: ${{ secrets.SYNOLOGY_USER }}
           password: ${{ secrets.SYNOLOGY_PASSWORD }}
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
-          source: "ec_v26/shopjoy_v260406/apps/ecBeCdn/eccdnapi-image.tar.gz"
+          source: "ec_v26/shopjoy_v260406/apps/ecBeCdn/ecbecdn-image.tar.gz"
           target: "/volume1/docker/shopjoy/apps/ecBeCdn/"
           strip_components: 4
 
@@ -194,7 +194,7 @@ jobs:
 
             if [ ! -f .env ]; then
               echo "[$(date '+%H:%M:%S')] ⚠ .env 파일이 없습니다 — 최초 1회 수동으로 준비해야 합니다. 배포를 계속하되"
-              echo "[$(date '+%H:%M:%S')]   eccdnapi 컨테이너는 필수 환경변수(CF_JWT_SECRET 등) 없이 뜨지 못할 수 있습니다."
+              echo "[$(date '+%H:%M:%S')]   ecbecdn 컨테이너는 필수 환경변수(CF_JWT_SECRET 등) 없이 뜨지 못할 수 있습니다."
             fi
 
             echo ""
@@ -203,7 +203,7 @@ jobs:
 
             echo ""
             echo "[$(date '+%H:%M:%S')] [6-1-3] 새 이미지 로드 (재빌드 없음 — NAS 는 미리 빌드된 이미지만 import)"
-            sudo docker load < eccdnapi-image.tar.gz
+            sudo docker load < ecbecdn-image.tar.gz
 
             echo ""
             echo "[$(date '+%H:%M:%S')] [6-1-4] docker compose 로 스택 기동/갱신"
@@ -211,7 +211,7 @@ jobs:
 
             echo ""
             echo "[$(date '+%H:%M:%S')] [6-1-5] 임시 압축파일 정리"
-            rm -f eccdnapi-image.tar.gz
+            rm -f ecbecdn-image.tar.gz
 
             echo ""
             echo "[$(date '+%H:%M:%S')] [6-1-6] 컨테이너 상태 확인"
@@ -219,8 +219,8 @@ jobs:
             sudo docker compose ps
 
             echo ""
-            echo "[$(date '+%H:%M:%S')] [6-1-7] eccdnapi 초기 로그"
-            sudo docker compose logs --tail 30 eccdnapi
+            echo "[$(date '+%H:%M:%S')] [6-1-7] ecbecdn 초기 로그"
+            sudo docker compose logs --tail 30 ecbecdn
 
       # ─────────────────────────────────────────
       # [7] 외부 헬스체크
@@ -255,5 +255,5 @@ jobs:
           echo "[$(date '+%H:%M:%S')] Synology SSH 수동 확인 명령어"
           echo "[$(date '+%H:%M:%S')]   cd /volume1/docker/shopjoy/apps/ecBeCdn"
           echo "[$(date '+%H:%M:%S')]   sudo docker compose ps"
-          echo "[$(date '+%H:%M:%S')]   sudo docker compose logs -f eccdnapi"
-          echo "[$(date '+%H:%M:%S')]   sudo docker compose restart eccdnapi"
+          echo "[$(date '+%H:%M:%S')]   sudo docker compose logs -f ecbecdn"
+          echo "[$(date '+%H:%M:%S')]   sudo docker compose restart ecbecdn"

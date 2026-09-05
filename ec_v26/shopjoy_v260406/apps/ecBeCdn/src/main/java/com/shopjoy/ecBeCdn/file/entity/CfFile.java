@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * cf_file 테이블 — EcCdnApi 가 자체 관리하는 파일 메타데이터(EcAdminApi 의 sy_attach 와는 별개,
+ * cf_file 테이블 — EcBeCdn 가 자체 관리하는 파일 메타데이터(EcBeBo 의 sy_attach 와는 별개,
  * 완전히 독립된 도메인). filePath/thumbnailPath/framePath 는 전부 storage-root 기준 상대경로다.
  */
 @Entity
@@ -47,7 +47,7 @@ public class CfFile {
     @Column(name = "media_type_cd", length = 10)
     private String mediaTypeCd;
 
-    /** 업로드를 요청한 내부 클라이언트(cf_client.client_id) — 현재는 사실상 항상 EcAdminApi 계정 */
+    /** 업로드를 요청한 내부 클라이언트(cf_client.client_id) — 현재는 사실상 항상 EcBeBo 계정 */
     @Column(name = "uploader_client_id", length = 40)
     private String uploaderClientId;
 

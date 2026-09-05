@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-/** cf_client(EcCdnApi 호출 계정) 관리 화면용 CRUD — 관리자 정적 페이지(static/cf-client.html) 전용. */
+/** cf_client(EcBeCdn 호출 계정) 관리 화면용 CRUD — 관리자 정적 페이지(static/cf-client.html) 전용. */
 @Slf4j
 @Service
 @RequiredArgsConstructor

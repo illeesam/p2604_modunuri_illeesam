@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * P6Spy SQL 로그 포맷터 (local/dev 전용) — EcAdminApi 의
- * {@code com.shopjoy.ecadminapi.common.config.P6SpyFormatter} 를 그대로 포팅한 것이다.
- * EcCdnApi 는 MyBatis 를 쓰지 않는 순수 JPA 앱이라 원본의 MyBatisQueryInterceptor 연동(현재 실행
+ * P6Spy SQL 로그 포맷터 (local/dev 전용) — EcBeBo 의
+ * {@code com.shopjoy.ecBeBo.common.config.P6SpyFormatter} 를 그대로 포팅한 것이다.
+ * EcBeCdn 는 MyBatis 를 쓰지 않는 순수 JPA 앱이라 원본의 MyBatisQueryInterceptor 연동(현재 실행
  * 중인 Mapper 메서드명 헤더에 표시)만 제외했다 — SQL 정렬/들여쓰기 엔진은 완전히 동일하다.
  *
  * spy.properties 의 logMessageFormat 에 이 클래스를 지정하면 실제 바인딩 값이 치환된 SQL 을

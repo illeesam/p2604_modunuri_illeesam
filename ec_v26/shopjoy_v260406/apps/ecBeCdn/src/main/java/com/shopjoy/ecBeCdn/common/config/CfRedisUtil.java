@@ -10,8 +10,8 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * Redis 공통 유틸 — EcAdminApi 의 cache/config/RedisUtil.java 를 그대로 참고해 이식했다
- * (요청사항: "EcCdnApi 프로그램 참고해줘"). app.redis.enabled=false(스위치 꺼짐)면 모든 메서드가
+ * Redis 공통 유틸 — EcBeBo 의 cache/config/RedisUtil.java 를 그대로 참고해 이식했다
+ * (요청사항: "EcBeCdn 프로그램 참고해줘"). app.redis.enabled=false(스위치 꺼짐)면 모든 메서드가
  * no-op/empty 를 반환해 호출 측이 null 체크 없이 그냥 써도 되게 한다 — DB(cf_token)가 항상
  * source of truth 이고 이 클래스는 조회 편의용 캐시일 뿐이라, 꺼져 있어도 인증 로직 자체는
  * 100% 그대로 동작한다(요청사항: "redis switch 될수 있게 해줘").

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-/** 전역 예외 → ApiResponse 표준 응답 변환. EcAdminApi 의 GlobalExceptionHandler 와 같은 역할. */
+/** 전역 예외 → ApiResponse 표준 응답 변환. EcBeBo 의 GlobalExceptionHandler 와 같은 역할. */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {

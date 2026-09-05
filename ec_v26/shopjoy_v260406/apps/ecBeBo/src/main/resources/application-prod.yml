@@ -169,7 +169,7 @@ auth:
 # ────────────────────────────────────────────
 # 로깅 — prod 프로파일
 #   레벨 : INFO (logback-spring.xml <springProfile name="prod"> 적용)
-#   파일 : logs/ecadminapi.log
+#   파일 : logs/ecbebo.log
 # ────────────────────────────────────────────
 logging:
   file:

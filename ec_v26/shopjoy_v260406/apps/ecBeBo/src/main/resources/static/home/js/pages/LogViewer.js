@@ -1,7 +1,7 @@
 /* LogViewer.js — 로그뷰어 화면. shell(index.html)의 main 프레임에 <log-viewer> 로 임베드된다.
  * EcCdnApi 의 js/pages/CfLogViewer.js 를 그대로 참고해 포팅했다(요청사항: "EcCdnApi 프로그램
  * 참고해줘"). 인증없이 누구나 조회 가능(요청사항) — /api/co/** 전체가 permitAll.
- * 일반 로그(ecadminapi.log) / 에러 로그(ecadminapi-error.log) 탭 전환 + 줄수 선택 + 자동새로고침 +
+ * 일반 로그(ecbebo.log) / 에러 로그(ecbebo-error.log) 탭 전환 + 줄수 선택 + 자동새로고침 +
  * 클라이언트측 레벨/키워드 필터.
  *
  * 2026-09-06: <bo-page>(제목) + <bo-container>(카드 영역) + <bo-grid>(파일 정보 목록) 로
@@ -206,7 +206,7 @@ window.LogViewer = {
   },
   template: `
     <div>
-      <bo-page title="🪵 로그뷰어" desc-summary="ecadminapi.log / ecadminapi-error.log (인증 불필요)" />
+      <bo-page title="🪵 로그뷰어" desc-summary="ecbebo.log / ecbebo-error.log (인증 불필요)" />
 
       <div class="log-viewer-2col">
         <!-- ① 좌측 파일 tree(요청사항: "logs 경로부터 트리로") -->

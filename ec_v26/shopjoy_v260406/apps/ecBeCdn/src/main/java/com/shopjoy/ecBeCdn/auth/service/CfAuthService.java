@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * id/pwd 로 로그인 → accessToken(30초) 발급, accessToken 으로 재발급.
  *
- * <p>2026-09-06: cf_token(발급된 토큰)/cf_token_hist(발급 이력)에 전부 기록한다. EcAdminApi 등
+ * <p>2026-09-06: cf_token(발급된 토큰)/cf_token_hist(발급 이력)에 전부 기록한다. EcBeBo 등
  * 호출자가 여러 인스턴스일 수 있다는 전제로 BO 의 "1세션"이 아니라 FO 의 "멀티디바이스"(로그인마다
  * 행 추가, 기존 삭제 없음) 정책을 따른다 — 인스턴스 A 가 로그인해도 인스턴스 B 의 세션을 안 지운다.
  * issuedIp + requesterSystemNm(X-Caller-System 헤더) 둘 다 남겨 "어느 서비스의 어느 인스턴스"인지
@@ -139,7 +139,7 @@ public class CfAuthService {
         ), accessTtl);
 
         log.info("[CfAuthService] 로그인 성공: clientId={} ip={} system={}", id, callerIp, callerSystem);
-        // refreshToken 은 응답에 절대 안 실어보낸다(서버 DB 보관 원칙) — EcAdminApi 의
+        // refreshToken 은 응답에 절대 안 실어보낸다(서버 DB 보관 원칙) — EcBeBo 의
         // BoAuthService/FoAuthService.login() 이 LoginRes.refreshToken(null) 로 두는 것과 동일.
         return new CfTokenResponse(accessToken, null, accessTtl);
     }
@@ -149,7 +149,7 @@ public class CfAuthService {
      * 보관한다. 그래서 클라이언트는 refreshToken 을 보낼 방법이 없고, 대신 "지금 갖고 있는(막
      * 만료됐을 수도 있는) accessToken" 을 보내면 서버가 그 값으로 세션 행(cf_token)을 찾아 그 안에
      * 보관된 refreshToken 의 유효성만 서버 내부에서 확인하고 새 accessToken 을 발급한다 —
-     * EcAdminApi 의 BoAuthService.refresh(expiredAccessToken) 와 완전히 동일한 패턴.
+     * EcBeBo 의 BoAuthService.refresh(expiredAccessToken) 와 완전히 동일한 패턴.
      */
     @Transactional
     public CfTokenResponse refresh(String expiredAccessToken, String callerIp, String callerSystem) {

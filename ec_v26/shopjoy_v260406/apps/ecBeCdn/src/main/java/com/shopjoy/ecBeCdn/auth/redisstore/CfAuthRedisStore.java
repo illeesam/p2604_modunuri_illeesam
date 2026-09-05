@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * EcCdnApi 인증(cf_client) 세션 캐시 — EcAdminApi 의
+ * EcBeCdn 인증(cf_client) 세션 캐시 — EcBeBo 의
  * cache/redisstore/BoAuthRedisStore.java 를 그대로 참고해 이식했다(요청사항: "redis 인증
  * 연동해줘"). DB(cf_token/cf_token_hist)가 항상 source of truth 이며, 이 클래스는 순수 조회
  * 편의용 캐시 + 강제폐기 즉시무효화(blacklist) 용도일 뿐이다 — app.redis.enabled=false(스위치

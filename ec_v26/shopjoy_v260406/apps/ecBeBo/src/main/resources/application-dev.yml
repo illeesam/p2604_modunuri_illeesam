@@ -177,8 +177,8 @@ app:
 # 로깅 — dev 프로파일
 #   레벨   : DEBUG (logback-spring.xml <springProfile name="local,dev"> 적용)
 #   콘솔   : 컬러 + (%파일:%라인) IntelliJ 클릭 링크 → 소스 바로 이동
-#   파일   : logs/ecadminapi.log  (50MB 롤링·30일·2GB·gzip)
-#   에러   : logs/ecadminapi-error.log (20MB 롤링·90일·500MB·gzip)
+#   파일   : logs/ecbebo.log  (50MB 롤링·30일·2GB·gzip)
+#   에러   : logs/ecbebo-error.log (20MB 롤링·90일·500MB·gzip)
 #   시작 시: logback statusListener 가 파일 경로를 콘솔에 출력
 # ────────────────────────────────────────────
 logging:
@@ -186,6 +186,6 @@ logging:
     # 2026-09-06 버그수정: 여기 있던 C:/_logs/shopjoy 는 local(윈도우 직접 실행) 전용 경로가
     # 실수로 dev 에도 복사돼 있던 것 — dev 는 Linux Docker 컨테이너라 그 경로로는 로그 파일이
     # 전혀 안 만들어지고 있었다(docker exec 로 확인: /app/logs 자체가 없었음). docker-compose.yml
-    # 의 볼륨 마운트(/volume1/docker/ecadminapi/logs:/app/logs)에 맞춰 컨테이너 내부 경로로 수정.
+    # 의 볼륨 마운트(/volume1/docker/ecbebo/logs:/app/logs)에 맞춰 컨테이너 내부 경로로 수정.
     path: /app/logs
   # level: hibernate SQL 로그 — p6spy 사용 중이므로 비활성 (중복 출력 방지)

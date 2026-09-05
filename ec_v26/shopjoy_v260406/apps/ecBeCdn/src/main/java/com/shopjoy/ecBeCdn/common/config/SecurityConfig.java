@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  *
  * <p>2026-09-06 변경: 관리 화면(static/index.html, /api/cdn/**)은 로그인 없이 쓴다 — 요청사항
  * "여기에선 로그인 안해도 되". accessToken(30초)/로그인 체계 자체(CfJwtProvider·CfAuthController·
- * CfTokenAuthFilter·cf_client 테이블)는 그대로 남겨뒀다 — 나중에 EcAdminApi 의 CfCdnApiClient 를
+ * CfTokenAuthFilter·cf_client 테이블)는 그대로 남겨뒀다 — 나중에 EcBeBo 의 CfCdnApiClient 를
  * 실제로 연동할 때(현재는 대기 상태) 서버-서버 호출 구간만 다시 강제하고 싶어질 수 있어서다.
  * 지금은 {@code /api/cdn/**} 를 permitAll 로 열어뒀기 때문에 그 체계가 실질적으로는 켜져 있어도
  * 아무 경로에서도 강제되지 않는다(요청 시 토큰을 보내도 무시될 뿐 — 있어도 없어도 통과).</p>

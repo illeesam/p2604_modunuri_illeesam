@@ -16,7 +16,7 @@ import java.util.Date;
 
 /**
  * accessToken(30초, app.cf.jwt.access-expiry-ms)/refreshToken(7일) 발급·검증.
- * EcAdminApi 의 JwtProvider 와 같은 jjwt 0.12.x API 를 쓰지만, 클레임은 clientId 하나뿐이라
+ * EcBeBo 의 JwtProvider 와 같은 jjwt 0.12.x API 를 쓰지만, 클레임은 clientId 하나뿐이라
  * 훨씬 단순하다 — 역할(roles)/부서/사이트 같은 개념이 이 서버엔 없음.
  */
 @Slf4j

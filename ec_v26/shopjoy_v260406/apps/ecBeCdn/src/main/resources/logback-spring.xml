@@ -18,12 +18,12 @@
          ※ local/dev 기본값을 워크스페이스 밖 절대경로(C:/_logs/shopjoy)로 설정 — VSCode Live
            Server 가 워크스페이스 안의 .log 파일 변경을 감지해 브라우저를 계속 새로고침하던 문제
            회피(EcAdminApi 와 동일 원인/동일 해법, _doc/정책서-dev/local-logging.md 참조). 같은
-           폴더를 공유해도 APP_NAME 이 달라(ecadminapi vs eccdnapi) 파일이 섞이지 않는다.
+           폴더를 공유해도 APP_NAME 이 달라(ecbebo vs ecbecdn) 파일이 섞이지 않는다.
          ================================================================ -->
     <springProperty scope="context" name="LOG_DIR"
                     source="logging.file.path" defaultValue="C:/_logs/shopjoy"/>
 
-    <property name="APP_NAME"    value="eccdnapi"/>
+    <property name="APP_NAME"    value="ecbecdn"/>
     <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>
     <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
     <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>

@@ -84,7 +84,7 @@ appuser@illeesam:backend$ exit
 
 **명령어**:
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecbebo
 ```
 
 **명령어 설명**:
@@ -93,7 +93,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecadminapi
 |---|---|
 | `compose logs` | 컨테이너가 출력한 로그(실행 기록) 보기 |
 | `-f` | Follow — 새 로그가 찍힐 때마다 화면에 계속 이어서 보여줌(리눅스 `tail -f`와 동일 개념). **화면을 계속 붙잡고 있음** — 멈추려면 `Ctrl+C` |
-| `ecadminapi` | 어느 컨테이너(서비스)의 로그를 볼지 지정 |
+| `ecbebo` | 어느 컨테이너(서비스)의 로그를 볼지 지정 |
 
 **언제 쓰나**: 지금 막 요청을 보내면서 백엔드가 실시간으로 뭘 하는지 지켜보고 싶을 때(예: 로그인 시도하면서 어떤 에러가 찍히는지 바로 확인).
 
@@ -105,14 +105,14 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecadminapi
 
 **명령어**:
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 100 ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 100 ecbebo
 ```
 
 **명령어 설명**: `--tail 100` = 전체 로그 중 **최근 100줄만** 보여주고 바로 끝남(`-f`가 없으므로 이어서 보여주지 않음). 재기동 직후 정상적으로 떴는지 훑어볼 때 가장 많이 씁니다. `deploy-dev-synol-be-ecBeBo.js`(= `npm run deploy:dev-synol-be-ecAdminApi`)도 배포 마지막에 이걸 자동으로 30줄 찍어줍니다([14번 문서](<14_illeesam_synology_BE_자동배포가이드(npm script).md>) 참조).
 
 **실시간+최근 동시에 보고 싶으면**: `-f`와 `--tail`을 같이 써도 됩니다.
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f --tail 50 ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f --tail 50 ecbebo
 ```
 (최근 50줄을 먼저 보여준 뒤 이어서 실시간으로 계속 붙여줌)
 
@@ -122,8 +122,8 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f --tail 50 ecadmi
 
 **명령어**:
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --since 30m ecadminapi
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --since "2026-09-05T10:00:00" --until "2026-09-05T10:30:00" ecadminapi
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --since 30m ecbebo
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --since "2026-09-05T10:00:00" --until "2026-09-05T10:30:00" ecbebo
 ```
 
 **명령어 설명**:
@@ -141,14 +141,14 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --since "2026-09-05
 
 **명령어**:
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 500 ecadminapi | grep -i "ERROR"
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 500 ecbebo | grep -i "ERROR"
 ```
 
 **명령어 설명**: `|`(파이프)로 앞 명령 결과를 `grep`에 넘겨서 `ERROR`가 들어간 줄만 걸러냅니다. `-i`는 대소문자 구분 안 함.
 
 **앞뒤 맥락까지 같이 보고 싶으면** (에러 줄 앞 2줄 + 뒤 5줄까지):
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 500 ecadminapi | grep -i -B 2 -A 5 "ERROR"
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 500 ecbebo | grep -i -B 2 -A 5 "ERROR"
 ```
 
 | 부분 | 뜻 |
@@ -158,7 +158,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 500 ecadmina
 
 **특정 키워드로 찾기** (예: 특정 API 경로, 특정 회원ID 관련 로그만):
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 1000 ecadminapi | grep "user-pref"
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 1000 ecbebo | grep "user-pref"
 ```
 
 ---
@@ -167,7 +167,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 1000 ecadmin
 
 **명령어**:
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadminapi | less
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecbebo | less
 ```
 
 **명령어 설명**: `docker compose logs`만 단독으로 실행하면 화면에 한 번에 주루룩 쏟아져서 위쪽 내용을 놓치기 쉽습니다. `less`는 긴 출력을 **페이지 단위로 넘겨가며** 원하는 속도로 볼 수 있게 해주는 프로그램입니다(`|`로 앞 명령 결과를 그대로 넘김).
@@ -189,7 +189,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadmin
 
 **실시간 로그도 페이지 넘기듯 보고 싶으면** (`-f` + `less +F`):
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecadminapi | less +F
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecbebo | less +F
 ```
 `+F`는 `tail -f`처럼 실시간으로 따라가다가, `Ctrl+C`를 누르는 순간 일반 `less`(페이지 넘기기·검색 가능)로 전환됩니다 — 실시간으로 지켜보다가 방금 지나간 부분을 다시 스크롤해서 보고 싶을 때 유용합니다. (`less` 종료는 `q`, 다시 `+F` 모드로 돌아가려면 `F` 입력)
 
@@ -200,16 +200,16 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs -f ecadminapi | les
 로그가 아주 길 때 "100번째~200번째 줄만"처럼 원하는 구간만 정확히 잘라보고 싶으면:
 
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadminapi | sed -n '100,200p'
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecbebo | sed -n '100,200p'
 ```
 
 **명령어 설명**: `sed -n '100,200p'` = 입력받은 내용 중 **100번째 줄부터 200번째 줄까지만** 출력합니다(`-n`으로 기본 출력을 끄고, `p`로 지정한 범위만 찍음).
 
 **100줄씩 페이지 넘기듯 보고 싶으면**, 시작 줄만 바꿔가며 반복 실행합니다(1페이지=1~100, 2페이지=101~200, ...):
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadminapi | sed -n '1,100p'     # 1페이지
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadminapi | sed -n '101,200p'   # 2페이지
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadminapi | sed -n '201,300p'   # 3페이지
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecbebo | sed -n '1,100p'     # 1페이지
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecbebo | sed -n '101,200p'   # 2페이지
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecbebo | sed -n '201,300p'   # 3페이지
 ```
 
 > 매번 `--tail 2000`을 새로 뜬 다음 자르는 것이라, 그 사이 새 로그가 계속 쌓이는 실시간 상황에서는 페이지 경계가 살짝 밀릴 수 있습니다 — 딱 멈춰있는 구간을 정확히 나눠 보고 싶다면 7번처럼 먼저 파일로 저장해두고 그 파일을 기준으로 자르는 게 더 정확합니다.
@@ -220,7 +220,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 2000 ecadmin
 
 **NAS 안에 파일로 저장** (나중에 다시 보거나, 위 6번처럼 정확한 줄 번호로 페이지를 나누고 싶을 때):
 ```
-appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 5000 ecadminapi > ~/ecadminapi-$(date +%Y%m%d-%H%M).log
+appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 5000 ecbebo > ~/ecbebo-$(date +%Y%m%d-%H%M).log
 ```
 `>`(리다이렉트)로 화면 출력 대신 파일에 저장합니다. 파일명에 `$(date +%Y%m%d-%H%M)`을 넣어 저장 시각이 자동으로 붙게 했습니다.
 
@@ -228,7 +228,7 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 5000 ecadmin
 
 **내 컴퓨터로 가져와서 보기** (에디터에서 편하게 검색·스크롤하고 싶을 때, 🖥):
 ```
-~\ec_v26\shopjoy_v260406> scp -P 10022 appuser@illeesam.synology.me:~/ecadminapi-20260905-1430.log .
+~\ec_v26\shopjoy_v260406> scp -P 10022 appuser@illeesam.synology.me:~/ecbebo-20260905-1430.log .
 ```
 받은 뒤 VS Code 등으로 열어보면 됩니다(파일이 아주 크면 `--tail` 숫자를 줄여서 다시 저장하는 걸 권장 — 예: 2000줄 정도).
 
@@ -256,20 +256,20 @@ appuser@illeesam:backend$ /usr/local/bin/docker compose logs --tail 5000 ecadmin
 
 ```yaml
 volumes:
-  - /volume1/docker/ecadminapi/logs:/app/logs
+  - /volume1/docker/ecbebo/logs:/app/logs
 ```
 
-즉 컨테이너 안 `/app/logs`에 쓰인 파일은 NAS의 `/volume1/docker/ecadminapi/logs`에 그대로 보존되어, 컨테이너를 재기동/재생성해도 로그가 안 사라지도록 설계돼 있습니다.
+즉 컨테이너 안 `/app/logs`에 쓰인 파일은 NAS의 `/volume1/docker/ecbebo/logs`에 그대로 보존되어, 컨테이너를 재기동/재생성해도 로그가 안 사라지도록 설계돼 있습니다.
 
 > ⚠ **다만 지금(2026-09) 이 NAS는 `dev` 프로파일로 떠 있고, `dev` 프로파일의 `logging.file.path`는 `application-dev.yml`에 `C:/_logs/shopjoy`(로컬 개발용 Windows 경로)로 설정돼 있습니다.** 컨테이너는 Linux라 이 경로가 그대로 유효하지 않아서, 실제로는 이 볼륨(`/app/logs`)에 파일이 정상적으로 쌓이지 않을 가능성이 높습니다 — **지금은 위 1~4번의 `docker compose logs`(컨테이너 stdout, Docker의 `json-file` 로그 드라이버가 받아서 저장)가 사실상 유일하게 신뢰할 수 있는 로그 확인 방법**입니다.
 >
 > `docker compose logs`가 참조하는 stdout 로그도 무한정 쌓이진 않습니다 — `docker-compose.yml`의 `logging` 설정(`max-size: 10m`, `max-file: 5`)에 따라 컨테이너당 최대 50MB(10MB × 5개)까지만 보관되고 그 이상은 오래된 파일부터 자동으로 지워집니다. 오래된 로그를 길게 보존해야 하면 이 부분을 늘리거나, NAS용 프로파일의 `logging.file.path`를 컨테이너 안 실제 경로(예: `/app/logs`)로 맞추는 별도 작업이 필요합니다(지금은 안 돼 있음 — 필요하시면 말씀해주세요).
 >
-> `prod` 프로파일(`application-prod.yml`)은 `logging.file.path: logs`(상대경로)라 이 문제가 없습니다 — `prod`로 전환하면(9011번 문서 참조) 이 볼륨에 실제로 롤링 파일 로그(`ecadminapi.log`, `ecadminapi-error.log`, 30~90일 보관)가 쌓입니다.
+> `prod` 프로파일(`application-prod.yml`)은 `logging.file.path: logs`(상대경로)라 이 문제가 없습니다 — `prod`로 전환하면(9011번 문서 참조) 이 볼륨에 실제로 롤링 파일 로그(`ecbebo.log`, `ecbebo-error.log`, 30~90일 보관)가 쌓입니다.
 
 **로그 파일이 실제로 쌓이고 있는지 확인**:
 ```
-appuser@illeesam:backend$ ls -la /volume1/docker/ecadminapi/logs
+appuser@illeesam:backend$ ls -la /volume1/docker/ecbebo/logs
 ```
 파일이 없거나 텅 비어 있으면 위에서 설명한 `dev` 프로파일의 경로 문제 때문일 가능성이 큽니다 — `docker compose logs`로 대신 확인하세요.
 
@@ -281,7 +281,7 @@ appuser@illeesam:backend$ ls -la /volume1/docker/ecadminapi/logs
 
 **경로**: GitHub 리포지토리 → `Actions` 탭 → 해당 워크플로(`shopjoy-be-illeesam-synol-deploy` 등) → 최근 실행 클릭 → 각 스텝(`[6-1] 이미지 로드 + docker compose up -d` 등) 클릭하면 그 단계의 콘솔 출력이 펼쳐집니다.
 
-이 워크플로는 배포 스텝 안에서 `docker compose logs --tail 30 ecadminapi`를 자동으로 실행해 최근 로그를 남겨두므로, 배포가 실패했을 때 원인 파악용으로 가장 먼저 볼 곳입니다 — 자세한 흐름은 [21번(BE) 문서](21_illeesam_synology_GithubActions_BE_배포가이드.md) 참조.
+이 워크플로는 배포 스텝 안에서 `docker compose logs --tail 30 ecbebo`를 자동으로 실행해 최근 로그를 남겨두므로, 배포가 실패했을 때 원인 파악용으로 가장 먼저 볼 곳입니다 — 자세한 흐름은 [21번(BE) 문서](21_illeesam_synology_GithubActions_BE_배포가이드.md) 참조.
 
 ---
 

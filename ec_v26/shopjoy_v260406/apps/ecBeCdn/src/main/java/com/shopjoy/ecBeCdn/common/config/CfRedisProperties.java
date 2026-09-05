@@ -6,8 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * app.redis.* 설정 — EcAdminApi 의 cache/config/RedisProperties.java 를 그대로 참고해 이식했다
- * (요청사항: "redis 인증 연동해줘 단 redis switch 될수 있게 해줘"). EcCdnApi 는 노드 하나만
+ * app.redis.* 설정 — EcBeBo 의 cache/config/RedisProperties.java 를 그대로 참고해 이식했다
+ * (요청사항: "redis 인증 연동해줘 단 redis switch 될수 있게 해줘"). EcBeCdn 는 노드 하나만
  * 쓰므로(primary/secondary 이원화 없음) 그 부분만 단순화했다.
  *
  * <p>enabled: false(기본) → Redis 미사용, CfRedisUtil 모든 연산이 no-op(스위치).</p>

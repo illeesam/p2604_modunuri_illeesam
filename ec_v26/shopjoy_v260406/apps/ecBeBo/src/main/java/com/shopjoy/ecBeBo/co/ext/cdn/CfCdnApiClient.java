@@ -16,12 +16,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * EcCdnApi(동영상/이미지 CDN 서버) 호출 클라이언트 — id/pwd 로 로그인해 accessToken(30초)을 받고,
- * 만료되면 그 accessToken 을 그대로 다시 보내 재발급받는다(EcCdnApi 가 서버 DB에 보관 중인
+ * EcBeCdn(동영상/이미지 CDN 서버) 호출 클라이언트 — id/pwd 로 로그인해 accessToken(30초)을 받고,
+ * 만료되면 그 accessToken 을 그대로 다시 보내 재발급받는다(EcBeCdn 가 서버 DB에 보관 중인
  * refreshToken 을 내부에서 조회해 처리 — refreshToken 은 이 클라이언트도, 어떤 클라이언트도
  * 절대 안 받는다. EcBeBo 의 BoAuthService/FoAuthService 와 동일 원칙, 2026-09-06).
  *
- * <p><b>2026-09-06 시점 상태: 아직 어디서도 안 씀(대기 상태).</b> EcCdnApi 자체 배포 파이프라인과
+ * <p><b>2026-09-06 시점 상태: 아직 어디서도 안 씀(대기 상태).</b> EcBeCdn 자체 배포 파이프라인과
  * 함께 준비만 해둔 것으로, 기존에 잘 동작 중인 {@code CmUploadService}(로컬 디스크 저장,
  * storage_type_cd=LOCAL)를 이 클라이언트로 교체(storage_type_cd=CDN 분기 추가)하는 건 별도
  * 작업으로 뒤에 진행한다 — 운영 중인 업로드 흐름을 이 클래스 준비와 한 번에 바꾸는 건 리스크가
@@ -59,7 +59,7 @@ public class CfCdnApiClient {
         return withAuthRetry(token -> doUpload(token, fileBytes, fileName, contentType, thumbnail));
     }
 
-    /** 파일 삭제 (원본+썸네일+프레임 전부 EcCdnApi 가 알아서 지움). */
+    /** 파일 삭제 (원본+썸네일+프레임 전부 EcBeCdn 가 알아서 지움). */
     public void delete(String fileId) {
         withAuthRetry(token -> { doDelete(token, fileId); return null; });
     }
@@ -76,7 +76,7 @@ public class CfCdnApiClient {
         try {
             return call.apply(token);
         } catch (CfUnauthorizedException e) {
-            log.warn("[CfCdnApiClient] EcCdnApi 401 수신 — 재로그인 후 1회 재시도");
+            log.warn("[CfCdnApiClient] EcBeCdn 401 수신 — 재로그인 후 1회 재시도");
             synchronized (this) {
                 accessToken = null;
                 accessTokenExpiry = Instant.EPOCH;
@@ -85,10 +85,10 @@ public class CfCdnApiClient {
             try {
                 return call.apply(retried);
             } catch (Exception ex) {
-                throw new RuntimeException("EcCdnApi 호출 실패(재시도 후에도 실패): " + ex.getMessage(), ex);
+                throw new RuntimeException("EcBeCdn 호출 실패(재시도 후에도 실패): " + ex.getMessage(), ex);
             }
         } catch (Exception e) {
-            throw new RuntimeException("EcCdnApi 호출 실패: " + e.getMessage(), e);
+            throw new RuntimeException("EcBeCdn 호출 실패: " + e.getMessage(), e);
         }
     }
 
@@ -122,13 +122,13 @@ public class CfCdnApiClient {
                 .build();
             HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() != 200) {
-                throw new RuntimeException("EcCdnApi 로그인 실패(HTTP " + res.statusCode() + "): " + res.body());
+                throw new RuntimeException("EcBeCdn 로그인 실패(HTTP " + res.statusCode() + "): " + res.body());
             }
             applyTokenResponse(res.body());
-            log.info("[CfCdnApiClient] EcCdnApi 로그인 성공: clientId={}", clientId);
+            log.info("[CfCdnApiClient] EcBeCdn 로그인 성공: clientId={}", clientId);
         } catch (IOException | InterruptedException e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
-            throw new RuntimeException("EcCdnApi 로그인 요청 실패: " + e.getMessage(), e);
+            throw new RuntimeException("EcBeCdn 로그인 요청 실패: " + e.getMessage(), e);
         }
     }
 
@@ -157,7 +157,7 @@ public class CfCdnApiClient {
 
     private UploadResult doUpload(String token, byte[] fileBytes, String fileName, String contentType, boolean thumbnail)
             throws IOException, InterruptedException {
-        String boundary = "----EcCdnApiBoundary" + UUID.randomUUID();
+        String boundary = "----EcBeCdnBoundary" + UUID.randomUUID();
         byte[] multipartBody = buildMultipartBody(boundary, fileBytes, fileName, contentType, thumbnail);
 
         HttpRequest req = HttpRequest.newBuilder(URI.create(baseUrl + "/api/cdn/upload"))
@@ -169,7 +169,7 @@ public class CfCdnApiClient {
         HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         if (res.statusCode() == 401) throw new CfUnauthorizedException();
         if (res.statusCode() != 200 && res.statusCode() != 201) {
-            throw new RuntimeException("EcCdnApi 업로드 실패(HTTP " + res.statusCode() + "): " + res.body());
+            throw new RuntimeException("EcBeCdn 업로드 실패(HTTP " + res.statusCode() + "): " + res.body());
         }
         JsonNode d = objectMapper.readTree(res.body()).path("data");
         return new UploadResult(
@@ -190,7 +190,7 @@ public class CfCdnApiClient {
         HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         if (res.statusCode() == 401) throw new CfUnauthorizedException();
         if (res.statusCode() != 200) {
-            throw new RuntimeException("EcCdnApi 삭제 실패(HTTP " + res.statusCode() + "): " + res.body());
+            throw new RuntimeException("EcBeCdn 삭제 실패(HTTP " + res.statusCode() + "): " + res.body());
         }
     }
 

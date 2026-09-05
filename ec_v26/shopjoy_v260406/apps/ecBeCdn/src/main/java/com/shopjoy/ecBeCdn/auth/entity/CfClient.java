@@ -6,8 +6,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * EcCdnApi 를 호출하는 내부 서비스 계정(cf_client 테이블) — id/pwd 로 로그인해 accessToken 을 받는다.
- * EcAdminApi 가 대표적인(현재는 유일한) 호출자다. 필드에 기본값을 두지 않는다(project 전역 규칙).
+ * EcBeCdn 를 호출하는 내부 서비스 계정(cf_client 테이블) — id/pwd 로 로그인해 accessToken 을 받는다.
+ * EcBeBo 가 대표적인(현재는 유일한) 호출자다. 필드에 기본값을 두지 않는다(project 전역 규칙).
  */
 @Entity
 @Table(name = "cf_client")
