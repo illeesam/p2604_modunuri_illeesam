@@ -126,15 +126,27 @@ mkdir C:\_logs\shopjoy
 ## 발견 이력
 
 - 2026-09-06: `apps/LOG_DIR_IS_UNDEFINED/{ecbebo.log,ecbebo-error.log}` 폴더가 워크스페이스
-  안에 실제로 생겨있는 걸 발견(삭제 조치함) — 이 문서가 경고하던 바로 그 증상이 재현된 사례.
-  단, `application-local.yml`(`logging.file.path`)과 `logback-spring.xml`(`LOG_DIR`
-  springProperty `defaultValue`) 모두 소스 상으로는 정상 설정돼 있었고 stale 빌드 산출물
-  (`bin/main/`, `build/resources/main/`)의 복사본도 확인해봤지만 마찬가지로 정상값이었다 —
-  즉 "설정이 틀려서"가 아니라 **그 정상 설정이 적용되기 전(Spring Boot 로깅 부트스트랩보다
-  이른 시점)에 logback 이 먼저 초기화된 어떤 실행 경로**였을 가능성이 높다(정확한 재현 조건은
-  미확정). 다시 나타나면: 그 실행이 패키지된 jar(`java -jar`)였는지 IDE 직접 실행이었는지,
-  그리고 최초 로그 라인이 몇 번째 줄에서 찍혔는지(부트 배너보다 먼저 찍혔다면 이 가설 뒷받침)
-  확인할 것.
+  안에 **두 번** 실제로 생겨있는 걸 발견(둘 다 삭제 조치) — 이 문서가 경고하던 바로 그 증상이
+  재현된 사례. 두 번째 발견 때는 파일 내용을 직접 읽어 **근본 원인을 확정**했다:
+  - 로그 내용이 `org.hibernate.SQL`(`[sch-2]` 스레드, 10초 간격 반복) — 로컬에서 실제로 켜져
+    있던 `EcBeBoApplication`(local 프로파일)의 `@Scheduled` 잡(엑셀 다운로드 폴링)이 계속
+    남기고 있던 진짜 운영 로그였다. 즉 설정 오타나 잘못된 값 문제가 **아니었다**.
+  - `application-local.yml`(`logging.file.path`)과 `logback-spring.xml`(`LOG_DIR`
+    springProperty `defaultValue`)은 소스 상 항상 정상값이었다.
+  - **확정 원인**: Spring Boot 의 `springProperty`(`SpringPropertyAction`)는 Logback 이
+    Spring 의 `Environment`/`ApplicationContext` 가 아직 등록되기 전(이른 부팅 경로 — 예:
+    IntelliJ 실행과 동시에 별도 프로세스의 Gradle 빌드가 겹쳐 도는 등 타이밍이 어긋나는 경우)
+    에 먼저 초기화되면, **`defaultValue` 조차 적용하지 않고 `LOG_DIR` 자체를 아예 등록하지
+    않은 채 조용히 종료**한다(Spring Boot 자체의 알려진 제약 — environment 가 null 이면
+    `SpringPropertyAction.end()` 가 바로 return). 그 상태에서 `${LOG_DIR}` 를 그대로 참조하는
+    다른 property(`APP_LOG`/`ERR_LOG`/`ARCH_DIR`)는 Logback 이 미해석 변수를
+    `"LOG_DIR_IS_UNDEFINED"` 문자열로 치환해버려 그 이름의 폴더가 워크스페이스 안에
+    실제로 생긴다.
+  - **적용한 수정**: `springProperty` 자체는 유지하되(정상 케이스에서 계속 잘 동작),
+    `${LOG_DIR}` 를 **쓰는 곳마다** Logback 고유의 `${VAR:-default}` 구문으로 한 번 더
+    방어했다 — 이건 Spring 의 타이밍과 무관하게 Logback 자체가 처리하므로 위 실패 케이스의
+    영향을 받지 않는다. `apps/ecBeBo`, `apps/ecBeCdn` 의 `logback-spring.xml` 양쪽 다
+    `APP_LOG`/`ERR_LOG`/`ARCH_DIR` 세 property 에 전부 적용 완료.
 - 2026-05-08: F5 직후가 아닌 **계속되는** 0.5초 주기 깜빡임 증상 추적.
   Frontend 의 watch/computed/reactive 가 아닌 **백엔드 로그 파일 적재** 가 진짜 트리거였음.
   - `_apps/EcAdminApi/logs/ecadminapi.log` 매 API 호출마다 갱신

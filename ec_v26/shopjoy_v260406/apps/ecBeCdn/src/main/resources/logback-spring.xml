@@ -26,10 +26,15 @@
     <springProperty scope="context" name="LOG_DIR"
                     source="logging.file.path" defaultValue="C:/_logs/shopjoy/ecBeCdn"/>
 
+    <!-- 2026-09-06 버그수정(EcBeBo 에서 실측 재현된 것과 동일한 이슈 — 상세 원인은 EcBeBo 의
+         logback-spring.xml 주석 참조) — springProperty 는 Spring Environment 가 아직 없는
+         이른 부팅 경로에서는 defaultValue 조차 적용하지 못하고 LOG_DIR 자체를 비워버린다.
+         아래 ${LOG_DIR} 를 쓰는 자리마다 logback 고유의 ${VAR:-default} 문법으로 한 번 더
+         방어해서 "LOG_DIR_IS_UNDEFINED" 폴더가 워크스페이스 안에 생기는 걸 막는다. -->
     <property name="APP_NAME"    value="ecbecdn"/>
-    <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>
-    <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
-    <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>
+    <property name="APP_LOG"     value="${LOG_DIR:-C:/_logs/shopjoy/ecBeCdn}/${APP_NAME}.log"/>
+    <property name="ERR_LOG"     value="${LOG_DIR:-C:/_logs/shopjoy/ecBeCdn}/${APP_NAME}-error.log"/>
+    <property name="ARCH_DIR"    value="${LOG_DIR:-C:/_logs/shopjoy/ecBeCdn}/archived"/>
 
     <!-- 일반 파일 패턴 — [clientId] 는 요청 처리 중인 cf_client 계정(가능하면 필터/인터셉터가 MDC 로
          채워줌). 아직 MDC 연동 전이면 빈 값으로만 찍히고 크래시하지 않는다. -->

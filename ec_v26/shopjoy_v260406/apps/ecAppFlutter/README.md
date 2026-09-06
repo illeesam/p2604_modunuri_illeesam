@@ -16,7 +16,7 @@ ShopJoy 사용자(고객)용 **Flutter** 앱 (Dart + webview_flutter).
 
 ```bash
 flutter --version            # 3.22+ 권장
-cd _apps/flutter/ShopjoyFoApp
+cd apps/ecAppFlutter
 flutter create .             # android/ ios/ 등 자동 생성 (이미 있으면 skip)
 flutter pub get
 ```
@@ -46,7 +46,7 @@ flutter build ipa --release --dart-define=APP_ENV=prod
 ## 디렉토리
 
 ```
-ShopjoyFoApp/
+apps/ecAppFlutter/            # 2026-09-06: BO 앱(ShopjoyBoApp) 삭제 + 이 폴더 하나로 통합
 ├── pubspec.yaml
 ├── analysis_options.yaml
 ├── lib/

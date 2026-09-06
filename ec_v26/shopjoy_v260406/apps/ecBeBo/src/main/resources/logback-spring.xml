@@ -22,10 +22,23 @@
     <springProperty scope="context" name="LOG_DIR"
                     source="logging.file.path" defaultValue="C:/_logs/shopjoy/ecBeBo"/>
 
+    <!-- 2026-09-06 버그수정(요청사항: "apps/LOG_DIR_IS_UNDEFINED/ 가 왜 나올까? 확인하여 개선해줘") —
+         springProperty 는 Spring 의 ApplicationContext/Environment 가 아직 등록되기 전에 logback
+         이 먼저 초기화되는(=이른 부팅 경로) 경우 defaultValue 조차 적용하지 않고 LOG_DIR 자체를
+         아예 설정하지 않는다(Spring Boot 자체의 알려진 타이밍 이슈 — SpringPropertyAction 이
+         environment==null 이면 조용히 종료). 그 상태에서 아래 ${LOG_DIR} 를 그대로 참조하면
+         logback 이 미해석 변수를 "LOG_DIR_IS_UNDEFINED" 문자열로 치환해버려 워크스페이스 안에
+         그 이름의 폴더가 실제로 생겨버린다(2026-09-06 실측 재현 — org.hibernate.SQL 스케줄
+         쿼리 로그가 그 폴더에 계속 쌓이고 있었음). springProperty 의 defaultValue 는 이 경로를
+         못 구하므로, 아래처럼 ${LOG_DIR} 를 "쓰는 곳"마다 logback 고유의 ${VAR:-default} 문법으로
+         한 번 더 방어한다 — 이건 Spring 환경과 무관하게 logback 자체가 처리하므로 타이밍 문제의
+         영향을 안 받는다(정상 케이스에서는 LOG_DIR 이 이미 있으니 그 값을 그대로 쓰고, 실패
+         케이스에서만 이 기본값으로 폴백).
+    -->
     <property name="APP_NAME"    value="ecbebo"/>
-    <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>
-    <property name="ERR_LOG"     value="${LOG_DIR}/${APP_NAME}-error.log"/>
-    <property name="ARCH_DIR"    value="${LOG_DIR}/archived"/>
+    <property name="APP_LOG"     value="${LOG_DIR:-C:/_logs/shopjoy/ecBeBo}/${APP_NAME}.log"/>
+    <property name="ERR_LOG"     value="${LOG_DIR:-C:/_logs/shopjoy/ecBeBo}/${APP_NAME}-error.log"/>
+    <property name="ARCH_DIR"    value="${LOG_DIR:-C:/_logs/shopjoy/ecBeBo}/archived"/>
 
     <!-- 일반 파일 패턴 — [siteId:appTypeCd:userId:roleId] [uiNm>cmdNm] -->
     <property name="FILE_PATTERN"
