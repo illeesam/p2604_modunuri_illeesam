@@ -115,14 +115,17 @@ public class CfStorageBrowseController {
         String ext = fnExt(name);
 
         if (tracked.isPresent()) {
+            // 2026-09-06(요청사항: "이미지/동영상/썸네일류는 db id 접근방식이 아닌, 리소스경로
+            // 접근방식이어야 해") — ID 기반(/api/cdn/serve/file/{fileId}) 대신 실제 저장 경로
+            // 기반(CfAttachServeController 캐치올)으로.
             CfFile f = tracked.get();
             return RealFileEntry.builder()
                 .name(name).relPath(relPath).size(size).lastModified(lastModified)
                 .mediaTypeCd(f.getMediaTypeCd())
                 .tracked(true)
                 .fileId(f.getFileId())
-                .url("/api/cdn/serve/file/" + f.getFileId())
-                .thumbnailUrl(f.getThumbnailPath() != null ? "/api/cdn/serve/thumbnail/" + f.getFileId() : null)
+                .url("/api/cdn/" + f.getFilePath())
+                .thumbnailUrl(f.getThumbnailPath() != null ? "/api/cdn/" + f.getThumbnailPath() : null)
                 .build();
         }
         CfMediaType guessed = CfMediaType.fromExt(ext);

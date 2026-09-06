@@ -1034,6 +1034,15 @@
     var base = imgBase || PROD_IMG_BASE;
     if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
     if (p.sizes && !p.opt2s) { p.opt2s = p.sizes; }
+    // 2026-09-06(요청사항: "궁극적으로 ecBeCdn에 있어야 하는게 맞는거지?") — 실제 CDN 이미지는
+    // p.thumbnailUrl(레거시 컬럼, 거의 항상 null)이 아니라 p.prodImgs 배열(FoPdProdService
+    // ._listFillRelations 가 채워줌, cdnImgUrl 이 진짜 ecBeCdn 경로)에 들어있는데 여기서 그걸
+    // 안 읽어서 상품이 실제 이미지를 갖고 있어도 항상 로컬 데모 폴백(assets/cdn/...)으로
+    // 빠지고 있었다 — 대표이미지(isThumb='Y', 없으면 첫 번째)를 먼저 확인.
+    if (!p.image && Array.isArray(p.prodImgs) && p.prodImgs.length) {
+      var mainImg = p.prodImgs.find(function (im) { return im.isThumb === 'Y'; }) || p.prodImgs[0];
+      if (mainImg) { p.image = cofImgSrc(mainImg.cdnImgUrl || mainImg.cdnThumbUrl || ''); }
+    }
     if (!p.image && p.thumbnailUrl) { p.image = cofImgSrc(p.thumbnailUrl); }
     if (!p.image) {
       var id = parseInt(String(p.prodId || 1).replace(/[^0-9]/g, ''), 10) || 1;
