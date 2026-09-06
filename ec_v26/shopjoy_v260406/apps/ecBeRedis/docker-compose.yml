@@ -62,6 +62,13 @@ services:
 
     restart: always
 
+    # 2026-09-06 — EcBeBo/EcBeCdn 은 banner.txt(${shopjoy.version})로 버전을 표시하지만
+    # 이 컨테이너는 커스텀 코드가 없는 순정 redis 이미지라 그 방식이 안 통한다. 대신 Docker
+    # 레이블로 동일 정보를 붙여 `docker inspect shopjoy-ecBeRedis-22379 --format '{{.Config.Labels}}'`
+    # 로 확인 가능하게 한다 — 배포마다 EcBeBo/EcBeCdn 과 같은 값으로 수동으로 올릴 것.
+    labels:
+      shopjoy.version: "v1.0.0.20260906"
+
     healthcheck:
       # 2026-09-06: 비밀번호가 걸려 있어 인증 없는 PING은 (error) NOAUTH 로 실패한다 — -a 로
       # 인증하고, --no-auth-warning 으로 "비밀번호를 커맨드라인에 노출"경고 로그를 숨긴다

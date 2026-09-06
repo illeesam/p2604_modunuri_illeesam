@@ -43,6 +43,13 @@ services:
       - ./security-headers.conf:/etc/nginx/security-headers.conf:ro
       - /volume1/docker/shopjoy/apps/ecFeBo:/usr/share/nginx/html:ro
 
+    # 2026-09-06 — 순정 nginx 이미지라 EcBeBo/EcBeCdn 의 banner.txt(${shopjoy.version}) 방식이
+    # 안 통한다. 대신 Docker 레이블로 동일 정보를 붙여
+    # `docker inspect shopjoy-ecGateway-22099 --format '{{.Config.Labels}}'` 로 확인 가능하게
+    # 한다 — 배포마다 다른 앱들과 같은 값으로 수동으로 올릴 것.
+    labels:
+      shopjoy.version: "v1.0.0.20260906"
+
     restart: "no"
 
     logging:

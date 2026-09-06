@@ -54,6 +54,13 @@ services:
       # (이 NAS는 DSM 리버스 프록시 서브도메인 방식으로 HTTPS를 이미 확보하고 있어 필수는 아님)
       # - /volume1/docker/shopjoy/certs:/etc/letsencrypt:ro
 
+    # 2026-09-06 — 순정 nginx 이미지라 EcBeBo/EcBeCdn 의 banner.txt(${shopjoy.version}) 방식이
+    # 안 통한다. 대신 Docker 레이블로 동일 정보를 붙여
+    # `docker inspect shopjoy-ecFeBo-22000 --format '{{.Config.Labels}}'` 로 확인 가능하게
+    # 한다 — 배포마다 다른 앱들과 같은 값으로 수동으로 올릴 것.
+    labels:
+      shopjoy.version: "v1.0.0.20260906"
+
     restart: unless-stopped
 
     logging:

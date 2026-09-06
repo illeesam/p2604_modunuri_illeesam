@@ -36,6 +36,12 @@ spring:
       hibernate:
         format_sql: false
 
+# 부팅 배너(banner.txt)의 ${shopjoy.version} 이 참조하는 값 — EcBeBo 와 동일 조치(2026-09-06).
+# 이전엔 banner.txt 에 "(eccdnapi.version) : 0.0.1-SNAPSHOT" 로 하드코딩되어 있었다.
+# 배포마다 수동으로 올려주는 간단한 버전 문자열 — 자동 증가 없음. EcBeBo 와 같은 값으로 맞출 것.
+shopjoy:
+  version: v1.0.0.20260906
+
 app:
   cf:
     # 실제 파일이 저장되는 루트 경로. 로컬 실행은 ./storage(프로젝트 폴더 안), NAS 배포는

@@ -74,6 +74,12 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
+# 부팅 배너(banner.txt)의 ${shopjoy.version} 이 참조하는 값 — 원래 RuoYi 스캐폴드가 남긴
+# ${ruoyi.version} 은 이 프로젝트 어디에도 정의된 적이 없어 부팅 배너에 미해석 상태로 출력되던
+# 잔재였다(2026-09-06 rename). 배포마다 수동으로 올려주는 간단한 버전 문자열 — 자동 증가 없음.
+shopjoy:
+  version: v1.0.0.20260906
+
 app:
   # license.secret / license.enabled 는 sy_prop(app.license.*) 에서 주입
   license:

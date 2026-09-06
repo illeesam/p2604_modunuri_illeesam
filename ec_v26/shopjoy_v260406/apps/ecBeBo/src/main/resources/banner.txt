@@ -1,4 +1,4 @@
-(ruoyi.version) : ${ruoyi.version}
+(shopjoy.version) : ${shopjoy.version}
 (spring-boot.version) : ${spring-boot.version}
 (spring.profiles.active) : ${spring.profiles.active}
 
