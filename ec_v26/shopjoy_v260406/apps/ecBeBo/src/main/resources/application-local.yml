@@ -272,4 +272,8 @@ logging:
   file:
     # ⚠ 워크스페이스 밖 절대경로 — VSCode Live Server reload 무한 루프 회피
     #   자세히: _doc/정책서-dev/local-logging.md
-    path: C:/_logs/shopjoy
+    # 2026-09-06: 앱별 하위폴더로 재구조화(요청사항: "로컬의 로그정보 logs/* 폴더에 넣으면
+    # 좋겠는데") — 워크스페이스 밖이라는 원칙은 유지하되(그대로 두면 Live Server 무한
+    # reload 재발), 지금까지 EcBeBo/EcBeCdn 이 같은 평평한 폴더를 파일명으로만 구분해서
+    # 공유하던 것을 앱별 폴더로 나눔.
+    path: C:/_logs/shopjoy/ecBeBo

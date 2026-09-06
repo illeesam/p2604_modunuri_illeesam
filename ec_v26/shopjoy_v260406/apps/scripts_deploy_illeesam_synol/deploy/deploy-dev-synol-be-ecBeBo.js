@@ -30,8 +30,8 @@ const REMOTE_BE_LOGS_DIR = '/volume1/docker/shopjoy/logs/ecBeBoLogs';
 const REMOTE_BE_ENV_FILE = '/volume1/docker/shopjoy/env/ecBeBo.env';
 const PUBLIC_HOST = 'illeesam.synology.me';
 const PUBLIC_PORT = 22300;
-// 2026-09-06: ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
-// gateway 접속 URL 예제도 제시해줘") — /api/** 는 ecGateway 의 locations.conf 가 이 백엔드로
+// 2026-09-06: ecBeGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
+// gateway 접속 URL 예제도 제시해줘") — /api/** 는 ecBeGateway 의 locations.conf 가 이 백엔드로
 // 명시적으로 라우팅해준다. ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 다 떠 있어야 502 없이 통과한다.
 const GW = `${PUBLIC_HOST}:22099`;
 const GW_HTTPS = `22099.${PUBLIC_HOST}`;

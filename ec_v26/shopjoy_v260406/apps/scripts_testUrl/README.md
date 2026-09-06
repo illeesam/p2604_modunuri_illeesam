@@ -1,6 +1,6 @@
 # scripts_testUrl — 점검용 URL 모음
 
-5개 앱(`ecBeBo`/`ecBeCdn`/`ecFeBo`/`ecGateway`/`ecBeRedis`) 배포 스크립트(`apps/scripts_deploy_illeesam_synol/deploy-dev-synol-*.js`)의 `notifyDeployResult({ checkUrls })` 안에 흩어져 있던 점검 URL을 한 곳에 정리한 폴더입니다. NAS 접속정보(`.synology-deploy.env`) 없이 그냥 `node test-urls.js` 만 돌리면 됩니다 — 전부 공개(permitAll) URL만 다룹니다.
+5개 앱(`ecBeBo`/`ecBeCdn`/`ecFeBo`/`ecBeGateway`/`ecBeRedis`) 배포 스크립트(`apps/scripts_deploy_illeesam_synol/deploy-dev-synol-*.js`)의 `notifyDeployResult({ checkUrls })` 안에 흩어져 있던 점검 URL을 한 곳에 정리한 폴더입니다. NAS 접속정보(`.synology-deploy.env`) 없이 그냥 `node test-urls.js` 만 돌리면 됩니다 — 전부 공개(permitAll) URL만 다룹니다.
 
 ## 실행
 
@@ -48,7 +48,7 @@ node test-urls.js ecBeCdn ecFeBo   # 여러 개 지정
 | `https://22000.illeesam.synology.me/bo.html` | 관리자(BO) 메인 화면(로그인 필요) |
 | `https://22000.illeesam.synology.me/assets/cdn/pkg/vue/3.4.21/vue.global.prod.min.js` | 로컬 CDN 패키지(Vue) 정적서빙 확인 |
 
-### ecGateway — 테스트 전용 게이트웨이(22099)
+### ecBeGateway — 테스트 전용 게이트웨이(22099)
 
 ⚠️ 운영 경로가 아닙니다 — `ecBeBo`/`ecBeCdn`/`ecFeBo`가 이 NAS에 이미 떠 있어야 502 없이 통과합니다.
 

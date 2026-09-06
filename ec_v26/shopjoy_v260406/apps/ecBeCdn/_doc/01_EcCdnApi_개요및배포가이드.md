@@ -63,7 +63,7 @@ EcAdminApi 의 `_doc/11번 문서`(수동배포가이드)와 같은 절차. **�
 3. **NAS 디렉터리 준비**: `/volume1/docker/shopjoy/eccdnapi/` 에 `Dockerfile`, `docker-compose.yml`, `.env`(`env.dev` 참고해서 직접 작성, `CF_JWT_SECRET`/`DB_PASSWORD`/`CF_CDN_CLIENT_PWD` 등 실제 값 채움) 배치.
 4. **저장소/로그 볼륨 폴더 생성**: `mkdir -p /volume1/docker/shopjoy/cdn-storage /volume1/docker/eccdnapi/logs`
 5. **최초 기동**: `cd /volume1/docker/shopjoy/eccdnapi && docker compose up -d --build`
-6. **nginx 반영 확인** — (2026-09-06 2차 재편 후) `apps/ecGateway/nginx.conf`(upstream `ec_cdn_api`)와 `locations.conf`(`/api/cdn/` 프록시 하나로 통합, 예전 `/cf/`·`/api/auth/` 개별 location 은 폐기)가 테스트 게이트웨이 배포에 포함되어 있다. 실제 운영 경로는 이 게이트웨이 없이 `https://22400.illeesam.synology.me/api/cdn/serve/file/{fileId}` 로 EcCdnApi 를 직접 호출.
+6. **nginx 반영 확인** — (2026-09-06 2차 재편 후) `apps/ecBeGateway/nginx.conf`(upstream `ec_cdn_api`)와 `locations.conf`(`/api/cdn/` 프록시 하나로 통합, 예전 `/cf/`·`/api/auth/` 개별 location 은 폐기)가 테스트 게이트웨이 배포에 포함되어 있다. 실제 운영 경로는 이 게이트웨이 없이 `https://22400.illeesam.synology.me/api/cdn/serve/file/{fileId}` 로 EcCdnApi 를 직접 호출.
 
 ## 6. 반복 배포 (자동 스크립트)
 
@@ -158,4 +158,4 @@ URL 을 아는 사람은 누구나 파일 업로드/삭제·cf_client 계정 생
 | `_doc/ddl_pgsql/ec/cf_client.sql`, `cf_file.sql` | DDL(source of truth) |
 | `scripts/deploy-dev-synol-be-ecBeCdn.js` | 자동 배포 스크립트 |
 | `apps/ecBeBo/co/ext/cdn/CfCdnApiClient.java` | EcAdminApi → EcCdnApi 호출 클라이언트(대기 상태) |
-| `apps/ecGateway/nginx.conf`, `locations.conf` | 테스트 전용 게이트웨이의 `/api/cdn/` 프록시(upstream `ec_cdn_api`) — 운영 경로 아님, EcCdnApi(22400)/EcAdminApi(22300) 각자 직접 공개가 원칙 |
+| `apps/ecBeGateway/nginx.conf`, `locations.conf` | 테스트 전용 게이트웨이의 `/api/cdn/` 프록시(upstream `ec_cdn_api`) — 운영 경로 아님, EcCdnApi(22400)/EcAdminApi(22300) 각자 직접 공개가 원칙 |

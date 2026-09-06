@@ -33,7 +33,9 @@ logging:
     # p6spy 로거는 StdoutLogger 가 직접 출력하므로 logback 을 통한 중복 출력 방지(OFF).
     p6spy: OFF
   # 워크스페이스 밖 절대경로 — VSCode Live Server 가 .log 변경을 감지해 브라우저를 계속 새로고침하는
-  # 문제 회피(EcBeBo 의 local-logging.md 정책과 동일 원인/동일 해법). EcBeBo 와 같은 폴더를
-  # 공유하되 파일명(logback-spring.xml 의 APP_NAME=eccdnapi)이 달라 충돌하지 않는다.
+  # 문제 회피(EcBeBo 의 local-logging.md 정책과 동일 원인/동일 해법).
+  # 2026-09-06: 앱별 하위폴더로 재구조화(요청사항: "로컬의 로그정보 logs/* 폴더에 넣으면
+  # 좋겠는데") — 지금까지 EcBeBo 와 같은 평평한 폴더를 파일명(APP_NAME=ecbecdn)으로만
+  # 구분해 공유하던 것을 앱별 폴더로 분리.
   file:
-    path: C:/_logs/shopjoy
+    path: C:/_logs/shopjoy/ecBeCdn

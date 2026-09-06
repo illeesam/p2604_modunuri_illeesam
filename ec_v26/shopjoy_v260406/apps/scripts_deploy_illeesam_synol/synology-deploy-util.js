@@ -50,7 +50,7 @@ function initFileLog() {
     const dayDir = path.join(LOG_DIR, dateStr);
     if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
     // 2026-09-06: npm_lifecycle_event 단독 의존 폐기 — deploy/stop/delete/ps 4개 워크스페이스가
-    // 전부 같은 짧은 스크립트명(예: "ecGateway")을 쓰게 되면서 npm_lifecycle_event 만으로는
+    // 전부 같은 짧은 스크립트명(예: "ecBeGateway")을 쓰게 되면서 npm_lifecycle_event 만으로는
     // 로그 파일명에서 "이게 stop 인지 ps 인지"가 안 드러나는 문제가 생겼다(요청사항: "ps 는
     // 로그파일 안남기네" — 실제로는 남지만 파일명만 보고 구분이 안 됐던 것). 실행 파일 자체
     // (process.argv[1] — manage-dev-synol.js 는 항상 이 이름 그대로) + 실제 전달된 인자

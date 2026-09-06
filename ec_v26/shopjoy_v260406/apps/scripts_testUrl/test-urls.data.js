@@ -1,4 +1,4 @@
-/* test-urls.data.js — 5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecGateway/ecBeRedis)의 점검용 URL을 한 곳에
+/* test-urls.data.js — 5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeGateway/ecBeRedis)의 점검용 URL을 한 곳에
  * 모아둔 데이터 파일(로직 없음). 각 deploy-dev-synol-*.js 의 notifyDeployResult({ checkUrls })
  * 에 흩어져 있던 목록을 그대로 옮겨왔다 — 배포 스크립트를 매번 뒤져야 "지금 뭘로 확인하면
  * 되지?"를 알 수 있던 걸, 이 파일 하나만 보면 되게 정리(요청사항: "테스트 URL 정보 정리해줄
@@ -16,14 +16,14 @@
  * + "gateway 방식도") — 접근 방식별로 실제로 뭐가 다른지는 각 서비스 블록 상단 주석 참조.
  *   1) HTTPS 서브도메인 직접   — https://{port}.illeesam.synology.me/...   (운영/브라우저 정식 경로)
  *   2) HTTP 호스트:포트 직접   — http://illeesam.synology.me:{port}/...    (디버깅 전용, 평문)
- *   3) 게이트웨이(22099) 경유 — http(s)://…22099…/...                     (ecGateway 가 내부 prefix
- *      라우팅으로 3개 서비스를 한 origin 으로 묶어줌 — 테스트 전용, 운영 경로 아님. ecGateway
+ *   3) 게이트웨이(22099) 경유 — http(s)://…22099…/...                     (ecBeGateway 가 내부 prefix
+ *      라우팅으로 3개 서비스를 한 origin 으로 묶어줌 — 테스트 전용, 운영 경로 아님. ecBeGateway
  *      의 locations.conf 에 명시적 규칙이 있는 경로만 여기 포함시켰다 — 없는 경로는 "/" 캐치올
  *      → @backend 폴백으로 우연히 될 수도 있지만 확실치 않아 목록에서 뺐다)
  */
 const HOST = 'illeesam.synology.me';
-const GW = `${HOST}:22099`;      // ecGateway, HTTP 포트 방식
-const GW_HTTPS = `22099.${HOST}`; // ecGateway, HTTPS 서브도메인 방식(2026-09-06 인증서 등록 완료)
+const GW = `${HOST}:22099`;      // ecBeGateway, HTTP 포트 방식
+const GW_HTTPS = `22099.${HOST}`; // ecBeGateway, HTTPS 서브도메인 방식(2026-09-06 인증서 등록 완료)
 
 const services = {
   // ── ecBeBo(22300) — 관리자 백엔드 API. 전부 로그인 불필요(공개 라우트만 모음). ──
@@ -120,11 +120,11 @@ const services = {
     ],
   },
 
-  // ── ecGateway(22099) — 테스트 전용 게이트웨이. ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 이미 떠
-  //    있어야 502 없이 통과한다(운영 경로 아님, apps/ecGateway/docker-compose.yml 상단 주석 참조).
+  // ── ecBeGateway(22099) — 테스트 전용 게이트웨이. ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 이미 떠
+  //    있어야 502 없이 통과한다(운영 경로 아님, apps/ecBeGateway/docker-compose.yml 상단 주석 참조).
   //    게이트웨이 자체는 HTTP(22099)/HTTPS(22099.illeesam...) 둘 다 등록 완료(2026-09-06). ──
-  ecGateway: {
-    label: '테스트 게이트웨이(ecGateway, 22099)',
+  ecBeGateway: {
+    label: '테스트 게이트웨이(ecBeGateway, 22099)',
     urls: [
       { url: `http://${GW}/index.html`, note: '사용자(FO) 메인 화면(게이트웨이, HTTP)' },
       { url: `https://${GW_HTTPS}/index.html`, note: '사용자(FO) 메인 화면(게이트웨이, HTTPS)' },

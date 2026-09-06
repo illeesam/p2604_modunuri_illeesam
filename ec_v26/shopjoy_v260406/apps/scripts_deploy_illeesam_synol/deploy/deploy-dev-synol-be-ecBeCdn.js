@@ -41,8 +41,8 @@ const REMOTE_CDN_STORAGE_DIR = '/volume1/docker/shopjoy/storage/ecBeCdnStorage';
 // 지원) 아래 HTTPS 외부 헬스체크가 그 경로로 동작한다 — 등록 전까지는 HTTP 직접 포트로 확인.
 const PUBLIC_HOST = 'illeesam.synology.me';
 const PUBLIC_PORT = 22400;
-// 2026-09-06: ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
-// gateway 접속 URL 예제도 제시해줘") — /api/cdn/** 는 ecGateway 의 locations.conf 가 이
+// 2026-09-06: ecBeGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
+// gateway 접속 URL 예제도 제시해줘") — /api/cdn/** 는 ecBeGateway 의 locations.conf 가 이
 // CDN 서버로 명시적으로 라우팅해준다. ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 다 떠 있어야 502
 // 없이 통과한다.
 const GW = `${PUBLIC_HOST}:22099`;

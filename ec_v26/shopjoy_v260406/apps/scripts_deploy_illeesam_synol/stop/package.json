@@ -9,7 +9,7 @@
     "ecBeCdn": "node ../manage-dev-synol.js stop ecBeCdn",
     "ecFeBo": "node ../manage-dev-synol.js stop ecFeBo",
     "ecBeRedis": "node ../manage-dev-synol.js stop ecBeRedis",
-    "ecGateway": "node ../manage-dev-synol.js stop ecGateway",
-    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+    "ecBeGateway": "node ../manage-dev-synol.js stop ecBeGateway",
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecBeGateway"
   }
 }

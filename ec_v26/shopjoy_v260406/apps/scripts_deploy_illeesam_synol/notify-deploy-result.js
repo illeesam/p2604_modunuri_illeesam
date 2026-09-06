@@ -191,7 +191,7 @@ function buildServerInfo(serverInfo) {
 async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, serverInfo, checkUrls, npmScript, logFilePath }) {
   const emoji = success ? '✅' : '❌';
   const statusText = success ? '성공' : '실패';
-  // 2026-09-06(요청사항: "무지개 아이콘 추가해줘 🌈✅[ShopJoy] [배포] ecGateway 성공") —
+  // 2026-09-06(요청사항: "무지개 아이콘 추가해줘 🌈✅[ShopJoy] [배포] ecBeGateway 성공") —
   // 앞머리에 🌈 고정 + "[ShopJoy 배포]" 한 덩어리였던 걸 "[ShopJoy] [배포]" 두 덩어리로 분리.
   const subject = `🌈${emoji}[ShopJoy] [배포] ${scriptName} ${statusText} (소요 ${elapsed})`
     + (npmScript ? ` — ${npmScript}` : '');

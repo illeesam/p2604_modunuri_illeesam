@@ -49,8 +49,8 @@ const PUBLIC_HOST = 'illeesam.synology.me';
 // 22000.illeesam.synology.me 를 DSM 콘솔에 등록 완료(13번 문서 절차, curl 실측 200 확인).
 // CorsOriginPolicy.java 의 "*.illeesam.synology.me" 패턴은 신규 서브도메인도 자동 허용.
 const PUBLIC_HTTPS_HOST = '22000.illeesam.synology.me';
-// ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는 gateway 접속
-// URL 예제도 제시해줘") — 이 정적 파일들은 ecGateway 자기 root 에서도 그대로 서빙된다.
+// ecBeGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는 gateway 접속
+// URL 예제도 제시해줘") — 이 정적 파일들은 ecBeGateway 자기 root 에서도 그대로 서빙된다.
 const GW = `${PUBLIC_HOST}:22099`;
 const GW_HTTPS = `22099.${PUBLIC_HOST}`;
 // 이 스크립트는 항상 dev NAS 대상 + dev 프로파일로 빌드한다(build-minify.js 의 --profile=dev,

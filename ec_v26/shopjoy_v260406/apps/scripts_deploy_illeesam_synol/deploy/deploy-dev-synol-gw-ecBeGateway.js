@@ -1,36 +1,39 @@
-/* deploy-dev-synol-gw-ecGateway.js — Synology NAS(dev)의 테스트 전용 게이트웨이(apps/ecGateway)를
+/* deploy-dev-synol-gw-ecBeGateway.js — Synology NAS(dev)의 테스트 전용 게이트웨이(apps/ecBeGateway)를
  * docker-compose.yml 기준으로 (재)배포한다. 다른 deploy-dev-synol-be-*.js 와 달리 Gradle 빌드가
  * 없다 — 공식 nginx 이미지를 그대로 쓰므로 "빌드해서 전송"할 산출물 자체가 없고, compose+nginx
  * 설정 3종 전송 + 컨테이너 기동이 전부다.
  *
- * ⚠️ 테스트 전용이다(apps/ecGateway/docker-compose.yml 상단 주석 참조) — ecBeBo(22300)/
+ * ⚠️ 테스트 전용이다(apps/ecBeGateway/docker-compose.yml 상단 주석 참조) — ecBeBo(22300)/
  * ecBeCdn(22400)이 이 NAS에 이미 떠 있어야(host.docker.internal 경유로 호출) 정상 동작하고,
  * ecFeBo(22000)가 배포해둔 정적 파일 폴더(/volume1/docker/shopjoy/apps/ecFeBo)를 그대로 재사용한다
  * — 즉 이 스크립트를 돌리기 전에 deploy/ 에서 npm run ecBeBo / ecBeCdn / ecFeBo 가
  * 먼저 실행되어 있어야 의미가 있다(순서 강제는 안 함 — 없어도 컨테이너 자체는 뜨지만 502/빈
  * 화면만 보게 된다).
  *
- * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecGateway
- *          (또는 루트에서 npm run ecGateway --workspace=deploy)
+ * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeGateway
+ *          (또는 루트에서 npm run ecBeGateway --workspace=deploy)
  * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
 const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
-requireCreds('deploy-dev-synol-gw-ecGateway.js');
+requireCreds('deploy-dev-synol-gw-ecBeGateway.js');
 
 const DOCKER = '/usr/local/bin/docker';
 // 2026-09-06 재구조화(요청사항: "shopjoy 아래 혼재돼 있던 폴더를 apps/storage/data/logs 로 분류")
-const REMOTE_GW_DIR = '/volume1/docker/shopjoy/apps/ecGateway';
-const CONTAINER_NAME = 'shopjoy-ecGateway-22099';
+const REMOTE_GW_DIR = '/volume1/docker/shopjoy/apps/ecBeGateway';
+// 2026-09-06(요청사항: "logs 는 안 남기나 — dev 에서는 로그 남겨줘") — docker-compose.yml 이
+// /var/log/nginx 를 이 경로에 바인드마운트한다. 다른 앱들과 같은 logs/{앱}Logs 이름규칙.
+const REMOTE_GW_LOGS_DIR = '/volume1/docker/shopjoy/logs/ecBeGatewayLogs';
+const CONTAINER_NAME = 'shopjoy-ecBeGateway-22099';
 const PUBLIC_PORT = 22099;
 const PUBLIC_HOST = 'illeesam.synology.me';
 // 2026-09-06: 22099.illeesam.synology.me 도 DSM 리버스프록시+전용 인증서 등록 완료(curl 실측
 // 200) — HTTP 포트 방식과 나란히 HTTPS 서브도메인 방식도 같이 보여준다.
 const PUBLIC_HTTPS_HOST = `22099.${PUBLIC_HOST}`;
 
-const TAG = { toString() { return `[${hms()}][deploy-dev-synol-gw-ecGateway.js][GW]`; } };
+const TAG = { toString() { return `[${hms()}][deploy-dev-synol-gw-ecBeGateway.js][GW]`; } };
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
 
 const startedAt = Date.now();
@@ -43,10 +46,10 @@ function fmtElapsed() {
 
 (async () => {
   try {
-    console.log(`${TAG} ▶ 시작 : 테스트 게이트웨이(ecGateway) compose 배포 (배포 대상: dev NAS, 빌드 단계 없음)\n`);
+    console.log(`${TAG} ▶ 시작 : 테스트 게이트웨이(ecBeGateway) compose 배포 (배포 대상: dev NAS, 빌드 단계 없음)\n`);
 
-    // ROOT(synology-deploy-util.js 기준) = apps/ — 형제 폴더 apps/ecGateway 에 설정 파일이 있다.
-    const gwDir = path.join(ROOT, 'ecGateway');
+    // ROOT(synology-deploy-util.js 기준) = apps/ — 형제 폴더 apps/ecBeGateway 에 설정 파일이 있다.
+    const gwDir = path.join(ROOT, 'ecBeGateway');
     const configUploads = ['docker-compose.yml', 'nginx.conf', 'locations.conf', 'security-headers.conf']
       .map((f) => ({ local: path.join(gwDir, f), remote: `${REMOTE_GW_DIR}/${f}` }));
 
@@ -54,6 +57,7 @@ function fmtElapsed() {
     await withSsh(
       configUploads,
       [
+        { label: '로그 볼륨 폴더 존재 보장', cmd: `mkdir -p ${REMOTE_GW_LOGS_DIR}` },
         { label: '컨테이너 기동/갱신 (+ 옛 구성 정리)', cmd: `cd ${REMOTE_GW_DIR} && ${DOCKER} compose up -d --force-recreate --remove-orphans` },
         { label: '3초 대기 후 상태 확인', cmd: `sleep 3 && cd ${REMOTE_GW_DIR} && ${DOCKER} compose ps` },
         {
@@ -96,7 +100,7 @@ function fmtElapsed() {
     console.log(`${TAG}   ⚠ ecBeBo(22300)/ecBeCdn(22400)이 이 NAS에 안 떠 있으면 /api,/cdn-admin,/admin-tools 는 502가 정상입니다.`);
 
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecGateway', success: true, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeGateway', success: true, elapsed: fmtElapsed(),
       detail: '배포 완료 — 위 로그의 각 경로별 HTTP 상태 참조',
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 포트 ${PUBLIC_PORT})` },
@@ -117,16 +121,16 @@ function fmtElapsed() {
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 게이트웨이→ecBeBo, HTTP)' },
         { url: `https://${PUBLIC_HTTPS_HOST}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 게이트웨이→ecBeBo, HTTPS)' },
       ],
-      npmScript: 'deploy/ecGateway',
+      npmScript: 'deploy/ecBeGateway',
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
     console.error(`\n${TAG}[실패] ❌ 배포 실패 (경과 ${fmtElapsed()}): ${e.message}`);
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecGateway', success: false, elapsed: fmtElapsed(),
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeGateway', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
-      npmScript: 'deploy/ecGateway',
+      npmScript: 'deploy/ecBeGateway',
     });
     process.exit(1);
   }

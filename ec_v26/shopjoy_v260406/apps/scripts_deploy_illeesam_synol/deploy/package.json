@@ -9,12 +9,12 @@
     "ecBeCdn": "node deploy-dev-synol-be-ecBeCdn.js",
     "ecFeBo": "node deploy-dev-synol-fe-ecFeBo.js",
     "ecBeRedis": "node deploy-dev-synol-be-ecBeRedis.js",
-    "ecGateway": "node deploy-dev-synol-gw-ecGateway.js",
+    "ecBeGateway": "node deploy-dev-synol-gw-ecBeGateway.js",
     "zmulti-ecBeBo-ecBeCdn": "npm run ecBeBo && npm run ecBeCdn",
-    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecBeGateway"
   },
   "scriptsGuide": {
     "ecXxx": "빌드(필요시)+전송+컨테이너 기동/갱신. 요청사항 원문: 5개 앱을 각자 독립 배포.",
-    "zmulti-all": "5개 앱 전부 순서대로(ecBeBo→ecBeCdn→ecFeBo→ecBeRedis→ecGateway) 배포. 하나라도 실패하면 그 뒤는 실행 안 됨(&& 체이닝)."
+    "zmulti-all": "5개 앱 전부 순서대로(ecBeBo→ecBeCdn→ecFeBo→ecBeRedis→ecBeGateway) 배포. 하나라도 실패하면 그 뒤는 실행 안 됨(&& 체이닝)."
   }
 }

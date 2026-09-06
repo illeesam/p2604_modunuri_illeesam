@@ -1,13 +1,14 @@
 {
   "name": "shopjoy-test-urls",
   "private": true,
-  "description": "5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecGateway)의 점검용 URL을 test-urls.data.js 한 곳에 모아두고, test-urls.js 로 실제 curl 확인까지 한다. deploy-dev-synol-*.js 의 notifyDeployResult({ checkUrls }) 목록을 그대로 옮겨온 것 — SSH 접속정보 불필요(공개 URL만 GET).",
+  "description": "5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeGateway)의 점검용 URL을 test-urls.data.js 한 곳에 모아두고, test-urls.js 로 실제 curl 확인까지 한다. deploy-dev-synol-*.js 의 notifyDeployResult({ checkUrls }) 목록을 그대로 옮겨온 것 — SSH 접속정보 불필요(공개 URL만 GET).",
   "scripts": {
+    "---------- TEST (배포 URL 점검) ----------": "exit 0",
     "test:all": "node test-urls.js",
     "test:ecBeBo": "node test-urls.js ecBeBo",
     "test:ecBeCdn": "node test-urls.js ecBeCdn",
     "test:ecFeBo": "node test-urls.js ecFeBo",
-    "test:ecGateway": "node test-urls.js ecGateway"
+    "test:ecBeGateway": "node test-urls.js ecBeGateway"
   },
   "// scriptsGuide": "JSON은 주석 문법이 없어 npm 이 무시하는 커스텀 필드로 설명을 남긴다.",
   "scriptsGuide": {

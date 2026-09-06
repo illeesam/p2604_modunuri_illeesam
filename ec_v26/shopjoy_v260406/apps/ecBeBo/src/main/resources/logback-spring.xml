@@ -16,8 +16,11 @@
                  0.5초 간격으로 브라우저를 reload 하던 무한 깜빡임 해결.
                  자세한 설명: _doc/정책서-dev/local-logging.md
          ================================================================ -->
+    <!-- 2026-09-06: 앱별 하위폴더로 재구조화(요청사항: "로컬 로그를 logs/* 폴더에") — 워크스페이스
+         밖이라는 원칙(Live Server 무한 reload 회피)은 유지, EcBeCdn 과 파일명만으로 구분해
+         공유하던 평평한 폴더를 앱별 폴더로 분리. -->
     <springProperty scope="context" name="LOG_DIR"
-                    source="logging.file.path" defaultValue="C:/_logs/shopjoy"/>
+                    source="logging.file.path" defaultValue="C:/_logs/shopjoy/ecBeBo"/>
 
     <property name="APP_NAME"    value="ecbebo"/>
     <property name="APP_LOG"     value="${LOG_DIR}/${APP_NAME}.log"/>

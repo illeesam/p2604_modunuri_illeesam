@@ -1,4 +1,4 @@
-/* manage-dev-synol.js — 5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecGateway) 공용 컨테이너
+/* manage-dev-synol.js — 5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecBeGateway) 공용 컨테이너
  * 중지/삭제/상태확인 도구. deploy-dev-synol-*.js 는 "빌드+전송+기동"까지 하지만, 이 스크립트는
  * 그 반대 방향(멈추기/치우기/들여다보기)만 담당한다 — 둘을 분리해서 한 파일에 다 넣지 않음.
  *
@@ -6,10 +6,10 @@
  *   action: stop(정지만, 컨테이너/설정 남음) | start(정지된 걸 다시 시작) |
  *           delete(컨테이너+네트워크 제거, docker compose down — 볼륨/데이터는 안 지움) |
  *           ps(상태 확인) | logs(최근 로그 30줄)
- *   app   : ecBeBo | ecBeCdn | ecFeBo | ecBeRedis | ecGateway
+ *   app   : ecBeBo | ecBeCdn | ecFeBo | ecBeRedis | ecBeGateway
  *
  * npm 스크립트로는 stop/, delete/, ps/ 워크스페이스(각자 package.json)에 {app} 이름으로 등록돼
- * 있다 — 예: cd stop && npm run ecBeBo, cd delete && npm run ecGateway, cd ps && npm run ecFeBo
+ * 있다 — 예: cd stop && npm run ecBeBo, cd delete && npm run ecBeGateway, cd ps && npm run ecFeBo
  * (또는 루트에서 npm run ecBeBo --workspace=stop 처럼 --workspace 지정).
  *
  * ⚠️ delete(docker compose down)는 컨테이너/compose가 만든 네트워크만 지운다 — 볼륨(DB 데이터,
@@ -32,7 +32,7 @@ const APP_DIRS = {
   ecBeCdn: '/volume1/docker/shopjoy/apps/ecBeCdn',
   ecFeBo: '/volume1/docker/shopjoy/apps/ecFeBoApp',
   ecBeRedis: '/volume1/docker/shopjoy/apps/ecBeRedis',
-  ecGateway: '/volume1/docker/shopjoy/apps/ecGateway',
+  ecBeGateway: '/volume1/docker/shopjoy/apps/ecBeGateway',
 };
 
 const ACTIONS = {

@@ -1,20 +1,25 @@
 {
   "name": "shopjoy-deploy-scripts",
   "private": true,
-  "description": "5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecGateway) 공통 배포 도구. 2026-09-06 2차 개편(요청사항: 'deploy/stop/delete/ps 를 4개로 나눌 수 있나?') — npm workspaces로 4개 하위폴더(deploy/,stop/,delete/,ps/)에 각자 package.json을 두고 짧은 스크립트명(npm run ecBeBo 등)으로 부른다. node_modules(ssh2/nodemailer)는 워크스페이스 호이스팅으로 이 루트 한 곳만 공유. 구버전 이름(deploy:dev-synol-ecBeBo 등)은 2026-09-06 폐기 — 이 파일을 참조하던 문서/주석도 함께 새 사용법으로 갱신함.",
+  "description": "5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecBeGateway) 공통 배포 도구. 2026-09-06 2차 개편(요청사항: 'deploy/stop/delete/ps 를 4개로 나눌 수 있나?') — npm workspaces로 4개 하위폴더(deploy/,stop/,delete/,ps/)에 각자 package.json을 두고 짧은 스크립트명(npm run ecBeBo 등)으로 부른다. node_modules(ssh2/nodemailer)는 워크스페이스 호이스팅으로 이 루트 한 곳만 공유. 구버전 이름(deploy:dev-synol-ecBeBo 등)은 2026-09-06 폐기 — 이 파일을 참조하던 문서/주석도 함께 새 사용법으로 갱신함.",
   "workspaces": [
     "deploy",
     "stop",
     "delete",
     "ps"
   ],
-  "// 사용법": "이 루트에서 직접 실행할 스크립트는 없다 — 아래처럼 워크스페이스 폴더에서 실행할 것.",
+  "// 사용법": "워크스페이스(deploy/stop/delete/ps) 스크립트는 아래처럼 그 폴더에서 실행. reset-ecBeRedis-data 만 예외적으로 이 루트 자체의 scripts 항목 — 5개 앱 zmulti-all 순회 대상에 실수로 섞이면 안 되는 위험한 단독 동작(데이터 초기화)이라 워크스페이스 밖에 따로 둔다.",
   "usage": {
-    "deploy": "cd deploy && npm run ecBeBo (또는 ecBeCdn/ecFeBo/ecBeRedis/ecGateway/zmulti-all)",
+    "deploy": "cd deploy && npm run ecBeBo (또는 ecBeCdn/ecFeBo/ecBeRedis/ecBeGateway/zmulti-all)",
     "stop": "cd stop && npm run ecBeBo (또는 다른 앱/zmulti-all)",
     "delete": "cd delete && npm run ecBeBo (또는 다른 앱/zmulti-all)",
     "ps": "cd ps && npm run ecBeBo (또는 다른 앱)",
-    "루트에서 한 줄로": "npm run ecBeBo --workspace=deploy (cd 없이 워크스페이스 지정 가능)"
+    "루트에서 한 줄로": "npm run ecBeBo --workspace=deploy (cd 없이 워크스페이스 지정 가능)",
+    "reset-ecBeRedis-data": "이 폴더(apps/scripts_deploy_illeesam_synol/)에서 바로 npm run reset-ecBeRedis-data — shopjoy-ecBeRedis-22379 의 로그인세션/블랙리스트 캐시 등 모든 키를 즉시 비움(FLUSHALL+SAVE, 컨테이너 재시작 없음)"
+  },
+  "scripts": {
+    "---------- RESET (데이터 초기화, zmulti-all 대상 아님) ----------": "exit 0",
+    "reset-ecBeRedis-data": "node reset-ecBeRedis-data.js"
   },
   "dependencies": {
     "ssh2": "^1.17.0",

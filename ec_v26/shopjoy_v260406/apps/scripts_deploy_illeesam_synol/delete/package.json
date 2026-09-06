@@ -9,7 +9,7 @@
     "ecBeCdn": "node ../manage-dev-synol.js delete ecBeCdn",
     "ecFeBo": "node ../manage-dev-synol.js delete ecFeBo",
     "ecBeRedis": "node ../manage-dev-synol.js delete ecBeRedis",
-    "ecGateway": "node ../manage-dev-synol.js delete ecGateway",
-    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecGateway"
+    "ecBeGateway": "node ../manage-dev-synol.js delete ecBeGateway",
+    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecBeGateway"
   }
 }
