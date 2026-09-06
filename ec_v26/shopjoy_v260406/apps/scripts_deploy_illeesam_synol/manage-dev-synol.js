@@ -19,6 +19,10 @@
  * SSH 로 들어가서 해당 볼륨 경로를 손으로 지울 것(실수 방지를 위해 이 스크립트에 안 넣음).
  */
 const { requireCreds, withSsh, hms } = require('./synology-deploy-util');
+// 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한 구성하여
+// 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — stop/delete(및 start) 직후 앱별 공통
+// 점검목록(app-health-checks.js)을 그대로 재사용해 실제로 내려갔는지/떠 있는지 확인한다.
+const { runHealthCheck } = require('./app-health-checks');
 
 const DOCKER = '/usr/local/bin/docker';
 
@@ -35,10 +39,15 @@ const APP_DIRS = {
   ecBeGateway: '/volume1/docker/shopjoy/apps/ecBeGateway',
 };
 
+// checkExpect — 이 action 수행 후 app-health-checks.js 공통점검을 어떤 기대치로 돌릴지.
+// 'down'(stop/delete) = 접속 자체가 안 돼야 정상, 'up'(start) = 200 이어야 정상. 미지정(ps/logs)이면
+// 점검 안 함(상태/로그만 보는 게 목적이라 매번 URL 왕복시키지 않음).
+// waitSec — 점검 전에 대기할 시간(초). start는 JVM 백엔드가 뜨는 데 시간이 걸려 바로 점검하면
+// 오탐(아직 기동 중인데 ❌로 표시)이 날 수 있어 여유를 둔다. stop/delete는 즉시 반영되므로 0.
 const ACTIONS = {
-  stop: { label: '컨테이너 정지(compose stop — 설정/컨테이너는 남음, 다음 start로 바로 재개 가능)', cmd: 'compose stop' },
-  start: { label: '정지된 컨테이너 다시 시작(compose start)', cmd: 'compose start' },
-  delete: { label: '컨테이너+네트워크 제거(compose down — 볼륨/데이터/이미지는 안 지움)', cmd: 'compose down' },
+  stop: { label: '컨테이너 정지(compose stop — 설정/컨테이너는 남음, 다음 start로 바로 재개 가능)', cmd: 'compose stop', checkExpect: 'down', waitSec: 0 },
+  start: { label: '정지된 컨테이너 다시 시작(compose start)', cmd: 'compose start', checkExpect: 'up', waitSec: 15 },
+  delete: { label: '컨테이너+네트워크 제거(compose down — 볼륨/데이터/이미지는 안 지움)', cmd: 'compose down', checkExpect: 'down', waitSec: 0 },
   ps: { label: '컨테이너 상태 확인(compose ps)', cmd: 'compose ps' },
   logs: { label: '최근 로그 30줄(compose logs --tail 30)', cmd: 'compose logs --tail 30' },
 };
@@ -59,7 +68,7 @@ requireCreds('manage-dev-synol.js');
 
 (async () => {
   const dir = APP_DIRS[app];
-  const { label, cmd } = ACTIONS[action];
+  const { label, cmd, checkExpect, waitSec } = ACTIONS[action];
   try {
     console.log(`${TAG} ▶ ${label}`);
     console.log(`${TAG}   대상 디렉터리: ${dir}`);
@@ -68,6 +77,19 @@ requireCreds('manage-dev-synol.js');
       [{ label, cmd: `cd ${dir} && ${DOCKER} ${cmd}` }],
       TAG
     );
+
+    if (checkExpect) {
+      if (waitSec) {
+        console.log(`${TAG}   ${waitSec}초 대기 후 공통점검 실행(기동 시간 확보)...`);
+        await new Promise((r) => setTimeout(r, waitSec * 1000));
+      }
+      const { ok, skipped } = await runHealthCheck(app, { expect: checkExpect, tag: TAG });
+      if (skipped) {
+        console.log(`${TAG}   (이 앱은 URL 점검 대상 아님 — 위 compose ps/redis-cli ping 결과로만 확인)`);
+      } else if (!ok) {
+        console.log(`${TAG} ⚠ 기대(${checkExpect === 'up' ? '정상응답 200' : '무응답'})와 다른 결과가 있었습니다 — 위 ❌ 항목 확인 필요`);
+      }
+    }
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
     console.error(`${TAG}[실패] ❌ ${e.message}`);

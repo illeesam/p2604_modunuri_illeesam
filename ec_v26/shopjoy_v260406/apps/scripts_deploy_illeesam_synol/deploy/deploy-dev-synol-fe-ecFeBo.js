@@ -23,8 +23,12 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
+const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
+// 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
+// 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그/이메일 점검안내의
+// 단일 소스.
+const { runHealthCheck } = require('../app-health-checks');
 
 requireCreds('scripts/deploy-dev-synol-fe-ecFeBo.js');
 
@@ -49,10 +53,8 @@ const PUBLIC_HOST = 'illeesam.synology.me';
 // 22000.illeesam.synology.me 를 DSM 콘솔에 등록 완료(13번 문서 절차, curl 실측 200 확인).
 // CorsOriginPolicy.java 의 "*.illeesam.synology.me" 패턴은 신규 서브도메인도 자동 허용.
 const PUBLIC_HTTPS_HOST = '22000.illeesam.synology.me';
-// ecBeGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는 gateway 접속
-// URL 예제도 제시해줘") — 이 정적 파일들은 ecBeGateway 자기 root 에서도 그대로 서빙된다.
-const GW = `${PUBLIC_HOST}:22099`;
-const GW_HTTPS = `22099.${PUBLIC_HOST}`;
+// 게이트웨이(22099) 경유 예시 URL 은 이제 app-health-checks.js 공통목록에서 나온다(GW/GW_HTTPS
+// 상수는 그 파일에 이미 있음 — 여기서 중복 정의 안 함).
 // 이 스크립트는 항상 dev NAS 대상 + dev 프로파일로 빌드한다(build-minify.js 의 --profile=dev,
 // npm run build:dev 와 동일) — local/prod 빌드가 필요하면 npm run build:local/build:prod 를
 // 직접 쓰거나(로컬 확인용) GitHub Actions 배포(deploy:dev-github-*)를 사용할 것.
@@ -157,48 +159,15 @@ function fmtElapsed() {
       console.log(`${TAG}     위 [헬스체크 1/2] 로그, DSM 리버스 프록시(22000 서브도메인 등록 여부) 확인 — 12번 문서 참조`);
     }
 
-    // 2026-09-06(요청사항: "우측에 결과정보 표시해줄수 있어? ✅ 200 이런식이지") — 아래 나열할
-    // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다.
-    // 2026-09-06(요청사항: "/index.html 생략해줘") — FO 메인은 index.html 이 index 문서라
-    // nginx가 루트 경로에서 그대로 서빙(문서화된 "URL 단축: /index.html → /" 와 동일 근거).
-    // 결과 메시지에 굳이 /index.html 을 붙여 보여줄 필요가 없어 루트만 표시·점검한다.
-    // bo.html 은 index 문서가 아니므로(별도 진입점) 그대로 명시.
-    const completionUrls = [
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}`,
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
-      `https://${PUBLIC_HTTPS_HOST}`,
-      `https://${PUBLIC_HTTPS_HOST}/bo.html`,
-      `http://${GW}`,
-      `http://${GW}/bo.html`,
-      `https://${GW_HTTPS}`,
-      `https://${GW_HTTPS}/bo.html`,
-    ];
-    const completionBadges = await checkUrlStatusBadges(completionUrls);
-    const completionWidth = Math.max(...completionUrls.map((u) => u.length));
-    const withBadge = (i) => `${completionUrls[i].padEnd(completionWidth)}  ${completionBadges[i]}`;
-
-    console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
-    console.log(`${TAG}   HTTP  : ${withBadge(0)}`);
-    console.log(`${TAG}   HTTP  : ${withBadge(1)}`);
-    console.log(`${TAG}   HTTPS : ${withBadge(2)}`);
-    console.log(`${TAG}   HTTPS : ${withBadge(3)}  (로그인은 이쪽 필수)`);
-    console.log(`${TAG}   게이트웨이(22099) 경유 예시 — ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 같이 떠 있을 때만:`);
-    console.log(`${TAG}     ${withBadge(4)}`);
-    console.log(`${TAG}     ${withBadge(5)}`);
-    console.log(`${TAG}     ${withBadge(6)}`);
-    console.log(`${TAG}     ${withBadge(7)}`);
+    // 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
+    // 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그 배지 + 이메일
+    // 점검안내 둘 다 app-health-checks.js 의 단일 목록에서 나온다(stop/delete 때도 같은
+    // 목록을 반대 기대치로 재사용 — manage-dev-synol.js 참조).
+    const { ok: healthOk, results: healthResults } = await runHealthCheck('ecFeBo', { expect: 'up', tag: TAG });
+    console.log(`\n${TAG}[완료] 프론트 배포 끝 (총 소요 ${fmtElapsed()})${allOk && healthOk ? ' (헬스체크 정상)' : ' (헬스체크 이상 있음 — 위 내용 확인)'}`);
     console.log(`${TAG}   ⚠ 백엔드/CDN API 호출은 이제 이 nginx를 안 거치고 각자의 절대 URL로 직접 나간다 —`);
     console.log(`${TAG}     apps/ecFeBo/lib/env/profiles/{bo,fo}EnvConsts.dev.js 의 baseApiHost/cdnApiHost 참조.`);
-    // 점검 안내 + 서버/환경 정보(요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘" /
-    // "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어"). 완전 분리
-    // 설계 전환 후엔 이 nginx가 정적 파일만 다루므로 점검 URL 도 그에 맞춰 축소.
-    const checkUrls = [
-      { url: `https://${PUBLIC_HTTPS_HOST}`, note: '사용자(FO) 메인 화면' },
-      { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(로그인 필요)' },
-      { url: `https://${PUBLIC_HTTPS_HOST}/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js`, note: '로컬 CDN 패키지(Vue) 정적서빙 확인' },
-      { url: `http://${GW}`, note: '사용자(FO) 메인 화면(게이트웨이 22099 경유, HTTP)' },
-      { url: `https://${GW_HTTPS}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 22099 경유, HTTPS)' },
-    ];
+    const checkUrls = healthResults.map((r) => ({ url: r.url, note: r.note }));
     const serverInfo = [
       { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 공개 포트 ${PUBLIC_PORT})` },
       { label: '정적 파일 경로', value: REMOTE_FRONTEND_DIR },
@@ -208,8 +177,8 @@ function fmtElapsed() {
       { label: '공개 도메인', value: `https://${PUBLIC_HTTPS_HOST}` },
     ];
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecFeBo', success: allOk, elapsed: fmtElapsed(),
-      detail: allOk ? '헬스체크 정상' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus}`,
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecFeBo', success: allOk && healthOk, elapsed: fmtElapsed(),
+      detail: (allOk && healthOk) ? '헬스체크 정상(공통점검 포함)' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus}${healthOk ? '' : ' / 공통점검 일부 이상'}`,
       serverInfo,
       checkUrls,
       npmScript: 'deploy/ecFeBo',

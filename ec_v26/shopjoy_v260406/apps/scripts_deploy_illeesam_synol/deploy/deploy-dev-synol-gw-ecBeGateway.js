@@ -15,8 +15,13 @@
  * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
+const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
+// 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
+// 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 이 앱의 완료 로그 배지 +
+// 이메일 점검안내 모두 app-health-checks.js 의 단일 목록에서 나온다(stop/delete 때도
+// 같은 목록을 반대 기대치로 재사용 — manage-dev-synol.js 참조).
+const { runHealthCheck } = require('../app-health-checks');
 
 requireCreds('deploy-dev-synol-gw-ecBeGateway.js');
 
@@ -30,8 +35,7 @@ const CONTAINER_NAME = 'shopjoy-ecBeGateway-22099';
 const PUBLIC_PORT = 22099;
 const PUBLIC_HOST = 'illeesam.synology.me';
 // 2026-09-06: 22099.illeesam.synology.me 도 DSM 리버스프록시+전용 인증서 등록 완료(curl 실측
-// 200) — HTTP 포트 방식과 나란히 HTTPS 서브도메인 방식도 같이 보여준다.
-const PUBLIC_HTTPS_HOST = `22099.${PUBLIC_HOST}`;
+// 200) — 실제 점검 URL 목록은 이제 app-health-checks.js 의 공통목록(runHealthCheck)에서 나온다.
 
 const TAG = { toString() { return `[${hms()}][deploy-dev-synol-gw-ecBeGateway.js][GW]`; } };
 const step = (n) => `${TAG}[${String(n).padStart(2, '0')}]`;
@@ -74,35 +78,16 @@ function fmtElapsed() {
       TAG
     );
 
-    // 2026-09-06(요청사항: "우측에 결과정보 표시해줄수 있어? ✅ 200 이런식이지") — 아래 나열할
-    // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다.
-    // 2026-09-06(요청사항: "/index.html 생략해줘") — FO 메인은 index 문서라 루트 경로로 표시.
-    const completionUrls = [
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}`,
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
-      `https://${PUBLIC_HTTPS_HOST}`,
-      `https://${PUBLIC_HTTPS_HOST}/bo.html`,
-      // 2026-09-06(요청사항: "swagger 도 추가해주고") — locations.conf 에 /swagger-ui/, /v3/api-docs
-      // 전용 라우팅을 추가한 뒤 실측 200 확인.
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`,
-      `https://${PUBLIC_HTTPS_HOST}/swagger-ui/index.html`,
-    ];
-    const completionBadges = await checkUrlStatusBadges(completionUrls);
-    const completionWidth = Math.max(...completionUrls.map((u) => u.length));
-    const withBadge = (i) => `${completionUrls[i].padEnd(completionWidth)}  ${completionBadges[i]}`;
-
+    // 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
+    // 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그 배지 + 이메일
+    // 점검안내 둘 다 app-health-checks.js 의 단일 목록에서 나온다.
+    const { ok: healthOk, results: healthResults } = await runHealthCheck('ecBeGateway', { expect: 'up', tag: TAG });
     console.log(`\n${TAG}[완료] 게이트웨이 배포 끝 (총 소요 ${fmtElapsed()})`);
-    console.log(`${TAG}   접속(HTTP)  : ${withBadge(0)}`);
-    console.log(`${TAG}   접속(HTTP)  : ${withBadge(1)}`);
-    console.log(`${TAG}   접속(HTTPS) : ${withBadge(2)}`);
-    console.log(`${TAG}   접속(HTTPS) : ${withBadge(3)}`);
-    console.log(`${TAG}   Swagger(HTTP)  : ${withBadge(4)}`);
-    console.log(`${TAG}   Swagger(HTTPS) : ${withBadge(5)}`);
     console.log(`${TAG}   ⚠ ecBeBo(22300)/ecBeCdn(22400)이 이 NAS에 안 떠 있으면 /api,/cdn-admin,/admin-tools 는 502가 정상입니다.`);
 
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeGateway', success: true, elapsed: fmtElapsed(),
-      detail: '배포 완료 — 위 로그의 각 경로별 HTTP 상태 참조',
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeGateway', success: healthOk, elapsed: fmtElapsed(),
+      detail: healthOk ? '배포 완료 — 공통점검 전체 정상' : '배포 완료 — 공통점검에서 일부 이상 있음(위 로그 ❌ 항목 참조)',
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 포트 ${PUBLIC_PORT})` },
         { label: '설치 경로', value: REMOTE_GW_DIR },
@@ -110,18 +95,7 @@ function fmtElapsed() {
         { label: '용도', value: '테스트 전용 — ecBeBo/ecBeCdn/ecFeBo 를 한 origin 으로 묶어서 보는 편의 도구' },
         { label: '전제조건', value: 'ecBeBo(22300)/ecBeCdn(22400)이 같은 NAS에 떠 있고, ecFeBo 정적 파일이 배포돼 있어야 함' },
       ],
-      checkUrls: [
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTP)' },
-        { url: `https://${PUBLIC_HTTPS_HOST}`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTPS)' },
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTP)' },
-        { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTPS — 로그인 가능)' },
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 API(게이트웨이→ecBeBo, HTTP)' },
-        // 2026-09-06(요청사항: "swagger 도 추가해주고") — /swagger-ui/** 는 locations.conf 의
-        // 어느 location 에도 안 걸려 맨 아래 location / → @backend 폴백으로 ecBeBo(ec_admin_api)에
-        // 그대로 넘어간다(직접 확인 필요 없이 이미 라우팅됨).
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 게이트웨이→ecBeBo, HTTP)' },
-        { url: `https://${PUBLIC_HTTPS_HOST}/swagger-ui/index.html`, note: 'API 문서(Swagger UI, 게이트웨이→ecBeBo, HTTPS)' },
-      ],
+      checkUrls: healthResults.map((r) => ({ url: r.url, note: r.note })),
       npmScript: 'deploy/ecBeGateway',
     });
     console.log(`${TAG} ◀ 완료`);

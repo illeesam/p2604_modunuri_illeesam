@@ -21,8 +21,12 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH, checkUrlStatusBadges } = require('../synology-deploy-util');
+const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
+// 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
+// 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그/이메일 점검안내의
+// 단일 소스(stop/delete 때도 같은 목록을 반대 기대치로 재사용 — manage-dev-synol.js 참조).
+const { runHealthCheck } = require('../app-health-checks');
 
 requireCreds('scripts/deploy-dev-synol-be-ecBeCdn.js');
 
@@ -41,12 +45,8 @@ const REMOTE_CDN_STORAGE_DIR = '/volume1/docker/shopjoy/storage/ecBeCdnStorage';
 // 지원) 아래 HTTPS 외부 헬스체크가 그 경로로 동작한다 — 등록 전까지는 HTTP 직접 포트로 확인.
 const PUBLIC_HOST = 'illeesam.synology.me';
 const PUBLIC_PORT = 22400;
-// 2026-09-06: ecBeGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
-// gateway 접속 URL 예제도 제시해줘") — /api/cdn/** 는 ecBeGateway 의 locations.conf 가 이
-// CDN 서버로 명시적으로 라우팅해준다. ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 다 떠 있어야 502
-// 없이 통과한다.
-const GW = `${PUBLIC_HOST}:22099`;
-const GW_HTTPS = `22099.${PUBLIC_HOST}`;
+// 게이트웨이(22099) 경유 예시 URL 은 이제 app-health-checks.js 공통목록에서 나온다(GW/GW_HTTPS
+// 상수는 그 파일에 이미 있음 — 여기서 중복 정의 안 함).
 
 // 2026-09-06: 완전 분리 설계 전환 후에도 "NAS 내부만 정상이고 외부 공개 경로는 막혀있다"는
 // 사고를 놓치지 않기 위해 이 컴퓨터 → 실제 공개 포트로 별도 확인한다(요청사항: "URL 헬스체크도
@@ -176,46 +176,14 @@ function fmtElapsed() {
       console.log(`${TAG}   ⚠ 200이 아닌 응답이 있습니다 — 방화벽/공유기 포트포워딩(${PUBLIC_PORT})이 안 열려있을 수 있음`);
     }
 
-    // 2026-09-06(요청사항: "우측에 결과정보 표시해줄수 있어? ✅ 200 이런식이지") — 아래 나열할
-    // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다.
-    const completionUrls = [
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/actuator/health`,
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html`,
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/client/page?pageNo=1&pageSize=10`,
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/file/page?pageNo=1&pageSize=10`,
-      `http://${GW}/api/cdn/client/page?pageNo=1&pageSize=10`,
-      `https://${GW_HTTPS}/api/cdn/client/page?pageNo=1&pageSize=10`,
-    ];
-    const completionBadges = await checkUrlStatusBadges(completionUrls);
-    const completionWidth = Math.max(...completionUrls.map((u) => u.length));
-    const withBadge = (i) => `${completionUrls[i].padEnd(completionWidth)}  ${completionBadges[i]}`;
+    // 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
+    // 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그 배지 + 이메일
+    // 점검안내 둘 다 app-health-checks.js 의 단일 목록에서 나온다.
+    const { ok: healthOk, results: healthResults } = await runHealthCheck('ecBeCdn', { expect: 'up', tag: TAG });
+    const overallOk = publicOk && healthOk;
+    console.log(`\n${TAG}[완료] EcCdnApi 배포 끝 (총 소요 ${fmtElapsed()})${overallOk ? ' (외부 헬스체크 정상)' : ' (외부 헬스체크 이상 있음 — 위 내용 확인)'}`);
 
-    console.log(`\n${TAG}[완료] EcCdnApi 배포 끝 (총 소요 ${fmtElapsed()})${publicOk ? ' (외부 헬스체크 정상)' : ' (외부 헬스체크 이상 있음 — 위 내용 확인)'}`);
-    console.log(`${TAG}   헬스체크(직접): ${withBadge(0)}`);
-    console.log(`${TAG}   공개 경로: ${withBadge(1)}`);
-    // 2026-09-06(요청사항: "코드조회 url 표시해주고 public 이니") — ecBeBo 의 공통코드(sy_code)에
-    // 대응하는 이 서버의 조회 API 는 cf_client/cf_file 목록이다(둘 다 SecurityConfig 에서
-    // permitAll — 로그인 불필요, 명시).
-    console.log(`${TAG}   조회 API(cf_client 목록, 로그인 불필요, public):`);
-    console.log(`${TAG}     ${withBadge(2)}`);
-    console.log(`${TAG}   조회 API(cf_file 목록, 로그인 불필요, public):`);
-    console.log(`${TAG}     ${withBadge(3)}`);
-    console.log(`${TAG}   게이트웨이(22099) 경유 예시 — ecBeBo/ecBeCdn/ecFeBo 가 이 NAS에 같이 떠 있을 때만:`);
-    console.log(`${TAG}     ${withBadge(4)}`);
-    console.log(`${TAG}     ${withBadge(5)}`);
-    // 점검 안내(요청사항) — 정적화면(로그뷰어 포함) + API + NAS 내부 디버그, 다양하게 골라 나열.
-    const checkUrls = [
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html`, note: '관리자 화면 기본 진입(cf_file 관리, 로그인 불필요)' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html?page=logViewer`, note: '🪵 로그뷰어(인증 불필요)' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html?page=authTest`, note: '인증 테스트(로그인/재발급/강제폐기)' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/home/index.html?page=dbTest`, note: 'DB 연결 테스트(임의 접속정보로 SELECT 확인)' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/client/page?pageNo=1&pageSize=1`, note: 'cf_client 목록 API(로그인 불필요, public) — 확인용' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/file/page?pageNo=1&pageSize=1`, note: 'cf_file 목록 API(로그인 불필요, public) — 확인용' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/cdn/log/tail?file=app&lines=20`, note: '로그 tail API(최근 20줄)' },
-      { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/actuator/health`, note: '헬스체크(직접)' },
-      { url: `http://${GW}/api/cdn/client/page?pageNo=1&pageSize=1`, note: 'cf_client 목록 API(게이트웨이 22099 경유, HTTP)' },
-      { url: `https://${GW_HTTPS}/api/cdn/client/page?pageNo=1&pageSize=1`, note: 'cf_client 목록 API(게이트웨이 22099 경유, HTTPS)' },
-    ];
+    const checkUrls = healthResults.map((r) => ({ url: r.url, note: r.note }));
     // 서버/설치경로/환경 정보(요청사항: "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어").
     const serverInfo = [
       { label: 'NAS 호스트', value: `illeesam.synology.me (SSH 10022 / 앱 포트 ${PUBLIC_PORT} — 이제 정식 공개 포트)` },
@@ -228,8 +196,8 @@ function fmtElapsed() {
       { label: '로그 경로', value: `${REMOTE_CDN_LOGS_DIR} → 컨테이너 /app/logs` },
     ];
     await notifyDeployResult({
-      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeCdn', success: publicOk, elapsed: fmtElapsed(),
-      detail: publicOk ? '외부 헬스체크 정상' : `외부 헬스체크 이상 있음: /home/index.html=${adminStatus} /api/cdn/client/page=${apiStatus}`,
+      tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeCdn', success: overallOk, elapsed: fmtElapsed(),
+      detail: overallOk ? '외부 헬스체크 정상(공통점검 포함)' : `외부 헬스체크 이상 있음: /home/index.html=${adminStatus} /api/cdn/client/page=${apiStatus}${healthOk ? '' : ' / 공통점검 일부 이상'}`,
       serverInfo,
       checkUrls,
       npmScript: 'deploy/ecBeCdn',
