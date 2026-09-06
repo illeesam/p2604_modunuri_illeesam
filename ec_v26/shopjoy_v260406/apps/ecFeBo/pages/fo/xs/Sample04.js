@@ -5,7 +5,72 @@ window.XsSample04 = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, onMounted, watch } = Vue;
+    const { reactive, onMounted, onBeforeUnmount, watch } = Vue;
+
+    /* 2026-09-06(Location.js 와 동일한 "TypeError: Illegal constructor" 크래시 원인 제거) —
+       이 화면 전용 키프레임/모달 CSS 가 원래 template 끝에 <style> 태그로 직접 박혀 있었는데,
+       Vue 3 런타임 템플릿에서 <style> 이 컴포넌트 자식 노드로 마운트되면 크래시가 난다(헤드리스
+       크롬 이분탐색으로 실증). 전역 CSS로 옮기기엔 이 화면 전용 클래스가 많아서(s04_* 키프레임 +
+       모달 데모용 .modal-, .btn-, .badge- 류 클래스 등), 대신 순수 JS로 <style> 엘리먼트를 만들어
+       document.head 에 직접 붙인다 — Vue 템플릿/vdom을 전혀 거치지 않으므로 안전하다. */
+    let _s04StyleEl = null;
+    const S04_STYLE_CSS = `
+    @keyframes s04_slideRight  { from { transform:translateX(100%); } to { transform:translateX(0); } }
+    @keyframes s04_slideBottom { from { transform:translateY(100%); } to { transform:translateY(0); } }
+    @keyframes s04_spin        { to   { transform:rotate(360deg); } }
+    @keyframes s04_fadeIn      { from { opacity:0; } to { opacity:1; } }
+
+    /* -- 관리자 공통 모달 CSS (bo-global-style.css 미포함 환경용) -- */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9100;display:flex;align-items:center;justify-content:center;padding:20px; }
+    .modal-box     { background:#fff;border-radius:12px;padding:24px;width:100%;max-width:580px;max-height:85vh;overflow-y:auto; }
+    .modal-box.wide { max-width:820px; }
+    .modal-header  { display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; }
+    .modal-title   { font-size:16px;font-weight:700; }
+    .modal-close   { cursor:pointer;font-size:22px;color:#aaa;line-height:1; }
+    .modal-close:hover { color:#555; }
+    .form-control  { width:100%;padding:8px 11px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;background:#fff;box-sizing:border-box; }
+    .form-control:focus { outline:none;border-color:#e8587a;box-shadow:0 0 0 2px rgba(232,88,122,.1); }
+    .sel-modal-list      { max-height:360px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px; }
+    .sel-modal-item      { display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #f5f5f5; }
+    .sel-modal-item:last-child { border-bottom:none; }
+    .sel-modal-item:hover      { background:#fff8f9; }
+    .sel-modal-item-name { flex:1;font-size:13px;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .sel-modal-item-id   { font-size:11px;color:#888;background:#f0f4ff;padding:1px 6px;border-radius:3px;flex-shrink:0; }
+    .sel-modal-item-btn  { font-size:12px;background:#e8587a;color:#fff;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;flex-shrink:0; }
+    .sel-modal-item-btn:hover { opacity:.85; }
+    .pager-btn { min-width:28px;height:28px;padding:0 6px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;font-size:12px;cursor:pointer;color:#555;transition:all .12s; }
+    .pager-btn:hover:not(:disabled) { border-color:#e8587a;color:#e8587a; }
+    .pager-btn.active  { background:#e8587a;color:#fff;border-color:#e8587a;font-weight:700; }
+    .pager-btn:disabled { opacity:.35;cursor:default; }
+    .btn           { display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:opacity .15s; }
+    .btn:hover     { opacity:.85; }
+    .btn-primary   { background:#e8587a;color:#fff; }
+    .btn-secondary { background:#fff;color:#444;border:1px solid #d9d9d9 !important; }
+    .btn-blue      { background:#1677ff;color:#fff; }
+    .btn-green     { background:#52c41a;color:#fff; }
+    .btn-danger    { background:#ff4d4f;color:#fff; }
+    .btn-sm        { padding:4px 10px;font-size:12px; }
+    .btn-xs        { padding:2px 7px !important;font-size:11px !important; }
+    .badge         { display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap; }
+    .badge-blue    { background:#e6f4ff;color:#1677ff; }
+    .badge-green   { background:#f6ffed;color:#389e0d; }
+    .badge-red     { background:#fff1f0;color:#cf1322; }
+    .badge-gray    { background:#f5f5f5;color:#8c8c8c; }
+    .badge-orange  { background:#fff7e6;color:#d46b08; }
+    .badge-purple  { background:#f9f0ff;color:#722ed1; }
+    .badge-pink    { background:#fff0f6;color:#c41d7f; }
+    .badge-teal    { background:#e6fffb;color:#08979c; }
+    .badge-xs      { padding:1px 5px !important;font-size:10px !important;border-radius:4px !important;font-weight:700 !important; }
+    `;
+    onMounted(() => {
+      _s04StyleEl = document.createElement('style');
+      _s04StyleEl.textContent = S04_STYLE_CSS;
+      document.head.appendChild(_s04StyleEl);
+    });
+    onBeforeUnmount(() => {
+      _s04StyleEl?.remove();
+      _s04StyleEl = null;
+    });
 
     const uiState = reactive({ loading: false, error: null, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
     const codes = reactive({
@@ -1069,55 +1134,9 @@ window.XsSample04 = {
 <!-- ===== ■. ⑰ 카테고리 멀티선택 ============================================= -->
 <fo-cm-popup-modal popup-cmd="cmPopup-category-select" popup-code="category" :multi="true" result-type="idArray" :show="bModal.type==='catSelect'" :init-selected-ids="catSelIds" @close="closeBModal" @select="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
 <!-- ===== □. ⑰ 카테고리 멀티선택 ============================================= -->
-<!-- ===== ■. 영역 ====================================================== -->
-<style>
-    @keyframes s04_slideRight  { from { transform:translateX(100%); } to { transform:translateX(0); } }
-    @keyframes s04_slideBottom { from { transform:translateY(100%); } to { transform:translateY(0); } }
-    @keyframes s04_spin        { to   { transform:rotate(360deg); } }
-    @keyframes s04_fadeIn      { from { opacity:0; } to { opacity:1; } }
-
-    /* -- 관리자 공통 모달 CSS (bo-global-style.css 미포함 환경용) -- */
-    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9100;display:flex;align-items:center;justify-content:center;padding:20px; }
-    .modal-box     { background:#fff;border-radius:12px;padding:24px;width:100%;max-width:580px;max-height:85vh;overflow-y:auto; }
-    .modal-box.wide { max-width:820px; }
-    .modal-header  { display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; }
-    .modal-title   { font-size:16px;font-weight:700; }
-    .modal-close   { cursor:pointer;font-size:22px;color:#aaa;line-height:1; }
-    .modal-close:hover { color:#555; }
-    .form-control  { width:100%;padding:8px 11px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;background:#fff;box-sizing:border-box; }
-    .form-control:focus { outline:none;border-color:#e8587a;box-shadow:0 0 0 2px rgba(232,88,122,.1); }
-    .sel-modal-list      { max-height:360px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px; }
-    .sel-modal-item      { display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #f5f5f5; }
-    .sel-modal-item:last-child { border-bottom:none; }
-    .sel-modal-item:hover      { background:#fff8f9; }
-    .sel-modal-item-name { flex:1;font-size:13px;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-    .sel-modal-item-id   { font-size:11px;color:#888;background:#f0f4ff;padding:1px 6px;border-radius:3px;flex-shrink:0; }
-    .sel-modal-item-btn  { font-size:12px;background:#e8587a;color:#fff;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;flex-shrink:0; }
-    .sel-modal-item-btn:hover { opacity:.85; }
-    .pager-btn { min-width:28px;height:28px;padding:0 6px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;font-size:12px;cursor:pointer;color:#555;transition:all .12s; }
-    .pager-btn:hover:not(:disabled) { border-color:#e8587a;color:#e8587a; }
-    .pager-btn.active  { background:#e8587a;color:#fff;border-color:#e8587a;font-weight:700; }
-    .pager-btn:disabled { opacity:.35;cursor:default; }
-    .btn           { display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:opacity .15s; }
-    .btn:hover     { opacity:.85; }
-    .btn-primary   { background:#e8587a;color:#fff; }
-    .btn-secondary { background:#fff;color:#444;border:1px solid #d9d9d9 !important; }
-    .btn-blue      { background:#1677ff;color:#fff; }
-    .btn-green     { background:#52c41a;color:#fff; }
-    .btn-danger    { background:#ff4d4f;color:#fff; }
-    .btn-sm        { padding:4px 10px;font-size:12px; }
-    .btn-xs        { padding:2px 7px !important;font-size:11px !important; }
-    .badge         { display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap; }
-    .badge-blue    { background:#e6f4ff;color:#1677ff; }
-    .badge-green   { background:#f6ffed;color:#389e0d; }
-    .badge-red     { background:#fff1f0;color:#cf1322; }
-    .badge-gray    { background:#f5f5f5;color:#8c8c8c; }
-    .badge-orange  { background:#fff7e6;color:#d46b08; }
-    .badge-purple  { background:#f9f0ff;color:#722ed1; }
-    .badge-pink    { background:#fff0f6;color:#c41d7f; }
-    .badge-teal    { background:#e6fffb;color:#08979c; }
-    .badge-xs      { padding:1px 5px !important;font-size:10px !important;border-radius:4px !important;font-weight:700 !important; }
-  </style>
+<!-- 이 화면 전용 CSS(s04_* 키프레임 + 모달 데모 스타일)는 더 이상 여기(template 자식 <style>)에
+     두지 않는다 — setup() 상단에서 onMounted 시 document.head 에 JS로 직접 주입한다
+     ("TypeError: Illegal constructor" 크래시 원인 제거, 2026-09-06). -->
 </div>
 </fo-page>
 <!-- ===== □. 영역 ====================================================== -->

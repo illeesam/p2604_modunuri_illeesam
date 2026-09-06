@@ -64,7 +64,6 @@ window.FO_REG_TO_GLOBAL = {
   AboutPage: "About",
   BlogPage: "Blog",
   LikePage: "Like",
-  LocationPage: "Location",
   XdDispUi01: "DispUi01",
   XdDispUi02: "DispUi02",
   XdDispUi03: "DispUi03",

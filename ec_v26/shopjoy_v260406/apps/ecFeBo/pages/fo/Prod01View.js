@@ -1303,7 +1303,7 @@ window.Prod01View = {
 <!-- ===== ■.■. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
 <div v-if="uiState.tabFixed" :style="{ height: uiState.tabPlaceholderH + 'px', marginTop:'24px' }">
 </div>
-<div ref="tabBarRef"
+<div ref="tabBarRef" class="fo-prod-tabbar"
       :style="uiState.tabFixed ? {
       position:'fixed', top:uiState.tabFixedTop+'px', left:uiState.tabFixedLeft+'px', width:uiState.tabFixedW+'px',
       zIndex:55,

@@ -195,7 +195,7 @@ body {
    화면보다 살짝 넓어져 페이지 전체가 가로로 밀리는 원인이 됐다(요청사항: "모바일로
    모드로 보는데 디자인이 밀리는 증상"). calc(-50vw + 50%) 는 부모 컨테이너의 실제 폭을
    기준으로 보정해서 그 오차를 없앤다 — 풀블리드(전체폭) 배너의 표준 안전 공식. */
-.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-top: -36px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw; max-width: 100vw; display: flex; align-items: center; justify-content: center; }
+.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-top: -36px; margin-bottom: 36px; width: 100%; display: flex; align-items: center; justify-content: center; }
 .fo-page-banner-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .fo-page-banner-dim { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(255,255,255,0.72) 0%, rgba(240,245,255,0.55) 45%, rgba(220,232,255,0.38) 100%); }
 .fo-page-banner-body { position: relative; z-index: 1; text-align: center; }
@@ -560,6 +560,7 @@ body {
   100% { transform: scale(1) rotate(0deg); }
 }
 .fo-shake { animation: foShake 2s ease; }
+@keyframes spin { to { transform: rotate(360deg); } }
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -779,7 +780,7 @@ footer {
 
 /* ── Page padding helper ── */
 .page-wrap { padding: 36px 32px; max-width: 1100px; margin: 0 auto; }
-@media (max-width: 767px) { .page-wrap { padding: 24px 16px; } .fo-page-banner { margin-top: -24px; left: auto; right: auto; margin-left: -16px; margin-right: -16px; width: auto; max-width: none; } }
+@media (max-width: 767px) { .page-wrap { padding: 24px 16px; } .fo-page-banner { margin-top: -24px; } .fo-prod-tabbar { left: 0 !important; right: 0 !important; width: auto !important; } .faq-layout { grid-template-columns: 1fr !important; } .faq-tree { position: static !important; top: auto !important; } }
 .prod-top-wrap { padding: 0; }
 /* 페이지 타이틀 배너: page-wrap 상단 padding 상쇄 후 full-width */
 .page-banner-full { margin-top: -36px; position: relative; left: 50%; right: 50%; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw; max-width: 100vw; }

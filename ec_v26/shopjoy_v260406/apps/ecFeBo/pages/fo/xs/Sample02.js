@@ -355,9 +355,10 @@ window.XsSample02 = {
     </template>
   </fo-grid-crud>
   <!-- ===== □. 목록 영역 =================================================== -->
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
 </fo-page>
+<!-- 2026-09-06(Location.js 와 동일한 "TypeError: Illegal constructor" 크래시 원인 제거) —
+     컴포넌트 template 자식으로 <style> 태그를 직접 넣는 패턴 자체가 Vue 3 런타임 템플릿
+     마운트 시 크래시를 유발(헤드리스 크롬 이분탐색으로 실증). spin 키프레임은
+     assets/css/fo-global-style0N.css 전역으로 옮겨 등록. -->
 `,
 };

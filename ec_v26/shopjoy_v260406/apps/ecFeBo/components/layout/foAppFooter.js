@@ -575,8 +575,12 @@ window.foAppFooter = {
 <!-- ===== □. 채팅 상담 플로팅 버튼 + 패널 ============================== -->
 
 <!-- 채팅 패널 -->
+<!-- width:340px 고정이라 뷰포트가 364px(340+양쪽24px) 보다 좁은 폰(갤럭시 S8=360px 등 흔한
+     화면폭)에서는 패널이 왼쪽 화면 밖으로 밀려나가 비대칭으로 잘려 보이던 버그(2026-09-06,
+     "채팅 상담란 스타일이 이상하다"). width:min() 으로 뷰포트 폭에 맞춰 자동으로 줄어들게 해서
+     좌우 24px 여백을 항상 유지한다. -->
 <div v-if="chatState.open"
-  style="position:fixed;right:24px;bottom:90px;z-index:8800;width:340px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.22);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffe4ec;">
+  style="position:fixed;right:24px;bottom:90px;z-index:8800;width:min(340px, calc(100vw - 48px));height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.22);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffe4ec;">
   <!-- 패널 헤더 -->
   <div style="background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);border-bottom:1px solid #ffc9d6;">
     <!-- 제목 행 -->

@@ -170,6 +170,30 @@ function buildServerInfo(serverInfo) {
   return `\n\n🖥 서버/환경 정보\n${lines.join('\n')}`;
 }
 
+/* [NAS 배포 URL 표] — FO/BO/ecBeBo/ecBeCdn × 포트/서브도메인/gateway 3가지 접속 방식 전체를
+ * 어느 배포 스크립트를 실행했든 이메일/Slack 본문에 항상 동일하게 붙인다(요청사항: "모든 첨부란에
+ * NAS 배포 URL 정보 다 추가해줘" — FO 푸터/BO 사이드바/ecBeBo·ecBeCdn 운영화면에 이미 떠 있는
+ * "🔗 NAS 배포 URL" 팝업과 같은 URL 목록을, 배포 결과 이메일 본문에도 넣어달라는 요청).
+ * URL 값은 그 팝업들(apps/ecFeBo/components/layout/foAppFooter.js 의 DEPLOY_LINKS 등)과 반드시
+ * 동일하게 유지 — 한쪽만 바뀌면 서로 어긋나므로, 포트/도메인 구성이 바뀌면 양쪽 다 같이 고칠 것. */
+const DEPLOY_LINKS_HOST = 'illeesam.synology.me';
+const DEPLOY_LINKS = {
+  FO:      { 포트: `http://${DEPLOY_LINKS_HOST}:22000/`,                서브도메인: `https://22000.${DEPLOY_LINKS_HOST}/`,                gateway: `http://${DEPLOY_LINKS_HOST}:22099/` },
+  BO:      { 포트: `http://${DEPLOY_LINKS_HOST}:22000/bo.html`,         서브도메인: `https://22000.${DEPLOY_LINKS_HOST}/bo.html`,         gateway: `http://${DEPLOY_LINKS_HOST}:22099/bo.html` },
+  ecBeBo:  { 포트: `http://${DEPLOY_LINKS_HOST}:22300/home/index.html`, 서브도메인: `https://22300.${DEPLOY_LINKS_HOST}/home/index.html`, gateway: `http://${DEPLOY_LINKS_HOST}:22099/admin-tools/index.html` },
+  ecBeCdn: { 포트: `http://${DEPLOY_LINKS_HOST}:22400/home/index.html`, 서브도메인: `https://22400.${DEPLOY_LINKS_HOST}/home/index.html`, gateway: `http://${DEPLOY_LINKS_HOST}:22099/cdn-admin/index.html` },
+};
+function buildDeployLinksTable() {
+  const lines = ['🔗 NAS 배포 URL'];
+  Object.entries(DEPLOY_LINKS).forEach(([app, rows]) => {
+    lines.push(`  ${app}`);
+    Object.entries(rows).forEach(([label, url]) => {
+      lines.push(`    ${label}: ${url}`);
+    });
+  });
+  return `\n\n${lines.join('\n')}`;
+}
+
 /**
  * notifyDeployResult — 배포 성공/실패 결과를 이메일+Slack 양쪽에 best-effort 로 통지.
  * 자격정보가 없는 채널은 조용히 스킵되고, 이 함수 자체는 절대 예외를 던지지 않는다
@@ -197,11 +221,12 @@ async function notifyDeployResult({ tag, scriptName, success, elapsed, detail, s
     + (npmScript ? ` — ${npmScript}` : '');
   const info = buildServerInfo(serverInfo);
   const guide = await buildInspectionGuide(checkUrls);
+  const links = buildDeployLinksTable();
   // 2026-09-06(요청사항: "내용에 실행스크립트명도 적어줘") — 제목에도 있지만 본문 첫머리에도
   // 명시해 메일만 봐도 어느 스크립트를 실행한 결과인지 바로 알 수 있게 한다.
   const scriptLine = npmScript ? `실행 스크립트: ${npmScript}\n` : '';
   const logLine = logFilePath ? `로그 파일: ${path.basename(logFilePath)} (첨부${fs.existsSync(logFilePath) ? '됨' : ' 시도 — 파일 없음'})\n` : '';
-  const text = `${scriptName} 배포 ${statusText}\n${scriptLine}${logLine}소요시간: ${elapsed}\n\n${detail || ''}${info}${guide}`;
+  const text = `${scriptName} 배포 ${statusText}\n${scriptLine}${logLine}소요시간: ${elapsed}\n\n${detail || ''}${info}${guide}${links}`;
   await Promise.all([
     sendEmail(subject, text, tag, logFilePath),
     sendSlack(`${subject}\n${scriptLine}${detail || ''}${info}${guide}`, tag),

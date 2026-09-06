@@ -63,7 +63,7 @@ window.BlogView = {
         id:     b.blogId,
         title:  b.blogTitle || '',
         author: b.blogAuthor || '',
-        date:   (b.regDate || '').tocoUtil.cofYmdDot(),
+        date:   coUtil.cofYmdDot(b.regDate || ''),
         imgSm:  thumb ? coUtil.cofImgSrc(thumb) : '',
         img:    thumb ? coUtil.cofImgSrc(thumb) : '',
       };
@@ -144,7 +144,7 @@ window.BlogView = {
         title:     raw.blogTitle || '',
         category:  raw.blogCateId || '',
         author:    raw.blogAuthor || '',
-        date:      (raw.regDate || '').tocoUtil.cofYmdDot(),
+        date:      coUtil.cofYmdDot(raw.regDate || ''),
         readTime:  '',
         viewCount: raw.viewCount || 0,
         body:      String(raw.blogContent || raw.blogSummary || '').replace(/(src|href)=(['"])\/cdn\//g, '$1=$2assets/cdn/'),
@@ -155,7 +155,7 @@ window.BlogView = {
         comments:  (raw.replies || []).map(r => ({
                      id:     r.blogReplyId,
                      author: r.writerNm || r.writerId || '익명',
-                     date:   (r.regDate || '').tocoUtil.cofYmdDot(),
+                     date:   coUtil.cofYmdDot(r.regDate || ''),
                      text:   r.blogCommentContent || '',
                    })),
       };
@@ -173,7 +173,7 @@ window.BlogView = {
     const handleAddComment = () => {
       const t = commentText.value.trim();
       if (!t) { return; }
-      localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOcoUtil.cofYmdDot(), text: t });
+      localComments.push({ id: Date.now(), author: '홍길동', date: coUtil.cofYmdDot(new Date().toISOString()), text: t });
       commentText.value = '';
     };
 

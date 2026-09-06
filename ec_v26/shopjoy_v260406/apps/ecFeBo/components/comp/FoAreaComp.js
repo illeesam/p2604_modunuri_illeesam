@@ -272,21 +272,15 @@ window.FoPage = {
     return { pdfAreaRef, pdfExporting, handleExportPdf, handleShareKakao, handleCopyLink };
   },
   template: `
-<div :class="bare ? '' : wrapClass" ref="pdfAreaRef">
-  <div v-if="showPdf || showShare || showLink" class="fo-page-utilbar">
-    <button v-if="showLink" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
-    <button v-if="showShare" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
-    <button v-if="showPdf" class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
-      <span v-if="pdfExporting">⏳</span>
-      <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
-        <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
-        <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
-        <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
-      </svg>
-    </button>
-  </div>
-  <!-- ===== 페이지 타이틀 배너 ===== -->
+<div ref="pdfAreaRef">
+  <!-- 2026-09-06(PC 모드 배너 우측에 빈 공백이 밀리는 증상 — 근본 수정) — 배너를
+       max-width:1100px 로 잘리는 wrapClass 래퍼 "안"에 두고 vw 계산(calc(-50vw+50%) 등)으로
+       화면 끝까지 밀어내던 예전 방식은, 데스크톱 세로 스크롤바가 있는/없는 순간의 100vw 오차 때문에
+       완벽히 맞아떨어지지 않아 오른쪽에 스크롤바 폭만큼 빈틈이 남는 근본적 한계가 있었다(모바일은
+       스크롤바가 오버레이라 안 보였을 뿐 같은 원인). 배너를 wrapClass 래퍼 "밖", 이 컴포넌트의
+       진짜 최상위(어떤 max-width 제약도 없는 pdfAreaRef 바로 아래)로 옮기면 그냥 width:100% 로
+       자기 부모(= 실제 뷰포트 폭)를 그대로 채우므로 vw/calc 트릭이 아예 필요 없어진다.
+       (pdfAreaRef 는 여전히 배너+본문 전체를 감싸므로 PDF 내보내기 캡처 범위는 그대로 유지) -->
   <slot name="banner">
     <div v-if="bannerImg" class="fo-page-banner">
       <img :src="bannerImg" :alt="title" class="fo-page-banner-img" :style="'object-position:' + bannerAlign + ';'" />
@@ -304,8 +298,23 @@ window.FoPage = {
       </div>
     </div>
   </slot>
-  <!-- 화면 본문 -->
-  <slot></slot>
+  <div :class="bare ? '' : wrapClass">
+    <div v-if="showPdf || showShare || showLink" class="fo-page-utilbar">
+      <button v-if="showLink" class="btn btn_link" title="링크 공유(URL만)" @click="handleCopyLink">🔗</button>
+      <button v-if="showShare" class="btn btn_kakao" title="카카오톡 공유" @click="handleShareKakao">💬</button>
+      <button v-if="showPdf" class="btn btn_pdf" title="PDF 다운로드" :disabled="pdfExporting" @click="handleExportPdf">
+        <span v-if="pdfExporting">⏳</span>
+        <svg v-else width="18" height="20" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 2 H20 L28 10 V34 H4 Z" fill="#fff" stroke="#c2410c" stroke-width="1.5"/>
+          <path d="M20 2 V10 H28 Z" fill="#f3d4c0"/>
+          <rect x="2" y="20" width="28" height="12" rx="2" fill="#e2372c"/>
+          <text x="16" y="29" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">PDF</text>
+        </svg>
+      </button>
+    </div>
+    <!-- 화면 본문 -->
+    <slot></slot>
+  </div>
 </div>`,
 };
 

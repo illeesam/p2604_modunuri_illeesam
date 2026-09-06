@@ -53,7 +53,9 @@ function hms() {
 const FO_REG_TO_GLOBAL = {
   BlogPage: 'Blog',
   LikePage: 'Like',
-  LocationPage: 'Location',
+  // LocationPage: 'Location', // 2026-09-06 제거 — window.Location 은 브라우저 내장 Location
+  // 인터페이스 생성자라 재할당이 조용히 무시됨("Illegal constructor" 크래시 원인). Location.js
+  // 파일 내부 전역명을 등록명과 동일한 window.LocationPage 로 바꿔 이 매핑 자체를 없앴다.
   AboutPage: 'About',
   XdDispUi01: 'DispUi01',
   XdDispUi02: 'DispUi02',
