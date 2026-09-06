@@ -10,9 +10,9 @@
  * 먼저 실행되어 있어야 의미가 있다(순서 강제는 안 함 — 없어도 컨테이너 자체는 뜨지만 502/빈
  * 화면만 보게 된다).
  *
- * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeGateway
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeGateway
  *          (또는 루트에서 npm run ecBeGateway --workspace=deploy)
- * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
+ * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
 const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');

@@ -14,9 +14,9 @@
  *      2) _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 을 DB에 적용 + cf_client 계정 시딩
  *    이 스크립트는 그 이후 "jar만 갱신"하는 반복 배포용이다 — Dockerfile/compose/.env 는 안 건드림.
  *
- * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeCdn
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeCdn
  *          (또는 루트에서 npm run ecBeCdn --workspace=deploy)
- * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
+ * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const fs = require('fs');
 const path = require('path');
@@ -82,7 +82,7 @@ function fmtElapsed() {
 
     console.log(`${step(1)} Gradle 빌드 (clean bootJar -x test)`);
     // ROOT(synology-deploy-util.js 기준) = apps/ (2026-09-06: apps/ecFeBo/scripts/ 에서
-    // apps/scripts_deploy_illeesam_synol/ 로 독립). CDN 서버는 그 바로 아래 형제 폴더 apps/ecBeCdn 에 있다.
+    // scripts/scripts_deploy_illeesam_synol/ 로 독립). CDN 서버는 그 바로 아래 형제 폴더 apps/ecBeCdn 에 있다.
     const cdnDir = path.join(ROOT, 'ecBeCdn');
     const gradlew = process.platform === 'win32'
       ? path.join(cdnDir, 'gradlew.bat')

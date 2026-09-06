@@ -33,7 +33,7 @@
   "// scriptsGuide": "JSON은 주석 문법이 없어 npm 이 무시하는 커스텀 필드로 설명을 남긴다.",
   "// 구분선": "'---------- 그룹명 ----------': 'exit 0' 항목은 실행용이 아니라 VS Code NPM SCRIPTS 패널에서 점검/맵생성/맵검증/정리/빌드 그룹을 시각적으로 나누기 위한 더미 항목이다(요청사항: '너무 많은데 중간에 구분선 줄 수 있어'). 실수로 실행해도 exit 0 이라 무해하다.",
   "// 사용법": "npm run <스크립트명> (예: npm run check-orphans). VS Code 는 NPM SCRIPTS 패널에서 우클릭 실행도 가능.",
-  "// 순서": "scripts 는 실행 흐름 순서로 정렬돼 있다 — ①점검(check-orphans) ②맵생성(gen-*) ③맵검증(verify-lazy) ④정리(clean) ⑤빌드(build:*)/검증(verify-dist)/프로파일별 통합(build, build:local/dev/prod). 배포 명령(deploy:dev-synol-*, deploy:dev-github-*)은 전부 이 파일에서 빠졌다(2026-09-06) — SSH 즉시배포는 apps/scripts_deploy_illeesam_synol/package.json, GitHub Actions 트리거(git push)는 apps/scripts_deploy_illeesam_github/package.json 에서 npm run <이름> 으로 실행할 것.",
+  "// 순서": "scripts 는 실행 흐름 순서로 정렬돼 있다 — ①점검(check-orphans) ②맵생성(gen-*) ③맵검증(verify-lazy) ④정리(clean) ⑤빌드(build:*)/검증(verify-dist)/프로파일별 통합(build, build:local/dev/prod). 배포 명령(deploy:dev-synol-*, deploy:dev-github-*)은 전부 이 파일에서 빠졌다(2026-09-06) — SSH 즉시배포는 scripts/scripts_deploy_illeesam_synol/package.json, GitHub Actions 트리거(git push)는 scripts/scripts_deploy_illeesam_github/package.json 에서 npm run <이름> 으로 실행할 것.",
   "scriptsGuide": {
     "check-orphans": "[① 종합점검] BO+FO 전체를 4가지 관점에서 자동 진단한다 — ①등록누락(화면 파일은 있는데 어디에도 안 걸림) ②eager/lazy 이중등록(부팅 시 아직 안 실린 lazy 클래스를 eager 체인이 참조 — 체인 크래시 지뢰) ③클래스명 중복정의(서로 다른 두 파일이 같은 window.ClassName= 정의) ④도달불가(lazy 맵엔 있지만 어느 pageId/메뉴에서도 정적으로 못 찾음 — 근사치라 사람 확인 필요). 새 화면 추가·리팩터 후 습관적으로 돌릴 것.",
     "gen-bo-lazy": "[② 맵 재생성] pages/bo + pages/co 를 스캔해 lib/app/boAppLazyClasses.js(클래스명→파일경로 맵 + BO_APP_COMP_PAGE)를 자동 생성한다. 이 맵은 손으로 고치지 않는다 — 새 BO 화면을 추가했으면 이 스크립트를 다시 돌려서 갱신한다.",

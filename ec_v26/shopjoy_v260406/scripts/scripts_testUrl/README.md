@@ -1,11 +1,11 @@
 # scripts_testUrl — 점검용 URL 모음
 
-5개 앱(`ecBeBo`/`ecBeCdn`/`ecFeBo`/`ecBeGateway`/`ecBeRedis`) 배포 스크립트(`apps/scripts_deploy_illeesam_synol/deploy-dev-synol-*.js`)의 `notifyDeployResult({ checkUrls })` 안에 흩어져 있던 점검 URL을 한 곳에 정리한 폴더입니다. NAS 접속정보(`.synology-deploy.env`) 없이 그냥 `node test-urls.js` 만 돌리면 됩니다 — 전부 공개(permitAll) URL만 다룹니다.
+5개 앱(`ecBeBo`/`ecBeCdn`/`ecFeBo`/`ecBeGateway`/`ecBeRedis`) 배포 스크립트(`scripts/scripts_deploy_illeesam_synol/deploy-dev-synol-*.js`)의 `notifyDeployResult({ checkUrls })` 안에 흩어져 있던 점검 URL을 한 곳에 정리한 폴더입니다. NAS 접속정보(`.synology-deploy.env`) 없이 그냥 `node test-urls.js` 만 돌리면 됩니다 — 전부 공개(permitAll) URL만 다룹니다.
 
 ## 실행
 
 ```bash
-cd apps/scripts_testUrl
+cd scripts/scripts_testUrl
 npm run test:all          # 전체
 npm run test:ecBeBo       # 서비스 하나만
 node test-urls.js ecBeCdn ecFeBo   # 여러 개 지정
@@ -63,11 +63,11 @@ node test-urls.js ecBeCdn ecFeBo   # 여러 개 지정
 
 ### ecBeRedis — HTTP 점검 없음
 
-Redis는 HTTP가 아니라 자체 프로토콜이라 이 스크립트로는 확인하지 않습니다. `npm run deploy:dev-synol-ecBeRedis`(`apps/scripts_deploy_illeesam_synol/`)가 배포 중 컨테이너 안에서 `redis-cli -a $REDIS_PASSWORD ping`으로 직접 확인합니다.
+Redis는 HTTP가 아니라 자체 프로토콜이라 이 스크립트로는 확인하지 않습니다. `npm run deploy:dev-synol-ecBeRedis`(`scripts/scripts_deploy_illeesam_synol/`)가 배포 중 컨테이너 안에서 `redis-cli -a $REDIS_PASSWORD ping`으로 직접 확인합니다.
 
 ## 목록을 최신으로 유지하려면
 
 URL이 추가/삭제되면 **두 곳을 같이** 고쳐야 합니다 — 어느 한쪽만 고치면 다음에 또 어긋납니다.
 
-1. `apps/scripts_testUrl/test-urls.data.js` (이 폴더)
-2. `apps/scripts_deploy_illeesam_synol/deploy-dev-synol-*.js` 안의 해당 서비스 `checkUrls` 배열
+1. `scripts/scripts_testUrl/test-urls.data.js` (이 폴더)
+2. `scripts/scripts_deploy_illeesam_synol/deploy-dev-synol-*.js` 안의 해당 서비스 `checkUrls` 배열

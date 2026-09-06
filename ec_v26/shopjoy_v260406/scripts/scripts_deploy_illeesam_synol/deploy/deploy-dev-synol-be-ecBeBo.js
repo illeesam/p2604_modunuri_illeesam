@@ -4,9 +4,9 @@
  * 프론트는 별도 deploy-dev-synol-fe-ecFeBo.js(= cd deploy && npm run ecFeBo).
  * 백엔드+CDN서버 둘 다 한 번에 하려면 npm run zmulti-ecBeBo-ecBeCdn.
  *
- * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeBo
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeBo
  *          (또는 루트에서 npm run ecBeBo --workspace=deploy)
- * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
+ * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/11_illeesam_synology_BE_수동배포가이드(synology).md 의
  * STEP 1~5 와 완전히 동일한 절차를 그대로 스크립트로 옮긴 것뿐이다 — 사람이 손으로 치던
@@ -62,7 +62,7 @@ function fmtElapsed() {
 
     console.log(`${step(1)} Gradle 빌드 (clean bootJar -x test)`);
     // ROOT(synology-deploy-util.js 기준) = apps/ (2026-09-06: 이 스크립트가 apps/ecFeBo/scripts/
-    // 에서 apps/scripts_deploy_illeesam_synol/ 로 독립 — 배포 스크립트가 프론트 앱 폴더 밑에 있는 게 어색하다는 지적).
+    // 에서 scripts/scripts_deploy_illeesam_synol/ 로 독립 — 배포 스크립트가 프론트 앱 폴더 밑에 있는 게 어색하다는 지적).
     // 백엔드는 그 바로 아래 형제 폴더 apps/ecBeBo 에 있다.
     const beDir = path.join(ROOT, 'ecBeBo');
     // 상대경로/PATH 탐색에 기대지 않고 절대경로로 직접 지정 — 실행 환경(git-bash/cmd/PowerShell)에

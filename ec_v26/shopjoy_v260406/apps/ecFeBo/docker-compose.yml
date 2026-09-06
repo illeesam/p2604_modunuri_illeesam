@@ -15,7 +15,7 @@
 #
 #  ⚠️ 정적 파일 배포 폴더(/volume1/docker/shopjoy/apps/ecFeBo)와 이 compose/설정 파일이 있는
 #     폴더(/volume1/docker/shopjoy/apps/ecFeBoApp)를 반드시 분리해야 한다 — FE 배포 스크립트
-#     (deploy-dev-synol-fe-ecFeBo.js, apps/scripts_deploy_illeesam_synol/deploy/ 에서
+#     (deploy-dev-synol-fe-ecFeBo.js, scripts/scripts_deploy_illeesam_synol/deploy/ 에서
 #     npm run ecFeBo)가 매 배포마다
 #     ecFeBo 폴더를 통째로 rm -rf 후 dist/ 로 재생성하기 때문에, 같은 폴더에 두면 이
 #     docker-compose.yml 자체가 다음 프론트 배포 때 지워진다.

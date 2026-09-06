@@ -323,7 +323,7 @@ window.foAppFooter = {
     /* 2026-09-06(요청사항: "하단별도란에 시놀로지에 배포된 ecBeBo, ecBeCdn 도 링크 추가해줘 —
        포트방식/서브도메인방식/gateway방식") — NAS 배포 완료된 4개 앱(FO/BO/ecBeBo/ecBeCdn)을
        접속방식 3가지(포트/서브도메인/gateway)로 한 표에서 바로 열어볼 수 있게 한다.
-       실제 URL은 전부 실측 확인(curl 200) 완료 — apps/scripts_testUrl/test-urls.data.js 의
+       실제 URL은 전부 실측 확인(curl 200) 완료 — scripts/scripts_testUrl/test-urls.data.js 의
        URL 목록과 동일 기준. */
     const NAS_HOST = 'illeesam.synology.me';
     // 2026-09-06(요청사항: "/index.html 생략" + "ecBeBo/ecBeCdn 자동인식" — StaticIndexRedirectController

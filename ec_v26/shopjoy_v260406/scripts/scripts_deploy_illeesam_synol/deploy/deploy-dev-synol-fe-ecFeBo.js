@@ -13,9 +13,9 @@
  * nginx가 더 이상 /api,/cdn-admin 을 리버스프록시하지 않으므로 그 헬스체크도 제거 — 이제
  * index.html/bo.html 정적 서빙만 확인한다.
  *
- * 사용법: apps/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecFeBo
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecFeBo
  *          (또는 루트에서 npm run ecFeBo --workspace=deploy)
- * NAS 접속정보는 apps/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
+ * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/12_illeesam_synology_FE_수동배포가이드(synology).md 의
  * STEP 1~4 와 완전히 동일한 절차를 그대로 스크립트로 옮긴 것뿐이다.
@@ -32,7 +32,7 @@ const { runHealthCheck } = require('../app-health-checks');
 
 requireCreds('scripts/deploy-dev-synol-fe-ecFeBo.js');
 
-// ROOT(synology-deploy-util.js 기준) = apps/ (2026-09-06: apps/ecFeBo/scripts/ 에서 apps/scripts_deploy_illeesam_synol/
+// ROOT(synology-deploy-util.js 기준) = apps/ (2026-09-06: apps/ecFeBo/scripts/ 에서 scripts/scripts_deploy_illeesam_synol/
 // 로 독립). 실제 빌드(npm run build/package.json/dist)는 형제 폴더 apps/ecFeBo 안에서 돌아가야
 // 하므로 npm/tar 명령의 cwd 는 항상 feDir 로 지정한다(ROOT 를 그대로 쓰면 apps/ 에서 실행돼
 // package.json 을 못 찾는다).

@@ -19,7 +19,7 @@
  * "로그아웃 처리해둔 토큰이 자연만료 전이면 블랙리스트가 사라져 다시 쓰일 수 있게 됨"(영향
  * 범위: 액세스토큰 만료시간 이내, dev/prod 기준 15분) — 2026-09-06 대화에서 확인한 내용.
  *
- * 사용법: apps/scripts_deploy_illeesam_synol/ 에서 npm run reset-ecBeRedis-data
+ * 사용법: scripts/scripts_deploy_illeesam_synol/ 에서 npm run reset-ecBeRedis-data
  * NAS 접속정보는 .synology-deploy.env 필요 — 형식은 synology-deploy-util.js 상단 주석 참조.
  */
 const { requireCreds, withSsh, hms } = require('./synology-deploy-util');

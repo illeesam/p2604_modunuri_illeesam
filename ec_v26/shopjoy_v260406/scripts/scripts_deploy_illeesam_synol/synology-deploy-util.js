@@ -16,14 +16,24 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { Client } = require('ssh2');
 
-const ROOT = path.resolve(__dirname, '..');
+// 2026-09-06(요청사항: "apps/scripts_* 5개를 scripts/ 밑으로 옮길 수 있어?") — 이 폴더가
+// (구)apps/scripts_deploy_illeesam_synol → (신)scripts/scripts_deploy_illeesam_synol 로
+// 이동하면서 __dirname 기준 부모 관계가 둘로 갈라졌다:
+//   - 실제 배포 대상 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecBeGateway)은 그대로 apps/ 에 있다
+//     → 더 이상 형제 폴더가 아니라 "조부모(shopjoy_v260406)의 apps/" 로 두 단 올라가야 한다.
+//   - scripts_logs 등 이 도구 그룹 자신의 형제 폴더는 여전히 __dirname 바로 위(scripts/)에 있다.
+// ROOT 는 기존 소비자(deploy-dev-synol-*.js 의 path.join(ROOT, 'ecBeBo') 등)와의 하위호환을
+// 위해 이름은 그대로 두고 "배포 대상 앱들의 부모(apps/)"를 가리키도록 재계산한다.
+const ROOT = path.resolve(__dirname, '..', '..', 'apps');
+// scripts_logs 처럼 이 도구 그룹 자신의 형제 폴더를 찾을 때는 이걸 쓴다(ROOT 와 다름 — 헷갈리지 말 것).
+const SCRIPTS_ROOT = path.resolve(__dirname, '..');
 const ENV_FILE = path.join(__dirname, '.synology-deploy.env');
 
 // ═══════════════════════════════════════════════════════════════════════
 //  콘솔 출력 → 파일 로그 (2026-09-06 신설, 요청사항: "스크립트 실행하면 콘솔출력정보
 //  로그로 기록 가능하나?")
 //
-//  apps/scripts_logs/{YYYYMMDD}_{HHmmss}_{npm 스크립트명}.log 에 그대로 기록한다. 이 파일이
+//  scripts/scripts_logs/{YYYYMMDD}_{HHmmss}_{npm 스크립트명}.log 에 그대로 기록한다. 이 파일이
 //  synology-deploy-util.js 를 require 하는 모든 스크립트(deploy/deploy-dev-synol-*.js,
 //  manage-dev-synol.js)가 로드되는 시점에 자동으로 켜진다 — 개별 스크립트가 따로 뭘 더
 //  안 해도 된다. 파일명의 스크립트명은 process.env.npm_lifecycle_event(= npm 이 "npm run
@@ -38,7 +48,7 @@ const ENV_FILE = path.join(__dirname, '.synology-deploy.env');
 //  의 stdio:'inherit'(OS 파일디스크립터 직접 상속 — JS 후킹을 건너뜀) 대신 spawn 으로 받아
 //  수동으로 process.stdout/stderr 에 다시 흘려보내는 방식으로 바꿨다(아래 run() 참조).
 // ═══════════════════════════════════════════════════════════════════════
-const LOG_DIR = path.join(ROOT, 'scripts_logs');
+const LOG_DIR = path.join(SCRIPTS_ROOT, 'scripts_logs');
 
 function initFileLog() {
   try {
@@ -46,7 +56,7 @@ function initFileLog() {
     const p2 = (n) => String(n).padStart(2, '0');
     const dateStr = `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}`;
     const stamp = `${dateStr}_${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}`;
-    // 날짜별 하위 폴더(apps/scripts_logs/YYYYMMDD/)로 묶는다 — 파일이 계속 쌓여도 스크립트
+    // 날짜별 하위 폴더(scripts/scripts_logs/YYYYMMDD/)로 묶는다 — 파일이 계속 쌓여도 스크립트
     // 여러 개 x 날짜 여러 날치가 한 폴더에 뒤섞이지 않게(요청사항).
     const dayDir = path.join(LOG_DIR, dateStr);
     if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });

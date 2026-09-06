@@ -5,7 +5,7 @@
  *   1) 환경변수 JASYPT_MASTER_KEY (권장 — 셸 히스토리에 평문이 안 남는다)
  *   2) 첫 번째 인자로 직접 (간편하지만 셸 히스토리에 남을 수 있음)
  *
- * 사용법 (apps/scripts_crypto/ 안에서):
+ * 사용법 (scripts/scripts_funcs/crypto/ 안에서):
  *   JASYPT_MASTER_KEY=마스터키 npm run encrypt -- "평문값"
  *   JASYPT_MASTER_KEY=마스터키 npm run decrypt -- "ENC(암호문)"
  *   또는
