@@ -116,7 +116,7 @@ public class CfFileService {
             .thumbnailPath(thumbnailPath)
             .framePath(framePath)
             .fileSize(file.getSize())
-            .contentType(file.getContentType())
+            .contentType(contentType)
             .mediaTypeCd(mediaType.name())
             .uploaderClientId(uploaderClientId)
             .useYn("Y")
