@@ -157,7 +157,9 @@ async function buildInspectionGuide(checkUrls) {
     const badge = statuses[i] === '200' ? `✅ ${statuses[i]}` : `❌ ${statuses[i]}`;
     return `  - ${c.url.padEnd(width)}  ${badge}${c.note ? '  — ' + c.note : ''}`;
   });
-  return `\n\n📋 점검 안내\n${lines.join('\n')}`;
+  // 2026-09-06(요청사항: "점검 url 별 한줄씩 공백란 띄워줘") — URL이 다닥다닥 붙어 있으면
+  // 읽기 힘들어 항목 사이에 빈 줄을 하나씩 넣는다.
+  return `\n\n📋 점검 안내\n${lines.join('\n\n')}`;
 }
 
 /* [서버/환경 정보] serverInfo: [{label, value}] → 어느 서버에 뭐가 어디로 배포됐는지(호스트, 설치
@@ -177,20 +179,30 @@ function buildServerInfo(serverInfo) {
  * URL 값은 그 팝업들(apps/ecFeBo/components/layout/foAppFooter.js 의 DEPLOY_LINKS 등)과 반드시
  * 동일하게 유지 — 한쪽만 바뀌면 서로 어긋나므로, 포트/도메인 구성이 바뀌면 양쪽 다 같이 고칠 것. */
 const DEPLOY_LINKS_HOST = 'illeesam.synology.me';
+// 2026-09-06(요청사항: "FO 에 끝에 / 는 빼줘") — FO 만 경로가 없어(루트) 다른 항목과 달리
+// 끝에 '/' 가 남아있던 것 제거.
+// 2026-09-06(요청사항: "/index.html 은 자동 인식되게 하면 될거 같은데 안되면 알려줘") — 처음엔
+// Spring Boot 정적 리소스 서빙엔 nginx의 index 지시어 같은 자동 인식이 없어(welcome-page 자동
+// 인식은 루트 "/" 한정) /home, /admin-tools 단독으로는 404/500 이었다. ecBeBo/ecBeCdn 에
+// StaticIndexRedirectController(static/{dir}/index.html 존재 시 리다이렉트, 이름 하드코딩 없어
+// 향후 /portal 등 추가돼도 그대로 커버) 를 추가하고, 게이트웨이 프록시 헤더(X-Forwarded-Host/
+// Proto 가 비표준 포트·서브도메인 HTTPS 에서 유실되던 버그)까지 고쳐서 이제 전부 index.html
+// 없이도 정상 동작(실측 200 확인) — 그래서 아래 4개도 짧은 형태로 통일.
 const DEPLOY_LINKS = {
-  FO:      { 포트: `http://${DEPLOY_LINKS_HOST}:22000/`,                서브도메인: `https://22000.${DEPLOY_LINKS_HOST}/`,                gateway: `http://${DEPLOY_LINKS_HOST}:22099/` },
-  BO:      { 포트: `http://${DEPLOY_LINKS_HOST}:22000/bo.html`,         서브도메인: `https://22000.${DEPLOY_LINKS_HOST}/bo.html`,         gateway: `http://${DEPLOY_LINKS_HOST}:22099/bo.html` },
-  ecBeBo:  { 포트: `http://${DEPLOY_LINKS_HOST}:22300/home/index.html`, 서브도메인: `https://22300.${DEPLOY_LINKS_HOST}/home/index.html`, gateway: `http://${DEPLOY_LINKS_HOST}:22099/admin-tools/index.html` },
-  ecBeCdn: { 포트: `http://${DEPLOY_LINKS_HOST}:22400/home/index.html`, 서브도메인: `https://22400.${DEPLOY_LINKS_HOST}/home/index.html`, gateway: `http://${DEPLOY_LINKS_HOST}:22099/cdn-admin/index.html` },
+  FO:      { 포트: `http://${DEPLOY_LINKS_HOST}:22000`,           서브도메인: `https://22000.${DEPLOY_LINKS_HOST}`,           gateway: `http://${DEPLOY_LINKS_HOST}:22099` },
+  BO:      { 포트: `http://${DEPLOY_LINKS_HOST}:22000/bo.html`,   서브도메인: `https://22000.${DEPLOY_LINKS_HOST}/bo.html`,   gateway: `http://${DEPLOY_LINKS_HOST}:22099/bo.html` },
+  ecBeBo:  { 포트: `http://${DEPLOY_LINKS_HOST}:22300/home`,      서브도메인: `https://22300.${DEPLOY_LINKS_HOST}/home`,      gateway: `http://${DEPLOY_LINKS_HOST}:22099/admin-tools` },
+  ecBeCdn: { 포트: `http://${DEPLOY_LINKS_HOST}:22400/home`,      서브도메인: `https://22400.${DEPLOY_LINKS_HOST}/home`,      gateway: `http://${DEPLOY_LINKS_HOST}:22099/cdn-admin` },
 };
 function buildDeployLinksTable() {
-  const lines = ['🔗 NAS 배포 URL'];
+  const lines = ['🔗 NAS 배포 URL', ''];
   Object.entries(DEPLOY_LINKS).forEach(([app, rows]) => {
-    lines.push(`  ${app}`);
     Object.entries(rows).forEach(([label, url]) => {
-      lines.push(`    ${label}: ${url}`);
+      lines.push(`${app} - ${label} : ${url}`);
     });
+    lines.push('');
   });
+  lines.pop(); // 마지막 그룹 뒤 불필요한 빈 줄 제거
   return `\n\n${lines.join('\n')}`;
 }
 

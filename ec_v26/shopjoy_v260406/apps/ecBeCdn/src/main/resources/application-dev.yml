@@ -19,6 +19,9 @@ spring:
 
 server:
   port: 3000
+  # 2026-09-06(EcBeBo 와 동일 이유) — DSM 리버스 프록시(TLS 종료) 뒤에서 redirect:/home/index.html
+  # 같은 절대 리다이렉트가 스킴을 http:// 로 잘못 잡던 문제 — X-Forwarded-* 헤더 신뢰.
+  forward-headers-strategy: framework
 
 logging:
   level:

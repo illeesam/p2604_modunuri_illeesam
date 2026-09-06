@@ -19,6 +19,8 @@ spring:
 
 server:
   port: 3000
+  # application-dev.yml 과 동일 이유 — DSM 리버스 프록시 뒤 절대 리다이렉트 스킴 보정.
+  forward-headers-strategy: framework
 
 logging:
   level:

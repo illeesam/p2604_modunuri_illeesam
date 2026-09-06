@@ -97,37 +97,40 @@ body {
 }
 
 /* ── 열린 탭바(index.html shell, 요청사항: "열린탭바도 있으면 좋겠는데") ──────────
-   메인 프로젝트 bo.html 의 멀티탭 감각을 축소 재현. 탭이 많아지면 가로 스크롤. */
+   메인 프로젝트 bo.html 의 멀티탭 감각을 축소 재현. 탭이 많아지면 가로 스크롤.
+   2026-09-06(요청사항: "탭란 주변영역 너무크고, 안이뻐") — 위아래 여백/줄 굵은 border-bottom
+   으로 생기던 "빈 액자" 느낌을 없애고, 탭 자체도 상단만 둥근 각진 모양 대신 완전한 pill 형태로
+   작고 정갈하게. 활성 탭은 흰 배경+얇은 하단 포인트 라인으로만 표시(그림자/두꺼운 테두리 제거). */
 .open-tabs-bar {
   display: flex;
   gap: 4px;
   overflow-x: auto;
   white-space: nowrap;
-  margin-bottom: 14px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+  padding: 4px;
+  background: #eef0f3;
+  border-radius: 10px;
 }
 .open-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex: 0 0 auto;
-  padding: 6px 8px 6px 12px;
-  border-radius: 8px 8px 0 0;
-  background: #f4f5f7;
-  color: #777;
+  padding: 5px 6px 5px 10px;
+  border-radius: 7px;
+  background: transparent;
+  color: #888;
   font-size: 12px;
   cursor: pointer;
-  border: 1px solid transparent;
+  border: none;
+  transition: background .12s, color .12s;
 }
-.open-tab:hover { background: #fdeef3; color: #e91e63; }
+.open-tab:hover { background: rgba(233,30,99,0.08); color: #e91e63; }
 .open-tab.active {
   background: #fff;
   color: #e91e63;
   font-weight: 700;
-  border-color: #eee;
-  border-bottom-color: #fff;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 .open-tab .tab-close {
   width: 15px;

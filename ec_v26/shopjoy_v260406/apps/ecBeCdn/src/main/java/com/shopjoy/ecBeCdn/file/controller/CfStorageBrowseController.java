@@ -75,7 +75,7 @@ public class CfStorageBrowseController {
             throw new CfBizException("파일을 찾을 수 없습니다: " + path);
         }
         Resource resource = new FileSystemResource(target);
-        String contentType = fnGuessContentType(target);
+        String contentType = cfStorageService.guessContentType(target);
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(contentType))
             .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600")
@@ -140,20 +140,6 @@ public class CfStorageBrowseController {
     private String fnExt(String name) {
         int idx = name.lastIndexOf('.');
         return idx >= 0 ? name.substring(idx + 1) : "";
-    }
-
-    private String fnGuessContentType(Path file) {
-        try {
-            String probed = Files.probeContentType(file);
-            if (probed != null) return probed;
-        } catch (IOException ignored) {
-            // 확장자 기반 폴백으로 진행.
-        }
-        return switch (CfMediaType.fromExt(fnExt(file.getFileName().toString()))) {
-            case IMAGE -> "image/jpeg";
-            case VIDEO -> "video/mp4";
-            default -> "application/octet-stream";
-        };
     }
 
     /** cf_file 추적 여부와 무관하게 통일된 형태로 내려주는 실제 파일 항목. */

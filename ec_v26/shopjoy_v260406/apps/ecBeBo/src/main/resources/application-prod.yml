@@ -56,6 +56,9 @@ mybatis:
 
 server:
   port: 3000
+  # application-dev.yml 과 동일 이유 — DSM 리버스 프록시(TLS 종료) 뒤에서 절대 리다이렉트 URL
+  # 스킴이 깨지지 않도록 X-Forwarded-* 헤더를 신뢰.
+  forward-headers-strategy: framework
 
 management:
   endpoints:

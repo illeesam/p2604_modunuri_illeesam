@@ -2,6 +2,7 @@ package com.shopjoy.ecBeCdn.file.service;
 
 import com.shopjoy.ecBeCdn.common.config.CfProperties;
 import com.shopjoy.ecBeCdn.common.exception.CfBizException;
+import com.shopjoy.ecBeCdn.file.domain.CfMediaType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -93,6 +94,25 @@ public class CfStorageService {
             throw new CfBizException("잘못된 경로입니다: " + relPath);
         }
         return candidate;
+    }
+
+    /** 파일 확장자/OS 판정으로 Content-Type 추정 — CfStorageBrowseController(실제 폴더 브라우저)와
+     *  CfFileServeController(/api/cdn/attach/** 경로기반 서빙)가 공유(2026-09-06, 중복 제거). */
+    public String guessContentType(Path file) {
+        try {
+            String probed = Files.probeContentType(file);
+            if (probed != null) return probed;
+        } catch (IOException ignored) {
+            // 확장자 기반 폴백으로 진행.
+        }
+        String name = file.getFileName().toString();
+        int idx = name.lastIndexOf('.');
+        String ext = idx >= 0 ? name.substring(idx + 1) : "";
+        return switch (CfMediaType.fromExt(ext)) {
+            case IMAGE -> "image/jpeg";
+            case VIDEO -> "video/mp4";
+            default -> "application/octet-stream";
+        };
     }
 
     /** storage-root 전체를 재귀적으로 훑어 실제 디렉터리 트리를 만든다(파일 개수는 하위 전체 누적).

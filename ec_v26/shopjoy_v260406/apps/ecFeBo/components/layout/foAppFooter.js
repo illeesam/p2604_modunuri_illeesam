@@ -326,11 +326,13 @@ window.foAppFooter = {
        실제 URL은 전부 실측 확인(curl 200) 완료 — apps/scripts_testUrl/test-urls.data.js 의
        URL 목록과 동일 기준. */
     const NAS_HOST = 'illeesam.synology.me';
+    // 2026-09-06(요청사항: "/index.html 생략" + "ecBeBo/ecBeCdn 자동인식" — StaticIndexRedirectController
+    // 추가 + 게이트웨이 헤더 수정으로 아래 4개 전부 index.html 없이도 정상 동작(실측 200 확인)).
     const DEPLOY_LINKS = {
-      fo:      { port: `http://${NAS_HOST}:22000/index.html`,          sub: `https://22000.${NAS_HOST}/index.html`,          gw: `http://${NAS_HOST}:22099/index.html` },
-      bo:      { port: `http://${NAS_HOST}:22000/bo.html`,             sub: `https://22000.${NAS_HOST}/bo.html`,             gw: `http://${NAS_HOST}:22099/bo.html` },
-      ecBeBo:  { port: `http://${NAS_HOST}:22300/home/index.html`,     sub: `https://22300.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/admin-tools/index.html` },
-      ecBeCdn: { port: `http://${NAS_HOST}:22400/home/index.html`,     sub: `https://22400.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/cdn-admin/index.html` },
+      fo:      { port: `http://${NAS_HOST}:22000`,          sub: `https://22000.${NAS_HOST}`,          gw: `http://${NAS_HOST}:22099` },
+      bo:      { port: `http://${NAS_HOST}:22000/bo.html`,  sub: `https://22000.${NAS_HOST}/bo.html`,  gw: `http://${NAS_HOST}:22099/bo.html` },
+      ecBeBo:  { port: `http://${NAS_HOST}:22300/home`,     sub: `https://22300.${NAS_HOST}/home`,     gw: `http://${NAS_HOST}:22099/admin-tools` },
+      ecBeCdn: { port: `http://${NAS_HOST}:22400/home`,     sub: `https://22400.${NAS_HOST}/home`,     gw: `http://${NAS_HOST}:22099/cdn-admin` },
     };
     const DEPLOY_COLS = [
       { key: 'fo',      label: 'FO' },

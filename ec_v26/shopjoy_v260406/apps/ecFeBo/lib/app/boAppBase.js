@@ -2062,11 +2062,12 @@
          "메뉴 바로가기" 모달에 추가한 NAS 배포 URL 표(포트/서브도메인/gateway)를 BO 의
          "연관사이트" 팝업에도 동일하게 추가) — URL 은 전부 실측 확인(curl 200) 완료. */
       const NAS_HOST = 'illeesam.synology.me';
+      // 2026-09-06(요청사항: "/index.html 생략" + "ecBeBo/ecBeCdn 자동인식") — foAppFooter.js 와 동일.
       const DEPLOY_LINKS = {
-        fo:      { port: `http://${NAS_HOST}:22000/index.html`,          sub: `https://22000.${NAS_HOST}/index.html`,          gw: `http://${NAS_HOST}:22099/index.html` },
-        bo:      { port: `http://${NAS_HOST}:22000/bo.html`,             sub: `https://22000.${NAS_HOST}/bo.html`,             gw: `http://${NAS_HOST}:22099/bo.html` },
-        ecBeBo:  { port: `http://${NAS_HOST}:22300/home/index.html`,     sub: `https://22300.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/admin-tools/index.html` },
-        ecBeCdn: { port: `http://${NAS_HOST}:22400/home/index.html`,     sub: `https://22400.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/cdn-admin/index.html` },
+        fo:      { port: `http://${NAS_HOST}:22000`,          sub: `https://22000.${NAS_HOST}`,          gw: `http://${NAS_HOST}:22099` },
+        bo:      { port: `http://${NAS_HOST}:22000/bo.html`,  sub: `https://22000.${NAS_HOST}/bo.html`,  gw: `http://${NAS_HOST}:22099/bo.html` },
+        ecBeBo:  { port: `http://${NAS_HOST}:22300/home`,     sub: `https://22300.${NAS_HOST}/home`,     gw: `http://${NAS_HOST}:22099/admin-tools` },
+        ecBeCdn: { port: `http://${NAS_HOST}:22400/home`,     sub: `https://22400.${NAS_HOST}/home`,     gw: `http://${NAS_HOST}:22099/cdn-admin` },
       };
       const DEPLOY_COLS = [
         { key: 'fo',      label: 'FO' },

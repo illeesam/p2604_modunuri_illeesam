@@ -66,6 +66,13 @@ mybatis:
 
 server:
   port: 3000
+  # 2026-09-06(요청사항: "/home 자동인식" 후속) — DSM 리버스 프록시가 TLS 를 종료하고 이
+  # 컨테이너엔 평문 HTTP 로 넘기기 때문에, 이 값이 없으면 Spring 이 redirect:/home/index.html
+  # 같은 상대 리다이렉트를 절대 URL로 만들 때 스킴을 무조건 http:// 로 잡아버려(실제 접속은
+  # https:// 인데) 서브도메인 HTTPS 접근 시 리다이렉트가 깨졌다(실측: Location 이 http:// 로
+  # 나가서 이어지는 요청이 404). 리버스 프록시가 보내는 X-Forwarded-Proto/Host/Port 헤더를
+  # 신뢰해 원래 스킴/호스트를 복원하도록 설정.
+  forward-headers-strategy: framework
 
 management:
   endpoints:
