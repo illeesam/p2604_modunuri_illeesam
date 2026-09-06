@@ -1308,6 +1308,30 @@
   function cofIsValidPassword(v) { return !v || cofRegexPassword.test(String(v)); }
   function cofIsValidLoginId(v) { return !v || cofRegexLoginId.test(String(v)); }
 
+  /* cofDevTestPresets / cofDispatchDevAutofill — 개발용 값적용(요청사항: "(개발) 값적용
+   * [1][2][3] 버튼 추가해줘 / 화면마다 값적용 편하게 할거야") — foAppHeader.js 의 설정(⚙)
+   * 드롭다운에서 버튼 클릭 시 `fo-dev-autofill` 커스텀 이벤트를 전역으로 쏜다(detail=preset
+   * 객체). 주문서(Order.js)/문의상담(Contact.js) 등 폼이 있는 화면이 각자 onMounted 에서
+   * window.addEventListener('fo-dev-autofill', ...) 로 구독해, 자기 폼의 name/tel/email/
+   * postcode/address/addressDetail 키만 골라서 채운다 — 헤더(공통 컴포넌트)가 화면별 폼
+   * 구조를 몰라도 되게 이벤트로 느슨하게 연결한 것. 3개 프리셋 전부 이름/연락처/이메일/주소를
+   * 기본 포함(요청사항: "이름, 연락처, 이메일, 주소 등은 기본적으로 적용되게").
+   * 2026-09-06(요청사항: "1,2,3번 전부 화면에 보이는 실제 값으로 적용해줘") — 개발자 본인이
+   * 테스트할 때 반복 입력하는 실제 정보로 3개 슬롯 전부 동일하게 채움.
+   * ⚠ 이 파일은 정적 배포되어 로그인 없이도 접근 가능한 공개 경로다 — 실제 개인정보(이름/
+   * 연락처/이메일/주소)가 포함돼 있으므로, foAppHeader.js 가 운영(prod) 프로파일에서는 이
+   * 값적용 UI 자체를 렌더링하지 않도록 cfFoActive!=='prod' 로 막아둔다(아래 참조). 운영에
+   * 실수로 노출되지 않게 그 가드는 유지할 것. */
+  const cofDevTestPresets = [
+    { name: '송성일', tel: '010-3805-0206', email: 'illeesam@gmail.com', postcode: '13439', address: '경기 성남시 중원구 성남대로997번길 49-14', addressDetail: '9201호' },
+    { name: '송성일', tel: '010-3805-0206', email: 'illeesam@gmail.com', postcode: '13439', address: '경기 성남시 중원구 성남대로997번길 49-14', addressDetail: '9201호' },
+    { name: '송성일', tel: '010-3805-0206', email: 'illeesam@gmail.com', postcode: '13439', address: '경기 성남시 중원구 성남대로997번길 49-14', addressDetail: '9201호' },
+  ];
+  function cofDispatchDevAutofill(presetNo) {
+    const preset = cofDevTestPresets[(presetNo || 1) - 1] || cofDevTestPresets[0];
+    window.dispatchEvent(new CustomEvent('fo-dev-autofill', { detail: preset }));
+  }
+
   /* cofValidationToast — 저장 시 폼 검증 실패 토스트 표준화(2026-08-29).
    * 이전엔 실패한 필드가 몇 개든 "입력 내용을 확인해주세요." 하나만 떠서, 화면을 스크롤해
    * 빨간 안내문구를 직접 찾아야 했다(탭이 여러 개인 화면은 특히 어느 탭이 문제인지도 안 보임).
@@ -1445,4 +1469,7 @@
   global.coUtil.cofIsValidPassword = global.coUtil.cofIsValidPassword || cofIsValidPassword;
   global.coUtil.cofIsValidLoginId = global.coUtil.cofIsValidLoginId || cofIsValidLoginId;
   global.coUtil.cofValidationToast = global.coUtil.cofValidationToast || cofValidationToast;
+  // 개발용 값적용(요청사항) — foAppHeader.js 설정 드롭다운 + 각 폼 화면(Order.js/Contact.js 등)
+  global.coUtil.cofDevTestPresets = global.coUtil.cofDevTestPresets || cofDevTestPresets;
+  global.coUtil.cofDispatchDevAutofill = global.coUtil.cofDispatchDevAutofill || cofDispatchDevAutofill;
 })(typeof window !== 'undefined' ? window : this);

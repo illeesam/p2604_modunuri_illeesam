@@ -503,28 +503,31 @@ window.Login = {
         <div style="flex:1;height:1px;background:var(--border);">
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:9px;">
+      <!-- 2026-09-06(요청사항: "3행을 1행 3열로 배치") — 세로 3행이 모달 높이를 밀어 하단이
+           가려지던 문제라 1행 3열 그리드로 압축. 열 폭이 좁아져 라벨을 "OO로 로그인"→"OO"로
+           줄이고(위 "소셜 로그인" 구분선이 이미 문맥을 알려줌), 아이콘+라벨을 세로 배치. -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
         <button @click="handleBtnAction('form-socialLogin', 'google')"
-          style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text-primary);font-weight:600;">
+          style="padding:10px 4px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.78rem;color:var(--text-primary);font-weight:600;">
           <span style="font-size:1.1rem;">
             🌐
           </span>
-          Google로 로그인
+          Google
         </button>
         <button @click="handleBtnAction('form-socialLogin', 'kakao')"
-          style="width:100%;padding:11px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#3C1E1E;font-weight:700;">
+          style="padding:10px 4px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.78rem;color:#3C1E1E;font-weight:700;">
           <span style="font-size:1.1rem;">
             💬
           </span>
-          카카오로 로그인
+          카카오
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button @click="handleBtnAction('form-socialLogin', 'naver')"
-          style="width:100%;padding:11px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#fff;font-weight:700;">
+          style="padding:10px 4px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:0.78rem;color:#fff;font-weight:700;">
           <span style="font-size:1.1rem;font-weight:900;">
             N
           </span>
-          네이버로 로그인
+          네이버
         </button>
       </div>
       <div style="text-align:center;margin-top:22px;">

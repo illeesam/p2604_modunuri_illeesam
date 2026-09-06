@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * JpaSpecificationExecutor 로 검색을 처리한다(CfFileService.getPage() 의 Specification 참조) —
@@ -21,4 +22,8 @@ public interface CfFileRepository extends JpaRepository<CfFile, String>, JpaSpec
     @Query(value = "SELECT to_char(reg_date, 'YYYY-MM-DD') AS day, COUNT(*) AS cnt " +
                     "FROM cf_file GROUP BY 1 ORDER BY 1 DESC", nativeQuery = true)
     List<Object[]> countByDay();
+
+    /** 실제 디스크 폴더 브라우저(CfStorageBrowseController)가 파일 하나를 cf_file 로 추적 중인지
+     *  확인할 때 사용 — file_path 는 storage-root 기준 상대경로라 정확히 일치해야 매칭된다. */
+    Optional<CfFile> findByFilePath(String filePath);
 }

@@ -10,7 +10,7 @@ window.Contact = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const modals = reactive({ isOrderModal: false });
     const uiState = reactive({ loading: false, error: null });
@@ -112,12 +112,23 @@ window.Contact = {
         if (!form.tel)   form.tel   = u.memberHpNo || u.phone || u.memberPhone || '';
       } catch (e) { console.error('[fnPrefillUser]', e); }
     };
+    /* handleDevAutofill — (요청사항: "문의상담의 경우도 마찬가지지") 헤더 설정(⚙) 드롭다운의
+       "(개발) 값적용 [1][2][3]" 클릭 시 전역으로 오는 fo-dev-autofill 이벤트를 받아 이름/이메일/
+       연락처를 채운다(문의상담은 주소가 없음) — coUtil.cofDispatchDevAutofill() 참조. */
+    const handleDevAutofill = (e) => {
+      const d = e.detail || {};
+      if (d.name != null) form.name = d.name;
+      if (d.email != null) form.email = d.email;
+      if (d.tel != null) form.tel = d.tel;
+    };
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
       await fnPrefillUser();
       await fnLoadRefTableNm();
+      window.addEventListener('fo-dev-autofill', handleDevAutofill);
     };
     onMounted(initPage);
+    onBeforeUnmount(() => window.removeEventListener('fo-dev-autofill', handleDevAutofill));
 
     /* fnDescText — desc(HTML 에디터) 태그 제거 후 순수 텍스트 (검증/글자수 공용) */
     const fnDescText = () => String(form.desc || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();

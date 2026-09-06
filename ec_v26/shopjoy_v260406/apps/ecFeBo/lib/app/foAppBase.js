@@ -559,7 +559,18 @@
     /* 임의 ID 생성: yymmddHHMMSS + rand4 — coUtil.cofGenId 위임 */
     const genId = () => coUtil.cofGenId();
 
-    /* prods 로드 후: 장바구니 복원 + URL pid 복원 */
+    /* prods 로드 후: 장바구니 복원 + URL pid 복원
+       2026-09-06 버그수정(요청사항: "F5 refresh 했는데 좋아요 1건은 남아 있는데 장바구니
+       1건은 사라졌어 왜 차이가 있는거야?") — 옵션(색상) 없는 상품(opt1s 가 배열이 아님, 즉
+       대부분의 "기본/FREE" 단일옵션 상품)을 담은 뒤 새로고침하면 100% 재현됨. 원인:
+       `item.color && item.size && Array.isArray(p.opt1s)` 전체가 하나의 AND 조건이라,
+       상품 자체(p)는 정상적으로 찾았어도 그 상품에 색상 옵션 배열(opt1s)이 없으면 조건 전체가
+       거짓이 되어 그 항목을 통째로 버렸다(addToCart 는 색상 없는 상품도 { name:'기본' }
+       기본값으로 정상 처리하므로 담을 때는 아무 문제가 없었음 — 새로고침 복원 시에만 사라짐).
+       likes(위시리스트)는 상품ID만 Set 에 저장/복원하는 단순 구조라 이런 조건 자체가 없어서
+       항상 정상 복원됐던 것 — 그래서 좋아요와 장바구니의 새로고침 동작이 달라 보였던 것.
+       수정: "상품 자체가 존재하는지"만 필수 조건으로 남기고, 색상 재매칭은 실패해도 저장해둔
+       item.color 스냅샷을 그대로 써서 복원하도록 완화. */
     const _restoreAfterProds = () => {
       try {
         const saved = localStorage.getItem('modu-fo-od-cart');
@@ -568,10 +579,12 @@
           if (Array.isArray(parsed)) {
             parsed.forEach(item => {
               const p = prods.find(x => x.prodId === item.prodId);
-              if (p && item.color && item.size && Array.isArray(p.opt1s)) {
-                const color = p.opt1s.find(c => c.name === item.color.name) || item.color;
-                cart.push({ cartId: item.cartId || genId(), prod: p, color, size: item.size, qty: item.qty || 1 });
+              if (!p) return; // 상품 자체가 없어졌으면(단종 등) 복원 불가 — 그 외엔 전부 복원
+              let color = item.color || { name: '기본' };
+              if (item.color && Array.isArray(p.opt1s) && p.opt1s.length) {
+                color = p.opt1s.find(c => c.name === item.color.name) || item.color;
               }
+              cart.push({ cartId: item.cartId || genId(), prod: p, color, size: item.size || 'FREE', qty: item.qty || 1 });
             });
           }
         }

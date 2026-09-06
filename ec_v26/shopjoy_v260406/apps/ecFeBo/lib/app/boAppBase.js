@@ -2057,6 +2057,29 @@
         { fo: '03', bo: '03' },
         { fo: '9999', bo: '9999' },
       ];
+
+      /* 2026-09-06(요청사항: "Bo에서도 비슷한 화면 있는데 마찬가지야" — foAppFooter.js 의
+         "메뉴 바로가기" 모달에 추가한 NAS 배포 URL 표(포트/서브도메인/gateway)를 BO 의
+         "연관사이트" 팝업에도 동일하게 추가) — URL 은 전부 실측 확인(curl 200) 완료. */
+      const NAS_HOST = 'illeesam.synology.me';
+      const DEPLOY_LINKS = {
+        fo:      { port: `http://${NAS_HOST}:22000/index.html`,          sub: `https://22000.${NAS_HOST}/index.html`,          gw: `http://${NAS_HOST}:22099/index.html` },
+        bo:      { port: `http://${NAS_HOST}:22000/bo.html`,             sub: `https://22000.${NAS_HOST}/bo.html`,             gw: `http://${NAS_HOST}:22099/bo.html` },
+        ecBeBo:  { port: `http://${NAS_HOST}:22300/home/index.html`,     sub: `https://22300.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/admin-tools/index.html` },
+        ecBeCdn: { port: `http://${NAS_HOST}:22400/home/index.html`,     sub: `https://22400.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/cdn-admin/index.html` },
+      };
+      const DEPLOY_COLS = [
+        { key: 'fo',      label: 'FO' },
+        { key: 'bo',      label: 'BO' },
+        { key: 'ecBeBo',  label: 'ecBeBo' },
+        { key: 'ecBeCdn', label: 'ecBeCdn' },
+      ];
+      const DEPLOY_ROWS = [
+        { key: 'port', label: '포트' },
+        { key: 'sub',  label: '서브도메인' },
+        { key: 'gw',   label: 'gateway' },
+      ];
+      const goDeployLink = (colKey, rowKey) => { window.open(DEPLOY_LINKS[colKey][rowKey], '_blank'); };
       const DISP_LINKS = [
         { label: '통합 페이지', hash: '#page=dispUiPage', icon: '🌐' },
         { label: 'UI 샘플 01', hash: '#page=dispUi01', icon: '1️⃣' },
@@ -2407,6 +2430,7 @@
         cfBoActive,
         SITE_PAIR_MENU,
         DISP_LINKS,
+        DEPLOY_LINKS, DEPLOY_COLS, DEPLOY_ROWS, goDeployLink,
         safe: window.safeUtil,
       };
     },
@@ -2851,6 +2875,31 @@
                     title="관리자 미리보기">관리자 ↗</button>
                 </div>
               </div>
+            </div>
+
+            <!-- NAS 배포 URL(포트/서브도메인/gateway) — 2026-09-06(요청사항) -->
+            <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;margin-top:12px;">
+              <div style="font-size:12px;font-weight:800;color:#1a1a2e;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e5e5ea;">🔗 NAS 배포 URL</div>
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;padding:4px 6px;color:#999;font-weight:600;"></th>
+                    <th v-for="col in DEPLOY_COLS" :key="col.key" style="text-align:center;padding:4px 6px;color:#555;font-weight:700;">{{ col.label }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in DEPLOY_ROWS" :key="row.key">
+                    <td style="padding:4px 6px;color:#666;font-weight:600;white-space:nowrap;">{{ row.label }}</td>
+                    <td v-for="col in DEPLOY_COLS" :key="col.key" style="padding:3px 4px;text-align:center;">
+                      <button type="button" @click="goDeployLink(col.key, row.key)"
+                        :title="DEPLOY_LINKS[col.key][row.key]"
+                        style="width:100%;padding:5px 4px;font-size:11px;font-weight:600;background:#eef6ff;color:#1565c0;border:1px solid #d3e6fb;border-radius:5px;cursor:pointer;transition:all .12s;"
+                        onmouseover="this.style.background='#dbeafe';this.style.borderColor='#93c5fd';"
+                        onmouseout="this.style.background='#eef6ff';this.style.borderColor='#d3e6fb';">열기</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

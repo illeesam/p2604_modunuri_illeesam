@@ -52,13 +52,19 @@
 
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; height: 100%; }
+/* 2026-09-06 버그수정(요청사항: "모바일로 모드로 보는데 디자인이 밀리는 증상 확인되") —
+   .fo-page-banner(아래)의 100vw 풀블리드 트릭이 스크롤바 폭 오차로 실제 뷰포트보다 살짝
+   넓어져 가로 스크롤/레이아웃 밀림을 유발했다. 그 계산을 calc(-50vw + 50%)로 더 안전한
+   공식으로 바꾸는 것과 별개로, html/body 에 overflow-x:hidden 을 안전망으로 걸어둔다 —
+   앞으로 어떤 요소가 실수로 폭을 살짝 넘겨도 가로 스크롤이 아예 생기지 않게(항상 잘림). */
+html { scroll-behavior: smooth; height: 100%; overflow-x: hidden; }
 body {
   background: var(--bg-base);
   color: var(--text-primary);
   font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
   min-height: 100vh;
   height: 100%;
+  overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
 }
 #app { height: 100%; min-height: 100vh; }
@@ -184,7 +190,13 @@ body {
 .btn_kakao:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(254,229,0,.5); }
 .btn_link      { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; }
 .btn_link:hover:not(:disabled)      { background: #dbeafe; border-color: #60a5fa; }
-.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-top: -36px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; width: 100vw; display: flex; align-items: center; justify-content: center; }
+/* 2026-09-06 버그수정 — margin-left/right:-50vw (고정값) 대신 calc(-50vw + 50%) 사용.
+   순수 -50vw 는 이 요소를 감싼 컨테이너 폭과 무관하게 뷰포트 절반만큼만 당기는데,
+   실제 뷰포트 폭(스크롤바 유무 등)과 100vw 계산이 미세하게 어긋나면 이 배너가 실제
+   화면보다 살짝 넓어져 페이지 전체가 가로로 밀리는 원인이 됐다(요청사항: "모바일로
+   모드로 보는데 디자인이 밀리는 증상"). calc(-50vw + 50%) 는 부모 컨테이너의 실제 폭을
+   기준으로 보정해서 그 오차를 없앤다 — 풀블리드(전체폭) 배너의 표준 안전 공식. */
+.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-top: -36px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw; max-width: 100vw; display: flex; align-items: center; justify-content: center; }
 .fo-page-banner-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .fo-page-banner-dim { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(255,255,255,0.72) 0%, rgba(240,245,255,0.55) 45%, rgba(220,232,255,0.38) 100%); }
 .fo-page-banner-body { position: relative; z-index: 1; text-align: center; }
@@ -768,11 +780,11 @@ footer {
 
 /* ── Page padding helper ── */
 .page-wrap { padding: 36px 32px; max-width: 1100px; margin: 0 auto; }
-@media (max-width: 767px) { .page-wrap { padding: 24px 16px; } .fo-page-banner { margin-top: -24px; } }
+@media (max-width: 767px) { .page-wrap { padding: 24px 16px; } .fo-page-banner { margin-top: -24px; left: auto; right: auto; margin-left: -16px; margin-right: -16px; width: auto; max-width: none; } }
 .prod-top-wrap { padding: 0; }
 /* 페이지 타이틀 배너: page-wrap 상단 padding 상쇄 후 full-width */
-.page-banner-full { margin-top: -36px; }
-@media (max-width: 767px) { .page-banner-full { margin-top: -24px; } }
+.page-banner-full { margin-top: -36px; position: relative; left: 50%; right: 50%; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); width: 100vw; max-width: 100vw; }
+@media (max-width: 767px) { .page-banner-full { margin-top: -24px; left: auto; right: auto; margin-left: -16px; margin-right: -16px; width: auto; max-width: none; } .mypage-wrap .page-banner-full { margin-left: -20px; margin-right: -20px; } }
 
 /* ── Section title ── */
 .section-title {
@@ -961,6 +973,17 @@ footer {
 @media (min-width: 1024px) {
   .hidden-sm { display: flex !important; }
   .lg\:hidden { display: none !important; }
+}
+/* 2026-09-06 버그수정(요청사항: "모바일 모드로 보면 fo 화면 이상해... 상단에 버튼들
+   삐져나왔고") — 헤더 우측 아이콘 클러스터(.fo-header-actions, foAppHeader.js)에 반응형
+   숨김이 전혀 없어 모바일 폭에서 아이콘 7~8개가 그대로 다 그려지며 화면 밖으로 넘쳤다.
+   우선순위 낮은 4개(테마토글/링크공유/카카오공유/PDF)는 모바일에서 숨기고, 대신 설정(⚙)
+   드롭다운 안에 같은 기능 항목을 추가해뒀다(foAppHeader.js 참조) — 기능 손실 없음. */
+@media (max-width: 767px) {
+  .fo-header-actions .theme-toggle,
+  .fo-header-actions .btn_link,
+  .fo-header-actions .btn_kakao,
+  .fo-header-actions .btn_pdf { display: none !important; }
 }
 [v-show] { transition: opacity 0.15s ease; }
 

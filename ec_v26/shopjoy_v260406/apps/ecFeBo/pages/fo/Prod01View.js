@@ -1057,13 +1057,17 @@ window.Prod01View = {
               :style="{
               width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
               cursor:'pointer',flexShrink:0,position:'relative',
-              border:uiState.selectedImg===i?'2px solid var(--blue)':'2px solid var(--border)',
+              border:uiState.selectedImg===i?'2px solid var(--text-muted)':'2px solid var(--border)',
               transition:'border-color .15s',
               background:'var(--bg-base)',
               }">
               <img v-if="img.src" :src="img.src" :alt="img.label" style="width:100%;height:100%;object-fit:cover;" />
-              <span v-if="img.isMain" style="position:absolute;top:2px;left:2px;font-size:9px;background:#e8587a;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1;">
-                ★
+              <!-- 2026-09-06(요청사항: "별표아이콘 안이뻐 이쁜아이콘으로 변경") — 유니코드 ★ 글자는
+                   폰트별로 두껍고 위치가 어긋나 보여서, 작은 배지 크기에 딱 맞는 SVG 별 아이콘으로 교체. -->
+              <span v-if="img.isMain" style="position:absolute;top:2px;left:2px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;background:#e8587a;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.25);">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="#fff">
+                  <path d="M12 2.5l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7-5.4-4.7 7.1-.6z"/>
+                </svg>
               </span>
             </div>
           </div>
@@ -1315,11 +1319,19 @@ window.Prod01View = {
       borderTop:'1px solid var(--border)', borderBottom:'1px solid var(--border)',
       marginTop:'24px',
       }">
-  <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:center;">
-    <button v-for="tab in TABS" :key="tab.id" @click="handleSelectAction('tab-go', tab.id)"
+  <!-- 2026-09-06(요청사항: "탭바 벗어나서 일부 숨겨지는데 숨겨지지 않게" + "탭 사이 구분표시") —
+       탭 5개가 좁은 화면 폭을 넘으면 body 의 overflow-x:hidden 때문에 오른쪽 탭이 그냥 잘려
+       보이지 않던 문제. 이 줄 자체를 가로 스크롤 컨테이너로 만들어(overflow-x:auto) 넘치는
+       탭도 스크롤해서 볼 수 있게 하고, 각 버튼 flexShrink:0 으로 눌려찌그러지지 않게 고정.
+       justify-content 도 center→flex-start 로 바꿔 기본 스크롤 위치에서 첫 탭이 항상 온전히
+       보이게 함(center 그대로면 넘칠 때 양쪽 다 잘린 채로 시작해 헷갈림). -->
+  <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+    <template v-for="(tab, idx) in TABS" :key="tab.id">
+      <span v-if="idx > 0" style="width:1px;align-self:center;height:14px;background:var(--border);flex-shrink:0;"></span>
+      <button @click="handleSelectAction('tab-go', tab.id)"
           :style="{
-          padding:'13px 22px',background:'none',cursor:'pointer',
-          border:'none',
+          padding:'13px 18px',background:'none',cursor:'pointer',
+          border:'none',flexShrink:'0',
           borderBottom:uiState.activeTab===tab.id?'2px solid var(--blue)':'2px solid transparent',
           color:uiState.activeTab===tab.id?'var(--blue)':'var(--text-secondary)',
           fontWeight:uiState.activeTab===tab.id?'700':'500',
@@ -1335,6 +1347,7 @@ window.Prod01View = {
     {{ svQnas.length }}
   </span>
 </button>
+    </template>
 </div>
 </div>
 <!-- ===== □.□. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->

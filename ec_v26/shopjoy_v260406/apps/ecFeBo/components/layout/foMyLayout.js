@@ -240,11 +240,14 @@ window.foMyLayout = {
     };
   },
   template: /* html */ `
-<div style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
+<div class="mypage-wrap" style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
 
   <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="position:relative;overflow:hidden;height:220px;margin-bottom:28px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
+  <!-- page-banner-full 클래스가 풀블리드 계산(desktop calc(-50vw+50%) / mobile 고정 px 이탈)을
+       전담(2026-09-06, .fo-page-banner 모바일 오버플로우 버그와 동일 원인 수정) — margin-top 은
+       이 화면 원래 동작(헤더 위로 안 당김)을 유지하려고 0으로 상쇄. -->
+  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-top:0;margin-bottom:28px;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="마이페이지"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
     <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EcAdminApi 운영 도구</title>
+<title>ecBeBo 운영</title>
 <link rel="stylesheet" href="css/log-admin.css">
 </head>
 <body>
@@ -14,8 +14,44 @@
      2026-09-06: 로그인 없이 바로 사용(요청사항: "인증없이 누구나 보는거야") — SecurityConfig 가
      /api/co/** 및 정적 리소스(/, /*.html, /css/**, /js/**)를 permitAll 로 열어둠. -->
 <div id="app">
-  <div class="shell-header">
-    <div class="brand">🛠️ EcAdminApi 운영 도구<span class="sub">로그뷰어 등</span></div>
+  <div class="shell-header" style="position:relative;">
+    <div class="brand">🛠️ ecBeBo 운영<span class="sub">로그뷰어 등</span></div>
+    <!-- 2026-09-06(요청사항: "ecBeBo, ecBeCdn 에서도 바로가기 링크 연결해줘" — FO/BO 의
+         "메뉴 바로가기"/"연관사이트" 팝업에 추가한 NAS 배포 URL 표(포트/서브도메인/gateway)를
+         이 운영 도구에도 동일하게 노출). -->
+    <button type="button" @click="deployLinksOpen = !deployLinksOpen"
+      style="margin-left:auto;padding:6px 12px;font-size:12px;font-weight:600;background:#eef6ff;color:#1565c0;border:1px solid #d3e6fb;border-radius:6px;cursor:pointer;">
+      🔗 배포 URL
+    </button>
+    <div v-if="deployLinksOpen" @click.self="deployLinksOpen = false"
+      style="position:fixed;inset:0;z-index:998;background:rgba(0,0,0,0.25);"></div>
+    <div v-if="deployLinksOpen"
+      style="position:absolute;right:0;top:calc(100% + 8px);z-index:999;width:420px;max-width:90vw;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,0.18);padding:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #eee;">
+        <span style="font-weight:800;font-size:13px;color:#1a1a2e;">🔗 NAS 배포 URL</span>
+        <button @click="deployLinksOpen = false" style="background:none;border:none;font-size:13px;color:#888;cursor:pointer;">✕</button>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:4px 6px;color:#999;font-weight:600;"></th>
+            <th v-for="col in DEPLOY_COLS" :key="col.key" style="text-align:center;padding:4px 6px;color:#555;font-weight:700;">{{ col.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in DEPLOY_ROWS" :key="row.key">
+            <td style="padding:4px 6px;color:#666;font-weight:600;white-space:nowrap;">{{ row.label }}</td>
+            <td v-for="col in DEPLOY_COLS" :key="col.key" style="padding:3px 4px;text-align:center;">
+              <button type="button" @click="window.open(DEPLOY_LINKS[col.key][row.key], '_blank')"
+                :title="DEPLOY_LINKS[col.key][row.key]"
+                style="width:100%;padding:5px 4px;font-size:11px;font-weight:600;background:#eef6ff;color:#1565c0;border:1px solid #d3e6fb;border-radius:5px;cursor:pointer;">
+                열기
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="shell-sidebar">
     <div class="menu-group-label">운영</div>
@@ -47,8 +83,26 @@ const initialPage = new URLSearchParams(location.search).get('page');
 const VALID_PAGES = ['logViewer'];
 const PAGE_LABELS = { logViewer: '🪵 로그뷰어' };
 
+// 2026-09-06(요청사항: "ecBeBo, ecBeCdn 에서도 바로가기 링크 연결해줘") — FO/BO 쪽과 동일한
+// NAS 배포 URL 표(포트/서브도메인/gateway). URL 은 전부 실측 확인(curl 200) 완료.
+const NAS_HOST = 'illeesam.synology.me';
+const DEPLOY_LINKS = {
+  fo:      { port: `http://${NAS_HOST}:22000/index.html`,          sub: `https://22000.${NAS_HOST}/index.html`,          gw: `http://${NAS_HOST}:22099/index.html` },
+  bo:      { port: `http://${NAS_HOST}:22000/bo.html`,             sub: `https://22000.${NAS_HOST}/bo.html`,             gw: `http://${NAS_HOST}:22099/bo.html` },
+  ecBeBo:  { port: `http://${NAS_HOST}:22300/home/index.html`,     sub: `https://22300.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/admin-tools/index.html` },
+  ecBeCdn: { port: `http://${NAS_HOST}:22400/home/index.html`,     sub: `https://22400.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/cdn-admin/index.html` },
+};
+const DEPLOY_COLS = [
+  { key: 'fo', label: 'FO' }, { key: 'bo', label: 'BO' },
+  { key: 'ecBeBo', label: 'ecBeBo' }, { key: 'ecBeCdn', label: 'ecBeCdn' },
+];
+const DEPLOY_ROWS = [
+  { key: 'port', label: '포트' }, { key: 'sub', label: '서브도메인' }, { key: 'gw', label: 'gateway' },
+];
+
 const app = createApp({
   setup() {
+    const deployLinksOpen = ref(false);
     const startPage = VALID_PAGES.includes(initialPage) ? initialPage : 'logViewer';
     const currentPage = ref(startPage);
     // 열린 탭바(요청사항) — 방문한 화면을 탭으로 유지.
@@ -72,7 +126,7 @@ const app = createApp({
       const nextTab = openTabs[idx] || openTabs[idx - 1];
       navigate(nextTab.id);
     };
-    return { currentPage, openTabs, navigate, onCloseTab };
+    return { currentPage, openTabs, navigate, onCloseTab, deployLinksOpen, DEPLOY_LINKS, DEPLOY_COLS, DEPLOY_ROWS };
   },
 });
 // BoLite.js(경량 로컬 포트) — 메인 프로젝트 bo-grid/bo-page/bo-container 의 columns 속성화

@@ -80,6 +80,31 @@ window.foAppHeader = {
       }
     };
     const hideShareTip = () => { shareTip.kind = null; };
+
+    /* devTip — "(개발) 값적용" [1][2][3] 버튼에 마우스오버 시 그 프리셋에 실제로 뭐가
+       들어있는지 "항목명:항목값" 목록으로 보여주는 레이어(요청사항: "번호에 마우스 오버하면
+       설정된 항목명:항목값 정보 보여줘"). null = 안 보임, 1~3 = 그 프리셋 번호.
+       2026-09-06 버그수정(요청사항: "값적용 이 가려보이네") — 이 드롭다운(설정⚙) 자체가
+       둥근 모서리를 위해 overflow:hidden 인데, 처음엔 이 툴팁을 버튼의 부모(그 dropdown
+       내부) 기준 position:absolute 로 띄웠더니 dropdown 박스 밖으로 나가는 부분이 그대로
+       잘려서 보였다. <Teleport to="body"> 로 완전히 밖에 그리고, position:fixed + 버튼의
+       실제 화면 좌표(getBoundingClientRect)로 위치를 계산해서 잘림 없이 보이게 한다. */
+    const devTip = ref(null);
+    const devTipPos = reactive({ top: 0, left: 0 });
+    const DEV_FIELD_LABELS = { name: '이름', tel: '연락처', email: '이메일', postcode: '우편번호', address: '주소', addressDetail: '상세주소' };
+    const fnDevPresetEntries = (n) => {
+      const preset = coUtil.cofDevTestPresets[(n || 1) - 1] || {};
+      return Object.keys(DEV_FIELD_LABELS)
+        .filter((k) => preset[k] != null && preset[k] !== '')
+        .map((k) => ({ label: DEV_FIELD_LABELS[k], value: preset[k] }));
+    };
+    const showDevTip = (n, evt) => {
+      const r = evt.currentTarget.getBoundingClientRect();
+      devTipPos.top = r.top;                       // 버튼 위쪽에 붙이고 CSS translateY(-100%)로 뒤집어 올림
+      devTipPos.left = Math.min(Math.max(r.left + r.width / 2, 130), window.innerWidth - 130); // 화면 좌우 밖으로 안 나가게 clamp
+      devTip.value = n;
+    };
+    const hideDevTip = () => { devTip.value = null; };
     const handleExportPdf = async () => {
       pdfExporting.value = true;
       try {
@@ -127,6 +152,9 @@ window.foAppHeader = {
       // 현재 화면 PDF 다운로드
       } else if (cmd === 'settings-export-pdf') {
         return handleExportPdf();
+      // (개발) 값적용 — 전역 이벤트로 현재 화면 폼에 프리셋 값 채우기(coUtil.js 참조)
+      } else if (cmd === 'dev-apply-values') {
+        return coUtil.cofDispatchDevAutofill(param);
       // 사용자 메뉴 드롭다운 토글
       } else if (cmd === 'userMenu-toggle') {
         return toggleUserMenu();
@@ -338,6 +366,7 @@ window.foAppHeader = {
       handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch
       pdfExporting, cfCompareCount,                                        // 링크/카카오공유/PDF (설정 드롭다운) / 상품비교 개수
       shareTip, showShareTip, hideShareTip,                                // 공유 아이콘 호버 시 실제 전달값 미리보기 레이어
+      devTip, devTipPos, fnDevPresetEntries, showDevTip, hideDevTip,        // (개발) 값적용 버튼 호버 시 프리셋 내용 미리보기(Teleport)
       pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
       cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu, fnIsLoaded,        // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
@@ -442,7 +471,13 @@ window.foAppHeader = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 우측: 로그인/유저 → 테마 순 ======================================= -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+  <!-- 2026-09-06 버그수정(요청사항: "모바일 모드로 보면 fo 화면 이상해... 상단에 버튼들
+       삐져나왔고") — 이 클러스터에 hidden-sm/lg:hidden 류 반응형 처리가 전혀 없어서 모바일
+       폭에서 아이콘 7~8개가 한 줄에 그대로 다 그려지며 화면 밖으로 넘쳤다. 그중 우선순위가
+       낮은 4개(테마토글/링크공유/카카오공유/PDF)는 .fo-header-actions 스코프로 모바일에서만
+       숨기고(fo-global-style0N.css @media max-width:767px), 대신 아래 설정(⚙) 드롭다운
+       안에 항목으로 추가해서 기능 자체는 그대로 유지한다. -->
+  <div class="fo-header-actions" style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
 
     <!-- ===== ■.■. 🔔 알림 종 (회원에게 온 알림 + 오류정보 누적) — 로그인 시에만 ==== -->
     <co-noti-bell v-if="cfIsLogin" ctx="fo" :navigate="navigate" />
@@ -585,6 +620,70 @@ window.foAppHeader = {
           <span>API 토스트 출력</span>
           <span style="margin-left:auto;font-size:10px;border-radius:8px;padding:1px 6px;font-weight:700;" :style="appApiToast?'background:var(--accent,#c9a96e);color:#fff;':'background:#e8e8e8;color:#888;'">{{ appApiToast ? 'ON' : 'OFF' }}</span>
         </button>
+        <!-- 2026-09-06(요청사항: "링크공유 pdf 저장 이런거로 인해 디자인 부자연스러우면 설정
+             안으로 넣어도 돼") — 모바일에서 숨긴 테마토글/링크공유/카카오공유/PDF 를 여기서도
+             그대로 실행 가능하게 함(데스크탑에서는 상단 아이콘과 중복되지만 무해). -->
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <button @click="handleBtnAction('theme-toggle')"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background='transparent'">
+          <span style="font-size:13px;">{{ theme==='light' ? '🌙' : '☀️' }}</span>
+          <span>{{ theme==='light' ? '다크 모드로 전환' : '라이트 모드로 전환' }}</span>
+        </button>
+        <!-- 2026-09-06(요청사항: "링크공유하기 상단에 구분선 넣어주고") -->
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <button @click="handleBtnAction('settings-copy-link')"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background='transparent'">
+          <span style="font-size:13px;">🔗</span>
+          <span>링크 공유(URL 복사)</span>
+        </button>
+        <button @click="handleBtnAction('settings-share-kakao')"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background='transparent'">
+          <span style="font-size:13px;">💬</span>
+          <span>카카오톡 공유</span>
+        </button>
+        <button @click="handleBtnAction('settings-export-pdf')" :disabled="pdfExporting"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background='transparent'">
+          <span style="font-size:13px;">{{ pdfExporting ? '⏳' : '📄' }}</span>
+          <span>PDF 다운로드</span>
+        </button>
+        <!-- 2026-09-06(요청사항: "제일 아래에 구분선 놓고 아래에 (개발) 값적용 [1][2][3] 버튼
+             추가해줘 / 이름 연락처 이메일 주소 등은 기본적으로 적용되게 해줘 / 화면마다
+             값적용 편하게 할거야 / 문의상담의 경우도 마찬가지지 / 번호에 마우스 오버하면
+             설정된 항목명:항목값 정보 보여줘") — 클릭하면 전역 'fo-dev-autofill' 이벤트를
+             쏘고(coUtil.cofDispatchDevAutofill), 주문서(Order.js)·문의상담(Contact.js) 등
+             폼이 있는 화면이 각자 구독해서 자기 폼 필드(name/tel/email/postcode/address/
+             addressDetail)를 채운다 — 헤더는 화면별 폼 구조를 몰라도 됨.
+             ⚠ 프리셋에 실제 개인정보(coUtil.js 참조)가 들어있어 운영(prod)에서는 이 UI 자체를
+             숨긴다(cfFoActive!=='prod') — 로그인 없이도 보이는 공개 헤더라 운영 노출은 막아야 함. -->
+        <template v-if="cfFoActive !== 'prod'">
+          <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+          <div style="padding:8px 14px 4px;font-size:11px;color:var(--text-muted);font-weight:700;">(개발) 값적용</div>
+          <div style="display:flex;gap:6px;padding:2px 14px 10px;">
+            <button v-for="n in [1,2,3]" :key="n" type="button" @click="handleBtnAction('dev-apply-values', n)"
+              @mouseenter="showDevTip(n, $event)" @mouseleave="hideDevTip"
+              style="flex:1;padding:6px 0;border:1.5px solid var(--border);border-radius:6px;background:var(--bg-base);color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:700;transition:all 0.15s;"
+              :style="devTip===n?'border-color:var(--blue);color:var(--blue);':''">
+              {{ n }}
+            </button>
+          </div>
+        </template>
+        <!-- devTip 미리보기 레이어는 이 dropdown(overflow:hidden) 밖으로 Teleport — 안에 두면
+             둥근 모서리 클리핑에 잘려서 잘 안 보였다(요청사항: "값적용 이 가려보이네"). -->
+        <Teleport to="body">
+          <div v-if="devTip"
+            :style="{ position:'fixed', top: devTipPos.top+'px', left: devTipPos.left+'px', transform:'translate(-50%,-100%) translateY(-6px)' }"
+            style="z-index:9999;min-width:220px;max-width:280px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);box-shadow:0 6px 20px rgba(0,0,0,0.14);font-size:12px;line-height:1.7;color:var(--text-secondary);text-align:left;white-space:normal;pointer-events:none;">
+            <div v-for="f in fnDevPresetEntries(devTip)" :key="f.label" style="word-break:break-all;"><b style="color:var(--text-primary);">{{ f.label }}</b>: {{ f.value }}</div>
+          </div>
+        </Teleport>
       </div>
     </div>
 

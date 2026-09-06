@@ -8,7 +8,7 @@ window.Order = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
     const cart                 = window.foApp.cart;  // 장바구니 목록
@@ -285,11 +285,26 @@ window.Order = {
       } finally { uiState.submitting = false; }
     };
 
+    /* handleDevAutofill — (요청사항: "화면마다 값적용 편하게 할거야") 헤더 설정(⚙) 드롭다운의
+       "(개발) 값적용 [1][2][3]" 클릭 시 전역으로 오는 fo-dev-autofill 이벤트를 받아 주문자
+       정보(이름/연락처/이메일/주소)를 채운다 — coUtil.cofDispatchDevAutofill() 참조. */
+    const handleDevAutofill = (e) => {
+      const d = e.detail || {};
+      if (d.name != null) form.name = d.name;
+      if (d.tel != null) form.tel = d.tel;
+      if (d.email != null) form.email = d.email;
+      if (d.postcode != null) form.postcode = d.postcode;
+      if (d.address != null) form.address = d.address;
+      if (d.addressDetail != null) form.addressDetail = d.addressDetail;
+    };
+
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
       handleSearchData();
+      window.addEventListener('fo-dev-autofill', handleDevAutofill);
     };
     onMounted(initPage);
+    onBeforeUnmount(() => window.removeEventListener('fo-dev-autofill', handleDevAutofill));
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

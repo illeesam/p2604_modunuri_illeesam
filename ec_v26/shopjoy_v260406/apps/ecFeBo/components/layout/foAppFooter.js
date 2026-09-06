@@ -268,15 +268,7 @@ window.foAppFooter = {
 
     /* goItem — 이동 */
     const goItem = (root, target) => {
-      if (root === 'foOffice') {
-        /* FO 라우팅은 쿼리스트링 기반(?page=) 이다(2026-08-22, 검색엔진 색인용 — 해시(#)는
-           서버로 전송되지 않아 상품/이벤트별로 별도 URL 취급을 못 받는다) */
-        window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '?page=' + target : '');
-        if (target && typeof window.navigate === 'function') { window.navigate(target); }
-      } else if (root === 'boOffice') {
-        /* BO 라우팅도 쿼리스트링 기반(?page=)이다(2026-08-22 해시(#)에서 전환) */
-        window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '?page=' + target : ''), '_blank');
-      } else if (root === 'dispFoUi') {
+      if (root === 'dispFoUi') {
         window.open((window.pageUrl ? window.pageUrl('fo-disp-ui-pop.html') : 'fo-disp-ui-pop.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispBoUi') {
         window.open((window.pageUrl ? window.pageUrl('bo-disp-ui-pop.html') : 'bo-disp-ui-pop.html') + (target ? '#page=' + target : ''), '_blank');
@@ -304,35 +296,6 @@ window.foAppFooter = {
     const currentFoSiteNo  = window.FO_SITE_NO || '01';
     const currentBoSiteNo = '01'; /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
 
-    const FO_MENU = [
-      { id:'home',       label:'홈',         icon:'🏠' },
-      { id:'prodList', label:'상품목록',    icon:'🛍' },
-      { id:'cart',       label:'장바구니',    icon:'🛒' },
-      { id:'order',      label:'주문하기',    icon:'📋' },
-      { id:'like',       label:'찜 목록',     icon:'💝' },
-      { id:'event',      label:'이벤트',      icon:'🎉' },
-      { id:'blog',       label:'블로그',      icon:'📝' },
-      { id:'faq',        label:'FAQ',        icon:'❓' },
-      { id:'contact',    label:'고객센터',    icon:'📞' },
-      { id:'location',   label:'위치안내',    icon:'📍' },
-      { id:'about',      label:'회사소개',    icon:'ℹ' },
-      { id:'myOrder',    label:'마이 - 주문',  icon:'📦' },
-      { id:'myCoupon',   label:'마이 - 쿠폰',  icon:'🎟' },
-      { id:'myCache',    label:'마이 - 캐시',  icon:'💰' },
-      { id:'myContact',  label:'마이 - 문의',  icon:'💬' },
-    ];
-    const BO_MENU = [
-      { id:'dashboard',           label:'대시보드',         icon:'📊' },
-      { id:'ecMemberMng',         label:'회원관리',         icon:'👥' },
-      { id:'ecProdMng',           label:'상품관리',         icon:'📦' },
-      { id:'ecOrderMng',          label:'주문관리',         icon:'📋' },
-      { id:'ecDispUiMng',         label:'전시UI관리',       icon:'🎨' },
-      { id:'ecDispAreaMng',       label:'전시영역관리',     icon:'🗂' },
-      { id:'ecDispPanelMng',      label:'전시패널관리',     icon:'🪟' },
-      { id:'ecDispWidgetMng',     label:'전시위젯관리',     icon:'🧩' },
-      { id:'ecDispWidgetLibMng',  label:'전시위젯Lib',      icon:'📚' },
-      { id:'ecDispUiSimul',       label:'전시UI시뮬레이션', icon:'🖼' },
-    ];
     const DISP_MENU = [
       { id:'dispUiPage', label:'통합 페이지',  icon:'🌐' },
       { id:'dispUi01',   label:'UI 샘플 01',  icon:'1️⃣' },
@@ -356,13 +319,41 @@ window.foAppFooter = {
       { fo:'03',   bo:'03',   siteId: toSiteId('03')   },
       { fo:'9999', bo:'9999', siteId: toSiteId('9999') },
     ];
+
+    /* 2026-09-06(요청사항: "하단별도란에 시놀로지에 배포된 ecBeBo, ecBeCdn 도 링크 추가해줘 —
+       포트방식/서브도메인방식/gateway방식") — NAS 배포 완료된 4개 앱(FO/BO/ecBeBo/ecBeCdn)을
+       접속방식 3가지(포트/서브도메인/gateway)로 한 표에서 바로 열어볼 수 있게 한다.
+       실제 URL은 전부 실측 확인(curl 200) 완료 — apps/scripts_testUrl/test-urls.data.js 의
+       URL 목록과 동일 기준. */
+    const NAS_HOST = 'illeesam.synology.me';
+    const DEPLOY_LINKS = {
+      fo:      { port: `http://${NAS_HOST}:22000/index.html`,          sub: `https://22000.${NAS_HOST}/index.html`,          gw: `http://${NAS_HOST}:22099/index.html` },
+      bo:      { port: `http://${NAS_HOST}:22000/bo.html`,             sub: `https://22000.${NAS_HOST}/bo.html`,             gw: `http://${NAS_HOST}:22099/bo.html` },
+      ecBeBo:  { port: `http://${NAS_HOST}:22300/home/index.html`,     sub: `https://22300.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/admin-tools/index.html` },
+      ecBeCdn: { port: `http://${NAS_HOST}:22400/home/index.html`,     sub: `https://22400.${NAS_HOST}/home/index.html`,     gw: `http://${NAS_HOST}:22099/cdn-admin/index.html` },
+    };
+    const DEPLOY_COLS = [
+      { key: 'fo',      label: 'FO' },
+      { key: 'bo',      label: 'BO' },
+      { key: 'ecBeBo',  label: 'ecBeBo' },
+      { key: 'ecBeCdn', label: 'ecBeCdn' },
+    ];
+    const DEPLOY_ROWS = [
+      { key: 'port', label: '포트' },
+      { key: 'sub',  label: '서브도메인' },
+      { key: 'gw',   label: 'gateway' },
+    ];
+    /* goDeployLink — 접속방식 표 버튼 클릭 시 새창으로 오픈 */
+    const goDeployLink = (colKey, rowKey) => { window.open(DEPLOY_LINKS[colKey][rowKey], '_blank'); };
+
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes,                                                       // 상태
       handleBtnAction, handleSelectAction,                                  // dispatch
       currentFoSiteNo, currentBoSiteNo,                                     // 사이트번호
-      FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU,               // 메뉴 정의
+      DISP_MENU, SITE_MENU, SITE_PAIR_MENU,                                 // 메뉴 정의
+      DEPLOY_LINKS, DEPLOY_COLS, DEPLOY_ROWS, goDeployLink,                 // NAS 배포 URL 표
       chatState, chatInputRef, onChatKeydown, fnChatParticipants,            // 채팅
     };
   },
@@ -423,8 +414,12 @@ window.foAppFooter = {
         style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9998;backdrop-filter:blur(2px);"
         @click="handleBtnAction('linksModal-close')">
       </div>
+      <!-- 2026-09-06(요청사항: "정보 2번이미지정도만 있으면 되") — foOffice/boOffice 메뉴
+           목록 2열은 제거(각각 헤더 햄버거/BO 사이드바로 이미 갈 수 있어 중복) — _SITE_NO +
+           dispUi 샘플 + NAS 배포 URL 표만 남기는 단일 컬럼 레이아웃으로 축소, 그만큼 모달 폭도
+           줄임(920px → 460px). -->
       <div v-if="uiState.menuOpen"
-        style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.28);width:920px;max-width:95vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #ffe4ec;"
+        style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.28);width:460px;max-width:95vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #ffe4ec;"
         @click.stop>
         <!-- ===== ■.■.■.■. 헤더 ================================================ -->
         <div style="padding:14px 18px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);display:flex;align-items:center;justify-content:space-between;">
@@ -441,50 +436,8 @@ window.foAppFooter = {
             ✕
           </button>
         </div>
-        <!-- ===== ■.■.■.■. 3열 본문 ============================================= -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:18px;overflow:auto;">
-          <!-- ===== ■.■.■.■.■. foOffice ======================================== -->
-          <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">
-              🛍 foOffice
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
-            <div style="display:flex;flex-direction:column;gap:2px;">
-              <button v-for="m in FO_MENU" :key="m.id" type="button"
-                @click="handleSelectAction('linksModal-go-item', { root: 'foOffice', target: m.id })"
-                style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
-                onmouseover="this.style.background='#fff5f8';this.style.color='#e8587a';"
-                onmouseout="this.style.background='transparent';this.style.color='#333';">
-                <span style="font-size:14px;width:18px;text-align:center;">
-                  {{ m.icon }}
-                </span>
-                <span>
-                  {{ m.label }}
-                </span>
-              </button>
-            </div>
-          </div>
-          <!-- ===== ■.■.■.■.■. boOffice ======================================== -->
-          <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">
-              🔧 boOffice
-            </div>
-            <div style="display:flex;flex-direction:column;gap:2px;">
-              <button v-for="m in BO_MENU" :key="m.id" type="button"
-                @click="handleSelectAction('linksModal-go-item', { root: 'boOffice', target: m.id })"
-                style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
-                onmouseover="this.style.background='#f7f0fa';this.style.color='#7b1fa2';"
-                onmouseout="this.style.background='transparent';this.style.color='#333';">
-                <span style="font-size:14px;width:18px;text-align:center;">
-                  {{ m.icon }}
-                </span>
-                <span>
-                  {{ m.label }}
-                </span>
-              </button>
-            </div>
-          </div>
-          <!-- ===== ■.■.■.■.■. 나머지: FO 사이트번호 + dispUi ========================== -->
+        <!-- ===== ■.■.■.■. 단일 컬럼 본문(_SITE_NO + dispUi + 배포 URL) ================= -->
+        <div style="display:grid;grid-template-columns:1fr;gap:14px;padding:18px;overflow:auto;">
           <div style="display:flex;flex-direction:column;gap:14px;">
             <!-- ===== ■.■.■.■.■.■. _SITE_NO (FO / BO 분리 링크) ====================== -->
             <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
@@ -498,10 +451,12 @@ window.foAppFooter = {
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. site_id 표시 ============================== -->
-                  <span :style="{flexShrink:0,minWidth:'112px',fontSize:'11px',fontFamily:'monospace',fontWeight:700,color: (currentFoSiteNo===p.fo||currentBoSiteNo===p.bo)?'#2e7d6b':'#999'}"
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. site_id 표시(2026-09-06: 모바일 폭에서 밀림 방지 —
+                       요청사항: "옆으로 넘어가는데 site_id 정보를 줄여줘" — "site_id=SITE000001"
+                       처럼 풀 텍스트 대신 "SITE" 접두어를 뗀 번호만 짧게, 전체 값은 title 툴팁으로) -->
+                  <span :style="{flexShrink:0,minWidth:'40px',fontSize:'11px',fontFamily:'monospace',fontWeight:700,color: (currentFoSiteNo===p.fo||currentBoSiteNo===p.bo)?'#2e7d6b':'#999'}"
                     :title="'적용 site_id: '+p.siteId">
-                    site_id={{ p.siteId }}
+                    #{{ p.siteId.replace('SITE','') }}
                   </span>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. FO 링크 =================================== -->
                   <button type="button" @click="handleSelectAction('linksModal-go-item', { root: 'foOnly', target: p.fo })"
@@ -564,6 +519,43 @@ window.foAppFooter = {
                   </button>
                 </div>
               </div>
+            </div>
+            <!-- ===== ■.■.■.■.■.■. NAS 배포 URL(포트/서브도메인/gateway) ================== -->
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
+            <!-- 2026-09-06(요청사항: "하단별도란에 시놀로지에 배포된 ecBeBo, ecBeCdn 도 링크
+                 추가해줘 — 포트방식, 서브도메인방식, gateway 방식 ... 마우스오버하면 url
+                 정보 보여주고") — 각 셀 title 속성이 hover 시 브라우저 기본 툴팁으로 실제
+                 URL을 보여준다. -->
+            <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
+              <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e5e5ea;">
+                🔗 NAS 배포 URL
+              </div>
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;padding:4px 6px;color:#999;font-weight:600;"></th>
+                    <th v-for="col in DEPLOY_COLS" :key="col.key" style="text-align:center;padding:4px 6px;color:#555;font-weight:700;">
+                      {{ col.label }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in DEPLOY_ROWS" :key="row.key">
+                    <td style="padding:4px 6px;color:#666;font-weight:600;white-space:nowrap;">
+                      {{ row.label }}
+                    </td>
+                    <td v-for="col in DEPLOY_COLS" :key="col.key" style="padding:3px 4px;text-align:center;">
+                      <button type="button" @click="goDeployLink(col.key, row.key)"
+                        :title="DEPLOY_LINKS[col.key][row.key]"
+                        style="width:100%;padding:5px 4px;font-size:11px;font-weight:600;background:#eef6ff;color:#1565c0;border:1px solid #d3e6fb;border-radius:5px;cursor:pointer;transition:all .12s;"
+                        onmouseover="this.style.background='#dbeafe';this.style.borderColor='#93c5fd';"
+                        onmouseout="this.style.background='#eef6ff';this.style.borderColor='#d3e6fb';">
+                        열기
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
