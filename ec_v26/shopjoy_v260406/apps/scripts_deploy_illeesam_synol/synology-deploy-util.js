@@ -3,7 +3,8 @@
  * 두 스크립트가 똑같은 접속 로직을 중복해서 들고 있지 않게 한다(직접 실행 대상 아님).
  *
  * NAS 접속정보는 scripts/.synology-deploy.env 파일(git 커밋 금지, .gitignore 처리됨)에서 읽는다.
- * 아직 없으면 아래 형식으로 scripts/.synology-deploy.env 를 직접 만들 것:
+ * 아직 없으면 같은 폴더의 .synology-deploy.env.example(플레이스홀더만 있는 공개 템플릿 — git
+ * 커밋 대상) 을 복사해서 .synology-deploy.env 로 만들고 실제 값을 채울 것:
  *   SYNOLOGY_HOST=illeesam.synology.me
  *   SYNOLOGY_PORT=10022
  *   SYNOLOGY_USER=appuser
