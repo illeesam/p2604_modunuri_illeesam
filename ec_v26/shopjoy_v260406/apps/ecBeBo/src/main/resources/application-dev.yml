@@ -8,10 +8,14 @@ spring:
 
   datasource:
     # DB_HOST=illeesam.synology.me | DB_PORT=17632 | DB_NAME=postgres | DB_SCHEMA=shopjoy_2604
-    # DB_USERNAME=postgres | DB_PASSWORD=(환경변수 필수)
+    # DB_USERNAME=postgres
+    # 2026-09-06(정책 준수: base.설정값암호화.md) — password 는 이제 평문 환경변수(DB_PASSWORD)가
+    # 아니라 Jasypt ENC(...) 값이다. 실행 시 JASYPT_ENCRYPTOR_PASSWORD(마스터키) 환경변수만
+    # 넘기면 Spring Boot 부팅 시 자동 복호화된다. 값 재생성/확인은
+    # apps/scripts_funcs/crypto/(npm run encrypt/decrypt) 참조.
     url: jdbc:p6spy:postgresql://${DB_HOST:illeesam.synology.me}:${DB_PORT:17632}/${DB_NAME:postgres}?currentSchema=${DB_SCHEMA:shopjoy_2604}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD}
+    password: ENC(AQkiKj/APEfU1zT7zSaO9HPJ+4XJO0uq9s8F7hWygavQs20pc+T/vlfxVcvQxJ6EvGgT6umnYY2l7jOXwTo49g==)
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
     hikari:
       maximum-pool-size: 10

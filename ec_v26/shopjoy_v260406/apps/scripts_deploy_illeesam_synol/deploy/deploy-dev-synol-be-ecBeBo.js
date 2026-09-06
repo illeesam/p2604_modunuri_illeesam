@@ -24,6 +24,10 @@ const DOCKER = '/usr/local/bin/docker';
 // 분류") — 컨테이너 실행 폴더는 apps/ 아래, 로그는 logs/ 아래로 이동.
 const REMOTE_BE_DIR = '/volume1/docker/shopjoy/apps/ecBeBo';
 const REMOTE_BE_LOGS_DIR = '/volume1/docker/shopjoy/logs/ecBeBoLogs';
+// 2026-09-06 버그수정 — "각 앱의 .env 파일을 env/로 모음" 재구조화 때 이 프로파일-확인 단계를
+// 놓쳐서, .env 가 이미 env/ecBeBo.env 로 옮겨간 뒤에도 계속 옛 경로(REMOTE_BE_DIR/.env)를
+// 봐서 매번 "SPRING_PROFILES_ACTIVE 미설정" 경고가 떴다(실측 확인).
+const REMOTE_BE_ENV_FILE = '/volume1/docker/shopjoy/env/ecBeBo.env';
 const PUBLIC_HOST = 'illeesam.synology.me';
 const PUBLIC_PORT = 22300;
 // 2026-09-06: ecGateway(22099, 테스트 전용) 경유 예시도 같이 보여준다(요청사항: "각로그에는
@@ -140,8 +144,8 @@ function fmtElapsed() {
           // 2026-09-06: 이 스크립트는 jar만 올리고 .env 는 건드리지 않는다 — 즉 컨테이너가
           // 실제로 어떤 Spring 프로파일(local/dev/prod)로 뜨는지는 NAS에 이미 있는 .env 가
           // 결정한다. 매 배포마다 지금 그 값이 뭔지 콘솔에서 바로 보이게 확인만 해둔다.
-          label: '적용 중인 Spring 프로파일 확인 (.env 의 SPRING_PROFILES_ACTIVE)',
-          cmd: `grep '^SPRING_PROFILES_ACTIVE=' ${REMOTE_BE_DIR}/.env || echo '  ⚠ SPRING_PROFILES_ACTIVE 미설정 — ${REMOTE_BE_DIR}/.env 확인 필요'`,
+          label: '적용 중인 Spring 프로파일 확인 (env/ecBeBo.env 의 SPRING_PROFILES_ACTIVE)',
+          cmd: `grep '^SPRING_PROFILES_ACTIVE=' ${REMOTE_BE_ENV_FILE} || echo '  ⚠ SPRING_PROFILES_ACTIVE 미설정 — ${REMOTE_BE_ENV_FILE} 확인 필요'`,
           allowFail: true,
         },
         { label: 'Docker 이미지 재빌드', cmd: `cd ${REMOTE_BE_DIR} && ${DOCKER} compose build` },
@@ -216,7 +220,7 @@ function fmtElapsed() {
       { label: '설치 경로', value: REMOTE_BE_DIR },
       { label: '컨테이너명', value: 'shopjoy-ecBeBo-22300 (docker compose 서비스명: ecbebo, 이미지: shopjoy/ecbebo:latest)' },
       { label: 'Docker 네트워크', value: '완전 분리 설계(2026-09-06) — 다른 컨테이너와 네트워크 비공유, 단독 기동' },
-      { label: '활성 프로파일', value: `${REMOTE_BE_DIR}/.env 의 SPRING_PROFILES_ACTIVE 값 (위 로그 참조)` },
+      { label: '활성 프로파일', value: `${REMOTE_BE_ENV_FILE} 의 SPRING_PROFILES_ACTIVE 값 (위 로그 참조)` },
       { label: 'DB 접속', value: 'illeesam.synology.me:17632 / shopjoy_2604 (PostgreSQL, p6spy 경유)' },
       { label: '로그 경로', value: `${REMOTE_BE_LOGS_DIR} → 컨테이너 내부 logs` },
     ];
