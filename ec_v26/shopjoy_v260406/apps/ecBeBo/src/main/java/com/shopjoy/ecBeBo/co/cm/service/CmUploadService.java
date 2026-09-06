@@ -9,12 +9,15 @@ import com.shopjoy.ecBeBo.common.util.FileUploadUtil;
 import com.shopjoy.ecBeBo.common.util.VideoConvertUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnailator;
+import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.filters.ImageFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,6 +40,19 @@ public class CmUploadService {
     private final com.shopjoy.ecBeBo.base.sy.repository.SyPropRepository syPropRepository;
     private final org.springframework.core.env.Environment environment;
     private final CfCdnApiClient cfCdnApiClient;
+
+    /* 2026-09-06(요청사항: "썸네일이미지 치고 일반적으로 선명하게하는 옵션으로") — EcBeCdn 의
+     * CfThumbnailService 와 동일한 표준 언샤프닝(3x3 sharpen convolution) — 이 클래스는
+     * storage-type=LOCAL 일 때만 실제로 쓰인다(CDN 이면 위 uploadMulti() 가 EcBeCdn 으로
+     * 위임해서 그쪽 로직을 탄다). 실사용 여부와 무관하게 동일 품질을 보장하려고 맞춰둔다. */
+    private static final ImageFilter SHARPEN = img -> {
+        float[] kernel = {
+             0f, -1f,  0f,
+            -1f,  5f, -1f,
+             0f, -1f,  0f,
+        };
+        return new ConvolveOp(new Kernel(3, 3, kernel), ConvolveOp.EDGE_NO_OP, null).filter(img, null);
+    };
 
     /* yml 기본값은 sy_prop 조회가 실패했을 때만 쓰는 최후 폴백이다.
        실제 값은 sy_prop(app.file.cdn-host) 의 활성 프로파일 행에서 읽는다 — fnCdnHost() 참조. */
@@ -118,7 +134,7 @@ public class CmUploadService {
             Files.createDirectories(Paths.get(folderPath));
 
             String originalName = file.getOriginalFilename();
-            String ext = fileUploadUtil.getFileExtension(originalName);
+            String ext = fileUploadUtil.getFileExtension(originalName).toLowerCase(); // 2026-09-06: 확장자 대소문자 정규화(getFileExtension 자체는 원문 보존이라 저장/파일명 생성 직전엔 소문자로 통일 필요)
             String savedName = fileUploadUtil.generateFileName(ext, 1);
             String filePath = folderPath + "/" + savedName;
 
@@ -184,7 +200,7 @@ public class CmUploadService {
                 try {
                     String thumbFileName = fileUploadUtil.generateThumbFileName(finalStoredNm);
                     String thumbFilePath = folderPath + "/" + thumbFileName;
-                    Thumbnailator.createThumbnail(new File(filePath), new File(thumbFilePath), 200, 200);
+                    Thumbnails.of(new File(filePath)).size(800, 800).addFilter(SHARPEN).toFile(new File(thumbFilePath)); // 2026-09-06: 200→800 + 언샤프닝 (CfThumbnailService와 동일 이유 — 선명도 개선)
                     syAttach.setThumbFileNm(originalName + " (thumbnail)");
                     syAttach.setThumbStoredNm(thumbFileName);
                     syAttach.setThumbUrl(thumbFilePath);
@@ -254,7 +270,7 @@ public class CmUploadService {
                     fileUploadUtil.validate(file);
 
                     String originalName = file.getOriginalFilename();
-                    String ext = fileUploadUtil.getFileExtension(originalName);
+                    String ext = fileUploadUtil.getFileExtension(originalName).toLowerCase(); // 2026-09-06: 확장자 대소문자 정규화(getFileExtension 자체는 원문 보존이라 저장/파일명 생성 직전엔 소문자로 통일 필요)
 
                     if (useCdn) {
                         // ── CDN 업로드 분기 — 원본/썸네일(이미지)·프레임+썸네일(동영상) 생성까지
@@ -384,7 +400,7 @@ public class CmUploadService {
                         try {
                             String thumbFileName = fileUploadUtil.generateThumbFileName(finalStoredNm);
                             String thumbFilePath = folderPath + "/" + thumbFileName;
-                            Thumbnailator.createThumbnail(new File(filePath), new File(thumbFilePath), 200, 200);
+                            Thumbnails.of(new File(filePath)).size(800, 800).addFilter(SHARPEN).toFile(new File(thumbFilePath)); // 2026-09-06: 200→800 + 언샤프닝 (CfThumbnailService와 동일 이유 — 선명도 개선)
                             syAttach.setThumbFileNm(originalName + " (thumbnail)");
                             syAttach.setThumbStoredNm(thumbFileName);
                             syAttach.setThumbUrl(storageFolderPath + "/" + thumbFileName);

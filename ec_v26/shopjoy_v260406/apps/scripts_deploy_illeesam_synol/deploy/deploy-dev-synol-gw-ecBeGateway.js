@@ -78,9 +78,9 @@ function fmtElapsed() {
     // URL들을 실제로 curl 체크해서 오른쪽에 상태 배지를 붙인다.
     // 2026-09-06(요청사항: "/index.html 생략해줘") — FO 메인은 index 문서라 루트 경로로 표시.
     const completionUrls = [
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/`,
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}`,
       `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
-      `https://${PUBLIC_HTTPS_HOST}/`,
+      `https://${PUBLIC_HTTPS_HOST}`,
       `https://${PUBLIC_HTTPS_HOST}/bo.html`,
       // 2026-09-06(요청사항: "swagger 도 추가해주고") — locations.conf 에 /swagger-ui/, /v3/api-docs
       // 전용 라우팅을 추가한 뒤 실측 200 확인.
@@ -111,8 +111,8 @@ function fmtElapsed() {
         { label: '전제조건', value: 'ecBeBo(22300)/ecBeCdn(22400)이 같은 NAS에 떠 있고, ecFeBo 정적 파일이 배포돼 있어야 함' },
       ],
       checkUrls: [
-        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTP)' },
-        { url: `https://${PUBLIC_HTTPS_HOST}/`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTPS)' },
+        { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTP)' },
+        { url: `https://${PUBLIC_HTTPS_HOST}`, note: '사용자(FO) 메인 화면(게이트웨이 경유, HTTPS)' },
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTP)' },
         { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 경유, HTTPS — 로그인 가능)' },
         { url: `http://${PUBLIC_HOST}:${PUBLIC_PORT}/api/co/sy/code/page?pageNo=1&pageSize=1`, note: '공통코드 API(게이트웨이→ecBeBo, HTTP)' },

@@ -57,8 +57,30 @@ public class CfFileService {
         String filePath = cfStorageService.save(file, storedFileName);
         String thumbnailPath = null;
         String framePath = null;
+        String contentType = file.getContentType();
 
         if (mediaType == CfMediaType.VIDEO) {
+            // 2026-09-06(요청사항: "동영상 업로드도 잘 정리해주고" + "상품리뷰 동영상 업로드가
+            // 보다 많이 사용될거야") — mp4 가 아닌 컨테이너(아이폰 기본 카메라 .mov 등)는 상당수
+            // 브라우저(Chrome/Firefox/Android — Safari 제외)가 재생을 못 한다. 원본을 그대로
+            // 저장하던 것을 H.264/AAC mp4 로 트랜스코딩 후 그걸 진짜 저장 파일로 쓴다.
+            // 이미 mp4 인 파일은 컨테이너 자체는 호환되는 게 보통이라 재인코딩 비용을 피하려고
+            // 건너뛴다(코덱까지 깊게 검사하진 않음 — 실용적 절충).
+            if (!"mp4".equalsIgnoreCase(ext)) {
+                String mp4FileName = baseName + ".mp4";
+                String candidateMp4Path = cfStorageService.reserveTodayPath(mp4FileName);
+                boolean converted = cfVideoFrameService.convertToMp4(
+                    cfStorageService.resolve(filePath), cfStorageService.resolve(candidateMp4Path));
+                if (converted) {
+                    cfStorageService.deleteIfExists(filePath);   // 원본(예: .mov)은 변환 성공 시 정리
+                    filePath = candidateMp4Path;
+                    contentType = "video/mp4";
+                    log.info("[CfFileService] 동영상 mp4 변환 성공: {} → {}", origName, mp4FileName);
+                } else {
+                    log.warn("[CfFileService] 동영상 mp4 변환 실패 — 원본 포맷({})으로 그대로 저장(일부 브라우저 재생 불가 가능)", ext);
+                }
+            }
+
             // 요청사항: 동영상은 첫 프레임 이미지 + 썸네일 이미지 둘 다 — 항상 시도(실패해도 업로드는 유지)
             String frameFileName = baseName + "_frame.jpg";
             String candidateFramePath = cfStorageService.reserveTodayPath(frameFileName);

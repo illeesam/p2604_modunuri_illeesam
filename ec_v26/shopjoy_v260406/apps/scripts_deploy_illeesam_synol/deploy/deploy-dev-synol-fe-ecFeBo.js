@@ -164,13 +164,13 @@ function fmtElapsed() {
     // 결과 메시지에 굳이 /index.html 을 붙여 보여줄 필요가 없어 루트만 표시·점검한다.
     // bo.html 은 index 문서가 아니므로(별도 진입점) 그대로 명시.
     const completionUrls = [
-      `http://${PUBLIC_HOST}:${PUBLIC_PORT}/`,
+      `http://${PUBLIC_HOST}:${PUBLIC_PORT}`,
       `http://${PUBLIC_HOST}:${PUBLIC_PORT}/bo.html`,
-      `https://${PUBLIC_HTTPS_HOST}/`,
+      `https://${PUBLIC_HTTPS_HOST}`,
       `https://${PUBLIC_HTTPS_HOST}/bo.html`,
-      `http://${GW}/`,
+      `http://${GW}`,
       `http://${GW}/bo.html`,
-      `https://${GW_HTTPS}/`,
+      `https://${GW_HTTPS}`,
       `https://${GW_HTTPS}/bo.html`,
     ];
     const completionBadges = await checkUrlStatusBadges(completionUrls);
@@ -193,10 +193,10 @@ function fmtElapsed() {
     // "서버정보 및 설치 경로정보도 추가해줘" / "주요 환경정보도 있으면 좋겠어"). 완전 분리
     // 설계 전환 후엔 이 nginx가 정적 파일만 다루므로 점검 URL 도 그에 맞춰 축소.
     const checkUrls = [
-      { url: `https://${PUBLIC_HTTPS_HOST}/`, note: '사용자(FO) 메인 화면' },
+      { url: `https://${PUBLIC_HTTPS_HOST}`, note: '사용자(FO) 메인 화면' },
       { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(로그인 필요)' },
       { url: `https://${PUBLIC_HTTPS_HOST}/assets/cdn/pkg/vue/3.4.21/vue.global.prod.js`, note: '로컬 CDN 패키지(Vue) 정적서빙 확인' },
-      { url: `http://${GW}/`, note: '사용자(FO) 메인 화면(게이트웨이 22099 경유, HTTP)' },
+      { url: `http://${GW}`, note: '사용자(FO) 메인 화면(게이트웨이 22099 경유, HTTP)' },
       { url: `https://${GW_HTTPS}/bo.html`, note: '관리자(BO) 메인 화면(게이트웨이 22099 경유, HTTPS)' },
     ];
     const serverInfo = [
@@ -226,7 +226,7 @@ function fmtElapsed() {
         { label: 'compose/설정 경로', value: REMOTE_FRONTEND_APP_DIR },
       ],
       checkUrls: [
-        { url: `https://${PUBLIC_HTTPS_HOST}/`, note: '사용자(FO) 메인 화면(정상화 후 재확인)' },
+        { url: `https://${PUBLIC_HTTPS_HOST}`, note: '사용자(FO) 메인 화면(정상화 후 재확인)' },
         { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(정상화 후 재확인)' },
       ],
       npmScript: 'deploy/ecFeBo',

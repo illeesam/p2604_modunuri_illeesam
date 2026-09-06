@@ -1036,12 +1036,16 @@
     if (p.sizes && !p.opt2s) { p.opt2s = p.sizes; }
     // 2026-09-06(요청사항: "궁극적으로 ecBeCdn에 있어야 하는게 맞는거지?") — 실제 CDN 이미지는
     // p.thumbnailUrl(레거시 컬럼, 거의 항상 null)이 아니라 p.prodImgs 배열(FoPdProdService
-    // ._listFillRelations 가 채워줌, cdnImgUrl 이 진짜 ecBeCdn 경로)에 들어있는데 여기서 그걸
-    // 안 읽어서 상품이 실제 이미지를 갖고 있어도 항상 로컬 데모 폴백(assets/cdn/...)으로
-    // 빠지고 있었다 — 대표이미지(isThumb='Y', 없으면 첫 번째)를 먼저 확인.
+    // ._listFillRelations 가 채워줌, cdnImgUrl/cdnThumbUrl 이 진짜 ecBeCdn 경로)에 들어있는데
+    // 여기서 그걸 안 읽어서 상품이 실제 이미지를 갖고 있어도 항상 로컬 데모 폴백(assets/cdn/...)
+    // 으로 빠지고 있었다 — 대표이미지(isThumb='Y', 없으면 첫 번째)를 먼저 확인.
+    // 2026-09-06(요청사항: "이미지의 경우 썸네일 이미지를 로드해야되는거 아닌가?") — 이 함수는
+    // 목록/카드(작은 썸네일)용이라 cdnThumbUrl(실제 축소 이미지, ecBeCdn 이 업로드 시 200x200
+    // 으로 생성)을 원본(cdnImgUrl)보다 먼저 써야 한다 — 원본을 먼저 쓰면 목록 화면에서 큰
+    // 원본 파일을 그대로 내려받아 느려진다. 썸네일이 없는(레거시/미생성) 파일만 원본으로 폴백.
     if (!p.image && Array.isArray(p.prodImgs) && p.prodImgs.length) {
       var mainImg = p.prodImgs.find(function (im) { return im.isThumb === 'Y'; }) || p.prodImgs[0];
-      if (mainImg) { p.image = cofImgSrc(mainImg.cdnImgUrl || mainImg.cdnThumbUrl || ''); }
+      if (mainImg) { p.image = cofImgSrc(mainImg.cdnThumbUrl || mainImg.cdnImgUrl || ''); }
     }
     if (!p.image && p.thumbnailUrl) { p.image = cofImgSrc(p.thumbnailUrl); }
     if (!p.image) {
