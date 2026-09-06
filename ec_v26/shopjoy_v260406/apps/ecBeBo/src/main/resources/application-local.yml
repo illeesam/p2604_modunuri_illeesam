@@ -181,12 +181,26 @@ app:
     dir: ${FRONTEND_DIR:../../}
     base-url: ${FRONTEND_BASE_URL:http://127.0.0.1:5501}
 
+  # 2026-09-06(요청사항: "로컬에서 ecBeCdn dev 바라보게 하면 어때 — 로컬 업로드 이미지도 dev 와
+  # 공유해야 해서") — app.file.storage-type(sy_prop, ^local^dev^prod^ 로 확장)이 CDN 이 되면서
+  # 로컬도 실제 dev NAS 의 ecBeCdn(22400)으로 업로드를 위임한다. base-url 공통 기본값
+  # (application.yml, http://localhost:3010 — 아무도 안 띄움)을 로컬에서만 dev 주소로 덮어쓴다.
+  # client-pwd 는 실제 cf_client 비밀번호라 기본값을 안 둔다 — IntelliJ 환경 변수로 필수 주입
+  # (NAS 의 shopjoy/env/ecBeBo.env 에 있는 CF_CDN_CLIENT_PWD 와 동일 값).
+  cf-cdn:
+    base-url: ${CF_CDN_BASE_URL:http://illeesam.synology.me:22400}
+    client-pwd: ${CF_CDN_CLIENT_PWD:}
+
   redis:
-    enabled: false            # true 로 변경 시 Redis 활성화
+    # 2026-09-06(요청사항: "로컬에서 ecBeCdn, ecBeRedis dev 바라보게 하면 어때 — 로컬에서
+    # ecBeRedis 를 띄울 일이 없어 보여서") — 로컬에서 별도 Redis 를 안 띄우고, dev NAS 의
+    # 진짜 Redis(shopjoy-ecBeRedis-22379, 이 PC에서 외부 접속 가능 확인됨)를 그대로 쓴다.
+    # REDIS_PASSWORD 는 실제 비밀번호라 기본값을 안 둔다 — IntelliJ 환경 변수로 필수 주입.
+    enabled: ${REDIS_ENABLED:true}
     primary:
-      host: localhost
-      port: 6379
-      password: ""
+      host: ${REDIS_HOST:illeesam.synology.me}
+      port: ${REDIS_PORT:22379}
+      password: ${REDIS_PASSWORD:}
       database: 0
       timeout: 3000
     # secondary:              # 보조 Redis 노드 (미설정 시 primary fallback)

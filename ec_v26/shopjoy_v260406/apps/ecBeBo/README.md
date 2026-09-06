@@ -84,10 +84,21 @@ java -Dspring.profiles.active=local -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME
 바로 연결되므로, 로컬 Postgres를 따로 안 띄웠다면 `DB_PASSWORD` 하나만 환경 변수로 넣으면 된다.
 비밀값은 `-D` VM 옵션(프로세스 커맨드라인에 평문 노출)보다 **환경 변수** 필드가 더 안전하다.
 
+**2026-09-06 추가** — 로컬에서 `ecBeCdn`/`ecBeRedis`를 따로 안 띄우고(요청사항: "로컬에서 업로드한
+이미지등은 dev 같이 공유해야 해서"), `application-local.yml`이 dev NAS의 진짜 ecBeCdn(22400)·
+ecBeRedis(22379)를 그대로 바라보도록 바뀌었다. 그래서 아래 2개도 함께 필요하다:
+- `REDIS_PASSWORD` — dev NAS Redis(`illeesam.synology.me:22379`) 비밀번호
+- `CF_CDN_CLIENT_PWD` — dev NAS ecBeCdn의 cf_client(`ecadminapi`) 비밀번호
+
 1. 상단 실행 구성 드롭다운 → **"실행/디버그 구성"**
 2. 대상 구성(`EcBeBoApplication`) 선택 → **"빌드 및 실행"** 섹션 우측의 **"옵션 수정"** 클릭
-3. **"환경 변수"** 체크 → 새로 생긴 필드에 `DB_PASSWORD=실제개발DB비밀번호` 입력
-4. `EcBeCdnApplication`(ecBeCdn)도 같은 방식으로 별도 설정 — DB는 공유하지만 실행 구성은 서로 독립적이라 각자 넣어야 한다.
+3. **"환경 변수"** 체크 → 새로 생긴 필드에 세미콜론으로 구분해 3개 모두 입력:
+   ```
+   DB_PASSWORD=실제개발DB비밀번호;REDIS_PASSWORD=실제Redis비밀번호;CF_CDN_CLIENT_PWD=실제cf_client비밀번호
+   ```
+4. `EcBeCdnApplication`(ecBeCdn)은 `DB_PASSWORD`만 같은 방식으로 별도 설정 — DB는 공유하지만 실행 구성은 서로 독립적이라 각자 넣어야 한다. Redis/CDN 클라이언트 비밀번호는 ecBeBo 쪽에만 필요(ecBeCdn은 자기 자신이 그 서버라 해당 없음).
+
+> 위 실제 값들은 이 문서에 적지 않는다 — NAS의 `shopjoy/env/ecBeBo.env`(git 미추적)에서 확인할 것.
 
 ![IntelliJ 실행/디버그 구성 — 활성화된 프로파일(local) + 환경 변수(DB_PASSWORD) 입력 화면, EcBeBoApplication/EcBeCdnApplication 두 구성 모두 표시](_doc/images/20260906_081904.jpg)
 

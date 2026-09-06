@@ -8,7 +8,12 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.sql.DataSource;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.sql.Connection;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -25,6 +30,7 @@ public class AppTableLog {
 
         checkDatabaseConnection(ctx);
         checkRedisConnection(ctx);
+        checkIfTargets(ctx);
         checkAuthConfiguration(ctx);
         checkFileStorageConfiguration(ctx);
         checkSocialLoginConfiguration(ctx);
@@ -117,6 +123,79 @@ public class AppTableLog {
             boolean enabled = ctx.getEnvironment().getProperty("app.redis.enabled", Boolean.class, false);
             if (!enabled) log.info("[Redis] Disabled (app.redis.enabled=false)");
             else          log.error("[Redis] Connection failed — {}", e.getMessage());
+        }
+    }
+
+    /* ##### [02-1] IF Targets — 연동 대상 서버 연결정보 #################################################### */
+
+    /**
+     * 요청사항: "ecBeBo, ecBeCdn 구동시 관계된 IF 타겟들의 연결정보도 구동완료 메시지에
+     * 출력해줘" — 이 앱이 실제로 밖으로 호출하는 다른 서버(ecBeCdn, ecFeBo)의 설정된 주소와
+     * 실측 연결 상태(HTTP GET /actuator/health, 짧은 타임아웃)를 함께 보여준다. DB/Redis 는
+     * 이미 위 두 섹션에서 다루므로 제외 — 여기는 "이 앱이 부르는 다른 앱"만 대상.
+     */
+    private static void checkIfTargets(ConfigurableApplicationContext ctx) {
+        try {
+            org.springframework.core.env.Environment env = ctx.getEnvironment();
+
+            String cdnBaseUrl   = env.getProperty("app.cf-cdn.base-url", "");
+            String cdnPublicUrl = env.getProperty("app.cf-cdn.public-base-url", cdnBaseUrl);
+            String cdnClientId  = env.getProperty("app.cf-cdn.client-id", "");
+            logTable("IF Target — EcBeCdn (CfCdnApiClient)", new String[][]{
+                {"Base URL (서버간)",  cdnBaseUrl.isBlank() ? "(not configured)" : cdnBaseUrl,
+                    "application.yml : app.cf-cdn.base-url (CF_CDN_BASE_URL)", ""},
+                {"Public Base URL", cdnPublicUrl.isBlank() ? "(not configured)" : cdnPublicUrl,
+                    "application.yml : app.cf-cdn.public-base-url (CF_CDN_PUBLIC_BASE_URL)", ""},
+                {"Client ID",       cdnClientId.isBlank() ? "(not configured)" : cdnClientId,
+                    "application.yml : app.cf-cdn.client-id (CF_CDN_CLIENT_ID)", ""},
+                {"Health Check",    httpHealthCheck(cdnBaseUrl), "", ""},
+            });
+
+            // 2026-09-06 버그수정 — app.frontend.base-url 은 브라우저용 절대URL(SEO/og:image)이라
+            // 반드시 공인 도메인(illeesam.synology.me)이어야 하는데, 같은 NAS 컨테이너 안에서
+            // 이 주소로 직접 헬스체크하면 자기 자신에게 되돌아오는 NAT 헤어핀 타임아웃이 난다
+            // (DB_HOST/REDIS_HOST 와 같은 문제, 실측 확인: HttpConnectTimeoutException). 표시값은
+            // 그대로 두고, 연결 확인만 host.docker.internal 로 바꿔서 우회한다 — 같은 NAS 에 있을
+            // 때만 정확하고, 다른 호스팅사로 옮기면 이 헬스체크만 무의미해진다(설정 자체는 무관).
+            String feBaseUrl = env.getProperty("app.frontend.base-url", "");
+            String feInternalUrl = toDockerInternalUrl(feBaseUrl);
+            logTable("IF Target — EcFeBo (Frontend)", new String[][]{
+                {"Base URL",     feBaseUrl.isBlank() ? "(not configured)" : feBaseUrl,
+                    "application-{profile}.yml : app.frontend.base-url (FRONTEND_BASE_URL)", ""},
+                {"Health Check", httpHealthCheck(feInternalUrl.isBlank() ? null : feInternalUrl + "/index.html"), "", ""},
+            });
+        } catch (Exception e) {
+            log.warn("[IF Targets] Config check failed — {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 공인 도메인(illeesam.synology.me) 호스트만 host.docker.internal 로 바꿔치기한다 — 그 외
+     * 호스트(다른 도메인/이미 host.docker.internal/localhost 등)는 그대로 둔다. 프로토콜/포트/
+     * 경로는 보존.
+     */
+    private static String toDockerInternalUrl(String url) {
+        if (url == null || url.isBlank()) return "";
+        return url.replace("illeesam.synology.me", "host.docker.internal");
+    }
+
+    /**
+     * 짧은 타임아웃(3초)으로 GET 요청 후 HTTP 상태코드만 확인한다. 부팅을 절대 막지 않도록
+     * 모든 예외를 삼키고 사유를 문자열로 반환한다 — DB의 simpleSelect()/Redis의 ping() 과
+     * 같은 "실측 연결 확인" 취지.
+     */
+    private static String httpHealthCheck(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) return "(not configured)";
+        String url = baseUrl.endsWith("/health") || baseUrl.contains("/index.html")
+                ? baseUrl : baseUrl + "/actuator/health";
+        try {
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
+            HttpRequest req = HttpRequest.newBuilder(URI.create(url))
+                    .timeout(Duration.ofSeconds(3)).GET().build();
+            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            return (res.statusCode() == 200 ? "✅ " : "⚠ ") + "HTTP " + res.statusCode() + " (" + url + ")";
+        } catch (Exception e) {
+            return "❌ 연결 실패 — " + e.getClass().getSimpleName() + " (" + url + ")";
         }
     }
 
