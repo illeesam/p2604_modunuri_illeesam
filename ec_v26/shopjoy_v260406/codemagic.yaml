@@ -33,10 +33,10 @@ workflows:
     max_build_duration: 60
     environment:
       <<: *android_env
-      # 2026-09-06: _apps/ShopjoyFoApp → apps/ecAppFoFlutter/ShopjoyFoApp (리네임 반영 — 이전
+      # 2026-09-06: _apps/ShopjoyFoApp → apps/ecAppFlutter/ShopjoyFoApp (리네임 반영 — 이전
       # 경로는 리네임 전에도 이미 실제 위치(_apps_app/flutter/ShopjoyFoApp)와 달라 안 맞았었음).
       vars:
-        APP_DIR: "apps/ecAppFoFlutter/ShopjoyFoApp"
+        APP_DIR: "apps/ecAppFlutter/ShopjoyFoApp"
       # Synology NAS 업로드용(요청사항: "시놀로지 특정폴더에 넣는건 가능해?") — Codemagic 콘솔의
       # Environment variables 에 synology_deploy 그룹으로 아래 4개를 등록해야 한다:
       #   SYNOLOGY_HOST / SYNOLOGY_PORT / SYNOLOGY_USER / SYNOLOGY_PASSWORD
@@ -60,9 +60,9 @@ workflows:
           APK_FILE=$(find $APP_DIR/android/app/build/outputs/apk -name "*.apk" | head -1)
           echo "업로드 대상: $APK_FILE"
           sshpass -p "$SYNOLOGY_PASSWORD" ssh -o StrictHostKeyChecking=no -p "$SYNOLOGY_PORT" "$SYNOLOGY_USER@$SYNOLOGY_HOST" \
-            "mkdir -p /volume1/docker/shopjoy/ecAppFoFlutter"
+            "mkdir -p /volume1/docker/shopjoy/apps/ecAppFlutter"
           sshpass -p "$SYNOLOGY_PASSWORD" scp -o StrictHostKeyChecking=no -P "$SYNOLOGY_PORT" "$APK_FILE" \
-            "$SYNOLOGY_USER@$SYNOLOGY_HOST:/volume1/docker/shopjoy/ecAppFoFlutter/"
+            "$SYNOLOGY_USER@$SYNOLOGY_HOST:/volume1/docker/shopjoy/apps/ecAppFlutter/"
     artifacts:
       - $APP_DIR/android/app/build/outputs/apk/**/*.apk
     publishing:

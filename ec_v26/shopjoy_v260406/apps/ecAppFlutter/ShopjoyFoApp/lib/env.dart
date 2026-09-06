@@ -39,4 +39,9 @@ class AppEnv {
 
   /// 환경 이름 — dotenv 의 `APP_ENV` 우선, 없으면 dart-define 의 `_appEnv`.
   static String get appEnv   => dotenv.maybeGet('APP_ENV')   ?? _appEnv;
+
+  /// ShopJoy 전체 릴리스 버전 (2026-09-06 추가) — 다른 앱들(EcBeBo/EcBeCdn 의
+  /// application.yml shopjoy.version, ecBeRedis/ecGateway/ecFeBo 의 docker-compose.yml
+  /// labels.shopjoy.version)과 같은 값을 배포 시 수동으로 맞춘다.
+  static String get shopjoyVersion => dotenv.maybeGet('SHOPJOY_VERSION') ?? 'unknown';
 }

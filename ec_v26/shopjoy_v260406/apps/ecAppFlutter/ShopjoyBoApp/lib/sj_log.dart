@@ -90,6 +90,7 @@ class SjLog {
       'APP_ENV': _env,
       'APP_NAME': AppEnv.appName,
       'BASE_URL': AppEnv.baseUrl,
+      'SHOPJOY_VERSION': AppEnv.shopjoyVersion,
       'kReleaseMode': kReleaseMode,
       'kDebugMode': kDebugMode,
       ...(extra ?? {}),
