@@ -4,7 +4,7 @@
   "private": true,
   "description": "5개 앱 컨테이너 상태만 빠르게 확인(docker compose ps) — 배포/정지/삭제 없이 지금 떠 있는지만 볼 때. 실제 구현은 루트(scripts/scripts_deploy_illeesam_synol/)의 manage-dev-synol.js 공용 — stop/delete/ps 가 이 파일 하나를 verb만 바꿔 호출한다.",
   "scripts": {
-    "---------- PS (컨테이너 상태 확인) ----------": "exit 0",
+    "---------- ■ ps PS (컨테이너 상태 확인) ----------": "exit 0",
     "ecBeBo": "node ../manage-dev-synol.js ps ecBeBo",
     "ecBeCdn": "node ../manage-dev-synol.js ps ecBeCdn",
     "ecFeBo": "node ../manage-dev-synol.js ps ecFeBo",
