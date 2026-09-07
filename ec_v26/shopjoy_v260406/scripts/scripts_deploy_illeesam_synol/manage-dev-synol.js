@@ -1,12 +1,13 @@
-/* manage-dev-synol.js — 5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecBeGateway) 공용 컨테이너
- * 중지/삭제/상태확인 도구. deploy-dev-synol-*.js 는 "빌드+전송+기동"까지 하지만, 이 스크립트는
- * 그 반대 방향(멈추기/치우기/들여다보기)만 담당한다 — 둘을 분리해서 한 파일에 다 넣지 않음.
+/* manage-dev-synol.js — 5개 앱(ecBeBo/ecBeCdn/ecFeBo/ecBeRedis/ecBeGateway) + 개발도구
+ * (ecCodeServer1~5) 공용 컨테이너 중지/삭제/상태확인 도구. deploy-dev-synol-*.js 는
+ * "빌드+전송+기동"까지 하지만, 이 스크립트는 그 반대 방향(멈추기/치우기/들여다보기)만
+ * 담당한다 — 둘을 분리해서 한 파일에 다 넣지 않음.
  *
  * 사용법: node manage-dev-synol.js <action> <app>
  *   action: stop(정지만, 컨테이너/설정 남음) | start(정지된 걸 다시 시작) |
  *           delete(컨테이너+네트워크 제거, docker compose down — 볼륨/데이터는 안 지움) |
  *           ps(상태 확인) | logs(최근 로그 30줄)
- *   app   : ecBeBo | ecBeCdn | ecFeBo | ecBeRedis | ecBeGateway
+ *   app   : ecBeBo | ecBeCdn | ecFeBo | ecBeRedis | ecBeGateway | ecCodeServer1~5
  *
  * npm 스크립트로는 stop/, delete/, ps/ 워크스페이스(각자 package.json)에 {app} 이름으로 등록돼
  * 있다 — 예: cd stop && npm run ecBeBo, cd delete && npm run ecBeGateway, cd ps && npm run ecFeBo
@@ -38,6 +39,12 @@ const APP_DIRS = {
   ecBeRedis: '/volume1/docker/shopjoy/apps/ecBeRedis',
   ecBeGateway: '/volume1/docker/shopjoy/apps/ecBeGateway',
 };
+// 2026-09-07 신설(요청사항: "codeserver 1,2,3,4,5 5개를 만들수 있게 구성해줘 중지도 삭제도") —
+// 5개 shopjoy 앱과 무관한 개발도구(브라우저용 VS Code) 1~5번 인스턴스. stop/delete를 지금
+// 작업 중인 그 인스턴스 안에서 실행하면 자기 세션이 끊기니 각별히 주의(zmulti-all 대상 아님).
+for (let n = 1; n <= 5; n++) {
+  APP_DIRS[`ecCodeServer${n}`] = `/volume1/docker/shopjoy/apps/ecCodeServer${n}`;
+}
 
 // checkExpect — 이 action 수행 후 app-health-checks.js 공통점검을 어떤 기대치로 돌릴지.
 // 'down'(stop/delete) = 접속 자체가 안 돼야 정상, 'up'(start) = 200 이어야 정상. 미지정(ps/logs)이면

@@ -91,6 +91,9 @@ logs/
 
 # scripts/deploySynology.js 가 읽는 NAS 접속정보(SSH 비밀번호 포함) — 로컬 전용, 커밋 금지
 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env
+# deploy-dev-synol-cs-ecCodeServer.js 가 배포 직전 __CS_INSTANCE__/__CS_PORT__ 치환한 임시
+# 렌더링 결과(정상 종료 시 자동 삭제됨 — 중간에 강제종료된 경우를 대비한 안전망)
+scripts/scripts_deploy_illeesam_synol/codeserver/.docker-compose.rendered.*.yml
 *.pem
 *.key
 *.crt
