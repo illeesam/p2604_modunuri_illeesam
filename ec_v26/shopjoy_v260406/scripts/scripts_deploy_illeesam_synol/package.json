@@ -15,7 +15,7 @@
     "stop": "cd stop && npm run ecBeBo (또는 다른 앱/zmulti-all)",
     "delete": "cd delete && npm run ecBeBo (또는 다른 앱/zmulti-all)",
     "ps": "cd ps && npm run ecBeBo (또는 다른 앱)",
-    "codeserver": "cd codeserver && npm run deploy1 (~deploy5, stop1~5, delete1~5, ps1~5) — 5개 shopjoy 앱과 무관한 개발도구(브라우저용 VS Code), zmulti류 일괄명령 없음(자기 세션 안전을 위해 항상 번호 하나만 단독 실행)",
+    "codeserver": "cd codeserver && npm run deploy1-25100 (~deploy5-25500, stop1~5, delete1~5, ps1~5) — 5개 shopjoy 앱과 무관한 개발도구(브라우저용 VS Code), zmulti류 일괄명령 없음(자기 세션 안전을 위해 항상 번호 하나만 단독 실행)",
     "루트에서 한 줄로": "npm run ecBeBo --workspace=deploy (cd 없이 워크스페이스 지정 가능)",
     "reset-ecBeRedis-data": "이 폴더(scripts/scripts_deploy_illeesam_synol/)에서 바로 npm run reset-ecBeRedis-data — shopjoy-ecBeRedis-22379 의 로그인세션/블랙리스트 캐시 등 모든 키를 즉시 비움(FLUSHALL+SAVE, 컨테이너 재시작 없음)"
   },
