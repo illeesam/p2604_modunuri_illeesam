@@ -108,10 +108,20 @@ async function waitForUp(url, maxWaitMs = 30000, intervalMs = 2000) {
     const renderedPath = path.join(csDir, `.docker-compose.rendered.${INSTANCE}.yml`);
     fs.writeFileSync(renderedPath, rendered, 'utf8');
 
-    console.log(`${step(1)} 설정 파일 전송(#${INSTANCE}번 인스턴스 렌더링본) + 볼륨/비밀번호 준비 + 컨테이너 기동`);
+    // 2026-09-07(요청사항: "코드서버 삭제후 새로 만들어볼게 그럼 개발메뉴얼.md 새로
+    // 추가되는거지?") — 이전엔 최초 1회 수동 SFTP로만 올려서, data 폴더 자체를 지우고
+    // 완전히 새로 만들면 매뉴얼이 안 딸려왔다. 매 배포마다 자동으로 최신 버전을 workspace
+    // root에 덮어써서, 어떤 방식으로 지우고 다시 만들어도 항상 있게 한다(사용자 작업물이
+    // 아니라 참고 문서라 매번 덮어써도 무해 — 오히려 최신으로 갱신되는 게 맞음).
+    const manualLocalPath = path.join(csDir, '개발메뉴얼.md');
+
+    console.log(`${step(1)} 설정 파일 전송(#${INSTANCE}번 인스턴스 렌더링본) + 개발메뉴얼 갱신 + 볼륨/비밀번호 준비 + 컨테이너 기동`);
     try {
       await withSsh(
-        [{ local: renderedPath, remote: `${REMOTE_CS_DIR}/docker-compose.yml` }],
+        [
+          { local: renderedPath, remote: `${REMOTE_CS_DIR}/docker-compose.yml` },
+          { local: manualLocalPath, remote: `${REMOTE_CS_DATA_DIR}/workspace/개발메뉴얼.md` },
+        ],
         [
           { label: '데이터 폴더 존재 보장(/config 영구 보존)', cmd: `mkdir -p ${REMOTE_CS_DATA_DIR}` },
           {
