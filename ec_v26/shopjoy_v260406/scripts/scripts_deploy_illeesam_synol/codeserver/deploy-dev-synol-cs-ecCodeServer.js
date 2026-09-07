@@ -130,18 +130,25 @@ function fmtElapsed() {
 
     // code-server는 다른 5개 앱과 달리 컨테이너 자체가 UI 포트를 HTTPS(자체서명 인증서)로만
     // 서빙한다 — 평범한 http:// 요청은 TLS 핸드셰이크가 아니라서 접속 자체가 실패한다(실측
-    // 확인됨). 그래서 UI는 https:// 로만, HTTP/DEV 포트는 사용자가 그 안에서 실제로 뭔가
-    // 띄웠을 때만 응답하므로 배포 시점엔 점검하지 않는다(아직 아무것도 안 띄운 빈 포트).
+    // 확인됨). 그래서 UI는 https:// 로만. HTTP/DEV 포트는 그 자체가 code-server 기능이
+    // 아니라 "인스턴스 안에서 사용자가 뭔가 띄웠을 때" 쓰는 통로라 배포 시점엔 대부분
+    // 비어있다(80/3000 포트 프로그램의 일반적 관례상 http:// 로 표기 — 안에서 https 서버를
+    // 직접 띄웠다면 그에 맞게 URL을 바꿔서 접속할 것).
+    // 2026-09-07(요청사항: "정보는 deploy 하고나면 각 url 로 제시해주") — 포트 숫자만 나열하지
+    // 않고 UI/HTTP/DEV 3개 전부 실제 클릭 가능한 URL 형태로 보여준다.
     const directUrl = `https://${PUBLIC_HOST}:${PORT_UI}`;
     const subdomainUrl = `https://${PORT_UI}.${PUBLIC_HOST}`;
-    const [directBadge] = await checkUrlStatusBadges([directUrl]);
+    const httpPreviewUrl = `http://${PUBLIC_HOST}:${PORT_HTTP}`;
+    const devPreviewUrl = `http://${PUBLIC_HOST}:${PORT_DEV}`;
+    const [directBadge, httpBadge, devBadge] = await checkUrlStatusBadges([directUrl, httpPreviewUrl, devPreviewUrl]);
 
     console.log(`\n${TAG}[완료] code-server #${INSTANCE}번 배포 끝 (총 소요 ${fmtElapsed()})`);
     console.log(`${TAG}   UI 접속(직접 포트, 지금 바로 됨 — 자체서명 인증서 경고는 무시) : ${directUrl}  ${directBadge}`);
     console.log(`${TAG}   UI 접속(DSM 서브도메인, 경고 없이 깔끔하게 쓰려면 별도 1회 등록 필요) : ${subdomainUrl}`);
     console.log(`${TAG}     ↪ DSM 제어판 > 로그인 포털 > 고급 > 역방향 프록시에서 소스(HTTPS, ${PORT_UI}.${PUBLIC_HOST}) →`);
     console.log(`${TAG}       대상(HTTPS, localhost:${PORT_UI}) 규칙 추가 + "인증서 신뢰 안 함 허용" 체크 필요(백엔드 자체가 HTTPS라 프로토콜을 HTTP가 아닌 HTTPS로 잡아야 함).`);
-    console.log(`${TAG}   추가 포트(인스턴스 안에서 뭔가 띄웠을 때 미리보기용) — HTTP:${PORT_HTTP}(컨테이너 80) / DEV:${PORT_DEV}(컨테이너 3000)`);
+    console.log(`${TAG}   HTTP 미리보기(인스턴스 안에서 80번으로 뭔가 띄웠을 때) : ${httpPreviewUrl}  ${httpBadge}  ← 아무것도 안 띄웠으면 ❌가 정상`);
+    console.log(`${TAG}   DEV서버 미리보기(인스턴스 안에서 3000번으로 뭔가 띄웠을 때) : ${devPreviewUrl}  ${devBadge}  ← 아무것도 안 띄웠으면 ❌가 정상`);
     console.log(`${TAG}   비밀번호: ${FIXED_PASSWORD} (요청사항에 따른 고정값 — 5개 인스턴스 공통)`);
     console.log(`${TAG}   ⚠ 비밀번호가 "1"이고 포트가 외부에 열려있으면 이 NAS 전체에 대한 원격 셸 접근권이나 마찬가지입니다 — 공유기/방화벽에서 외부 접근을 막아두는 걸 권장합니다.`);
     console.log(`${TAG}   ⚠ 이 인스턴스 안에서 작업 중일 땐 절대 이 스크립트를 다시 돌리지 마세요(자기 세션이 끊깁니다).`);
@@ -152,7 +159,6 @@ function fmtElapsed() {
       serverInfo: [
         { label: 'NAS 호스트', value: `illeesam.synology.me (Synology DS920+, SSH 10022)` },
         { label: '인스턴스 번호', value: `#${INSTANCE} (1~5 중)` },
-        { label: '포트', value: `UI(웹 접속) ${PORT_UI} / HTTP 미리보기 ${PORT_HTTP} / DEV서버 미리보기 ${PORT_DEV}` },
         { label: '설치 경로', value: REMOTE_CS_DIR },
         { label: '영구 데이터 경로', value: `${REMOTE_CS_DATA_DIR} (git workspace + VS Code 설정/확장 보존, 인스턴스별 완전 격리)` },
         { label: '컨테이너명', value: `${CONTAINER_NAME} (이미지 lscr.io/linuxserver/code-server:latest)` },
@@ -160,8 +166,10 @@ function fmtElapsed() {
         { label: '주의', value: `이 도구는 zmulti 대상 아님 — codeserver/ 에서 항상 npm run deploy${INSTANCE} 단독 실행` },
       ],
       checkUrls: [
-        { url: directUrl, note: `브라우저용 VS Code(code-server) #${INSTANCE}번 — 직접 포트, 자체서명 인증서 경고는 무시하고 진행` },
-        { url: subdomainUrl, note: `동일 인스턴스 — DSM 서브도메인(별도 1회 등록 전까지는 접속 안 됨, 위 로그 등록 방법 참조)` },
+        { url: directUrl, note: `UI 접속(code-server 본체) #${INSTANCE}번 — 직접 포트, 자체서명 인증서 경고는 무시하고 진행` },
+        { url: subdomainUrl, note: `UI 접속 — DSM 서브도메인(별도 1회 등록 전까지는 접속 안 됨, 위 로그 등록 방법 참조)` },
+        { url: httpPreviewUrl, note: `HTTP 미리보기 — 인스턴스 안에서 80번 포트로 뭔가 띄웠을 때만 응답(평소엔 무응답이 정상)` },
+        { url: devPreviewUrl, note: `DEV서버 미리보기 — 인스턴스 안에서 3000번 포트로 뭔가 띄웠을 때만 응답(평소엔 무응답이 정상)` },
       ],
       npmScript: `codeserver/deploy${INSTANCE}`,
     });
