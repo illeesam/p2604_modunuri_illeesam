@@ -117,11 +117,22 @@ function fmtElapsed() {
       fs.rmSync(renderedPath, { force: true });
     }
 
-    const completionUrls = [`https://${PUBLIC_HOST}:${PUBLIC_PORT}`];
-    const completionBadges = await checkUrlStatusBadges(completionUrls);
+    // 2026-09-07(요청사항: "codeserver deploy 하면 http, https url 정보 제시해줘") — code-server는
+    // 다른 5개 앱과 달리 컨테이너 자체가 8443을 HTTPS(자체서명 인증서)로만 서빙한다 — 이
+    // 포트로 평범한 http:// 요청을 보내면 TLS 핸드셰이크가 아니라서 접속 자체가 실패한다
+    // (실측: curl 로 http/https 둘 다 시도해 확인). 그래서 "http URL"은 존재하지 않는 게
+    // 맞고, 대신 두 가지 HTTPS 형태를 보여준다: 지금 바로 되는 직접 포트(자체서명 경고 있음)
+    // + DSM에 서브도메인을 등록하면 되는 깔끔한 형태(경고 없음, 별도 1회 등록 필요).
+    const directUrl = `https://${PUBLIC_HOST}:${PUBLIC_PORT}`;
+    const subdomainUrl = `https://${PUBLIC_PORT}.${PUBLIC_HOST}`;
+    const [directBadge] = await checkUrlStatusBadges([directUrl]);
 
     console.log(`\n${TAG}[완료] code-server #${INSTANCE}번 배포 끝 (총 소요 ${fmtElapsed()})`);
-    console.log(`${TAG}   접속(HTTPS, 자체서명 인증서 경고 무시) : ${completionUrls[0]}  ${completionBadges[0]}`);
+    console.log(`${TAG}   접속(직접 포트, 지금 바로 됨 — 자체서명 인증서 경고는 무시) : ${directUrl}  ${directBadge}`);
+    console.log(`${TAG}   접속(DSM 서브도메인, 경고 없이 깔끔하게 쓰려면 별도 1회 등록 필요) : ${subdomainUrl}`);
+    console.log(`${TAG}     ↪ DSM 제어판 > 로그인 포털 > 고급 > 역방향 프록시에서 소스(HTTPS, ${PUBLIC_PORT}.${PUBLIC_HOST}) →`);
+    console.log(`${TAG}       대상(HTTPS, localhost:${PUBLIC_PORT}) 규칙 추가 + "인증서 신뢰 안 함 허용" 체크 필요(다른 앱들과 달리 백엔드 자체가 HTTPS라 프로토콜을 HTTP가 아닌 HTTPS로 잡아야 함).`);
+    console.log(`${TAG}   ⚠ 이 컨테이너는 http:// 를 지원하지 않는다 — https:// 로만 접속할 것.`);
     console.log(`${TAG}   ⚠ 최초 배포였다면 위 로그의 "최초 비밀번호" 줄을 지금 옮겨 적어두세요 — 다시 표시되지 않습니다.`);
     console.log(`${TAG}   ⚠ 이 인스턴스 안에서 작업 중일 땐 절대 이 스크립트를 다시 돌리지 마세요(자기 세션이 끊깁니다).`);
 
@@ -138,7 +149,8 @@ function fmtElapsed() {
         { label: '주의', value: `이 도구는 zmulti 대상 아님 — codeserver/ 에서 항상 npm run deploy${INSTANCE} 단독 실행` },
       ],
       checkUrls: [
-        { url: `https://${PUBLIC_HOST}:${PUBLIC_PORT}`, note: `브라우저용 VS Code(code-server) #${INSTANCE}번 — 자체서명 인증서 경고는 무시하고 진행` },
+        { url: directUrl, note: `브라우저용 VS Code(code-server) #${INSTANCE}번 — 직접 포트, 자체서명 인증서 경고는 무시하고 진행` },
+        { url: subdomainUrl, note: `동일 인스턴스 — DSM 서브도메인(별도 1회 등록 전까지는 접속 안 됨, 위 로그 등록 방법 참조)` },
       ],
       npmScript: `codeserver/deploy${INSTANCE}`,
     });
