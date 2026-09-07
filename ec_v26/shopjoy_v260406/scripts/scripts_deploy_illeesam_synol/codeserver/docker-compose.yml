@@ -41,14 +41,18 @@ services:
     container_name: shopjoy-ecCodeServer__CS_INSTANCE__-__CS_PORT_UI__
 
     environment:
-      - PUID=1000
-      - PGID=1000
+      # 2026-09-07(요청사항: "root 권한을 기본으로 있으면 좋겠는데" + "매번 sudo 하기 싫어서") —
+      # PUID/PGID를 0(root)으로 주면 linuxserver 이미지의 기본 유저(abc)가 그대로 UID 0(root)이
+      # 되어, 터미널을 열자마자 이미 root라 sudo 자체가 필요 없어진다(공식 linuxserver 문서에
+      # 나오는 "run as root" 방법). 개인 dev 샌드박스 용도라 격리보다 편의를 우선.
+      - PUID=0
+      - PGID=0
       - TZ=Asia/Seoul
       # env/ecCodeServer__CS_INSTANCE__.env 에서 채워짐(배포 스크립트가 최초 1회 자동 생성,
       # 요청사항에 따라 5개 인스턴스 전부 동일한 고정값 "1"로 저장됨).
       - PASSWORD=${CODE_SERVER_PASSWORD}
-      # 컨테이너 안에서 sudo 쓸 때 필요(웹 로그인 비밀번호와 같은 값 재사용 — 별도로 관리할
-      # 비밀 하나를 더 늘리지 않기 위함).
+      # PUID=0(root)이라 평소엔 필요 없지만, 혹시 어떤 도구가 내부적으로 sudo를 호출하는
+      # 경우를 대비한 폴백(이미 root면 sudo도 그냥 통과되어 무해함).
       - SUDO_PASSWORD=${CODE_SERVER_PASSWORD}
       # 브라우저로 열었을 때 기본으로 펼쳐질 폴더 — 지금까지 수동 인스턴스에서 매번
       # ~/workspace 로 직접 이동해서 열던 것을 기본값으로 고정.
