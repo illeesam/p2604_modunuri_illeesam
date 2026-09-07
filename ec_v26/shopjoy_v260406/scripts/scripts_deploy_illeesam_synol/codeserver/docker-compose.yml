@@ -55,7 +55,9 @@ services:
       - DEFAULT_WORKSPACE=/config/workspace
 
     # ───── 포트 매핑 ─────
-    # linuxserver/code-server 컨테이너 내부 본체는 8443(HTTPS, 자체서명 인증서)으로 서빙한다.
+    # linuxserver/code-server 컨테이너 내부 본체는 8443에서 서빙한다 — HTTPS 자체서명 인증서로
+    # 서빙한다고 가정했던 게 틀렸다(2026-09-07 실측 정정: 컨테이너 로그가 "Not serving HTTPS"를
+    # 명시, 순수 HTTP). 접속은 http:// 로 할 것.
     # 80/3000 은 code-server 자체가 쓰는 포트가 아니라, 이 인스턴스 "안에서" 사용자가 직접
     # 띄우는 로컬 웹서버/dev 서버를 밖에서 바로 미리보기 할 수 있도록 미리 뚫어둔 통로다.
     ports:
