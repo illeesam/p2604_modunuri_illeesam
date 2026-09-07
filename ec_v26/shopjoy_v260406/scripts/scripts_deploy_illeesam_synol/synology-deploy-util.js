@@ -350,16 +350,30 @@ function checkUrlStatus(url) {
   });
 }
 
-// urls: 순서를 보존한 URL 문자열 배열 → 같은 순서의 "✅ 200"/"❌ 404" 배지 문자열 배열.
+// 2026-09-08(요청사항: "302면 응답은 왔다는거네 X 표시보다 좀더 부드러운 표현으로 변경해줘 /
+// X는 500 오류처럼 완전 실패의 의미로 정해주고 / 200 || 302 이거 외 / 그 외에 코드들도
+// 추가해줘 / 다른것들도 마찬가지") — 상태코드 3단계 표기로 통일:
+//   ✅ 2xx           — 완전 정상
+//   ⚠ 3xx/4xx        — 응답은 왔음(리다이렉트·인증필요·경로 문제 등) — 완전 실패 아님
+//   ❌ 5xx 또는 무응답 — timeout/error(ECONNRESET 등)/5xx = 서버가 전혀 응답 못 함(완전 실패)만
+// 200만 성공으로 보던 예전 이분법이 code-server 처럼 항상 302(→login)로 응답하는 정상 서비스를
+// 영구적으로 ❌ 오탐하게 만들었다(실측: http://.../:25100 → 302 Found, Location: ./login).
+function statusBadge(status) {
+  if (/^2\d\d$/.test(status)) return `✅ ${status}`;
+  if (/^[34]\d\d$/.test(status)) return `⚠ ${status}`;
+  return `❌ ${status}`; // 5xx 또는 'timeout'/'error(...)' 등 비-HTTP 상태 문자열
+}
+
+// urls: 순서를 보존한 URL 문자열 배열 → 같은 순서의 statusBadge() 결과 배열("✅ 200"/"⚠ 302"/"❌ 500" 등).
 // Promise.all 로 병렬 체크하므로 URL이 여러 개라도 순차 체크보다 훨씬 빠르다.
 async function checkUrlStatusBadges(urls) {
   const statuses = await Promise.all(urls.map(checkUrlStatus));
-  return statuses.map((s) => (s === '200' ? `✅ ${s}` : `❌ ${s}`));
+  return statuses.map(statusBadge);
 }
 
 module.exports = {
   ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms, LOG_FILE_PATH,
-  checkUrlStatus, checkUrlStatusBadges,
+  checkUrlStatus, checkUrlStatusBadges, statusBadge,
   // 2026-09-08(요청사항: "script 작업결과명 보낼때 변경이름으로 보내도록 해줘") — 로그 파일명에
   // 쓴 것과 동일한 값. deploy-dev-synol-*.js 가 notifyDeployResult({ npmScript: ... }) 에 하드코딩된
   // 옛 이름('deploy/ecBeBo' 등) 대신 이 값을 그대로 넘기면 이메일/Slack 제목도 같은 이름으로 통일된다.

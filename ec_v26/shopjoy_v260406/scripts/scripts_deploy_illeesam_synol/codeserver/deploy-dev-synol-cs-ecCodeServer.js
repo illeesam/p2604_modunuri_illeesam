@@ -33,7 +33,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatus, checkUrlStatusBadges, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
+const { requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatus, checkUrlStatusBadges, statusBadge, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 const INSTANCE = Number(process.argv[2]);
@@ -166,7 +166,10 @@ async function waitForUp(url, maxWaitMs = 30000, intervalMs = 2000) {
     // ECONNRESET) 200/300번대가 나올 때까지 최대 30초 재시도. HTTP/DEV 미리보기 포트는
     // 원래 비어있는 게 정상이라 즉시 1회만 점검한다.
     const directStatus = await waitForUp(directUrl);
-    const directBadge = /^[23]\d\d$/.test(directStatus) ? `✅ ${directStatus}` : `❌ ${directStatus}`;
+    // 2026-09-08(요청사항: "302면 응답은 왔다는거네 X 표시보다 좀더 부드러운 표현으로") —
+    // statusBadge() 재사용(synology-deploy-util.js). code-server 는 미인증 상태에서 항상
+    // 302(→login)로 응답하므로 ⚠로 표시 — ❌(완전 실패)는 5xx/무응답에만 예약.
+    const directBadge = statusBadge(directStatus);
     const [httpBadge, devBadge] = await checkUrlStatusBadges([httpPreviewUrl, devPreviewUrl]);
 
     // 2026-09-07(요청사항: "완료 메시지 전에 접속 http, https url 정보 제시해줘") — URL 정보를

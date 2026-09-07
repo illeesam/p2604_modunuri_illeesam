@@ -144,17 +144,30 @@ function checkUrlStatus(url) {
   });
 }
 
+// 2026-09-08(요청사항: "302면 응답은 왔다는거네 X 표시보다 좀더 부드러운 표현으로 변경해줘 /
+// X는 500 오류처럼 완전 실패의 의미로 정해주고 / 200 || 302 이거 외 / 그 외에 코드들도
+// 추가해줘 / 다른것들도 마찬가지") — synology-deploy-util.js 의 statusBadge() 와 동일 로직을
+// 여기 독립적으로 둔다(위 checkUrlStatus 와 같은 이유 — 순환 의존 없이 독립 유지).
+//   ✅ 2xx           — 완전 정상
+//   ⚠ 3xx/4xx        — 응답은 왔음(리다이렉트·인증필요 등) — 완전 실패 아님
+//   ❌ 5xx 또는 무응답 — timeout/error(...)/5xx 만 완전 실패로 취급
+function statusBadge(status) {
+  if (/^2\d\d$/.test(status)) return `✅ ${status}`;
+  if (/^[34]\d\d$/.test(status)) return `⚠ ${status}`;
+  return `❌ ${status}`;
+}
+
 /* [점검 안내] checkUrls: [{url, note}] → 사람이 배포 직후 클릭해서 바로 확인할 수 있는 URL 목록을
    코멘트와 함께 나열한 블록으로 포맷. 배포 스크립트마다 자기 대상에 맞는 URL/코멘트를 넘긴다
    (요청사항: "배포메일 보낼때 내용에 점검 안내도 같이 보내줘 — 각종 URL 정보가 나열되고 코멘트가
    있으면되"). 2026-09-06(요청사항: "URL 점검 결과도 우측에 표시해줘") — 각 URL을 실제로 curl
-   체크해서 "✅ 200"/"❌ 404" 를 URL 오른쪽(코멘트 왼쪽)에 붙인다. */
+   체크해서 statusBadge() 결과를 URL 오른쪽(코멘트 왼쪽)에 붙인다. */
 async function buildInspectionGuide(checkUrls) {
   if (!checkUrls || checkUrls.length === 0) return '';
   const statuses = await Promise.all(checkUrls.map((c) => checkUrlStatus(c.url)));
   const width = Math.max(...checkUrls.map((c) => c.url.length));
   const lines = checkUrls.map((c, i) => {
-    const badge = statuses[i] === '200' ? `✅ ${statuses[i]}` : `❌ ${statuses[i]}`;
+    const badge = statusBadge(statuses[i]);
     return `  - ${c.url.padEnd(width)}  ${badge}${c.note ? '  — ' + c.note : ''}`;
   });
   // 2026-09-06(요청사항: "점검 url 별 한줄씩 공백란 띄워줘") — URL이 다닥다닥 붙어 있으면

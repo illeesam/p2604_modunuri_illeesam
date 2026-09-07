@@ -108,8 +108,14 @@ async function runHealthCheck(app, { expect = 'up', tag, silent = false } = {}) 
     const width = Math.max(...results.map((r) => r.url.length));
     const label = expect === 'up' ? '기동 확인 — 200 기대' : '중지 확인 — 무응답 기대';
     console.log(`${t} 🔍 공통점검(${app}) ${label}`);
+    // 2026-09-08(요청사항: "302면 응답은 왔다는거네 X 표시보다 좀더 부드러운 표현으로 / X는
+    // 500 오류처럼 완전 실패의 의미로 정해주고 / 다른것들도 마찬가지") — expect:'up' 은 이제
+    // 3단계(✅2xx/⚠3xx·4xx/❌5xx·무응답)로 세분화해서 보여준다. 4xx도 "완전 실패"까진 아니므로
+    // ⚠(rowOk 는 그대로 false — 전체 정상 여부/배포 성공 판정에는 영향 없음, 표시만 부드럽게).
+    // expect:'down' 은 "응답이 오면 곧 실패"라는 의미가 명확해서 기존 이분법(✅/❌) 그대로 유지.
+    const upGlyph = (s) => (/^2\d\d$/.test(s) ? '✅' : /^[34]\d\d$/.test(s) ? '⚠' : '❌');
     results.forEach((r) => {
-      const badge = r.ok ? '✅' : '❌';
+      const badge = expect === 'up' ? upGlyph(r.status) : (r.ok ? '✅' : '❌');
       console.log(`${t}   ${r.url.padEnd(width)}  ${badge} ${r.status.padEnd(6)} ${r.note}`);
     });
     console.log(`${t}   ${ok ? '✅ 전체 정상' : '⚠ 일부 이상 있음 — 위 ❌ 항목 확인 필요'}`);
