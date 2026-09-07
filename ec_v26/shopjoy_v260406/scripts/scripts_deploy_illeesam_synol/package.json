@@ -20,7 +20,7 @@
     "reset-ecBeRedis-data": "이 폴더(scripts/scripts_deploy_illeesam_synol/)에서 바로 npm run reset-ecBeRedis-data — shopjoy-ecBeRedis-22379 의 로그인세션/블랙리스트 캐시 등 모든 키를 즉시 비움(FLUSHALL+SAVE, 컨테이너 재시작 없음)"
   },
   "scripts": {
-    "---------- RESET (데이터 초기화, zmulti-all 대상 아님) ----------": "exit 0",
+    "---------- ■ redis RESET (데이터 초기화, zmulti-all 대상 아님) ----------": "exit 0",
     "reset-ecBeRedis-data": "node reset-ecBeRedis-data.js"
   },
   "dependencies": {

@@ -3,21 +3,21 @@
   "private": true,
   "description": "개발용 점검/빌드 스크립트 모음. 앱 자체는 여전히 빌드 없이(원본 JS 그대로) 동작 — build:minify 는 배포 전 선택적 경량화 산출물(dist/)만 만든다.",
   "scripts": {
-    "---------- 점검 ----------": "exit 0",
+    "---------- ■ ecFeBo 점검 ----------": "exit 0",
     "check-orphans": "node scripts/check-orphan-screens.js",
 
-    "---------- 맵생성 ----------": "exit 0",
+    "---------- ■ ecFeBo 맵생성 ----------": "exit 0",
     "gen-bo-lazy": "node scripts/generate-bo-lazy-classes.js",
     "gen-fo-lazy": "node scripts/generate-fo-lazy-classes.js",
     "gen-lazy": "npm run gen-bo-lazy && npm run gen-fo-lazy",
 
-    "---------- 맵검증 ----------": "exit 0",
+    "---------- ■ ecFeBo 맵검증 ----------": "exit 0",
     "verify-lazy": "node scripts/verify-lazy-class-integrity.js",
 
-    "---------- 정리 ----------": "exit 0",
+    "---------- ■ ecFeBo 정리 ----------": "exit 0",
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
 
-    "---------- 빌드 ----------": "exit 0",
+    "---------- ■ ecFeBo 빌드 ----------": "exit 0",
     "build:minify": "node scripts/build-minify.js",
     "build:check": "node scripts/build-minify.js --check",
     "verify-dist": "node scripts/verify-lazy-class-integrity.js --dir dist",

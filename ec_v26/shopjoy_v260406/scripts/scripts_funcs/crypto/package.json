@@ -4,7 +4,7 @@
   "private": true,
   "description": "application-*.yml 의 ENC(...) 값을 만들거나 확인하는 CLI(_doc/정책서/base/base.설정값암호화.md 참조). Node 는 java(JasyptCli.java)를 그대로 실행하는 얇은 래퍼일 뿐 — 실제 암복호화는 프로젝트가 이미 쓰는 jasypt 1.9.3 라이브러리(ecBeBo build.gradle.kts 의 jasypt-spring-boot-starter 내부 엔진)로 수행하므로, 여기서 만든 ENC(...) 값을 Spring Boot 가 그대로 복호화 가능(직접 재구현 아님 — 알고리즘 미묘한 차이로 인한 불일치 위험 원천 차단).",
   "scripts": {
-    "---------- CRYPTO (ENC 값 생성/확인) ----------": "exit 0",
+    "---------- ■ crypto CRYPTO (ENC 값 생성/확인) ----------": "exit 0",
     "encrypt": "node crypto-cli.js encrypt",
     "decrypt": "node crypto-cli.js decrypt"
   },

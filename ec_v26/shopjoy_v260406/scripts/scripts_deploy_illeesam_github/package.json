@@ -3,13 +3,13 @@
   "private": true,
   "description": "3개 앱(ecBeBo/ecBeCdn/ecFeBo) + 모바일(ecAppFlutter) GitHub Actions/Codemagic 트리거 전용 — 실제로는 커밋 메시지에 전용 토큰을 실어 git push 하는 게 전부라 외부 의존성이 없다. scripts/scripts_deploy_illeesam_synol/(직접 SSH 즉시배포) 와는 별개(2026-09-06 분리 — 배포 방식(SSH즉시 vs git push트리거)별로 폴더를 나눠서 VS Code NPM SCRIPTS 패널에서 구분이 쉽게).",
   "scripts": {
-    "---------- deploy (GitHub Actions: 웹 3앱) ----------": "exit 0",
+    "---------- ■ github deploy (GitHub Actions: 웹 3앱) ----------": "exit 0",
     "deploy:dev-github-ecBeBo": "git add . && git commit -m \"deploy_dev-github-ecBeBo: 배포\" && git push",
     "deploy:dev-github-ecBeCdn": "git add . && git commit -m \"deploy_dev-github-ecBeCdn: 배포\" && git push",
     "deploy:dev-github-ecFeBo": "git add . && git commit -m \"deploy_dev-github-ecFeBo: 배포\" && git push",
     "deploy:dev-github-full": "git add . && git commit -m \"deploy_dev-github-full: 배포\" && git push",
 
-    "---------- deploy (Codemagic: 모바일) ----------": "exit 0",
+    "---------- ■ github deploy (Codemagic: 모바일) ----------": "exit 0",
     "deploy:dev-github-ecAppFlutter": "git add . && git commit -m \"deploy_dev-github-ecAppFlutter: 배포\" && git push"
   },
   "//": "──────────────────────────────────────────────────────────────────────",
