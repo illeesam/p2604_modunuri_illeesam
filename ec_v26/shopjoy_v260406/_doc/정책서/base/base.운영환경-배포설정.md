@@ -125,6 +125,80 @@ Connection: $connection_upgrade
 
 ---
 
+## 4-A. code-server(브라우저용 VS Code) 역방향 프록시 설정 (2026-09-08)
+
+`scripts/scripts_deploy_illeesam_synol/codeserver/`로 배포하는 code-server 1~5번 인스턴스를
+`http://illeesam.synology.me:2510N`(직접 포트) 대신 `https://2510N.illeesam.synology.me`
+서브도메인으로 접속하고 싶을 때의 설정. §4와 동일한 패턴이지만 **대상 포트가 인스턴스마다
+다르고(25100~25500), 인스턴스 개수만큼 인증서·규칙을 반복**해야 한다는 점이 다르다.
+
+### 0단계 — 서브도메인 인증서 발급 (역방향 프록시보다 먼저)
+
+`illeesam.synology.me` 인증서(§2)는 그 도메인 자체에만 유효하고, `2510N.illeesam.synology.me`
+같은 서브도메인은 **별도 인증서가 있어야** 브라우저가 경고 없이 접속한다.
+
+**DSM → 제어판 → 보안 → 인증서 → 추가**
+1. `인증서 추가` → `Let's Encrypt에서 인증서 받기` 선택
+2. 도메인 이름: `2510N.illeesam.synology.me` (예: 1번 인스턴스 → `25100.illeesam.synology.me`)
+   — **와일드카드(`*.illeesam.synology.me`) 아님.** DSM 기본 HTTP-01 방식은 정확한 개별
+   도메인명만 발급 가능하고, 와일드카드는 DNS-01 챌린지(지원되는 DNS 공급자 연동)가 필요해
+   더 번거롭다 — 인스턴스가 5개뿐이라 서브도메인별 개별 발급이 더 간단하다.
+3. 이메일 입력 후 발급 — 인증서 목록에 `2510N.illeesam.synology.me - {만료일}` 로 표시됨
+   (예: `25100.illeesam.synology.me - 2026-12-06`, 90일 유효·자동 갱신, §2와 동일)
+4. 인증서 목록 화면 우측 상단 **[설정]** 버튼 → 방금 만든 인증서를 이 서브도메인(또는 해당
+   역방향 프록시 서비스)에 연결 — DSM 버전에 따라 SNI로 자동 매칭되기도 하나, 안 뜨면 이 단계를
+   수동으로 확인할 것.
+5. 인스턴스 5개(`25100`~`25500`) 만큼 반복.
+
+### 1단계 — 역방향 프록시 규칙
+
+**DSM → 로그인 포털 → 고급 → 역방향 프록시 → 생성** (인스턴스별로 반복)
+
+| 항목 | 값 (예: 1번 인스턴스) |
+|---|---|
+| 소스 프로토콜 | HTTPS |
+| 소스 호스트명 | `25100.illeesam.synology.me` |
+| 소스 포트 | 443 |
+| 대상 프로토콜 | HTTP |
+| 대상 호스트명 | `localhost` |
+| 대상 포트 | `25100` |
+
+2번~5번은 `25100` 자리를 각각 `25200`~`25500`으로 바꿔서 동일하게 반복.
+
+### ⛔ "사용자 지정 머리글" 탭 — WebSocket 헤더 필수 (빠뜨리기 쉬움)
+
+"일반" 탭만 저장하고 끝내면 **초기 화면은 뜨지만 곧바로 아래 에러로 작업이 막힌다**(실측 확인,
+2026-09-08):
+
+```
+An unexpected error occurred that requires a reload of this page.
+The workbench failed to connect to the server (Error: WebSocket close with status code 1006)
+```
+
+**원인**: code-server(VS Code Web)는 터미널·파일감시·확장 호스트 통신에 WebSocket을 광범위하게
+쓰는데, DSM 역방향 프록시는 기본 설정으로는 일반 HTTP 요청만 릴레이하고 **WebSocket 업그레이드
+요청은 통과시키지 않는다**. HTTP로 뜨는 최초 페이지 로드는 성공하니 겉보기엔 정상처럼 보이다가,
+WebSocket이 필요한 순간(터미널 열기 등) 끊긴다. **리로드해도 재발한다** — 클라이언트 문제가
+아니라 프록시 설정 문제라서 브라우저 쪽에서 고칠 방법이 없다.
+
+**해결**: 그 프록시 규칙 편집 → **사용자 지정 머리글** 탭 → **[생성] → WebSocket** 프리셋 선택
+(DSM 7.x 기준 자동 추가됨). 프리셋이 없는 구버전이면 수동으로:
+```
+Upgrade: $http_upgrade
+Connection: $connection_upgrade
+```
+
+> 이 헤더 2개는 code-server 뿐 아니라 **WebSocket을 쓰는 모든 백엔드**(Spring Boot의 STOMP/
+> SockJS 엔드포인트 등)를 DSM 역방향 프록시 뒤에 둘 때 동일하게 필요하다 — §4의 Spring Boot API
+> 규칙도 이미 이 헤더를 전제로 한다.
+
+**임시 우회**: 프록시 설정을 아직 안 고쳤다면 직접 포트로 접속하면 WebSocket 문제 자체가 없다.
+```
+http://illeesam.synology.me:2510N
+```
+
+---
+
 ## 5. Spring Boot 운영 실행
 
 ```bash
