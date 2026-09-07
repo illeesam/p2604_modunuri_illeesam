@@ -50,6 +50,26 @@ const ENV_FILE = path.join(__dirname, '.synology-deploy.env');
 // ═══════════════════════════════════════════════════════════════════════
 const LOG_DIR = path.join(SCRIPTS_ROOT, 'scripts_logs');
 
+// 2026-09-08(요청사항: "script 작업결과명 보낼때 변경이름으로 보내도록 해줘 / script 로그
+// 이름도 변경이름명 활용해줘") — 2026-09-06 당시엔 npm_lifecycle_event 단독 의존을 폐기했었다
+// (그때는 deploy/stop/delete/ps 4개 워크스페이스가 전부 같은 짧은 이름 "ecBeBo" 등을 써서
+// npm_lifecycle_event 만으로 "이게 deploy 인지 stop 인지"가 전혀 안 드러났기 때문). 그런데
+// 오늘(2026-09-08) deploy/stop/delete/ps/codeserver 스크립트명을 전부
+// "apps DEPLOY ecBeBo-22300 (springboot)" / "apps STOP ecBeBo" 처럼 동작+대상(+스택)까지
+// 담은 고유 이름으로 바꿔서(각 워크스페이스 package.json 참조) npm_lifecycle_event 하나만으로
+// 완전히 구분 가능해졌다 — 그 값("변경이름")을 로그 파일명과 이메일/Slack 알림 제목 둘 다에
+// 최우선으로 쓴다. node 로 직접 실행해서(npm 경유 안 함) 이 값이 없을 때만 기존 argv 기반
+// 이름으로 폴백한다.
+function resolveNpmScriptName() {
+  if (process.env.npm_lifecycle_event) return process.env.npm_lifecycle_event;
+  const argExtras = process.argv.slice(2).filter((a) => a && !a.startsWith('-'));
+  const baseName = path.basename(process.argv[1] || 'unknown', '.js');
+  return argExtras.length ? `${baseName}-${argExtras.join('-')}` : baseName;
+}
+// 파일명에 못 쓰는 문자만 치환(Windows 기준 \ / : * ? " < > |) — 공백/괄호는 파일명에 허용되므로
+// "apps DEPLOY ecBeBo-22300 (springboot)" 그대로 남겨 로그 파일명만 보고도 바로 알아볼 수 있게 한다.
+const NPM_SCRIPT_NAME = resolveNpmScriptName();
+
 function initFileLog() {
   try {
     const d = new Date();
@@ -60,16 +80,7 @@ function initFileLog() {
     // 여러 개 x 날짜 여러 날치가 한 폴더에 뒤섞이지 않게(요청사항).
     const dayDir = path.join(LOG_DIR, dateStr);
     if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
-    // 2026-09-06: npm_lifecycle_event 단독 의존 폐기 — deploy/stop/delete/ps 4개 워크스페이스가
-    // 전부 같은 짧은 스크립트명(예: "ecBeGateway")을 쓰게 되면서 npm_lifecycle_event 만으로는
-    // 로그 파일명에서 "이게 stop 인지 ps 인지"가 안 드러나는 문제가 생겼다(요청사항: "ps 는
-    // 로그파일 안남기네" — 실제로는 남지만 파일명만 보고 구분이 안 됐던 것). 실행 파일 자체
-    // (process.argv[1] — manage-dev-synol.js 는 항상 이 이름 그대로) + 실제 전달된 인자
-    // (action/app 등, "-"로 시작하는 플래그는 제외)를 조합해서 파일명을 만든다 — npm 워크스페이스
-    // 경유든 node 직접 실행이든 process.argv 는 동일하므로 어느 경로로 실행해도 같은 결과.
-    const argExtras = process.argv.slice(2).filter((a) => a && !a.startsWith('-'));
-    const baseName = path.basename(process.argv[1] || 'unknown', '.js');
-    const scriptName = (argExtras.length ? `${baseName}-${argExtras.join('-')}` : baseName).replace(/:/g, '-');
+    const scriptName = NPM_SCRIPT_NAME.replace(/[\\/:*?"<>|]/g, '-');
     const logPath = path.join(dayDir, `${stamp}_${scriptName}.log`);
     const stream = fs.createWriteStream(logPath, { flags: 'a' });
 
@@ -349,4 +360,8 @@ async function checkUrlStatusBadges(urls) {
 module.exports = {
   ROOT, HOST, PORT, USER, PASSWORD, maskPassword, fail, requireCreds, toSftpPath, run, withSsh, hms, LOG_FILE_PATH,
   checkUrlStatus, checkUrlStatusBadges,
+  // 2026-09-08(요청사항: "script 작업결과명 보낼때 변경이름으로 보내도록 해줘") — 로그 파일명에
+  // 쓴 것과 동일한 값. deploy-dev-synol-*.js 가 notifyDeployResult({ npmScript: ... }) 에 하드코딩된
+  // 옛 이름('deploy/ecBeBo' 등) 대신 이 값을 그대로 넘기면 이메일/Slack 제목도 같은 이름으로 통일된다.
+  NPM_SCRIPT_NAME,
 };

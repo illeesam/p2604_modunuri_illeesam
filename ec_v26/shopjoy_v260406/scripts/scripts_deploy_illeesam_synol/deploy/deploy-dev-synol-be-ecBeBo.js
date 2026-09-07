@@ -14,7 +14,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, fail, requireCreds, run, withSsh, hms, LOG_FILE_PATH, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 // 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
 // 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그/이메일 점검안내의
@@ -197,7 +197,7 @@ function fmtElapsed() {
       detail: healthOk ? '배포 완료 — 공통점검 전체 정상' : '배포 완료 — 공통점검에서 일부 이상 있음(위 로그 ❌ 항목 참조)',
       serverInfo,
       checkUrls,
-      npmScript: 'deploy/ecBeBo',
+      npmScript: NPM_SCRIPT_NAME,
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -209,7 +209,7 @@ function fmtElapsed() {
         { label: 'NAS 호스트', value: 'illeesam.synology.me (SSH 10022 / 앱 포트 21080)' },
         { label: '설치 경로', value: REMOTE_BE_DIR },
       ],
-      npmScript: 'deploy/ecBeBo',
+      npmScript: NPM_SCRIPT_NAME,
     });
     process.exit(1);
   }

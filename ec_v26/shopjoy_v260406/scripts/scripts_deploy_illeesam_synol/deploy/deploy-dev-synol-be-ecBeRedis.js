@@ -14,7 +14,7 @@
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 requireCreds('deploy-dev-synol-be-ecBeRedis.js');
@@ -108,7 +108,7 @@ function fmtElapsed() {
         { label: '기존 무암호 컨테이너', value: '123-redis.70rc1(12379)은 포트가 달라 그대로 남아있음 — 준비되면 수동 정리' },
       ],
       checkUrls: [],
-      npmScript: 'deploy/ecBeRedis',
+      npmScript: NPM_SCRIPT_NAME,
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -117,7 +117,7 @@ function fmtElapsed() {
       tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'Redis', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
-      npmScript: 'deploy/ecBeRedis',
+      npmScript: NPM_SCRIPT_NAME,
     });
     process.exit(1);
   }

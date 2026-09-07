@@ -15,7 +15,7 @@
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');
-const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, requireCreds, withSsh, hms, LOG_FILE_PATH, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 // 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
 // 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 이 앱의 완료 로그 배지 +
@@ -96,7 +96,7 @@ function fmtElapsed() {
         { label: '전제조건', value: 'ecBeBo(22300)/ecBeCdn(22400)이 같은 NAS에 떠 있고, ecFeBo 정적 파일이 배포돼 있어야 함' },
       ],
       checkUrls: healthResults.map((r) => ({ url: r.url, note: r.note })),
-      npmScript: 'deploy/ecBeGateway',
+      npmScript: NPM_SCRIPT_NAME,
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -105,7 +105,7 @@ function fmtElapsed() {
       tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: 'ecBeGateway', success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
-      npmScript: 'deploy/ecBeGateway',
+      npmScript: NPM_SCRIPT_NAME,
     });
     process.exit(1);
   }

@@ -33,7 +33,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatus, checkUrlStatusBadges } = require('../synology-deploy-util');
+const { requireCreds, withSsh, hms, LOG_FILE_PATH, checkUrlStatus, checkUrlStatusBadges, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 
 const INSTANCE = Number(process.argv[2]);
@@ -200,7 +200,7 @@ async function waitForUp(url, maxWaitMs = 30000, intervalMs = 2000) {
         { url: httpPreviewUrl, note: `HTTP 미리보기 — 인스턴스 안에서 80번 포트로 뭔가 띄웠을 때만 응답(평소엔 무응답이 정상)` },
         { url: devPreviewUrl, note: `DEV서버 미리보기 — 인스턴스 안에서 3000번 포트로 뭔가 띄웠을 때만 응답(평소엔 무응답이 정상)` },
       ],
-      npmScript: `codeserver/deploy${INSTANCE}-${BASE_PORT}`,
+      npmScript: NPM_SCRIPT_NAME,
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -209,7 +209,7 @@ async function waitForUp(url, maxWaitMs = 30000, intervalMs = 2000) {
       tag: TAG, logFilePath: LOG_FILE_PATH, scriptName: `ecCodeServer${INSTANCE}`, success: false, elapsed: fmtElapsed(),
       detail: `오류: ${e.message}`,
       serverInfo: [], checkUrls: [],
-      npmScript: `codeserver/deploy${INSTANCE}-${BASE_PORT}`,
+      npmScript: NPM_SCRIPT_NAME,
     });
     process.exit(1);
   }

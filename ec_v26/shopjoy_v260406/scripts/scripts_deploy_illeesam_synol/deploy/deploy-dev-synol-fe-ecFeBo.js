@@ -23,7 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH } = require('../synology-deploy-util');
+const { ROOT, run, withSsh, requireCreds, hms, LOG_FILE_PATH, NPM_SCRIPT_NAME } = require('../synology-deploy-util');
 const { notifyDeployResult } = require('../notify-deploy-result');
 // 2026-09-06(요청사항: "npm deploy/stop/delete 시 공통 api점검, url점검 항목을 최대한
 // 구성하여 별도파일로 만들어 모두가 공통점검하면 좋겠는데") — 완료 로그/이메일 점검안내의
@@ -181,7 +181,7 @@ function fmtElapsed() {
       detail: (allOk && healthOk) ? '헬스체크 정상(공통점검 포함)' : `헬스체크 이상 있음: index.html=${idxStatus} bo.html=${boStatus}${healthOk ? '' : ' / 공통점검 일부 이상'}`,
       serverInfo,
       checkUrls,
-      npmScript: 'deploy/ecFeBo',
+      npmScript: NPM_SCRIPT_NAME,
     });
     console.log(`${TAG} ◀ 완료`);
   } catch (e) {
@@ -198,7 +198,7 @@ function fmtElapsed() {
         { url: `https://${PUBLIC_HTTPS_HOST}`, note: '사용자(FO) 메인 화면(정상화 후 재확인)' },
         { url: `https://${PUBLIC_HTTPS_HOST}/bo.html`, note: '관리자(BO) 메인 화면(정상화 후 재확인)' },
       ],
-      npmScript: 'deploy/ecFeBo',
+      npmScript: NPM_SCRIPT_NAME,
     });
     process.exit(1);
   }

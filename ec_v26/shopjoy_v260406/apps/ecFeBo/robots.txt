@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /bo.html
+Disallow: /bo-
+Disallow: /_doc/
+Disallow: /_apps_be/
+Disallow: /api/
+Allow: /
