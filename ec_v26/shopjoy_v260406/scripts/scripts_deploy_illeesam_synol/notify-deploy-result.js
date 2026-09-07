@@ -219,7 +219,7 @@ function buildDeployLinksTable() {
  * @param {string} [detail]   추가 상세(헬스체크 결과, 에러 메시지 등) — 여러 줄 가능
  * @param {Array<{label:string, value:string}>} [serverInfo] 서버/설치경로/환경 정보 항목 목록
  * @param {Array<{url:string, note?:string}>} [checkUrls] 점검 안내로 나열할 URL + 코멘트 목록
- * @param {string} [npmScript] 실행한 워크스페이스/스크립트명(예: 'deploy/ecFeBo' — cd deploy && npm run ecFeBo) — 제목 끝 + 본문에 표시
+ * @param {string} [npmScript] 실행한 워크스페이스/스크립트명(예: 'deploy/ecFeBo' — cd deploy && npm run "apps DEPLOY ecFeBo-22000 (nginx-vue3cdn)") — 제목 끝 + 본문에 표시
  * @param {string} [logFilePath] 이번 실행의 로그 파일 전체경로(synology-deploy-util.js 의 LOG_FILE_PATH)
  *                                — 있으면 이메일에 그대로 첨부(요청사항: "scripts 실행결과 메일보낼때
  *                                진행중인내용의 log 파일도 첨부해줘")

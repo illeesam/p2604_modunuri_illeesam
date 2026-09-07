@@ -1,15 +1,15 @@
 {
-  "// ⭐⭐⭐": "이 파일은 [DELETE] 전용 — 5개 앱 컨테이너+네트워크 제거(compose down, 볼륨/데이터/이미지는 안 지움). 형제 폴더 deploy/·stop/·ps/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것.",
+  "// ⭐⭐⭐": "이 파일은 [DELETE] 전용 — 5개 앱 컨테이너+네트워크 제거(compose down, 볼륨/데이터/이미지는 안 지움). 형제 폴더 deploy/·stop/·ps/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것. 2026-09-08: VS Code NPM SCRIPTS 패널 가독성을 위해 스크립트명 앞에 'apps DELETE ' 접두어를 붙임(터미널 직접 입력 시 공백 때문에 따옴표 필요: npm run \"apps DELETE ecBeBo\").",
   "name": "shopjoy-deploy-scripts-delete",
   "private": true,
   "description": "5개 앱 컨테이너+네트워크 제거(docker compose down — 볼륨/데이터/이미지는 안 지움, 재배포하면 그대로 복구). 실제 구현은 루트(scripts/scripts_deploy_illeesam_synol/)의 manage-dev-synol.js 공용 — stop/delete/ps 가 이 파일 하나를 verb만 바꿔 호출한다.",
   "scripts": {
     "---------- ■ apps DELETE (컨테이너+네트워크 제거) ----------": "exit 0",
-    "ecBeBo": "node ../manage-dev-synol.js delete ecBeBo",
-    "ecBeCdn": "node ../manage-dev-synol.js delete ecBeCdn",
-    "ecFeBo": "node ../manage-dev-synol.js delete ecFeBo",
-    "ecBeRedis": "node ../manage-dev-synol.js delete ecBeRedis",
-    "ecBeGateway": "node ../manage-dev-synol.js delete ecBeGateway",
-    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecBeGateway"
+    "apps DELETE ecBeBo": "node ../manage-dev-synol.js delete ecBeBo",
+    "apps DELETE ecBeCdn": "node ../manage-dev-synol.js delete ecBeCdn",
+    "apps DELETE ecFeBo": "node ../manage-dev-synol.js delete ecFeBo",
+    "apps DELETE ecBeRedis": "node ../manage-dev-synol.js delete ecBeRedis",
+    "apps DELETE ecBeGateway": "node ../manage-dev-synol.js delete ecBeGateway",
+    "apps DELETE zmulti-all": "npm run \"apps DELETE ecBeBo\" && npm run \"apps DELETE ecBeCdn\" && npm run \"apps DELETE ecFeBo\" && npm run \"apps DELETE ecBeRedis\" && npm run \"apps DELETE ecBeGateway\""
   }
 }

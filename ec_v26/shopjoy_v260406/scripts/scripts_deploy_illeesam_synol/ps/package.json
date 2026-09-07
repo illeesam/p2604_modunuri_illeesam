@@ -1,15 +1,15 @@
 {
-  "// ⭐⭐⭐": "이 파일은 [PS] 전용 — 5개 앱 컨테이너 상태만 확인(compose ps, 읽기전용). 형제 폴더 deploy/·stop/·delete/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것.",
+  "// ⭐⭐⭐": "이 파일은 [PS] 전용 — 5개 앱 컨테이너 상태만 확인(compose ps, 읽기전용). 형제 폴더 deploy/·stop/·delete/ 도 스크립트 이름(ecBeBo 등)은 똑같으니 폴더명으로 구분할 것. 2026-09-08: VS Code NPM SCRIPTS 패널 가독성을 위해 스크립트명 앞에 'apps PS ' 접두어를 붙임(터미널 직접 입력 시 공백 때문에 따옴표 필요: npm run \"apps PS ecBeBo\").",
   "name": "shopjoy-deploy-scripts-ps",
   "private": true,
   "description": "5개 앱 컨테이너 상태만 빠르게 확인(docker compose ps) — 배포/정지/삭제 없이 지금 떠 있는지만 볼 때. 실제 구현은 루트(scripts/scripts_deploy_illeesam_synol/)의 manage-dev-synol.js 공용 — stop/delete/ps 가 이 파일 하나를 verb만 바꿔 호출한다.",
   "scripts": {
     "---------- ■ apps PS (컨테이너 상태 확인) ----------": "exit 0",
-    "ecBeBo": "node ../manage-dev-synol.js ps ecBeBo",
-    "ecBeCdn": "node ../manage-dev-synol.js ps ecBeCdn",
-    "ecFeBo": "node ../manage-dev-synol.js ps ecFeBo",
-    "ecBeRedis": "node ../manage-dev-synol.js ps ecBeRedis",
-    "ecBeGateway": "node ../manage-dev-synol.js ps ecBeGateway",
-    "zmulti-all": "npm run ecBeBo && npm run ecBeCdn && npm run ecFeBo && npm run ecBeRedis && npm run ecBeGateway"
+    "apps PS ecBeBo": "node ../manage-dev-synol.js ps ecBeBo",
+    "apps PS ecBeCdn": "node ../manage-dev-synol.js ps ecBeCdn",
+    "apps PS ecFeBo": "node ../manage-dev-synol.js ps ecFeBo",
+    "apps PS ecBeRedis": "node ../manage-dev-synol.js ps ecBeRedis",
+    "apps PS ecBeGateway": "node ../manage-dev-synol.js ps ecBeGateway",
+    "apps PS zmulti-all": "npm run \"apps PS ecBeBo\" && npm run \"apps PS ecBeCdn\" && npm run \"apps PS ecFeBo\" && npm run \"apps PS ecBeRedis\" && npm run \"apps PS ecBeGateway\""
   }
 }

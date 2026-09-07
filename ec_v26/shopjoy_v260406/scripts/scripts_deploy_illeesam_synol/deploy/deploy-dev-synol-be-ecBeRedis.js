@@ -9,8 +9,8 @@
  * 컨테이너(123-redis.70rc1, 12379, 무암호)와 겹치지 않으므로 더 이상 그 컨테이너를 정지·삭제할
  * 필요가 없다 — 둘 다 동시에 떠 있을 수 있다(옛 컨테이너는 준비되는 대로 수동 정리할 것).
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeRedis-22379
- *          (또는 루트에서 npm run ecBeRedis-22379 --workspace=deploy)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run "apps DEPLOY ecBeRedis-22379 (redis)"
+ *          (또는 루트에서 npm run "apps DEPLOY ecBeRedis-22379 (redis)" --workspace=deploy)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');

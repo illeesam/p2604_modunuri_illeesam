@@ -14,8 +14,8 @@
  *      2) _doc/ddl_pgsql/ec/cf_client.sql, cf_file.sql 을 DB에 적용 + cf_client 계정 시딩
  *    이 스크립트는 그 이후 "jar만 갱신"하는 반복 배포용이다 — Dockerfile/compose/.env 는 안 건드림.
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeCdn-22400
- *          (또는 루트에서 npm run ecBeCdn-22400 --workspace=deploy)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run "apps DEPLOY ecBeCdn-22400 (springboot)"
+ *          (또는 루트에서 npm run "apps DEPLOY ecBeCdn-22400 (springboot)" --workspace=deploy)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const fs = require('fs');

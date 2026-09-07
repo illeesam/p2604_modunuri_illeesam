@@ -1,11 +1,11 @@
 /* deploy-dev-synol-be-ecBeBo.js — 내 컴퓨터에서 직접 SSH로 백엔드(EcAdminApi)를 Synology NAS(dev)에
  * 빌드+전송+재기동까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-ecBeBo/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포).
- * 프론트는 별도 deploy-dev-synol-fe-ecFeBo.js(= cd deploy && npm run ecFeBo-22000).
- * 백엔드+CDN서버 둘 다 한 번에 하려면 npm run zmulti-ecBeBo-ecBeCdn.
+ * 프론트는 별도 deploy-dev-synol-fe-ecFeBo.js(= cd deploy && npm run "apps DEPLOY ecFeBo-22000 (nginx-vue3cdn)").
+ * 백엔드+CDN서버 둘 다 한 번에 하려면 npm run "apps DEPLOY zmulti-ecBeBo-ecBeCdn".
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeBo-22300
- *          (또는 루트에서 npm run ecBeBo-22300 --workspace=deploy)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run "apps DEPLOY ecBeBo-22300 (springboot)"
+ *          (또는 루트에서 npm run "apps DEPLOY ecBeBo-22300 (springboot)" --workspace=deploy)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/11_illeesam_synology_BE_수동배포가이드(synology).md 의
@@ -37,7 +37,7 @@ const PUBLIC_PORT = 22300;
 // 게이트웨이(22099) 경유 예시 URL 은 이제 app-health-checks.js 공통목록에서 나온다(GW/GW_HTTPS
 // 상수는 그 파일에 이미 있음 — 여기서 중복 정의 안 함).
 
-// 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(BE)"을 밝히는 태그 — npm run zmulti-ecBeBo-ecBeCdn
+// 2026-09-05: 모든 로그 줄 앞에 "이 스크립트+대상(BE)"을 밝히는 태그 — npm run "apps DEPLOY zmulti-ecBeBo-ecBeCdn"
 // 처럼 여러 스크립트가 순서대로 도는 경우 지금 이 줄이 어디서 나온 건지 바로 구분하기 위함.
 // 2026-09-06: toString() 을 커스텀해서 `${TAG}` 로 보간될 때마다 그 순간의 [HH:MM:SS] 시각을
 // 새로 계산해 넣는다 — Gradle 빌드/NAS 전송처럼 오래 걸리는 단계 사이 실제 경과시간을 로그만

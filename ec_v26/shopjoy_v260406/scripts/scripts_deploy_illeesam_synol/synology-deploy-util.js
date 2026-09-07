@@ -194,7 +194,7 @@ function run(cmd, cwd, tag = SELF_TAG) {
 /* SSH 연결 하나를 열고, sftpPut(여러 건) → exec(순차 여러 명령) 을 차례로 수행한 뒤 닫는다.
    tag: 호출한 스크립트를 식별하는 접두어(예: "[deploy-dev-synol-be-ecBeBo.js][BE]") — 이 함수가 찍는
    모든 로그 줄(사전 준비/전송/NAS 실행/Docker 빌드 단계번호) 앞에 그대로 붙는다. 여러 스크립트가
-   순서대로 돌 때(deploy/ 워크스페이스의 npm run zmulti-ecBeBo-ecBeCdn 등) 지금 이 줄이 어느 스크립트에서 나온 건지 바로
+   순서대로 돌 때(deploy/ 워크스페이스의 npm run "apps DEPLOY zmulti-ecBeBo-ecBeCdn" 등) 지금 이 줄이 어느 스크립트에서 나온 건지 바로
    구분하기 위함(2026-09-05). */
 function withSsh(uploads, commands, tag = SELF_TAG) {
   return new Promise((resolve, reject) => {

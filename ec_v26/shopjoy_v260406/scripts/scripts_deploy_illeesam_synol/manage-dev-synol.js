@@ -10,8 +10,10 @@
  *   app   : ecBeBo | ecBeCdn | ecFeBo | ecBeRedis | ecBeGateway | ecCodeServer1~5
  *
  * npm 스크립트로는 stop/, delete/, ps/ 워크스페이스(각자 package.json)에 {app} 이름으로 등록돼
- * 있다 — 예: cd stop && npm run ecBeBo, cd delete && npm run ecBeGateway, cd ps && npm run ecFeBo
- * (또는 루트에서 npm run ecBeBo --workspace=stop 처럼 --workspace 지정).
+ * 있다 — 스크립트명 앞에 'apps STOP/DELETE/PS ' 접두어가 붙어있음(공백 있어 따옴표 필요).
+ * 예: cd stop && npm run "apps STOP ecBeBo", cd delete && npm run "apps DELETE ecBeGateway",
+ *     cd ps && npm run "apps PS ecFeBo"
+ * (또는 루트에서 npm run "apps STOP ecBeBo" --workspace=stop 처럼 --workspace 지정).
  *
  * ⚠️ delete(docker compose down)는 컨테이너/compose가 만든 네트워크만 지운다 — 볼륨(DB 데이터,
  * Redis 데이터, 로그, CDN 저장소 등 호스트 바인드마운트)은 전혀 건드리지 않는다. 이미지도 안

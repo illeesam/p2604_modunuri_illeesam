@@ -6,12 +6,12 @@
  * ⚠️ 테스트 전용이다(apps/ecBeGateway/docker-compose.yml 상단 주석 참조) — ecBeBo(22300)/
  * ecBeCdn(22400)이 이 NAS에 이미 떠 있어야(host.docker.internal 경유로 호출) 정상 동작하고,
  * ecFeBo(22000)가 배포해둔 정적 파일 폴더(/volume1/docker/shopjoy/apps/ecFeBo)를 그대로 재사용한다
- * — 즉 이 스크립트를 돌리기 전에 deploy/ 에서 npm run ecBeBo-22300 / ecBeCdn-22400 / ecFeBo-22000 가
+ * — 즉 이 스크립트를 돌리기 전에 deploy/ 에서 npm run "apps DEPLOY ecBeBo-22300 (springboot)" / "apps DEPLOY ecBeCdn-22400 (springboot)" / "apps DEPLOY ecFeBo-22000 (nginx-vue3cdn)" 가
  * 먼저 실행되어 있어야 의미가 있다(순서 강제는 안 함 — 없어도 컨테이너 자체는 뜨지만 502/빈
  * 화면만 보게 된다).
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeGateway-22099
- *          (또는 루트에서 npm run ecBeGateway-22099 --workspace=deploy)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run "apps DEPLOY ecBeGateway-22099 (nginx)"
+ *          (또는 루트에서 npm run "apps DEPLOY ecBeGateway-22099 (nginx)" --workspace=deploy)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  */
 const path = require('path');

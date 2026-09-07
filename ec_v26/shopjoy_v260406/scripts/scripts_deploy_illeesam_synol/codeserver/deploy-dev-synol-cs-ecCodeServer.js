@@ -23,13 +23,13 @@
  *      NAS 전체에 대한 원격 셸 접근권이 거의 누구나 열람 가능한 수준이 된다 — 방화벽/공유기
  *      단에서 외부 접근을 막아두는 걸 권장.)
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/codeserver/ 에서 npm run deploy1-25100 (~deploy5-25500)
- *          (또는 루트에서 npm run deploy1-25100 --workspace=codeserver)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/codeserver/ 에서 npm run "codeserver DEPLOY deploy1-25100 (codeserver)" (~deploy5-25500)
+ *          (또는 루트에서 npm run "codeserver DEPLOY deploy1-25100 (codeserver)" --workspace=codeserver)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * ⚠️ 의도적으로 zmulti 류 일괄 명령을 두지 않는다 — 지금 어느 인스턴스 안에서 작업 중일 때
  * 자기 자신의 컨테이너를 재기동시키면 그 순간 자기 터미널/에디터 세션이 끊긴다. 항상 단독
- * 실행할 것(예: npm run deploy3-25300).
+ * 실행할 것(예: npm run "codeserver DEPLOY deploy3-25300 (codeserver)").
  */
 const fs = require('fs');
 const path = require('path');
@@ -38,7 +38,7 @@ const { notifyDeployResult } = require('../notify-deploy-result');
 
 const INSTANCE = Number(process.argv[2]);
 if (!Number.isInteger(INSTANCE) || INSTANCE < 1 || INSTANCE > 5) {
-  console.error('사용법: node deploy-dev-synol-cs-ecCodeServer.js <1~5>  (codeserver/ 에서 npm run deploy1-25100 ~ deploy5-25500 로 실행할 것)');
+  console.error('사용법: node deploy-dev-synol-cs-ecCodeServer.js <1~5>  (codeserver/ 에서 npm run "codeserver DEPLOY deploy1-25100 (codeserver)" ~ "codeserver DEPLOY deploy5-25500 (codeserver)" 로 실행할 것)');
   process.exit(1);
 }
 
