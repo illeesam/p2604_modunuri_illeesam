@@ -1,7 +1,7 @@
 /* deploy-dev-synol-fe-ecFeBo.js — 내 컴퓨터에서 직접 SSH로 프론트(FO/BO 화면)를 Synology NAS(dev)에
  * 빌드+전송까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-ecBeBo/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포, GitHub Pages 도 같이 됨).
- * 백엔드는 별도 deploy-dev-synol-be-ecBeBo.js(= cd deploy && npm run ecBeBo).
+ * 백엔드는 별도 deploy-dev-synol-be-ecBeBo.js(= cd deploy && npm run ecBeBo-22300).
  * (2026-09-06: 예전엔 deploy:dev-synol-full 이 백엔드+프론트를 묶었으나, npm run zmulti-ecBeBo-ecBeCdn
  * 로 이름/조합이 바뀌면서 프론트는 이제 어떤 조합 명령에도 안 묶여있다 — 필요하면 이 스크립트를 따로 실행할 것.)
  *
@@ -13,8 +13,8 @@
  * nginx가 더 이상 /api,/cdn-admin 을 리버스프록시하지 않으므로 그 헬스체크도 제거 — 이제
  * index.html/bo.html 정적 서빙만 확인한다.
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecFeBo
- *          (또는 루트에서 npm run ecFeBo --workspace=deploy)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecFeBo-22000
+ *          (또는 루트에서 npm run ecFeBo-22000 --workspace=deploy)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/12_illeesam_synology_FE_수동배포가이드(synology).md 의
@@ -143,7 +143,7 @@ function fmtElapsed() {
 
     console.log(`\n${step(3)} 헬스체크 2/2 — 외부 HTTPS 접속 확인 (이 컴퓨터 → https://${PUBLIC_HTTPS_HOST})`);
     // 2026-09-06: nginx가 더 이상 /api 를 리버스프록시하지 않으므로(완전 분리 설계) 백엔드
-    // API 헬스체크는 여기서 뺀다 — 백엔드 자체 헬스체크는 deploy/ 의 npm run ecBeBo 가 담당.
+    // API 헬스체크는 여기서 뺀다 — 백엔드 자체 헬스체크는 deploy/ 의 npm run ecBeBo-22300 가 담당.
     const [idxStatus, boStatus] = await Promise.all([
       checkUrl('/index.html'),
       checkUrl('/bo.html'),

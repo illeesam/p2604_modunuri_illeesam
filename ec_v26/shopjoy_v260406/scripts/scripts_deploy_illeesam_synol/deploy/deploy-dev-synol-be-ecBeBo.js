@@ -1,11 +1,11 @@
 /* deploy-dev-synol-be-ecBeBo.js — 내 컴퓨터에서 직접 SSH로 백엔드(EcAdminApi)를 Synology NAS(dev)에
  * 빌드+전송+재기동까지 한 번에. GitHub Actions 를 거치지 않는다(그쪽은 package.json 의
  * deploy:dev-github-ecBeBo/-fe/-full 참조 — git push 로 GitHub 서버가 대신 빌드+배포).
- * 프론트는 별도 deploy-dev-synol-fe-ecFeBo.js(= cd deploy && npm run ecFeBo).
+ * 프론트는 별도 deploy-dev-synol-fe-ecFeBo.js(= cd deploy && npm run ecFeBo-22000).
  * 백엔드+CDN서버 둘 다 한 번에 하려면 npm run zmulti-ecBeBo-ecBeCdn.
  *
- * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeBo
- *          (또는 루트에서 npm run ecBeBo --workspace=deploy)
+ * 사용법: scripts/scripts_deploy_illeesam_synol/deploy/ 에서 npm run ecBeBo-22300
+ *          (또는 루트에서 npm run ecBeBo-22300 --workspace=deploy)
  * NAS 접속정보는 scripts/scripts_deploy_illeesam_synol/.synology-deploy.env 필요 — 형식은 ../synology-deploy-util.js 상단 주석 참조.
  *
  * 무엇을 하는지는 apps/ecBeBo/_doc/11_illeesam_synology_BE_수동배포가이드(synology).md 의
