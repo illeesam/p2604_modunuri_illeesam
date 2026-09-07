@@ -1,28 +1,49 @@
 {
     "recommendations": [
+        // ── 테마 / 아이콘 (요청사항: "atom 테마 atom 아이콘") ──────────────────
+        "akamud.vscode-theme-onedark",
+        "file-icons.file-icons",
         "melnykdanyil.best-white-theme",
-        "anthropic.claude-code",
-        "vscjava.vscode-java-debug",
         "jamesmaj.easy-icons",
-        "vscjava.vscode-java-pack",
-        "vscjava.vscode-gradle",
+        // ── 코드 품질 (린트, 프리티어) ──────────────────────────────────
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "usernamehw.errorlens",
+        "editorconfig.editorconfig",
+        // ── 한국어 ──────────────────────────────────────────────────
         "ms-ceintl.vscode-language-pack-ko",
+        // ── Java 17 / Gradle ────────────────────────────────────────
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-gradle",
+        "vscjava.vscode-maven",
+        "vscjava.vscode-java-dependency",
+        "vscjava.vscode-java-test",
         "redhat.java",
+        // ── npm ────────────────────────────────────────────────────
+        "christian-kohler.npm-intellisense",
+        // ── Vue 3 ──────────────────────────────────────────────────
+        "Vue.volar",
+        // ── 라이브 서버 ─────────────────────────────────────────────
         "ritwickdey.liveserver",
+        // ── Markdown 뷰어 ───────────────────────────────────────────
+        "yzhang.markdown-all-in-one",
         "bierner.markdown-mermaid",
         "ms-vscode.theme-markdownkit",
-        "vscjava.vscode-maven",
+        // ── 기타(YAML/Docker/Git/DB 등 이 프로젝트 스택에 필요한 것들) ──────
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "mikestead.dotenv",
+        "matt-meyers.vscode-dbml",
         "erralb.mermaid-js-erd-to-sql",
         "cweijan.vscode-office",
-        "vscjava.vscode-java-dependency",
+        "humao.rest-client",
+        // ── AI / 기타 도구 ──────────────────────────────────────────
+        "anthropic.claude-code",
         "ms-python.vscode-pylance",
         "ms-python.python",
         "ms-python.debugpy",
-        "ms-python.vscode-python-envs",
-        "humao.rest-client",
-        "vscjava.vscode-java-test",
-        "matt-meyers.vscode-dbml",
-        "usernamehw.errorlens",
-        "dbaeumer.vscode-eslint"
+        "ms-python.vscode-python-envs"
     ]
 }
