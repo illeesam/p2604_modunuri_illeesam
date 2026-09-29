@@ -56,3 +56,7 @@ COMMENT ON COLUMN shopjoy_2604.mb_member.reg_by IS '등록자 (sy_user.user_id, 
 COMMENT ON COLUMN shopjoy_2604.mb_member.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_date IS '수정일';
+
+-- 2026-09-29 migration_20260929_seller_phase1.sql — 셀러 컨셉 Phase 1
+ALTER TABLE shopjoy_2604.mb_member ADD COLUMN md_yn CHAR(1);
+COMMENT ON COLUMN shopjoy_2604.mb_member.md_yn IS 'MD(운영담당자) 여부 Y/N — 전 상품 상품평/Q&A 답변·숨김 블랭킷 권한. 판매자(seller)와 무관';

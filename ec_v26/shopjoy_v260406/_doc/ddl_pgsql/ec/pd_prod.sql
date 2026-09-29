@@ -104,3 +104,9 @@ CREATE INDEX pd_prod_ix02_category_id ON shopjoy_2604.pd_prod USING btree (categ
 CREATE INDEX pd_prod_ix03_dliv_tmplt_id ON shopjoy_2604.pd_prod USING btree (dliv_tmplt_id);
 CREATE INDEX pd_prod_ix04_md_user_id ON shopjoy_2604.pd_prod USING btree (md_user_id);
 CREATE INDEX pd_prod_ix05_vendor_id ON shopjoy_2604.pd_prod USING btree (vendor_id);
+
+-- 2026-09-29 migration_20260929_seller_phase1.sql — 셀러 컨셉 Phase 1
+ALTER TABLE shopjoy_2604.pd_prod ADD COLUMN seller_id VARCHAR(21);
+COMMENT ON COLUMN shopjoy_2604.pd_prod.seller_id IS '판매자ID (mb_seller.seller_id) — 상품 소유권 단일 기준. 기존 vendor_id는 유지(호환), 신규 로직은 이 컬럼 우선 참조';
+ALTER TABLE shopjoy_2604.pd_prod ADD CONSTRAINT pd_prod_fk_seller_id FOREIGN KEY (seller_id) REFERENCES shopjoy_2604.mb_seller (seller_id);
+CREATE INDEX pd_prod_ix06_seller_id ON shopjoy_2604.pd_prod USING btree (seller_id);
