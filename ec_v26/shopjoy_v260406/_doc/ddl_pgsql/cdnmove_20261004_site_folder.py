@@ -15,6 +15,7 @@ cdnmove_20261004_site_folder.py — CDN 파일을 멀티테넌트용 새 폴더 
   옛 → 새
      prod/img/shop/product/…  (샘플 상품 이미지)      →  <사이트>/attach/prod/_sample/…
      prod/img/client/…        (고객사 로고)            →  <사이트>/design/logo/…
+     prod/img/shop/banner/…   (쇼핑 배너)              →  <사이트>/design/banner/…
      prod/img/<종류>/…        (slider·testimonial 등)  →  <사이트>/design/<종류>/…
      attach/prod_img/yyyy/mm/dd/…                      →  <사이트>/attach/prod/yyyy/mm/dd/…
      yyyy/mm/dd/…             (업무 구분 없이 올린 것) →  <사이트>/attach/<업무>/yyyy/mm/dd/…
@@ -25,6 +26,11 @@ cdnmove_20261004_site_folder.py — CDN 파일을 멀티테넌트용 새 폴더 
      pd_prod.thumbnail_url 의 옛 상대경로 /cdn/prod/img/shop/product/…    →  https://…/api/cdn/<사이트>/attach/prod/_sample/…  (전체 주소로)
         · FO(resolveCdnUrl)·BO(cofImgSrc) 모두 http 로 시작하는 값은 그대로 쓴다. 상대경로로 두면 BO 미리보기가 assets/cdn/… 을 찾아 깨진다.
      1차 규칙 형식 SI26/<사이트>_<모듈>/<업무>/… 으로 올라간 파일이 있으면  →  SI26/<사이트>_<모듈>/attach/<새 업무>/…
+
+  FO 소스가 직접 가리키는 디자인 파일 (FO_DESIGN — DB 에는 없고 화면 소스가 주소를 적어 둔 것)
+     ecFeFoNuxt4 의 useCdn().designUrl(용도, 파일) 이 <사이트>/design/<용도>/<파일> 을 가리킨다. DB 가 가리키지 않는 파일은 위 계산에 안 잡히므로
+     아래 FO_DESIGN 목록(사이트별 옛 경로)을 같은 규칙(new_rel)으로 복사 목록에 더한다 — plan 의 copy_files.sh · verify · run 직전 확인에 모두 들어간다(DB 는 바꾸지 않는다).
+     옛 주소가 열리지 않는(HTTP 200 이 아닌) 파일은 빼고 알린다. FO 화면에 고정 이미지를 더하면 이 목록에도 더할 것.
 
   원칙
      · 같은 파일을 여러 사이트가 쓰면(샘플 상품 이미지, ec2 복사본) 사이트마다 한 벌씩 "복사"한다 — 사이트 폴더만 지워도 다른 사이트가 깨지지 않게.
@@ -102,6 +108,7 @@ TABLE_BIZ = {"pd_prod_img": "prod", "pd_prod": "prod", "pd_prod_content": "prod"
 SAMPLE_PREFIX = "prod/img/shop/product/"     # 샘플 상품 이미지
 DESIGN_PREFIX = "prod/img/"                  # 그 밖의 prod/img/<종류>/… 는 디자인 파일
 DESIGN_RENAME = {"client": "logo"}           # 고객사 로고
+DESIGN_PREFIX_RENAME = {"shop/banner/": "banner/"}   # 쇼핑 배너 — prod/img/shop/banner/… → design/banner/…
 DATE_ONLY_RE = re.compile(r"^[0-9]{4}/[0-9]{2}/[0-9]{2}/")
 # /api/cdn/ 아래 고정 경로(파일이 아님) — 바꾸지 않는다
 RESERVED = ("auth/", "client/", "file/", "storage/", "serve/", "config/", "log/", "db/", "redis/", "upload")
@@ -136,6 +143,27 @@ ATTACH_REF = {  # ref_table_nm → (테이블, PK, 사이트 식(별칭 r), 조�
     "sy_contact": ("sy_contact", "contact_id", "r.site_id", ""),
     "cm_bbs": ("cm_bbs", "bbs_id", "r.site_id", ""),
     "mb_member": ("mb_member", "member_id", "r.site_id", ""),
+}
+
+# ── FO 소스(ecFeFoNuxt4)가 직접 가리키는 디자인 파일 — 사이트 → 옛 상대경로 목록 (새 경로는 new_rel 로 계산) ──────────────
+#   2026-10-04 ecFeFoNuxt4 의 app/{pages,components,layout}/<모듈> · composables/useShareTools · utils/mapCategory 에서 모은 것.
+#   같은 파일을 ec1·ec2 가 함께 쓰므로 사이트마다 한 벌씩 복사한다(사이트 간 공유는 복사가 규칙).
+_FO_BOTH = (
+    ["slider/slider-1.jpg", "slider/slider-2.jpg", "slider/slider-3.jpg",                       # 홈 히어로 슬라이더
+     "slider/03/slider-01.jpg", "slider/03/slider-02.jpg", "slider/03/slider-03.jpg", "slider/04/slider-01.jpg",
+     "slider/05/slide111.webp", "slider/05/slide112.webp", "slider/05/slide113.webp"]
+    + [f"client/client-{i}.jpg" for i in range(1, 6)]                                           # 고객사 로고 → design/logo
+    + [f"testimonial/person-{i}.jpg" for i in range(1, 5)] + [f"testimonial/testi{i}.webp" for i in range(1, 4)]
+    + ["page-title/page-title-1.jpg", "blog/comments/avater-3.png", "bg/mega-menu-bg.jpg", "payment/paypal_logo.webp",
+       "logo/logo.png"]                                                                         # 공유 미리보기 기본 이미지
+    + ["shop/banner/banner-big-1.jpg", "shop/banner/banner-big-2.jpg"]                          # 상품 배너 대체 이미지 → design/banner
+    + [f"shop/banner/banner-sm-{i}.jpg" for i in range(1, 6)]                                   # 카테고리 배너 대체 이미지 → design/banner
+)
+_FO_EC1_ONLY = ["testimonial/testimonial-bg.jpg", "bg/bg-video.webp", "blog/blog-details-sm.jpg",   # home-3 · home-7 · blog-dtl (ec1 에만 있는 화면)
+                "blog/comments/avater-1.png", "blog/comments/avater-2.png"]
+FO_DESIGN = {   # 사이트ID → (FO 의 사이트 폴더(tenant 파일 cdnSiteDir), [옛 상대경로])
+    "SI260001": ("SI26/SI260001_ec1", [DESIGN_PREFIX + p for p in _FO_BOTH + _FO_EC1_ONLY]),
+    "SI260002": ("SI26/SI260002_ec2", [DESIGN_PREFIX + p for p in _FO_BOTH]),
 }
 
 
@@ -176,6 +204,9 @@ def new_sub(old_rel, biz):
         return "attach/prod/_sample/" + old_rel[len(SAMPLE_PREFIX):]
     if old_rel.startswith(DESIGN_PREFIX):
         rest = old_rel[len(DESIGN_PREFIX):]
+        for old_p, new_p in DESIGN_PREFIX_RENAME.items():
+            if rest.startswith(old_p):
+                return "design/" + new_p + rest[len(old_p):]
         if "/" not in rest:
             return "design/etc/" + rest
         kind, tail = rest.split("/", 1)
@@ -227,7 +258,12 @@ class Plan:
         self.url_sites = collections.defaultdict(set)  # old_rel → {site}
         self.refs = collections.defaultdict(lambda: collections.defaultdict(set))   # 파일 키 → {site → {업무}}
         self.rel_rows = 0          # pd_prod.thumbnail_url 옛 상대경로 행 수
+        self.fo_copies = {}        # FO 소스가 직접 가리키는 디자인 파일: new_rel → old_rel (복사·확인 대상, DB 변경 없음)
+        self.fo_added = collections.Counter()  # (사이트 폴더 이름, design/<용도>) → DB 계획에 없어 새로 더한 수
+        self.fo_missing = []       # (old_rel, HTTP 상태, 사이트) — 옛 주소가 열리지 않아 뺀 것
+        self.fo_notes = []         # 사이트 폴더가 FO 설정과 다른 경우 등
         self._scan()
+        self._scan_fo()
 
     def q(self, sql, args=None):
         self.cur.execute(sql, args)
@@ -360,6 +396,29 @@ class Plan:
             self.per_target["pd_prod.thumbnail_url"] += 1
             self.rel_rows += 1
 
+    def _scan_fo(self):
+        """FO 소스가 직접 가리키는 디자인 파일(FO_DESIGN)을 복사 목록에 더한다 — 옛 주소가 HTTP 200 인 것만. DB 는 건드리지 않는다."""
+        status = {}
+        for site, (fo_dir, olds) in sorted(FO_DESIGN.items()):
+            folder = self.site_folder.get(site)
+            if folder != fo_dir:      # FO 는 tenant 파일의 cdnSiteDir 로 주소를 만든다 — DB(sy_site 모듈)와 다르면 FO 쪽 폴더로 복사해야 화면이 열린다
+                self.fo_notes.append(f"{site}: sy_site 기준 폴더({folder or '없음'}) ≠ FO 설정 폴더({fo_dir}) — FO 설정 폴더로 복사합니다")
+                folder = fo_dir
+            for old in olds:
+                if old not in status:
+                    status[old] = http_status(f"{PUBLIC_BASE}/api/cdn/{old}")
+                if status[old] not in (200, 0):          # 원본이 없다 — 복사할 수 없으니 빼고 알린다
+                    self.fo_missing.append((old, status[old], site))
+                    continue
+                if status[old] == 0:
+                    self.fo_notes.append(f"옛 주소 확인 실패(네트워크) — 목록에는 넣었습니다: {old}")
+                nr = new_rel(old, folder, "etc")
+                self.fo_copies[nr] = old
+                self.url_sites[old].add(site)
+                if nr not in self.copies:
+                    self.copies[nr] = old
+                    self.fo_added[folder_group(nr)] += 1
+
     # cf_file: 한 곳으로만 옮겨진 파일은 경로를 새 위치로(파일ID 로 지울 때 새 파일이 지워지게). 여러 사이트가 나눠 가진 파일은 그대로 둔다
     def cf_file_changes(self):
         if "cf_file" not in self.cols:
@@ -420,6 +479,13 @@ def summarize(p, cf, http=False):
     print(f"    용량: cf_file 에 기록된 원본 {sum(1 for o in olds if o in sizes)}개 = {known / 1048576:.1f}MB (나머지는 cf_file 에 없는 옛 샘플·첨부 — 크기 모름)")
     for k, v in sorted(per_site.items()):
         print(f"    {k:<28} {v:>5}개   (" + ", ".join(f"{g} {n}" for (st, g), n in sorted(per_group.items()) if st == k) + ")")
+    if p.fo_copies:
+        print(f"  [FO 소스 디자인 파일] {len(p.fo_copies)}개(위 복사 수에 포함) — 그중 DB 계획에 없어 새로 더한 것 {sum(p.fo_added.values())}개: "
+              + ", ".join(f"{st} {g} {n}" for (st, g), n in sorted(p.fo_added.items())))
+    for old, st, site in p.fo_missing:
+        print(f"    [FO 원본 없음 — 뺌] HTTP {st}  {old}  ({site})")
+    for note in p.fo_notes:
+        print(f"    [FO 알림] {note}")
     if p.rel_rows:
         print(f"  pd_prod.thumbnail_url 옛 상대경로(/cdn/…) {p.rel_rows}행 → 상품 사이트 폴더의 전체 주소로 (위 변경 행 수에 포함)")
     if p.pending:
@@ -486,7 +552,12 @@ def verify(p):
         st = http_status(f"{PUBLIC_BASE}/api/cdn/{nr}")
         if st != 200:
             bad.append((nr, st))
-    print(f"[verify] 새 URL {len(p.copies)}개 중 HTTP 200 {len(p.copies) - len(bad)}개 · 실패 {len(bad)}개")
+    print(f"[verify] 새 URL {len(p.copies)}개(FO 소스 디자인 파일 {len(p.fo_copies)}개 포함) 중 HTTP 200 {len(p.copies) - len(bad)}개 · 실패 {len(bad)}개")
+    fo_bad = [nr for nr, _ in bad if nr in p.fo_copies]
+    if fo_bad:
+        print(f"    그중 FO 소스 디자인 파일 {len(fo_bad)}개 — 이 파일이 없으면 새 FO 화면의 고정 이미지(슬라이더·로고·배너)가 깨집니다. FO 배포 전에 반드시 복사하세요.")
+    for old, st, site in p.fo_missing:
+        print(f"    [FO 원본 없음 — 검사에서 뺌] HTTP {st}  {old}  ({site})")
     for nr, st in bad[:20]:
         print(f"    HTTP {st}  {PUBLIC_BASE}/api/cdn/{nr}")
     return not bad
