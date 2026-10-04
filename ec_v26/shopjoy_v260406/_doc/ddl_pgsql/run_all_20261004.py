@@ -337,6 +337,17 @@ def st_cdn(s):
                     "(새 경로가 HTTP 200 이 아니면 run 은 아무것도 바꾸지 않고 멈춘다)")
 
 
+F_BOAUDIT = "migration_20261004_bo_site_audit.py"
+
+
+def st_boaudit(s):
+    """BO 점검 보정(옛 사이트 값 md_sg_stack·사이트 선택 팝업 모듈 열) — 스크립트의 status(읽기 전용, 종료코드 0=적용됨)"""
+    import subprocess
+    r = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), F_BOAUDIT), "status"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    line = (r.stdout.strip().splitlines() or [r.stderr.strip()[-200:]])[-1]
+    return ("done" if r.returncode == 0 else "todo"), line
+
+
 # ── 단계별 실행 ─────────────────────────────────────────────────────────────
 
 def run_sql_file(name):
@@ -410,6 +421,7 @@ STEPS = [
     ("4-2", "post", "site_id NOT NULL·게시판 호환 뷰 삭제",    st_cmbbm2,   lambda: run_py(F_CMBBM, "run2", "--with-pm-cache"), f"{F_CMBBM} run2 --with-pm-cache"),
     ("8-2", "post", "옛 컬럼 sy_site.tenant_module 삭제",      st_module2,  run_drop_tenant_module,                          "DROP COLUMN sy_site.tenant_module"),
     ("12",  "post", "CDN URL 사이트 폴더로(SI26/<사이트>_<모듈>)", st_cdn,    lambda: run_py(F_CDN, "run"),                    f"{F_CDN} run (NAS 파일 복사 뒤)"),
+    ("13",  "post", "BO 점검 보정(사이트 선택 팝업 모듈 열 등)",   st_boaudit,  lambda: run_py(F_BOAUDIT, "run"),               f"{F_BOAUDIT} run"),
 ]
 LABEL = {"done": "적용됨", "todo": "미적용", "partial": "일부 적용"}
 
