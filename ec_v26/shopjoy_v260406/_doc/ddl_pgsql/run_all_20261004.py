@@ -20,6 +20,8 @@ run_all_20261004.py — 2026-10-03~04 대기 중인 DB 변경을 정해진 순�
        10-2 migration_20261004_category_module_root.py run   카테고리 루트 = 모듈: sy_site.root_category_id 추가, 사이트 6곳에 루트(ec1 …) 생성,
                                                              기존 1단계를 루트 아래로(깊이 +1), 갈 곳 없던 상품을 분류(상품명 꼬리표)·루트로 연결
        11   migration_20261004_ec2_prod_copy.py run          ec2 상품 = ec1 대표 160건 복사(옵션·SKU·이미지·브랜드·판매자↔사이트)
+       15   migration_20261004_category_cd.py run            카테고리 코드: pd_category.category_cd 추가(사이트 간 공통 집계 키 — 신발 = SHOES),
+                                                             사전으로 값 채움(ec1·ec2 같은 코드, danmoo1, 루트 = ROOT), (site_id, category_cd) 부분 유니크
      배포 "후"(post) — ecBeBo·ecFeBo 새 코드 배포·확인 뒤
        3-2  호환 뷰 sy_alarm·syh_alarm_send_hist·sy_noti 삭제 (noti_rename.sql 맨 아래 주석 처리된 2단계와 같은 문장)
        4-2  migration_20261003_cm_bbm_site_ownership.py run2 --with-pm-cache   빈 site_id 재채움·NOT NULL·호환 뷰 sy_bbm·sy_bbs 삭제
@@ -46,6 +48,9 @@ run_all_20261004.py — 2026-10-03~04 대기 중인 DB 변경을 정해진 순�
                  10-2 는 10 이 만든 SI260002 복사본·SI260003 보강분까지 루트 아래로 내리므로 10 뒤에 돈다(10 이 아직이면 시작하지 않는다).
                  새 백엔드(SySite.rootCategoryId)는 sy_site.root_category_id 컬럼이 있어야 뜬다 → 10-2 는 반드시 배포 전(pre).
                  컬럼만 있고 값이 비어 있는 동안(또는 옛 백엔드)에는 예전처럼 "부모 없는 카테고리 = 1단계"로 동작한다.
+     · 10-2 → 15 : 15 는 모듈 루트(sy_site.root_category_id)를 보고 루트에 ROOT 를 넣고 경로(루트 아래 이름)로 사전을 찾는다 → 10-2 뒤.
+                 새 백엔드(PdCategory.categoryCd)는 pd_category.category_cd 컬럼이 있어야 뜬다 → 15 는 반드시 배포 전(pre).
+                 컬럼 추가뿐이라 옛 백엔드는 영향 없다.
      · 11 → 12 : ec2 복사본의 이미지 URL 은 원본 그대로 들어가고, 12 가 행의 사이트 기준으로 SI26/SI260002_ec2/… 로 나눈다.
      · 3-2·4-2 : 호환 뷰를 지우고 NOT NULL 을 건다 — 옛 백엔드가 떠 있으면 깨지므로 반드시 배포 뒤. 통합 코드는 pm_cache INSERT 에
                  site_id 를 넣으므로(ecBeBo 7bd2f48) run2 는 처음부터 --with-pm-cache 로 실행한다.
@@ -355,6 +360,7 @@ def st_cdn(s):
 
 F_BOAUDIT = "migration_20261004_bo_site_audit.py"
 F_DMLOCAL = "migration_20261004_dm_local.sql"
+F_CATCD = "migration_20261004_category_cd.py"
 
 
 def st_dmlocal(s):
@@ -367,6 +373,16 @@ def st_dmlocal(s):
     finally:
         c.close()
     return ("done", "cm_local_post 있음") if ok else ("todo", "미적용")
+
+
+def st_catcd(s):
+    """카테고리 코드(pd_category.category_cd) — 스크립트의 status(읽기 전용, 종료코드 0=적용됨)"""
+    r = subprocess.run([sys.executable, os.path.join(HERE, F_CATCD), "status"], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       env=dict(os.environ, PYTHONIOENCODING="utf-8"))
+    line = (r.stdout.strip().splitlines() or [r.stderr.strip()[-200:]])[-1]
+    if r.returncode == 0:
+        return "done", line
+    return ("partial" if "일부만" in line else "todo"), line
 
 
 def st_boaudit(s):
@@ -448,6 +464,7 @@ STEPS = [
     ("10-2", "pre", "카테고리 루트 = 모듈(sy_site.root_category_id)", st_catroot, lambda: run_py(F_CATROOT, "run"),             f"{F_CATROOT} run"),
     ("11",  "pre",  "ec2 상품 = ec1 대표 160건 복사",           st_ec2,      lambda: run_py(F_EC2, "run"),                   f"{F_EC2} run"),
     ("14",  "pre",  "당무마켓 동네 글·전문가·견적요청(cm_local_post 등)", st_dmlocal, lambda: run_sql_file(F_DMLOCAL),               F_DMLOCAL),
+    ("15",  "pre",  "카테고리 코드(pd_category.category_cd — 사이트 간 집계 키)", st_catcd, lambda: run_py(F_CATCD, "run"),          f"{F_CATCD} run"),
     ("3-2", "post", "알림 이름 정리 2단계(호환 뷰 삭제)",      st_rename2,  run_drop_noti_views,                             "DROP VIEW sy_alarm·syh_alarm_send_hist·sy_noti"),
     ("4-2", "post", "site_id NOT NULL·게시판 호환 뷰 삭제",    st_cmbbm2,   lambda: run_py(F_CMBBM, "run2", "--with-pm-cache"), f"{F_CMBBM} run2 --with-pm-cache"),
     ("8-2", "post", "옛 컬럼 sy_site.tenant_module 삭제",      st_module2,  run_drop_tenant_module,                          "DROP COLUMN sy_site.tenant_module"),
@@ -473,7 +490,7 @@ def print_status(s, phases=("pre", "post")):
 def preflight(s):
     """pre 를 시작하면 안 되는 상황 — 문제 목록"""
     bad = []
-    for f in (F_SITEFIX2, F_FCM, F_RENAME, F_CMBBM, F_CHATT, F_MEET, F_TZ, F_MODULE, F_MODCODES, F_CATEGORY, F_CATROOT, F_EC2, F_CDN):
+    for f in (F_SITEFIX2, F_FCM, F_RENAME, F_CMBBM, F_CHATT, F_MEET, F_TZ, F_MODULE, F_MODCODES, F_CATEGORY, F_CATROOT, F_EC2, F_CDN, F_CATCD):
         if not os.path.isfile(os.path.join(HERE, f)):
             bad.append(f"파일 없음: {os.path.join(HERE, f)}")
     bad.extend(s.id_conflicts)
@@ -498,7 +515,7 @@ def main():
         for m in bad:
             print(f"  [문제] {m}")
         if not bad:
-            print("  [통과] 스크립트 파일 13개 있음 · 공통코드 ID 충돌 없음 · 실행 순서 문제 없음")
+            print("  [통과] 스크립트 파일 14개 있음 · 공통코드 ID 충돌 없음 · 실행 순서 문제 없음")
         pre_left = [no for no, ph, *_ in STEPS if ph == "pre" and st[no] != "done"]
         post_left = [no for no, ph, *_ in STEPS if ph == "post" and st[no] != "done"]
         print(f"\n남은 단계 — 배포 전: {', '.join(pre_left) or '없음'} / 배포 뒤: {', '.join(post_left) or '없음'}")
