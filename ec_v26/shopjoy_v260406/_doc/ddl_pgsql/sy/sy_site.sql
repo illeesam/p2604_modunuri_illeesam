@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.sy_site (
     site_id          VARCHAR(21)  NOT NULL CONSTRAINT sy_site_pk_site_id PRIMARY KEY,
     site_code        VARCHAR(50)  NOT NULL,
-    tenant_module    VARCHAR(20) ,   -- FO 모듈(ec1, ec2 …) — 멀티테넌트 2026-10-02 (migration_20261002_sy_site_tenant_module.sql)
+    module_cd        VARCHAR(20) ,   -- FO 모듈 (코드: MODULE_CD — ec1, ec2 …) — 2026-10-04 tenant_module → module_cd (migration_20261004_module_cd.sql)
     site_type_cd     VARCHAR(20) ,
     site_nm          VARCHAR(100) NOT NULL,
     site_domain      VARCHAR(200),
@@ -32,7 +32,7 @@ CREATE TABLE shopjoy_2604.sy_site (
 COMMENT ON TABLE  shopjoy_2604.sy_site IS '사이트';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_id IS '사이트ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_code IS '사이트코드';
-COMMENT ON COLUMN shopjoy_2604.sy_site.tenant_module IS '이 사이트가 운영되는 FO 모듈(ec1, ec2 …) — 배포 환경파일 .env.[사이트].[모듈].[프로파일] 의 [모듈]과 같아야 한다. NULL=미지정';
+COMMENT ON COLUMN shopjoy_2604.sy_site.module_cd IS 'FO 모듈 (코드: MODULE_CD — ec1/ec2/danmoo1/homepg1/datavisual1/bbm1). FO 사이트 파일 tenant/SI26/<사이트ID>-<모듈>.jsonc 의 모듈과 같아야 한다. NULL=미지정';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_type_cd IS '사이트유형 (코드: SITE_TYPE — EC/ADMIN/API)';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_nm IS '사이트명';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_domain IS '도메인';

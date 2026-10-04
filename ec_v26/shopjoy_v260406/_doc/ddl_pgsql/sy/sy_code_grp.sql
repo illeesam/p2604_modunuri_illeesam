@@ -9,6 +9,7 @@ CREATE TABLE shopjoy_2604.sy_code_grp (
     path_id       VARCHAR(21) ,
     code_grp_desc VARCHAR(300),
     use_yn        VARCHAR(1)   DEFAULT 'Y'::bpchar,
+    module_cd     VARCHAR(20) ,   -- 이 코드그룹을 쓰는 FO 모듈 (코드: MODULE_CD). NULL=공통 — 2026-10-04 (migration_20261004_module_codes.sql)
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
@@ -23,6 +24,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_code_grp.grp_nm IS '그룹명';
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.code_grp_desc IS '코드그룹설명';
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.use_yn IS '사용여부 Y/N';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.module_cd IS '이 코드그룹을 쓰는 FO 모듈 (코드: MODULE_CD — ec1/ec2/danmoo1/homepg1/datavisual1/bbm1). NULL=공통(전 모듈 공용)';
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.reg_by IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
