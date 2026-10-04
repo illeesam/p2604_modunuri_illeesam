@@ -355,7 +355,8 @@ def st_ec2(s):
 
 def st_cdn(s):
     if s.cdn_bak:
-        return "done", "백업 스키마 shopjoy_2604_bak_cdnmove_20261004._changes 있음(run 한 적 있음)"
+        return "done", ("백업 스키마 shopjoy_2604_bak_cdnmove_20261004._changes 있음(run 한 적 있음) — 그 뒤 더해진 대상(본문 HTML·cf_file 등)이 남았는지는 "
+                        "python cdnmove_20261004_site_folder.py dry 로 확인(남았으면 plan → copy_files.sh → run 을 다시 — run 은 다시 실행할 수 있다)")
     return "todo", ("미적용 — 먼저: python cdnmove_20261004_site_folder.py plan → copy_files.sh 를 NAS 에서 실행 → verify "
                     "(새 경로가 HTTP 200 이 아니면 run 은 아무것도 바꾸지 않고 멈춘다)")
 
