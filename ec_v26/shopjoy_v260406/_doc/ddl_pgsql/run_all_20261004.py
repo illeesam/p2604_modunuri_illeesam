@@ -17,6 +17,8 @@ run_all_20261004.py — 2026-10-03~04 대기 중인 DB 변경을 정해진 순�
        8-1  migration_20261004_module_cd.sql                 sy_site.module_cd 추가(tenant_module 값 복사) + 공통코드 MODULE_CD 6개
        9    migration_20261004_module_codes.sql              sy_code_grp.module_cd(모듈 한정 코드 그룹) + 모듈 전용 코드 그룹 5개·코드 23개
        10   migration_20261004_category_site.py run          카테고리: SI260002 = ec1 73건 복사, SI260003 당근형 분류 7건 보강
+       10-2 migration_20261004_category_module_root.py run   카테고리 루트 = 모듈: sy_site.root_category_id 추가, 사이트 6곳에 루트(ec1 …) 생성,
+                                                             기존 1단계를 루트 아래로(깊이 +1), 갈 곳 없던 상품을 분류(상품명 꼬리표)·루트로 연결
        11   migration_20261004_ec2_prod_copy.py run          ec2 상품 = ec1 대표 160건 복사(옵션·SKU·이미지·브랜드·판매자↔사이트)
      배포 "후"(post) — ecBeBo·ecFeBo 새 코드 배포·확인 뒤
        3-2  호환 뷰 sy_alarm·syh_alarm_send_hist·sy_noti 삭제 (noti_rename.sql 맨 아래 주석 처리된 2단계와 같은 문장)
@@ -40,7 +42,10 @@ run_all_20261004.py — 2026-10-03~04 대기 중인 DB 변경을 정해진 순�
                  8-1 과 배포 사이에도 옛 백엔드(tenant_module 을 읽음)가 그대로 동작한다. 옛 컬럼은 배포 뒤 8-2 가 지운다.
      · 9 : 새 백엔드의 SyCodeGrp 엔티티가 module_cd 를 읽는다(ecBeBo 710cd35) → 배포 전에 반드시. 9 의 공통코드 ID(CG2610042000NN/CD2610042000NN)는
                  5·6·8-1(CG261004100001/CD2610041000NN)과 겹치지 않는다.
-     · 4-1 → 10 → 11 : 11 은 sy_brand.site_id·sl_seller_site(4-1)와 10 의 카테고리 매핑이 있어야 한다.
+     · 4-1 → 10 → 10-2 → 11 : 11 은 sy_brand.site_id·sl_seller_site(4-1)와 10 의 카테고리 매핑, 10-2 의 루트(sy_site.root_category_id)가 있어야 한다.
+                 10-2 는 10 이 만든 SI260002 복사본·SI260003 보강분까지 루트 아래로 내리므로 10 뒤에 돈다(10 이 아직이면 시작하지 않는다).
+                 새 백엔드(SySite.rootCategoryId)는 sy_site.root_category_id 컬럼이 있어야 뜬다 → 10-2 는 반드시 배포 전(pre).
+                 컬럼만 있고 값이 비어 있는 동안(또는 옛 백엔드)에는 예전처럼 "부모 없는 카테고리 = 1단계"로 동작한다.
      · 11 → 12 : ec2 복사본의 이미지 URL 은 원본 그대로 들어가고, 12 가 행의 사이트 기준으로 SI26/SI260002_ec2/… 로 나눈다.
      · 3-2·4-2 : 호환 뷰를 지우고 NOT NULL 을 건다 — 옛 백엔드가 떠 있으면 깨지므로 반드시 배포 뒤. 통합 코드는 pm_cache INSERT 에
                  site_id 를 넣으므로(ecBeBo 7bd2f48) run2 는 처음부터 --with-pm-cache 로 실행한다.
@@ -88,6 +93,7 @@ F_TZ = "migration_20261004_db_timezone_kst.sql"
 F_MODULE = "migration_20261004_module_cd.sql"
 F_MODCODES = "migration_20261004_module_codes.sql"
 F_CATEGORY = "migration_20261004_category_site.py"
+F_CATROOT = "migration_20261004_category_module_root.py"
 F_EC2 = "migration_20261004_ec2_prod_copy.py"
 F_CDN = "cdnmove_20261004_site_folder.py"
 
@@ -326,6 +332,16 @@ def st_category(s):
     return summarize([("매핑 shopjoy_2604_map_category_20261004._map", s.cat_map), (f"SI260002 카테고리({s.cat_site2}건)", s.cat_site2 > 0)])
 
 
+def st_catroot(s):
+    """카테고리 루트 = 모듈 — 스크립트의 status(읽기 전용, 종료코드 0=적용됨)"""
+    r = subprocess.run([sys.executable, os.path.join(HERE, F_CATROOT), "status"], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       env=dict(os.environ, PYTHONIOENCODING="utf-8"))
+    line = (r.stdout.strip().splitlines() or [r.stderr.strip()[-200:]])[-1]
+    if r.returncode == 0:
+        return "done", line
+    return ("partial" if "일부만" in line else "todo"), line
+
+
 def st_ec2(s):
     return summarize([("매핑 shopjoy_2604_map_ec2copy_20261004._map", s.ec2_map), (f"SI260002 상품({s.prod_site2}건)", s.prod_site2 > 0)])
 
@@ -429,6 +445,7 @@ STEPS = [
     ("8-1", "pre",  "모듈 = 공통코드(sy_site.module_cd·MODULE_CD)", st_module1, lambda: run_sql_file(F_MODULE),                 f"{F_MODULE} (파일 전체 = 1단계)"),
     ("9",   "pre",  "모듈 한정 코드 그룹(sy_code_grp.module_cd)", st_modcodes, lambda: run_sql_file(F_MODCODES),               F_MODCODES),
     ("10",  "pre",  "사이트별 카테고리(ec2 복사·당무마켓 보강)", st_category, lambda: run_py(F_CATEGORY, "run"),              f"{F_CATEGORY} run"),
+    ("10-2", "pre", "카테고리 루트 = 모듈(sy_site.root_category_id)", st_catroot, lambda: run_py(F_CATROOT, "run"),             f"{F_CATROOT} run"),
     ("11",  "pre",  "ec2 상품 = ec1 대표 160건 복사",           st_ec2,      lambda: run_py(F_EC2, "run"),                   f"{F_EC2} run"),
     ("14",  "pre",  "당무마켓 동네 글·전문가·견적요청(cm_local_post 등)", st_dmlocal, lambda: run_sql_file(F_DMLOCAL),               F_DMLOCAL),
     ("3-2", "post", "알림 이름 정리 2단계(호환 뷰 삭제)",      st_rename2,  run_drop_noti_views,                             "DROP VIEW sy_alarm·syh_alarm_send_hist·sy_noti"),
@@ -447,7 +464,7 @@ def print_status(s, phases=("pre", "post")):
             continue
         st, detail = fn(s)
         out[no] = st
-        print(f"  [{no:<3}] {'배포 전' if phase == 'pre' else '배포 뒤'} · {LABEL[st]:<5} · {title}")
+        print(f"  [{no:<4}] {'배포 전' if phase == 'pre' else '배포 뒤'} · {LABEL[st]:<5} · {title}")
         print(f"         {what}")
         print(f"         → {detail}")
     return out
@@ -456,7 +473,7 @@ def print_status(s, phases=("pre", "post")):
 def preflight(s):
     """pre 를 시작하면 안 되는 상황 — 문제 목록"""
     bad = []
-    for f in (F_SITEFIX2, F_FCM, F_RENAME, F_CMBBM, F_CHATT, F_MEET, F_TZ, F_MODULE, F_MODCODES, F_CATEGORY, F_EC2, F_CDN):
+    for f in (F_SITEFIX2, F_FCM, F_RENAME, F_CMBBM, F_CHATT, F_MEET, F_TZ, F_MODULE, F_MODCODES, F_CATEGORY, F_CATROOT, F_EC2, F_CDN):
         if not os.path.isfile(os.path.join(HERE, f)):
             bad.append(f"파일 없음: {os.path.join(HERE, f)}")
     bad.extend(s.id_conflicts)
@@ -481,7 +498,7 @@ def main():
         for m in bad:
             print(f"  [문제] {m}")
         if not bad:
-            print("  [통과] 스크립트 파일 12개 있음 · 공통코드 ID 충돌 없음 · 실행 순서 문제 없음")
+            print("  [통과] 스크립트 파일 13개 있음 · 공통코드 ID 충돌 없음 · 실행 순서 문제 없음")
         pre_left = [no for no, ph, *_ in STEPS if ph == "pre" and st[no] != "done"]
         post_left = [no for no, ph, *_ in STEPS if ph == "post" and st[no] != "done"]
         print(f"\n남은 단계 — 배포 전: {', '.join(pre_left) or '없음'} / 배포 뒤: {', '.join(post_left) or '없음'}")

@@ -29,7 +29,11 @@ migration_20261004_category_site.py — 사이트별 카테고리 정비 (2026-1
      python migration_20261004_category_site.py run      # 적용(이미 적용이면 건너뜀)
      python migration_20261004_category_site.py revert   # 매핑·추가 기록 기준으로 삭제(상품이 물고 있으면 중단 — ec2 상품 복사를 먼저 revert)
    PowerShell: $env:DB_PASSWORD='…'; python C:\…\migration_20261004_category_site.py dry
-  실행 순서: run_all pre(사이트 정비·site_id 추가) → 이 스크립트 run → migration_20261004_ec2_prod_copy.py run
+  실행 순서: run_all pre(사이트 정비·site_id 추가) → 이 스크립트 run → migration_20261004_category_module_root.py run(10-2: 루트 = 모듈)
+             → migration_20261004_ec2_prod_copy.py run
+
+  루트 = 모듈(10-2) 뒤에 다시 실행할 때: sy_site.root_category_id 가 가리키는 루트는 복사·보강 대상에서 빼고(루트끼리는 10-2 가 매핑),
+    "1레벨" = 루트의 자식으로 본다. 새로 넣는 행은 루트 아래(깊이 2부터)로 들어간다. revert 는 10-2 를 먼저 revert 한 뒤에만 한다.
 """
 import os, sys, datetime, collections
 import psycopg2, psycopg2.extras
@@ -110,6 +114,20 @@ for need in (SRC, DST, DM):
         sys.exit(f"sy_site 에 {need} 가 없습니다 — 사이트 ID 정비(sitefix)를 먼저 실행하세요.")
 
 
+# 루트 = 모듈(10-2 단계) 적용 뒤에는 sy_site.root_category_id 가 그 사이트의 루트 카테고리를 가리킨다(없으면 예전 구조 — 부모 없는 것이 1레벨)
+ROOT = {}
+if q("SELECT 1 FROM information_schema.columns WHERE table_schema=%s AND table_name='sy_site' AND column_name='root_category_id'", (S,)):
+    ROOT = {r[0]: r[1] for r in q(f"SELECT site_id, root_category_id FROM {S}.sy_site WHERE coalesce(root_category_id, '') <> ''")}
+
+
+def is_top(r, site):
+    """이 사이트의 1레벨인가 — 루트가 있으면 루트의 자식, 없으면 부모 없는 것"""
+    root = ROOT.get(site)
+    if root:
+        return r["parent_category_id"] == root
+    return r["parent_category_id"] in (None, "")
+
+
 def load(site):
     cur.execute(f'SELECT {", ".join(chr(34) + c + chr(34) for c in COLS)} FROM {S}.pd_category WHERE site_id=%s ORDER BY category_depth NULLS FIRST, sort_ord, category_id', (site,))
     return [dict(zip(COLS, r)) for r in cur.fetchall()]
@@ -167,9 +185,9 @@ def structure_report(rows, site):
 
 def plan_dm():
     """SI260003 보강 계획 — [(이름, 부모이름 or None, 깊이, 정렬)]"""
-    lvl1 = {r["category_nm"]: r for r in dm_rows if r["category_depth"] == 1}
+    lvl1 = {r["category_nm"]: r for r in dm_rows if is_top(r, DM)}
     plan, skipped = [], []
-    next_sort = max([r["sort_ord"] or 0 for r in dm_rows if r["category_depth"] == 1 and r["category_nm"] != DM_LAST] + [0]) + 1
+    next_sort = max([r["sort_ord"] or 0 for r in dm_rows if is_top(r, DM) and r["category_nm"] != DM_LAST] + [0]) + 1
     for nm, alias in DM_WANT:
         hit = next((a for a in [nm] + alias if a in lvl1), None)
         if hit:
@@ -180,7 +198,7 @@ def plan_dm():
         else:
             plan.append((nm, None, 1, next_sort)); next_sort += 1
     for parent, children in DM_CHILDREN.items():
-        have = {r["category_nm"] for r in dm_rows if r["category_depth"] == 2 and lvl1.get(parent) and r["parent_category_id"] == lvl1[parent]["category_id"]}
+        have = {r["category_nm"] for r in dm_rows if lvl1.get(parent) and r["parent_category_id"] == lvl1[parent]["category_id"]}
         for i, ch in enumerate(children, 1):
             if ch not in have and (parent in lvl1 or any(p[0] == parent for p in plan)):
                 plan.append((ch, parent, 2, i))
@@ -193,9 +211,9 @@ def dm_prod_links():
                    FROM {S}.pd_prod p LEFT JOIN {S}.pd_category c ON c.category_id = p.category_id WHERE p.site_id=%s""", (DM,))[0]
 
 
-todo_src = [r for r in src_rows if r["category_id"] not in mapped]
+todo_src = [r for r in src_rows if r["category_id"] not in mapped and r["category_id"] != ROOT.get(SRC)]   # 루트끼리는 10-2 단계가 매핑한다
 dm_plan, dm_skipped = plan_dm()
-dst_unknown = [r for r in dst_rows if r["category_id"] not in set(mapped.values())]
+dst_unknown = [r for r in dst_rows if r["category_id"] not in set(mapped.values()) and r["category_id"] != ROOT.get(DST)]
 applied = map_exists and not todo_src and not dm_plan and len(dst_rows) > 0
 
 # ── status ───────────────────────────────────────────────────────────────────
@@ -211,6 +229,9 @@ if MODE == "status":
 if MODE == "revert":
     if not map_exists:
         sys.exit(f"매핑 {MAP}._map 이 없습니다 — run 을 한 적이 없습니다.")
+    if ROOT:
+        conn.rollback()
+        sys.exit("[중단] 루트 = 모듈(10-2)이 적용돼 있습니다 — 먼저 migration_20261004_category_module_root.py revert 를 실행하세요(루트 아래로 내린 카테고리·매핑을 되돌린 뒤). 아무것도 바꾸지 않았습니다.")
     ids = [r[0] for r in inserted]
     print(f"[되돌리기] 이 스크립트가 넣은 카테고리 {len(ids)}건 삭제 예정 ({', '.join(f'{k} {n}건' for k, n in collections.Counter(r[2] for r in inserted).items())})")
     used = []
@@ -241,14 +262,16 @@ warn, fatal = structure_report(src_rows, SRC)
 print(f"[{DST}] 현재 {len(dst_rows)}건 · 매핑 {len(mapped)}건 → 복사할 것 {len(todo_src)}건")
 if dst_unknown:
     print(f"   !! 매핑에 없는 기존 카테고리 {len(dst_unknown)}건: " + ", ".join(f"{r['category_id']} {r['category_nm']}" for r in dst_unknown[:10]))
-print(f"[{DM}] 현재 {len(dm_rows)}건 (1레벨: {', '.join(r['category_nm'] for r in dm_rows if r['category_depth'] == 1)})")
+if ROOT:
+    print("[루트 = 모듈] 적용됨 — " + ", ".join(f"{k} 루트 {v}" for k, v in sorted(ROOT.items()) if k in (SRC, DST, DM)) + " (루트는 복사·보강 대상이 아님, 1레벨 = 루트의 자식)")
+print(f"[{DM}] 현재 {len(dm_rows)}건 (1레벨: {', '.join(r['category_nm'] for r in dm_rows if is_top(r, DM))})")
 if dm_skipped:
     print("   건너뜀: " + ", ".join(dm_skipped))
 print(f"   추가할 것 {len(dm_plan)}건: " + (", ".join(f"{nm}({str(d)}레벨{'·' + p if p else ''}, 정렬 {s})" for nm, p, d, s in dm_plan) or "없음"))
 dm_links_before = dm_prod_links()
 print(f"   상품 {dm_links_before[0]}건 · 카테고리 연결이 깨진 상품 {dm_links_before[1]}건 · 다른 사이트 카테고리를 가리키는 상품 {dm_links_before[2]}건 (기존 행은 건드리지 않음)")
 for site in NO_CATEGORY_SITES:
-    np_ = q1(f"SELECT count(*) FROM {S}.pd_prod WHERE site_id=%s", (site,)); nc = q1(f"SELECT count(*) FROM {S}.pd_category WHERE site_id=%s", (site,))
+    np_ = q1(f"SELECT count(*) FROM {S}.pd_prod WHERE site_id=%s", (site,)); nc = q1(f"SELECT count(*) FROM {S}.pd_category WHERE site_id=%s AND category_id <> %s", (site, ROOT.get(site) or ""))   # 모듈 루트는 빼고 센다
     print(f"[{site}] 상품 {np_}건 · 카테고리 {nc}건 → " + ("카테고리 불필요(확인만)" if np_ == 0 and nc == 0 else "확인 필요 — 이 스크립트는 건드리지 않음"))
 # 참고: 카테고리를 가리키는 상품의 연결 상태(ec1) — 복사 대상은 아니지만 ec2 상품 복사(D)에 영향
 ec1_links = q(f"""SELECT count(*), count(*) FILTER (WHERE coalesce(p.category_id,'') = ''), count(*) FILTER (WHERE coalesce(p.category_id,'') <> '' AND c.category_id IS NULL)
@@ -256,6 +279,8 @@ ec1_links = q(f"""SELECT count(*), count(*) FILTER (WHERE coalesce(p.category_id
 print(f"[참고 {SRC} 상품] {ec1_links[0]}건 중 카테고리 없음 {ec1_links[1]}건 · 없는 카테고리 ID 를 가리킴 {ec1_links[2]}건")
 
 problems = list(fatal)
+if todo_src and ROOT.get(SRC) and not ROOT.get(DST):
+    problems.append(f"{SRC} 에는 루트가 있는데 {DST} 루트가 없습니다 — migration_20261004_category_module_root.py run 을 먼저 실행하세요")
 if dst_unknown and not map_exists:
     problems.append(f"{DST} 에 출처를 모르는 카테고리가 {len(dst_unknown)}건 있습니다(매핑 없음)")
 
@@ -265,6 +290,8 @@ used_ids = set(all_ids)
 new_copy = gen_ids("CA", len(todo_src), used_ids, base)
 new_dm = gen_ids("CA", len(dm_plan), used_ids, base)
 id_map = dict(mapped); id_map.update({r["category_id"]: n for r, n in zip(todo_src, new_copy)})
+if ROOT.get(SRC) and ROOT.get(DST):
+    id_map.setdefault(ROOT[SRC], ROOT[DST])      # 루트의 자식을 더 복사할 때 부모 = 대상 사이트 루트
 if todo_src:
     print(f"[새 ID] {DST} 복사: {new_copy[0]} ~ {new_copy[-1]}" + (f" / {DM} 추가: {new_dm[0]} ~ {new_dm[-1]}" if new_dm else ""))
 print(f"[적용 여부] {'적용됨 — run 은 건너뜀' if applied else '미적용(또는 일부) — run 대상'}")
@@ -318,13 +345,14 @@ try:
     print(f"[{DST}] 카테고리 {len(rows)}건 복사")
     # 3) 당무마켓 보강
     tmpl = dm_rows[0] if dm_rows else src_rows[0]
-    name_to_id = {r["category_nm"]: r["category_id"] for r in dm_rows if r["category_depth"] == 1}
+    name_to_id = {r["category_nm"]: r["category_id"] for r in dm_rows if is_top(r, DM)}
+    dm_root = ROOT.get(DM)                       # 루트가 있으면 1레벨은 루트 아래(깊이 2), 그 아래는 깊이 3
     rows = []
     for (nm, parent, depth, sort), new_id in zip(dm_plan, new_dm):
         if depth == 1: name_to_id[nm] = new_id
         blank = {c: None for c in COLS}
-        over = dict(blank, category_id=new_id, parent_category_id=(name_to_id[parent] if parent else None), category_nm=nm,
-                    category_depth=depth, sort_ord=sort, site_id=DM)
+        over = dict(blank, category_id=new_id, parent_category_id=(name_to_id[parent] if parent else dm_root), category_nm=nm,
+                    category_depth=depth + (1 if dm_root else 0), sort_ord=sort, site_id=DM)
         if "category_status_cd" in COLS: over["category_status_cd"] = "ACTIVE"
         if "category_desc" in COLS: over["category_desc"] = f"{nm} 중고거래" if depth == 1 else f"{parent} > {nm}"
         if "reg_site_id" in COLS: over["reg_site_id"] = DM
@@ -353,7 +381,7 @@ try:
     kept = q1(f"SELECT count(*) FROM {S}.pd_category WHERE category_id = ANY(%s)", ([r["category_id"] for r in dm_rows],))
     if kept != len(dm_rows): bad.append(f"{DM} 기존 카테고리 {len(dm_rows)}건 중 {kept}건만 남음")
     if dm_prod_links() != dm_links_before: bad.append(f"{DM} 상품의 카테고리 연결 상태가 바뀜: {dm_links_before} → {dm_prod_links()}")
-    dm_names = {r[0] for r in q(f"SELECT category_nm FROM {S}.pd_category WHERE site_id=%s AND category_depth=1", (DM,))}
+    dm_names = {r[0] for r in q(f"SELECT category_nm FROM {S}.pd_category WHERE site_id=%s AND coalesce(parent_category_id, '') = %s", (DM, ROOT.get(DM) or ""))}
     miss = [nm for nm, alias in DM_WANT if not ({nm, *alias} & dm_names)]
     if miss: bad.append(f"{DM} 에 아직 없는 분류: {miss}")
     if bad:

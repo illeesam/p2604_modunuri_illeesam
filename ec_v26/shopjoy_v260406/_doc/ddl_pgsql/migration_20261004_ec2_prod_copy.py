@@ -4,6 +4,7 @@ migration_20261004_ec2_prod_copy.py — ec2(SI260002) 상품 = ec1(SI260001) 상
 
   먼저 끝나 있어야 하는 것
     ① run_all pre (sy_brand.site_id · sl_seller_site 가 생김)   ② migration_20261004_category_site.py run (카테고리 매핑)
+    ③ migration_20261004_category_module_root.py run (10-2: 루트 = 모듈 — sy_site.root_category_id, 갈 곳 없던 상품을 분류·루트로 연결, 루트 → 루트 매핑)
     run 은 둘 중 하나라도 안 돼 있으면 시작하지 않는다. dry 는 지금 상태 그대로 계획을 보여 주고, pre 뒤에 달라질 부분을 표시한다.
 
   복사 범위 (기본 = 대표 160건, `--all` 이면 SI260001 전부, `--limit N` 으로 건수 조정)
@@ -21,7 +22,10 @@ migration_20261004_ec2_prod_copy.py — ec2(SI260002) 상품 = ec1(SI260001) 상
   값 규칙
     · 새 ID = CmUtil.generateId 형식(접두어 + yyMMddHHmmss + 4자리) — 접두어는 extractPrefix 규칙(pd_prod→PR, pd_prod_sku→PRS …)
     · prod_code(전체 유니크) → 원본 + '-E2' (빈 값은 NULL), sku_code(전체 유니크) → 앞의 원본 상품ID 를 새 상품ID 로 바꿈(그 형식이 아니면 + '-E2')
-    · category_id → 카테고리 매핑(shopjoy_2604_map_category_20261004._map)의 SI260002 카테고리, 매핑이 없으면(원본이 없는 카테고리를 가리킴) NULL
+    · category_id → 카테고리 매핑(shopjoy_2604_map_category_20261004._map)의 SI260002 카테고리(루트는 SI260002 루트로).
+      매핑이 없거나 비어 있으면 SI260002 루트(sy_site.root_category_id — 미분류·모듈 전체). 루트가 아직 없으면(10-2 전) NULL
+    · "카테고리가 실제로 연결된 것"(꼭 넣는 상품 기준)에는 10-2 단계가 옮긴 상품(백업 shopjoy_2604_bak_catroot_20261004._prod)과 루트에 달린 상품을 넣지 않는다
+      — 10-2 를 먼저 돌려도 대표 건 선정이 달라지지 않게
     · brand_id → 복사한 SI260002 브랜드, 옵션·SKU 참조 → 복사본 ID(원본에서 이미 끊긴 참조는 NULL), 조회수·판매수 → 0
     · 이미지 URL(cdn_img_url·cdn_thumb_url·thumbnail_url·본문 HTML)은 원본 그대로 — 파일은 공유. 사이트별 폴더로 옮기는 것은 다음 단계(E)가
       pd_prod_img.prod_id → pd_prod.site_id (또는 pd_prod_img.site_id) 기준으로 처리한다.
@@ -56,6 +60,7 @@ except Exception:
 S = "shopjoy_2604"
 MAP = "shopjoy_2604_map_ec2copy_20261004"
 CMAP = "shopjoy_2604_map_category_20261004"       # migration_20261004_category_site.py 가 만든 카테고리 매핑
+RBAK = "shopjoy_2604_bak_catroot_20261004"        # migration_20261004_category_module_root.py(10-2) 백업 — 그 단계가 옮긴 상품 목록
 MIG = "MIGRATION_20261004"
 SRC, DST = "SI260001", "SI260002"
 CODE_SUFFIX = "-E2"
@@ -187,6 +192,12 @@ def has_table(schema, name):
 
 map_exists = has_table(MAP, "_map")
 cmap_exists = has_table(CMAP, "_map")
+# 루트 = 모듈(10-2): 사이트의 루트 카테고리(sy_site.root_category_id) — 없으면 예전 방식(매핑 없는 카테고리는 NULL)
+ROOT = {}
+if q("SELECT 1 FROM information_schema.columns WHERE table_schema=%s AND table_name='sy_site' AND column_name='root_category_id'", (S,)):
+    ROOT = {r[0]: r[1] for r in q(f"SELECT site_id, root_category_id FROM {S}.sy_site WHERE coalesce(root_category_id, '') <> ''")}
+SRC_ROOT, DST_ROOT = ROOT.get(SRC), ROOT.get(DST)
+root_moved = {r[0] for r in q(f"SELECT prod_id FROM {RBAK}._prod")} if has_table(RBAK, "_prod") else set()
 brand_site = has_col("sy_brand", "site_id")
 seller_site = "sl_seller_site" in colinfo
 pre_ok = brand_site and seller_site
@@ -262,6 +273,7 @@ if map_exists:
 problems, waits = [], []      # problems = run 을 막는 데이터 문제, waits = 선행 단계 대기
 if not pre_ok: waits.append("run_all pre(4-1 게시판·site_id·판매자↔사이트)가 아직 — sy_brand.site_id / sl_seller_site 가 생긴 뒤에 run")
 if not cmap_exists: waits.append("카테고리 스크립트(migration_20261004_category_site.py run)가 아직 — 먼저 실행")
+if not DST_ROOT: waits.append("루트 = 모듈(migration_20261004_category_module_root.py run, 10-2 단계)이 아직 — 먼저 실행(sy_site.root_category_id)")
 sites = {r[0] for r in q(f"SELECT site_id FROM {S}.sy_site")}
 if SRC not in sites or DST not in sites: problems.append(f"sy_site 에 {SRC}/{DST} 가 없습니다")
 if dst_prod_cnt: problems.append(f"{DST} 에 이미 상품이 {dst_prod_cnt}건 있습니다(매핑 스키마 없음 — 출처를 알 수 없음)")
@@ -271,7 +283,8 @@ prods = q(f"""SELECT p.prod_id, p.prod_type_cd, p.prod_status_cd, p.seller_id, p
                      (c.category_id IS NOT NULL AND c.site_id = p.site_id) AS cat_ok
                 FROM {S}.pd_prod p LEFT JOIN {S}.pd_category c ON c.category_id = p.category_id
                WHERE p.site_id = %s ORDER BY p.prod_id""", (SRC,))
-P = {r[0]: dict(type=r[1], status=r[2], seller=r[3], brand=r[4], cat=r[5], code=r[6], visible=r[7], cat_ok=r[8]) for r in prods}
+P = {r[0]: dict(type=r[1], status=r[2], seller=r[3], brand=r[4], cat=r[5], code=r[6], visible=r[7], cat_ok=r[8],
+                 cat_real=bool(r[8]) and r[5] != SRC_ROOT and r[0] not in root_moved) for r in prods}   # cat_real = 원래부터 실제 분류에 연결돼 있던 것
 src_ids = list(P)
 print(f"\n[원본 {SRC}] 상품 {len(P)}건 — 상태 " + ", ".join(f"{k} {v}" for k, v in collections.Counter(p['status'] for p in P.values()).items())
       + " / 유형 " + ", ".join(f"{k} {v}" for k, v in collections.Counter(p['type'] for p in P.values()).items())
@@ -290,7 +303,7 @@ if ALL:
     selected = list(src_ids); core = set(selected)
     reason = f"--all: {SRC} 전부"
 else:
-    core = {pid for pid, p in P.items() if p["type"] != "OPTION" or p["cat_ok"]}
+    core = {pid for pid, p in P.items() if p["type"] != "OPTION" or p["cat_real"]}
     for t, c in [("pd_category_prod", "prod_id"), ("pd_prod_content", "prod_id"), ("pd_prod_rel", "prod_id"),
                  ("pd_prod_bundle_item", "bundle_prod_id"), ("pd_prod_set_item", "set_prod_id")]:
         if t in colinfo:
@@ -330,7 +343,11 @@ cat_valid = [i for i in selected if P[i]["cat_ok"]]
 cat_none = [i for i in selected if not (P[i]["cat"] or "")]
 cat_orphan = [i for i in selected if (P[i]["cat"] or "") and not P[i]["cat_ok"]]
 print(f"\n[카테고리] 연결된 상품 {len(cat_valid)}건 → 매핑으로 {DST} 카테고리 연결" + ("" if cmap_exists else " (C 실행 뒤)")
-      + f" · 카테고리 없음 {len(cat_none)}건 · 없는 카테고리 ID 를 가리킴 {len(cat_orphan)}건 → NULL 로 복사")
+      + (f" (그중 루트에 달린 것 {sum(1 for i in cat_valid if P[i]['cat'] == SRC_ROOT)}건 · 10-2 가 분류에 배정한 것 {sum(1 for i in cat_valid if i in root_moved and P[i]['cat'] != SRC_ROOT)}건)" if SRC_ROOT else "")
+      + f" · 카테고리 없음 {len(cat_none)}건 · 없는 카테고리 ID 를 가리킴 {len(cat_orphan)}건 → "
+      + (f"{DST} 루트({DST_ROOT})에 연결" if DST_ROOT else "NULL 로 복사(루트 = 모듈 10-2 단계 전)"))
+if not DST_ROOT:
+    print("   (주의) 루트 = 모듈(migration_20261004_category_module_root.py run)이 아직 — 그 뒤에 run 하면 갈 곳 없던 상품이 분류·루트에 연결된 채 복사됩니다")
 if cmap_exists:
     lost = [i for i in cat_valid if P[i]["cat"] not in cat_map]
     if lost: problems.append(f"카테고리 매핑에 없는 원본 카테고리를 쓰는 상품 {len(lost)}건 — 카테고리 스크립트를 다시 run 하세요")
@@ -504,6 +521,8 @@ def copy_sql(t, pk, scope, fks):
         else:
             joins.append(f"LEFT JOIN {MAP}._map {a} ON {a}.tbl = {L(ref)} AND {a}.old_id = x.\"{col}\""); nv = f"{a}.new_id"
         expr[col] = f"CASE WHEN coalesce(x.\"{col}\", '') = '' THEN x.\"{col}\" ELSE {nv} END"     # 빈 값은 그대로, 나머지는 복사본 ID(없으면 NULL)
+        if ref == "@category" and t == "pd_prod" and DST_ROOT:
+            expr[col] = f"coalesce({nv}, {L(DST_ROOT)})"   # 루트 = 모듈: 매핑이 없거나 빈 값이면 대상 사이트 루트(미분류)
     expr.update({c: v for c, v in OVERRIDE.get(t, {}).items() if c in cols})
     sel_list = ", ".join(expr.get(c, f'x."{c}"') for c in cols)
     return f'INSERT INTO {S}."{t}" ({", ".join(chr(34) + c + chr(34) for c in cols)})\nSELECT {sel_list}\n  FROM {S}."{t}" x\n  ' + "\n  ".join(joins)
@@ -581,7 +600,8 @@ try:
         n = q1(sql)
         if n: bad.append(f"{name}: 고아 {n}건")
     cat_linked = q1(f"SELECT count(*) FROM {S}.pd_prod WHERE site_id=%s AND coalesce(category_id, '') <> ''", (DST,))
-    if cat_linked != len(cat_valid): bad.append(f"카테고리 연결 상품 {cat_linked} ≠ 계획 {len(cat_valid)}")
+    cat_expect = len(selected) if DST_ROOT else len(cat_valid)     # 루트가 있으면 전부 연결(없던 것은 루트로)
+    if cat_linked != cat_expect: bad.append(f"카테고리 연결 상품 {cat_linked} ≠ 계획 {cat_expect}")
     vis = q1(f"SELECT count(*) FROM {S}.pd_prod p WHERE p.site_id=%s AND {VISIBLE}", (DST,))
     if vis != expected_visible: bad.append(f"FO 목록 조건 통과 {vis} ≠ 예상 {expected_visible}")
     if bad:
