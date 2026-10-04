@@ -1,18 +1,37 @@
 # -*- coding: utf-8 -*-
 r"""
-cdnmove_20261004_site_folder.py — CDN 파일을 사이트 폴더(SI26/<사이트ID>_<모듈>/…)로 옮기고 DB 의 URL 을 새 경로로 바꾼다 (2026-10-04)
+cdnmove_20261004_site_folder.py — CDN 파일을 멀티테넌트용 새 폴더 구조로 옮기고 DB 의 URL 을 새 경로로 바꾼다 (2026-10-04, 2차 규칙)
 
-  사용자 확정 규칙
-     NAS  /volume1/docker/shopjoy/storage/ecBeCdnStorage/cdn/SI26/SI260001_ec1/…   (= cdn/<사이트ID 앞 4자리>/<사이트ID>_<모듈>/…)
-     URL  https://22400.illeesam.synology.me/api/cdn/SI26/SI260001_ec1/prod/img/…
-     · 기존 하위 구조는 그대로 사이트 폴더 아래로:  prod/img/…  →  SI26/SI260001_ec1/prod/img/…,   attach/prod_img/…  →  SI26/…/attach/prod_img/…
-     · 날짜 폴더만 있던 파일(2026/10/04/F….webp — 업무 구분 없이 올린 것)은 업무 자리에 upload 를 넣는다:  SI26/…/upload/2026/10/04/F….webp
-       (사이트 폴더 바로 아래가 항상 "업무 이름"이 되게 — 새 업로드는 SI26/<사이트>_<모듈>/<업무>/yyyy/MM/dd/)
+  사용자 승인 구조 (NAS /volume1/docker/shopjoy/storage/ecBeCdnStorage/cdn, URL https://22400.illeesam.synology.me/api/cdn/…)
+     cdn/
+     ├─ _common/design/…                      모든 사이트 공용
+     ├─ _common/attach/etc/yyyy/mm/dd/        사이트를 알 수 없는 첨부
+     └─ SI26/<사이트ID>_<모듈>/               예: SI26/SI260001_ec1
+         ├─ design/{logo,banner,slider,icon,…}/   디자인 파일(뜻 있는 이름, 덮어쓰기 가능)
+         ├─ attach/<업무>/yyyy/mm/dd/             첨부(시스템 ID 파일명) — 업무: prod review qna board chat member contact seller etc
+         ├─ private/                              비공개 첨부(규칙만)
+         └─ temp/                                 저장 전 임시(규칙만)
+
+  옛 → 새
+     prod/img/shop/product/…  (샘플 상품 이미지)      →  <사이트>/attach/prod/_sample/…
+     prod/img/client/…        (고객사 로고)            →  <사이트>/design/logo/…
+     prod/img/<종류>/…        (slider·testimonial 등)  →  <사이트>/design/<종류>/…
+     attach/prod_img/yyyy/mm/dd/…                      →  <사이트>/attach/prod/yyyy/mm/dd/…
+     yyyy/mm/dd/…             (업무 구분 없이 올린 것) →  <사이트>/attach/<업무>/yyyy/mm/dd/…
+        업무는 그 파일을 가리키는 테이블로 정한다: pd_prod_img·pd_prod·pd_prod_content→prod, pd_review→review, pd_prod_qna→qna,
+        게시판(cm_bbs·sy_notice·cm_faq·cm_blog)→board, cm_chatt_msg→chat, mb_member 프로필→member, sy_contact→contact, 그 밖→etc
+        (썸네일 <ID>_thumbnail.<ext>·프레임은 원본과 같은 폴더로 간다)
+     사이트를 알 수 없는 옛 첨부(어느 데이터에도 연결되지 않은 sy_attach)  →  _common/attach/etc/yyyy/mm/dd/…
+     pd_prod.thumbnail_url 의 옛 상대경로 /cdn/prod/img/shop/product/…    →  https://…/api/cdn/<사이트>/attach/prod/_sample/…  (전체 주소로)
+        · FO(resolveCdnUrl)·BO(cofImgSrc) 모두 http 로 시작하는 값은 그대로 쓴다. 상대경로로 두면 BO 미리보기가 assets/cdn/… 을 찾아 깨진다.
+     1차 규칙 형식 SI26/<사이트>_<모듈>/<업무>/… 으로 올라간 파일이 있으면  →  SI26/<사이트>_<모듈>/attach/<새 업무>/…
+
+  원칙
      · 같은 파일을 여러 사이트가 쓰면(샘플 상품 이미지, ec2 복사본) 사이트마다 한 벌씩 "복사"한다 — 사이트 폴더만 지워도 다른 사이트가 깨지지 않게.
-     · 사이트를 알 수 없는 파일(어느 데이터에도 연결되지 않은 첨부·공용 파일)은 옮기지 않는다 — 옛 경로 그대로 서빙된다(목록만 출력).
      · 옛 파일은 지우지 않는다. 옛 URL 은 계속 열린다(ecBeCdn 의 경로 서빙은 그대로). 정리는 맨 끝 cleanup-plan 으로 따로.
      · URL 의 호스트도 공개 주소(https://22400.illeesam.synology.me)로 통일한다 — http://illeesam.synology.me:22400 · host.docker.internal:22400
        (브라우저에서 열리지 않는 주소) 로 저장된 행이 있다.
+     · picsum.photos 외부 이미지·http://localhost:3000/cdn/… 은 바꾸지 않는다(dry 에 숫자만).
 
   단계 (이 순서)
      1) dry          무엇이 어떻게 바뀌는지 출력(읽기 전용). --http 를 붙이면 옛 파일이 실제로 열리는지(HTTP)도 확인
@@ -27,7 +46,7 @@ cdnmove_20261004_site_folder.py — CDN 파일을 사이트 폴더(SI26/<사이�
 
   base64 로 들어간 이미지(data:image…)
      b64dry          어느 행에 몇 건, 얼마나 큰지 출력
-     b64run          파일로 올리고(ecBeCdn /api/cdn/upload, folder=SI26/<사이트>_<모듈>/<업무>) URL 로 교체 — 새 ecBeCdn(decca14 이후) 배포 뒤에만
+     b64run          파일로 올리고(ecBeCdn /api/cdn/upload, folder=SI26/<사이트>_<모듈>/attach/<업무>) URL 로 교체 — 새 ecBeCdn(2차 규칙) 배포 뒤에만
 
   사용법 (DB_PASSWORD 는 일회성 환경변수로만)
      PowerShell: $env:DB_PASSWORD='…'; python cdnmove_20261004_site_folder.py dry --http
@@ -65,10 +84,28 @@ USAGE = "사용법: python cdnmove_20261004_site_folder.py dry [--http] | plan |
 # 옛 URL 의 호스트 형태 — 전부 같은 ecBeCdn 을 가리킨다
 HOSTS = [r"https?://22400\.illeesam\.synology\.me", r"https?://illeesam\.synology\.me:22400", r"https?://host\.docker\.internal:22400"]
 URL_RE = re.compile(r"(?P<host>" + "|".join(HOSTS) + r")?/api/cdn/(?P<path>[A-Za-z0-9_\-./%]+)")
-NEW_PREFIX_RE = re.compile(r"^[A-Za-z]{2}[0-9]{2}/[A-Za-z0-9]+_[A-Za-z0-9]+/")
+COMMON = "_common"
+# 이미 새 구조인 경로
+NEW_PREFIX_RE = re.compile(r"^(?:[A-Za-z]{2}[0-9]{2}/[A-Za-z0-9]+_[A-Za-z0-9]+/(?:design|attach|private|temp)/|_common/(?:design|attach)/)")
+# 사이트 폴더로 시작하는 경로(1차 규칙 형식 포함)
+SITE_PREFIX_RE = re.compile(r"^([A-Za-z]{2}[0-9]{2}/[A-Za-z0-9]+_[A-Za-z0-9]+)/(.+)$")
+REL_CDN_RE = re.compile(r"^/cdn/([A-Za-z0-9_\-./%]+)$")   # 옛 상대경로(/cdn/prod/…) — 값 전체가 경로 하나
+# 업무 폴더 — ecBeBo CdnBizDir · ecBeCdn CfStorageService.BIZ_DIRS · 공통코드 CDN_BIZ_CD 와 같은 목록(앞쪽이 우선)
+BIZ_DIRS = ["prod", "review", "qna", "board", "chat", "member", "contact", "seller", "etc"]
+BIZ_KEYWORDS = [("review", "review"), ("qna", "qna"), ("chat", "chat"), ("contact", "contact"), ("profile", "member"), ("member", "member"),
+                ("seller", "seller"), ("vendor", "seller"), ("bbs", "board"), ("board", "board"), ("notice", "board"), ("faq", "board"),
+                ("blog", "board"), ("prod", "prod")]
+# 그 파일을 가리키는 테이블 → 업무
+TABLE_BIZ = {"pd_prod_img": "prod", "pd_prod": "prod", "pd_prod_content": "prod", "pd_review": "review", "pd_prod_qna": "qna",
+             "cm_bbs": "board", "sy_notice": "board", "cm_faq": "board", "cm_blog": "board", "cm_chatt_msg": "chat",
+             "mb_member": "member", "sy_contact": "contact", "sy_contact_content": "contact", "dp_panel_item": "etc", "sy_vendor": "seller"}
+SAMPLE_PREFIX = "prod/img/shop/product/"     # 샘플 상품 이미지
+DESIGN_PREFIX = "prod/img/"                  # 그 밖의 prod/img/<종류>/… 는 디자인 파일
+DESIGN_RENAME = {"client": "logo"}           # 고객사 로고
 DATE_ONLY_RE = re.compile(r"^[0-9]{4}/[0-9]{2}/[0-9]{2}/")
 # /api/cdn/ 아래 고정 경로(파일이 아님) — 바꾸지 않는다
 RESERVED = ("auth/", "client/", "file/", "storage/", "serve/", "config/", "log/", "db/", "redis/", "upload")
+THUMB_SUFFIX_RE = re.compile(r"(?:_thumbnail|_frame)?\.[A-Za-z0-9]+$")
 DATA_RE = re.compile(r"data:image/(?P<ext>png|jpeg|jpg|gif|webp);base64,(?P<b64>[A-Za-z0-9+/=]+)")
 
 # (테이블, PK, 컬럼, 사이트를 구하는 SQL 식(별칭 t), 필요한 조인, 그 조인에 필요한 (테이블,컬럼) — 없으면 "pre 뒤 처리")
@@ -114,10 +151,56 @@ def connect(readonly):
     return c
 
 
-def new_rel(old_rel, site_folder):
-    """옛 상대경로 → 사이트 폴더 아래 새 상대경로"""
-    sub = ("upload/" + old_rel) if DATE_ONLY_RE.match(old_rel) else old_rel
-    return site_folder + "/" + sub
+def biz_dir(v):
+    """업무 값(옛 값 포함) → 정해진 업무 폴더"""
+    b = (v or "").strip().lower()
+    if b in BIZ_DIRS:
+        return b
+    for key, d in BIZ_KEYWORDS:
+        if key in b:
+            return d
+    return "etc"
+
+
+def base_key(path):
+    """원본·썸네일·프레임을 한 묶음으로 보는 키(폴더 + 파일 ID) — 썸네일은 원본 옆에 둔다"""
+    d, _, name = path.rpartition("/")
+    return d + "/" + THUMB_SUFFIX_RE.sub("", name)
+
+
+def new_sub(old_rel, biz):
+    """옛 상대경로 → 사이트 폴더 아래 새 경로. biz 는 날짜 폴더만 있던 파일에만 쓰인다(그 파일을 가리키는 테이블로 정한 업무)"""
+    if DATE_ONLY_RE.match(old_rel):
+        return f"attach/{biz}/{old_rel}"
+    if old_rel.startswith(SAMPLE_PREFIX):
+        return "attach/prod/_sample/" + old_rel[len(SAMPLE_PREFIX):]
+    if old_rel.startswith(DESIGN_PREFIX):
+        rest = old_rel[len(DESIGN_PREFIX):]
+        if "/" not in rest:
+            return "design/etc/" + rest
+        kind, tail = rest.split("/", 1)
+        return f"design/{DESIGN_RENAME.get(kind, kind)}/{tail}"
+    first, _, tail = old_rel.partition("/")
+    if first == "attach" and "/" in tail:                       # attach/prod_img/… → attach/prod/…
+        old_biz, _, tail2 = tail.partition("/")
+        return f"attach/{biz_dir(old_biz)}/{tail2}"
+    if tail and biz_dir(first) != "etc":                        # <옛 업무 폴더>/… (예: CONTACT_CONTENT_ATTACH/…)
+        return f"attach/{biz_dir(first)}/{tail}"
+    return f"attach/{biz}/{old_rel}"
+
+
+def new_rel(old_rel, folder, biz):
+    """옛 상대경로 → 새 상대경로. folder = 사이트 폴더(SI26/SI260001_ec1) 또는 _common"""
+    m = SITE_PREFIX_RE.match(old_rel)
+    if m:                                                       # 1차 규칙 형식 SI26/<사이트>/<업무>/… → 같은 사이트의 attach/<새 업무>/…
+        first, _, tail = m.group(2).partition("/")
+        if first == "attach" and "/" in tail:
+            first, _, tail = tail.partition("/")
+        return f"{m.group(1)}/attach/{biz_dir(first)}/{tail}"
+    sub = new_sub(old_rel, biz)
+    if folder == COMMON and sub.startswith("attach/"):          # 공용 첨부는 etc 로만
+        sub = "attach/etc/" + sub.split("/", 2)[2]
+    return folder + "/" + sub
 
 
 class Plan:
@@ -137,20 +220,37 @@ class Plan:
         self.changes = []          # (table, pk_col, pk, col, old_value, new_value)
         self.copies = {}           # new_rel → old_rel
         self.pending = []          # pre 뒤 처리(사이트 컬럼 없음)
-        self.no_site = collections.Counter()   # (table.col) → 행 수 (사이트를 알 수 없어 그대로 둠)
-        self.no_site_paths = set()
+        self.common = collections.Counter()    # (table.col) → 행 수 (사이트를 알 수 없어 _common 으로)
+        self.common_paths = set()
+        self.no_site_paths = set()             # (옛 이름 — cleanup-plan 이 본다. 이제는 사이트 불명도 _common 으로 옮기므로 비어 있다)
         self.per_target = collections.Counter()
-        self.host_only = collections.Counter()
         self.url_sites = collections.defaultdict(set)  # old_rel → {site}
+        self.refs = collections.defaultdict(lambda: collections.defaultdict(set))   # 파일 키 → {site → {업무}}
+        self.rel_rows = 0          # pd_prod.thumbnail_url 옛 상대경로 행 수
         self._scan()
 
     def q(self, sql, args=None):
         self.cur.execute(sql, args)
         return self.cur.fetchall()
 
-    def _rewrite(self, value, site, label):
+    # 1차: 어느 사이트·업무가 어떤 파일을 가리키는지 모은다
+    def _note(self, value, site, biz):
+        if not site or site not in self.site_folder:
+            return
+        for m in URL_RE.finditer(value or ""):
+            path = m.group("path")
+            if path.startswith(RESERVED) or NEW_PREFIX_RE.match(path):
+                continue
+            self.refs[base_key(path)][site].add(biz)
+
+    def _biz(self, path, site, fallback):
+        got = self.refs.get(base_key(path), {}).get(site) or {fallback}
+        return next((b for b in BIZ_DIRS if b in got), "etc")
+
+    def _rewrite(self, value, site, label, biz):
         """문자열 안의 CDN URL 을 모두 새 경로로. 반환: 새 문자열(바뀐 것이 없으면 원래 값)"""
         folder = self.site_folder.get(site) if site else None
+        used_common = []
 
         def repl(m):
             path = m.group("path")
@@ -159,21 +259,25 @@ class Plan:
             host = PUBLIC_BASE if m.group("host") else ""
             if NEW_PREFIX_RE.match(path):                       # 이미 새 경로 — 호스트만 통일
                 return f"{host}/api/cdn/{path}"
-            if not folder:
-                self.no_site_paths.add(path)
-                return m.group(0)                               # 사이트를 모르면 호스트도 건드리지 않는다
-            self.url_sites[path].add(site)
-            nr = new_rel(path, folder)
+            if folder:
+                self.url_sites[path].add(site)
+                nr = new_rel(path, folder, self._biz(path, site, biz))
+            else:                                               # 사이트를 알 수 없음 → 공용 폴더
+                nr = new_rel(path, COMMON, "etc")
+                if nr.startswith(COMMON + "/"):
+                    self.common_paths.add(path)
+                    used_common.append(path)
             self.copies[nr] = path
             return f"{host}/api/cdn/{nr}"
 
         new = URL_RE.sub(repl, value)
-        if new == value and not folder and URL_RE.search(value):
-            self.no_site[label] += 1
+        if used_common:
+            self.common[label] += 1
         return new
 
     def _scan(self):
         like = "(t.\"{c}\" LIKE '%%/api/cdn/%%')"
+        loaded = []     # (table, pk, col, label, rows)
         for table, pk, col, site_expr, join, needs in TARGETS:
             if table not in self.cols or col not in self.cols[table]:
                 continue
@@ -185,16 +289,41 @@ class Plan:
                     self.pending.append((label, n, ", ".join(missing) or f"{table}.site_id"))
                 continue
             rows = self.q(f"SELECT t.{pk}, t.\"{col}\", {site_expr} FROM {S}.{table} t {join} WHERE " + like.format(c=col))
+            loaded.append((table, pk, col, label, rows))
             for pkv, val, site in rows:
-                new = self._rewrite(val, site, label)
+                self._note(val, site, TABLE_BIZ.get(table, "etc"))
+        attach = self._load_attach()
+        for aid, site, biz, cols, vals in attach:
+            for v in vals:
+                self._note(v, site, biz)
+        # 2차: 바꿀 값 계산
+        for table, pk, col, label, rows in loaded:
+            for pkv, val, site in rows:
+                new = self._rewrite(val, site, label, TABLE_BIZ.get(table, "etc"))
                 if new != val:
                     self.changes.append((table, pk, pkv, col, val, new))
                     self.per_target[label] += 1
-        self._scan_attach()
+        self._scan_rel()
+        for aid, site, biz, cols, vals in attach:
+            if not site:   # 연결 안 된 첨부 — 다른 데이터가 같은 파일을 가리키면(본문에 넣은 이미지, 채팅 사진, 프로필) 그 사이트를 따른다
+                for v in vals:
+                    m = URL_RE.search(v or "")
+                    sites = self.refs.get(base_key(m.group("path")), {}) if m else {}
+                    if len(sites) == 1:
+                        site = next(iter(sites))
+                        break
+            for c, v in zip(cols, vals):
+                if not v:
+                    continue
+                new = self._rewrite(v, site, f"sy_attach.{c}", biz)
+                if new != v:
+                    self.changes.append(("sy_attach", "attach_id", aid, c, v, new))
+                    self.per_target[f"sy_attach.{c}"] += 1
 
-    def _scan_attach(self):
+    def _load_attach(self):
+        """sy_attach 행 — [(attach_id, 사이트(연결된 데이터 기준, 없으면 None), 업무, 컬럼들, 값들)]"""
         if "sy_attach" not in self.cols:
-            return
+            return []
         cols = [c for c in ATTACH_COLS if c in self.cols["sy_attach"]]
         site_of = {}
         for ref, (rt, rpk, expr, join) in ATTACH_REF.items():
@@ -207,24 +336,31 @@ class Plan:
                 site_of[aid] = site
         sel = ", ".join(f'a."{c}"' for c in cols)
         rows = self.q(f"SELECT a.attach_id, a.ref_table_nm, {sel} FROM {S}.sy_attach a WHERE " + " OR ".join(f"a.\"{c}\" LIKE '%%/api/cdn/%%'" for c in cols))
-        for row in rows:
-            aid, ref = row[0], row[1]
-            site = site_of.get(aid)
-            if not site:   # 연결 안 된 첨부 — 다른 데이터가 같은 파일을 가리키면(본문에 넣은 이미지, 채팅 사진, 프로필) 그 사이트를 따른다
-                for v in row[2:]:
-                    m = URL_RE.search(v or "")
-                    if m and len(self.url_sites.get(m.group("path"), ())) == 1:
-                        site = next(iter(self.url_sites[m.group("path")]))
-                        break
-            for c, v in zip(cols, row[2:]):
-                if not v:
-                    continue
-                new = self._rewrite(v, site, f"sy_attach.{c}")
-                if new != v:
-                    self.changes.append(("sy_attach", "attach_id", aid, c, v, new))
-                    self.per_target[f"sy_attach.{c}"] += 1
+        return [(r[0], site_of.get(r[0]), TABLE_BIZ.get(r[1] or "", "etc"), cols, list(r[2:])) for r in rows]
 
-    # cf_file: 한 사이트로만 옮겨진 파일은 경로를 새 위치로(파일ID 로 지울 때 새 파일이 지워지게). 여러 사이트가 나눠 가진 파일은 그대로 둔다
+    def _scan_rel(self):
+        """pd_prod.thumbnail_url 의 옛 상대경로(/cdn/prod/…) → 그 상품 사이트 폴더의 새 경로(전체 주소).
+        FO(resolveCdnUrl)·BO(cofImgSrc)·SEO(toAbsoluteUrl) 모두 http 로 시작하는 값은 그대로 쓴다 — 같은 컬럼에 이미 전체 주소로 든 행이 있다."""
+        if "thumbnail_url" not in self.cols.get("pd_prod", set()):
+            return
+        for pkv, val, site in self.q(f"SELECT prod_id, thumbnail_url, site_id FROM {S}.pd_prod WHERE thumbnail_url LIKE '/cdn/%%'"):
+            m = REL_CDN_RE.match(val)
+            if not m or m.group(1).startswith(RESERVED) or NEW_PREFIX_RE.match(m.group(1)):
+                continue
+            path = m.group(1)
+            folder = self.site_folder.get(site)
+            if folder:
+                self.url_sites[path].add(site)
+            else:
+                self.common_paths.add(path)
+                self.common["pd_prod.thumbnail_url"] += 1
+            nr = new_rel(path, folder or COMMON, "prod")
+            self.copies[nr] = path
+            self.changes.append(("pd_prod", "prod_id", pkv, "thumbnail_url", val, f"{PUBLIC_BASE}/api/cdn/{nr}"))
+            self.per_target["pd_prod.thumbnail_url"] += 1
+            self.rel_rows += 1
+
+    # cf_file: 한 곳으로만 옮겨진 파일은 경로를 새 위치로(파일ID 로 지울 때 새 파일이 지워지게). 여러 사이트가 나눠 가진 파일은 그대로 둔다
     def cf_file_changes(self):
         if "cf_file" not in self.cols:
             return []
@@ -233,20 +369,30 @@ class Plan:
             targets[old].add(nr)
         out = []
         for fid, fp, tp, frp in self.q(f"SELECT file_id, file_path, thumbnail_path, frame_path FROM {S}.cf_file"):
-            if not fp or len(targets.get(fp, ())) != 1:
+            if not fp or NEW_PREFIX_RE.match(fp) or len(targets.get(fp, ())) != 1:
                 continue
-            folder = next(iter(targets[fp]))[: -len(new_rel(fp, "X")) + 1].rstrip("/")
-            for col, old in (("file_path", fp), ("thumbnail_path", tp), ("frame_path", frp)):
+            nr = next(iter(targets[fp]))
+            ndir = nr.rpartition("/")[0]
+            out.append(("cf_file", "file_id", fid, "file_path", fp, nr))
+            for col, old in (("thumbnail_path", tp), ("frame_path", frp)):
                 if old and not NEW_PREFIX_RE.match(old):
-                    nr = new_rel(old, folder)
-                    self.copies.setdefault(nr, old)       # 썸네일·프레임도 같이 복사
-                    out.append(("cf_file", "file_id", fid, col, old, nr))
+                    n2 = ndir + "/" + old.rpartition("/")[2]      # 썸네일·프레임은 원본 옆
+                    self.copies.setdefault(n2, old)
+                    out.append(("cf_file", "file_id", fid, col, old, n2))
         return out
 
     def file_sizes(self):
         if "cf_file" not in self.cols:
             return {}
         return {r[0]: r[1] for r in self.q(f"SELECT file_path, file_size FROM {S}.cf_file")}
+
+
+def folder_group(nr):
+    """새 경로 → (사이트 폴더 이름 또는 _common, 종류/하위) — 요약용"""
+    parts = nr.split("/")
+    if parts[0] == COMMON:
+        return COMMON, "/".join(parts[1:3])
+    return parts[1], "/".join(parts[2:4])
 
 
 def http_status(url):
@@ -268,23 +414,26 @@ def summarize(p, cf, http=False):
     olds = set(p.copies.values())
     sizes = p.file_sizes()
     known = sum(sizes.get(o, 0) for o in olds)
-    per_site = collections.Counter(nr.split("/")[1] for nr in p.copies)
+    per_site = collections.Counter(folder_group(nr)[0] for nr in p.copies)
+    per_group = collections.Counter(folder_group(nr) for nr in p.copies)
     print(f"  복사할 파일 {len(p.copies)}개 (원본 {len(olds)}개 — 여러 사이트가 같이 쓰는 원본 {sum(1 for o in olds if len(p.url_sites.get(o, ())) > 1)}개)")
     print(f"    용량: cf_file 에 기록된 원본 {sum(1 for o in olds if o in sizes)}개 = {known / 1048576:.1f}MB (나머지는 cf_file 에 없는 옛 샘플·첨부 — 크기 모름)")
     for k, v in sorted(per_site.items()):
-        print(f"    {k:<28} {v:>5}개")
+        print(f"    {k:<28} {v:>5}개   (" + ", ".join(f"{g} {n}" for (st, g), n in sorted(per_group.items()) if st == k) + ")")
+    if p.rel_rows:
+        print(f"  pd_prod.thumbnail_url 옛 상대경로(/cdn/…) {p.rel_rows}행 → 상품 사이트 폴더의 전체 주소로 (위 변경 행 수에 포함)")
     if p.pending:
         print("  [pre 뒤 처리] 사이트 컬럼이 아직 없어 지금은 계산하지 않은 것:")
         for label, n, why in p.pending:
             print(f"    {label:<36} {n:>6}행  (필요: {why})")
-    if p.no_site or p.no_site_paths:
-        print(f"  [그대로 둠] 사이트를 알 수 없는 파일 {len(p.no_site_paths)}개 — 옛 경로로 계속 서빙:")
-        for k, v in p.no_site.items():
+    if p.common or p.common_paths:
+        print(f"  [공용 폴더로] 사이트를 알 수 없는 파일 {len(p.common_paths)}개 → {COMMON}/attach/etc/… (디자인성 경로는 {COMMON}/design/…):")
+        for k, v in p.common.items():
             print(f"    {k:<36} {v:>6}행")
-        for path in sorted(p.no_site_paths)[:10]:
+        for path in sorted(p.common_paths)[:5]:
             print(f"      {path}")
-        if len(p.no_site_paths) > 10:
-            print(f"      … 외 {len(p.no_site_paths) - 10}개")
+        if len(p.common_paths) > 5:
+            print(f"      … 외 {len(p.common_paths) - 5}개")
     if http:
         bad = [(o, st) for o in sorted(olds) for st in [http_status(f"{PUBLIC_BASE}/api/cdn/{o}")] if st != 200]
         print(f"  [옛 파일 확인] {len(olds)}개 중 열리지 않는 것 {len(bad)}개")
@@ -302,7 +451,6 @@ def legacy_report(conn):
     print("[이상 데이터 — 이 스크립트가 바꾸지 않는 것]")
     checks = [
         ("picsum.photos 외부 이미지 (pd_prod_img)", f"SELECT count(*) FROM {S}.pd_prod_img WHERE cdn_img_url LIKE '%%picsum.photos%%'"),
-        ("옛 상대경로 /cdn/prod/… (pd_prod.thumbnail_url — 화면이 앞에 호스트를 붙여 쓰는 옛 형식)", f"SELECT count(*) FROM {S}.pd_prod WHERE thumbnail_url LIKE '/cdn/%%'"),
         ("http://localhost:3000/cdn/… (md_cb_pattern.thumbnail_url)", f"SELECT count(*) FROM {S}.md_cb_pattern WHERE thumbnail_url LIKE 'http://localhost%%'"),
         ("http://localhost:3000/cdn/… (md_sg_project.thumbnail_url)", f"SELECT count(*) FROM {S}.md_sg_project WHERE thumbnail_url LIKE 'http://localhost%%'"),
     ]
@@ -407,7 +555,7 @@ def revert():
             skipped += 1 - cur.rowcount
         cur.execute(f"DROP SCHEMA {BAK} CASCADE")
         conn.commit()
-        print(f"[revert] 복원 {back}건 · 그사이 값이 바뀌어 건너뜀 {skipped}건. 복사된 파일(SI26/…)은 그대로 둡니다.")
+        print(f"[revert] 복원 {back}건 · 그사이 값이 바뀌어 건너뜀 {skipped}건. 복사된 파일(SI26/… · _common/…)은 그대로 둡니다.")
     except Exception as e:
         conn.rollback()
         sys.exit(f"[실패 — 롤백] {str(e).strip()}")
@@ -423,29 +571,35 @@ def cleanup_plan():
     cur.execute(f"SELECT old_value FROM {BAK}._changes")
     olds = set()
     for (v,) in cur.fetchall():
+        mr = REL_CDN_RE.match(v)
+        if mr:                                  # pd_prod.thumbnail_url 옛 상대경로
+            olds.add(mr.group(1))
+            continue
         for m in URL_RE.finditer(v if "/api/cdn/" in v else "/api/cdn/" + v):
             if not NEW_PREFIX_RE.match(m.group("path")):
                 olds.add(m.group("path"))
     p = Plan(conn)   # 아직 옛 경로를 가리키는 데이터가 남았는지
     still = set(p.copies.values()) | p.no_site_paths
+    cur.execute(f"SELECT thumbnail_url FROM {S}.pd_prod WHERE thumbnail_url LIKE '/cdn/%%'")
+    still |= {v[5:] for (v,) in cur.fetchall()}
     safe = sorted(olds - still)
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, "cleanup_old_files.sh")
     with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write("#!/bin/sh\n# 옛 경로 파일 삭제 — 새 경로로 옮긴 뒤 충분히 지켜본 다음에만 실행. cd " + NAS_ROOT + " 에서.\n# 운영 중인 옛 FO/앱 빌드·캐시가 옛 URL 을 아직 쓸 수 있다.\n"
+        f.write("#!/bin/sh\n# 옛 경로 파일 삭제 — 새 경로로 옮긴 뒤 충분히 지켜본 다음에만 실행. cd " + NAS_ROOT + " 에서.\n# 운영 중인 옛 FO/앱 빌드·캐시가 옛 URL 을 아직 쓸 수 있다. FO 소스가 직접 적어 둔 디자인 경로(prod/img/slider 등)도 새 경로로 바꾼 뒤에만.\n"
                 + "".join(f"rm -f '{o}'\n" for o in safe))
     print(f"[cleanup-plan] 지워도 되는 옛 파일 {len(safe)}개 (아직 옛 경로를 가리키는 데이터가 있는 {len(olds & still)}개는 뺌)\n  {path}  — 만들기만 했습니다.")
 
 
 # ── base64 이미지 ───────────────────────────────────────────────────────────
-B64_TARGETS = [  # (테이블, PK, 컬럼, 사이트 식, 조인, 업무 폴더)
+B64_TARGETS = [  # (테이블, PK, 컬럼, 사이트 식, 조인, 업무 폴더 — attach/<업무>)
     ("pd_prod_img", "prod_img_id", "cdn_img_url", "coalesce(t.site_id, p.site_id)", f"LEFT JOIN {S}.pd_prod p ON p.prod_id = t.prod_id", "prod"),
     ("pd_prod_img", "prod_img_id", "cdn_thumb_url", "coalesce(t.site_id, p.site_id)", f"LEFT JOIN {S}.pd_prod p ON p.prod_id = t.prod_id", "prod"),
     ("pd_prod_content", "prod_content_id", "content_html", "t.site_id", "", "prod"),
-    ("sy_notice", "notice_id", "content_html", "t.site_id", "", "notice"),
-    ("cm_faq", "faq_id", "faq_answer", "t.site_id", "", "faq"),
+    ("sy_notice", "notice_id", "content_html", "t.site_id", "", "board"),
+    ("cm_faq", "faq_id", "faq_answer", "t.site_id", "", "board"),
     ("sy_contact", "contact_id", "contact_content", "t.site_id", "", "contact"),
-    ("sy_vendor", "vendor_id", "vendor_remark", "t.site_id", "", "vendor"),
+    ("sy_vendor", "vendor_id", "vendor_remark", "t.site_id", "", "seller"),
 ]
 
 
@@ -480,7 +634,7 @@ def b64dry():
             uniq.add(hashlib.sha1(b.encode()).hexdigest())
         imgs += len(found)
         total += size
-        print(f"  {table}.{col} [{pkv}] 사이트 {site or '?'} — 이미지 {len(found)}개 {size / 1024:.0f}KB → {p.site_folder.get(site, '(사이트 없음 — 건너뜀)')}/{biz}")
+        print(f"  {table}.{col} [{pkv}] 사이트 {site or '?'} — 이미지 {len(found)}개 {size / 1024:.0f}KB → {p.site_folder.get(site, '(사이트 없음 — 건너뜀)')}/attach/{biz}")
     print(f"[b64dry] {len(items)}행 · 이미지 {imgs}개(내용이 다른 것 {len(uniq)}개) · {total / 1048576:.2f}MB — 아무것도 바꾸지 않았습니다.")
 
 
@@ -526,7 +680,7 @@ def b64run():
                 key = hashlib.sha1(m.group("b64").encode()).hexdigest() + folder
                 if key not in cache:
                     ext = "jpg" if m.group("ext") == "jpeg" else m.group("ext")
-                    cache[key] = cdn_upload(base64.b64decode(m.group("b64")), f"b64-{key[:12]}.{ext}", f"image/{m.group('ext')}", f"{folder}/{biz}")
+                    cache[key] = cdn_upload(base64.b64decode(m.group("b64")), f"b64-{key[:12]}.{ext}", f"image/{m.group('ext')}", f"{folder}/attach/{biz}")
                 return cache[key]
 
             new = DATA_RE.sub(repl, val)

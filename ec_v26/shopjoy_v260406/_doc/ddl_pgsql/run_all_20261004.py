@@ -22,11 +22,13 @@ run_all_20261004.py — 2026-10-03~04 대기 중인 DB 변경을 정해진 순�
        11   migration_20261004_ec2_prod_copy.py run          ec2 상품 = ec1 대표 160건 복사(옵션·SKU·이미지·브랜드·판매자↔사이트)
        15   migration_20261004_category_cd.py run            카테고리 코드: pd_category.category_cd 추가(사이트 간 공통 집계 키 — 신발 = SHOES),
                                                              사전으로 값 채움(ec1·ec2 같은 코드, danmoo1, 루트 = ROOT), (site_id, category_cd) 부분 유니크
+       16   migration_20261004_cdn_biz_dir.sql               CDN 첨부 업무 폴더 목록: 공통코드 CDN_BIZ_CD 9개(prod·review·qna·board·chat·member·contact·seller·etc)
      배포 "후"(post) — ecBeBo·ecFeBo 새 코드 배포·확인 뒤
        3-2  호환 뷰 sy_alarm·syh_alarm_send_hist·sy_noti 삭제 (noti_rename.sql 맨 아래 주석 처리된 2단계와 같은 문장)
        4-2  migration_20261003_cm_bbm_site_ownership.py run2 --with-pm-cache   빈 site_id 재채움·NOT NULL·호환 뷰 sy_bbm·sy_bbs 삭제
        8-2  옛 컬럼 sy_site.tenant_module 삭제 (module_cd.sql 맨 아래 주석 처리된 2단계와 같은 문장)
-       12   cdnmove_20261004_site_folder.py run              CDN URL 을 사이트 폴더(SI26/<사이트ID>_<모듈>/…)로 — NAS 파일 복사(plan → copy_files.sh)를 먼저 해야 한다.
+       12   cdnmove_20261004_site_folder.py run              CDN URL 을 새 폴더 구조(SI26/<사이트ID>_<모듈>/{design,attach/<업무>} · _common/attach/etc)로
+                                                             — NAS 파일 복사(plan → copy_files.sh)를 먼저 해야 한다.
                                                              새 경로가 HTTP 200 이 아니면 이 단계는 아무것도 바꾸지 않고 멈춘다(맨 마지막 단계라 앞 단계에는 영향 없음)
 
   ■ 순서를 이렇게 둔 이유 (2026-10-04 스크립트 검토)
@@ -359,6 +361,21 @@ def st_cdn(s):
 
 
 F_BOAUDIT = "migration_20261004_bo_site_audit.py"
+F_CDNBIZ = "migration_20261004_cdn_biz_dir.sql"
+CDNBIZ_CODES = ["prod", "review", "qna", "board", "chat", "member", "contact", "seller", "etc"]
+
+
+def st_cdnbiz(s):
+    """CDN 첨부 업무 폴더 목록 — 공통코드 CDN_BIZ_CD 와 그 코드 9개"""
+    c = connect(True)
+    try:
+        cur = c.cursor()
+        cur.execute(f"""SELECT count(*) FROM {S}.sy_code c JOIN {S}.sy_code_grp g ON g.code_grp_id = c.code_grp_id
+                         WHERE g.code_grp = 'CDN_BIZ_CD' AND c.code_value = ANY(%s)""", (CDNBIZ_CODES,))
+        n = cur.fetchone()[0]
+    finally:
+        c.close()
+    return summarize([("코드그룹 CDN_BIZ_CD", "CDN_BIZ_CD" in s.code_grps), (f"CDN_BIZ_CD 코드 {len(CDNBIZ_CODES)}개", n == len(CDNBIZ_CODES))])
 F_DMLOCAL = "migration_20261004_dm_local.sql"
 F_CATCD = "migration_20261004_category_cd.py"
 
@@ -465,10 +482,11 @@ STEPS = [
     ("11",  "pre",  "ec2 상품 = ec1 대표 160건 복사",           st_ec2,      lambda: run_py(F_EC2, "run"),                   f"{F_EC2} run"),
     ("14",  "pre",  "당무마켓 동네 글·전문가·견적요청(cm_local_post 등)", st_dmlocal, lambda: run_sql_file(F_DMLOCAL),               F_DMLOCAL),
     ("15",  "pre",  "카테고리 코드(pd_category.category_cd — 사이트 간 집계 키)", st_catcd, lambda: run_py(F_CATCD, "run"),          f"{F_CATCD} run"),
+    ("16",  "pre",  "CDN 첨부 업무 폴더 목록(공통코드 CDN_BIZ_CD)", st_cdnbiz,  lambda: run_sql_file(F_CDNBIZ),                  F_CDNBIZ),
     ("3-2", "post", "알림 이름 정리 2단계(호환 뷰 삭제)",      st_rename2,  run_drop_noti_views,                             "DROP VIEW sy_alarm·syh_alarm_send_hist·sy_noti"),
     ("4-2", "post", "site_id NOT NULL·게시판 호환 뷰 삭제",    st_cmbbm2,   lambda: run_py(F_CMBBM, "run2", "--with-pm-cache"), f"{F_CMBBM} run2 --with-pm-cache"),
     ("8-2", "post", "옛 컬럼 sy_site.tenant_module 삭제",      st_module2,  run_drop_tenant_module,                          "DROP COLUMN sy_site.tenant_module"),
-    ("12",  "post", "CDN URL 사이트 폴더로(SI26/<사이트>_<모듈>)", st_cdn,    lambda: run_py(F_CDN, "run"),                    f"{F_CDN} run (NAS 파일 복사 뒤)"),
+    ("12",  "post", "CDN URL 새 폴더 구조로(SI26/<사이트>_<모듈>/attach·design)", st_cdn,    lambda: run_py(F_CDN, "run"),                    f"{F_CDN} run (NAS 파일 복사 뒤)"),
     ("13",  "post", "BO 점검 보정(사이트 선택 팝업 모듈 열 등)",   st_boaudit,  lambda: run_py(F_BOAUDIT, "run"),               f"{F_BOAUDIT} run"),
 ]
 LABEL = {"done": "적용됨", "todo": "미적용", "partial": "일부 적용"}
@@ -490,7 +508,7 @@ def print_status(s, phases=("pre", "post")):
 def preflight(s):
     """pre 를 시작하면 안 되는 상황 — 문제 목록"""
     bad = []
-    for f in (F_SITEFIX2, F_FCM, F_RENAME, F_CMBBM, F_CHATT, F_MEET, F_TZ, F_MODULE, F_MODCODES, F_CATEGORY, F_CATROOT, F_EC2, F_CDN, F_CATCD):
+    for f in (F_SITEFIX2, F_FCM, F_RENAME, F_CMBBM, F_CHATT, F_MEET, F_TZ, F_MODULE, F_MODCODES, F_CATEGORY, F_CATROOT, F_EC2, F_CDN, F_CATCD, F_CDNBIZ):
         if not os.path.isfile(os.path.join(HERE, f)):
             bad.append(f"파일 없음: {os.path.join(HERE, f)}")
     bad.extend(s.id_conflicts)
@@ -515,7 +533,7 @@ def main():
         for m in bad:
             print(f"  [문제] {m}")
         if not bad:
-            print("  [통과] 스크립트 파일 14개 있음 · 공통코드 ID 충돌 없음 · 실행 순서 문제 없음")
+            print("  [통과] 스크립트 파일 15개 있음 · 공통코드 ID 충돌 없음 · 실행 순서 문제 없음")
         pre_left = [no for no, ph, *_ in STEPS if ph == "pre" and st[no] != "done"]
         post_left = [no for no, ph, *_ in STEPS if ph == "post" and st[no] != "done"]
         print(f"\n남은 단계 — 배포 전: {', '.join(pre_left) or '없음'} / 배포 뒤: {', '.join(post_left) or '없음'}")
