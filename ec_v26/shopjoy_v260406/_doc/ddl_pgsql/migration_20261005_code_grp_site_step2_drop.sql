@@ -77,22 +77,8 @@ SELECT c.code_id,
        c.upd_by,
        c.upd_date
   FROM shopjoy_2604.sy_code c
-  LEFT JOIN shopjoy_2604.sy_code_grp g ON g.code_grp_id::text = c.code_grp_id::text
- WHERE g.code_grp_id IS NULL
-    OR NOT EXISTS (
-        SELECT 1
-          FROM shopjoy_2604.sy_code_grp g2
-         WHERE g2.code_grp = g.code_grp
-           AND g2.code_grp_id <> g.code_grp_id
-           AND (
-                (NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_code_grp_site m2 WHERE m2.code_grp_id = g2.code_grp_id)
-                 AND EXISTS (SELECT 1 FROM shopjoy_2604.sy_code_grp_site m1 WHERE m1.code_grp_id = g.code_grp_id))
-             OR ((EXISTS (SELECT 1 FROM shopjoy_2604.sy_code_grp_site m2 WHERE m2.code_grp_id = g2.code_grp_id)
-                  = EXISTS (SELECT 1 FROM shopjoy_2604.sy_code_grp_site m1 WHERE m1.code_grp_id = g.code_grp_id))
-                 AND g2.code_grp_id < g.code_grp_id)
-           )
-       );
-COMMENT ON VIEW shopjoy_2604.vw_sy_code IS '공통코드 + 그룹명 (목록의 코드 라벨 조인용). 이름이 같은 그룹이 여럿이면 대표 그룹(전체 공통 우선)만 보인다';
+  LEFT JOIN shopjoy_2604.sy_code_grp g ON g.code_grp_id::text = c.code_grp_id::text;
+COMMENT ON VIEW shopjoy_2604.vw_sy_code IS '공통코드 + 그룹명 (목록의 코드 라벨 조인용)';
 
 COMMIT;
 
