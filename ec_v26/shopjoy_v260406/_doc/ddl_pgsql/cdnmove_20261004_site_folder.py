@@ -27,6 +27,18 @@ cdnmove_20261004_site_folder.py — CDN 파일을 멀티테넌트용 새 폴더 
         · FO(resolveCdnUrl)·BO(cofImgSrc) 모두 http 로 시작하는 값은 그대로 쓴다. 상대경로로 두면 BO 미리보기가 assets/cdn/… 을 찾아 깨진다.
      1차 규칙 형식 SI26/<사이트>_<모듈>/<업무>/… 으로 올라간 파일이 있으면  →  SI26/<사이트>_<모듈>/attach/<새 업무>/…
 
+  값 전체가 옛 상대경로 하나인 컬럼 (REL_TARGETS — 2026-10-04 추가분 포함). 새 값은 모두 전체 주소 https://…/api/cdn/<사이트>/…
+     pd_prod.thumbnail_url                      /cdn/prod/img/shop/product/…         →  <사이트>/attach/prod/_sample/…
+     cm_blog_file.img_url · thumb_url           /cdn/prod/img/blog/…                 →  <사이트>/design/blog/…        (사이트 = 그 글 cm_blog.site_id)
+     pm_event.img_url                           /cdn/prod/img/blog/…                 →  <사이트>/design/blog/…        (블로그 샘플과 같은 파일 → 같은 새 경로)
+     pm_plan.thumbnail_url · banner_url         /cdn/prod/img/shop/banner/…          →  <사이트>/design/banner/…
+     dp_widget · dp_widget_lib.thumbnail_url    assets/cdn/prod/img/shop/product/…   →  <사이트>/attach/prod/_sample/… (샘플 상품 이미지 — 상품과 같은 파일 → 같은 새 경로)
+     md_cb_pattern · md_sg_project.thumbnail_url  http://localhost:3000/cdn/attach/<업무>/…  →  <사이트>/attach/etc/…
+        · localhost 주소는 CDN 에 그 파일이 실제로 있을 때만(옛 주소 HTTP 200) 옮긴다. 없으면 그대로 두고 알린다.
+     사이트: 행의 site_id(사이트 폴더가 있는 사이트)를 따르고, site_id 가 없거나 폴더를 모르면 기본 사이트 ec1(SI260001) 폴더로 간다.
+        (pd_prod 만 예전대로 사이트 불명이면 _common)
+     읽는 화면: FO resolveCdnUrl · BO cofImgSrc 는 http 로 시작하면 그대로 쓰고, 나머지(BO 기획전·코바늘·소스생성 목록)는 값을 그대로 src 로 쓴다 — 전체 주소가 안전.
+
   FO 소스가 직접 가리키는 디자인 파일 (FO_DESIGN — DB 에는 없고 화면 소스가 주소를 적어 둔 것)
      ecFeFoNuxt4 의 useCdn().designUrl(용도, 파일) 이 <사이트>/design/<용도>/<파일> 을 가리킨다. DB 가 가리키지 않는 파일은 위 계산에 안 잡히므로
      아래 FO_DESIGN 목록(사이트별 옛 경로)을 같은 규칙(new_rel)으로 복사 목록에 더한다 — plan 의 copy_files.sh · verify · run 직전 확인에 모두 들어간다(DB 는 바꾸지 않는다).
@@ -37,7 +49,7 @@ cdnmove_20261004_site_folder.py — CDN 파일을 멀티테넌트용 새 폴더 
      · 옛 파일은 지우지 않는다. 옛 URL 은 계속 열린다(ecBeCdn 의 경로 서빙은 그대로). 정리는 맨 끝 cleanup-plan 으로 따로.
      · URL 의 호스트도 공개 주소(https://22400.illeesam.synology.me)로 통일한다 — http://illeesam.synology.me:22400 · host.docker.internal:22400
        (브라우저에서 열리지 않는 주소) 로 저장된 행이 있다.
-     · picsum.photos 외부 이미지·http://localhost:3000/cdn/… 은 바꾸지 않는다(dry 에 숫자만).
+     · picsum.photos 외부 이미지는 외부 주소라 바꾸지 않는다(dry 에 숫자만). http://localhost:3000/cdn/… 은 CDN 에 파일이 있을 때만 옮긴다(위).
 
   단계 (이 순서)
      1) dry          무엇이 어떻게 바뀌는지 출력(읽기 전용). --http 를 붙이면 옛 파일이 실제로 열리는지(HTTP)도 확인
@@ -96,6 +108,9 @@ NEW_PREFIX_RE = re.compile(r"^(?:[A-Za-z]{2}[0-9]{2}/[A-Za-z0-9]+_[A-Za-z0-9]+/(
 # 사이트 폴더로 시작하는 경로(1차 규칙 형식 포함)
 SITE_PREFIX_RE = re.compile(r"^([A-Za-z]{2}[0-9]{2}/[A-Za-z0-9]+_[A-Za-z0-9]+)/(.+)$")
 REL_CDN_RE = re.compile(r"^/cdn/([A-Za-z0-9_\-./%]+)$")   # 옛 상대경로(/cdn/prod/…) — 값 전체가 경로 하나
+# 값 전체가 옛 경로 하나인 여러 형태: /cdn/… · cdn/… · assets/cdn/…(BO 로컬 파일 경로) · http://localhost:3000/cdn/…(개발 PC 주소로 저장된 것)
+REL_ANY_RE = re.compile(r"^(?:(?P<local>https?://(?:localhost|127\.0\.0\.1)(?::[0-9]+)?/)|/)?(?:assets/)?cdn/(?P<path>[A-Za-z0-9_\-./%]+)$")
+DEFAULT_SITE = "SI260001"                    # site_id 가 없거나 판단할 수 없는 행이 가는 사이트(ec1)
 # 업무 폴더 — ecBeBo CdnBizDir · ecBeCdn CfStorageService.BIZ_DIRS · 공통코드 CDN_BIZ_CD 와 같은 목록(앞쪽이 우선)
 BIZ_DIRS = ["prod", "review", "qna", "board", "chat", "member", "contact", "seller", "etc"]
 BIZ_KEYWORDS = [("review", "review"), ("qna", "qna"), ("chat", "chat"), ("contact", "contact"), ("profile", "member"), ("member", "member"),
@@ -133,6 +148,22 @@ TARGETS = [
     ("cm_bbs", "bbs_id", "content_html", "t.site_id", "", [("cm_bbs", "site_id")]),
     ("cm_blog", "blog_id", "blog_content", "t.site_id", "", [("cm_blog", "site_id")]),
 ]
+# 값 전체가 옛 상대경로 하나인 컬럼 — (테이블, PK, 컬럼, 사이트 식(별칭 t), 조인, 업무, 사이트 불명일 때 기본 사이트(None 이면 _common))
+#   site_id 가 있고 사이트 폴더를 아는 사이트면 그 폴더, 아니면 기본 사이트(ec1) 폴더. 새 값은 전체 주소.
+REL_TARGETS = [
+    ("pd_prod", "prod_id", "thumbnail_url", "t.site_id", "", "prod", None),
+    ("cm_blog_file", "blog_file_id", "img_url", "b.site_id", f"LEFT JOIN {S}.cm_blog b ON b.blog_id = t.blog_id", "board", DEFAULT_SITE),
+    ("cm_blog_file", "blog_file_id", "thumb_url", "b.site_id", f"LEFT JOIN {S}.cm_blog b ON b.blog_id = t.blog_id", "board", DEFAULT_SITE),
+    ("dp_widget", "widget_id", "thumbnail_url", "t.site_id", "", "etc", DEFAULT_SITE),
+    ("dp_widget_lib", "widget_lib_id", "thumbnail_url", "t.site_id", "", "etc", DEFAULT_SITE),
+    ("pm_event", "event_id", "img_url", "t.site_id", "", "etc", DEFAULT_SITE),
+    ("pm_plan", "plan_id", "thumbnail_url", "t.site_id", "", "etc", DEFAULT_SITE),
+    ("pm_plan", "plan_id", "banner_url", "t.site_id", "", "etc", DEFAULT_SITE),
+    ("md_cb_pattern", "pattern_id", "thumbnail_url", "t.site_id", "", "etc", DEFAULT_SITE),
+    ("md_sg_project", "project_id", "thumbnail_url", "t.site_id", "", "etc", DEFAULT_SITE),
+]
+REL_JOIN_NEEDS = {"cm_blog_file": [("cm_blog", "site_id")]}   # 조인에 필요한 (테이블, 컬럼) — 없으면 기본 사이트로
+
 # sy_attach — 연결된 데이터(ref_table_nm/ref_id)의 사이트를 따른다
 ATTACH_COLS = ["cdn_img_url", "thumb_url", "thumb_cdn_url", "cdn_thumb_url", "attach_url"]
 ATTACH_REF = {  # ref_table_nm → (테이블, PK, 사이트 식(별칭 r), 조인)
@@ -257,7 +288,10 @@ class Plan:
         self.per_target = collections.Counter()
         self.url_sites = collections.defaultdict(set)  # old_rel → {site}
         self.refs = collections.defaultdict(lambda: collections.defaultdict(set))   # 파일 키 → {site → {업무}}
-        self.rel_rows = 0          # pd_prod.thumbnail_url 옛 상대경로 행 수
+        self.rel_rows = collections.Counter()      # (table.col) → 값 전체가 옛 상대경로였던 행 수
+        self.rel_default = collections.Counter()   # (table.col) → site_id 가 없거나 폴더를 몰라 기본 사이트(ec1)로 보낸 행 수
+        self.rel_group = collections.defaultdict(collections.Counter)   # (table.col) → {(사이트 폴더, 종류): 행 수}
+        self.local_missing = []    # (table.col, pk, 값, HTTP 상태) — localhost 주소인데 CDN 에 파일이 없어 그대로 둔 것
         self.fo_copies = {}        # FO 소스가 직접 가리키는 디자인 파일: new_rel → old_rel (복사·확인 대상, DB 변경 없음)
         self.fo_added = collections.Counter()  # (사이트 폴더 이름, design/<용도>) → DB 계획에 없어 새로 더한 수
         self.fo_missing = []       # (old_rel, HTTP 상태, 사이트) — 옛 주소가 열리지 않아 뺀 것
@@ -375,26 +409,45 @@ class Plan:
         return [(r[0], site_of.get(r[0]), TABLE_BIZ.get(r[1] or "", "etc"), cols, list(r[2:])) for r in rows]
 
     def _scan_rel(self):
-        """pd_prod.thumbnail_url 의 옛 상대경로(/cdn/prod/…) → 그 상품 사이트 폴더의 새 경로(전체 주소).
-        FO(resolveCdnUrl)·BO(cofImgSrc)·SEO(toAbsoluteUrl) 모두 http 로 시작하는 값은 그대로 쓴다 — 같은 컬럼에 이미 전체 주소로 든 행이 있다."""
-        if "thumbnail_url" not in self.cols.get("pd_prod", set()):
-            return
-        for pkv, val, site in self.q(f"SELECT prod_id, thumbnail_url, site_id FROM {S}.pd_prod WHERE thumbnail_url LIKE '/cdn/%%'"):
-            m = REL_CDN_RE.match(val)
-            if not m or m.group(1).startswith(RESERVED) or NEW_PREFIX_RE.match(m.group(1)):
+        """값 전체가 옛 상대경로 하나인 컬럼(REL_TARGETS) → 그 행 사이트 폴더의 새 경로(전체 주소).
+        FO(resolveCdnUrl)·BO(cofImgSrc)·SEO(toAbsoluteUrl) 모두 http 로 시작하는 값은 그대로 쓴다 — pd_prod.thumbnail_url 에는 이미 전체 주소로 든 행이 있다.
+        http://localhost…/cdn/… 로 저장된 값은 CDN 에 그 파일이 실제로 있을 때만(옛 주소 HTTP 200) 옮긴다."""
+        status = {}
+        for table, pk, col, site_expr, join, biz, default_site in REL_TARGETS:
+            if col not in self.cols.get(table, set()) or pk not in self.cols[table]:
                 continue
-            path = m.group(1)
-            folder = self.site_folder.get(site)
-            if folder:
-                self.url_sites[path].add(site)
-            else:
-                self.common_paths.add(path)
-                self.common["pd_prod.thumbnail_url"] += 1
-            nr = new_rel(path, folder or COMMON, "prod")
-            self.copies[nr] = path
-            self.changes.append(("pd_prod", "prod_id", pkv, "thumbnail_url", val, f"{PUBLIC_BASE}/api/cdn/{nr}"))
-            self.per_target["pd_prod.thumbnail_url"] += 1
-            self.rel_rows += 1
+            label = f"{table}.{col}"
+            if any(c not in self.cols.get(t, set()) for t, c in REL_JOIN_NEEDS.get(table, [])) or ("t.site_id" in site_expr and "site_id" not in self.cols[table]):
+                site_expr, join = "NULL", ""                     # 사이트를 구할 수 없는 테이블 — 기본 사이트로
+            c = f't."{col}"'
+            rows = self.q(f"SELECT t.{pk}, {c}, {site_expr} FROM {S}.{table} t {join} WHERE {c} LIKE '/cdn/%%' OR {c} LIKE 'cdn/%%' OR {c} LIKE 'assets/cdn/%%'"
+                          f" OR {c} LIKE '/assets/cdn/%%' OR {c} LIKE 'http://localhost%%/cdn/%%' OR {c} LIKE 'http://127.0.0.1%%/cdn/%%' ORDER BY t.{pk}")
+            for pkv, val, site in rows:
+                m = REL_ANY_RE.match(val)
+                if not m or m.group("path").startswith(RESERVED) or NEW_PREFIX_RE.match(m.group("path")):
+                    continue
+                path = m.group("path")
+                if m.group("local"):                             # 개발 PC 주소 — CDN 에 파일이 있을 때만
+                    if path not in status:
+                        status[path] = http_status(f"{PUBLIC_BASE}/api/cdn/{path}")
+                    if status[path] != 200:
+                        self.local_missing.append((label, pkv, val, status[path]))
+                        continue
+                folder = self.site_folder.get(site)
+                if not folder and default_site and default_site in self.site_folder:
+                    site, folder = default_site, self.site_folder[default_site]
+                    self.rel_default[label] += 1
+                if folder:
+                    self.url_sites[path].add(site)
+                else:
+                    self.common_paths.add(path)
+                    self.common[label] += 1
+                nr = new_rel(path, folder or COMMON, biz)
+                self.copies[nr] = path
+                self.changes.append((table, pk, pkv, col, val, f"{PUBLIC_BASE}/api/cdn/{nr}"))
+                self.per_target[label] += 1
+                self.rel_rows[label] += 1
+                self.rel_group[label][folder_group(nr)] += 1
 
     def _scan_fo(self):
         """FO 소스가 직접 가리키는 디자인 파일(FO_DESIGN)을 복사 목록에 더한다 — 옛 주소가 HTTP 200 인 것만. DB 는 건드리지 않는다."""
@@ -487,7 +540,15 @@ def summarize(p, cf, http=False):
     for note in p.fo_notes:
         print(f"    [FO 알림] {note}")
     if p.rel_rows:
-        print(f"  pd_prod.thumbnail_url 옛 상대경로(/cdn/…) {p.rel_rows}행 → 상품 사이트 폴더의 전체 주소로 (위 변경 행 수에 포함)")
+        print(f"  [값 전체가 옛 상대경로인 컬럼] {sum(p.rel_rows.values())}행 → 그 행 사이트 폴더의 전체 주소로 (위 변경 행 수에 포함)")
+        for label, n in p.rel_rows.items():
+            where = ", ".join(f"{st}/{g} {c}" for (st, g), c in sorted(p.rel_group[label].items()))
+            note = f" — site_id 없음·판단 불가 {p.rel_default[label]}행은 기본 사이트({DEFAULT_SITE})로" if p.rel_default[label] else ""
+            print(f"    {label:<36} {n:>6}행 → {where}{note}")
+    if p.local_missing:
+        print(f"  [localhost 주소 — CDN 에 파일이 없어 그대로 둠] {len(p.local_missing)}행")
+        for label, pkv, val, st in p.local_missing:
+            print(f"    HTTP {st}  {label} [{pkv}]  {val}")
     if p.pending:
         print("  [pre 뒤 처리] 사이트 컬럼이 아직 없어 지금은 계산하지 않은 것:")
         for label, n, why in p.pending:
@@ -509,23 +570,27 @@ def summarize(p, cf, http=False):
     for t, pk, pkv, col, old, new in p.changes[:1] + p.changes[len(p.changes) // 2: len(p.changes) // 2 + 1] + p.changes[-1:]:
         mo, mn = URL_RE.search(old), URL_RE.search(new)
         print(f"    {t}.{col} [{pkv}]\n      옛: {mo.group(0) if mo else old[:120]}\n      새: {mn.group(0) if mn else new[:120]}")
+    seen = set()
+    for t, pk, pkv, col, old, new in p.changes:      # 값 전체가 상대경로였던 컬럼은 컬럼마다 한 건씩
+        if f"{t}.{col}" in p.rel_rows and (t, col) not in seen and REL_ANY_RE.match(old):
+            seen.add((t, col))
+            print(f"    {t}.{col} [{pkv}]\n      옛: {old[:120]}\n      새: {new[:120]}")
 
 
-def legacy_report(conn):
+def legacy_report(conn, p=None):
     """이 스크립트가 바꾸지 않는 이상 데이터 — 목록만"""
     cur = conn.cursor()
     print("[이상 데이터 — 이 스크립트가 바꾸지 않는 것]")
-    checks = [
-        ("picsum.photos 외부 이미지 (pd_prod_img)", f"SELECT count(*) FROM {S}.pd_prod_img WHERE cdn_img_url LIKE '%%picsum.photos%%'"),
-        ("http://localhost:3000/cdn/… (md_cb_pattern.thumbnail_url)", f"SELECT count(*) FROM {S}.md_cb_pattern WHERE thumbnail_url LIKE 'http://localhost%%'"),
-        ("http://localhost:3000/cdn/… (md_sg_project.thumbnail_url)", f"SELECT count(*) FROM {S}.md_sg_project WHERE thumbnail_url LIKE 'http://localhost%%'"),
-    ]
-    for label, sql in checks:
-        try:
-            cur.execute(sql)
-            print(f"    {cur.fetchone()[0]:>6}행  {label}")
-        except Exception as e:
-            print(f"    (조회 실패) {label}: {str(e).strip()[:80]}")
+    try:
+        cur.execute(f"SELECT coalesce(t.site_id, p.site_id), count(*) FROM {S}.pd_prod_img t LEFT JOIN {S}.pd_prod p ON p.prod_id = t.prod_id"
+                    f" WHERE t.cdn_img_url LIKE '%%picsum.photos%%' GROUP BY 1 ORDER BY 1")
+        rows = cur.fetchall()
+        print(f"    {sum(n for _, n in rows):>6}행  picsum.photos 외부 이미지 (pd_prod_img) — 외부 주소라 그대로 둔다"
+              + (" : " + ", ".join(f"{sid or '사이트 없음'} {n}" for sid, n in rows) if rows else ""))
+    except Exception as e:
+        print(f"    (조회 실패) picsum.photos: {str(e).strip()[:80]}")
+    missing = len(p.local_missing) if p else 0
+    print(f"    {missing:>6}행  http://localhost…/cdn/… 인데 CDN 에 파일이 없어 그대로 둔 것 (md_cb_pattern · md_sg_project 썸네일)")
 
 
 def write_plan(p):
@@ -642,9 +707,9 @@ def cleanup_plan():
     cur.execute(f"SELECT old_value FROM {BAK}._changes")
     olds = set()
     for (v,) in cur.fetchall():
-        mr = REL_CDN_RE.match(v)
-        if mr:                                  # pd_prod.thumbnail_url 옛 상대경로
-            olds.add(mr.group(1))
+        mr = REL_ANY_RE.match(v)
+        if mr:                                  # 값 전체가 옛 상대경로 하나(REL_TARGETS)
+            olds.add(mr.group("path"))
             continue
         for m in URL_RE.finditer(v if "/api/cdn/" in v else "/api/cdn/" + v):
             if not NEW_PREFIX_RE.match(m.group("path")):
@@ -779,7 +844,7 @@ def main():
         cf = p.cf_file_changes()
         if mode == "dry":
             summarize(p, cf, http="--http" in args)
-            legacy_report(conn)
+            legacy_report(conn, p)
             print("(dry) 아무것도 바꾸지 않았습니다.")
         elif mode == "plan":
             summarize(p, cf)
