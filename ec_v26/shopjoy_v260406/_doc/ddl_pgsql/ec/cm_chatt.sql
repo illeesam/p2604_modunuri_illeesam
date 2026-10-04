@@ -1,13 +1,18 @@
 -- cm_chatt 테이블 DDL
 -- 채팅 방 (cm_chatt_room 대체, 2026-06-27 재구조화)
+-- 2026-10-04: 방 종류(chatt_type_cd CS/TRADE)·거래 대상(ref_type_cd/ref_id)·미리보기(last_msg_text) 추가 — migration_20261004_chatt_trade.sql
 
 CREATE TABLE shopjoy_2604.cm_chatt (
     chatt_id               VARCHAR(21)  NOT NULL CONSTRAINT cm_chatt_pk_chatt_id PRIMARY KEY,
     reg_site_id                VARCHAR(21)  NOT NULL,
+    chatt_type_cd          VARCHAR(20)  NOT NULL DEFAULT 'CS',
+    ref_type_cd            VARCHAR(20) ,
+    ref_id                 VARCHAR(21) ,
     subject                VARCHAR(200),
     chatt_status_cd        VARCHAR(20)  DEFAULT 'PENDING',
     chatt_status_cd_before VARCHAR(20) ,
     last_msg_date          TIMESTAMP   ,
+    last_msg_text          VARCHAR(200),
     chatt_memo             TEXT        ,
     close_date             TIMESTAMP   ,
     close_reason           VARCHAR(200),
@@ -20,10 +25,14 @@ CREATE TABLE shopjoy_2604.cm_chatt (
 COMMENT ON TABLE  shopjoy_2604.cm_chatt IS '채팅 방';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_id IS '채팅방ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.reg_site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_type_cd IS '채팅방 종류 (코드: CHATT_TYPE — CS:고객 상담 / TRADE:회원 간 거래)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt.ref_type_cd IS '거래 대상 유형 (TRADE 방: PRODUCT)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt.ref_id IS '거래 대상 ID (PRODUCT → pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.subject IS '채팅주제';
-COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_status_cd IS '상태 (코드: CHATT_STATUS — PENDING/OPEN/CLOSED)';
-COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_status_cd_before IS '변경 전 상태';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_status_cd IS '상태 (코드: CHATT_STATUS — PENDING:대기 / ACTIVE:진행중 / CLOSED:종료)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_status_cd_before IS '변경 전 상태 (코드: CHATT_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.last_msg_date IS '마지막 메시지 일시';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt.last_msg_text IS '마지막 메시지 미리보기 (목록용 캐시, 사진=사진)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.chatt_memo IS '관리자 메모';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.close_date IS '종료일시';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt.close_reason IS '종료사유';
@@ -34,3 +43,4 @@ COMMENT ON COLUMN shopjoy_2604.cm_chatt.upd_date IS '수정일시';
 
 CREATE INDEX cm_chatt_ix01_chatt_status_cd ON shopjoy_2604.cm_chatt USING btree (chatt_status_cd);
 CREATE INDEX cm_chatt_ix02_reg_date ON shopjoy_2604.cm_chatt USING btree (reg_date DESC);
+CREATE INDEX cm_chatt_ix03_type_ref ON shopjoy_2604.cm_chatt USING btree (chatt_type_cd, ref_type_cd, ref_id);
