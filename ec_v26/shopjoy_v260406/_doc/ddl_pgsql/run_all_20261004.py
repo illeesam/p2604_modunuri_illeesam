@@ -338,6 +338,19 @@ def st_cdn(s):
 
 
 F_BOAUDIT = "migration_20261004_bo_site_audit.py"
+F_DMLOCAL = "migration_20261004_dm_local.sql"
+
+
+def st_dmlocal(s):
+    """당무마켓 동네 글·전문가·견적요청 — cm_local_post 테이블이 있으면 적용됨"""
+    c = connect(True)
+    try:
+        cur = c.cursor()
+        cur.execute("SELECT to_regclass('shopjoy_2604.cm_local_post') IS NOT NULL")
+        ok = cur.fetchone()[0]
+    finally:
+        c.close()
+    return ("done", "cm_local_post 있음") if ok else ("todo", "미적용")
 
 
 def st_boaudit(s):
@@ -417,6 +430,7 @@ STEPS = [
     ("9",   "pre",  "모듈 한정 코드 그룹(sy_code_grp.module_cd)", st_modcodes, lambda: run_sql_file(F_MODCODES),               F_MODCODES),
     ("10",  "pre",  "사이트별 카테고리(ec2 복사·당무마켓 보강)", st_category, lambda: run_py(F_CATEGORY, "run"),              f"{F_CATEGORY} run"),
     ("11",  "pre",  "ec2 상품 = ec1 대표 160건 복사",           st_ec2,      lambda: run_py(F_EC2, "run"),                   f"{F_EC2} run"),
+    ("14",  "pre",  "당무마켓 동네 글·전문가·견적요청(cm_local_post 등)", st_dmlocal, lambda: run_sql_file(F_DMLOCAL),               F_DMLOCAL),
     ("3-2", "post", "알림 이름 정리 2단계(호환 뷰 삭제)",      st_rename2,  run_drop_noti_views,                             "DROP VIEW sy_alarm·syh_alarm_send_hist·sy_noti"),
     ("4-2", "post", "site_id NOT NULL·게시판 호환 뷰 삭제",    st_cmbbm2,   lambda: run_py(F_CMBBM, "run2", "--with-pm-cache"), f"{F_CMBBM} run2 --with-pm-cache"),
     ("8-2", "post", "옛 컬럼 sy_site.tenant_module 삭제",      st_module2,  run_drop_tenant_module,                          "DROP COLUMN sy_site.tenant_module"),

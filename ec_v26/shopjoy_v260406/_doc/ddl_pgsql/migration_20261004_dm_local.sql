@@ -25,7 +25,7 @@
 --  ID 대역: 코드그룹 CG261004300001~300022, 코드 CD261004300001~300148
 --           (2026-10-04 조회: DB 에 CG261004%·CD261004% 없음. 같은 날 대기 중인 chatt_trade …0000xx, cm_meet …07xxxx,
 --            module_cd …10xxxx, module_codes …20xxxx 대역과 겹치지 않는다)
---           BO 메뉴 MN000097~MN000100 (조회: 가장 큰 menu_id = MN000096)
+--           BO 메뉴 MN000111~MN000114 (조회: 가장 큰 menu_id = MN000096 — 게시판 마이그레이션이 MN000097 을 쓰므로 111~ 로 띄움)
 -- ═══════════════════════════════════════════════════════════
 --  사용법: 아래 스크립트 전체 실행 (재실행해도 안전 — IF NOT EXISTS / NOT EXISTS)
 --  롤백: 맨 아래 "롤백" 블록 (주석 해제 후 실행)
@@ -565,10 +565,10 @@ SELECT 'CD261004300999', 'LOCAL_POST', '동네 글', 9, 'Y', '당무마켓 동�
 INSERT INTO shopjoy_2604.sy_menu (menu_id, menu_code, menu_nm, parent_menu_id, menu_url, menu_type_cd, icon_class, sort_ord, use_yn, menu_remark, reg_by, reg_date, reg_site_id)
 SELECT v.menu_id, v.menu_code, v.menu_nm, v.parent_menu_id, v.menu_url, 'FOLDER', NULL, v.sort_ord, 'Y', v.menu_remark, 'MIGRATION_20261004', CURRENT_TIMESTAMP, 'SI260001'
   FROM (VALUES
-         ('MN000097', 'CUST_GRP_LOCAL', '동네생활',      'MN000060', NULL,                   4, '그룹'),
-         ('MN000098', 'CM_LOCAL_POST',  '동네 글 관리',  'MN000097', '#page=cmLocalPostMng', 1, NULL),
-         ('MN000099', 'CM_EXPERT',      '전문가 관리',   'MN000097', '#page=cmExpertMng',    2, NULL),
-         ('MN000100', 'CM_QUOTE_REQ',   '견적요청 관리', 'MN000097', '#page=cmQuoteReqMng',  3, NULL)
+         ('MN000111', 'CUST_GRP_LOCAL', '동네생활',      'MN000060', NULL,                   4, '그룹'),
+         ('MN000112', 'CM_LOCAL_POST',  '동네 글 관리',  'MN000111', '#page=cmLocalPostMng', 1, NULL),
+         ('MN000113', 'CM_EXPERT',      '전문가 관리',   'MN000111', '#page=cmExpertMng',    2, NULL),
+         ('MN000114', 'CM_QUOTE_REQ',   '견적요청 관리', 'MN000111', '#page=cmQuoteReqMng',  3, NULL)
        ) AS v(menu_id, menu_code, menu_nm, parent_menu_id, menu_url, sort_ord, menu_remark)
  WHERE NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_menu m WHERE m.menu_id = v.menu_id OR m.menu_code = v.menu_code);
 
@@ -577,7 +577,7 @@ INSERT INTO shopjoy_2604.sy_role_menu (role_menu_id, role_id, menu_id, perm_leve
 SELECT 'ROM261004' || lpad(((('x' || substr(md5(src.role_id || ':' || n.menu_id), 1, 8))::bit(32)::bigint) % 10000000000)::text, 10, '0'),
        src.role_id, n.menu_id, src.perm_level, 'MIGRATION_20261004', CURRENT_TIMESTAMP, 'SI260001'
   FROM shopjoy_2604.sy_role_menu src
- CROSS JOIN (VALUES ('MN000097'), ('MN000098'), ('MN000099'), ('MN000100')) AS n(menu_id)
+ CROSS JOIN (VALUES ('MN000111'), ('MN000112'), ('MN000113'), ('MN000114')) AS n(menu_id)
  WHERE src.menu_id = 'MN000063'
    AND EXISTS (SELECT 1 FROM shopjoy_2604.sy_menu m WHERE m.menu_id = n.menu_id AND m.reg_by = 'MIGRATION_20261004')
    AND NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_role_menu x WHERE x.role_id = src.role_id AND x.menu_id = n.menu_id);
@@ -589,15 +589,15 @@ SELECT 'ROM261004' || lpad(((('x' || substr(md5(src.role_id || ':' || n.menu_id)
 --    AND table_name IN ('cm_local_post','cm_local_attach','cm_expert','cm_expert_cate','cm_quote_req','cm_quote_bid') ORDER BY 1;   → 6행
 -- SELECT g.code_grp, count(c.code_id) FROM shopjoy_2604.sy_code_grp g LEFT JOIN shopjoy_2604.sy_code c ON c.code_grp_id = g.code_grp_id
 --  WHERE g.code_grp_id LIKE 'CG2610043%' GROUP BY 1 ORDER BY 1;                                                                  → 22개 그룹, 코드 합계 148
--- SELECT menu_id, menu_nm, parent_menu_id, menu_url FROM shopjoy_2604.sy_menu WHERE menu_id IN ('MN000097','MN000098','MN000099','MN000100') ORDER BY 1;  → 4행
+-- SELECT menu_id, menu_nm, parent_menu_id, menu_url FROM shopjoy_2604.sy_menu WHERE menu_id IN ('MN000111','MN000112','MN000113','MN000114') ORDER BY 1;  → 4행
 --
 --  백엔드 코드 캐시: 코드는 Redis(sy:code:*)에 최대 1시간 남는다 — 바로 보이게 하려면 BO 캐시 새로고침(또는 재기동).
 
 -- ═══════════════════════════════════════════════════════════
 --  롤백 (주석 해제 후 실행) — 테이블에 쌓인 글·요청·견적도 함께 지워진다. 첨부 파일(sy_attach·CDN)은 남는다.
 -- ═══════════════════════════════════════════════════════════
--- DELETE FROM shopjoy_2604.sy_role_menu WHERE menu_id IN ('MN000097','MN000098','MN000099','MN000100') AND reg_by = 'MIGRATION_20261004';
--- DELETE FROM shopjoy_2604.sy_menu      WHERE menu_id IN ('MN000098','MN000099','MN000100','MN000097') AND reg_by = 'MIGRATION_20261004';
+-- DELETE FROM shopjoy_2604.sy_role_menu WHERE menu_id IN ('MN000111','MN000112','MN000113','MN000114') AND reg_by = 'MIGRATION_20261004';
+-- DELETE FROM shopjoy_2604.sy_menu      WHERE menu_id IN ('MN000112','MN000113','MN000114','MN000111') AND reg_by = 'MIGRATION_20261004';
 -- DELETE FROM shopjoy_2604.sy_code      WHERE code_id LIKE 'CD2610043%' AND reg_by = 'MIGRATION_20261004';
 -- DELETE FROM shopjoy_2604.sy_code_grp  WHERE code_grp_id LIKE 'CG2610043%' AND reg_by = 'MIGRATION_20261004';
 -- DELETE FROM shopjoy_2604.mb_like      WHERE target_type_cd = 'LOCAL_POST';
