@@ -188,13 +188,14 @@ INSERT INTO shopjoy_2604.cm_bbs_attach
        (bbs_attach_id, site_id, bbm_id, bbs_id, attach_type_cd, file_nm, file_ext, file_size, mime_type, cdn_url, thumb_url, file_path,
         sort_ord, down_cnt, use_yn, member_id, reg_by, reg_date, upd_by, upd_date, reg_site_id)
 SELECT 'BBA' || substring(a.attach_id FROM 3),
-       s.site_id, s.bbm_id, s.bbs_id,
+       COALESCE(s.site_id, m.site_id), s.bbm_id, s.bbs_id,   -- 글에 사이트가 비어 있으면 게시판의 사이트
        CASE WHEN lower(COALESCE(a.file_ext, '')) IN ('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg') THEN 'IMAGE' ELSE 'FILE' END,
        a.file_nm, lower(a.file_ext), a.file_size, a.mime_type_cd,
        COALESCE(a.cdn_img_url, a.attach_url), COALESCE(a.thumb_cdn_url, a.cdn_thumb_url, a.thumb_url), a.storage_path,
        COALESCE(a.sort_ord, 0), 0, 'Y', s.member_id, a.reg_by, a.reg_date, 'MIGRATION_20261005', NOW(), a.reg_site_id
   FROM shopjoy_2604.sy_attach a
   JOIN shopjoy_2604.cm_bbs s ON s.bbs_id = a.ref_id
+  JOIN shopjoy_2604.cm_bbm m ON m.bbm_id = s.bbm_id
  WHERE a.ref_table_nm = 'cm_bbs'
    AND NOT EXISTS (SELECT 1 FROM shopjoy_2604.cm_bbs_attach t WHERE t.bbs_attach_id = 'BBA' || substring(a.attach_id FROM 3));
 
