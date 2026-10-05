@@ -27,7 +27,7 @@ migration_20261005_org_seller.py — 조직·판매자 구조 통일 (2026-10-05
            택배사 직원은 옮기지 않는다 — 소속 없는 BO 사용자(플랫폼 파트너)로 sy_user_role 배송 역할 그대로
         ④ 소속 역할 이전(OWNER → MANAGER+owner_yn=Y, STAFF → OPR/MD)
         ⑤ 판매자 없는 상품 채우기(D10)  ⑥ 브랜드·배송템플릿·대시보드 공유의 업체 → 판매자  ⑦ 사이트 유형 3종,
-        모듈 없는 데모 사이트(SI260008~17) INACTIVE(FO 요청 막기)  ⑧ 정산·프로모션 seller_id 빈 칸
+        모듈 없는 데모 사이트(SI260008~17) INACTIVE(FO 요청 막기)  ⑧ 정산·프로모션 seller_id 빈 칸  ⑨ 옛 업체 공통팝업 사용 안 함
     3 나중 정리 — 새 코드 배포 뒤에만(--confirm-deployed). 지운 값은 백업에 남기고 revert 로 되살린다
         운영사의 sl_seller_site 행 삭제, sy_site.operator_seller_id NOT NULL, 컬럼 삭제(sl_seller_member.is_main, vendor_id 16개 테이블,
         cm_dashboard.share_vendor_ids, sy_site.site_ceo·site_business_no·site_zip_code·site_address), sy_vendor 계열 5개 읽기 전용(트리거),
@@ -574,6 +574,13 @@ for t in ("st_settle", "st_settle_item", "st_settle_pay", "st_settle_raw", "st_s
         for pk, vid in q(f"SELECT {PKS[t]}, vendor_id FROM {S}.{t} WHERE vendor_id IS NOT NULL AND seller_id IS NULL"):
             if vendor_seller.get(vid): set_val("⑧정산·프로모션", t, pk, "seller_id", None, vendor_seller[vid])
             else: notes.append(f"{t} {pk}: 업체 {vid} 의 판매자 없음 — 채우지 못함")
+
+# ⑨ 옛 업체 공통팝업(cm_popup vendor·myVendorProd — 엔티티 SyVendor 를 읽음) 사용 안 함 — 코드 A 에서 SyVendor 엔티티가 사라져 열면 오류.
+#    BO 는 판매자 선택 모달(판매자 목록 API)을 쓴다 (2026-10-05)
+OLD_POPUP_CODES = ["vendor", "myVendorProd"]
+if has_table(S, "cm_popup"):
+    for pid, pcode in q(f"SELECT popup_id, popup_code FROM {S}.cm_popup WHERE popup_code = ANY(%s) AND coalesce(use_yn,'Y') = 'Y'", (OLD_POPUP_CODES,)):
+        set_val("⑨옛업체팝업", "cm_popup", pid, "use_yn", "Y", "N")
 
 # 사전 점검(2단계)
 problems2 = []
