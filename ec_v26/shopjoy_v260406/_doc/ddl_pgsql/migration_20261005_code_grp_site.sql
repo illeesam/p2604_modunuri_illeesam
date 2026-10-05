@@ -15,36 +15,38 @@
 --        reg_site_id 는 다른 테이블과 같은 감사 필드일 뿐이다(사이트 조건은 site_id 로만 — 정책 sy.57 §12).
 --   ② 그룹명(code_grp)은 지금처럼 전체에서 유일 — 유일 인덱스 sy_code_grp_uk_code_grp 는 그대로 둔다(바꾸지 않는다).
 --        코드 조회는 그룹 이름 그대로 한 번에 읽는다(사이트별 우선순위 없음).
---        이름 규칙(3단계, 사용자 확정 2026-10-05):
+--        이름 규칙(3단계, 사용자 최종 확정 2026-10-05 — 범위는 접미어, 앞자리는 기존 관례대로 업무 약어):
 --          전체 공통        XX_STATUS_CD                      매핑 없음
---          모듈 전용        EC1_XX_STATUS_CD                  <모듈 대문자>_…_CD — 그 모듈을 쓰는 사이트 전부(지금은 1개씩)
---          사이트 전용      SI260001_EC1_XX_STATUS_CD         <사이트ID>_<모듈 대문자>_…_CD — 그 사이트 1개
---          (여러 사이트 공용: 접두어 없이 매핑만 여러 개)
---        모듈 접두어: EC1_ / EC2_ / DANMOO1_ / HOMEPG1_ / DATAVISUAL1_ / BBM1_ (sy_site.module_cd 대문자). 약어(DM_, HP_)는 더 쓰지 않는다.
---        사이트:모듈이 1:1 이라 사이트 전용으로 바꿀 기존 그룹은 없다. 기존 모듈 전용 27개는 ⑧ 에서 모듈 접두어 이름으로 바꾼다.
+--          모듈 전용        XX_STATUS_CD_EC1                  공통 이름 + _<모듈 대문자> — 그 모듈을 쓰는 사이트 전부(지금은 1개씩)
+--          사이트 전용      XX_STATUS_CD_EC1_SI260001         모듈 전용 이름 + _<사이트ID> — 그 사이트 1개
+--          (여러 사이트 공용: 접미어 없이 매핑만 여러 개)
+--        같은 뜻의 코드(공통·모듈·사이트 변형)가 정렬하면 나란히 모이고, 뒤에서부터 떼면 기준 이름이다. 접미어 판정은 등록된 모듈(sy_site.module_cd 대문자)·사이트ID 목록으로.
+--        모듈 접미어: _EC1 / _EC2 / _DANMOO1 / _HOMEPG1 / _DATAVISUAL1 / _BBM1. 약어(DM_, HP_)는 더 쓰지 않는다.
+--        사이트:모듈이 1:1 이라 사이트 전용으로 바꿀 기존 그룹은 없다. 기존 모듈 전용 27개는 ⑧ 에서 접미어 이름으로 바꾼다.
 --   ③ 코드값 유일 조건 추가 — UNIQUE (code_grp_id, code_value). (2026-10-05 조회: 중복 0건)
 --   ④ sy_code_grp.code_opt1_desc (신규 컬럼) — 그 그룹에서 코드의 추가값(code_opt1)이 무엇을 뜻하는지 설명.
 --   ⑤ 표시경로(path_id) 정리 — 값만 고친다(그룹명은 바꾸지 않는다)
 --        promotion.* 14개 → promo.* 로 통일. 이유: path_id 가 21자라 promotion. 접두어는 뒤가 잘린다(promotion.event.statu),
 --        이미 promo.* 가 17개로 더 많고, 메뉴·다른 테이블(sy_prop: app/biz/spring)에는 이 낱말을 키로 쓰는 곳이 없다.
 --        잘려 있던 꼬리(statu·targ·appl)도 같이 바로잡는다. 빈 값 33개는 그룹 성격에 맞는 경로로 채운다.
---   ⑧ 모듈 전용 그룹 27개 이름 변경 — 옛 → 새 (DM_/HP_ 약어를 떼고 모듈 접두어 + 끝에 _CD. 가장 긴 이름 29자, 컬럼 50자)
+--   ⑧ 모듈 전용 그룹 27개 이름 변경 — 옛 → 새 (DM_/HP_ 약어는 사실상 모듈 표시였으므로 떼고, _CD 가 없으면 붙인 뒤 _DANMOO1/_HOMEPG1 접미어. 가장 긴 이름 29자, 컬럼 50자)
+--        떼고 남은 기준 이름이 기존 전체 공통 그룹명과 같아지는 것: 없음(2026-10-05 조회 — TRADE_METHOD_CD 는 자기 자신이 바뀌는 것)
 --        당무마켓(SI260003, danmoo1) 25개
---          DM_CAR_ACCIDENT        → DANMOO1_CAR_ACCIDENT_CD          DM_CAR_COLOR           → DANMOO1_CAR_COLOR_CD
---          DM_CAR_FUEL            → DANMOO1_CAR_FUEL_CD              DM_CAR_GEAR            → DANMOO1_CAR_GEAR_CD
---          DM_CAR_MAKER           → DANMOO1_CAR_MAKER_CD             DM_CONTACT_METHOD      → DANMOO1_CONTACT_METHOD_CD
---          DM_EXPERT_CATE_STATUS  → DANMOO1_EXPERT_CATE_STATUS_CD    DM_EXPERT_STATUS       → DANMOO1_EXPERT_STATUS_CD
---          DM_JOB_KIND            → DANMOO1_JOB_KIND_CD              DM_JOB_PERIOD          → DANMOO1_JOB_PERIOD_CD
---          DM_JOB_TASK            → DANMOO1_JOB_TASK_CD              DM_JOB_TYPE            → DANMOO1_JOB_TYPE_CD
---          DM_PAY_TYPE            → DANMOO1_PAY_TYPE_CD              DM_POST_KIND           → DANMOO1_POST_KIND_CD
---          DM_POST_STATUS         → DANMOO1_POST_STATUS_CD           DM_QUOTE_BID_STATUS    → DANMOO1_QUOTE_BID_STATUS_CD
---          DM_QUOTE_CATE          → DANMOO1_QUOTE_CATE_CD            DM_QUOTE_STATUS        → DANMOO1_QUOTE_STATUS_CD
---          DM_QUOTE_WHEN          → DANMOO1_QUOTE_WHEN_CD            DM_REALTY_DEAL         → DANMOO1_REALTY_DEAL_CD
---          DM_REALTY_KIND         → DANMOO1_REALTY_KIND_CD           DM_REALTY_OPTION       → DANMOO1_REALTY_OPTION_CD
---          DM_REALTY_TYPE         → DANMOO1_REALTY_TYPE_CD           DM_WEEKDAY             → DANMOO1_WEEKDAY_CD
---          TRADE_METHOD_CD        → DANMOO1_TRADE_METHOD_CD
+--          DM_CAR_ACCIDENT        → CAR_ACCIDENT_CD_DANMOO1          DM_CAR_COLOR           → CAR_COLOR_CD_DANMOO1
+--          DM_CAR_FUEL            → CAR_FUEL_CD_DANMOO1              DM_CAR_GEAR            → CAR_GEAR_CD_DANMOO1
+--          DM_CAR_MAKER           → CAR_MAKER_CD_DANMOO1             DM_CONTACT_METHOD      → CONTACT_METHOD_CD_DANMOO1
+--          DM_EXPERT_CATE_STATUS  → EXPERT_CATE_STATUS_CD_DANMOO1    DM_EXPERT_STATUS       → EXPERT_STATUS_CD_DANMOO1
+--          DM_JOB_KIND            → JOB_KIND_CD_DANMOO1              DM_JOB_PERIOD          → JOB_PERIOD_CD_DANMOO1
+--          DM_JOB_TASK            → JOB_TASK_CD_DANMOO1              DM_JOB_TYPE            → JOB_TYPE_CD_DANMOO1
+--          DM_PAY_TYPE            → PAY_TYPE_CD_DANMOO1              DM_POST_KIND           → POST_KIND_CD_DANMOO1
+--          DM_POST_STATUS         → POST_STATUS_CD_DANMOO1           DM_QUOTE_BID_STATUS    → QUOTE_BID_STATUS_CD_DANMOO1
+--          DM_QUOTE_CATE          → QUOTE_CATE_CD_DANMOO1            DM_QUOTE_STATUS        → QUOTE_STATUS_CD_DANMOO1
+--          DM_QUOTE_WHEN          → QUOTE_WHEN_CD_DANMOO1            DM_REALTY_DEAL         → REALTY_DEAL_CD_DANMOO1
+--          DM_REALTY_KIND         → REALTY_KIND_CD_DANMOO1           DM_REALTY_OPTION       → REALTY_OPTION_CD_DANMOO1
+--          DM_REALTY_TYPE         → REALTY_TYPE_CD_DANMOO1           DM_WEEKDAY             → WEEKDAY_CD_DANMOO1
+--          TRADE_METHOD_CD        → TRADE_METHOD_CD_DANMOO1
 --        홈페이지1(SI260004, homepg1) 2개
---          HP_CONTACT_CATEGORY    → HOMEPG1_CONTACT_CATEGORY_CD      HP_CONTACT_SERVICE     → HOMEPG1_CONTACT_SERVICE_CD
+--          HP_CONTACT_CATEGORY    → CONTACT_CATEGORY_CD_HOMEPG1      HP_CONTACT_SERVICE     → CONTACT_SERVICE_CD_HOMEPG1
 --        다른 테이블에 그룹명이 값으로 저장된 곳: 없음(2026-10-05 전 테이블 문자열 컬럼 3,299개 조회 — zd_meta_* 포함 0건).
 --        컬럼 주석(pg_description) 17개가 옛 이름을 적고 있어 같이 바꾼다.
 --        옛 이름을 쓰는 지금의 운영 코드 영향(DDL 실행 ~ 새 배포 사이): 백엔드는 이 이름을 동작에 쓰지 않음(주석만), FO 당무마켓·홈페이지1 과 BO 동네글/전문가/견적 3화면은
@@ -141,7 +143,7 @@ SELECT 'COGS2610050000'
 -- ───────────────────────────────────────────────────────────
 -- 3) 그룹명(code_grp) — 전체 유일 그대로(인덱스 sy_code_grp_uk_code_grp 유지). 설명만 새 이름 규칙으로
 -- ───────────────────────────────────────────────────────────
-COMMENT ON COLUMN shopjoy_2604.sy_code_grp.code_grp IS '코드그룹코드 (전체에서 유일, 예: MEMBER_GRADE). 새 그룹 이름 규칙: 업무약어_이름_CD, 한 모듈 전용이면 앞에 모듈 접두어(EC1_/EC2_/HOMEPG1_/DATAVISUAL1_/BBM1_, 당무마켓은 DM_)';
+COMMENT ON COLUMN shopjoy_2604.sy_code_grp.code_grp IS '코드그룹코드 (전체에서 유일, 예: MEMBER_GRADE). 새 그룹 이름 규칙: 업무약어_이름_CD, 모듈 전용은 뒤에 _모듈(…_CD_EC1 / _DANMOO1 / _HOMEPG1 …), 사이트 전용은 모듈 전용 이름 + _사이트ID(예: SORT_CD_EC1_SI260001)';
 
 -- ───────────────────────────────────────────────────────────
 -- 4) 코드값 유일 조건 — 같은 그룹 안에서 code_value 유일
@@ -254,38 +256,38 @@ UPDATE shopjoy_2604.sy_code_grp
    AND COALESCE(code_grp_desc, '') LIKE '%child_code_values%';
 
 -- ───────────────────────────────────────────────────────────
--- 8) 모듈 전용 그룹 27개 이름 변경 (옛 이름일 때만 — 다시 실행해도 안전. 새 이름이 이미 다른 그룹에 있으면 유일 인덱스가 막는다)
+-- 8) 모듈 전용 그룹 27개 이름 변경 — 기준 이름 + _모듈 접미어 (옛 이름일 때만 — 다시 실행해도 안전. 새 이름이 이미 다른 그룹에 있으면 유일 인덱스가 막는다)
 -- ───────────────────────────────────────────────────────────
 UPDATE shopjoy_2604.sy_code_grp g
    SET code_grp = v.new_nm, upd_by = 'MIGRATION_20261005', upd_date = NOW()
   FROM (VALUES
-        ('DM_CAR_ACCIDENT',       'DANMOO1_CAR_ACCIDENT_CD'),
-        ('DM_CAR_COLOR',          'DANMOO1_CAR_COLOR_CD'),
-        ('DM_CAR_FUEL',           'DANMOO1_CAR_FUEL_CD'),
-        ('DM_CAR_GEAR',           'DANMOO1_CAR_GEAR_CD'),
-        ('DM_CAR_MAKER',          'DANMOO1_CAR_MAKER_CD'),
-        ('DM_CONTACT_METHOD',     'DANMOO1_CONTACT_METHOD_CD'),
-        ('DM_EXPERT_CATE_STATUS', 'DANMOO1_EXPERT_CATE_STATUS_CD'),
-        ('DM_EXPERT_STATUS',      'DANMOO1_EXPERT_STATUS_CD'),
-        ('DM_JOB_KIND',           'DANMOO1_JOB_KIND_CD'),
-        ('DM_JOB_PERIOD',         'DANMOO1_JOB_PERIOD_CD'),
-        ('DM_JOB_TASK',           'DANMOO1_JOB_TASK_CD'),
-        ('DM_JOB_TYPE',           'DANMOO1_JOB_TYPE_CD'),
-        ('DM_PAY_TYPE',           'DANMOO1_PAY_TYPE_CD'),
-        ('DM_POST_KIND',          'DANMOO1_POST_KIND_CD'),
-        ('DM_POST_STATUS',        'DANMOO1_POST_STATUS_CD'),
-        ('DM_QUOTE_BID_STATUS',   'DANMOO1_QUOTE_BID_STATUS_CD'),
-        ('DM_QUOTE_CATE',         'DANMOO1_QUOTE_CATE_CD'),
-        ('DM_QUOTE_STATUS',       'DANMOO1_QUOTE_STATUS_CD'),
-        ('DM_QUOTE_WHEN',         'DANMOO1_QUOTE_WHEN_CD'),
-        ('DM_REALTY_DEAL',        'DANMOO1_REALTY_DEAL_CD'),
-        ('DM_REALTY_KIND',        'DANMOO1_REALTY_KIND_CD'),
-        ('DM_REALTY_OPTION',      'DANMOO1_REALTY_OPTION_CD'),
-        ('DM_REALTY_TYPE',        'DANMOO1_REALTY_TYPE_CD'),
-        ('DM_WEEKDAY',            'DANMOO1_WEEKDAY_CD'),
-        ('TRADE_METHOD_CD',       'DANMOO1_TRADE_METHOD_CD'),
-        ('HP_CONTACT_CATEGORY',   'HOMEPG1_CONTACT_CATEGORY_CD'),
-        ('HP_CONTACT_SERVICE',    'HOMEPG1_CONTACT_SERVICE_CD')
+        ('DM_CAR_ACCIDENT',       'CAR_ACCIDENT_CD_DANMOO1'),
+        ('DM_CAR_COLOR',          'CAR_COLOR_CD_DANMOO1'),
+        ('DM_CAR_FUEL',           'CAR_FUEL_CD_DANMOO1'),
+        ('DM_CAR_GEAR',           'CAR_GEAR_CD_DANMOO1'),
+        ('DM_CAR_MAKER',          'CAR_MAKER_CD_DANMOO1'),
+        ('DM_CONTACT_METHOD',     'CONTACT_METHOD_CD_DANMOO1'),
+        ('DM_EXPERT_CATE_STATUS', 'EXPERT_CATE_STATUS_CD_DANMOO1'),
+        ('DM_EXPERT_STATUS',      'EXPERT_STATUS_CD_DANMOO1'),
+        ('DM_JOB_KIND',           'JOB_KIND_CD_DANMOO1'),
+        ('DM_JOB_PERIOD',         'JOB_PERIOD_CD_DANMOO1'),
+        ('DM_JOB_TASK',           'JOB_TASK_CD_DANMOO1'),
+        ('DM_JOB_TYPE',           'JOB_TYPE_CD_DANMOO1'),
+        ('DM_PAY_TYPE',           'PAY_TYPE_CD_DANMOO1'),
+        ('DM_POST_KIND',          'POST_KIND_CD_DANMOO1'),
+        ('DM_POST_STATUS',        'POST_STATUS_CD_DANMOO1'),
+        ('DM_QUOTE_BID_STATUS',   'QUOTE_BID_STATUS_CD_DANMOO1'),
+        ('DM_QUOTE_CATE',         'QUOTE_CATE_CD_DANMOO1'),
+        ('DM_QUOTE_STATUS',       'QUOTE_STATUS_CD_DANMOO1'),
+        ('DM_QUOTE_WHEN',         'QUOTE_WHEN_CD_DANMOO1'),
+        ('DM_REALTY_DEAL',        'REALTY_DEAL_CD_DANMOO1'),
+        ('DM_REALTY_KIND',        'REALTY_KIND_CD_DANMOO1'),
+        ('DM_REALTY_OPTION',      'REALTY_OPTION_CD_DANMOO1'),
+        ('DM_REALTY_TYPE',        'REALTY_TYPE_CD_DANMOO1'),
+        ('DM_WEEKDAY',            'WEEKDAY_CD_DANMOO1'),
+        ('TRADE_METHOD_CD',       'TRADE_METHOD_CD_DANMOO1'),
+        ('HP_CONTACT_CATEGORY',   'CONTACT_CATEGORY_CD_HOMEPG1'),
+        ('HP_CONTACT_SERVICE',    'CONTACT_SERVICE_CD_HOMEPG1')
        ) AS v(old_nm, new_nm)
  WHERE g.code_grp = v.old_nm;
 
@@ -296,14 +298,14 @@ DECLARE
     v_desc TEXT;
     v_pair TEXT[];
     v_pairs TEXT[][] := ARRAY[
-        ['DM_CAR_ACCIDENT','DANMOO1_CAR_ACCIDENT_CD'], ['DM_CAR_COLOR','DANMOO1_CAR_COLOR_CD'], ['DM_CAR_FUEL','DANMOO1_CAR_FUEL_CD'], ['DM_CAR_GEAR','DANMOO1_CAR_GEAR_CD'],
-        ['DM_CAR_MAKER','DANMOO1_CAR_MAKER_CD'], ['DM_CONTACT_METHOD','DANMOO1_CONTACT_METHOD_CD'], ['DM_EXPERT_CATE_STATUS','DANMOO1_EXPERT_CATE_STATUS_CD'],
-        ['DM_EXPERT_STATUS','DANMOO1_EXPERT_STATUS_CD'], ['DM_JOB_KIND','DANMOO1_JOB_KIND_CD'], ['DM_JOB_PERIOD','DANMOO1_JOB_PERIOD_CD'], ['DM_JOB_TASK','DANMOO1_JOB_TASK_CD'],
-        ['DM_JOB_TYPE','DANMOO1_JOB_TYPE_CD'], ['DM_PAY_TYPE','DANMOO1_PAY_TYPE_CD'], ['DM_POST_KIND','DANMOO1_POST_KIND_CD'], ['DM_POST_STATUS','DANMOO1_POST_STATUS_CD'],
-        ['DM_QUOTE_BID_STATUS','DANMOO1_QUOTE_BID_STATUS_CD'], ['DM_QUOTE_CATE','DANMOO1_QUOTE_CATE_CD'], ['DM_QUOTE_STATUS','DANMOO1_QUOTE_STATUS_CD'],
-        ['DM_QUOTE_WHEN','DANMOO1_QUOTE_WHEN_CD'], ['DM_REALTY_DEAL','DANMOO1_REALTY_DEAL_CD'], ['DM_REALTY_KIND','DANMOO1_REALTY_KIND_CD'],
-        ['DM_REALTY_OPTION','DANMOO1_REALTY_OPTION_CD'], ['DM_REALTY_TYPE','DANMOO1_REALTY_TYPE_CD'], ['DM_WEEKDAY','DANMOO1_WEEKDAY_CD'],
-        ['TRADE_METHOD_CD','DANMOO1_TRADE_METHOD_CD'], ['HP_CONTACT_CATEGORY','HOMEPG1_CONTACT_CATEGORY_CD'], ['HP_CONTACT_SERVICE','HOMEPG1_CONTACT_SERVICE_CD']
+        ['DM_CAR_ACCIDENT','CAR_ACCIDENT_CD_DANMOO1'], ['DM_CAR_COLOR','CAR_COLOR_CD_DANMOO1'], ['DM_CAR_FUEL','CAR_FUEL_CD_DANMOO1'], ['DM_CAR_GEAR','CAR_GEAR_CD_DANMOO1'],
+        ['DM_CAR_MAKER','CAR_MAKER_CD_DANMOO1'], ['DM_CONTACT_METHOD','CONTACT_METHOD_CD_DANMOO1'], ['DM_EXPERT_CATE_STATUS','EXPERT_CATE_STATUS_CD_DANMOO1'],
+        ['DM_EXPERT_STATUS','EXPERT_STATUS_CD_DANMOO1'], ['DM_JOB_KIND','JOB_KIND_CD_DANMOO1'], ['DM_JOB_PERIOD','JOB_PERIOD_CD_DANMOO1'], ['DM_JOB_TASK','JOB_TASK_CD_DANMOO1'],
+        ['DM_JOB_TYPE','JOB_TYPE_CD_DANMOO1'], ['DM_PAY_TYPE','PAY_TYPE_CD_DANMOO1'], ['DM_POST_KIND','POST_KIND_CD_DANMOO1'], ['DM_POST_STATUS','POST_STATUS_CD_DANMOO1'],
+        ['DM_QUOTE_BID_STATUS','QUOTE_BID_STATUS_CD_DANMOO1'], ['DM_QUOTE_CATE','QUOTE_CATE_CD_DANMOO1'], ['DM_QUOTE_STATUS','QUOTE_STATUS_CD_DANMOO1'],
+        ['DM_QUOTE_WHEN','QUOTE_WHEN_CD_DANMOO1'], ['DM_REALTY_DEAL','REALTY_DEAL_CD_DANMOO1'], ['DM_REALTY_KIND','REALTY_KIND_CD_DANMOO1'],
+        ['DM_REALTY_OPTION','REALTY_OPTION_CD_DANMOO1'], ['DM_REALTY_TYPE','REALTY_TYPE_CD_DANMOO1'], ['DM_WEEKDAY','WEEKDAY_CD_DANMOO1'],
+        ['TRADE_METHOD_CD','TRADE_METHOD_CD_DANMOO1'], ['HP_CONTACT_CATEGORY','CONTACT_CATEGORY_CD_HOMEPG1'], ['HP_CONTACT_SERVICE','CONTACT_SERVICE_CD_HOMEPG1']
     ];
     i INTEGER;
 BEGIN
@@ -347,7 +349,7 @@ SELECT code_grp_id, code_grp, path_id
  WHERE COALESCE(path_id, '') = '' OR path_id LIKE 'promotion.%';
 -- 옛 이름이 남은 그룹(예상 0행) / 새 이름 그룹 수(예상 27)
 SELECT code_grp FROM shopjoy_2604.sy_code_grp WHERE code_grp ~ '^(DM_|HP_)' OR code_grp = 'TRADE_METHOD_CD';
-SELECT COUNT(*) AS renamed FROM shopjoy_2604.sy_code_grp WHERE code_grp ~ '^(DANMOO1|HOMEPG1)_.*_CD$';
+SELECT COUNT(*) AS renamed FROM shopjoy_2604.sy_code_grp WHERE code_grp ~ '_CD_(DANMOO1|HOMEPG1)$';
 -- 그룹명 유일 인덱스가 그대로 있는지(예상 1행)
 SELECT indexname FROM pg_indexes WHERE schemaname = 'shopjoy_2604' AND indexname = 'sy_code_grp_uk_code_grp';
 -- 뷰 행 수 = 코드 행 수(예상 1,470)
