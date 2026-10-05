@@ -31,18 +31,22 @@ SET LOCAL lock_timeout = '10s';
 
 -- U1 상품코드
 CREATE UNIQUE INDEX IF NOT EXISTS pd_prod_uk_site_id_prod_code_x2 ON shopjoy_2604.pd_prod (site_id, prod_code);
+ALTER TABLE shopjoy_2604.pd_prod DROP CONSTRAINT IF EXISTS pd_prod_uk_prod_code;   -- 옛 전역 유일은 제약조건(UNIQUE)이라 DROP INDEX 만으로는 실패한다(2026-10-05)
 DROP INDEX IF EXISTS shopjoy_2604.pd_prod_uk_prod_code;
 
 -- U2 SKU 코드
 CREATE UNIQUE INDEX IF NOT EXISTS pd_prod_sku_uk_site_id_sku_code_x2 ON shopjoy_2604.pd_prod_sku (site_id, sku_code);
+ALTER TABLE shopjoy_2604.pd_prod_sku DROP CONSTRAINT IF EXISTS pd_prod_sku_uk_sku_code;   -- 옛 전역 유일은 제약조건(UNIQUE)이라 DROP INDEX 만으로는 실패한다(2026-10-05)
 DROP INDEX IF EXISTS shopjoy_2604.pd_prod_sku_uk_sku_code;
 
 -- U3 쿠폰코드
 CREATE UNIQUE INDEX IF NOT EXISTS pm_coupon_uk_site_id_coupon_cd_x2 ON shopjoy_2604.pm_coupon (site_id, coupon_cd);
+ALTER TABLE shopjoy_2604.pm_coupon DROP CONSTRAINT IF EXISTS pm_coupon_uk_coupon_cd;   -- 옛 전역 유일은 제약조건(UNIQUE)이라 DROP INDEX 만으로는 실패한다(2026-10-05)
 DROP INDEX IF EXISTS shopjoy_2604.pm_coupon_uk_coupon_cd;
 
 -- U4 위젯코드
 CREATE UNIQUE INDEX IF NOT EXISTS dp_widget_lib_uk_site_id_widget_code_x2 ON shopjoy_2604.dp_widget_lib (site_id, widget_code);
+ALTER TABLE shopjoy_2604.dp_widget_lib DROP CONSTRAINT IF EXISTS dp_widget_lib_uk_widget_code;   -- 옛 전역 유일은 제약조건(UNIQUE)이라 DROP INDEX 만으로는 실패한다(2026-10-05)
 DROP INDEX IF EXISTS shopjoy_2604.dp_widget_lib_uk_widget_code;
 
 -- U5 전시 UI·영역 코드
@@ -56,13 +60,13 @@ COMMIT;
 
 -- ── 되돌리기 ──────────────────────────────────────────────────────────────────
 -- BEGIN;
--- CREATE UNIQUE INDEX IF NOT EXISTS pd_prod_uk_prod_code ON shopjoy_2604.pd_prod (prod_code);              -- 사이트 간 같은 코드가 생겼으면 실패
+-- ALTER TABLE shopjoy_2604.pd_prod ADD CONSTRAINT pd_prod_uk_prod_code UNIQUE (prod_code);              -- 사이트 간 같은 코드가 생겼으면 실패
 -- DROP INDEX IF EXISTS shopjoy_2604.pd_prod_uk_site_id_prod_code_x2;
--- CREATE UNIQUE INDEX IF NOT EXISTS pd_prod_sku_uk_sku_code ON shopjoy_2604.pd_prod_sku (sku_code);
+-- ALTER TABLE shopjoy_2604.pd_prod_sku ADD CONSTRAINT pd_prod_sku_uk_sku_code UNIQUE (sku_code);
 -- DROP INDEX IF EXISTS shopjoy_2604.pd_prod_sku_uk_site_id_sku_code_x2;
--- CREATE UNIQUE INDEX IF NOT EXISTS pm_coupon_uk_coupon_cd ON shopjoy_2604.pm_coupon (coupon_cd);
+-- ALTER TABLE shopjoy_2604.pm_coupon ADD CONSTRAINT pm_coupon_uk_coupon_cd UNIQUE (coupon_cd);
 -- DROP INDEX IF EXISTS shopjoy_2604.pm_coupon_uk_site_id_coupon_cd_x2;
--- CREATE UNIQUE INDEX IF NOT EXISTS dp_widget_lib_uk_widget_code ON shopjoy_2604.dp_widget_lib (widget_code);
+-- ALTER TABLE shopjoy_2604.dp_widget_lib ADD CONSTRAINT dp_widget_lib_uk_widget_code UNIQUE (widget_code);
 -- DROP INDEX IF EXISTS shopjoy_2604.dp_widget_lib_uk_site_id_widget_code_x2;
 -- DROP INDEX IF EXISTS shopjoy_2604.dp_ui_uk_site_id_ui_cd_x2;
 -- DROP INDEX IF EXISTS shopjoy_2604.dp_area_uk_site_id_area_cd_x2;
