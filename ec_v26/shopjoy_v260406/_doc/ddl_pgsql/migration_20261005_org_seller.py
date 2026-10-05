@@ -16,17 +16,26 @@ migration_20261005_org_seller.py — 조직·판매자 구조 통일 (2026-10-05
               sy_brand.seller_id·pd_dliv_tmplt.seller_id(+FK·인덱스) / cm_dashboard.share_seller_ids / 코드 컬럼 주석 갱신
         코드: SELLER_TYPE_CD + OPERATOR, SELLER_STATUS_CD + CLOSED, 새 그룹 SELLER_MEMBER_ROLE_CD(MANAGER/OPR/MD/CS — 전체 공통),
               SITE_TYPE_CD + MARKET/SINGLE/C2C, 대상 유형 4그룹(PROMO_TARGET_TYPE·DISCNT_PROD_TARGET·PM_PROD_TARGET·NOTI_TARGET_TYPE) + SELLER
-    2 값 이전 — 지금 코드로도 오류 없이 돈다. 단 업체 직원 40명이 소속을 얻어 범위가 좁아진다(배포된 판매자 범위 08671e4 는 운영사를 몰라
-      운영사 소속 22명이 ShopJoy 운영팀 상품·프로모션만 봄) → 코드 A 배포 바로 앞에 이어서 실행. 다시 실행하면 그 사이 생긴 옛 값(OWNER/STAFF·판매자 없는 상품)만 다시 옮긴다.
+    2 값 이전 — 옛 코드로도 오류 없이 돈다. 단 옛 코드에서는 업체 직원(택배 제외 29명)이 소속을 얻어 범위가 좁아진다(배포된 판매자 범위 08671e4 는
+      운영사를 몰라 운영사 소속 직원이 ShopJoy 운영팀 상품·프로모션만 봄) → 코드 A 를 먼저 배포하고 실행하거나(권장, 아래 순서), 코드 A 바로 앞에 이어서 실행.
+      다시 실행하면 그 사이 생긴 옛 값(OWNER/STAFF·판매자 없는 상품)만 다시 옮긴다.
       다른 작업의 migration_20261005_seller_scope.sql(od_order_item.seller_id)은 이 단계 뒤에 실행(또는 다시 실행)하면 판매자 없던 상품의 주문상품도 운영사로 채워진다.
         ① 사이트별 운영사 판매자 지정·생성(아래 상수), sy_site 운영 주체 칸 → 운영사 판매자, 운영사의 sl_seller_site 호환 행(3단계에서 지움)
+           새 운영사는 "모듈 있는 사이트 + 그 사이트만의 대표자·사업자번호"일 때만(홈페이지1·데이타시각화1·통합게시판1). 모듈 없는 데모 사이트는 ShopJoy 운영팀
         ② 업체 → 판매자 합치기(이미 vendor_id 로 연결된 판매자에 사업자·계약·주소·소개를 채움, 판매자가 아닌 업체(택배·CS·전산 외주)의 판매자 행은 CLOSED)
-        ③ 업체 직원(sy_vendor_user) → 판매자 소속(sl_seller_member.user_id)  ④ 소속 역할 이전(OWNER → MANAGER+owner_yn=Y, STAFF → OPR/MD)
+        ③ 업체 직원(sy_vendor_user) → 판매자 소속(sl_seller_member.user_id). CS 대행·전산 외주 직원 → 운영사 CS·OPR.
+           택배사 직원은 옮기지 않는다 — 소속 없는 BO 사용자(플랫폼 파트너)로 sy_user_role 배송 역할 그대로
+        ④ 소속 역할 이전(OWNER → MANAGER+owner_yn=Y, STAFF → OPR/MD)
         ⑤ 판매자 없는 상품 채우기(D10)  ⑥ 브랜드·배송템플릿·대시보드 공유의 업체 → 판매자  ⑦ 사이트 유형 3종  ⑧ 정산·프로모션 seller_id 빈 칸
     3 나중 정리 — 새 코드 배포 뒤에만(--confirm-deployed). 지운 값은 백업에 남기고 revert 로 되살린다
         운영사의 sl_seller_site 행 삭제, sy_site.operator_seller_id NOT NULL, 컬럼 삭제(sl_seller_member.is_main, vendor_id 16개 테이블,
         cm_dashboard.share_vendor_ids, sy_site.site_ceo·site_business_no·site_zip_code·site_address), sy_vendor 계열 5개 읽기 전용(트리거),
-        옛 코드값·업체 코드그룹·업체형 역할 사용 안 함(use_yn='N'), 소속 사용자의 업체형 sy_user_role 행 삭제
+        옛 코드값·업체 코드그룹·업체형 역할(배송 역할 트리 DLIV_ROOT 는 남김)·옛 업체 메뉴(SY_BIZ·SY_BIZ_USER) 사용 안 함(use_yn='N'),
+        소속 사용자의 업체형 sy_user_role 행 삭제
+
+  코드 A(ecBeBo·ecFeBo·ecFeFoNuxt4)와의 순서: 코드 A 는 1단계 뒤 DB 에서 2단계 전·후 모두 돈다(옛 값 OWNER/STAFF·빈 operator_seller_id 는 옛 규칙으로 읽음).
+     권장: run --step 1 → 코드 A 배포 → run --step 2(바로 새 규칙으로 동작, 범위가 좁아지는 구간 없음) → 검증 → run --step 3 --confirm-deployed
+     (2단계를 코드 A 보다 먼저 실행해도 되지만, 그 사이 옛 코드에서는 업체 직원 범위가 좁아지므로 이어서 배포한다)
 
   백업·되돌리기: 백업 스키마 shopjoy_2604_bak_orgseller_20261005
      _run(실행 이력) · _ddl(실행한 DDL 과 되돌릴 DDL) · _chg(바꾼 값) · _ins(추가한 행) · _del(지운 행, json) · _coldef/_colval(삭제한 컬럼 정의·값)
@@ -67,11 +76,17 @@ SITE_TYPE_DEFAULT = "SINGLE"          # 모듈 없는 데모 사이트(SI260007~
 #         이미 판매자 SEL2609292349050011 로 연결돼 있다 → 이 판매자를 세 사이트의 운영사로.
 PLATFORM_OPERATOR = "SEL2609292349050011"
 OPERATOR_FIXED = {"SI260001": PLATFORM_OPERATOR, "SI260002": PLATFORM_OPERATOR, "SI260003": PLATFORM_OPERATOR}
-# 그 밖의 사이트: sy_site 대표자·사업자번호가 있으면 그 사업자로 운영사 판매자를 새로 만든다(같은 사업자번호 = 한 판매자). 없으면 PLATFORM_OPERATOR.
+# 그 밖의 사이트: "그 사이트만의 사업자 정보"가 실제로 있을 때만 운영사 판매자를 새로 만든다(같은 사업자번호 = 한 판매자).
+#   조건 = 모듈이 있는 실제 사이트(sy_site.module_cd) + 대표자 + 사업자번호(000-00-00000 모양) 셋 다.
+#   모듈 없는 데모 사이트(SI260007~17)는 대표자·사업자번호 칸이 있어도 데모 값이라 새로 만들지 않고 PLATFORM_OPERATOR 로 —
+#   판매자 목록이 데모 운영사로 어지럽혀지지 않게(2026-10-05 조정). 데모 값은 3단계 컬럼 삭제 때 백업(_colval)에 남는다.
 OPERATOR_NEW_FROM_SITE = True
+OPERATOR_NEW_REQUIRES_MODULE = True
 # 판매자가 아닌 업체 유형(sy_vendor.vendor_type_cd) → 그 업체 직원을 "업체 등록 사이트의 운영사" 소속으로 옮길 때의 역할(None = 옮기지 않음).
-# 택배사는 공통코드 COURIER 로만 남고(조직 아님), CS 대행·전산 외주 직원은 운영사의 CS·OPR 직원이 된다.
-NON_SELLER_VENDOR = {"DELIVERY": "CS", "CS": "CS", "PROG": "OPR"}
+# CS 대행·전산 외주 직원은 운영사의 CS·OPR 직원이 된다.
+# 택배사(DELIVERY)는 None — 배송 파트너는 MANAGER/OPR/MD/CS 어디에도 맞지 않는다(2026-10-05 조정). 판매자 행만 CLOSED 로 두고,
+#   직원은 "소속 없는 BO 사용자"로 남아 지금처럼 sy_user.role_id·sy_user_role 의 배송 역할(DLIV_ROOT 아래)로 동작한다(플랫폼 파트너 경로).
+NON_SELLER_VENDOR = {"DELIVERY": None, "CS": "CS", "PROG": "OPR"}
 NON_SELLER_STATUS = "CLOSED"          # 위 업체와 연결돼 있던 판매자 행의 상태(상품·주문 0건)
 # 업체 직원 역할(sy_role.role_code) → 소속 역할. 목록에 없으면 VENDOR_ROLE_DEFAULT. 업체 대표 담당자(is_main=Y)이고 결과가 MANAGER 면 owner_yn=Y.
 VENDOR_ROLE = {"REP": "MANAGER", "MGT": "MANAGER", "SITE_ADMIN": "MD", "SITE_OPER": "MD", "STAFF": "CS", "SALES_CALL": "CS", "SALES_BLOCKED": "CS",
@@ -343,32 +358,45 @@ by_bno = {}
 for s in sellers:
     b = sellers[s]["info"].get("seller_business_no")
     if b and sellers[s]["type"] == "OPERATOR": by_bno[b] = s
+def own_biz(si):
+    """그 사이트만의 사업자 정보가 실제로 있는가 — 모듈 있는 실제 사이트 + 대표자 + 사업자번호 모양(데모 사이트 제외)"""
+    if OPERATOR_NEW_REQUIRES_MODULE and not si["module"]:
+        return False
+    return bool(si["ceo"]) and bool(biz_of(si["bno"]))
+
+
 for site, si in sites.items():
+    use_site_info = True       # 사이트의 운영 주체 칸(대표자·사업자번호·주소)을 운영사 판매자 정보로 옮기는가
     if si["op"] and si["op"] in sellers:
         operator_of[site] = si["op"]; how = "이미 지정됨"
     elif site in OPERATOR_FIXED and OPERATOR_FIXED[site] in sellers:
         operator_of[site] = OPERATOR_FIXED[site]; how = "기존 판매자 지정(상수 OPERATOR_FIXED)"
-    elif OPERATOR_NEW_FROM_SITE and (si["bno"] or si["ceo"]):
-        if si["bno"] and si["bno"] in by_bno:
+    elif OPERATOR_NEW_FROM_SITE and own_biz(si):
+        if si["bno"] in by_bno:
             operator_of[site] = by_bno[si["bno"]]; how = "같은 사업자번호의 운영사"
         else:
             operator_of[site] = new_seller("①운영사", f"{si['nm']} 운영사", "OPERATOR", site, {})
-            if si["bno"]: by_bno[si["bno"]] = operator_of[site]
-            how = "새 운영사 판매자(sy_site 운영 주체 칸)"
+            by_bno[si["bno"]] = operator_of[site]
+            how = "새 운영사 판매자(그 사이트의 대표자·사업자번호)"
     else:
         if PLATFORM_OPERATOR not in sellers:
             notes.append(f"!! {site}: 운영사를 정할 수 없음(PLATFORM_OPERATOR {PLATFORM_OPERATOR} 없음)"); continue
-        operator_of[site] = PLATFORM_OPERATOR; how = "플랫폼 운영사(대표자·사업자번호 없음)"
+        operator_of[site] = PLATFORM_OPERATOR
+        use_site_info = False   # 데모 사이트의 대표자·사업자번호를 ShopJoy 운영팀 칸에 채우지 않는다
+        how = ("플랫폼 운영사(모듈 없는 데모 사이트 — 데모 사업자 값은 옮기지 않음)" if not si["module"] and (si["ceo"] or si["bno"])
+               else "플랫폼 운영사(대표자·사업자번호 없음)")
     op = operator_of[site]
     if sellers[op]["type"] != "OPERATOR":
         set_val("①운영사", "sl_seller", op, "seller_type_cd", sellers[op]["type"], "OPERATOR"); sellers[op]["type"] = "OPERATOR"
     if sellers[op]["status"] != "ACTIVE" and not sellers[op].get("new"):
         notes.append(f"{site}: 운영사 {op} 상태가 {sellers[op]['status']} — 확인 필요")
-    fill_info("①운영사", op, dict(seller_business_no=si["bno"], seller_ceo_nm=si["ceo"], seller_email=si["email"], seller_phone=si["phone"],
-                                 seller_zip_code=si["zip"], seller_addr=si["addr"]))
+    if use_site_info:
+        fill_info("①운영사", op, dict(seller_business_no=si["bno"], seller_ceo_nm=si["ceo"], seller_email=si["email"], seller_phone=si["phone"],
+                                     seller_zip_code=si["zip"], seller_addr=si["addr"]))
     set_val("①운영사", "sy_site", site, "operator_seller_id", si["op"], op)
-    link_site("①운영사(호환 행)", op, site)          # 지금 코드의 "판매자가 그 사이트에 연결" 확인용 — 3단계에서 지운다
-    s2_table.append((site, si["nm"], si["module"] or "-", SITE_TYPE.get(site, SITE_TYPE_DEFAULT), op, sellers[op]["nm"], how))
+    link_site("①운영사(호환 행)", op, site)          # 옛 코드의 "판매자가 그 사이트에 연결" 확인용 — 3단계에서 지운다(코드 A 는 쓰지 않음)
+    s2_table.append((site, si["nm"], si["module"] or "-", SITE_TYPE.get(site, SITE_TYPE_DEFAULT), op, sellers[op]["nm"], how,
+                     si["ceo"] or "-", si["bno"] or "-"))
 
 # ② 업체 → 판매자
 vendor_seller = {}
@@ -552,7 +580,9 @@ OLD_CODE_VALUES = {"SITE_TYPE_CD": ["EC", "ADMIN", "API"], "PROMO_TARGET_TYPE": 
                    "PM_PROD_TARGET": ["VENDOR"], "NOTI_TARGET_TYPE": ["VENDOR"]}
 OLD_CODE_GRPS = ["VENDOR_STATUS_CD", "VENDOR_TYPE_CD", "VENDOR_TYPE_KR", "VENDOR_CLASS_CD", "VENDOR_USER_STATUS_CD", "VENDOR_CONTENT_TYPE",
                  "VENDOR_CONTENT_STATUS_CD"]
-OLD_ROLE_ROOTS = ["SITE_MGR_ROOT", "SITE_OP_ROOT", "DLIV_ROOT", "CS_ROOT", "PROG_ROOT"]     # 판매업체·사이트운영업체·배송·콜센터·유지보수업체 역할 트리
+OLD_ROLE_ROOTS = ["SITE_MGR_ROOT", "SITE_OP_ROOT", "CS_ROOT", "PROG_ROOT"]     # 판매업체·사이트운영업체·콜센터·유지보수업체 역할 트리
+# 배송업체 역할 트리(DLIV_ROOT)는 남긴다 — 택배사 직원은 소속 없는 플랫폼 파트너로 이 역할을 계속 쓴다(2026-10-05 조정)
+OLD_MENU_CODES = ["SY_BIZ", "SY_BIZ_USER"]     # 업체·업체사용자 메뉴(sy_menu) — 화면이 판매자관리로 흡수됨
 s3 = dict(drop=[(t, c) for t, c in DROP_COLS if has_col(t, c)])
 s3["opsite"] = q(f"""SELECT ss.seller_site_id, ss.seller_id, ss.site_id FROM {S}.sl_seller_site ss JOIN {S}.sl_seller s ON s.seller_id = ss.seller_id
                      WHERE s.seller_type_cd = 'OPERATOR'""")
@@ -567,6 +597,18 @@ s3["roles"] = q(f"SELECT role_id, role_code FROM {S}.sy_role WHERE coalesce(use_
 s3["userroles"] = q(f"""SELECT ur.user_role_id, ur.user_id, ur.role_id FROM {S}.sy_user_role ur
                         WHERE ur.role_id = ANY(%s) AND EXISTS (SELECT 1 FROM {S}.sl_seller_member m WHERE m.user_id = ur.user_id
                                                                 AND (m.status_cd IS NULL OR m.status_cd = 'ACTIVE'))""", (old_role_ids,))
+s3["menus"] = q(f"SELECT menu_id, menu_code FROM {S}.sy_menu WHERE coalesce(use_yn,'Y') = 'Y' AND menu_code = ANY(%s)", (OLD_MENU_CODES,))
+# 알림(바꾸지 않음): 소속이 없는 사용자(플랫폼 관리자·파트너)가 쓰던 업체형 역할 — 3단계 뒤 그 역할의 메뉴 권한이 빠진다
+s3_unaffiliated = q(f"""SELECT u.login_id, r.role_code FROM {S}.sy_user u
+                         JOIN (SELECT user_id, role_id FROM {S}.sy_user WHERE role_id IS NOT NULL
+                               UNION SELECT user_id, role_id FROM {S}.sy_user_role) x ON x.user_id = u.user_id
+                         JOIN {S}.sy_role r ON r.role_id = x.role_id
+                        WHERE x.role_id = ANY(%s) AND coalesce(u.user_status_cd,'ACTIVE') = 'ACTIVE'
+                          AND NOT EXISTS (SELECT 1 FROM {S}.sl_seller_member m WHERE m.user_id = u.user_id
+                                           AND (m.status_cd IS NULL OR m.status_cd = 'ACTIVE'))
+                          AND NOT EXISTS (SELECT 1 FROM {S}.sy_vendor_user vu JOIN {S}.sy_vendor v ON v.vendor_id = vu.vendor_id
+                                           WHERE vu.user_id = u.user_id AND v.vendor_type_cd <> 'DELIVERY')
+                        ORDER BY 1, 2""", (old_role_ids,)) if has_table(S, "sy_vendor_user") else []
 step3_todo = sum(len(v) for v in s3.values()) + (1 if s3_nullable or not has_col("sy_site", "operator_seller_id") else 0)
 
 # ══════════════════════════════ 출력 도우미 ══════════════════════════════
@@ -579,9 +621,12 @@ def print_step1():
 
 def print_step2():
     print(f"\n━━ 2단계 값 이전 — 값 {len(chg):,}칸 + 추가 {len(ins):,}행" + (" (옮길 것 없음)" if not step2_todo else ""))
-    print("   [사이트별 운영사·유형]")
-    for site, nm, mod, typ, op, opnm, how in s2_table:
-        print(f"      {site} {nm} ({mod}) 유형 {typ} → 운영사 {op} {opnm} — {how}")
+    print("   [사이트별 운영사·유형] 사이트 이름 (모듈) 유형 [사이트 대표자/사업자번호] → 운영사 — 근거")
+    for site, nm, mod, typ, op, opnm, how, ceo, bno in s2_table:
+        print(f"      {site} {nm} ({mod}) 유형 {typ} [{ceo}/{bno}] → 운영사 {op} {opnm} — {how}")
+    pv = sorted({v["nm"] for v in vendors.values() if NON_SELLER_VENDOR.get(v["type"], "x") is None})
+    if pv:
+        print(f"   [플랫폼 파트너 — 소속 없이 둠] 업체 {', '.join(pv)}: 판매자 행 {NON_SELLER_STATUS}, 직원은 소속 없는 BO 사용자(sy_user_role 배송 역할 그대로)")
     by = collections.Counter((c[0], c[1], c[3]) for c in chg)
     for (fix, t, col), n in sorted(by.items()): print(f"   {fix} {t}.{col}: {n:,}칸")
     byi = collections.Counter((x[0], x[1]) for x in ins)
@@ -621,8 +666,14 @@ def print_step3():
     print(f"   읽기 전용 트리거: {', '.join(s3['ro']) or '없음'}")
     print(f"   코드값 사용 안 함: {', '.join(f'{g}.{v}' for _, g, v in s3['codes']) or '없음'}")
     print(f"   코드그룹 사용 안 함: {', '.join(g for _, g in s3['grps']) or '없음'}")
-    print(f"   역할 사용 안 함(업체형 역할 트리 {', '.join(OLD_ROLE_ROOTS)}): {len(s3['roles'])}개")
+    print(f"   역할 사용 안 함(업체형 역할 트리 {', '.join(OLD_ROLE_ROOTS)}): {len(s3['roles'])}개 — 배송 역할 트리 DLIV_ROOT 는 남김(택배 파트너)")
     print(f"   소속 사용자의 업체형 sy_user_role 삭제: {len(s3['userroles'])}행")
+    print(f"   옛 업체 메뉴 사용 안 함: {', '.join(c for _, c in s3['menus']) or '없음'}")
+    if s3_unaffiliated:
+        agg = collections.defaultdict(list)
+        for lid, rc in s3_unaffiliated: agg[rc].append(lid)
+        print(f"   (알림) 소속 없는 사용자가 쓰는 업체형 역할 — 3단계 뒤 이 역할의 메뉴 권한이 빠짐(다른 역할은 그대로): "
+              + "; ".join(f"{rc} {', '.join(v)}" for rc, v in sorted(agg.items())))
 
 
 # ══════════════════════════════ status / dry ══════════════════════════════
@@ -886,7 +937,8 @@ try:
         load_meta()
         apply_chg(run_no, 3, [("옛코드값", "sy_code", cid, "use_yn", "Y", "N") for cid, _, _ in s3["codes"]] +
                   [("업체코드그룹", "sy_code_grp", gid, "use_yn", "Y", "N") for gid, _ in s3["grps"]] +
-                  [("업체형역할", "sy_role", rid, "use_yn", "Y", "N") for rid, _ in s3["roles"]])
+                  [("업체형역할", "sy_role", rid, "use_yn", "Y", "N") for rid, _ in s3["roles"]] +
+                  [("옛업체메뉴", "sy_menu", mid, "use_yn", "Y", "N") for mid, _ in s3["menus"]])
         # ── 사후 검증 ──
         bad = []
         if q1(f"SELECT count(*) FROM {S}.sl_seller_site ss JOIN {S}.sl_seller s ON s.seller_id = ss.seller_id WHERE s.seller_type_cd = 'OPERATOR'"): bad.append("운영사 매핑 남음")
