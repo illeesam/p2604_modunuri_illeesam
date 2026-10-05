@@ -154,7 +154,7 @@ COMMENT ON COLUMN shopjoy_2604.xer_erd.folder_id  IS '폴더ID (xer_folder.folde
 COMMENT ON COLUMN shopjoy_2604.xer_erd.erd_nm     IS 'ERD 이름';
 COMMENT ON COLUMN shopjoy_2604.xer_erd.conn_id    IS '커넥션ID — 표 연결형 엔티티의 컬럼을 읽을 커넥션 (DEFAULT = 기본(현재 DB), 그 밖은 xer_conn.conn_id, FK 없음)';
 COMMENT ON COLUMN shopjoy_2604.xer_erd.schema_nm  IS '기본 스키마';
-COMMENT ON COLUMN shopjoy_2604.xer_erd.erd_json   IS 'ERD 내용 JSON — {version, viewport:{x,y,zoom}, nodes:[{id, type:entity|area|memo, position, size, parentId(영역), data:{mode:TABLE|LOGICAL, schema, table, logicalNm, color, columns[논리 엔티티만]}}], edges:[{id, source, target, sourceHandle, targetHandle, data:{cardinality 1:1|1:N|N:M, label, identifying}}]}';
+COMMENT ON COLUMN shopjoy_2604.xer_erd.erd_json   IS 'ERD 내용 JSON — {version, viewport:{x,y,zoom}, nodes:[{id, type:entity|area|memo, position, width, height(영역·메모), data:{mode:TABLE|LOGICAL, schema, table, logicalNm, color, colView, columns[논리 엔티티만]}}](영역 소속은 위치로 판단 — 따로 저장 안 함), edges:[{id, source, target, sourceHandle, targetHandle, data:{cardinality 1:1|1:N|N:M, label, identifying}}]}';
 COMMENT ON COLUMN shopjoy_2604.xer_erd.erd_ver    IS '저장 판 번호 — 내용 저장마다 +1. 화면이 읽은 판과 다르면 저장 거부(두 사람이 덮어쓰지 않게)';
 COMMENT ON COLUMN shopjoy_2604.xer_erd.sort_ord   IS '정렬순서 (같은 폴더 안)';
 COMMENT ON COLUMN shopjoy_2604.xer_erd.erd_desc   IS '설명';
