@@ -37,7 +37,15 @@ CREATE TABLE shopjoy_2604.sy_site (
     url_prod_http    VARCHAR(500),
     url_prod_https   VARCHAR(500),
     url_prod_aos     VARCHAR(500),
-    url_prod_ios     VARCHAR(500)
+    url_prod_ios     VARCHAR(500),
+    -- 모듈 소스 경로·앱 파일 경로 — 2026-10-06 (migration_20261006_sy_site_module_path_app_files.sql)
+    module_path        VARCHAR(200),
+    aos_dev_file_path  VARCHAR(500),
+    aos_prod_file_path VARCHAR(500),
+    ios_dev_file_path  VARCHAR(500),
+    ios_prod_file_path VARCHAR(500),
+    service_stage_cd   VARCHAR(20),
+    service_sort_ord   INTEGER
 ,
     CONSTRAINT sy_site_uk_site_code UNIQUE (site_code),
     CONSTRAINT sy_site_uk_site_business_no UNIQUE (site_business_no)
@@ -63,6 +71,13 @@ COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_http   IS '접속주소 운영 h
 COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_https  IS '접속주소 운영 https (브라우저, 예 https://danmoo1--shopjoy-ecfefonuxt4.netlify.app) — NULL=운영 없음';
 COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_aos    IS '접속주소 운영 안드로이드 앱이 여는 화면 (앱 테넌트 foUrl.prod, https 만) — NULL=운영 앱 없음';
 COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_ios    IS '접속주소 운영 아이폰 앱이 여는 화면 (앱 테넌트 foUrl.prod, https 만) — NULL=운영 앱 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.module_path        IS '모듈 소스 경로 (예 ecFeFoNuxt4/app/pages/datavisual1, ecFeBoNuxt4/app/pages/bom1) — 포털 카드 표시, NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.aos_dev_file_path  IS '안드로이드 개발 앱 파일 경로 (URL 또는 CDN 상대 경로) — 있으면 포털에서 다운로드, NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.aos_prod_file_path IS '안드로이드 운영 앱 파일 경로 (URL 또는 CDN 상대 경로) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.ios_dev_file_path  IS '아이폰 개발 앱 파일 경로 (URL 또는 CDN 상대 경로) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.ios_prod_file_path IS '아이폰 운영 앱 파일 경로 (URL 또는 CDN 상대 경로) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.service_stage_cd   IS '서비스 분류 (코드: SERVICE_STAGE_CD — COMPANY/PREP/WORK/SERVICE/END/ADMIN) — 종합서비스관리 포털 칸반 칸, NULL=기본 분류';
+COMMENT ON COLUMN shopjoy_2604.sy_site.service_sort_ord   IS '서비스 정렬순서 — 같은 분류 안의 칸반 순서(작을수록 위), NULL=이름순 뒤';
 COMMENT ON COLUMN shopjoy_2604.sy_site.logo_url IS '로고URL';
 COMMENT ON COLUMN shopjoy_2604.sy_site.favicon_url IS '파비콘URL';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_desc IS '사이트설명';
