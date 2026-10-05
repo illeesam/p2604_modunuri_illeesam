@@ -26,12 +26,13 @@ migration_20261005_org_seller.py — 조직·판매자 구조 통일 (2026-10-05
         ③ 업체 직원(sy_vendor_user) → 판매자 소속(sl_seller_member.user_id). CS 대행·전산 외주 직원 → 운영사 CS·OPR.
            택배사 직원은 옮기지 않는다 — 소속 없는 BO 사용자(플랫폼 파트너)로 sy_user_role 배송 역할 그대로
         ④ 소속 역할 이전(OWNER → MANAGER+owner_yn=Y, STAFF → OPR/MD)
-        ⑤ 판매자 없는 상품 채우기(D10)  ⑥ 브랜드·배송템플릿·대시보드 공유의 업체 → 판매자  ⑦ 사이트 유형 3종  ⑧ 정산·프로모션 seller_id 빈 칸
+        ⑤ 판매자 없는 상품 채우기(D10)  ⑥ 브랜드·배송템플릿·대시보드 공유의 업체 → 판매자  ⑦ 사이트 유형 3종,
+        모듈 없는 데모 사이트(SI260008~17) INACTIVE(FO 요청 막기)  ⑧ 정산·프로모션 seller_id 빈 칸
     3 나중 정리 — 새 코드 배포 뒤에만(--confirm-deployed). 지운 값은 백업에 남기고 revert 로 되살린다
         운영사의 sl_seller_site 행 삭제, sy_site.operator_seller_id NOT NULL, 컬럼 삭제(sl_seller_member.is_main, vendor_id 16개 테이블,
         cm_dashboard.share_vendor_ids, sy_site.site_ceo·site_business_no·site_zip_code·site_address), sy_vendor 계열 5개 읽기 전용(트리거),
         옛 코드값·업체 코드그룹·업체형 역할(배송 역할 트리 DLIV_ROOT 는 남김)·옛 업체 메뉴(SY_BIZ·SY_BIZ_USER) 사용 안 함(use_yn='N'),
-        소속 사용자의 업체형 sy_user_role 행 삭제
+        소속 사용자의 업체형 sy_user_role 행 삭제, 사업자번호 유일을 사이트 쪽(sy_site_uk_site_business_no 삭제) → 판매자 쪽(부분 유일 인덱스)으로
 
   코드 A(ecBeBo·ecFeBo·ecFeFoNuxt4)와의 순서: 코드 A 는 1단계 뒤 DB 에서 2단계 전·후 모두 돈다(옛 값 OWNER/STAFF·빈 operator_seller_id 는 옛 규칙으로 읽음).
      권장: run --step 1 → 코드 A 배포 → run --step 2(바로 새 규칙으로 동작, 범위가 좁아지는 구간 없음) → 검증 → run --step 3 --confirm-deployed
@@ -99,6 +100,12 @@ STAFF_OPR_ROLE_CODES = {"SITE_OPER"}
 C2C_FALLBACK = "OPERATOR"
 # 단독몰(SINGLE)에 이미 매핑된 입점 판매자(테스트 판매자 6개) — True = 그대로 두고 알리기만, False = 매핑을 SUSPENDED 로
 KEEP_SINGLE_MALL_VENDORS = True
+# 모듈 없는 데모 사이트(sy_site.module_cd 없음)가 ACTIVE 면 FO 요청을 받을 수 있는 상태 → INACTIVE 로 바꾼다(2026-10-05 조정, 운영사는 ShopJoy 운영팀)
+DEMO_SITE_INACTIVE = True
+# 사업자번호 유일: 사이트 쪽 전역 유일(sy_site_uk_site_business_no)은 없애고(한 운영사가 여러 사이트 운영), 판매자 쪽에 둔다(같은 회사 = 판매자 1행).
+#   3단계에서 — 사이트 유일 제약 삭제, 판매자 부분 유일 인덱스 생성(값 있는 행만). 중복이 있으면 3단계를 멈추고 알린다.
+SITE_BIZNO_UNIQUE = "sy_site_uk_site_business_no"
+SELLER_BIZNO_UNIQUE = "sl_seller_uk_seller_business_no"
 
 ROLE_RANK = {"MANAGER": 4, "OPR": 3, "MD": 2, "CS": 1}
 NEW_ROLES = ("MANAGER", "OPR", "MD", "CS")
@@ -548,6 +555,18 @@ for site, s in single_vendors:
         notes.append(f"단독몰 {site} 에 입점 판매자 {s}({sellers[s]['nm']}) — 그대로 둠(상수 KEEP_SINGLE_MALL_VENDORS)")
     else:
         set_val("⑦사이트유형", "sl_seller_site", seller_sites[s][site][0], "seller_site_status_cd", "ACTIVE", "SUSPENDED")
+# ⑦-2 모듈 없는 데모 사이트 → INACTIVE (FO 요청을 받지 않게, 운영사는 ShopJoy 운영팀)
+demo_rows = []    # (사이트, 이름, 상태, 바꿀 상태, 회원 수, 상품 수, 사용자 기본 사이트 수)
+for site, si in sites.items():
+    if si["module"]:
+        continue
+    want = "INACTIVE" if DEMO_SITE_INACTIVE else si["status"]
+    cnt = q(f"""SELECT (SELECT count(*) FROM {S}.mb_member WHERE site_id = %s), (SELECT count(*) FROM {S}.pd_prod WHERE site_id = %s),
+                         (SELECT count(*) FROM {S}.sy_user WHERE site_id = %s)""", (site, site, site))[0]
+    demo_rows.append((site, si["nm"], si["status"], want, *cnt))
+    if si["status"] != want:
+        set_val("⑦데모사이트", "sy_site", site, "site_status_cd", si["status"], want)
+
 # ⑧ 정산·프로모션 seller_id 빈 칸 (업체만 있는 행)
 for t in ("st_settle", "st_settle_item", "st_settle_pay", "st_settle_raw", "st_settle_config", "st_recon", "st_erp_voucher",
           "pm_coupon", "pm_discnt", "pm_gift", "pm_save_policy"):
@@ -598,6 +617,11 @@ s3["userroles"] = q(f"""SELECT ur.user_role_id, ur.user_id, ur.role_id FROM {S}.
                         WHERE ur.role_id = ANY(%s) AND EXISTS (SELECT 1 FROM {S}.sl_seller_member m WHERE m.user_id = ur.user_id
                                                                 AND (m.status_cd IS NULL OR m.status_cd = 'ACTIVE'))""", (old_role_ids,))
 s3["menus"] = q(f"SELECT menu_id, menu_code FROM {S}.sy_menu WHERE coalesce(use_yn,'Y') = 'Y' AND menu_code = ANY(%s)", (OLD_MENU_CODES,))
+# 사업자번호 유일 — 사이트 쪽 제약 삭제, 판매자 쪽 부분 유일 인덱스(값 있는 행만)
+s3["site_uq"] = [(SITE_BIZNO_UNIQUE,)] if q1("SELECT 1 FROM pg_constraint WHERE conname = %s", (SITE_BIZNO_UNIQUE,)) else []
+s3["seller_uq"] = [] if (not has_col("sl_seller", "seller_business_no") or q1("SELECT 1 FROM pg_indexes WHERE schemaname=%s AND indexname=%s", (S, SELLER_BIZNO_UNIQUE))) else [(SELLER_BIZNO_UNIQUE,)]
+s3_bizno_dup = q(f"""SELECT seller_business_no, string_agg(seller_id || ' ' || seller_nm, ', ') FROM {S}.sl_seller
+                       WHERE coalesce(seller_business_no, '') <> '' GROUP BY 1 HAVING count(*) > 1""") if has_col("sl_seller", "seller_business_no") else []
 # 알림(바꾸지 않음): 소속이 없는 사용자(플랫폼 관리자·파트너)가 쓰던 업체형 역할 — 3단계 뒤 그 역할의 메뉴 권한이 빠진다
 s3_unaffiliated = q(f"""SELECT u.login_id, r.role_code FROM {S}.sy_user u
                          JOIN (SELECT user_id, role_id FROM {S}.sy_user WHERE role_id IS NOT NULL
@@ -634,6 +658,10 @@ def print_step2():
     if prod_fill:
         print("   [⑤ 판매자 없는 상품 채우기] 사이트 — 기준 — 판매자: 건수")
         for (site, why, tgt), n in sorted(prod_fill.items()): print(f"      {site} — {why} — {tgt} {sellers[tgt]['nm']}: {n}")
+    if demo_rows:
+        print("   [모듈 없는 데모 사이트] 사이트 이름: 지금 상태 → 바뀔 상태 (회원/상품/기본 사이트인 BO 사용자 수)")
+        for site, nm, st, want, nmb, npd, nus in demo_rows:
+            print(f"      {site} {nm}: {st} → {want} ({nmb}/{npd}/{nus})" + ("  (이미 INACTIVE)" if st == want else ""))
     rc = collections.Counter((x[2]["role_cd"], x[2]["status_cd"], x[2]["owner_yn"], sellers[x[2]["seller_id"]]["type"]) for x in ins if x[0] == "③업체직원→소속")
     if rc:
         print("   [③ 업체 직원 → 소속] 역할/상태/owner/판매자유형: " + ", ".join(f"{k[0]}/{k[1]}/{k[2]}/{k[3]} {n}" for k, n in sorted(rc.items())))
@@ -669,6 +697,10 @@ def print_step3():
     print(f"   역할 사용 안 함(업체형 역할 트리 {', '.join(OLD_ROLE_ROOTS)}): {len(s3['roles'])}개 — 배송 역할 트리 DLIV_ROOT 는 남김(택배 파트너)")
     print(f"   소속 사용자의 업체형 sy_user_role 삭제: {len(s3['userroles'])}행")
     print(f"   옛 업체 메뉴 사용 안 함: {', '.join(c for _, c in s3['menus']) or '없음'}")
+    print(f"   사업자번호 유일 — 사이트 쪽 제약 {SITE_BIZNO_UNIQUE} 삭제: {'할 일' if s3['site_uq'] else '이미 없음'}"
+          f" / 판매자 쪽 부분 유일 인덱스 {SELLER_BIZNO_UNIQUE}: {'만들 일' if s3['seller_uq'] else '이미 있음(또는 칸 없음)'}")
+    if s3_bizno_dup:
+        print("   !! 판매자 사업자번호 중복(3단계 실행 전에 정리 필요): " + "; ".join(f"{b} = {w}" for b, w in s3_bizno_dup))
     if s3_unaffiliated:
         agg = collections.defaultdict(list)
         for lid, rc in s3_unaffiliated: agg[rc].append(lid)
@@ -905,8 +937,18 @@ try:
                 cur.execute(f"INSERT INTO {BAK}._del (run_no, step, tbl, pk, row_json) VALUES (%s,3,%s,%s,%s::jsonb)", (run_no, tbl, pk, json.dumps(rj)))
                 cur.execute(f'DELETE FROM {S}."{tbl}" WHERE "{PKS[tbl]}" = %s', (pk,))
 
+        if s3_bizno_dup and s3["seller_uq"]:
+            raise RuntimeError("판매자 사업자번호 중복 " + "; ".join(f"{b} = {w}" for b, w in s3_bizno_dup) + " — 같은 회사는 판매자 한 행이어야 합니다. 정리한 뒤 다시 실행하세요")
         del_rows("sl_seller_site", [r[0] for r in s3["opsite"]])
         del_rows("sy_user_role", [r[0] for r in s3["userroles"]])
+        if s3["site_uq"]:   # 컬럼 삭제보다 먼저 — 되돌릴 때 컬럼 값이 돌아온 뒤 제약을 다시 만든다
+            ddl(run_no, 3, f"유일 제약 삭제 {SITE_BIZNO_UNIQUE}", [f"ALTER TABLE {S}.sy_site DROP CONSTRAINT IF EXISTS {SITE_BIZNO_UNIQUE}"],
+                [f"ALTER TABLE {S}.sy_site ADD CONSTRAINT {SITE_BIZNO_UNIQUE} UNIQUE (site_business_no)"])
+        if s3["seller_uq"]:
+            ddl(run_no, 3, f"부분 유일 인덱스 {SELLER_BIZNO_UNIQUE}",
+                [f"CREATE UNIQUE INDEX IF NOT EXISTS {SELLER_BIZNO_UNIQUE} ON {S}.sl_seller (seller_business_no) WHERE seller_business_no IS NOT NULL AND seller_business_no <> ''",
+                 f"COMMENT ON INDEX {S}.{SELLER_BIZNO_UNIQUE} IS {lit('같은 회사(사업자번호) = 판매자 한 행 — 운영사·입점사 공통 (정책 sy.59)')}"],
+                [f"DROP INDEX IF EXISTS {S}.{SELLER_BIZNO_UNIQUE}"])
         if s3_nullable:
             ddl(run_no, 3, "NOT NULL sy_site.operator_seller_id", [f"ALTER TABLE {S}.sy_site ALTER COLUMN operator_seller_id SET NOT NULL"],
                 [f"ALTER TABLE {S}.sy_site ALTER COLUMN operator_seller_id DROP NOT NULL"])
