@@ -24,7 +24,20 @@ CREATE TABLE shopjoy_2604.sy_site (
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30) ,
     upd_date         TIMESTAMP   ,
-    path_id          VARCHAR(21) 
+    path_id          VARCHAR(21) ,
+    -- 접속 주소 12칸: 환경(local/dev/prod) × http·https(브라우저)·aos·ios(앱이 여는 화면) — 2026-10-05 (migration_20261005_sy_site_urls.sql)
+    url_local_http   VARCHAR(500),
+    url_local_https  VARCHAR(500),
+    url_local_aos    VARCHAR(500),
+    url_local_ios    VARCHAR(500),
+    url_dev_http     VARCHAR(500),
+    url_dev_https    VARCHAR(500),
+    url_dev_aos      VARCHAR(500),
+    url_dev_ios      VARCHAR(500),
+    url_prod_http    VARCHAR(500),
+    url_prod_https   VARCHAR(500),
+    url_prod_aos     VARCHAR(500),
+    url_prod_ios     VARCHAR(500)
 ,
     CONSTRAINT sy_site_uk_site_code UNIQUE (site_code),
     CONSTRAINT sy_site_uk_site_business_no UNIQUE (site_business_no)
@@ -38,6 +51,18 @@ COMMENT ON COLUMN shopjoy_2604.sy_site.root_category_id IS '카테고리 트리 
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_type_cd IS '사이트유형 (코드: SITE_TYPE — EC/ADMIN/API)';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_nm IS '사이트명';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_domain IS '도메인';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_local_http  IS '접속주소 내PC http (브라우저, 예 http://localhost:3100) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_local_https IS '접속주소 내PC https (브라우저) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_local_aos   IS '접속주소 내PC 안드로이드 앱이 여는 화면 (앱 테넌트 foUrl.local, 폰은 adb reverse) — NULL=앱 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_local_ios   IS '접속주소 내PC 아이폰 앱이 여는 화면 (앱 테넌트 foUrl.local) — NULL=앱 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_dev_http    IS '접속주소 개발(NAS) http (브라우저, 예 http://illeesam.synology.me:22003) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_dev_https   IS '접속주소 개발(NAS) https (브라우저, DSM 역방향 프록시 <포트>.illeesam.synology.me) — NULL=없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_dev_aos     IS '접속주소 개발 안드로이드 앱이 여는 화면 (앱 테넌트 foUrl.dev) — NULL=앱 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_dev_ios     IS '접속주소 개발 아이폰 앱이 여는 화면 (앱 테넌트 foUrl.dev) — NULL=앱 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_http   IS '접속주소 운영 http (브라우저, Netlify 는 https 로 넘김) — NULL=운영 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_https  IS '접속주소 운영 https (브라우저, 예 https://danmoo1--shopjoy-ecfefonuxt4.netlify.app) — NULL=운영 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_aos    IS '접속주소 운영 안드로이드 앱이 여는 화면 (앱 테넌트 foUrl.prod, https 만) — NULL=운영 앱 없음';
+COMMENT ON COLUMN shopjoy_2604.sy_site.url_prod_ios    IS '접속주소 운영 아이폰 앱이 여는 화면 (앱 테넌트 foUrl.prod, https 만) — NULL=운영 앱 없음';
 COMMENT ON COLUMN shopjoy_2604.sy_site.logo_url IS '로고URL';
 COMMENT ON COLUMN shopjoy_2604.sy_site.favicon_url IS '파비콘URL';
 COMMENT ON COLUMN shopjoy_2604.sy_site.site_desc IS '사이트설명';
