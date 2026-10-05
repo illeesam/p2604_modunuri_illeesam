@@ -165,8 +165,9 @@ class State:
             # 멀티테넌트 데이터 정비(8~12) 상태
             self.module_code_cnt = q(f"""SELECT count(*) FROM {S}.sy_code c JOIN {S}.sy_code_grp g ON g.code_grp_id = c.code_grp_id
                                            WHERE g.code_grp = 'MODULE_CD' AND c.code_value = ANY(%s)""", (MODULE_CODES,))[0][0]
-            self.modcode_cnt = q(f"""SELECT count(*) FROM {S}.sy_code c JOIN {S}.sy_code_grp g ON g.code_grp_id = c.code_grp_id
-                                       WHERE g.code_grp = ANY(%s)""", (list(MODCODE_GRPS.values()),))[0][0]
+            # 2026-10-05 공통코드 이름 규칙(접미어 _DANMOO1 등)으로 그룹 이름이 바뀌었으므로 바뀌지 않는 그룹 ID 로 센다
+            self.modcode_grp_ids = {r[0] for r in q(f"SELECT code_grp_id FROM {S}.sy_code_grp WHERE code_grp_id = ANY(%s)", (list(MODCODE_GRPS.keys()),))}
+            self.modcode_cnt = q(f"""SELECT count(*) FROM {S}.sy_code c WHERE c.code_grp_id = ANY(%s)""", (list(MODCODE_GRPS.keys()),))[0][0]
             self.cat_map = q("SELECT to_regclass('shopjoy_2604_map_category_20261004._map') IS NOT NULL")[0][0]
             self.cat_site2 = q(f"SELECT count(*) FROM {S}.pd_category WHERE site_id = 'SI260002'")[0][0]
             self.ec2_map = q("SELECT to_regclass('shopjoy_2604_map_ec2copy_20261004._map') IS NOT NULL")[0][0]
@@ -330,7 +331,7 @@ def st_module2(s):
 def st_modcodes(s):
     return summarize([
         ("sy_code_grp.module_cd", s.has_col("sy_code_grp", "module_cd")),
-        ("모듈 전용 코드그룹 5개", all(g in s.code_grps for g in MODCODE_GRPS.values())),
+        ("모듈 전용 코드그룹 5개(그룹 ID 기준 — 이름은 2026-10-05 접미어 규칙으로 바뀜)", len(s.modcode_grp_ids) == len(MODCODE_GRPS)),
         ("그 코드 23개 이상", s.modcode_cnt >= 23),
     ])
 
