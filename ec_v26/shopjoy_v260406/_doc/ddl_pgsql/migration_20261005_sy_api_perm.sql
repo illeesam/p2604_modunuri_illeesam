@@ -18,14 +18,20 @@
 --        처음 수집 분류(서버 ApiPermConst.initialPermType 과 같은 규칙):
 --          /api/sch/jenkins/** = PUBLIC(Jenkins 토큰 호출)
 --          /api/md/**(모듈 코바늘·소스젠 — BO 토큰 요청만 판정, FO 회원 화면은 대상 아님) · /api/sch/**(전역 배치 실행·등록·해제)
---          · /api/cache/** · /api/autoRest/** · /api/base/**(내부 공통 레이어) · /api/bo/zd/**(운영지원·시뮬레이션) · /api/bo/sy/api-perm/**
+--          · /api/cache/** · /api/autoRest/** · /api/bo/zd/**(운영지원·시뮬레이션) · /api/bo/sy/api-perm/**
 --          · /api/bo/sy/batch/** 의 쓰기(전역 배치 설정·실행 — 사이트 한정 사용자 불가) = ADMIN
+--          · /api/base/**(내부 공통 레이어) 중 BO 화면이 부르지 않는 것 = ADMIN
+--            BO 화면이 직접 부르는 /api/base 는 ADMIN 으로 두지 않는다(차단 모드에서 그 화면이 비관리자에게 막히지 않게) — 2026-10-05 ecFeBo 소스 전수: 1곳
+--              POST /api/base/ec/od/order-item/save/{cmd} ← 주문 칸반(OdOrderKanban.js, 화면 odOrderKanban) — 연결 추정이 칸반 메뉴에 붙인다
+--            (서버 ApiPermConst.SCREEN_BASE_APIS 와 같은 표. 화면이 /api/base 를 새로 부르면 둘 다 고친다)
 --          나머지 = MENU·메뉴 연결 없음(미분류) → BO 화면 [연결 추정]으로 미리보고 골라 적용
 --  ② 공통코드(전체 공통) API_PERM_TYPE_CD(4) · API_CHECK_MODE_CD(4)
 --  ③ 설정(sy_prop, path app.bo) — app.bo.api-perm.mode = MONITOR(첫 배포: 통과시키고 막혔을 요청만 기록)
 --                                 app.bo.api-perm.unmapped = ALLOW(차단 모드에서 미분류 API 통과)
 --                                 app.bo.api-perm.admin-roles = SUPER_ADMIN,SYS_ADMIN,RL000001(플랫폼 관리자 역할 코드·ID)
 --  ④ 메뉴 시스템 > 메뉴 > API 권한관리(#page=syApiPermMng) + 관리자 역할(SUPER_ADMIN 2·SYS_ADMIN 2·RL000001 3) 메뉴 권한
+--  ⑤ 감시 기록 보존 — 새 테이블 없이 기존 syh_api_log(외부 API 로그, 지금 견본 15행뿐)에 api_type_cd = 'BO_API_PERM' 으로 5분 묶음 저장(서버가 쓴다, 이 파일은 손대지 않음)
+--     나머지 BO 메뉴(정산·판매자·기획전 등 sy_menu 에 없는 화면)는 BO 화면 [메뉴 동기화](미리보기 → 적용)로 맞춘다 — 이 파일에서 넣지 않는다
 --
 --  sy_role_menu.perm_level 뜻(BO 역할관리 화면 SyRoleMng 기준, 2026-10-05 조회: 1=179행, 2=420행, 3=123행, 비어 있음=65행):
 --     0 없음 / 1 읽기 → READ / 2 쓰기 → WRITE / 3 관리 → WRITE / 4 차단(어느 역할이든 차단이면 그 메뉴 권한 없음) / 비어 있음 → 읽기
@@ -115,10 +121,15 @@ UPDATE shopjoy_2604.sy_api SET perm_type_cd = 'ADMIN', upd_date = CURRENT_TIMEST
         OR (url_pattern LIKE '/api/sch/%' AND url_pattern NOT LIKE '/api/sch/jenkins/%')
         OR url_pattern LIKE '/api/cache/%'
         OR url_pattern LIKE '/api/autoRest/%'
-        OR url_pattern LIKE '/api/base/%'
+        OR (url_pattern LIKE '/api/base/%'
+            AND (http_method, url_pattern) NOT IN (('POST', '/api/base/ec/od/order-item/save/{cmd}')))   -- 화면이 부르는 /api/base 제외
         OR url_pattern LIKE '/api/bo/zd/%'
         OR url_pattern LIKE '/api/bo/sy/api-perm%'
         OR (url_pattern LIKE '/api/bo/sy/batch%' AND http_method NOT IN ('GET', 'HEAD')));
+-- 예전 판(화면이 부르는 /api/base 까지 ADMIN)으로 이미 보정된 행을 되돌린다 — 관리자가 손대지 않은 수집 행만
+UPDATE shopjoy_2604.sy_api SET perm_type_cd = 'MENU', upd_date = CURRENT_TIMESTAMP
+ WHERE upd_by = 'SYSTEM_COLLECT' AND perm_type_cd = 'ADMIN' AND menu_id IS NULL
+   AND (http_method, url_pattern) IN (('POST', '/api/base/ec/od/order-item/save/{cmd}'));
 
 -- ───────────────────────────────────────────────────────────
 -- 2) 공통코드 (전체 공통 — 적용 사이트 매핑 없음)
@@ -170,7 +181,8 @@ SELECT v.prop_id, 'app.bo', v.prop_key, v.prop_value, v.prop_label, 'STRING', v.
 -- ───────────────────────────────────────────────────────────
 -- 4) 메뉴 — 시스템 > 메뉴(MN000091) > API 권한관리. 형식은 기존 행과 같다(menu_type_cd FOLDER, menu_url #page=<화면ID>)
 --    ※ BO 의 실제 좌측 메뉴는 ecFeBo lib/app/boAppMenuData.js — sy_menu 는 메뉴관리·역할관리·API 권한의 기준 데이터.
---    메뉴ID 는 MN000115, 이미 다른 메뉴가 쓰고 있으면 가장 큰 번호 + 1
+--    메뉴ID 는 MN000115, 이미 다른 메뉴가 쓰고 있으면 가장 큰 번호 + 1.
+--    BO 화면 [메뉴 동기화]를 먼저 적용했으면 같은 화면(#page=syApiPermMng)의 행이 이미 있으므로 만들지 않는다(동기화도 코드 SY_API_PERM 을 쓴다).
 -- ───────────────────────────────────────────────────────────
 INSERT INTO shopjoy_2604.sy_menu (menu_id, menu_code, menu_nm, parent_menu_id, menu_url, menu_type_cd, icon_class, sort_ord, use_yn, menu_remark, reg_by, reg_date, reg_site_id)
 SELECT CASE WHEN EXISTS (SELECT 1 FROM shopjoy_2604.sy_menu WHERE menu_id = 'MN000115')
@@ -178,12 +190,12 @@ SELECT CASE WHEN EXISTS (SELECT 1 FROM shopjoy_2604.sy_menu WHERE menu_id = 'MN0
             ELSE 'MN000115' END,
        'SY_API_PERM', 'API 권한관리', 'MN000091', '#page=syApiPermMng', 'FOLDER', NULL, 3, 'Y',
        'BO API(HTTP 메서드+URL) 권한 — 플랫폼 관리자 전용', 'MIGRATION_20261005_APIPERM', CURRENT_TIMESTAMP, 'SI260001'
- WHERE NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_menu m WHERE m.menu_code = 'SY_API_PERM');
+ WHERE NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_menu m WHERE m.menu_code = 'SY_API_PERM' OR m.menu_url = '#page=syApiPermMng');
 
 INSERT INTO shopjoy_2604.sy_role_menu (role_menu_id, role_id, menu_id, perm_level, reg_by, reg_date, reg_site_id)
 SELECT 'ROM261005AP' || v.sfx, v.role_id, m.menu_id, v.perm_level, 'MIGRATION_20261005_APIPERM', CURRENT_TIMESTAMP, 'SI260001'
   FROM (VALUES ('01', 'ROLE000000000001', 2), ('02', 'RL000002', 2), ('03', 'RL000001', 3)) AS v(sfx, role_id, perm_level)
-  JOIN shopjoy_2604.sy_menu m ON m.menu_code = 'SY_API_PERM'
+  JOIN shopjoy_2604.sy_menu m ON m.menu_id = (SELECT min(x.menu_id) FROM shopjoy_2604.sy_menu x WHERE x.menu_code = 'SY_API_PERM' OR x.menu_url = '#page=syApiPermMng')
  WHERE NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_role_menu x WHERE x.role_id = v.role_id AND x.menu_id = m.menu_id)
    AND NOT EXISTS (SELECT 1 FROM shopjoy_2604.sy_role_menu x WHERE x.role_menu_id = 'ROM261005AP' || v.sfx);
 
