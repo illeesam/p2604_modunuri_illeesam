@@ -641,6 +641,11 @@ s3_unaffiliated = q(f"""SELECT u.login_id, r.role_code FROM {S}.sy_user u
                                            WHERE vu.user_id = u.user_id AND v.vendor_type_cd <> 'DELIVERY')
                         ORDER BY 1, 2""", (old_role_ids,)) if has_table(S, "sy_vendor_user") else []
 step3_todo = sum(len(v) for v in s3.values()) + (1 if s3_nullable or not has_col("sy_site", "operator_seller_id") else 0)
+# 2026-10-05 3단계(정리)가 끝난 뒤에는 2단계를 다시 돌리면 3단계가 지운 운영사 호환 행·옛 업체 값을 되살린다 — 막는다.
+#   (3단계 뒤 상태의 "2단계 남은 것"은 정리 결과를 2단계 기준으로 다시 센 것일 뿐 실제로 남은 일이 아니다)
+step3_applied = step1_done and not step3_todo and bak_exists and bool(q(f"SELECT 1 FROM {BAK}._run WHERE step = 3 LIMIT 1"))
+if step3_applied and MODE == "run" and STEP == 2 and "--force" not in sys.argv:
+    sys.exit("[거부] 3단계까지 적용된 뒤에는 2단계를 다시 실행하지 않습니다(3단계 정리를 되돌림). 되돌리려면 revert --step 3 을 먼저.")
 
 # ══════════════════════════════ 출력 도우미 ══════════════════════════════
 def print_step1():
@@ -720,9 +725,9 @@ if MODE == "status":
     runs = q(f"SELECT step, count(*) FROM {BAK}._run GROUP BY 1 ORDER BY 1") if bak_exists else []
     print(f"[상태] 백업 스키마 {BAK}: {'있음 — 실행 ' + ', '.join(f'{s}단계 {n}회' for s, n in runs) if bak_exists else '없음'}")
     print(f"[상태] 1단계: {'적용됨' if step1_done else f'미적용 — DDL {len(s1_ddl)}·코드 {len(s1_codes)} 남음'}")
-    print(f"[상태] 2단계: {'적용됨' if step1_done and not step2_todo else f'남은 것 값 {len(chg):,}칸·추가 {len(ins):,}행'}")
+    print(f"[상태] 2단계: {'적용됨(3단계까지 끝남 — 다시 실행하지 않음)' if step3_applied else ('적용됨' if step1_done and not step2_todo else f'남은 것 값 {len(chg):,}칸·추가 {len(ins):,}행')}")
     print(f"[상태] 3단계: {'적용됨' if not step3_todo else f'남은 것 {step3_todo:,}건(새 코드 배포 뒤 실행)'}")
-    sys.exit(0 if step1_done and not step2_todo else 3)
+    sys.exit(0 if step3_applied or (step1_done and not step2_todo) else 3)
 
 if MODE == "dry":
     cnt = dict(q(f"SELECT 'sl_seller', count(*) FROM {S}.sl_seller UNION ALL SELECT 'sl_seller_member', count(*) FROM {S}.sl_seller_member "
